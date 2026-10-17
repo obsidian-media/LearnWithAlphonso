@@ -27,9 +27,9 @@ The spike ran in a scratch folder outside the repo. Each library was run against
 Findings:
 
 - `pouvoir` 1sg returns the archaic/formal `puis` ("je puis"). It is a valid French form but not what a beginner course teaches. The table says `peux`, so **this form fails the gate and `pouvoir` is not used in the first-person-singular present**. The gate caught a real divergence on the first run, which is the point of having it.
-- `getAux` default is sound for the verbs we use (`aller`, `venir`, `arriver`, `rester` give ETRE, `manger` gives AVOIR) but is **not trusted**: the template declares the auxiliary per verb and a test compares it with the table.
+- `getAux` is **wrong for dual-auxiliary verbs**, measured: `aller venir arriver rester partir entrer tomber` give ETRE (and `alwaysAuxEtre` is true), but `rentrer sortir monter descendre passer retourner` give AVOIR (`alwaysAuxEtre` false). Those six take être when intransitive ("elle est rentrée") and avoir with an object. An earlier draft of this spec called the default sound; that was wrong. The rule is now: the table declares the auxiliary per verb; the gate compares it with `alwaysAuxEtre` **only for always-être verbs**; dual-auxiliary verbs carry a table flag `intransitiveOnly: être`, and a test proves no template ever gives such a verb an object (§9, item 3).
 - The §8.3 condition 3 trap is confirmed live: `aller`, ETRE, person 3, with `agreeGender` but no `agreeNumber`, returns `sommes allé` (singular). The compiler must always pass both `agreeGender` and `agreeNumber` for être verbs, and a test must prove it (the gate in §9, item 3).
-- Licence: the package code is Apache-2.0, but the bundled lexicon `french-verbs-lefff/dist/conjugations.json` is the Lefff data under **LGPL-LR**. We use it as a build-time tool, not redistributed in a shipped artifact: it is **6.1 MB, so it must be a `devDependency` and never be imported from `src/` runtime code** (it would land in the web bundle). A guard test (§9, item 9) enforces that. The generated sentences are our own output.
+- Licence: the package code is Apache-2.0, but the bundled lexicon `french-verbs-lefff/dist/conjugations.json` is the Lefff data under **LGPL-LR**. We use it as a build-time tool, not redistributed in a shipped artifact: it is **6.1 MB, so it must be a `devDependency` and never be imported from `src/` runtime code** (it would land in the web bundle). A guard test (§9, item 9) enforces that. The generated sentences are our own output. Further rules: (1) **no extract of `conjugations.json` is ever committed**, not even a fixture; our committed tables are hand-written and independent of it. (2) The package metadata labels the whole package Apache-2.0 while the bundled data is LGPL-LR; that mislabel is recorded in the repo's third-party notices file in the implementation PR, with the data's real licence and our dev-only use. (3) Gate 9 also covers `scripts/export-*` and dynamic `import()` / `require`, and adds a built-bundle check for a Lefff marker string.
 
 ### 2.2 Spanish: two candidates
 
@@ -58,6 +58,18 @@ The stem-changing families still have coverage from passing verbs: o>ue (dormir,
 
 **Fallback considered and not needed:** if no Spanish library had been good enough, the authority would be the committed table alone for a small closed verb set. It is not needed, but the table is built so the library check can be deleted without weakening anything: the table is always the final word.
 
+### 2.3 How independent are the sources? (honest accounting, and the fix)
+
+- `spanish-verbs` is a rule-based fork of the `conjugator` package. It is also known to get `servir`, `repetir`, `vestir`, `preferir` and `mentir` wrong, beyond the eight verbs the spike found. **Its agreement with our table is therefore weak evidence**: it is a rules engine, not an independent lexicon, and it passes whatever its rules happen to produce. The same author wrote the table and ran the library, so a shared blind spot is possible. Library agreement is a tripwire against typos in the table, not proof of correctness.
+- The French Lefff data is a real lexicon (independent of the table) and is stronger evidence than the Spanish rules engine.
+
+Two further checks are added so correctness does not rest on the library plus one author's table:
+
+- **(a) In-repo cross-check.** A test reads every existing hand-authored cloze line shaped `Pronoun ___ (infinitive)|form` (for example `fra2p1`, `frb1p1`, `esa1p5`, and the other conjugation packs) and checks the form against our table for that (verb, person, tense). It also reads every `article noun` pair in the French bank and checks it against the noun table. The existing course content was written and reviewed separately, so this is independent evidence for every verb and noun it covers. Where the course and the table disagree, the build fails and a person decides which is wrong.
+- **(b) Wiktionary as a check-only third source.** A local script (not run in CI; no Wiktionary data is committed) reads the kaikki.org JSONL extracts (CC BY-SA) for French and Spanish, looks up every lexicon verb form and noun gender, and writes a short **summary file** (counts, plus the list of disagreements) that is committed. A disagreement blocks a verb or noun until resolved. Only the summary is committed, which keeps the CC BY-SA data out of the repo. The script runs in the implementation PR and its summary is part of that PR.
+
+Coverage claim: a verb or noun counts as "three-source verified" only when the table, the library (or the Lefff lexicon) and Wiktionary agree, and it is additionally course-verified where (a) covers it. The implementation PR reports the count in each bucket.
+
 ## 3. Pronouns (closed classes, never LLM-proposed)
 
 **French:** `je` (`j'` before a vowel or mute h), `tu`, `il`, `elle`, `nous`, `vous`, `ils`, `elles`. `vous` is included: its verb form is unambiguous (the formal singular and plural share it) and English has one word, "you", for it. Person index for the library: je=0, tu=1, il/elle=2, nous=3, vous=4, ils/elles=5.
@@ -68,124 +80,160 @@ Subject pronouns are the only subjects, as in the English pilot. Spanish subject
 
 ## 4. Templates
 
-Shape matches the English pilot: a hand-authored skeleton, a closed slot assignment, and a literal `"sentence|answer"` line that goes through the unmodified `validate`/`preview`/`apply --confirm` path.
+Shape matches the English pilot: a hand-authored skeleton, a closed slot assignment, and a literal `"sentence|answer"` line that goes through the unmodified `validate`/`preview`/`apply --confirm` path. In every template the **blank is the verb unit only** (the finite verb, or the whole auxiliary plus participle in the passé composé); the subject pronoun, article and noun are fixed text.
 
-| Id               | Language | Level | Skeleton                                   | Notes                                                    |
-| ---------------- | -------- | ----- | ------------------------------------------ | -------------------------------------------------------- |
-| `fr-svo-present` | fr       | A2    | `{subject} {verb} {article} {noun}.`       | transitive verb, definite or indefinite article          |
-| `fr-svo-pc`      | fr       | B1    | `{subject} {aux} {participle} {article} {noun}.` | avoir verbs only; the cloze blanks the whole `ai mangé` unit |
-| `fr-etre-pc`     | fr       | B1    | `{subject} {être-aux} {participle} {à/au/à la/aux} {place}.` | être verbs; subjects limited to il elle ils elles (see §4.2) |
-| `es-svo-present` | es       | A2    | `{subject} {verb} {article} {noun}.`       | no `a personal` (objects are things, never people)       |
-| `es-svo-preterite` | es     | A2    | same, preterite                            | only verbs that pass the preterite table in §2.2         |
+| Id                 | Language | Level | Skeleton                                                  | Notes                                                                                   |
+| ------------------ | -------- | ----- | --------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `fr-svo-present`   | fr       | A2    | `{subject} ___ ({infinitive}) {np}.`                      | `np` = article (kind chosen per §5.3) + noun                                            |
+| `fr-svo-pc`        | fr       | B1    | `{subject} ___ ({infinitive}) {np}.` (answer `a mangé`)   | avoir verbs only; never `je` (see §4.4)                                                 |
+| `fr-etre-pc`       | fr       | B1    | `{subject} ___ ({infinitive}) {place-phrase}.`            | aller venir arriver rester rentrer only; subjects il elle ils elles (§4.1)              |
+| `es-svo-present`   | es       | A2    | `{subject} ___ ({infinitive}) {np}.`                      | no personal `a` (objects are things; animals indefinite only, §5.2)                     |
+| `es-svo-preterite` | es       | A2    | same, preterite                                           | only verbs that pass the preterite table in §2.2                                        |
 
 Level placement follows the course: the existing French "Common Verbs (je form)" is A2 and "Passé Composé" is B1; the existing Spanish "Past Tense (yo form)" is A2. Generated content sits beside, not before, the hand-authored grammar introduction.
 
-### 4.1 French passé composé — **included, but only because the gates cover it**
+### 4.1 French passé composé — included, with the risks closed one by one
 
-Included because the spike shows 372 of 372 forms correct and the two risks are testable:
-
-- **Auxiliary choice** is declared per verb in the table (`avoir` or `être`) and compared with the library's choice. A disagreement fails the build.
-- **Participle agreement.** With `avoir` and the object after the verb, there is no agreement, so `fr-svo-pc` is safe by construction (the object is never placed before the verb; no pronoun objects, no relative clauses). With `être`, the participle agrees with the subject in gender and number. `fr-etre-pc` therefore only uses **il, elle, ils, elles**, where the pronoun fixes the gender. `je`, `tu`, `nous`, `vous` are excluded from `être` sentences: their gender is not determined by the pronoun, and picking one would invent a fact about the learner. The compiler passes both `agreeGender` and `agreeNumber` every time, and a test proves it (§9, item 3).
+- **Auxiliary.** Declared per verb in the table. Compared with the library's `alwaysAuxEtre` **only for always-être verbs** (`aller venir arriver rester`). `rentrer` is dual-auxiliary (the library's `getAux` says AVOIR, §2.1), so it carries `intransitiveOnly: être`; a test proves no template gives it an object. `sortir monter descendre passer retourner` are not used at all.
+- **Participle agreement.** With `avoir` and the object after the verb there is no agreement, so `fr-svo-pc` is safe by construction (no pronoun objects, no relative clauses, object never before the verb). With `être` the participle agrees with the subject, so `fr-etre-pc` uses only **il, elle, ils, elles**. `je`, `tu`, `nous`, `vous` are excluded from `être` sentences. The compiler always passes both `agreeGender` and `agreeNumber` (§9, item 3).
+- **Place phrases.** `fr-etre-pc` is restricted to `aller`, `venir`, `arriver`, `rester`, `rentrer`. Each place noun carries hand-written phrases per relation, written out in full (never composed by a preposition rule): `to` (`à la maison`, `au marché`, `à l'école`), `at` (`à la maison`, `chez le médecin` only where the shipped data has the person), `from` (`de la maison`, `du marché`). A hand-written **(verb, place) allowlist** says which relation each verb uses and which places are natural: `aller` + `to`; `arriver` + `to`; `venir` + `from` (`Elle est venue du marché.`); `rester` + `at` (`Ils sont restés à la maison.`); `rentrer` + `to` and only for `maison` and `école`. Countries (`en France`) and `chez` phrases enter only if the shipped data contains the noun, and each is written out and allowlisted individually. Gate: §9, item 3.
 
 ### 4.2 Spanish preterite — included for the 29 passing verbs
 
-Accent placement is the main risk (`habló` vs `hablo`). The table carries the accents and the comparison is exact, with no accent folding.
+Accent placement is the main risk (`habló` vs `hablo`). The table carries the accents and comparison is exact, with no accent folding. A pack never mixes present and preterite answers.
 
 ### 4.3 What is deliberately out
 
-Negation, questions, pronoun objects (`je le mange`), reflexive verbs, adjectives, imperfect, future, subjunctive, two-verb sentences (`je veux manger`), `a personal`, and partitive articles in negation. Each introduces an agreement or word-order rule the gates in §9 do not yet cover. Out of scope until separately specified.
+Negation, questions, pronoun objects (`je le mange`), reflexive verbs, adjectives, imperfect, future, subjunctive, two-verb sentences (`je veux manger`), personal `a`, and partitive articles in negation. Each introduces an agreement or word-order rule the gates in §9 do not yet cover.
 
-## 5. Articles, gender, number, elision, contraction
+### 4.4 Elision inside the cloze (French)
+
+The blank holds the verb only, so `J'___` would leak the answer's first sound and `Je ___` before a vowel is ungrammatical. Rules:
+
+- **`je` is used only with consonant-initial verbs in the present.** Vowel-initial and mute-h verbs (`aimer`, `écouter`, `acheter`, `écrire`, `ouvrir`, `avoir`, `apprendre`, `habiter`) are used with every subject **except `je`**.
+- **Pack composition:** a pack's verbs are all consonant-initial (any subject, including `je`) or all vowel/mute-h-initial (no `je`). Because the distractor pool is the pack's own answers, this guarantees no distractor begins with a vowel in a `Je ___` line, so a wrong option is never wrong merely because of elision.
+- **The passé composé never uses `je`** with avoir verbs (the unit `ai mangé` would force `J'___`). `fr-etre-pc` already excludes `je`.
+- **The gate tests the completed sentence for every choice**, answer and distractors alike: substitute each choice into the blank and run the elision checker on the result. The answer must pass entirely. A distractor may be wrong only because of its verb form; if its completed sentence also has an elision defect, the build fails (§9, item 4).
+
+## 5. Articles, countability, gender, number, elision, contraction
 
 ### 5.1 French
 
-- Nouns carry gender (`m`/`f`) and number (`s`/`p`) taken from the shipped bank, where French nouns already appear with their article (`la mère`, `l'oncle`, `les cheveux`). **Gender is read from the article in the course data, not guessed.** For `l'`-nouns (`l'oncle`, `l'amie`) the bank's own gender word is ambiguous from the article alone, so those nouns need their gender from the committed noun table, cross-checked: a table entry must agree with every shipped line that disambiguates it (for example a `le`/`la` form of the same stem elsewhere), and a `l'` noun with no disambiguating evidence is **left out**, not guessed.
-- Articles: definite `le/la/l'/les`, indefinite `un/une/des`. Plural nouns take `les`/`des` only.
-- Elision: `je` becomes `j'` before a vowel or mute h in the verb (`j'aime`, `j'écoute`, `j'habite`, `j'ai`); `le`/`la` become `l'` before a vowel or mute h in the noun. **Aspirated h is the trap** (`le héros`, `la haine`): any noun or verb starting with `h` must carry an explicit `hAspire` flag in its table entry, and an `h` word without the flag fails the vocabulary gate.
-- Contraction: `à + le = au`, `à + les = aux`, `à + la` unchanged, `à + l'` unchanged; `de + le = du`, `de + les = des`. Used in `fr-etre-pc` (`à la maison`, `au marché`) and, only if a template needs it, `de`.
-- Capitalisation: first letter only. The cloze blank stays lowercase answer, matching `fra2p1`.
-- Final punctuation: `.` with no space before it (French typography puts a space before `?`, `!`, `:`, `;`; those are out of scope here because only statements are generated).
+- Nouns carry gender (`m`/`f`), number (`s`/`p`) and **countability** (`count` or `mass`) in the committed noun table. Gender comes from the article in the shipped data (`la mère`, `l'oncle`, `les cheveux`). For `l'` nouns the article does not show gender, so the table entry must be backed by a disambiguating shipped line or the third source (§2.3); otherwise the noun is **left out**.
+- **Mass nouns take the partitive**, as the course already does (`fra2p1`: `de l'eau`, `du pain`): `du` (m), `de la` (f), `de l'` (vowel or mute h), `des` (plural). Mass nouns never take `un/une`. Count nouns take `un/une/des` or `le/la/l'/les`.
+- **Elision.** `le`/`la` become `l'` before a vowel or mute h; `de la` becomes `de l'`. **Every noun and verb whose spelling begins with a vowel, `h`, `y` or `w` must carry an explicit `elides: true|false` flag** (this covers aspirated h: `le héros`, `les haricots`, `le handball`, `la hauteur`, `la honte`, and the y-initial words that do not elide: `le yoga`, `le yaourt`). A missing flag fails the vocabulary gate; the flag is checked against a small committed list of known cases.
+- **Contraction** (hand-written, tested including the h-aspiré and y cases): `à + le = au`, `à + les = aux`, `à + la` and `à + l'` unchanged; `de + le = du`, `de + les = des`. Examples the tests pin: `au marché`, `au héros` (not `à l'héros`), `aux haricots`, `du yaourt` (not `de l'yaourt`), `de l'école`.
+- Capitalisation: first letter only; the blank's answer is lowercase, matching `fra2p1`. Final punctuation is `.` with no space before it (statements only).
 
 ### 5.2 Spanish
 
-- The shipped Spanish noun data is **bare** (`casa`, `mesa`, `manzana`), with **no gender**, unlike French. The task rule is that gender must not be invented, so gender comes from a committed hand-verified noun table, and a noun is admitted only if it passes both of:
-  1. an **ending rule**: `-o`, `-or`, `-aje`, `-án`, `-ón` expect masculine; `-a`, `-ción`, `-sión`, `-dad`, `-tad`, `-ud` expect feminine. Every noun whose table gender disagrees with the rule must be on an explicit, reviewed **exception list** (`mano` f, `día` m, `mapa` m, `problema` m, `agua` f, `foto` f, `moto` f, `radio` f, `pijama` m, `tomate` m, `sofá` m, ...). A noun with no rule match (`pan`, `lápiz`, `flor`, `luz`) needs a positive piece of evidence in the course data (a shipped sentence that puts an article or adjective with it) or it is **left out**.
-  2. a **corpus check**: where the shipped data shows the noun next to an article, adjective or demonstrative (`la cuenta`, `una manzana`, `esa idea`), the table gender must match. A conflict fails the build.
-- Articles: definite `el/la/los/las`, indefinite `un/una/unos/unas`. Plural nouns are generated only from nouns whose plural is the regular `+s`/`+es` and are verified against a table plural form, not computed (an `-z` noun becomes `-ces`; we simply avoid such nouns).
-- **Feminine nouns starting with stressed `a`/`ha` (`el agua`, `el águila`) are excluded**, because they take `el` while remaining feminine and break both the agreement gate and the beginner's rule.
-- Contractions: `a + el = al`, `de + el = del`. Needed only if a template uses them; `es-svo-*` does not, so this is covered by a unit test of the helper, not by shipped content.
+- The shipped Spanish noun data is **bare** (`casa`, `mesa`), with **no gender**. Gender is never inferred. A noun is admitted only with **positive evidence**, one of:
+  1. **corpus evidence**: an article, demonstrative or agreeing adjective next to the noun in shipped Spanish data (`la cuenta`, `una manzana`, `esa idea`, `casa grande`); or
+  2. **the third source** (§2.3, Wiktionary) agreeing with the table **and** the in-repo cross-check where it applies.
+  The ending rule (`-o` m, `-a` f, `-ción` f) is demoted to a **tripwire only**: it flags a table entry that disagrees, which then needs explicit review. It is not evidence, because it is not independent of how we would write the table (`razón`, `opinión`, `región`, `religión` are feminine yet end in `-ón`, which the old rule listed as masculine).
+- **Stressed-a feminine nouns.** Every noun beginning with `a`, `á`, `ha` or `há` must carry an explicit `stressedA: true|false` flag (`aula`, `agua`, `hambre`, `arma`, `águila`, `hacha`, `alma`). Stress is not computable from spelling, so a missing flag fails the build. Nouns flagged `true` are **excluded from the first release**: they take `el`/`un` while feminine and break the agreement gate and the beginner's rule.
+- **Countability and articles.** Nouns carry `count|mass`. **Mass nouns use the bare noun** (`Yo bebo leche.`), never `la/una`. Plural count nouns may be bare (`Ella compra manzanas.`) or definite (`los/las`); singular count nouns take `un/una` or `el/la` per §5.3. Plurals are table entries, not computed.
+- **Animals take the indefinite only** (`Veo un perro.`, `Tengo un gato.`), never a definite animal object. A definite animal object invites the personal `a` (`Veo al perro`), which is out of scope (§4.3). Objects that are things never take personal `a`.
+- Contractions `a + el = al`, `de + el = del`: no shipped template uses them; the helper has a unit test.
 - No inverted marks (statements only). Accents are exact: no folding anywhere in the pipeline.
+
+### 5.3 Article choice is hand-written per (verb, class)
+
+Grammatical agreement does not make the article natural: `J'ai le chien`, `J'aime une pomme`, `Yo tengo la manzana` are well formed and wrong in this context. For every (verb, noun-class) pair on the allowlist (§6) the table lists the **article kinds allowed**, from `definite`, `indefinite`, `partitive` (French mass), `bare` (Spanish mass, Spanish bare plural). Examples:
+
+| Verb (fr / es)          | Class                | Allowed article kinds                                           |
+| ----------------------- | -------------------- | --------------------------------------------------------------- |
+| avoir / tener           | animal, object       | indefinite only (`J'ai un chien`, `Tengo un gato`)              |
+| aimer (French only; `gustar` is out of scope) | food, drink, animal  | definite (`J'aime les pommes`, `J'aime le thé`)                 |
+| manger / comer          | food (count)         | indefinite, definite plural (`Il mange une pomme`)              |
+| manger / comer          | food (mass)          | partitive / bare (`Elle mange du pain`, `Ella come pan`)        |
+| boire / beber           | drink (mass)         | partitive / bare (`Je bois de l'eau`, `Yo bebo leche`)          |
+| lire / leer             | readable (count)     | indefinite or definite                                          |
+| ver / voir / regarder   | animal               | indefinite (es); indefinite or definite (fr)                    |
+| porter / llevar, mettre | clothing             | indefinite or definite                                          |
+
+The compiler picks only among the allowed kinds; a test checks each emitted line's article kind against the table (§9, item 2).
 
 ## 6. Vocabulary: where it comes from
 
-**Only words already in the shipped French/Spanish packs.** The extraction script reads the pair packs and the cloze hints and produces a candidate list; a person-reviewed, committed table (`src/data/generative/fr-lexicon.ts`, `es-lexicon.ts`) is what the generator reads. The table is not edited by any tool that talks to an LLM. Each entry records: lemma or noun, gender, number, the **source pack id and line**, an English gloss (for the explanation line and for the sample in the content PR), and a semantic **object class**.
+**Only words already in the shipped French/Spanish packs.** The extraction script reads the pair packs and the cloze hints and produces a candidate list; a person-reviewed, committed table (`src/data/generative/fr-lexicon.ts`, `es-lexicon.ts`) is what the generator reads. The table is not edited by any tool that talks to an LLM. Each entry records: lemma or noun, gender, number, countability, the **source pack id and line**, an English gloss (used only in the owner sample, never in learner text, §7), and its semantic classes.
 
-Measured supply (French pair packs with an article-bearing noun: about 25 packs; Spanish: nouns exist in about 20 packs but bare).
+**Meaning allowlist, finer than before.** Classes are fine-grained, assigned per noun by hand, and some are an explicit per-noun flag rather than inherited from the source pack:
 
-**Object classes (hand-assigned per noun, from its source pack):** `food`, `drink`, `clothing`, `animal`, `school-object`, `household-object`, `vehicle`, `book-media`, `place`. **Verb to class allowlist (hand-written):** for example `manger`/`comer` accept `food`; `boire`/`beber` accept `drink`; `lire`/`leer` accept `book-media`; `porter`/`llevar` accept `clothing`; `regarder`/`mirar`/`voir`/`ver` accept `animal`, `vehicle`, `household-object`, `book-media`; `acheter`/`comprar` accept `food`, `drink`, `clothing`, `school-object`, `household-object`, `book-media`. The expander only emits an allowlisted (verb, class) pair, and a vocabulary test fails on any verb with an empty allowlist or any noun in no class. The allowlist is the only thing keeping "elle mange la chaise" out, so it is reviewed line by line in the implementation PR.
+- `food-count`, `food-mass`, `drink`, `clothing`, `animal`, `school-object`, `household-object`, `vehicle`, `place` (for §4.1 only);
+- `readable` (livre, journal, cahier... / libro, cuaderno...), `watchable` (an explicit flag on nouns one actually watches: animals, vehicles, screens, films; **not** all household objects), `listenable` (musique, radio...).
 
-**Verb set** (first cut, all in the shipped banks and all passing §2):
+**Verb to class allowlist (hand-written, reviewed line by line in the implementation PR).** Examples: `manger`/`comer` accept `food-count`, `food-mass`; `boire`/`beber` accept `drink`; `lire`/`leer` accept `readable`; `porter` and `mettre` accept `clothing` (this is the **only** class `mettre` accepts); `regarder`/`voir`/`mirar`/`ver` accept `watchable`; `écouter`/`escuchar` accept `listenable`; `acheter`/`comprar` accept the consumables, `clothing`, `school-object`, `readable`; `avoir`/`tener` accept `animal`, `school-object`, `household-object`; `préparer`/`cuisiner`/`preparar`/`cocinar` accept `food-*`. **Dropped:** `donner`/`dar` (they need an indirect object) and `poner`, plus `mettre`/`poner` outside clothing. Where a class is still too coarse for a verb, the allowlist is written at **(verb, noun)** level instead. The example this must exclude is `regarder la fourchette`.
 
-- French present, transitive: aimer manger boire prendre acheter regarder écouter lire écrire voir avoir choisir finir vendre perdre mettre ouvrir apprendre préparer cuisiner chercher trouver donner porter. `pouvoir` is not used in a way that exposes the 1sg `puis` divergence. The set is capped per pack (§7), as in the English pilot.
-- French passé composé avoir: the transitive subset of the above that the 40-verb table covers. French passé composé être: aller venir partir arriver rester sortir entrer rentrer.
-- Spanish present: comer beber leer escribir abrir comprar escuchar mirar ver tomar preparar buscar encontrar poner dar vender cocinar limpiar tener hacer querer. Spanish preterite: the subset of those that pass the preterite column.
+The expander only emits an allowlisted pair. The vocabulary test fails on any verb with an empty allowlist, any noun in no class, and prints every distinct (verb, class) pair to be read in review.
 
-A verb enters a pack only if the lexicon lists it **and** the table has all its forms **and** the library matches. A new verb is a three-way edit (lexicon, table, library check), so a verb can never reach a lesson half-verified.
+**Verb set** (first cut; all in the shipped banks and all passing §2):
+
+- French present, transitive: aimer manger boire prendre acheter regarder écouter lire écrire voir avoir choisir finir vendre perdre ouvrir apprendre préparer cuisiner chercher trouver porter, and `mettre` (clothing only). Vowel-initial verbs follow §4.4.
+- French passé composé avoir: the subset of the above with participles in the table. French passé composé être: aller venir arriver rester rentrer.
+- Spanish present: comer beber leer escribir abrir comprar escuchar mirar ver tomar preparar buscar encontrar vender cocinar limpiar tener querer. Spanish preterite: the subset that passes the preterite column.
+
+A verb enters a pack only if the lexicon lists it, the table has all its forms and the library matches. A new verb is a three-way edit (lexicon, table, library check), so a verb never reaches a lesson half-verified.
 
 ## 7. From a generated item to a lesson question
 
 Same path as the English pilot, unchanged downstream:
 
-1. The expander builds `"sentence|answer"` lines. Example (French): `Je ___ (manger) une pomme.|mange`; (Spanish): `Ella ___ (comer) una manzana.|come`. The parenthetical hint is the verb's infinitive, matching the existing `fra2p1` and `esa1p5` lines.
-2. A line becomes a `cloze` pack, `kind: "cloze"`, run through `validate`, `preview` and `apply --confirm`. `bank-engine.ts` turns each line into an `mc` or `fill` question exactly as for the hand-authored packs (hash-chosen, 4 choices, distractors pooled from the pack's answers). **No change to `bank-engine.ts`.**
-3. Question types are therefore the ones the English pilot produced: `mc` and `fill`. `translate` is not generated (it would need an English-side grammar this work does not build).
-4. English meaning is **not** a question field. It is used in two places only: the question's explanation line (`"mange" is correct here. ...`, as today) and the owner-spot-check sample table in the content PR. It is composed from the lexicon's English glosses with a hand-written English verb form per lexicon entry, never from `compromise`.
+1. The expander builds `"sentence|answer"` lines. Example (French): `Elle ___ (manger) du pain.|mange`; (Spanish): `Ella ___ (comer) una manzana.|come`. The parenthetical hint is the verb's infinitive, matching `fra2p1` and `esa1p5`.
+2. A line becomes a `cloze` pack run through `validate`, `preview` and `apply --confirm`. `bank-engine.ts` turns each line into an `mc` or `fill` (tap-the-word) question as for hand-authored packs (hash-chosen, 4 choices, distractors pooled from the pack's answers). **No change to `bank-engine.ts`.**
+3. Question types are therefore `mc` and `fill`. `translate` is not generated.
+4. **The English gloss stays out of learner text.** The existing explanation line (`"mange" is correct here. <note>`) has no per-line slot for a gloss, and adding one means a `bank-engine.ts` change, which is out of scope. The gloss is used only by a script that prints the **owner spot-check sample** (sentence, English meaning) for the content PR body. English forms come from the lexicon's hand-written glosses, never from `compromise`.
 
-**Distractors.** Pool distractors inherit the existing weakness the French audit documented (§8.1): a different verb's conjugation is an easy, vocabulary-not-conjugation distractor. We do not change the engine. We bound the damage with two measures: a pack uses at most 4 verbs (as in the English pilot), and sentences are stratified across subjects so the answers in a pack are spread over person forms. Quality is then **measured, not assumed**, by the gates in §9 (item 6) against the same thresholds the existing French and Spanish distractor tests use.
+**Distractors: a real threshold, not a pinned count.** The existing distractor-quality tests pin measured counts, which would pass a regression that stayed under the pin. For these packs we define a quantity and a floor:
 
-**Volume (quality over volume):**
+- **Same-verb share** = (distractors that are a form of the same hinted verb as the line) / (all distractors) over a pack. A same-verb distractor tests conjugation; a different-verb distractor tests only vocabulary (French audit §8.1).
+- **Floor: at least 40% per pack**, asserted as a floor in the test, not pinned at the measured value. The implementation PR reports the measured figure.
+- **Pack composition that meets it:** at most **2 verbs per pack**, sentences stratified across subjects so each verb's person forms are all present. With 2 verbs the pool has roughly half same-verb answers, which is why the floor is 40% and not higher.
+- The existing `pair-distractor-quality`, `spanish-distractor-quality` and French equivalent scans still run over the new packs unchanged.
 
-| Language | Packs | Questions | Lessons (5 each) | Level |
-| -------- | ----- | --------- | ---------------- | ----- |
-| French present | 4 themed (food, drinks and shopping, school and home, animals and transport) x 25 | 100 | 20 | A2 |
-| French passé composé | 2 avoir packs x 20, 1 être pack x 20 | 60 | 12 | B1 |
-| Spanish present | 4 themed x 25 | 100 | 20 | A2 |
-| Spanish preterite | 2 packs x 20 | 40 | 8 | A2 |
+**Volume (quality over volume).** Smaller packs of two verbs each, 15 questions (3 lessons) per pack:
 
-About 300 questions in total, each pack's verb pool capped at 4. If a pack cannot reach its size without a repeated prompt or a failed gate, it ships smaller; the gates win over the target. Pack ids use a distinct prefix (`frg`, `esg`) so a generated pack is recognisable and never collides with hand-authored ids; the content PR also checks the placement-overlap guard.
+| Language             | Packs                                   | Questions | Lessons | Level |
+| -------------------- | --------------------------------------- | --------- | ------- | ----- |
+| French present       | 6 (food, drinks, clothing, school, animals, media; each 2 verbs) | 90 | 18 | A2 |
+| French passé composé | 2 avoir packs + 2 être packs            | 60        | 12      | B1    |
+| Spanish present      | 6 themed, 2 verbs each                  | 90        | 18      | A2    |
+| Spanish preterite    | 3 packs, 2 verbs each                   | 45        | 9       | A2    |
+
+About 285 questions in total. If a pack cannot reach its size without a repeated prompt, a failed gate or an unnatural pair, it ships smaller; the gates win over the target. Pack ids use a distinct prefix (`frg`, `esg`); the content PR also checks the placement-overlap guard.
 
 ## 8. Mechanics of the pipeline change (implementation PR)
 
 - `Template` gains `lang` and the French/Spanish slot kinds; the English path is untouched and its tests must stay green.
-- `pack-tool generate --course fr|es --template <id> --topic <topic>` **no longer calls the LLM vocabulary proposer for fr/es**. It reads the committed lexicon for the topic. (`NVIDIA_API_KEY` is required only for `--course en`.)
-- `bun add -d french-verbs french-verbs-lefff spanish-verbs` (exact versions pinned). They are used only from `scripts/` and `*.test.ts`.
-- New files, all under `src/data/generative/`: `fr-lexicon.ts`, `es-lexicon.ts`, `fr-verb-table.ts`, `es-verb-table.ts`, `compile-fr.ts`, `compile-es.ts`, plus tests.
+- `pack-tool generate --course fr|es --template <id> --topic <topic>` **does not call the LLM vocabulary proposer for fr/es**. It reads the committed lexicon. (`NVIDIA_API_KEY` is required only for `--course en`.)
+- `bun add -d french-verbs french-verbs-lefff spanish-verbs` (exact versions pinned). Used only from `scripts/` and `*.test.ts`.
+- New files under `src/data/generative/`: `fr-lexicon.ts`, `es-lexicon.ts`, `fr-verb-table.ts`, `es-verb-table.ts`, `compile-fr.ts`, `compile-es.ts`, plus tests. A local script `scripts/check-wiktionary.ts` (not in CI) and its committed summary.
 
 ## 9. Validation gates (each is a test, each is mutation-checked)
 
-Every gate is verified by deliberately breaking **the property it claims to guard**, one at a time, and seeing that gate go red (and only after confirming it was green before). The mutation list is recorded in the implementation PR.
+Every gate is verified by breaking **the property it claims to guard**, one change at a time, after confirming it was green before. The mutation list is recorded in the implementation PR.
 
-1. **Verb form = library = committed table.** For every (verb, tense, person) the lexicon uses, `library form === table form`. Plus: no verb is used in any generated line unless it is in the table (a generated line's verb is looked up in the table, not the library). Mutations: change one table cell; change one library-returning cell via a stub; add a verb to the lexicon but not the table; each must fail.
-2. **Gender and number agreement.** Article gender and number match the noun's table gender and number; the Spanish ending-rule-with-exceptions check and the corpus check run over the lexicon. Mutation: flip one noun's gender; swap `la` for `le` in a template.
-3. **Passé composé agreement and auxiliary.** Auxiliary matches the table; for être sentences the participle agrees with the subject in gender and number; **the compiler always passes `agreeNumber`**. Mutations: drop `agreeNumber` from the call (this reproduces the `sommes allé` result of §2.1 and must be caught); declare `aller` as AVOIR.
-4. **Elision, contraction, spacing, capitalisation, punctuation.** `j'` / `l'` before vowels and mute h, none before aspirated h; `au/aux/du/des`; Spanish `al/del`; no double space, no space before `.`, a single trailing `.`, first letter capital, rest as written, no `--`. Mutation: remove the elision rule; remove the aspirated-h flag from `héros`.
-5. **The course's own checkers accept the answer and reject every wrong option.** For each generated question, `deriveAnswerCorrectness(question, answer, course)` is true for the intended answer and false for every distractor. (For cloze `fill` this is exact case-insensitive equality; for `mc` it is choice equality.) A second check proves no distractor equals the answer once accents are folded with `normaliseSpoken`, so a spoken or typed variant cannot slip a wrong form through (`habló` vs `hablo`). Mutation: add the answer to its own distractor list; add its unaccented twin as a distractor.
-6. **No duplicate prompt in the course, distractor quality.** No generated prompt equals any existing question prompt in that course (normalised with `normaliseWritten`), and none repeats within the pack. The generated packs are included in the scope of `pair-distractor-quality`, `spanish-distractor-quality` and the French equivalent (extending those tests' scans to the new packs, with the existing thresholds, not looser ones). Mutation: append an existing hand-authored line to a generated pack.
-7. **Semantic allowlist.** Every (verb, noun-class) pair in a generated line is on the allowlist, and the allowlist has no empty verb. Mutation: add a forbidden pair to the expander.
+1. **Verb form = library = committed table, plus the two independent checks.** For every (verb, tense, person) the lexicon uses, `library form === table form`. No verb appears in a generated line unless it is in the table. The **in-repo cross-check** (§2.3a) compares the table with every existing hand-authored `Pronoun ___ (infinitive)|form` cloze line and every French article-noun pair. Mutations: change one table cell; stub one library cell; add a verb to the lexicon but not the table; change a table cell that an existing course line covers (the cross-check must catch it).
+2. **Agreement, countability and article kind.** Article gender and number match the noun table; **a mass noun is never given `un/une/le/la` in a counted role (French partitive, Spanish bare)**; every emitted (verb, class, article kind) is in the §5.3 table (no `J'ai le chien`, `J'aime une pomme`, `Yo tengo la manzana`); animals in Spanish are indefinite only; the Spanish noun table has positive evidence for every entry and an explicit `stressedA` flag on every a-/á-/ha-/há- noun. Mutations: flip a gender; mark `pain` as count; allow `definite` for `avoir`; drop a `stressedA` flag.
+3. **Passé composé.** Auxiliary matches the table, compared with `alwaysAuxEtre` only for always-être verbs; dual-auxiliary verbs carry `intransitiveOnly: être` and no template gives them an object; for être sentences the participle agrees with the subject in gender and number; the compiler always passes `agreeNumber`; every `fr-etre-pc` place phrase is a hand-written entry and its (verb, place, relation) is on the allowlist. Mutations: drop `agreeNumber` (reproduces `sommes allé`); declare `aller` as AVOIR; give `rentrer` an object; use a `from` phrase with `aller`.
+4. **Elision, contraction, typography, cloze elision.** `l'` / `de l'` before vowels and mute h; none before an `elides: false` word (`héros`, `haricots`, `yaourt`); `au/aux/du/des` including `au héros`; Spanish `al/del`; no double space, no space before `.`, one trailing `.`, first letter capital, no `--`. **The completed sentence is checked for every choice**: the answer must be defect-free; a distractor must have no elision defect (§4.4). `je` never appears with a vowel-initial verb, a pack is all-consonant or all-vowel, and the avoir passé composé never uses `je`. Mutations: remove an elision rule; clear `elides` on `héros`; put `aimer` in a `je` pack; allow `je` in an avoir passé composé line.
+5. **Checker accepts the answer; no distractor is a correct form.** `deriveAnswerCorrectness(question, answer, course)` accepts the intended answer. For every distractor, it is **not a correct form for that line's subject, verb and tense per the table, counting all accepted variants** (the table stores every valid spelling: `paie`/`paye`, participle gender variants). A distractor that coincides with another person's form of the same verb, but is also valid for this person (`mange` for `je` and `il`), fails here. A second check rejects a distractor that equals the answer once accents are folded (`habló`/`hablo`) so a typed or spoken variant cannot pass as a wrong option. (The plain `distractor !== answer` check is deliberately not the gate: `pickDistractors` already drops the answer, so that assertion could not fail.) Mutations: add a valid variant spelling to the distractors; add the unaccented twin of the answer.
+6. **No duplicate prompt, same-verb share.** No generated prompt equals any existing question prompt in that course (normalised with `normaliseWritten`) or another in the pack. **Same-verb share per pack is at least 40%** and a pack has at most 2 verbs. The existing distractor-quality scans pass over the new packs. Mutations: append an existing hand-authored line; build a 4-verb pack (the floor must fail).
+7. **Meaning allowlist.** Every (verb, class) and every (verb, noun) override in a generated line is on the allowlist; no verb has an empty allowlist; `mettre` accepts clothing only. Mutations: add `watchable` to a fork; give `mettre` `food-count`; add `regarder` + `fourchette`.
 8. **`curriculum-consistency.test.ts` passes**, including the no-`--` guard, unchanged.
-9. **Runtime isolation.** A guard test fails if any file under `src/` outside `src/data/generative/*.test.ts` imports `french-verbs`, `french-verbs-lefff` or `spanish-verbs` (the 6 MB Lefff JSON must never reach a client bundle). Mutation: add such an import to a `src/` file.
+9. **Runtime and licence isolation.** A guard fails if any file under `src/` (outside `src/data/generative/*.test.ts`) or any `scripts/export-*` file imports `french-verbs`, `french-verbs-lefff` or `spanish-verbs`, by static `import`, dynamic `import()` or `require`. A second check scans the built web bundle for a Lefff marker string (a distinctive rare verb form from `conjugations.json`), and a third scans the repo for any committed file containing a long run of lexicon entries. Mutations: add each kind of import to a `src/` file; paste a lexicon fragment into a fixture.
 
-Also unchanged and required in CI: `bun scripts/export-ios-content.ts` and `bun scripts/export-android-content.ts` must be re-run in the content PR, or the stale-bundle check fails.
+Also required in CI: `bun scripts/export-ios-content.ts` and `bun scripts/export-android-content.ts` re-run in the content PR, or the stale-bundle check fails.
 
 ## 10. Verb tables used in the spike (what gets committed)
 
-Hand-verified present tables: être avoir aller faire prendre apprendre comprendre vouloir pouvoir venir savoir dire voir boire lire écrire mettre ouvrir partir dormir vendre attendre perdre finir choisir parler aimer manger regarder écouter chercher trouver donner porter préparer cuisiner jouer travailler acheter appeler préférer commencer nettoyer (43). Spanish present (42 tried, 34 pass) and preterite (33 tried, 29 pass) as in §2.2. Passé composé participles for the 40 French verbs plus the 11 être verbs. The spike deliberately includes traps (`acheter`, `appeler`, `préférer`, `commencer`, `nettoyer`, `manger` for spelling changes; `jugar`, `pedir`, `cerrar` for stem changes) to see whether the library catches them. The French library did; the Spanish one did not for eight verbs.
+Hand-verified present tables: être avoir aller faire prendre apprendre comprendre vouloir pouvoir venir savoir dire voir boire lire écrire mettre ouvrir partir dormir vendre attendre perdre finir choisir parler aimer manger regarder écouter chercher trouver donner porter préparer cuisiner jouer travailler acheter appeler préférer commencer nettoyer (43). Spanish present (42 tried, 34 pass) and preterite (33 tried, 29 pass) as in §2.2. Passé composé participles for 40 avoir verbs plus 11 être verbs. The spike deliberately includes traps (`acheter`, `appeler`, `préférer`, `commencer`, `nettoyer`, `manger` for spelling changes; `jugar`, `pedir`, `cerrar` for stem changes). The French library handled them; the Spanish one did not for eight verbs. The verbs in §6 are a subset of what the spike tested. `servir repetir vestir preferir mentir` were not in the spike set and are added to the Spanish spike tables in the implementation PR (reported as likely failures).
 
-The implementation PR commits the tables for exactly the verbs it uses, not the whole spike set.
+The implementation PR commits tables for exactly the verbs it uses, not the whole spike set.
 
 ## 11. Risks and what we are not claiming
 
-- **The hand tables are written by one author (an AI agent) and checked against a library by the same agent.** Where they agree, two independent sources agree (the library is not derived from the table). Where a verb is wrong in **both** the table and the library the same way, no gate here sees it. The mitigation is breadth of checks (spelling changes, stem changes, accent placement) and keeping the verb set to forms a beginner course teaches. The sample in the content PR lets the owner spot-check by eye. We make no claim of native-speaker review.
-- Meaning-level errors the allowlist did not foresee (a sensible-looking pair that is odd in practice) are possible. The allowlist is conservative on purpose, and the sample exposes them.
-- Distractor quality inherits `bank-engine.ts`'s pooled behaviour. Better generated distractors (other forms of the line's own verb, §8.3 of the French audit) remain a separate, unscheduled design.
-- The 6 MB Lefff lexicon is LGPL-LR data. It stays a dev tool (§9, item 9). If a later change wanted it at runtime, the licence needs a fresh look.
+- **The tables are written by one author (an AI agent).** The library check is a tripwire, not independent proof, especially for Spanish (§2.3). The independence comes from the in-repo cross-check of existing hand-authored content and from the Wiktionary check. A form wrong in the table, the library, Wiktionary and the existing course would pass; that is unlikely but not excluded. The owner sample lets a person spot-check by eye. We make no claim of native-speaker review.
+- Meaning-level errors the allowlist did not foresee are possible. The allowlist is conservative, written at (verb, noun) level where classes are coarse, and the sample exposes the rest.
+- Distractor quality inherits `bank-engine.ts`'s pooled behaviour; the 40% same-verb floor bounds it. Generating other forms of the line's own verb as distractors (French audit §8.3) remains a separate, unscheduled design.
+- The 6 MB Lefff lexicon is LGPL-LR data and stays a dev tool (§9, item 9, and §2.1). If a later change wanted it at runtime, the licence needs a fresh look.
