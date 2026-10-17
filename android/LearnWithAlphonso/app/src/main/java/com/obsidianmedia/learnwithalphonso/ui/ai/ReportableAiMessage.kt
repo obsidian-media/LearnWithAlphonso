@@ -1,46 +1,49 @@
 package com.obsidianmedia.learnwithalphonso.ui.ai
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
-import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
-import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
 
 /**
  * Long-press an AI message to report it into the moderation queue (`content_reports`, kind 'ai_response'), with a
- * TalkBack custom action for the same. Port of ReportableAIMessage in AIResponseReporting.swift. [content] draws the
- * message and applies the modifier it is given. `enabled` is false for the learner's own turns and for fixed opening
- * lines (written by us, not the model).
+ * TalkBack long-click action and custom action for the same. Port of ReportableAIMessage in AIResponseReporting.swift.
+ * [content] draws the message and applies the modifier it is given. `enabled` is false for the learner's own turns and
+ * for fixed opening lines (written by us, not the model).
+ *
+ * The request is sent by [sender], which outlives this bubble; its progress and result are shown once per screen by
+ * [AiReportStatusHost]. While a report is in flight the reasons are disabled, so a second tap cannot add a second row.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReportableAiMessage(
     enabled: Boolean,
-    client: ProgressSyncClient,
+    sender: AiReportSender,
     makeReport: (AiResponseReportReason) -> AiResponseReport,
     content: @Composable (Modifier) -> Unit,
 ) {
@@ -49,18 +52,25 @@ fun ReportableAiMessage(
         return
     }
     val palette = AlphonsoColor.palette
-    val scope = rememberCoroutineScope()
+    val sending by sender.state.collectAsState()
     var showMenu by rememberSaveable { mutableStateOf(false) }
     var showReasons by rememberSaveable { mutableStateOf(false) }
-    var result by rememberSaveable { mutableStateOf<String?>(null) }
 
+    // A long press, not a click: a plain tap does nothing, shows no ripple and is not announced as a button. TalkBack
+    // gets the same action as a long click and as a named custom action.
     content(
         Modifier
-            .combinedClickable(onClick = {}, onLongClick = { showMenu = true }, onLongClickLabel = AiConsentCopy.reportAction)
-            .semantics { customActions = listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true }) },
+            .pointerInput(Unit) { detectTapGestures(onLongPress = { showMenu = true }) }
+            .semantics {
+                onLongClick(label = AiConsentCopy.reportAction) { showReasons = true; true }
+                customActions = listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true })
+            },
     )
     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-        DropdownMenuItem(text = { Text(AiConsentCopy.reportAction) }, onClick = { showMenu = false; showReasons = true })
+        DropdownMenuItem(
+            text = { Text(AiConsentCopy.reportAction) }, enabled = !sending.sending,
+            onClick = { showMenu = false; showReasons = true },
+        )
     }
     if (showReasons) {
         AlertDialog(
@@ -70,19 +80,13 @@ fun ReportableAiMessage(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(AiConsentCopy.reportReviewNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                     AiResponseReportReason.entries.forEach { reason ->
-                        TextButton(onClick = {
-                            showReasons = false
-                            scope.launch {
-                                result = try {
-                                    client.reportAiResponse(makeReport(reason))
-                                    AiConsentCopy.reportThanks
-                                } catch (e: CancellationException) {
-                                    throw e
-                                } catch (e: Exception) {
-                                    AiConsentCopy.reportFailed
-                                }
-                            }
-                        }) { Text(reason.label, color = palette.ink) }
+                        TextButton(
+                            enabled = !sending.sending,
+                            onClick = {
+                                // Ignored by the sender when a report is already in flight.
+                                if (sender.submit(makeReport(reason)) != null) showReasons = false
+                            },
+                        ) { Text(reason.label, color = if (sending.sending) palette.inkSoft else palette.ink) }
                     }
                 }
             },
@@ -90,11 +94,30 @@ fun ReportableAiMessage(
             dismissButton = { TextButton(onClick = { showReasons = false }) { Text("Cancel", color = palette.inkSoft) } },
         )
     }
-    result?.let { message ->
+}
+
+/** Shows "Sending your report..." while a report is in flight and its outcome after, once per screen. */
+@Composable
+fun AiReportStatusHost(sender: AiReportSender) {
+    val palette = AlphonsoColor.palette
+    val status by sender.state.collectAsState()
+    if (status.sending) {
         AlertDialog(
-            onDismissRequest = { result = null },
+            onDismissRequest = { },
+            text = {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(color = palette.moss, modifier = Modifier.then(Modifier))
+                    Text("Sending your report...", style = MaterialTheme.typography.bodyMedium, color = palette.ink)
+                }
+            },
+            confirmButton = {},
+        )
+    }
+    status.message?.let { message ->
+        AlertDialog(
+            onDismissRequest = sender::dismissMessage,
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = { result = null }) { Text("OK", color = palette.moss) } },
+            confirmButton = { TextButton(onClick = sender::dismissMessage) { Text("OK", color = palette.moss) } },
         )
     }
 }

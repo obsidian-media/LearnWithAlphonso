@@ -64,6 +64,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
 import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
@@ -209,6 +210,7 @@ private fun HectorConversation(container: AppContainer) {
 
     AiConsentGate(container) {
         Column(Modifier.fillMaxSize().background(palette.surface)) {
+            AiReportStatusHost(container.aiReports)
             Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp))
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { _, turn ->
@@ -219,7 +221,7 @@ private fun HectorConversation(container: AppContainer) {
                         Spacer(Modifier.width(6.dp))
                         // Every Hector reply is the model's (there is no fixed opening line), so every one is reportable.
                         ReportableAiMessage(
-                            enabled = !isUser, client = container.progressClient,
+                            enabled = !isUser, sender = container.aiReports,
                             makeReport = { reason -> AiResponseReport(turn.content, AiResponseSurface.HECTOR, "en", reason) },
                         ) { reportModifier ->
                             Text(

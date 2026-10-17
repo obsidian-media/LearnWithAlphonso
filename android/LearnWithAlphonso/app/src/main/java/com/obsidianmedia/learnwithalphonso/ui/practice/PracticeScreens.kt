@@ -36,12 +36,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseSurface
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
-import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
 import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
@@ -72,16 +73,16 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String) -> Unit, on
 }
 
 /** What a conversation screen needs to report one of its replies: the client and how to build the report for a turn. */
-private class ReplyReporting(val client: ProgressSyncClient, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
+private class ReplyReporting(val sender: AiReportSender, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
 
 @Composable
-private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, client: ProgressSyncClient, makeReport: (AiResponseReportReason) -> AiResponseReport) {
+private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport) {
     val palette = AlphonsoColor.palette
     val isUser = turn.role == "user"
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
             if (isUser) Spacer(Modifier.width(40.dp))
-            ReportableAiMessage(enabled = reportable, client = client, makeReport = makeReport) { reportModifier ->
+            ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier ->
                 Text(
                     turn.content,
                     modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
@@ -104,6 +105,7 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size) }
 
     Column(Modifier.fillMaxSize().background(palette.surface)) {
+        AiReportStatusHost(reporting.sender)
         ScreenHeader(title, onBack, actions)
         header()
         LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -111,7 +113,7 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
                 Bubble(
                     turn, state.confidenceByTurn[index], tint, userText,
                     reportable = AiReplyReporting.isReportable(turn.role, index, state.openerIndices),
-                    client = reporting.client,
+                    sender = reporting.sender,
                     makeReport = { reason -> reporting.makeReport(turn.content, AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },
                 )
             }
@@ -141,7 +143,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     AiConsentGate(container, onDecline = onBack) {
         ConversationBody(
             vm, scenario.title, palette.moss, Color.White, onBack,
-            reporting = ReplyReporting(container.progressClient) { message, _, reason ->
+            reporting = ReplyReporting(container.aiReports) { message, _, reason ->
                 AiResponseReport(message, AiResponseSurface.CONVERSATION, "en", reason, scenarioId = scenario.id)
             },
         )
@@ -161,7 +163,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     AiConsentGate(container, onDecline = onBack) {
         ConversationBody(
             vm, campaign.title, palette.moss, Color.White, onBack,
-            reporting = ReplyReporting(container.progressClient) { message, sceneIndex, reason ->
+            reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
                 AiResponseReport(message, AiResponseSurface.CAMPAIGN, "en", reason, campaignId = campaign.id, sceneIndex = sceneIndex)
             },
             header = {

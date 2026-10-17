@@ -142,12 +142,14 @@ Use a QA account that has never allowed AI (on the web, Settings > AI features i
 
 ## Report an AI reply (nothing here has been run on a device)
 
-Use a QA account with AI allowed. Reports are emailed to the owner by the report trigger, so say so in the reason when testing.
+Use a QA account with AI allowed. Reports are emailed to the owner by the report trigger, so tell them before testing.
 
 - [ ] Hector: long-press one of Hector's replies: a "Report this response" menu appears; tapping it shows the four reasons (Inappropriate or offensive, Harmful or unsafe, Wrong or misleading, Something else) and "We review reports within 24 hours.". Long-pressing your own message does nothing.
 - [ ] Pick a reason: "Thanks. We'll review this response."; a row appears in `content_reports` with kind `ai_response`, no reported user, the reply text in `context.message`, `surface` `hector`, `course` `en`, `platform` `android`.
 - [ ] Practice scenario: the scene's first line (written by us) cannot be reported; every later assistant reply can, and the row has `surface` `conversation` and the scenario id.
 - [ ] Campaign: report a reply in scene 1, continue to scene 2 and report a reply there: the rows have `scene_index` 0 and 1. The opener of scene 2 is not reportable. After "Restart scene" the earlier scene's replies still are.
+- [ ] Tap a reason twice quickly, or report again while "Sending your report..." shows: only one row is created and the reasons are disabled meanwhile. Rotate while it sends: the result still appears.
+- [ ] A plain tap on a reply does nothing (no ripple, and TalkBack does not announce a button).
 - [ ] Airplane mode: the report ends with "Couldn't send your report. Check your connection and try again."
 - [ ] TalkBack: the reply announces a "Report this response" action in the actions menu; it opens the same reasons.
 - [ ] Rotate with the reasons dialog open: it stays open.

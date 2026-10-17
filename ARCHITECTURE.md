@@ -1285,7 +1285,11 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   codes and labels to the web. `ProgressSyncClient.reportAiResponse` is a plain
   insert into `content_reports` (kind `ai_response`, `platform` `android`, no
   reported user, RLS `content_reports_insert_own`). `ReportableAiMessage` wraps
-  a bubble with a long-press menu and a TalkBack custom action; only assistant
+  a bubble with a long-press menu and TalkBack long-click and custom actions
+  (no click handler, so a plain tap is inert); `AiReportSender` (core, owned by
+  `AppContainer`) sends one report at a time on the app scope, ignoring a second
+  while one is in flight, and `AiReportStatusHost` shows its progress and result
+  once per screen; only assistant
   turns that are not an opener are reportable. Openers are tracked by position
   (`ConversationUiState.openerIndices`, updated by a campaign's next scene and
   restart), so a model reply that repeats an opener's words is still reportable

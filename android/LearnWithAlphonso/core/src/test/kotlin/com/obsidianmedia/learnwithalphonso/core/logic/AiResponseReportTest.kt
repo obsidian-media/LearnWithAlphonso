@@ -66,6 +66,27 @@ class AiResponseReportTest {
     }
 
     @Test
+    fun `the cap counts code points, not UTF-16 units`() {
+        // 1000 emoji (two UTF-16 units each) + 1500 letters = 2500 code points but 3500 units: nothing may be cut.
+        val message = "\uD83D\uDE00".repeat(1000) + "x".repeat(1500)
+        assertEquals(3500, message.length)
+        val kept = report(message).message
+        assertEquals(message, kept)
+        assertEquals(2500, cp(kept))
+        // One more code point goes over the cap and is the only thing dropped.
+        assertEquals(message, report(message + "y").message)
+    }
+
+    @Test
+    fun `an empty or all-NUL message is stored as empty, as on iOS, and the row is still valid`() {
+        for (blank in listOf("", "\u0000", "\u0000".repeat(50))) {
+            val r = report(blank)
+            assertEquals("", r.message)
+            assertEquals("", r.toRow()["context"]!!.jsonObject["message"]!!.jsonPrimitive.content)
+        }
+    }
+
+    @Test
     fun `a short message is kept whole`() {
         assertEquals("Bonjour, ca va ?", report("Bonjour, ca va ?", course = "fr").message)
     }
