@@ -10,6 +10,8 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Android: flaky Learn view-model test fixed (2026-10-16, #307; Android, no build yet).** The level, course, refresh, claim and freeze actions in `LearnViewModel` now return their `Job`, and `LearnViewModelTest` joins them instead of polling the fake server. The old test could finish while the coroutine was still resuming after `Dispatchers.resetMain()`, which crashed the next test intermittently. A newer load now cancels the superseded one. No other behaviour change.
+
 **"AI-narrated" label on podcast episodes (2026-10-16, #308; web now, iOS in the next build).** Episodes read by a synthetic voice (`podcast_episodes.source = 'tts'`) say "AI-narrated" in the episode list, search results and downloaded episodes (iOS), and in the web player bar; uploaded recordings carry no label. The rule and the wording are shared (`src/lib/podcast-label.ts`, the iOS Kit's `PodcastLabel`); the iOS mini bar shows the title only, and Android follows with its podcast work.
 
 **Name filter: two slang spellings (2026-10-16, #304; server only, no app change).** `noods` and `pron` are blocked as whole words in display and team names (migration `20261018100000`). Digit swaps such as `n00ds` and `pr0n` already folded onto them; the words themselves were missing. Noodle, Pronto, Pronoun and Apron stay allowed, and a rolled-back production check found no existing name affected.

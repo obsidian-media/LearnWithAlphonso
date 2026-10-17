@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
@@ -15,6 +16,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.buyStreakFreezeWithXp
 import com.obsidianmedia.learnwithalphonso.core.net.claimWeeklyQuest
 import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyChallenges
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +28,8 @@ import kotlinx.coroutines.launch
 
 /** The five CEFR bands, same ids, order and names as src/data/levels.ts. */
 val LEVELS: List<Pair<String, String>> = listOf("A1" to "Beginner", "A2" to "Elementary", "B1" to "Intermediate", "B2" to "Upper Int.", "C1" to "Advanced")
+
+private val COMPLETED: Job = Job().also { it.complete() }
 
 data class LearnUiState(
     val course: Course = Course.ENGLISH,
@@ -63,27 +67,32 @@ class LearnViewModel(
     val dueBadge: StateFlow<String?> = syncStore.dueCount.map(ReviewBadge::text).stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val dueCount: StateFlow<Int> = syncStore.dueCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
-    init { load() }
+    private var loadJob: Job? = null
 
-    fun selectCourse(course: Course) {
-        if (course == _state.value.course) return
+    /** The first load, so tests can join it instead of polling. */
+    @VisibleForTesting
+    val initialLoad: Job = load()
+
+    /** Every action returns its Job so callers (tests) can join it rather than wait on a side effect. */
+    fun selectCourse(course: Course): Job {
+        if (course == _state.value.course) return COMPLETED
         _state.value = LearnUiState(course = course)
-        load()
+        return load()
     }
 
     /** Local band switch is instant; the server save is fire-and-forget, mirroring the web's pick(). */
-    fun selectLevel(level: String) {
+    fun selectLevel(level: String): Job {
         _state.update { it.copy(selectedLevel = level) }
         val course = _state.value.course
-        viewModelScope.launch { runCatching { client.setCefrLevel(course.code, level) } }
+        return viewModelScope.launch { runCatching { client.setCefrLevel(course.code, level) } }
     }
 
-    fun refresh() = load()
+    fun refresh(): Job = load()
 
     /** Claims a completed challenge for this week's Monday; the reward shows as a notice. */
-    fun claimChallenge(challenge: WeeklyChallenge) {
+    fun claimChallenge(challenge: WeeklyChallenge): Job {
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             val r = runCatching { client.claimWeeklyQuest(challenge.templateId, course.code, mondayDateString(0, nowMillis())) }.getOrNull()
             when {
                 r == null -> _state.update { it.copy(notice = "Check your connection and try again.") }
@@ -97,9 +106,9 @@ class LearnViewModel(
     }
 
     /** Spends 50 XP on a streak freeze, same RPC the web app calls. */
-    fun buyStreakFreeze() {
+    fun buyStreakFreeze(): Job {
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             when (val r = runCatching { client.buyStreakFreezeWithXp(course.code) }.getOrNull()) {
                 null -> _state.update { it.copy(notice = "Check your connection and try again.") }
                 is BuyStreakFreezeResult.Ok -> {
@@ -113,9 +122,11 @@ class LearnViewModel(
 
     fun clearNotice() = _state.update { it.copy(notice = null) }
 
-    private fun load() {
+    /** A newer load supersedes (cancels) the previous one, so nothing is left running after a course switch. */
+    private fun load(): Job {
+        loadJob?.cancel()
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             val level = runCatching { client.fetchCefrLevel(course.code) }.getOrNull()?.takeIf { it.isNotEmpty() && LEVELS.any { l -> l.first == it } }
             val ids = runCatching { client.fetchCompletedLessonIds(course.code) }.getOrDefault(emptyList())
             val placed = runCatching { client.fetchPlacementTakenAt(course.code) }
@@ -130,6 +141,6 @@ class LearnViewModel(
                     challenges = challenges,
                 )
             }
-        }
+        }.also { loadJob = it }
     }
 }
