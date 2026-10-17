@@ -34,8 +34,12 @@ function writeJSON(filename: string, data: unknown) {
 writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
 writeJSON("curriculum-es.json", buildIOSContentBundle("es"));
-writeJSON("scenarios.json", buildIOSScenariosBundle());
-writeJSON("campaigns.json", buildIOSCampaignsBundle());
+writeJSON("scenarios.json", buildIOSScenariosBundle("en"));
+writeJSON("scenarios-fr.json", buildIOSScenariosBundle("fr"));
+writeJSON("scenarios-es.json", buildIOSScenariosBundle("es"));
+writeJSON("campaigns.json", buildIOSCampaignsBundle("en"));
+writeJSON("campaigns-fr.json", buildIOSCampaignsBundle("fr"));
+writeJSON("campaigns-es.json", buildIOSCampaignsBundle("es"));
 writeJSON("achievements.json", buildIOSAchievementsBundle());
 writeJSON("vocab-images.json", buildIOSVocabImagesBundle());
 writeJSON("placement-en.json", buildIOSPlacementBundle("en"));

@@ -103,6 +103,18 @@ Two test accounts that are friends (A and B).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 
+## French and Spanish Practice (nothing here has been run on a device)
+
+Use a QA account with AI allowed.
+
+- [ ] Learn tab: switch to French. Open Practice: the campaigns and scenarios are the French ones (titles in French, the English gloss under each); the same for Spanish; switching back to English shows the English list.
+- [ ] Kill and reopen the app: Learn and Practice open on the course you last chose; sign in as another account: it opens on that account's own course (English if it never chose).
+- [ ] Open a French scenario: the first line is French, and holding the button and speaking French is transcribed as French; the reply comes back in French and is spoken with a French voice (not English). Same for Spanish.
+- [ ] A French campaign: scenes advance as in English, and the next scene's opening line is French.
+- [ ] Hector with French selected: Hector greets and answers in French, with a French voice; switching to Spanish on Learn gives a fresh Hector conversation in Spanish.
+- [ ] Rotate in a French conversation: the transcript stays and nothing restarts.
+- [ ] English still behaves exactly as before.
+
 ## Public-name step (nothing here has been run on a device)
 
 Use a fresh QA account (email sign-up) and a Google account whose name is set.

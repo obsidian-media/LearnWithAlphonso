@@ -6,7 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 object TutorMemoryContext {
     fun buildPrimingMessage(cefrLevel: String?, openWeaknessCategories: List<String>): ChatMessage? {
         val parts = ArrayList<String>()
-        if (!cefrLevel.isNullOrEmpty()) parts.add("their current English level is $cefrLevel")
+        if (!cefrLevel.isNullOrEmpty()) parts.add("their current level is $cefrLevel")
         val top = openWeaknessCategories.take(3)
         if (top.isNotEmpty()) parts.add("they've recently been working on: ${top.joinToString(", ") { it.replace('-', ' ') }}")
         if (parts.isEmpty()) return null

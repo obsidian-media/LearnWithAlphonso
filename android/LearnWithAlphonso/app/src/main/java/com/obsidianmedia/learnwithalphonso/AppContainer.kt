@@ -11,6 +11,7 @@ import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
 import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
+import com.obsidianmedia.learnwithalphonso.core.content.ActiveCourseStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
 import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
@@ -27,6 +28,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.data.AiConsentPrefsCache
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
+import com.obsidianmedia.learnwithalphonso.data.PrefsCourseStore
 import com.obsidianmedia.learnwithalphonso.data.GoalPrefsStore
 import com.obsidianmedia.learnwithalphonso.data.LeaderboardSnapshotCache
 import com.obsidianmedia.learnwithalphonso.data.LeagueTierCache
@@ -86,6 +88,8 @@ class AppContainer(context: Context) {
     )
     val progressClient = ProgressSyncClient(supabaseHttp)
 
+    /** The learner's active course, shared by Learn, Practice and Hector and remembered per account. */
+    val activeCourse = ActiveCourseStore(PrefsCourseStore(prefs))
     /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
     val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
