@@ -700,8 +700,14 @@ hand-authored one once it lands in `lesson-bank.ts`.
   committed file collapses an empty array onto one line, which a naive
   `"\n];"` search couldn't find).
 
+**French and Spanish (designed, not yet built):** the extension is
+specified in `docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md`
+(library spike results, templates, closed vocabulary taken only from the
+shipped course data, and the validation gates). This section is renamed
+when the implementation lands.
+
 **Known, documented limitations** (not silently solved): French/Spanish
-out of scope; cross-verb MC distractors reduced but not eliminated
+out of scope for the pilot itself; cross-verb MC distractors reduced but not eliminated
 (would need semantic verb/object modeling or a shared `bank-engine.ts`
 change, both out of scope for the pilot); a new LLM-proposed verb
 beyond the 7 spike-verified ones (have/go/do/walk/run/eat/play) is
@@ -1162,10 +1168,9 @@ Kotlin + Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk
 the iOS app uses. Started 2026-09-29 on the long-lived `android` branch and merged to `main`
 on 2026-10-01 (#200); the app is not on Google Play yet (owner-gated: Play
 account, subscription, RevenueCat Android key). It has NOT received the
-2026-10-08 iOS and web safety work (account-level AI consent screen, public-name
-step, hearts gate at lesson open, report-an-AI-reply); the server enforces
-consent regardless, so Android AI calls are refused for an account that has
-not granted consent on web or iOS. Design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
+2026-10-08 iOS and web safety work except the account-level AI consent
+screen and the hearts gate at lesson open (both ported, see below); the
+public-name step and report-an-AI-reply are still missing. Design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
 under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 - **Two Gradle modules.** `core` is pure JVM Kotlin: content models with
@@ -1215,8 +1220,30 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `SpeakQuestionCard` grades the transcript with the same `SpokenAnswer`
   ports, offline falls back to typing. `PracticeScreen` lists scenarios and
   campaigns; `HectorViewModel` sends `TutorMemoryContext.buildPrimingMessage`
-  once at the head of the history. `AiDisclosureGate` wraps the lesson
-  player, review queue, Practice and Hector (key `aiDisclosureAcknowledged`).
+  once at the head of the history. AI consent is the account's
+  (`profiles.ai_consent_at`), not a device flag: `AiConsentStore` (core, JVM
+  tested) reads and writes it through `get_ai_consent` / `set_ai_consent`
+  (`ProgressSyncClient.fetchAiConsent` / `setAiConsent`), keeps a per-account
+  cache for when the server is unreachable (a failed read is UNAVAILABLE with
+  a retry, never "AI is off"), drops a read that began before a local
+  decision, and never lets one account's grant show for another. `ApiHttp`
+  reports a 403 `ai-consent-required` through `onAiConsentRequired` so the
+  store closes the gate at once and re-reads. `AiConsentPolicy`,
+  `AiConsentGate.presentation` and `TranslationGradingPolicy` are the iOS
+  rules ported: Hector, Practice scenarios and Campaigns sit behind the
+  `AiConsentGate` composable, which never unmounts the screen once shown (a
+  withdrawal covers the live conversation); lessons and review are never
+  walled, a translate answer is graded locally without consent and offers
+  "Turn on AI grading", a speak question types instead and says why, and
+  placement asks the server grader only with consent (a deliberate
+  difference from iOS, whose placement is graded on the device only: here a
+  learner who allowed AI keeps the AI second opinion on a written placement
+  answer, and neither is ever asked or walled). Settings has the
+  "AI features" switch (on opens the same sheet, off withdraws at once). The
+  old device-wide "Got it" flag is gone and is not carried to the account,
+  because it was a forced acknowledgement, not an Allow naming the providers.
+  `src/lib/ai-consent-copy-parity.test.ts` also checks `AiConsent.kt` against
+  the web strings.
   Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.

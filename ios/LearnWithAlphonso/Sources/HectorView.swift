@@ -16,7 +16,7 @@ struct HectorView: View {
         NavigationStack {
             Group {
                 if !entitlementStore.isPro {
-                    PaywallView(entitlementStore: entitlementStore)
+                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
                 } else {
                     HectorConversationView(
                         session: session,
@@ -106,7 +106,7 @@ private struct HectorConversationView: View {
         // .notEntitled opens the paywall. The server's RevenueCat check
         // can disagree with the local isPro (lapsed, refunded, other device).
         .sheet(isPresented: $showPaywall) {
-            PaywallView(entitlementStore: entitlementStore)
+            PaywallView(entitlementStore: entitlementStore, source: .hectorRefused, onClose: { showPaywall = false })
         }
         .onAppear {
             conversation = conversationStore.snapshot(for: key, seededWith: nil)

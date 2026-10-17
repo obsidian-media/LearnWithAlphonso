@@ -103,6 +103,25 @@ Two test accounts that are friends (A and B).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 
+## Account-level AI consent (nothing here has been run on a device)
+
+Use a QA account that has never allowed AI (on the web, Settings > AI features is off) and, for the "already allowed" rows, a second one that has.
+
+- [ ] Fresh QA account, open Hector: a spinner, then the sheet "How Alphonso uses AI" naming Deepgram and NVIDIA, with "Read our Privacy Policy", "Allow" and "Not now". The sheet cannot be dismissed by tapping outside or Back.
+- [ ] "Not now" on Hector leaves the page "AI practice is off" with "Review and allow"; tapping that reopens the sheet. The microphone is never asked for until you allow.
+- [ ] "Not now" on a Practice scenario or Campaign goes back to the Practice list.
+- [ ] "Allow" opens the conversation; the Settings > AI features switch is now on, and on the web the same account shows the setting on.
+- [ ] An account that already allowed AI on web or iOS never sees the sheet on Android.
+- [ ] Airplane mode with a never-read account on Hector: "You're offline" with "Try again", never the consent sheet and never "AI practice is off".
+- [ ] Allow, start a conversation and say a turn, then turn AI off on the web and send another turn: the gate covers the live conversation ("AI practice is off") and the transcript is still there after you allow again.
+- [ ] Settings > AI features: off withdraws at once (the web shows it off); on opens the sheet; "Not now" leaves it off. With airplane mode on, turning it off shows "Couldn't save your choice. Check your connection and try again." and the switch stays on.
+- [ ] Lesson with a written translation question, consent off: no sheet, no wall; the card says "Checked against our answer list only." with "Turn on AI grading", which opens the sheet. A near-miss answer is marked wrong without an AI second opinion. After allowing, the same near-miss can be accepted.
+- [ ] A speaking question with consent off: "Speaking answers use AI, which is turned off. Type the phrase instead." with "Use your voice instead" (opens the sheet) and a typing field; after allowing, the hold-to-talk button appears.
+- [ ] Review translate card with consent off shows the same note and button.
+- [ ] Placement test: no sheet at any point; written answers are checked locally when consent is off.
+- [ ] Rotate the phone with the sheet open, and on a conversation that the gate covers (withdraw consent on the web first): the cover stays, the transcript is still there, "Not now" is not offered again by itself, and the sheet reopens only if it was open. The gate's flags are saved across rotation (`rememberSaveable`); this row is the only check of that, since Compose state is not unit tested.
+- [ ] A speaking question while the setting is still loading says "Checking your AI setting..." (never "AI is turned off"); with an unreadable setting it shows "Couldn't check your AI setting" with "Try again".
+
 ## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
 
 Use a QA account, never the App Review account. Drain its hearts by answering five questions wrong.
