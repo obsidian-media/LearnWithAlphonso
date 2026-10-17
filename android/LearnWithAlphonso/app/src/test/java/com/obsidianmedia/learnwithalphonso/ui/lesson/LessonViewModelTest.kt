@@ -32,7 +32,13 @@ class LessonViewModelTest {
     private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true) = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
         isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
+        ownerUserId = { "u1" },
     )
+
+    private suspend fun playThrough(v: LessonViewModel) {
+        v.begin(); v.startPractice()
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+    }
 
     private fun correctAnswer(q: Question): String = when (q) {
         is Question.MultipleChoice -> q.choices[q.answer]
@@ -117,6 +123,65 @@ class LessonViewModelTest {
         assertEquals(1, store.completions.size)
         assertEquals(lesson.questions.size, store.completions[0].answers.size)
         assertEquals(42L, store.completions[0].queuedAt)
+    }
+
+    @Test
+    fun `a rejected finish is never queued or called offline, it says why`() = runBlocking {
+        val server = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+                req.path.endsWith("complete-lesson") -> json("""{"error":"lesson-version-mismatch"}""", HttpStatusCode.Conflict)
+                else -> json("[]")
+            }
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        playThrough(v)
+        awaitTrue("failure shown") { v.state.value.phase is LessonPhase.SaveFailed }
+        val failed = v.state.value.phase as LessonPhase.SaveFailed
+        assertEquals("This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again.", failed.message)
+        assertEquals("If this keeps happening, email support@alphonsoecosystem.app.", failed.supportLine)
+        assertTrue("nothing a retry could fix is queued", store.completions.isEmpty())
+    }
+
+    @Test
+    fun `server trouble at the finish is queued with the owner, and says it is saved`() = runBlocking {
+        val server = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+                req.path.endsWith("complete-lesson") -> json("""{"error":"overloaded"}""", HttpStatusCode.ServiceUnavailable)
+                else -> json("[]")
+            }
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        playThrough(v)
+        awaitTrue("queued") { v.state.value.phase is LessonPhase.QueuedOffline }
+        val queued = v.state.value.phase as LessonPhase.QueuedOffline
+        assertEquals("Our server had a problem. Your lesson is saved and will sync automatically.", queued.message)
+        assertEquals("u1", store.completions.single().ownerUserId)
+    }
+
+    @Test
+    fun `at zero hearts the finish is queued to sync after a refill, not failed`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"out-of-hearts","refillAt":null}""", HttpStatusCode.Conflict) else json("[]")
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        playThrough(v)
+        awaitTrue("queued") { v.state.value.phase is LessonPhase.QueuedOffline }
+        assertEquals("Saved. It will sync when your hearts refill.", (v.state.value.phase as LessonPhase.QueuedOffline).message)
+        assertEquals(1, store.completions.size)
+    }
+
+    @Test
+    fun `no connection at the finish queues it and says so`() = runBlocking {
+        val store = MemorySyncStore()
+        val v = vm(okServer(), store, connected = false)
+        playThrough(v)
+        awaitTrue("queued") { v.state.value.phase is LessonPhase.QueuedOffline }
+        assertEquals("Saved. It will sync when you're back online.", (v.state.value.phase as LessonPhase.QueuedOffline).message)
     }
 
     @Test

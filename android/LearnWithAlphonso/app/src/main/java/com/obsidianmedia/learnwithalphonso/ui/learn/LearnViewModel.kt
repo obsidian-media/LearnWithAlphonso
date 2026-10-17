@@ -15,6 +15,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.buyStreakFreezeWithXp
 import com.obsidianmedia.learnwithalphonso.core.net.claimWeeklyQuest
 import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyChallenges
+import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,6 +69,13 @@ class LearnViewModel(
     val progress: StateFlow<LessonCompletionProgress?> = syncStore.progress.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val dueBadge: StateFlow<String?> = syncStore.dueCount.map(ReviewBadge::text).stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val dueCount: StateFlow<Int> = syncStore.dueCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    /** Finished lessons and review answers still waiting to reach the server. */
+    val pendingLessons: StateFlow<Int> = syncStore.pendingLessonCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+    val pendingReviewAnswers: StateFlow<Int> = syncStore.pendingReviewGradeCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    /** Lesson completions the server permanently rejected. */
+    val deadLetters: StateFlow<List<DeadLetterInfo>> = syncStore.deadLetters.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private var loadJob: Job? = null
 

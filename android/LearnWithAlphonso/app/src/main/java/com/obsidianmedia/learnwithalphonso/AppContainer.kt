@@ -122,11 +122,17 @@ class AppContainer(context: Context) {
     }
 
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
-        .addMigrations(AlphonsoDatabase.MIGRATION_1_2)
+        .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3)
         .build()
     val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) })
 
-    val syncCoordinator = SyncCoordinator(syncStore) { if (session.currentAccessToken() != null) progressClient else null }
+    val syncCoordinator = SyncCoordinator(
+        store = syncStore,
+        client = { if (session.currentAccessToken() != null) progressClient else null },
+        currentUserId = { session.userId },
+        isConnected = { connectivity.isConnected.value },
+        scope = appScope,
+    )
 
     // ---- Plan 4: podcasts, reminders, push ----
 

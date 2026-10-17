@@ -50,7 +50,10 @@ data class ReviewItem(
 data class DueReviews(val due: List<ReviewItem>, val total: Int)
 
 @Serializable
-data class ReviewGradeOutcome(val retired: Boolean, val dueOn: String, val correct: Boolean? = null)
+data class ReviewGradeOutcome(val retired: Boolean, val dueOn: String, val correct: Boolean? = null) {
+    /** Whether the item is still due today or earlier, which is what a wrong answer gets (ISO dates compare as strings). */
+    fun isStillDue(today: String): Boolean = !retired && dueOn <= today
+}
 
 @Serializable
 data class ReviewClearBonus(val granted: Boolean, val hearts: Int? = null)

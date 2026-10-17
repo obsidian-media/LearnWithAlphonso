@@ -75,6 +75,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             lastKnownTier = { container.tierCache.lastKnownTier },
             rememberTier = { container.tierCache.lastKnownTier = it },
             hasAiConsent = { container.aiConsent.isGranted },
+            ownerUserId = { container.session.userId },
         )
     }
     val state by vm.state.collectAsState()
@@ -105,7 +106,12 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             LessonPhase.Vocab -> VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
             LessonPhase.Quiz -> QuizBody(vm, state, course, container)
             is LessonPhase.Finished -> FinishScreen(phase, state.correctCount, state.total, container, state.lesson.id, course, onNext = if (vm.nextLessonId != null) vm::continueToNextLesson else null)
-            is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.pending.optimisticXpEstimate, state.correctCount, state.total)
+            is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.message, phase.pending.optimisticXpEstimate, state.correctCount, state.total)
+            is LessonPhase.SaveFailed -> Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
+                Text(phase.message, style = MaterialTheme.typography.titleMedium, color = palette.ink, textAlign = TextAlign.Center)
+                phase.supportLine?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center) }
+                AlphonsoPrimaryButton("Back", onClick = onExit, fullWidth = false)
+            }
             is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(phase.message, color = palette.ink, textAlign = TextAlign.Center) }
         }
     }
@@ -226,11 +232,11 @@ private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, 
 }
 
 @Composable
-private fun OfflineFinishScreen(estimate: Int, correct: Int, total: Int) {
+private fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, total: Int) {
     val palette = AlphonsoColor.palette
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
         Text("☁️", fontSize = 48.sp)
-        Text("Saved. This will sync when you're back online", style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
+        Text(message, style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
         Text("~+$estimate XP (estimated)", style = MaterialTheme.typography.headlineMedium, color = palette.ember)
         Text("$correct/$total correct", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
     }
