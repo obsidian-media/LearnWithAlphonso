@@ -237,3 +237,13 @@ The implementation PR commits tables for exactly the verbs it uses, not the whol
 - Meaning-level errors the allowlist did not foresee are possible. The allowlist is conservative, written at (verb, noun) level where classes are coarse, and the sample exposes the rest.
 - Distractor quality inherits `bank-engine.ts`'s pooled behaviour; the 40% same-verb floor bounds it. Generating other forms of the line's own verb as distractors (French audit §8.3) remains a separate, unscheduled design.
 - The 6 MB Lefff lexicon is LGPL-LR data and stays a dev tool (§9, item 9, and §2.1). If a later change wanted it at runtime, the licence needs a fresh look.
+
+## 12. Implementation notes (what changed from the design while building it)
+
+- **One verb per pack.** The measured same-verb share of a two-verb pack was about 31%, under the 40% floor, because `bank-engine` pools a pack's answers. Every pack now drills a single verb (100% of wrong options are other persons' forms of it). The gate still allows two verbs and holds the 40% floor. Volume became 18 French and 9 Spanish packs of up to 15 questions, rather than fewer two-verb packs.
+- **Tense marker.** Past sentences start with `Hier,` / `Ayer,`. Without it a passé composé or preterite line would read exactly like the present-tense line for the same subject and noun, which is an ambiguous question.
+- **Pack size.** The engine's distractor walk steps by 7, so a pool whose size is a multiple of 7 can leave a question with fewer than three distinct wrong options. The generator tries 15 questions and falls back to 14, 13 or 12; a test requires four distinct choices on every question.
+- **Existing prompts.** Candidates that already exist in the course (for example `Je ___ (boire) de l'eau.`) are filtered out at generation time.
+- **Agreement strings are table data.** The compiler never calls the library; the table's four written-out être participles are the source, and the test compares them with the library with `agreeNumber` passed.
+- **Unused verbs.** `cuisiner prendre mettre ouvrir regarder choisir rentrer` (French) and `preparar tomar buscar mirar abrir querer` (Spanish) are verified and allowlisted but not used by any shipped pack.
+- **Wiktionary rule.** A present form tagged only "indicative" (no other tense) counts as present; a participle form listed in the base participle's own inflection line counts as confirmed.

@@ -169,7 +169,7 @@
         "participles": [
           "choisi"
         ],
-        "status": "disagree"
+        "status": "agree"
       },
       "aller": {
         "present": [
@@ -220,7 +220,7 @@
           "arrivés",
           "arrivées"
         ],
-        "status": "disagree"
+        "status": "agree"
       },
       "rester": {
         "present": [
@@ -1493,8 +1493,5 @@
       }
     }
   },
-  "disagreements": [
-    "fr verb choisir: present 2 \"choisit\"",
-    "fr verb arriver: participle \"arrivée\""
-  ]
+  "disagreements": []
 }

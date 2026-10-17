@@ -35,7 +35,7 @@ describe("gate 1 (es): the committed table and the library agree (the library is
   });
 });
 
-const HINT = /^(?:Ayer, )?(yo|tú|él|ella|nosotros|ellos|ellas|ustedes) ___ \(([^)]+)\)/i;
+const HINT = /^(?:Ayer,? )?(yo|tú|él|ella|nosotros|ellos|ellas|ustedes) ___ \(([^)]+)\)/i;
 const PERSON_OF: Record<string, Person> = {
   yo: 0,
   tú: 1,

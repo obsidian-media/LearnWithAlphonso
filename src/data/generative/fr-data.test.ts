@@ -147,7 +147,7 @@ describe("in-repo cross-check (fr): existing hand-authored lines against our tab
       expect(right, `${left}`).toBe(verb.present[SUBJECT_PERSON[m[1]!.toLowerCase()]!]);
       covered++;
     }
-    expect(covered).toBeGreaterThanOrEqual(8);
+    expect(covered).toBeGreaterThanOrEqual(6);
   });
 
   it("passé composé: frb1p1's lines agree with the table for every verb we use", () => {

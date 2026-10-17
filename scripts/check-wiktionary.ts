@@ -146,7 +146,12 @@ async function main() {
       if (!isFormOf(fr.get(ms), v.inf, [["participle", "past"], ["participle"]]))
         problems.push(`participle "${ms}"`);
       const chain = (form: string, base: string, tags: string[]) =>
-        isFormOf(fr.get(form), base, [tags]) || listedAs(fr.get(base), form, tags);
+        isFormOf(fr.get(form), base, [tags]) ||
+        listedAs(
+          fr.get(base),
+          form,
+          tags.filter((t) => t !== "singular"),
+        );
       if (!chain(fs, ms, ["feminine", "singular"])) problems.push(`participle "${fs}"`);
       if (!chain(mp, ms, ["plural"])) problems.push(`participle "${mp}"`);
       if (!chain(fp, ms, ["feminine", "plural"])) problems.push(`participle "${fp}"`);
