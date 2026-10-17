@@ -28,6 +28,8 @@ data class PodcastEpisode(
      * when no row exists yet; sent back with a save for optimistic concurrency.
      */
     val playbackUpdatedAt: String?,
+    /** Read by a synthetic voice (`source = 'tts'`); the Listen screens label it [PodcastLabel.AI_NARRATED]. */
+    val aiNarrated: Boolean = false,
 )
 
 /** Download state for one episode, as the UI sees it. */

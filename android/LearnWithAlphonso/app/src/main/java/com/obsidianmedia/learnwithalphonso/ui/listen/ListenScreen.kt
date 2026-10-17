@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTranscript
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTree
@@ -101,7 +102,7 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         item { Text("Offline — showing your downloads", style = MaterialTheme.typography.labelMedium, color = palette.ember, fontWeight = FontWeight.SemiBold) }
                         items(offline, key = { it.id }) { episode ->
-                            EpisodeRow(container, episode, subtitle = "Downloaded", onPlay = { scope.launch { play(container, episode, offline) } })
+                            EpisodeRow(container, episode, subtitle = PodcastLabel.downloadedSubtitle(episode.aiNarrated), onPlay = { scope.launch { play(container, episode, offline) } })
                         }
                     }
                 }
@@ -147,8 +148,9 @@ private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId
             }
         }
         items(episodes, key = { "e-" + it.id }) { episode ->
-            val length = length(episode.durationSeconds)
-            EpisodeRow(container, episode, subtitle = if (episode.positionSeconds > 0) "$length · Resume" else length, onPlay = { scope.launch { play(container, episode, episodes) } })
+            // The list is a snapshot from when the folder opened: show the position this device last stored, if newer.
+            val shown = container.podcastPlayer.resumed(episode)
+            EpisodeRow(container, shown, subtitle = PodcastLabel.rowSubtitle(shown.durationSeconds, resume = shown.positionSeconds > 0, aiNarrated = shown.aiNarrated), onPlay = { scope.launch { play(container, episode, episodes) } })
         }
         if (children.isEmpty() && episodes.isEmpty() && !loading) {
             item { Text("Nothing here yet. New episodes appear as they're published.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft) }
@@ -166,7 +168,7 @@ private fun SearchResults(container: AppContainer, state: ListenUiState, onPlay:
         state.searchResults.isEmpty() -> Message("No episodes match “${state.query}”.")
         else -> LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(state.searchResults, key = { it.id }) { episode ->
-                EpisodeRow(container, episode, subtitle = length(episode.durationSeconds), onPlay = { onPlay(episode) })
+                EpisodeRow(container, episode, subtitle = PodcastLabel.rowSubtitle(episode.durationSeconds, resume = false, aiNarrated = episode.aiNarrated), onPlay = { onPlay(episode) })
             }
         }
     }

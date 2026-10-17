@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayback
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import io.ktor.client.statement.HttpResponse
@@ -41,7 +42,7 @@ class PodcastClient(
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     private companion object {
-        const val EPISODE_SELECT = "id,folder_id,slug,title,description,audio_path,duration_seconds"
+        const val EPISODE_SELECT = "id,folder_id,slug,title,description,audio_path,duration_seconds,source"
     }
 
     suspend fun fetchFolders(): List<PodcastFolder> =
@@ -86,8 +87,13 @@ class PodcastClient(
     suspend fun fetchTranscript(episodeId: String): String? =
         rows(http.rest(HttpMethod.Get, "podcast_transcripts", mapOf("select" to "text", "episode_id" to "eq.$episodeId", "limit" to "1"))).firstOrNull()?.str("text")
 
-    /** Optimistic concurrency on updated_at: a stale device matches nothing and gets StaleWrite. */
-    suspend fun savePlaybackPosition(episodeId: String, positionSeconds: Int, completed: Boolean, lastSeenUpdatedAt: String?) {
+    /**
+     * Optimistic concurrency on updated_at: a stale device matches nothing and gets StaleWrite. With no row known the
+     * write is an upsert on the (user_id, episode_id) key, so it also works when the row exists but this device has
+     * forgotten it (a plain POST would conflict). Returns the `updated_at` the SERVER stored, the only correct value to
+     * guard the next write on.
+     */
+    suspend fun savePlaybackPosition(episodeId: String, positionSeconds: Int, completed: Boolean, lastSeenUpdatedAt: String?): String? {
         val now = DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(nowMillis()))
         val body = buildJsonObject {
             put("episode_id", episodeId)
@@ -96,13 +102,13 @@ class PodcastClient(
             if (completed) put("completed_at", now)
             if (lastSeenUpdatedAt == null) userId()?.let { put("user_id", it) }
         }
-        val headers = mapOf("Prefer" to "return=representation")
         val response = if (lastSeenUpdatedAt != null) {
-            http.rest(HttpMethod.Patch, "podcast_playback", mapOf("episode_id" to "eq.$episodeId", "updated_at" to "eq.$lastSeenUpdatedAt"), body, headers)
+            http.rest(HttpMethod.Patch, "podcast_playback", mapOf("episode_id" to "eq.$episodeId", "updated_at" to "eq.$lastSeenUpdatedAt"), body, mapOf("Prefer" to "return=representation"))
         } else {
-            http.rest(HttpMethod.Post, "podcast_playback", emptyMap(), body, headers)
+            http.rest(HttpMethod.Post, "podcast_playback", mapOf("on_conflict" to "user_id,episode_id"), body, mapOf("Prefer" to "resolution=merge-duplicates,return=representation"))
         }
-        if (rows(response).isEmpty()) throw PodcastClientError.StaleWrite()
+        val saved = rows(response).firstOrNull() ?: throw PodcastClientError.StaleWrite()
+        return saved.str("updated_at")
     }
 
     /** Through the SECURITY DEFINER RPC only; authenticated has no INSERT grant on the table. */
@@ -123,6 +129,7 @@ class PodcastClient(
             durationSeconds = duration,
             positionSeconds = PodcastPlayback.clampPosition(position.toDouble(), duration.toDouble()).toInt(),
             playbackUpdatedAt = updatedAt,
+            aiNarrated = PodcastLabel.isAiNarrated(row.str("source")),
         )
     }
 
