@@ -8,16 +8,67 @@ final class PaywallPresentationTests: XCTestCase {
     private func product(
         title: String = "Alphonso Pro",
         price: String = "$9.99",
+        amount: Decimal = Decimal(string: "9.99")!,
         period: BillingPeriod? = BillingPeriod(unit: .month, value: 1),
-        trial: BillingPeriod? = BillingPeriod(unit: .week, value: 2)
+        trial: BillingPeriod? = BillingPeriod(unit: .week, value: 2),
+        id: String = "com.obsidianmedia.learnwithalphonso.pro.monthly"
     ) -> PaywallProduct {
         PaywallProduct(
-            id: "com.obsidianmedia.learnwithalphonso.pro.monthly",
+            id: id,
             localizedTitle: title,
             localizedPriceString: price,
+            price: amount,
             period: period,
             eligibleFreeTrial: trial
         )
+    }
+
+    private var yearlyProduct: PaywallProduct {
+        product(price: "$79.99", amount: Decimal(string: "79.99")!, period: BillingPeriod(unit: .year, value: 1),
+                trial: nil, id: "com.obsidianmedia.learnwithalphonso.pro.yearly")
+    }
+
+    // MARK: - Plans
+
+    func testOnePlanShowsNoPicker() {
+        XCTAssertEqual(PaywallPresentation.make(.loaded([product()])).options, [])
+    }
+
+    func testTwoPlansListYearlyFirstWithItsSavingAndDefaultToYearly() {
+        let p = PaywallPresentation.make(.loaded([product(), yearlyProduct]))
+        XCTAssertEqual(p.productID, "com.obsidianmedia.learnwithalphonso.pro.yearly")
+        XCTAssertEqual(p.options.map(\.title), ["Yearly", "Monthly"])
+        XCTAssertEqual(p.options.map(\.priceLine), ["$79.99 / year", "$9.99 / month"])
+        // 12 x 9.99 = 119.88; 79.99 saves 33.27%, shown rounded down.
+        XCTAssertEqual(p.options.map(\.savingsLine), ["Save 33%", nil])
+        XCTAssertEqual(p.options.map(\.isSelected), [true, false])
+        XCTAssertEqual(p.priceLine, "$79.99 / year")
+        XCTAssertNil(p.trialLine, "the yearly plan has no trial, so none is promised")
+        XCTAssertTrue(p.renewalDisclosure.contains("$79.99/year"), p.renewalDisclosure)
+    }
+
+    func testThePickedPlanDrivesEveryLine() {
+        let p = PaywallPresentation.make(.loaded([product(), yearlyProduct]),
+                                         selectedProductID: "com.obsidianmedia.learnwithalphonso.pro.monthly")
+        XCTAssertEqual(p.productID, "com.obsidianmedia.learnwithalphonso.pro.monthly")
+        XCTAssertEqual(p.priceLine, "$9.99 / month")
+        XCTAssertEqual(p.trialLine, "Free for 2 weeks, then $9.99/month")
+        XCTAssertEqual(p.options.map(\.isSelected), [false, true])
+    }
+
+    func testAnUnknownPickFallsBackToTheDefault() {
+        XCTAssertEqual(PaywallPresentation.make(.loaded([product(), yearlyProduct]), selectedProductID: "gone").productID,
+                       "com.obsidianmedia.learnwithalphonso.pro.yearly")
+    }
+
+    func testNoSavingIsClaimedWhenTheYearlyPlanIsNotCheaper() {
+        let pricey = product(price: "$129.99", amount: Decimal(string: "129.99")!,
+                             period: BillingPeriod(unit: .year, value: 1), trial: nil, id: "y")
+        XCTAssertNil(PaywallPresentation.make(.loaded([product(), pricey])).options.first?.savingsLine)
+        let tiny = product(price: "$116.99", amount: Decimal(string: "116.99")!,
+                           period: BillingPeriod(unit: .year, value: 1), trial: nil, id: "y2")
+        XCTAssertNil(PaywallPresentation.make(.loaded([product(), tiny])).options.first?.savingsLine,
+                     "under 5% is not worth a badge")
     }
 
     // MARK: - Strings
@@ -114,7 +165,7 @@ final class PaywallPresentationTests: XCTestCase {
 
     func testOnlyTheFirstProductIsPresented() {
         let second = PaywallProduct(id: "other", localizedTitle: "Other", localizedPriceString: "$1.00",
-                                    period: monthly, eligibleFreeTrial: nil)
+                                    price: 1, period: monthly, eligibleFreeTrial: nil)
         XCTAssertEqual(PaywallPresentation.make(.loaded([product(), second])).productID,
                        "com.obsidianmedia.learnwithalphonso.pro.monthly")
     }

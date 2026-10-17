@@ -79,8 +79,12 @@ final class MockPurchases: PurchasesProviding {
         return try productsResult.get()
     }
 
-    func purchase(productID: String) async throws -> PurchaseOutcome {
+    /// The source passed with each purchase, in order.
+    private(set) var purchaseSources: [PaywallSource?] = []
+
+    func purchase(productID: String, source: PaywallSource?) async throws -> PurchaseOutcome {
         calls.append("purchase:\(productID)")
+        purchaseSources.append(source)
         return try purchaseResult.get()
     }
 
