@@ -71,12 +71,14 @@ extension ProgressSyncClient {
     /// find the exact team. Added in the 2026-09-29
     /// pre-submission audit: public team names were the one piece of
     /// user-written content shown to strangers with no report path.
-    /// `teams` is readable by every signed-in user (`teams_select_all`),
-    /// so this needs no new RPC or migration.
+    /// A signed-in user can read a public team and their own team
+    /// (`teams_select_visible`), which covers every team whose name the
+    /// app shows them: private teams never reach strangers' boards.
     ///
     /// Returns false, filing nothing, when the team has no creator --
     /// auto-created teams get a system-generated name, so there is no
-    /// person to report and nothing user-written to review.
+    /// person to report and nothing user-written to review -- or when the
+    /// row is not visible to the caller.
     public func reportTeamName(teamID: String, reason: String) async throws -> Bool {
         let lookup = restRequest(path: "teams", query: [
             URLQueryItem(name: "id", value: "eq.\(teamID)"),
