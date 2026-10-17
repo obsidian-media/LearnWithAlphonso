@@ -56,6 +56,36 @@ class PodcastClientTest {
     }
 
     @Test
+    fun `a save returns the updated_at the server stored, not the device clock`() = runTest {
+        val patch = FakeSupabase { json("""[{"position_seconds":30,"updated_at":"2026-09-24T10:00:07.123456+00:00"}]""") }
+        assertEquals("2026-09-24T10:00:07.123456+00:00", client(patch).savePlaybackPosition("e1", 30, false, "2026-09-24T10:00:00Z"))
+        val post = FakeSupabase { json("""[{"position_seconds":5,"updated_at":"2026-09-24T10:05:00+00:00"}]""") }
+        assertEquals("2026-09-24T10:05:00+00:00", client(post).savePlaybackPosition("e1", 5, false, null))
+        assertNull(client(FakeSupabase { json("""[{"position_seconds":5}]""") }).savePlaybackPosition("e1", 5, false, null))
+    }
+
+    @Test
+    fun `a server-format stamp with a plus sign is sent percent-encoded so it still matches`() = runTest {
+        val fake = FakeSupabase { json("""[{"position_seconds":30,"updated_at":"2026-09-24T10:00:08+00:00"}]""") }
+        client(fake).savePlaybackPosition("e1", 30, false, "2026-09-24T10:00:07.123456+00:00")
+        val encoded = fake.seen.single().encodedQuery
+        assertTrue(encoded.contains("%2B"), encoded)
+        assertTrue(!encoded.contains("+00:00"), "a literal plus would decode as a space on the server")
+    }
+
+    @Test
+    fun `episodes carry the source, and only a tts source is AI-narrated`() = runTest {
+        fun row(id: String, source: String?) = episodeRow(id).dropLast(1) + (if (source == null) ""","source":null}""" else ""","source":"$source"}""")
+        val fake = FakeSupabase { req -> if (req.path.endsWith("podcast_episodes")) json("[${row("e1", "tts")},${row("e2", "upload")},${row("e3", null)}]") else json("[]") }
+        val episodes = client(fake).fetchEpisodes("f1")
+        assertEquals(listOf(true, false, false), episodes.map { it.aiNarrated })
+        assertTrue(fake.seen[0].query["select"]!!.split(",").contains("source"))
+        val search = FakeSupabase { json("[${row("e9", "tts")}]") }
+        assertTrue(client(search).searchEpisodes("coffee").single().aiNarrated)
+        assertTrue(search.seen.single().query["select"]!!.split(",").contains("source"))
+    }
+
+    @Test
     fun `unauthorized is distinct`() = runTest {
         val fake = FakeSupabase { json("{}", HttpStatusCode.Unauthorized) }
         assertThrows<PodcastClientError.Unauthorized> { client(fake).fetchFolders() }
@@ -115,6 +145,9 @@ class PodcastClientTest {
         val post = FakeSupabase { json("""[{"position_seconds":5}]""") }
         client(post).savePlaybackPosition("e1", 5, false, null)
         assertEquals("POST", post.seen.single().method)
+        // An upsert on the key, so it also works when the row exists but this device forgot it (a plain POST conflicts).
+        assertEquals("user_id,episode_id", post.seen.single().query["on_conflict"])
+        assertEquals("resolution=merge-duplicates,return=representation", post.seen.single().headers["Prefer"])
         assertEquals("user-1", Json.parseToJsonElement(post.seen.single().body).jsonObject["user_id"]!!.jsonPrimitive.content)
 
         val done = FakeSupabase { json("""[{"position_seconds":0}]""") }

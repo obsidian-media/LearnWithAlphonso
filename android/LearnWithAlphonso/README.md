@@ -42,8 +42,9 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-Missing on Android: the report action on AI replies, save-any-word, and the later iOS podcast player
-reliability work.
+Missing on Android: the report action on AI replies, save-any-word, and the rest of the iOS podcast player
+work (the playback state machine and its failure messages with Retry, download validation, and removing
+downloads of unpublished episodes).
 
 Ported on 2026-10-17, not yet run on a device: the iOS offline-queue reliability work (#261, #284, #291, #293).
 A failed lesson save is classified by cause: offline, a timeout, server trouble and rate limits are queued and
@@ -55,6 +56,12 @@ support link. Rows queued by another account are dropped unsent, rows from befor
 adopted by the first account that syncs, a review answer is sent with a stable attempt id so a lost response is
 replayed instead of graded twice, the queue wakes itself when the next item is due, and the Learn tab says how
 many lessons and review answers are waiting, with a Sync now button.
+
+Ported on 2026-10-17, not yet run on a device: the "AI-narrated" label on Listen rows (episodes whose `source` is
+`tts`; "5:05 · Resume · AI-narrated", and "Downloaded · AI-narrated" offline), and the iOS resume
+reliability work: saves guard on the `updated_at` the server stored, run one at a time, pause after a stale write or a
+401 until the learner acts, remember what this device last stored per episode (so a stale list row never wins), still
+guard a save made after leaving an episode, and stop on sign-out.
 
 Ported on 2026-10-17, not yet run on a device: French and Spanish Practice
 scenarios and Campaigns, and Hector in the active course. Practice and Hector

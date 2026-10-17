@@ -95,7 +95,11 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     remember(signedInUserId) { container.activeCourse.accountChanged(signedInUserId); signedInUserId }
     // Signing out drops everything onboarding held for the account.
     LaunchedEffect(signedInUserId) {
-        if (state !is AuthState.SignedIn) container.onboarding.reset()
+        if (state !is AuthState.SignedIn) {
+            container.onboarding.reset()
+            // The next account on this device must not hear, see or resume the previous account's episode.
+            container.podcastPlayer.stopForAccountChange()
+        }
     }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
