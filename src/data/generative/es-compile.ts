@@ -125,6 +125,7 @@ export function esCandidates(template: RomanceTemplateId, verbInf: string): Gene
         if (noun.stressedA === true) continue;
         if (!noun.classes.includes(use.cls)) continue;
         if (use.nouns && !use.nouns.includes(noun.key)) continue;
+        if (use.except?.includes(noun.key)) continue;
         for (const kind of use.kinds) {
           if (!esFeasibleKinds(noun).includes(kind)) continue;
           out.push(compileEs(template, subject, verb, noun, kind));

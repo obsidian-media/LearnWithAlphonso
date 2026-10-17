@@ -729,6 +729,7 @@ nouns and verbs already in the shipped course.
   hand-written cloze lines, and `docs/superpowers/generative-wiktionary-check.json`
   is the committed summary of the local Wiktionary check
   (`scripts/check-wiktionary.ts`; the data itself is not committed).
+- Shipped 2026-10-17: the 21 planned packs are applied (`frga2p1-6` A2, `frgb1p1-6` B1, `esga2p1-9` A2). Regenerating a pack from the plan must give the committed lines (the gate tests check it).
 - `bun scripts/pack-tool.ts generate --course fr|es --pack <id>` writes a
   draft; `scripts/romance-sample.ts` prints an owner spot-check sample with
   English meanings (never stored in the banks). Licensing of the Lefff data:

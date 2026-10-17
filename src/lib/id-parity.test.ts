@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { collectCourseIds, diffIds, packLineStats } from "./id-parity";
 import type { Course } from "@/data/courses";
+import { ROMANCE_PACK_SPECS, buildRomancePack } from "@/data/generative/romance-packs";
 
 describe("diffIds", () => {
   it("reports no drift for identical id sets", () => {
@@ -78,7 +79,10 @@ describe.each(COURSES)(
         // A short pack silently produces short lessons with no test failure
         // otherwise -- spec section 6.3 item 2.
         const stats = packLineStats(course);
+        // Generated packs (id prefix frg) are single-verb drills sized by their plan
+        // (checked exactly in the next test). Every other pack must be 25.
         for (const [packId, s] of Object.entries(stats)) {
+          if (packId.startsWith("frg")) continue;
           expect(s.lines, `pack ${packId} has ${s.lines} lines, expected 25`).toBe(25);
         }
       });
@@ -95,15 +99,31 @@ describe.each(COURSES)(
         // by construction): +5 for the translate packs, +5 for the listening
         // packs, +5 for the speak packs (docs/superpowers/specs/2026-09-25-
         // spanish-content-audit-design.md §7 step 7, PRs 2-4) -- all four
-        // Spanish Phase 2 PRs now landed.
+        // Spanish Phase 2 PRs now landed. The 15 bucket also gained the 9 generated
+        // one-verb packs (esga2p1-9), 15 questions each.
         const stats = packLineStats(course);
         const distribution: Record<number, number> = {};
         for (const s of Object.values(stats)) {
           distribution[s.lines] = (distribution[s.lines] ?? 0) + 1;
         }
-        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 62 });
+        expect(distribution).toEqual({ 10: 3, 15: 62, 20: 27, 25: 62 });
       });
     }
+
+    it("generated packs have exactly the size their plan generates", () => {
+      const stats = packLineStats(course);
+      const planned = ROMANCE_PACK_SPECS.filter((s) => s.lang === course);
+      for (const spec of planned)
+        expect(stats[spec.id]?.lines, `pack ${spec.id}`).toBe(buildRomancePack(spec).items.length);
+      const prefix = course === "fr" ? "frg" : course === "es" ? "esg" : null;
+      if (prefix)
+        for (const packId of Object.keys(stats))
+          if (packId.startsWith(prefix))
+            expect(
+              planned.map((s) => s.id),
+              packId,
+            ).toContain(packId);
+    });
 
     it("has not added or removed any question id against the committed baseline", () => {
       const baselinePath = path.resolve(import.meta.dirname, "../../.audit-baseline", baseline);
