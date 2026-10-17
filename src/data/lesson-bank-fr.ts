@@ -3261,7 +3261,7 @@ C'est la première fois qu'il ___ (voyager) seul.|ait voyagé`,
     subtitle: "Recognizing the passé simple",
     kind: "pair",
     prompt: 'The passé simple form "%s" means…',
-    note: "Passé simple recognition -- used in literature and formal narration, not spoken French.",
+    note: "Passé simple recognition: used in literature and formal narration, not spoken French.",
     data: `il fut|he was
 il eut|he had
 il fit|he did/made
