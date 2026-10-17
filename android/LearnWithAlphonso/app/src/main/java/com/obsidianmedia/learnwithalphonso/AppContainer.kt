@@ -16,7 +16,9 @@ import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
 import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
+import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
 import com.obsidianmedia.learnwithalphonso.core.net.LearningGoalClient
@@ -88,6 +90,9 @@ class AppContainer(context: Context) {
         refresh = { session.freshAccessToken(force = true) },
     )
     val progressClient = ProgressSyncClient(supabaseHttp)
+
+    /** Sends reports of AI replies on the app's scope, so a rotation or a scrolled-away bubble cannot lose or double one. */
+    val aiReports = AiReportSender({ progressClient.reportAiResponse(it) }, appScope)
 
     /** The learner's active course, shared by Learn, Practice and Hector and remembered per account. */
     val activeCourse = ActiveCourseStore(PrefsCourseStore(prefs))

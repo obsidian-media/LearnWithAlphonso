@@ -28,6 +28,7 @@ into the credential entry itself).
 3. Listen tab: podcast folders, an episode plays with the screen locked and shows lock-screen controls; the download icon stores an episode for offline use.
 4. Practice tab: scenarios and campaigns use the microphone; the first AI screen shows the AI consent sheet (Allow or Not now); the choice is the account's, so allow it once for the review account. The demo seed resets it, so expect the sheet on the first AI screen of a fresh run.
    The podcast audio is AI-narrated (Deepgram Aura-2 voices); say so in the notes.
+   AI replies can be reported in the app: long-press a reply in Hector, Practice or a Campaign (TalkBack: the "Report this response" action), choose a reason, and it reaches our moderation queue (Google Play AI-generated content policy).
 5. Hector tab: opens directly for the demo account; for any other account it shows the paywall with a Google Play test purchase.
 6. Profile tab: leaderboard, friends, teams, achievements, settings including Export my data and Delete my account (typed DELETE confirmation).
 
