@@ -58,7 +58,7 @@ the one-time public-name step (a full-screen "What should other learners call
 you?" prompt after the first sign-in and before placement, with a live check
 through `display_name_problem`, Save through `confirm_display_name`, and Skip
 that never traps the learner), and Settings now words a refused name the same
-way,
+way.
 
 Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
 AI error copy that matches iOS and web, with one retry on an empty chat reply

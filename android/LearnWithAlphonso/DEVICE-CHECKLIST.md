@@ -116,7 +116,10 @@ Use a fresh QA account (email sign-up) and a Google account whose name is set.
 - [ ] Google account: the field is prefilled with the first name from the Google profile and checks itself; a name that is an email address is never prefilled.
 - [ ] An account that already confirmed its name never sees the prompt; killing the app on the prompt and reopening shows it again.
 - [ ] Settings > Display name with a blocked name: "That name isn't allowed. Try another." (not a generic failure).
-- [ ] Rotate the phone on the prompt with a name typed: the typed text and result stay.
+- [ ] Rotate the phone on the prompt with a name typed: the typed text and result stay, and the app does not sync or sign in to billing again.
+- [ ] Rotate while offline with the prompt up: the prompt is still there.
+- [ ] Sign out on the prompt (kill and reopen if needed), then sign in as a different new account: it shows that account's own name or the `Learner-XXXX` hint, never the previous account's name.
+- [ ] While Save is working the field is disabled; the keyboard is up when the prompt appears.
 
 ## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
 

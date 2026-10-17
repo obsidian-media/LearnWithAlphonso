@@ -12,6 +12,7 @@ import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
@@ -80,6 +81,9 @@ class AppContainer(context: Context) {
         refresh = { session.freshAccessToken(force = true) },
     )
     val progressClient = ProgressSyncClient(supabaseHttp)
+
+    /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
+    val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
 
     private val apiHttp = ApiHttp(BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine) { session.freshAccessToken(force = true) }

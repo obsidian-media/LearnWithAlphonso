@@ -141,6 +141,28 @@ class DisplayNameOnboardingTest {
     }
 
     @Test
+    fun `whitespace is the platform's, so a non-breaking space and an ideographic space collapse like a normal one`() {
+        assertEquals("Ana Lima", DisplayNameOnboarding.normalized("Ana\u00A0Lima"))
+        assertEquals("Ana Lima", DisplayNameOnboarding.normalized("\u3000Ana\u3000\u3000Lima\u00A0"))
+        assertEquals(DisplayNameOnboarding.localProblem("A\u00A0"), "invalid-name")
+        assertNull(DisplayNameOnboarding.localProblem("Al\u00A0"))
+    }
+
+    @Test
+    fun `refusal wording is the shared social-reason fixture's`() {
+        val social = Json.parseToJsonElement(javaClass.getResource("/social-reason.fixtures.json")!!.readText()).jsonObject
+        val reasons = social["reasons"]!!.jsonObject
+        assertEquals(str(social, "connection"), NameReasonCopy.connectionFailure)
+        assertEquals(str(social, "generic"), NameReasonCopy.generic)
+        assertEquals(str(social, "nameSaveFailed"), NameReasonCopy.nameSaveFailed)
+        for (code in listOf("unauthenticated", "invalid-name", "blocked-content")) {
+            assertEquals(str(reasons, code), NameReasonCopy.message(code), code)
+        }
+        assertEquals(NameReasonCopy.generic, NameReasonCopy.message("some-new-code"))
+        assertEquals(NameReasonCopy.connectionFailure, NameReasonCopy.message(null))
+    }
+
+    @Test
     fun `save failures are worded by cause`() {
         assertEquals(NameReasonCopy.connectionFailure, NameReasonCopy.nameSaveMessage(null, null, isConnectionFailure = true))
         assertEquals(NameReasonCopy.nameNotAllowed, NameReasonCopy.nameSaveMessage(400, "blocked-content", false))

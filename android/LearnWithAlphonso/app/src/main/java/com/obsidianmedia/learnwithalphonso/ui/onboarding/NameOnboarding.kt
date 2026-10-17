@@ -18,7 +18,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
 import com.obsidianmedia.learnwithalphonso.core.logic.NameOnboardingCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.NameReasonCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
@@ -113,7 +118,9 @@ class NameOnboardingViewModel(
                 throw e
             } catch (e: Exception) {
                 val server = e as? ProgressSyncError.Server
-                val message = NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = e is IOException)
+                // An unreadable answer is the connection's fault from the learner's side (iOS: badResponse).
+                val connection = e is IOException || e is ProgressSyncError.InvalidPayload
+                val message = NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = connection)
                 _state.update { it.submitFailed(server?.serverMessage, message) }
             }
         }
@@ -143,12 +150,17 @@ class NameOnboardingViewModel(
 }
 
 @Composable
-fun NameOnboardingScreen(container: AppContainer, start: DisplayNameOnboarding, onFinish: () -> Unit) {
+fun NameOnboardingScreen(container: AppContainer, presentation: OnboardingFlow.NamePresentation, onFinish: () -> Unit) {
     val palette = AlphonsoColor.palette
-    val vm: NameOnboardingViewModel = viewModel(key = "name-onboarding") { NameOnboardingViewModel(container.progressClient, start, onFinish) }
+    // Keyed by the presentation, which belongs to one account: a view model from an earlier prompt (another account's
+    // prefilled name) is never reused.
+    val vm: NameOnboardingViewModel = viewModel(key = "name-onboarding-${presentation.id}") { NameOnboardingViewModel(container.progressClient, presentation.start, onFinish) }
     val state by vm.state.collectAsState()
     // The prompt cannot be backed out of: Skip is the way out and never traps the learner.
     BackHandler { }
+    // The field is focused on arrival, so the keyboard is up and the learner can just type.
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     SideEffect { vm.onFinish = onFinish }
 
     Column(
@@ -165,10 +177,11 @@ fun NameOnboardingScreen(container: AppContainer, start: DisplayNameOnboarding, 
             placeholder = { Text(state.fieldPlaceholder) },
             singleLine = true,
             isError = state.isProblem,
+            enabled = !state.isSubmitting,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done, autoCorrectEnabled = false),
             keyboardActions = KeyboardActions(onDone = { vm.save() }),
             trailingIcon = if (state.name.isNotEmpty()) ({ TextButton(onClick = { vm.edit("") }) { Text("Clear", color = palette.inkSoft) } }) else null,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().focusRequester(focus),
         )
         state.message?.let {
             Text(it, style = MaterialTheme.typography.bodySmall, color = if (state.isProblem) palette.destructive else palette.inkSoft)

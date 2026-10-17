@@ -126,7 +126,21 @@ data class DisplayNameOnboarding(
 
         fun needsPrompt(nameConfirmed: Boolean): Boolean = !nameConfirmed
 
-        fun normalized(raw: String): String = raw.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString(" ")
+        /** Whitespace is `Char.isWhitespace` (a non-breaking space and U+3000 count), like Swift's `isWhitespace`, not a regex class that differs by platform. */
+        fun normalized(raw: String): String {
+            val out = StringBuilder()
+            var pendingSpace = false
+            for (c in raw) {
+                if (c.isWhitespace()) {
+                    pendingSpace = out.isNotEmpty()
+                } else {
+                    if (pendingSpace) out.append(' ')
+                    pendingSpace = false
+                    out.append(c)
+                }
+            }
+            return out.toString()
+        }
 
         /** The server's length rule (2 to 40 after cleaning), counted in Unicode code points like Postgres char_length. */
         fun localProblem(raw: String): String? {

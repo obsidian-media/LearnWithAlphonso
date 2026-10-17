@@ -33,8 +33,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingStep
 import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
 import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.content.Course
@@ -85,6 +88,10 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val palette = AlphonsoColor.palette
 
     LaunchedEffect(Unit) { session.restore() }
+    // Signing out drops everything onboarding held for the account.
+    LaunchedEffect((state as? AuthState.SignedIn)?.session?.userId) {
+        if (state !is AuthState.SignedIn) container.onboarding.reset()
+    }
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {
         when {
@@ -110,30 +117,53 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     val currentRoute = backStack?.destination?.route
     val showBar = currentRoute in Routes.tabs
     val userId = container.session.userId
-    var nameStep by remember(userId) { mutableStateOf<DisplayNameOnboarding?>(null) }
-    val scope = rememberCoroutineScope()
-    val runPlacementStep: suspend () -> Unit = {
-        val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
-        if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
+    val flow = container.onboarding
+    val namePresentation by flow.name.collectAsState()
+
+    // The step after the name prompt: English placement, driven by OnboardingSequence so the order lives in one place.
+    val advanceOnboarding: () -> Unit = {
+        val id = userId
+        if (id != null && flow.next(id) == OnboardingStep.PLACEMENT) {
+            flow.finish(id, OnboardingStep.PLACEMENT)
             nav.navigate(Routes.placement("en"))
         }
     }
 
     LaunchedEffect(userId) {
-        container.syncCoordinator.triggerSync()
-        runCatching { userId?.let { container.progressClient.fetchProfileTheme(it) } }.getOrNull()?.let(container.themeManager::hydrateFromServer)
-        userId?.let { container.entitlements.login(it) }
-        container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
-        container.pushRegistrar.registerIfAuthorized()
-        // Onboarding: the one-time public-name prompt first, then English placement (OnboardingSequence). A failed
-        // check skips its step this launch instead of blocking the app.
-        nameStep = null
-        val status = runCatching { container.progressClient.fetchNameStatus() }.getOrNull()
-        if (status != null && status.needsPrompt) {
-            val names = container.session.fetchUserNames()
-            nameStep = DisplayNameOnboarding.start(DisplayNameOnboarding.prefill(names, status.displayName), status.displayName)
-        } else {
-            runPlacementStep()
+        val id = userId ?: return@LaunchedEffect
+        // Once per account per process: a rotation neither redoes the launch work nor loses the prompt. If this run is
+        // cancelled before it finishes, the next composition runs it again.
+        if (!flow.tryBegin(id)) return@LaunchedEffect
+        try {
+            coroutineScope {
+                // The onboarding checks start first, in their own coroutine, so they never wait behind sync, sign-in
+                // to billing, reminders or push registration. A failed check skips its step this launch, never blocks.
+                launch {
+                    val status = runCatching { container.progressClient.fetchNameStatus() }.getOrNull()
+                    val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
+                    val placementTaken = when {
+                        placed != null -> true
+                        runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess -> false
+                        else -> null
+                    }
+                    flow.record(id, nameConfirmed = status?.nameConfirmed, placementTaken = placementTaken)
+                    if (flow.next(id) == OnboardingStep.DISPLAY_NAME) {
+                        val names = container.session.fetchUserNames()
+                        flow.presentName(id, status?.let { DisplayNameOnboarding.start(DisplayNameOnboarding.prefill(names, it.displayName), it.displayName) })
+                    }
+                    advanceOnboarding()
+                }
+                launch {
+                    container.syncCoordinator.triggerSync()
+                    runCatching { container.progressClient.fetchProfileTheme(id) }.getOrNull()?.let(container.themeManager::hydrateFromServer)
+                    container.entitlements.login(id)
+                    container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
+                    container.pushRegistrar.registerIfAuthorized()
+                }
+            }
+        } catch (e: CancellationException) {
+            flow.abandon(id)
+            throw e
         }
     }
 
@@ -229,10 +259,11 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     }
 
     // The one-time public-name prompt covers the app until the learner saves or skips; placement follows.
-    nameStep?.let { step ->
-        NameOnboardingScreen(container, step) {
-            nameStep = null
-            scope.launch { runPlacementStep() }
+    // Only a prompt that belongs to the signed-in account is ever shown.
+    namePresentation?.takeIf { it.userId == userId }?.let { presentation ->
+        NameOnboardingScreen(container, presentation) {
+            userId?.let { flow.finish(it, OnboardingStep.DISPLAY_NAME) }
+            advanceOnboarding()
         }
     }
 }

@@ -41,7 +41,7 @@ class IdentityViewModel(private val client: ProgressSyncClient, private val user
             val failure = runCatching { client.updateProfileDisplayName(trimmed, id) }.exceptionOrNull()
             // A name the server filter refuses says so ("That name isn't allowed. Try another."), not a generic failure.
             val server = failure as? ProgressSyncError.Server
-            val error = failure?.let { NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = it is java.io.IOException) }
+            val error = failure?.let { NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = it is java.io.IOException || it is ProgressSyncError.InvalidPayload) }
             _state.update { it.copy(saving = false, displayName = if (failure == null) trimmed else it.displayName, error = error) }
         }
     }

@@ -135,6 +135,69 @@ class NameOnboardingViewModelTest {
     }
 
     @Test
+    fun `skip after typing or a prefill sends nothing but the skip call`() = runBlocking {
+        val typed = server()
+        val v1 = vm(typed)
+        v1.edit("Ana").join()
+        v1.skip().join()
+        val skip = typed.seen.single { it.path.endsWith("skip_display_name_prompt") }
+        assertEquals("{}", skip.body)
+        assertTrue("skipping never confirms what was typed", typed.seen.none { it.path.endsWith("confirm_display_name") })
+
+        val prefilled = server()
+        val v2 = vm(prefilled, DisplayNameOnboarding.start("Ana", "Ana Lima"))
+        v2.currentCheck!!.join()
+        v2.skip().join()
+        assertEquals("{}", prefilled.seen.single { it.path.endsWith("skip_display_name_prompt") }.body)
+        assertTrue(prefilled.seen.none { it.path.endsWith("confirm_display_name") })
+    }
+
+    @Test
+    fun `a dropped connection while saving says the server could not be reached`() = runBlocking {
+        val s = FakeServer { req ->
+            if (req.path.endsWith("confirm_display_name")) throw java.io.IOException("offline")
+            if (req.path.endsWith("display_name_problem")) json("null") else json("[]")
+        }
+        val v = vm(s)
+        v.edit("Ana").join()
+        v.save().join()
+        assertEquals(0, finished)
+        assertEquals("Couldn't reach the server. Check your connection and try again.", v.state.value.message)
+        assertTrue("the learner can try again", v.state.value.canSave)
+    }
+
+    @Test
+    fun `an unreadable answer while saving is the connection's problem too`() = runBlocking {
+        val s = server(confirm = "42" to HttpStatusCode.OK)
+        val v = vm(s)
+        v.edit("Ana").join()
+        v.save().join()
+        assertEquals(0, finished)
+        assertEquals("Couldn't reach the server. Check your connection and try again.", v.state.value.message)
+    }
+
+    @Test
+    fun `save while the name is still being checked sends nothing`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("display_name_problem") -> { gate.await(); json("null") }
+                req.path.endsWith("confirm_display_name") -> json("\"Ana\"")
+                else -> json("[]")
+            }
+        }
+        val v = vm(s)
+        val checking = v.edit("Ana")
+        assertEquals("Checking…", v.state.value.message)
+        v.save().join()
+        assertEquals(0, finished)
+        assertTrue(s.seen.none { it.path.endsWith("confirm_display_name") })
+        gate.complete(Unit)
+        checking.join()
+        assertTrue(v.state.value.canSave)
+    }
+
+    @Test
     fun `skip on a healthy server stamps it and closes`() = runBlocking {
         val s = server()
         vm(s).skip().join()

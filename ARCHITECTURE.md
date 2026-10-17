@@ -700,8 +700,14 @@ hand-authored one once it lands in `lesson-bank.ts`.
   committed file collapses an empty array onto one line, which a naive
   `"\n];"` search couldn't find).
 
+**French and Spanish (designed, not yet built):** the extension is
+specified in `docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md`
+(library spike results, templates, closed vocabulary taken only from the
+shipped course data, and the validation gates). This section is renamed
+when the implementation lands.
+
 **Known, documented limitations** (not silently solved): French/Spanish
-out of scope; cross-verb MC distractors reduced but not eliminated
+out of scope for the pilot itself; cross-verb MC distractors reduced but not eliminated
 (would need semantic verb/object modeling or a shared `bank-engine.ts`
 change, both out of scope for the pilot); a new LLM-proposed verb
 beyond the 7 spike-verified ones (have/go/do/walk/run/eat/play) is
@@ -1221,9 +1227,16 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.
 - **One-time public-name step.** After the first sign-in `SignedInApp`
-  reads `get_my_name_status` (`fetchNameStatus`); while `name_confirmed_at`
-  is NULL a full-screen `NameOnboardingScreen` covers the app, then English
-  placement follows (`OnboardingSequence`). All rules and copy are core's
+  reads `get_my_name_status` (`fetchNameStatus`) in its own coroutine, started
+  before sync, billing sign-in, reminders and push registration; while
+  `name_confirmed_at` is NULL a full-screen `NameOnboardingScreen` covers the
+  app, then English placement follows. The order is `OnboardingSequence`, and
+  `OnboardingFlow` (held by `AppContainer`, so for the life of the process)
+  keeps its inputs and the steps already done: the launch work runs once per
+  account (a rotation neither redoes it nor loses the prompt; a run cancelled
+  half way is run again), each prompt has its own id which keys its view
+  model, and an account change or sign-out drops the previous account's
+  prompt and prefilled name. All rules and copy are core's
   `DisplayNameOnboarding` (length 2 to 40 in code points, the prefill order
   given name then first word of full or short name, the generated
   `Learner-XXXX` handle shown as a hint and never as text), decoded from the
