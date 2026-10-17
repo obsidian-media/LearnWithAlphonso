@@ -520,7 +520,9 @@ describe("gate 7: the meaning allowlist", () => {
   });
 
   it("manger takes the indefinite only for the generic nouns fruit and légume", () => {
-    for (const item of everything.filter((i) => i.verb === "manger" && ["fruit", "légume"].includes(i.object)))
+    for (const item of everything.filter(
+      (i) => i.verb === "manger" && ["fruit", "légume"].includes(i.object),
+    ))
       expect(item.articleKind, item.prompt).toBe("indefinite");
   });
 

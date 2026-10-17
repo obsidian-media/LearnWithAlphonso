@@ -63,7 +63,16 @@ const PERSON_TAGS: [string, string][] = [
   ["third-person", "plural"],
 ];
 
-const OTHER_TENSES = ["past", "historic", "imperfect", "future", "conditional", "subjunctive", "imperative", "preterite"];
+const OTHER_TENSES = [
+  "past",
+  "historic",
+  "imperfect",
+  "future",
+  "conditional",
+  "subjunctive",
+  "imperative",
+  "preterite",
+];
 
 /** True when an entry for `word` is a verb form of `lemma` carrying one of the tag sets. */
 function isFormOf(entries: Entry[] | undefined, lemma: string, need: string[][]): boolean {
@@ -78,7 +87,12 @@ function isFormOf(entries: Entry[] | undefined, lemma: string, need: string[][])
 }
 
 /** Wiktionary sometimes tags a present form only "indicative" (e.g. choisit): accept that when no other tense is named. */
-function isPresentIndicative(entries: Entry[] | undefined, lemma: string, a: string, b: string): boolean {
+function isPresentIndicative(
+  entries: Entry[] | undefined,
+  lemma: string,
+  a: string,
+  b: string,
+): boolean {
   for (const e of entries ?? [])
     if (e.pos === "verb")
       for (const s of e.senses ?? []) {
@@ -135,7 +149,10 @@ async function main() {
     const problems: string[] = [];
     v.present.forEach((form, p) => {
       const [a, b] = PERSON_TAGS[p]!;
-      if (!isPresentIndicative(fr.get(form), v.inf, a, b) && !listedAs(fr.get(v.inf), form, ["present", "indicative", a, b]))
+      if (
+        !isPresentIndicative(fr.get(form), v.inf, a, b) &&
+        !listedAs(fr.get(v.inf), form, ["present", "indicative", a, b])
+      )
         problems.push(`present ${p} "${form}"`);
     });
     const participles = v.pcEtre
@@ -188,7 +205,10 @@ async function main() {
     const problems: string[] = [];
     v.present.forEach((form, p) => {
       const [a, b] = PERSON_TAGS[p]!;
-      if (!isPresentIndicative(es.get(form), v.inf, a, b) && !listedAs(es.get(v.inf), form, ["present", "indicative", a, b]))
+      if (
+        !isPresentIndicative(es.get(form), v.inf, a, b) &&
+        !listedAs(es.get(v.inf), form, ["present", "indicative", a, b])
+      )
         problems.push(`present ${p} "${form}"`);
     });
     v.preterite?.forEach((form, p) => {

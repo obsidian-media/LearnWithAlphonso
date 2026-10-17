@@ -21,6 +21,8 @@ if (result.ok) {
   console.error("Build output exists but contained no scannable files.");
   process.exit(1);
 } else {
-  console.error("Lefff lexicon data found in the build output:\n  " + result.offenders.join("\n  "));
+  console.error(
+    "Lefff lexicon data found in the build output:\n  " + result.offenders.join("\n  "),
+  );
   process.exit(1);
 }

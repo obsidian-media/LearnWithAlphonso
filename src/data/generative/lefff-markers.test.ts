@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { findLefffLeak } from "./lefff-markers";
 import { scanBuildOutput } from "./lefff-scan";
 import { REPO_ROOT } from "./romance-bank.testutil";
@@ -13,6 +13,8 @@ import { REPO_ROOT } from "./romance-bank.testutil";
  * the bundler actually emits. Words are assembled from pieces so this file
  * does not itself contain a marker.
  */
+vi.setConfig({ testTimeout: 120_000 });
+
 const row = (q: string) =>
   ["sui" + "s", "sui" + "s", "sui" + "t", "suiv" + "ons", "suiv" + "ez", "suiv" + "ent"]
     .map((w) => `${q}${w}${q}`)

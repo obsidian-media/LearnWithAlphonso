@@ -26,7 +26,12 @@ export const LEFFF_ROW_LIMIT = 4;
 
 /** Returns why `text` looks like it contains Lefff data, or null. */
 export function findLefffLeak(text: string): string | null {
-  if (LEFFF_PATTERNS.some((p) => p.test(text))) return "marker";
+  // Every marker names "suiv" or "abhorr"; most files name neither.
+  if (
+    (text.includes("suiv") || text.includes("abhorr")) &&
+    LEFFF_PATTERNS.some((p) => p.test(text))
+  )
+    return "marker";
   if ((text.match(LEFFF_ROW_SHAPE) ?? []).length > LEFFF_ROW_LIMIT) return "rows";
   return null;
 }

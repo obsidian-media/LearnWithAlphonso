@@ -117,7 +117,11 @@ export const ES_VERBS: EsVerb[] = [
     tenses: ["present"],
     en: { base: "have", third: "has", past: "had" },
     uses: [
-      { cls: "animal", kinds: ["indefinite"], nouns: ["perro", "gato", "caballo", "conejo", "pájaro"] },
+      {
+        cls: "animal",
+        kinds: ["indefinite"],
+        nouns: ["perro", "gato", "caballo", "conejo", "pájaro"],
+      },
       { cls: "household-object", kinds: ["indefinite"] },
       { cls: "school-object", kinds: ["indefinite"] },
     ],
@@ -131,7 +135,11 @@ export const ES_VERBS: EsVerb[] = [
     tenses: ["present"],
     en: { base: "want", third: "wants", past: "wanted" },
     uses: [
-      { cls: "animal", kinds: ["indefinite"], nouns: ["perro", "gato", "caballo", "conejo", "pájaro"] },
+      {
+        cls: "animal",
+        kinds: ["indefinite"],
+        nouns: ["perro", "gato", "caballo", "conejo", "pájaro"],
+      },
       { cls: "household-object", kinds: ["indefinite"] },
       { cls: "school-object", kinds: ["indefinite"] },
     ],

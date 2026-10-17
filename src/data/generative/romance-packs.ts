@@ -402,7 +402,9 @@ export function buildRomancePack(spec: RomancePackSpec): { pack: Pack; items: Ge
       if (hasThreeDistractors(pack)) return { pack, items };
     }
   }
-  throw new Error(`${spec.id}: no multiple-of-five pack gives every question three distinct wrong options`);
+  throw new Error(
+    `${spec.id}: no multiple-of-five pack gives every question three distinct wrong options`,
+  );
 }
 
 export function levelOf(spec: RomancePackSpec): Level {

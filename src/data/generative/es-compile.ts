@@ -112,7 +112,10 @@ export function compileEs(
 export function esCandidates(template: RomanceTemplateId, verbInf: string): GeneratedItem[] {
   if (template !== "es-svo-present" && template !== "es-svo-preterite") return [];
   const verb = esVerb(verbInf);
-  if (template === "es-svo-preterite" && (!verb.preterite || verb.tenses?.includes("preterite") === false))
+  if (
+    template === "es-svo-preterite" &&
+    (!verb.preterite || verb.tenses?.includes("preterite") === false)
+  )
     return [];
   if (template === "es-svo-present" && verb.tenses?.includes("present") === false) return [];
   const out: GeneratedItem[] = [];

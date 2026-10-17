@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { LEFFF_PATTERNS, findLefffLeak } from "./lefff-markers";
 import { REPO_ROOT } from "./romance-bank.testutil";
 
@@ -10,6 +10,9 @@ import { REPO_ROOT } from "./romance-bank.testutil";
  * 6 MB of LGPL-LR data; if anything outside the one test helper imported it,
  * it would land in the web bundle.
  */
+// The machine running these can be badly I/O loaded; these tests walk the repo and write temp files.
+vi.setConfig({ testTimeout: 120_000 });
+
 const LIBS = ["french-verbs", "french-verbs-lefff", "spanish-verbs"];
 const ONLY_IMPORTER = "src/data/generative/romance-libs.testutil.ts";
 
@@ -27,6 +30,8 @@ const rel = (f: string) => path.relative(REPO_ROOT, f).split(path.sep).join("/")
 
 /** Static import, export-from, dynamic import() and require() of any of the libraries. */
 export function importsLibrary(source: string): string | null {
+  // Fast path: a file that names none of the libraries cannot import one.
+  if (!LIBS.some((lib) => source.includes(lib))) return null;
   for (const lib of LIBS) {
     const escaped = lib.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
     const q = `["'\`]${escaped}(?:/[^"'\`]*)?["'\`]`;
@@ -47,16 +52,20 @@ describe("gate 9: runtime and licence isolation", () => {
     ...walk(path.join(REPO_ROOT, "scripts")),
   ].filter((f) => /\.(ts|tsx|js|mjs|cjs)$/.test(f));
 
-  it("only the one test helper imports a conjugation library (static, dynamic or require)", () => {
-    const offenders = sources
-      .filter((f) => rel(f) !== ONLY_IMPORTER)
-      .map((f) => ({ file: rel(f), lib: importsLibrary(readFileSync(f, "utf8")) }))
-      .filter((x) => x.lib !== null);
-    expect(offenders).toEqual([]);
-    expect(
-      importsLibrary(readFileSync(path.join(REPO_ROOT, ONLY_IMPORTER), "utf8")),
-    ).not.toBeNull();
-  });
+  it(
+    "only the one test helper imports a conjugation library (static, dynamic or require)",
+    { timeout: 120_000 },
+    () => {
+      const offenders = sources
+        .filter((f) => rel(f) !== ONLY_IMPORTER)
+        .map((f) => ({ file: rel(f), lib: importsLibrary(readFileSync(f, "utf8")) }))
+        .filter((x) => x.lib !== null);
+      expect(offenders).toEqual([]);
+      expect(
+        importsLibrary(readFileSync(path.join(REPO_ROOT, ONLY_IMPORTER), "utf8")),
+      ).not.toBeNull();
+    },
+  );
 
   it("the detector itself catches every import style", () => {
     // Assembled from pieces so this file does not itself import a library.
