@@ -44,6 +44,7 @@ import com.obsidianmedia.learnwithalphonso.notifications.WorkManagerReminderSche
 import com.obsidianmedia.learnwithalphonso.podcast.MediaControllerPort
 import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadManager
 import com.obsidianmedia.learnwithalphonso.podcast.PodcastPlayer
+import com.obsidianmedia.learnwithalphonso.podcast.PodcastProbe
 import com.obsidianmedia.learnwithalphonso.push.PushRegistrar
 import com.obsidianmedia.learnwithalphonso.push.firebaseToken
 import com.obsidianmedia.learnwithalphonso.sync.SyncCoordinator
@@ -136,6 +137,8 @@ class AppContainer(context: Context) {
         { if (session.currentAccessToken() != null) podcastClient else null },
         RecordingState.isRecording,
         appScope,
+        isOnline = { connectivity.isConnected.value },
+        probe = PodcastProbe(okHttp),
     )
     val reminders = ReminderHooks(WorkManagerReminderScheduler(app))
     val pushRegistrar = PushRegistrar(

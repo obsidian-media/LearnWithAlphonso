@@ -224,12 +224,12 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             }
             composable(Routes.LISTEN) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
                 ListenScreen(container, listenVm, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
             composable(Routes.LISTEN_FOLDER) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
                 ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { nav.navigate(Routes.scenario(it)) }, onOpenCampaign = { nav.navigate(Routes.campaign(it)) }) }

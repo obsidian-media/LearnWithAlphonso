@@ -7,6 +7,10 @@ import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlaybackFailure
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastProbeResult
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,11 +30,19 @@ class FakePort : PlayerPort {
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
+    override var onError: (Int?, Int?) -> Unit = { _, _ -> }
+    override var onStalled: () -> Unit = {}
+
+    /** A real player confirms playback a moment after play(); tests that need it unconfirmed turn this off. */
+    var confirmPlay = true
     val calls = ArrayList<String>()
     var position = 0L
     var duration: Long? = null
     override fun prepare(uri: String, startMillis: Long) { calls.add("prepare($uri,$startMillis)"); position = startMillis }
-    override fun play() { calls.add("play") }
+    override fun play() {
+        calls.add("play")
+        if (confirmPlay) onPlayingChanged(true)
+    }
     override fun pause() { calls.add("pause") }
     override fun seekTo(millis: Long) { calls.add("seek($millis)"); position = millis }
     override fun currentMillis() = position
@@ -58,9 +70,19 @@ class PodcastPlayerTest {
         }
     }
 
-    private fun player(s: FakeServer, port: FakePort, recording: MutableStateFlow<Boolean> = MutableStateFlow(false)): PodcastPlayer {
+    private fun player(
+        s: FakeServer,
+        port: FakePort,
+        recording: MutableStateFlow<Boolean> = MutableStateFlow(false),
+        isOnline: () -> Boolean = { true },
+        probe: suspend (String) -> PodcastProbeResult = { PodcastProbeResult.NotRun },
+        timeoutMillis: Long = 20_000L,
+    ): PodcastPlayer {
         val client = PodcastClient(SupabaseHttp("https://x.supabase.co", "pk", { "tok" }, s.engine), { "u1" }) { 1_758_000_000_000L }
-        return PodcastPlayer(port, { client }, recording, CoroutineScope(Dispatchers.Main))
+        return PodcastPlayer(
+            port, { client }, recording, CoroutineScope(Dispatchers.Main),
+            isOnline = isOnline, probe = probe, loadTimeoutMillis = timeoutMillis, stallTimeoutMillis = timeoutMillis,
+        )
     }
 
     private fun saves(s: FakeServer) = s.seen.filter { it.path.endsWith("podcast_playback") }
@@ -292,7 +314,7 @@ class PodcastPlayerTest {
         p.toggle()
         assertTrue(p.state.value.isPlaying)
         assertEquals(2, port.calls.count { it == "play" })
-        assertEquals(0, port.calls.count { it == "pause" })
+        assertEquals("the tap resumed; it did not pause again", "play", port.calls.last())
     }
 
     @Test
@@ -312,4 +334,123 @@ class PodcastPlayerTest {
         assertEquals(15, Json.parseToJsonElement(saves(s).single().body).jsonObject["position_seconds"]!!.jsonPrimitive.content.toInt())
         assertEquals(listOf(episode("e1"), episode("e2")), p.state.value.queue)
     }
+
+    @Test
+    fun `playback shows as playing only once the player confirms it`() = runBlocking {
+        val port = FakePort().apply { confirmPlay = false }
+        val p = player(server(), port)
+        p.play(episode())
+        assertEquals(PodcastPlayerPhase.Loading, p.state.value.phase)
+        assertFalse("play() was called but nothing is audible yet", p.state.value.isPlaying)
+        assertEquals(PodcastPlayerControl.SPINNER, p.state.value.control)
+        port.onPlayingChanged(true)
+        assertTrue(p.state.value.isPlaying)
+        assertEquals(PodcastPlayerControl.PAUSE, p.state.value.control)
+    }
+
+    @Test
+    fun `a remote episode with no connection fails as offline without touching the player, a download still plays`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port, isOnline = { false })
+        p.play(episode())
+        assertEquals(PodcastPlaybackFailure.OFFLINE_NOT_DOWNLOADED, p.state.value.failure)
+        assertEquals(PodcastPlayerControl.RETRY, p.state.value.control)
+        assertFalse(port.calls.any { it.startsWith("prepare") })
+        p.close()
+        p.play(episode("e2"), localUri = "file:///downloads/e2.mp3")
+        assertTrue(p.state.value.isPlaying)
+        assertEquals("prepare(file:///downloads/e2.mp3,0)", port.calls.first { it.startsWith("prepare") })
+    }
+
+    @Test
+    fun `a missing remote episode is told apart from a dead network by the probe, and Retry loads it again`() = runBlocking {
+        val port = FakePort().apply { confirmPlay = false }
+        var status = 400
+        val p = player(server(), port, probe = { PodcastProbeResult.Status(status) })
+        p.play(episode(position = 30))
+        port.onError(PlayerCodes.BAD_STATUS, null)
+        awaitTrue("failure") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.NOT_FOUND, p.state.value.failure)
+        assertFalse(p.state.value.isPlaying)
+        // Retry restarts the load from where the learner was, and only a confirmed player shows playing again.
+        status = 200
+        port.confirmPlay = true
+        p.retry()
+        assertEquals(2, port.calls.count { it.startsWith("prepare") })
+        assertEquals("prepare(https://cdn.example/e1.mp3,30000)", port.calls.last { it.startsWith("prepare") })
+        assertTrue(p.state.value.isPlaying)
+        assertNull(p.state.value.failure)
+    }
+
+    @Test
+    fun `a failure that arrives after the learner moved on is ignored`() = runBlocking {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val port = FakePort().apply { confirmPlay = false }
+        val p = player(server(), port, probe = { gate.await(); PodcastProbeResult.Status(404) })
+        p.play(episode("e1"))
+        port.onError(PlayerCodes.BAD_STATUS, null)
+        p.play(episode("e2"))
+        gate.complete(Unit)
+        port.onPlayingChanged(true)
+        awaitTrue("playing e2") { p.state.value.isPlaying }
+        assertEquals("e2", p.state.value.episode?.id)
+        assertNull(p.state.value.failure)
+    }
+
+    @Test
+    fun `a downloaded file that fails is unplayable, with no probe`() = runBlocking {
+        var probed = false
+        val port = FakePort().apply { confirmPlay = false }
+        val p = player(server(), port, probe = { probed = true; PodcastProbeResult.Status(404) })
+        p.play(episode(), localUri = "file:///downloads/e1.mp3")
+        port.onError(PlayerCodes.BAD_STATUS, null)
+        awaitTrue("failure") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.UNPLAYABLE, p.state.value.failure)
+        assertFalse(probed)
+    }
+
+    @Test
+    fun `loading that never produces sound times out as a network failure with Retry`() = runBlocking {
+        val port = FakePort().apply { confirmPlay = false }
+        val p = player(server(), port, timeoutMillis = 50)
+        p.play(episode())
+        awaitTrue("timeout") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.NETWORK, p.state.value.failure)
+        assertEquals(PodcastPlayerControl.RETRY, p.state.value.control)
+    }
+
+    @Test
+    fun `a stall that outlasts the timeout fails and saves, a recovery before it does not`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port, timeoutMillis = 200)
+        p.play(episode())
+        port.onStalled()
+        assertEquals(PodcastPlayerPhase.Buffering, p.state.value.phase)
+        port.onPlayingChanged(true)
+        assertTrue(p.state.value.isPlaying)
+        kotlinx.coroutines.delay(300)
+        assertTrue("recovered before the timeout, so the late timer does nothing", p.state.value.isPlaying)
+        port.onStalled()
+        awaitTrue("stall timeout") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.NETWORK, p.state.value.failure)
+        awaitTrue("position saved") { saves(s).isNotEmpty() }
+    }
+
+    @Test
+    fun `finishing rewinds to the start, marks complete and offers Play`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode(position = 42))
+        port.onEnded()
+        assertEquals(PodcastPlayerPhase.Finished, p.state.value.phase)
+        assertEquals(PodcastPlayerControl.PLAY, p.state.value.control)
+        assertTrue(port.calls.contains("seek(0)"))
+        assertEquals(0.0, p.state.value.elapsedSeconds, 0.0)
+        awaitTrue("completion save") { saves(s).any { Json.parseToJsonElement(it.body).jsonObject.containsKey("completed_at") } }
+    }
 }
+
+/** Media3 PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS, the code the controller reports for a rejected request. */
+private object PlayerCodes { const val BAD_STATUS = 2004 }

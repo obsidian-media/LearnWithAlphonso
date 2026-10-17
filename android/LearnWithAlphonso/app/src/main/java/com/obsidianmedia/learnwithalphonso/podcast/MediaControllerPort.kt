@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.podcast
 import android.content.ComponentName
 import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -23,6 +24,8 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
+    override var onError: (Int?, Int?) -> Unit = { _, _ -> }
+    override var onStalled: () -> Unit = {}
 
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
@@ -32,11 +35,20 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     private val listener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) onEnded()
+            // Out of data while the learner wants sound is a stall, not a pause.
+            if (playbackState == Player.STATE_BUFFERING && controller?.playWhenReady == true) onStalled()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) startTicker() else ticker?.cancel()
-            onPlayingChanged(isPlaying)
+            // Media3 reports "not playing" while it buffers, and the order against the state change is not fixed.
+            val buffering = controller?.let { it.playbackState == Player.STATE_BUFFERING && it.playWhenReady } == true
+            if (!isPlaying && buffering) onStalled() else onPlayingChanged(isPlaying)
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            // The status of a rejected request does not cross the session boundary; the HEAD probe supplies it.
+            onError(error.errorCode, null)
         }
     }
 

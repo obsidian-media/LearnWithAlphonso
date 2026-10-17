@@ -4,7 +4,10 @@ import android.content.Context
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastCache
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastCacheBudget
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastCacheEntry
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadCopy
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadFailure
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadValidation
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +23,7 @@ import java.io.File
 sealed class PodcastDownloadRefusal(message: String) : Exception(message) {
     /** Carries what could be removed to make room; the learner chooses, nothing is deleted here. */
     class BudgetExceeded(val candidates: List<PodcastCacheEntry>, val neededBytes: Long) : PodcastDownloadRefusal("Budget exceeded")
-    class TransferFailed(val reason: String) : PodcastDownloadRefusal(reason)
+    class TransferFailed(val failure: PodcastDownloadFailure) : PodcastDownloadRefusal(PodcastDownloadCopy.message(failure))
 }
 
 /**
@@ -66,7 +69,8 @@ class PodcastDownloadManager(
             val (bytes, etag) = withContext(Dispatchers.IO) {
                 staging.delete()
                 http.newCall(Request.Builder().url(episode.audioUrl).build()).execute().use { response ->
-                    if (!response.isSuccessful) throw PodcastDownloadRefusal.TransferFailed("HTTP ${response.code}")
+                    // Status and type before anything is kept: a missing object answers 400 with a JSON body.
+                    PodcastDownloadValidation.checkResponse(response.code, response.header("Content-Type"))?.let { throw PodcastDownloadRefusal.TransferFailed(it) }
                     val body = response.body
                     val expected = body.contentLength().takeIf { it >= 0 }
                     body.byteStream().use { input ->
@@ -83,9 +87,9 @@ class PodcastDownloadManager(
                         }
                     }
                     val actual = staging.length()
-                    if (expected != null && expected != actual) {
+                    PodcastDownloadValidation.checkBody(expected, actual, episode.durationSeconds)?.let {
                         staging.delete()
-                        throw PodcastDownloadRefusal.TransferFailed("incomplete download")
+                        throw PodcastDownloadRefusal.TransferFailed(it)
                     }
                     actual to response.header("ETag")
                 }
@@ -96,7 +100,7 @@ class PodcastDownloadManager(
             }
             // Atomic move last: a file at the final path always means a complete, accounted-for download.
             final.delete()
-            if (!staging.renameTo(final)) throw PodcastDownloadRefusal.TransferFailed("could not move the download into place")
+            if (!staging.renameTo(final)) throw PodcastDownloadRefusal.TransferFailed(PodcastDownloadFailure.NoSpace)
             dao.upsert(PodcastDownloadRecord(episode.id, bytes, etag, episode.durationSeconds, null, now()))
             _states.update { it + (episode.id to PodcastDownloadState.Downloaded(bytes)) }
         } catch (refusal: PodcastDownloadRefusal.BudgetExceeded) {
@@ -104,8 +108,9 @@ class PodcastDownloadManager(
             throw refusal
         } catch (e: Exception) {
             staging.delete()
-            _states.update { it + (episode.id to PodcastDownloadState.Failed(e.message ?: "download failed")) }
-            throw if (e is PodcastDownloadRefusal) e else PodcastDownloadRefusal.TransferFailed(e.message ?: "download failed")
+            val refusal = e as? PodcastDownloadRefusal.TransferFailed ?: PodcastDownloadRefusal.TransferFailed(PodcastDownloadValidation.classify(e))
+            _states.update { it + (episode.id to PodcastDownloadState.Failed(refusal.message ?: "download failed")) }
+            throw refusal
         }
     }
 
@@ -114,6 +119,12 @@ class PodcastDownloadManager(
         dao.delete(episodeId)
         _states.update { it + (episodeId to PodcastDownloadState.NotDownloaded) }
     }
+
+    /**
+     * Licensing: an episode that has been unpublished must not keep playing from a download. The caller passes only the
+     * ids [PodcastLibrary.unpublishedDownloads] chose, and only after a successful read of what is published.
+     */
+    suspend fun removeAll(episodeIds: List<String>) = episodeIds.forEach { delete(it) }
 
     suspend fun markPlayed(episodeId: String) = dao.markPlayed(episodeId, now())
 

@@ -5,6 +5,7 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayback
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPublishedEpisodeRef
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -42,11 +43,12 @@ class PodcastClient(
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     private companion object {
+        const val PUBLISHED_INDEX_PAGE_SIZE = 500
         const val EPISODE_SELECT = "id,folder_id,slug,title,description,audio_path,duration_seconds,source"
     }
 
     suspend fun fetchFolders(): List<PodcastFolder> =
-        rows(http.rest(HttpMethod.Get, "podcast_folders", mapOf("select" to "id,parent_id,slug,title,description,sort_order", "order" to "sort_order.asc")))
+        rows(http.rest(HttpMethod.Get, "podcast_folders", mapOf("select" to "id,parent_id,slug,title,description,sort_order,course", "order" to "sort_order.asc")))
             .mapNotNull { row ->
                 PodcastFolder(
                     id = row.str("id") ?: return@mapNotNull null,
@@ -55,8 +57,35 @@ class PodcastClient(
                     title = row.str("title") ?: return@mapNotNull null,
                     description = row.str("description"),
                     sortOrder = row.int("sort_order") ?: 0,
+                    course = row.str("course"),
                 )
             }
+
+    /**
+     * Every published episode's id and folder. RLS already hides unpublished rows; the explicit filter states the
+     * intent. Paged (ordered by id) until a short page, because one request returns at most `max_rows`: a larger
+     * catalogue would otherwise be truncated, and the caller treats this list as the whole published set when it
+     * removes downloads.
+     */
+    suspend fun fetchPublishedIndex(): List<PodcastPublishedEpisodeRef> {
+        val refs = ArrayList<PodcastPublishedEpisodeRef>()
+        var offset = 0
+        while (true) {
+            val page = rows(
+                http.rest(
+                    HttpMethod.Get, "podcast_episodes",
+                    mapOf("select" to "id,folder_id", "published" to "eq.true", "order" to "id.asc", "limit" to PUBLISHED_INDEX_PAGE_SIZE.toString(), "offset" to offset.toString()),
+                ),
+            )
+            page.forEach { row ->
+                val id = row.str("id")
+                val folderId = row.str("folder_id")
+                if (id != null && folderId != null) refs.add(PodcastPublishedEpisodeRef(id, folderId))
+            }
+            if (page.size < PUBLISHED_INDEX_PAGE_SIZE) return refs
+            offset += PUBLISHED_INDEX_PAGE_SIZE
+        }
+    }
 
     /** Published episodes in one folder merged with this user's saved positions; a failed playback read never fails the listing. */
     suspend fun fetchEpisodes(folderId: String): List<PodcastEpisode> {
