@@ -19,27 +19,41 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.io.File
 import java.util.Collections
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Routes viewModelScope onto an unconfined dispatcher: launched work runs
  * inline until its first real suspension (a Ktor call on the mock engine's
  * thread) and resumes there, so tests wait on concrete conditions with
  * awaitTrue instead of virtual time.
+ *
+ * When a test ends, Main is NOT reset to "unset". View-model work that is still
+ * suspended on the mock engine would resume afterwards and crash on a missing
+ * Main (an IllegalStateException that fails whichever test happens to be
+ * running). Instead Main becomes an [AbandonedMainDispatcher] that drops late
+ * resumptions: nothing crashes and nothing from a finished test touches the
+ * next one.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRule : TestWatcher() {
-    override fun starting(description: Description) = Dispatchers.setMain(Dispatchers.Unconfined)
-    override fun finished(description: Description) = Dispatchers.resetMain()
+    public override fun starting(description: Description) = Dispatchers.setMain(Dispatchers.Unconfined)
+    public override fun finished(description: Description) = Dispatchers.setMain(AbandonedMainDispatcher)
+}
+
+/** Main after a test has ended: every late dispatch is silently discarded. */
+object AbandonedMainDispatcher : CoroutineDispatcher() {
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean = true
+    override fun dispatch(context: CoroutineContext, block: Runnable) = Unit
 }
 
 /** Polls a condition for up to `timeoutMs` of real time. */

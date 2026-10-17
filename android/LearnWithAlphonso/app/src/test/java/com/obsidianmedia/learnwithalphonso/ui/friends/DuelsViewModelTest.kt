@@ -74,6 +74,8 @@ class DuelsViewModelTest {
         awaitTrue("waiting") { v2.state.value.waitingInQueue }
         v2.leaveQueue()
         awaitTrue("left") { !v2.state.value.waitingInQueue && waiting.seen.any { it.path.endsWith("leave_duel_queue") } }
-        assertTrue(true)
+        assertFalse("leaving the queue clears the waiting flag", v2.state.value.waitingInQueue)
+        assertEquals("""{"_course":"en","_match_by_level":false}""", waiting.seen.first { it.path.endsWith("join_open_duel_queue") }.body)
+        assertEquals(1, waiting.seen.count { it.path.endsWith("leave_duel_queue") })
     }
 }
