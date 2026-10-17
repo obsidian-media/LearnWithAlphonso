@@ -26,6 +26,7 @@ const episode = {
   audioUrl: "https://example.test/x.mp3",
   durationSeconds: 305,
   positionSeconds: 0,
+  aiNarrated: false,
 };
 
 describe("ListenFolderView", () => {
@@ -38,6 +39,18 @@ describe("ListenFolderView", () => {
     render(<ListenFolderView folders={folders} episodes={[episode]} segments={["en", "a1"]} />);
     expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
     expect(screen.getByText("5:05")).toBeInTheDocument();
+  });
+
+  it("labels an AI-narrated episode and only that one", () => {
+    const narrated = { ...episode, id: "e2", title: "Market Day", aiNarrated: true };
+    render(
+      <ListenFolderView folders={folders} episodes={[episode, narrated]} segments={["en", "a1"]} />,
+    );
+    expect(screen.getAllByText("AI-narrated")).toHaveLength(1);
+    expect(screen.getByText("Market Day").closest("button")).toHaveTextContent("AI-narrated");
+    expect(screen.getByText("Ordering Coffee").closest("button")).not.toHaveTextContent(
+      "AI-narrated",
+    );
   });
 
   it("shows an empty state for a folder with no children or episodes", () => {
@@ -62,6 +75,18 @@ describe("PodcastSearchResults", () => {
   it("lists matching episodes", () => {
     render(<PodcastSearchResults query="coffee" results={results} isLoading={false} />);
     expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
+  });
+
+  it("labels AI-narrated search results", () => {
+    render(
+      <PodcastSearchResults
+        query="coffee"
+        results={[{ ...episode, aiNarrated: true }]}
+        isLoading={false}
+      />,
+    );
+    expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
+    expect(screen.getByText("AI-narrated")).toBeInTheDocument();
   });
 
   it("says nothing matched rather than showing an empty list", () => {

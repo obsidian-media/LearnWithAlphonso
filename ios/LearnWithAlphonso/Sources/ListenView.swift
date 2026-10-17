@@ -306,10 +306,11 @@ private struct PodcastFolderListing: View {
     }
 
     private func subtitle(for episode: PodcastEpisode) -> String {
-        let minutes = episode.durationSeconds / 60
-        let seconds = episode.durationSeconds % 60
-        let length = String(format: "%d:%02d", minutes, seconds)
-        return episode.positionSeconds > 0 ? "\(length) · Resume" : length
+        PodcastLabel.rowSubtitle(
+            durationSeconds: episode.durationSeconds,
+            resume: episode.positionSeconds > 0,
+            aiNarrated: episode.aiNarrated
+        )
     }
 
     private func loadEpisodes() async {
@@ -412,9 +413,7 @@ private struct PodcastSearchResultsView: View {
     }
 
     private func durationLabel(for episode: PodcastEpisode) -> String {
-        let minutes = episode.durationSeconds / 60
-        let seconds = episode.durationSeconds % 60
-        return String(format: "%d:%02d", minutes, seconds)
+        PodcastLabel.rowSubtitle(durationSeconds: episode.durationSeconds, resume: false, aiNarrated: episode.aiNarrated)
     }
 }
 

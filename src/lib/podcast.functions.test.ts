@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampPosition } from "./podcast.functions";
+import { clampPosition, toPodcastEpisode } from "./podcast.functions";
 
 // Review Focus #4: a re-uploaded, shorter episode leaves saved positions
 // past its end. Seeking there strands the player instead of restarting.
@@ -25,5 +25,35 @@ describe("clampPosition", () => {
   it("treats a non-finite position as the start", () => {
     expect(clampPosition(Number.NaN, 300)).toBe(0);
     expect(clampPosition(Number.POSITIVE_INFINITY, 300)).toBe(0);
+  });
+});
+
+describe("toPodcastEpisode", () => {
+  const row = {
+    id: "e1",
+    folder_id: "f1",
+    slug: "s",
+    title: "T",
+    description: null,
+    duration_seconds: 120,
+    source: "tts",
+  };
+
+  it("maps a row and labels a text-to-speech episode AI-narrated", () => {
+    expect(toPodcastEpisode(row, "https://x/a.mp3", 30)).toEqual({
+      id: "e1",
+      folderId: "f1",
+      slug: "s",
+      title: "T",
+      description: null,
+      audioUrl: "https://x/a.mp3",
+      durationSeconds: 120,
+      positionSeconds: 30,
+      aiNarrated: true,
+    });
+  });
+
+  it("does not label an uploaded recording", () => {
+    expect(toPodcastEpisode({ ...row, source: "upload" }, "u", 0).aiNarrated).toBe(false);
   });
 });

@@ -10,6 +10,8 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**"AI-narrated" label on podcast episodes (2026-10-17; web now, iOS in the next build).** Episodes read by a synthetic voice (`podcast_episodes.source = 'tts'`) say "AI-narrated" in the episode list, search results and the web player; uploaded recordings carry no label. One rule and one wording on every platform (`src/lib/podcast-label.ts`, the iOS Kit's `PodcastLabel`). Downloaded episodes on iOS are rebuilt from the on-device cache and do not show it yet.
+
 **Name filter: two slang spellings (2026-10-16, #304; server only, no app change).** `noods` and `pron` are blocked as whole words in display and team names (migration `20261018100000`). Digit swaps such as `n00ds` and `pr0n` already folded onto them; the words themselves were missing. Noodle, Pronto, Pronoun and Apron stay allowed, and a rolled-back production check found no existing name affected.
 
 **Android: hearts gate when a lesson opens (2026-10-16, #303; Android, no build yet).** The lesson session starts when the lesson opens, as on iOS and the web. At 0 hearts the out-of-hearts screen replaces the lesson: a live countdown, "Use 50 XP for a heart" (online, through `buy_heart_with_xp`) and "Review instead". Offline, the cached hearts decide, and losing the last heart offline starts the refill timer. A session token older than the server's 3-hour limit is replaced once at finish instead of queueing the lesson.
