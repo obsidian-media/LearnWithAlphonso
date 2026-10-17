@@ -226,4 +226,23 @@ class SyncCoordinatorTest {
         assertFalse("still signed out", watcher.signedOut(null))
         assertFalse(watcher.signedOut("u2"))
     }
+
+    @Test
+    fun `a progress read that ends after the account changed is not stored under the new account`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = FakeServer { req ->
+            if (req.path.contains("progress")) gate.await()
+            json("[]")
+        }
+        val store = MemorySyncStore()
+        var user = "u1"
+        val coordinator = SyncCoordinator(store, { s.progressClient }, { user }, { true }, null, { now })
+        val pass = async(Dispatchers.Default) { coordinator.triggerSync() }
+        awaitTrue("the progress read is in flight") { s.seen.any { it.path.contains("progress") } }
+        user = "u2"
+        gate.complete(Unit)
+        pass.await()
+        assertNull("nothing from the old account's read is stored", store.syncedAt)
+        assertNull(store.lastKnownProgress())
+    }
 }
