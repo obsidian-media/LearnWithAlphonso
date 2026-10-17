@@ -163,6 +163,36 @@ final class PaywallPresentationTests: XCTestCase {
         }
     }
 
+    func testSavingsRoundDownNotToNearest() {
+        // 12 x 9.99 = 119.88; 59.99 saves 49.958% -> 49, never 50.
+        let y = product(price: "$59.99", amount: Decimal(string: "59.99")!,
+                        period: BillingPeriod(unit: .year, value: 1), trial: nil, id: "y")
+        XCTAssertEqual(PaywallPresentation.make(.loaded([product(), y])).options.first?.savingsLine, "Save 49%")
+    }
+
+    func testFivePercentIsTheThreshold() {
+        // 12 x 10 = 120; 114 saves exactly 5%, 114.01 saves 4.99%.
+        let monthly10 = product(price: "$10.00", amount: 10)
+        let five = product(price: "$114.00", amount: 114, period: BillingPeriod(unit: .year, value: 1), trial: nil, id: "y5")
+        let under = product(price: "$114.01", amount: Decimal(string: "114.01")!, period: BillingPeriod(unit: .year, value: 1), trial: nil, id: "y4")
+        XCTAssertEqual(PaywallPresentation.make(.loaded([monthly10, five])).options.first?.savingsLine, "Save 5%")
+        XCTAssertNil(PaywallPresentation.make(.loaded([monthly10, under])).options.first?.savingsLine)
+    }
+
+    func testATwelveMonthPlanIsYearlyEverywhere() {
+        let twelve = product(price: "$79.99", amount: Decimal(string: "79.99")!,
+                             period: BillingPeriod(unit: .month, value: 12), trial: nil, id: "m12")
+        let p = PaywallPresentation.make(.loaded([product(), twelve]))
+        XCTAssertEqual(p.options.first?.title, "Yearly")
+        XCTAssertEqual(p.options.first?.priceLine, "$79.99 / year")
+        XCTAssertEqual(p.priceLine, "$79.99 / year")
+    }
+
+    func testATrialOnTheUnselectedPlanIsStillShownOnItsRow() {
+        let p = PaywallPresentation.make(.loaded([product(), yearlyProduct]))
+        XCTAssertEqual(p.options.map(\.trialNote), [nil, "2-week free trial"])
+    }
+
     func testOnlyTheFirstProductIsPresented() {
         let second = PaywallProduct(id: "other", localizedTitle: "Other", localizedPriceString: "$1.00",
                                     price: 1, period: monthly, eligibleFreeTrial: nil)

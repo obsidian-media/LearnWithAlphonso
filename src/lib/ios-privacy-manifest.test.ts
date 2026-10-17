@@ -198,11 +198,25 @@ describe("app privacy manifest: collected data types (match the App Store Connec
     "NSPrivacyCollectedDataTypeOtherDiagnosticData",
   ];
 
-  it("every type is linked to the user except diagnostics, never used for tracking, for app functionality only", () => {
+  /**
+   * Product Interaction is also Analytics: the paywall writes which entry point opened it (`paywall_source`) to
+   * the RevenueCat customer so the owner can see which one sells. Everything else is app functionality only.
+   */
+  const ANALYTICS = "NSPrivacyCollectedDataTypePurposeAnalytics";
+  const ALSO_ANALYTICS: Record<string, RegExp> = {
+    NSPrivacyCollectedDataTypeProductInteraction: /PaywallSource\.attributeKey/,
+  };
+
+  it("every type is linked to the user except diagnostics, never used for tracking, for app functionality (plus the declared analytics)", () => {
     for (const t of types) {
       expect(t.linked, t.type).toBe(!NOT_LINKED.includes(t.type));
       expect(t.tracking, t.type).toBe(false);
-      expect(t.purposes, t.type).toEqual([APP_FUNCTIONALITY]);
+      expect(t.purposes, t.type).toEqual(
+        t.type in ALSO_ANALYTICS ? [APP_FUNCTIONALITY, ANALYTICS] : [APP_FUNCTIONALITY],
+      );
+    }
+    for (const [type, evidence] of Object.entries(ALSO_ANALYTICS)) {
+      expect(evidence.test(appCode), `${type}: analytics declared but no code evidence ${evidence}`).toBe(true);
     }
     expect(xml).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
     expect(xml).toMatch(/<key>NSPrivacyTrackingDomains<\/key>\s*<array\/>/);

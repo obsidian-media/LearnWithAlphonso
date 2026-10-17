@@ -41,8 +41,9 @@ public struct PaywallProduct: Sendable, Equatable {
     }
 }
 
-/// Why the paywall opened, recorded on the RevenueCat customer when a purchase starts so the
-/// owner can see which entry point sells. Raw values are the attribute values; never rename one.
+/// Why the paywall opened, recorded on the RevenueCat customer when a purchase STARTS (so a cancelled attempt
+/// also stamps it, last write wins): it reads "entry point of the last purchase attempt", which for a subscriber
+/// is the one that sold. Raw values are the attribute values; never rename one.
 public enum PaywallSource: String, Sendable, Equatable, CaseIterable {
     /// The Hector tab, for a learner without Pro.
     case hectorTab = "hector_tab"
@@ -62,6 +63,9 @@ public struct PaywallPlanOption: Sendable, Equatable, Identifiable {
     public let priceLine: String
     /// "Save 33%" on the yearly plan when it costs less than twelve months of the monthly one.
     public let savingsLine: String?
+    /// "2-week free trial" when this plan has a free trial the learner is eligible for, so a trial on a plan
+    /// that is not selected is never hidden.
+    public let trialNote: String?
     public let isSelected: Bool
 }
 
@@ -204,6 +208,7 @@ public struct PaywallPresentation: Sendable, Equatable {
                         title: planTitle(optionPeriod),
                         priceLine: priceLine(optionPrice, optionPeriod),
                         savingsLine: isYearly(optionPeriod) ? saving.map { "Save \($0)%" } : nil,
+                        trialNote: option.eligibleFreeTrial.flatMap { $0.value >= 1 ? "\(trialLength($0)) free trial" : nil },
                         isSelected: option.id == product.id
                     )
                 }
@@ -251,16 +256,23 @@ public struct PaywallPresentation: Sendable, Equatable {
         return percent >= 5 ? percent : nil
     }
 
-    /// "$9.99 / month", "$24.99 every 3 months".
+    /// "2-week", "7-day", "1-month".
+    static func trialLength(_ period: BillingPeriod) -> String {
+        "\(period.value)-\(word(period.unit, plural: false))"
+    }
+
+    /// "$9.99 / month", "$24.99 every 3 months"; a 12-month plan reads "/ year".
     static func priceLine(_ price: String, _ period: BillingPeriod) -> String {
-        period.value == 1
+        if isYearly(period) { return "\(price) / year" }
+        return period.value == 1
             ? "\(price) / \(word(period.unit, plural: false))"
             : "\(price) every \(period.value) \(word(period.unit, plural: true))"
     }
 
-    /// "$9.99/month", "$24.99 every 3 months".
+    /// "$9.99/month", "$24.99 every 3 months"; a 12-month plan reads "/year".
     static func compactPrice(_ price: String, _ period: BillingPeriod) -> String {
-        period.value == 1
+        if isYearly(period) { return "\(price)/year" }
+        return period.value == 1
             ? "\(price)/\(word(period.unit, plural: false))"
             : "\(price) every \(period.value) \(word(period.unit, plural: true))"
     }

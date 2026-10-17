@@ -63,6 +63,22 @@ final class EntitlementControllerTests: XCTestCase {
         XCTAssertNil(controller.state.source)
     }
 
+    @MainActor
+    func testAPickDuringAPurchaseIsIgnored() async {
+        let mock = MockPurchases()
+        mock.productsResult = .success([monthly, yearly])
+        let gate = Gate()
+        mock.purchaseGate = gate
+        let controller = EntitlementController(provider: mock)
+        await controller.loadOffering()
+        let buying = Task { await controller.purchase() }
+        while !controller.state.isPurchasing { await Task.yield() }
+        controller.select(productID: monthly.id)
+        XCTAssertEqual(controller.state.presentation.productID, yearly.id, "the plan being bought stays selected")
+        gate.open()
+        await buying.value
+    }
+
     func testSourceAttributeValuesNeverChange() {
         XCTAssertEqual(PaywallSource.attributeKey, "paywall_source")
         XCTAssertEqual(PaywallSource.allCases.map(\.rawValue), ["hector_tab", "hector_not_entitled", "practice_hector_card"])

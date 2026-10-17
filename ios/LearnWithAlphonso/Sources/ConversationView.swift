@@ -72,7 +72,7 @@ struct ConversationView: View {
         .id(course)
         .tint(AlphonsoColor.moss)
         .sheet(isPresented: $showHectorPaywall) {
-            PaywallView(entitlementStore: entitlementStore, source: .practiceCard)
+            PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: { showHectorPaywall = false })
         }
     }
 }
