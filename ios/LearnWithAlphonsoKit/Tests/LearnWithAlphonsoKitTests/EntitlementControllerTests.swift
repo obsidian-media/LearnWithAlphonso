@@ -4,8 +4,13 @@ import XCTest
 final class EntitlementControllerTests: XCTestCase {
     private let monthly = PaywallProduct(
         id: "com.obsidianmedia.learnwithalphonso.pro.monthly", localizedTitle: "Alphonso Pro",
-        localizedPriceString: "$9.99", period: BillingPeriod(unit: .month, value: 1),
+        localizedPriceString: "$9.99", price: Decimal(string: "9.99")!, period: BillingPeriod(unit: .month, value: 1),
         eligibleFreeTrial: BillingPeriod(unit: .week, value: 2)
+    )
+    private let yearly = PaywallProduct(
+        id: "com.obsidianmedia.learnwithalphonso.pro.yearly", localizedTitle: "Alphonso Pro",
+        localizedPriceString: "$79.99", price: Decimal(string: "79.99")!, period: BillingPeriod(unit: .year, value: 1),
+        eligibleFreeTrial: nil
     )
     private let pro = EntitlementSnapshot(isProActive: true)
     private let free = EntitlementSnapshot(isProActive: false)
@@ -26,6 +31,57 @@ final class EntitlementControllerTests: XCTestCase {
         await controller.login(userID: "user-a")
         controller.startListening()
         return controller
+    }
+
+    // MARK: - Plans and source
+
+    @MainActor
+    func testThePickedPlanIsTheOneBoughtAndTheSourceGoesWithIt() async {
+        let mock = MockPurchases()
+        mock.productsResult = .success([monthly, yearly])
+        let controller = EntitlementController(provider: mock)
+        controller.presented(from: .practiceCard)
+        await controller.loadOffering()
+        XCTAssertEqual(controller.state.presentation.productID, yearly.id, "yearly is the default")
+        controller.select(productID: monthly.id)
+        XCTAssertEqual(controller.state.presentation.productID, monthly.id)
+        await controller.purchase()
+        XCTAssertEqual(mock.calls.last, "purchase:\(monthly.id)")
+        XCTAssertEqual(mock.purchaseSources, [.practiceCard])
+    }
+
+    @MainActor
+    func testSignOutForgetsThePickedPlanAndTheSource() async {
+        let mock = MockPurchases()
+        mock.productsResult = .success([monthly, yearly])
+        let controller = EntitlementController(provider: mock)
+        controller.presented(from: .hectorTab)
+        await controller.loadOffering()
+        controller.select(productID: monthly.id)
+        await controller.reset()
+        XCTAssertNil(controller.state.selectedProductID)
+        XCTAssertNil(controller.state.source)
+    }
+
+    @MainActor
+    func testAPickDuringAPurchaseIsIgnored() async {
+        let mock = MockPurchases()
+        mock.productsResult = .success([monthly, yearly])
+        let gate = Gate()
+        mock.purchaseGate = gate
+        let controller = EntitlementController(provider: mock)
+        await controller.loadOffering()
+        let buying = Task { await controller.purchase() }
+        while !controller.state.isPurchasing { await Task.yield() }
+        controller.select(productID: monthly.id)
+        XCTAssertEqual(controller.state.presentation.productID, yearly.id, "the plan being bought stays selected")
+        gate.open()
+        await buying.value
+    }
+
+    func testSourceAttributeValuesNeverChange() {
+        XCTAssertEqual(PaywallSource.attributeKey, "paywall_source")
+        XCTAssertEqual(PaywallSource.allCases.map(\.rawValue), ["hector_tab", "hector_not_entitled", "practice_hector_card"])
     }
 
     // MARK: - Offering states
