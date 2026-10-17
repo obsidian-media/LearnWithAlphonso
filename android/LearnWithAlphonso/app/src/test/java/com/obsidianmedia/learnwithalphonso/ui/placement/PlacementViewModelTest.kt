@@ -21,7 +21,7 @@ class PlacementViewModelTest {
     private fun server() = FakeServer { req -> if (req.path.endsWith("save_placement_result")) json("") else json("""{"correct":false,"reason":null}""") }
 
     private fun vm(s: FakeServer, canPlayAudio: Boolean = false) =
-        PlacementViewModel(testContent, s.progressClient, s.translation, Course.ENGLISH, canPlayAudio = canPlayAudio, isConnected = { false }, random = Random(7))
+        PlacementViewModel(testContent, s.progressClient, s.translation, Course.ENGLISH, canPlayAudio = canPlayAudio, isConnected = { false }, random = Random(7), hasAiConsent = { true })
 
     private fun rightAnswer(q: PlacementQuestion): String = when (q) {
         is PlacementQuestion.MultipleChoice -> q.choices[q.answer]

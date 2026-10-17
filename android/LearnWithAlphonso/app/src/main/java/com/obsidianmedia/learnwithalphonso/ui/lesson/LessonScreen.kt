@@ -56,7 +56,6 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
-import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
@@ -75,6 +74,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             isConnected = { container.connectivity.isConnected.value },
             lastKnownTier = { container.tierCache.lastKnownTier },
             rememberTier = { container.tierCache.lastKnownTier = it },
+            hasAiConsent = { container.aiConsent.isGranted },
         )
     }
     val state by vm.state.collectAsState()
@@ -88,7 +88,6 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         }
     }
 
-    AiDisclosureGate(container.prefs) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -109,7 +108,6 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.pending.optimisticXpEstimate, state.correctCount, state.total)
             is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(phase.message, color = palette.ink, textAlign = TextAlign.Center) }
         }
-    }
     }
 }
 

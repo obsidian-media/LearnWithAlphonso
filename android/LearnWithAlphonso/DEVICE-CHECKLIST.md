@@ -34,6 +34,10 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Download an episode, airplane mode on, kill and reopen the app: the Listen tab shows "Offline, showing your downloads" and the episode plays.
 - [ ] Delete a downloaded episode while it plays: playback stops first, no crash.
 - [ ] Close the app mid-episode, reopen: the episode row shows "Resume" and resumes near the same position.
+- [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
+- [ ] Listen on two devices with the same account: play on A, then on B past A's position; going back to A and playing does not rewind B's position (A may resume from B's after it reloads the list).
+- [ ] An AI-narrated episode (podcast voice episodes) shows "5:05 · AI-narrated" (plus "Resume" when it has a position); an uploaded recording shows no label; the offline list shows "Downloaded · AI-narrated" for a downloaded AI-narrated one.
+- [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)
 
@@ -102,6 +106,69 @@ Two test accounts that are friends (A and B).
 - [ ] Matching (two test accounts that are NOT friends, same course, similar level, neither with a buddy): A sees the opt-in explanation, an "I'm 13 or older" checkbox and "Find me a study buddy (English)" (disabled until the box is ticked); ticking it and tapping shows "Looking for a study buddy learning English at your level." with Stop looking. B taps the same: both now show each other with "Matched learner" and the more-options menu (Block User / Report User).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
+
+## French and Spanish Practice (nothing here has been run on a device)
+
+Use a QA account with AI allowed.
+
+- [ ] Learn tab: switch to French. Open Practice: the campaigns and scenarios are the French ones (titles in French, the English gloss under each); the same for Spanish; switching back to English shows the English list.
+- [ ] Kill and reopen the app: Learn and Practice open on the course you last chose; sign in as another account: it opens on that account's own course (English if it never chose).
+- [ ] Open a French scenario: the first line is French, and holding the button and speaking French is transcribed as French; the reply comes back in French and is spoken with a French voice (not English). Same for Spanish.
+- [ ] A French campaign: scenes advance as in English, and the next scene's opening line is French.
+- [ ] Hector with French selected: Hector greets and answers in French, with a French voice; switching to Spanish on Learn gives a fresh Hector conversation in Spanish.
+- [ ] Rotate in a French conversation: the transcript stays and nothing restarts.
+- [ ] English still behaves exactly as before.
+
+## Public-name step (nothing here has been run on a device)
+
+Use a fresh QA account (email sign-up) and a Google account whose name is set.
+
+- [ ] First sign-in on a new email account: the "What should other learners call you?" screen covers the app before anything else, with the public-name note, an empty field showing the generated `Learner-XXXX` handle as a hint, a disabled "Save name", and "Skip for now" with "If you skip, you'll appear as Learner-XXXX." Back does nothing.
+- [ ] Type one letter: "That name is too short or too long." immediately. Type a normal name: "Checking…" then "Looks good." and Save enables. Clear it: no message at all.
+- [ ] Type a name the filter blocks: "That name isn't allowed. Try another." and Save stays disabled.
+- [ ] Save a good name: the app opens (or placement, for a new account) and Settings > Display name shows the cleaned name (spaces collapsed).
+- [ ] Airplane mode while typing: no error line, Save stays available; Save then says "Couldn't reach the server. Check your connection and try again." and the prompt stays.
+- [ ] Skip: the prompt closes and the name stays `Learner-XXXX`; skip in airplane mode also closes it, and the prompt comes back on the next launch.
+- [ ] Google account: the field is prefilled with the first name from the Google profile and checks itself; a name that is an email address is never prefilled.
+- [ ] An account that already confirmed its name never sees the prompt; killing the app on the prompt and reopening shows it again.
+- [ ] Settings > Display name with a blocked name: "That name isn't allowed. Try another." (not a generic failure).
+- [ ] Rotate the phone on the prompt with a name typed: the typed text and result stay, and the app does not sync or sign in to billing again.
+- [ ] Rotate while offline with the prompt up: the prompt is still there.
+- [ ] Sign out on the prompt (kill and reopen if needed), then sign in as a different new account: it shows that account's own name or the `Learner-XXXX` hint, never the previous account's name.
+- [ ] While Save is working the field is disabled; the keyboard is up when the prompt appears.
+
+## Account-level AI consent (nothing here has been run on a device)
+
+Use a QA account that has never allowed AI (on the web, Settings > AI features is off) and, for the "already allowed" rows, a second one that has.
+
+- [ ] Fresh QA account, open Hector: a spinner, then the sheet "How Alphonso uses AI" naming Deepgram and NVIDIA, with "Read our Privacy Policy", "Allow" and "Not now". The sheet cannot be dismissed by tapping outside or Back.
+- [ ] "Not now" on Hector leaves the page "AI practice is off" with "Review and allow"; tapping that reopens the sheet. The microphone is never asked for until you allow.
+- [ ] "Not now" on a Practice scenario or Campaign goes back to the Practice list.
+- [ ] "Allow" opens the conversation; the Settings > AI features switch is now on, and on the web the same account shows the setting on.
+- [ ] An account that already allowed AI on web or iOS never sees the sheet on Android.
+- [ ] Airplane mode with a never-read account on Hector: "You're offline" with "Try again", never the consent sheet and never "AI practice is off".
+- [ ] Allow, start a conversation and say a turn, then turn AI off on the web and send another turn: the gate covers the live conversation ("AI practice is off") and the transcript is still there after you allow again.
+- [ ] Settings > AI features: off withdraws at once (the web shows it off); on opens the sheet; "Not now" leaves it off. With airplane mode on, turning it off shows "Couldn't save your choice. Check your connection and try again." and the switch stays on.
+- [ ] Lesson with a written translation question, consent off: no sheet, no wall; the card says "Checked against our answer list only." with "Turn on AI grading", which opens the sheet. A near-miss answer is marked wrong without an AI second opinion. After allowing, the same near-miss can be accepted.
+- [ ] A speaking question with consent off: "Speaking answers use AI, which is turned off. Type the phrase instead." with "Use your voice instead" (opens the sheet) and a typing field; after allowing, the hold-to-talk button appears.
+- [ ] Review translate card with consent off shows the same note and button.
+- [ ] Placement test: no sheet at any point; written answers are checked locally when consent is off.
+- [ ] Rotate the phone with the sheet open, and on a conversation that the gate covers (withdraw consent on the web first): the cover stays, the transcript is still there, "Not now" is not offered again by itself, and the sheet reopens only if it was open. The gate's flags are saved across rotation (`rememberSaveable`); this row is the only check of that, since Compose state is not unit tested.
+- [ ] A speaking question while the setting is still loading says "Checking your AI setting..." (never "AI is turned off"); with an unreadable setting it shows "Couldn't check your AI setting" with "Try again".
+
+## Report an AI reply (nothing here has been run on a device)
+
+Use a QA account with AI allowed. Reports are emailed to the owner by the report trigger, so tell them before testing.
+
+- [ ] Hector: long-press one of Hector's replies: a "Report this response" menu appears; tapping it shows the four reasons (Inappropriate or offensive, Harmful or unsafe, Wrong or misleading, Something else) and "We review reports within 24 hours.". Long-pressing your own message does nothing.
+- [ ] Pick a reason: "Thanks. We'll review this response."; a row appears in `content_reports` with kind `ai_response`, no reported user, the reply text in `context.message`, `surface` `hector`, `course` the conversation's (`fr` when French is selected on Learn), `platform` `android`.
+- [ ] Practice scenario: the scene's first line (written by us) cannot be reported; every later assistant reply can, and the row has `surface` `conversation` and the scenario id.
+- [ ] Campaign: report a reply in scene 1, continue to scene 2 and report a reply there: the rows have `scene_index` 0 and 1. The opener of scene 2 is not reportable. After "Restart scene" the earlier scene's replies still are.
+- [ ] Tap a reason twice quickly, or report again while "Sending your report..." shows: only one row is created and the reasons are disabled meanwhile. Rotate while it sends: the result still appears.
+- [ ] A plain tap on a reply does nothing (no ripple, and TalkBack does not announce a button).
+- [ ] Airplane mode: the report ends with "Couldn't send your report. Check your connection and try again."
+- [ ] TalkBack: the reply announces a "Report this response" action in the actions menu; it opens the same reasons.
+- [ ] Rotate with the reasons dialog open: it stays open.
 
 ## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
 

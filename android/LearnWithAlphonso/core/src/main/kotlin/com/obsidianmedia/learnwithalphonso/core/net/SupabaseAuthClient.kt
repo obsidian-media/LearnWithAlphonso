@@ -1,8 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.logic.AuthUserNames
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -126,6 +128,18 @@ class SupabaseAuthClient(
                 post("auth/v1/token", buildJsonObject { put("auth_code", code); put("code_verifier", codeVerifier) }, mapOf("grant_type" to "pkce")),
             ),
         )
+
+    /** The names in the auth record's user_metadata, for prefilling the public-name prompt. Null when there are none. */
+    suspend fun fetchUserNames(accessToken: String): AuthUserNames? {
+        val response = client.get("${supabaseUrl.trimEnd('/')}/auth/v1/user") {
+            header("apikey", publishableKey)
+            header("Authorization", "Bearer $accessToken")
+        }
+        val obj = runCatching { json.parseToJsonElement(requireSuccess(response)).jsonObject }.getOrElse { throw SupabaseAuthError.InvalidPayload() }
+        val meta = obj["user_metadata"] as? JsonObject ?: return null
+        fun s(key: String) = meta[key]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+        return AuthUserNames(s("given_name"), s("full_name"), s("name"))
+    }
 
     suspend fun refresh(session: SupabaseSession): SupabaseSession =
         decodeSession(

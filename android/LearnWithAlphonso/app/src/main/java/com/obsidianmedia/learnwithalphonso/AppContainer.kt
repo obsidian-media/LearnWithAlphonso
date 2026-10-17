@@ -11,8 +11,14 @@ import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
 import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
+import com.obsidianmedia.learnwithalphonso.core.content.ActiveCourseStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
+import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
+import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
 import com.obsidianmedia.learnwithalphonso.core.net.LearningGoalClient
@@ -22,12 +28,15 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
+import com.obsidianmedia.learnwithalphonso.data.AiConsentPrefsCache
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
+import com.obsidianmedia.learnwithalphonso.data.PrefsCourseStore
 import com.obsidianmedia.learnwithalphonso.data.GoalPrefsStore
 import com.obsidianmedia.learnwithalphonso.data.LeaderboardSnapshotCache
 import com.obsidianmedia.learnwithalphonso.data.LeagueTierCache
 import com.obsidianmedia.learnwithalphonso.data.NudgeCooldownCache
 import com.obsidianmedia.learnwithalphonso.data.RoomSyncQueueStore
+import com.obsidianmedia.learnwithalphonso.data.SessionAiConsentBackend
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import com.obsidianmedia.learnwithalphonso.data.WeeklyRecapCache
 import com.obsidianmedia.learnwithalphonso.net.ConnectivityMonitor
@@ -80,9 +89,24 @@ class AppContainer(context: Context) {
         refresh = { session.freshAccessToken(force = true) },
     )
     val progressClient = ProgressSyncClient(supabaseHttp)
+
+    /** Sends reports of AI replies on the app's scope, so a rotation or a scrolled-away bubble cannot lose or double one. */
+    val aiReports = AiReportSender({ progressClient.reportAiResponse(it) }, appScope)
+
+    /** The learner's active course, shared by Learn, Practice and Hector and remembered per account. */
+    val activeCourse = ActiveCourseStore(PrefsCourseStore(prefs))
+    /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
+    val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
 
-    private val apiHttp = ApiHttp(BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine) { session.freshAccessToken(force = true) }
+    /** The account's AI consent (profiles.ai_consent_at), shared by every screen that asks. */
+    val aiConsent = AiConsentStore(SessionAiConsentBackend(session, progressClient), AiConsentPrefsCache(prefs))
+
+    private val apiHttp = ApiHttp(
+        BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine,
+        refresh = { session.freshAccessToken(force = true) },
+        onAiConsentRequired = aiConsent.consentRefusalHook(appScope),
+    )
     val accountClient = AccountClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)

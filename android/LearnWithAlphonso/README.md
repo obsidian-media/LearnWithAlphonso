@@ -31,7 +31,7 @@ on a phone.
 | --- | --- |
 | 1 (in) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
 | 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
-| 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, a per-device AI disclosure gate on every AI path (see "Not yet ported" below), generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
+| 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, the account-level AI consent (screen, Settings switch, gate on the AI screens), generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
 | 4 (in) | Listen tab: folder tree, search, resume with optimistic-concurrency saves, transcripts, offline downloads with a budget and a `.partial` staging file, one ExoPlayer in a `MediaSessionService` with lock-screen controls, next episode, mini bar on every screen. Local reminders (streak 20:00, due reviews +3 h, weekly recap Monday 09:00, weakness 10:00) over WorkManager. FCM token registration behind the notification permission. Glance streak widget. Backend: PR #192 (`device_tokens.platform` accepts `android`, `_shared/fcm.ts`). |
 | 5 (in) | `android-release.yml` (manual dispatch: signed `bundleRelease`, bundletool validation of the produced `.aab`, optional Play upload, store screenshots as the demo account), upload signing from secrets only, `play/` listing copy, data-safety answers and review notes, `DEVICE-CHECKLIST.md`. |
 
@@ -42,18 +42,40 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-The server now enforces an **account-level AI consent** on every AI endpoint
-(403 `ai-consent-required`), and Android has no consent screen or Settings
-switch yet; its disclosure gate is a per-device flag. Until it is ported, AI
-features on Android work only for an account that has already granted consent
-on web or iOS; a refused call now says "Turn on AI features to practise
-speaking with a tutor." but offers no switch. This is a release gate for the
-first Play upload. Also missing on Android: the one-time public-name step, the
-report action on AI replies, French and Spanish conversation scenarios
-(learners get the English ones), and the later iOS offline-queue and podcast
-player reliability work.
+Missing on Android: save-any-word, the later iOS offline-queue
+reliability work, and the rest of the iOS podcast player work (the playback state machine and its failure
+messages with Retry, download validation, and removing downloads of unpublished episodes).
+
+Ported on 2026-10-17, not yet run on a device: the "AI-narrated" label on Listen rows (episodes whose `source` is
+`tts`; "5:05 · Resume · AI-narrated", and "Downloaded · AI-narrated" offline), and the iOS resume
+reliability work: saves guard on the `updated_at` the server stored, run one at a time, pause after a stale write or a
+401 until the learner acts, remember what this device last stored per episode (so a stale list row never wins), still
+guard a save made after leaving an episode, and stop on sign-out.
+
+Ported on 2026-10-17, not yet run on a device: French and Spanish Practice
+scenarios and Campaigns, and Hector in the active course. Practice and Hector
+follow the course chosen on the Learn tab (remembered per account); speech is
+transcribed, replied to and spoken in that course, and the level comes from it.
+
+Ported on 2026-10-17, not yet run on a device: "Report this response" on AI
+replies. Long-press (or the TalkBack custom action on) a Hector, Practice or
+Campaign reply, pick a reason, and it goes into the moderation queue as an
+`ai_response` row in `content_reports`; the scene's fixed opening line, which
+we wrote, is not reportable.
+
+Ported on 2026-10-17, not yet run on a device (see `DEVICE-CHECKLIST.md`):
+the one-time public-name step (a full-screen "What should other learners call
+you?" prompt after the first sign-in and before placement, with a live check
+through `display_name_problem`, Save through `confirm_display_name`, and Skip
+that never traps the learner), and Settings now words a refused name the same
+way.
 
 Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
+the account-level AI consent (the sheet with Allow and Not now, the Settings
+"AI features" switch, a gate on Hector, Practice and Campaigns that is never
+unmounted once shown, "Turn on AI grading" on lesson and review translate
+cards, typing instead of voice without consent, and a 403
+`ai-consent-required` closing the gate at once), plus
 AI error copy that matches iOS and web, with one retry on an empty chat reply
 (#302), and the hearts gate at lesson open with the out-of-hearts screen
 (#303).

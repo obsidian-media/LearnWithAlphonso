@@ -49,6 +49,8 @@ import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
+import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
@@ -61,7 +63,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
-import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
+import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -94,17 +98,21 @@ class HectorViewModel(
     private val progress: ProgressSyncClient,
     private val player: ReplyPlayer,
     private val sessionId: String = UUID.randomUUID().toString(),
+    /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
+    val course: Course = Course.ENGLISH,
 ) : ViewModel() {
     private val _state = MutableStateFlow(HectorUiState())
     val state: StateFlow<HectorUiState> = _state.asStateFlow()
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", null, timing) }, viewModelScope)
+    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var memoryContext: ChatMessage? = null
+    private var cefrLevel: String? = null
     private var analysed = false
 
     init {
         viewModelScope.launch {
-            val level = runCatching { progress.fetchCefrLevel("en") }.getOrNull()
+            val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
             val open = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList()).filter { it.openCount > 0 }.map { it.category }
+            cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
         }
         viewModelScope.launch {
@@ -128,7 +136,7 @@ class HectorViewModel(
     private suspend fun sendTurn(text: String) {
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
-            val reply = tutor.respond(sessionId, text, "en", historyForTutor())
+            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel)
             _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = ConversationPhase.SPEAKING) }
             reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
@@ -145,7 +153,7 @@ class HectorViewModel(
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript) } }
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript, course.code) } }
     }
 }
 
@@ -195,8 +203,10 @@ fun PaywallScreen(container: AppContainer) {
 private fun HectorConversation(container: AppContainer) {
     val palette = AlphonsoColor.palette
     val playback = remember { container.newPlayback() }
-    val vm: HectorViewModel = viewModel {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) })
+    // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
+    val course by container.activeCourse.course.collectAsState()
+    val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course)
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
@@ -204,8 +214,9 @@ private fun HectorConversation(container: AppContainer) {
     DisposableEffect(Unit) { onDispose { vm.onLeave() } }
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
 
-    AiDisclosureGate(container.prefs) {
+    AiConsentGate(container) {
         Column(Modifier.fillMaxSize().background(palette.surface)) {
+            AiReportStatusHost(container.aiReports)
             Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp))
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { _, turn ->
@@ -214,11 +225,17 @@ private fun HectorConversation(container: AppContainer) {
                         if (!isUser) Image(painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop, modifier = Modifier.size(26.dp).clip(CircleShape))
                         else Spacer(Modifier.width(40.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text(
-                            turn.content,
-                            modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
-                            style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink,
-                        )
+                        // Every Hector reply is the model's (there is no fixed opening line), so every one is reportable.
+                        ReportableAiMessage(
+                            enabled = !isUser, sender = container.aiReports,
+                            makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
+                        ) { reportModifier ->
+                            Text(
+                                turn.content,
+                                modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
+                                style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink,
+                            )
+                        }
                     }
                 }
             }

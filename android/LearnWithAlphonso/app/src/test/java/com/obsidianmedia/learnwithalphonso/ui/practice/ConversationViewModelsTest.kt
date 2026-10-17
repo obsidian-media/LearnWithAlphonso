@@ -5,6 +5,7 @@ import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
@@ -69,6 +70,36 @@ class ConversationViewModelsTest {
     }
 
     @Test
+    fun `a French conversation uses the French scenario and speaks, hears and levels in French`() = runBlocking {
+        val s = server(transcript = "Je voudrais un cafe")
+        val scenario = testContent.scenarios(Course.FRENCH).first()
+        val v = ScenarioConversationViewModel(scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player, Course.FRENCH)
+        awaitTrue("level") { v.state.value.cefrLevel == "B1" }
+        assertEquals(scenario.opener, v.state.value.turns.single().content)
+        assertTrue("the level is the French course's", s.seen.any { it.query["select"] == "cefr_level" && it.query["language"] == "eq.fr" })
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val chat = s.seen.first { it.path.endsWith("/api/chat") }
+        assertTrue(chat.body.contains(""""systemPrompt":"${scenario.systemPrompt.take(20)}"""))
+        assertTrue(chat.body.contains(""""course":"fr""""))
+        assertTrue(s.seen.first { it.path.endsWith("/api/tts") }.body.contains(""""course":"fr""""))
+        assertTrue("speech is transcribed as French", Regex("(?s)name=\"?course\"?.{0,80}?\r?\n\r?\nfr").containsMatchIn(s.seen.first { it.path.endsWith("/api/stt") }.body))
+    }
+
+    @Test
+    fun `a French campaign follows the same rule`() = runBlocking {
+        val s = server()
+        val campaign = testContent.campaigns(Course.FRENCH).first()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player, Course.FRENCH)
+        assertEquals(campaign.scenes[0].opener, v.state.value.turns.single().content)
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val chat = s.seen.first { it.path.endsWith("/api/chat") }
+        assertTrue(chat.body.contains(campaign.premise.take(15)))
+        assertTrue(chat.body.contains(""""course":"fr""""))
+    }
+
+    @Test
     fun `a quota error from chat shows the quota copy, never the raw server text`() = runBlocking {
         val v = scenarioVm(server(chatError = true))
         v.pressBegan(); v.pressEnded()
@@ -126,6 +157,30 @@ class ConversationViewModelsTest {
             v.continueToNextScene()
         }
         assertTrue(v.campaignState.value.finished)
+    }
+
+    @Test
+    fun `openers are tracked by position across scenes and a restart, so only model replies are reportable`() = runBlocking {
+        val campaign = testContent.campaigns.first { it.scenes.size > 1 }
+        val s = server()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player)
+        assertEquals(setOf(0), v.state.value.openerIndices)
+        repeat(campaign.scenes[0].minTurns) { i -> v.pressBegan(); v.pressEnded(); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 1 + 2 * (i + 1) } }
+        val firstSceneReply = 1
+        assertTrue(AiReplyReporting.isReportable("assistant", firstSceneReply, v.state.value.openerIndices))
+        v.continueToNextScene()
+        val secondOpener = v.state.value.turns.size - 1
+        assertEquals(setOf(0, secondOpener), v.state.value.openerIndices)
+        assertFalse(AiReplyReporting.isReportable("assistant", secondOpener, v.state.value.openerIndices))
+        // A report records the scene the reply was made in, not the one the learner is on now.
+        assertEquals(0, AiReplyReporting.sceneIndexOfTurn(firstSceneReply, v.state.value.openerIndices))
+        assertEquals(1, AiReplyReporting.sceneIndexOfTurn(secondOpener, v.state.value.openerIndices))
+        v.pressBegan(); v.pressEnded(); awaitTrue("scene 2 turn") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == secondOpener + 3 }
+        assertEquals(1, AiReplyReporting.sceneIndexOfTurn(secondOpener + 2, v.state.value.openerIndices))
+        v.restartScene()
+        assertEquals(setOf(0, secondOpener), v.state.value.openerIndices)
+        val scenario = ScenarioConversationViewModel(testContent.scenarios.first(), InstantRecorder(), { true }, ai(s), s.progressClient, player)
+        assertEquals(setOf(0), scenario.state.value.openerIndices)
     }
 
     @Test

@@ -21,7 +21,8 @@ public protocol PurchasesProviding: AnyObject {
     func logIn(_ userID: String) async throws -> EntitlementSnapshot
     func logOut() async throws -> EntitlementSnapshot
     func currentOfferingProducts() async throws -> [PaywallProduct]
-    func purchase(productID: String) async throws -> PurchaseOutcome
+    /// `source` is why the paywall opened; the adapter records it on the RevenueCat customer.
+    func purchase(productID: String, source: PaywallSource?) async throws -> PurchaseOutcome
     func restorePurchases() async throws -> EntitlementSnapshot
     func customerInfoUpdates() -> AsyncStream<EntitlementSnapshot>
 }
@@ -38,10 +39,14 @@ public struct EntitlementState: Sendable, Equatable {
     public var notice: Notice?
     public var isPurchasing = false
     public var isRestoring = false
+    /// The plan the learner picked, or nil for the default (see `PaywallPresentation.make`).
+    public var selectedProductID: String?
+    /// Why the paywall on screen opened.
+    public var source: PaywallSource?
 
     public init() {}
 
-    public var presentation: PaywallPresentation { .make(load) }
+    public var presentation: PaywallPresentation { .make(load, selectedProductID: selectedProductID) }
 }
 
 /// The single source of truth for "is this account Pro" and for everything the paywall
@@ -177,6 +182,17 @@ public final class EntitlementController: EntitlementResetting {
         }
     }
 
+    /// The learner picked a plan. Ignored while a purchase is running.
+    public func select(productID: String) {
+        guard !state.isPurchasing else { return }
+        state.selectedProductID = productID
+    }
+
+    /// The paywall appeared from `source`.
+    public func presented(from source: PaywallSource) {
+        state.source = source
+    }
+
     public func purchase() async {
         guard let provider, !state.isPurchasing,
               let productID = state.presentation.productID else { return }
@@ -185,7 +201,7 @@ public final class EntitlementController: EntitlementResetting {
         state.isPurchasing = true
         defer { state.isPurchasing = false }
         do {
-            let outcome = try await provider.purchase(productID: productID)
+            let outcome = try await provider.purchase(productID: productID, source: state.source)
             guard started == generation else { return }
             switch outcome {
             case .completed(let snapshot):

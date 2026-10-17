@@ -379,7 +379,7 @@ jobs:
           DISPLAY_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" "$APP/Info.plist" 2>/dev/null || echo MISSING)
           [ "$DISPLAY_NAME" = "Alphonso" ] || { echo "::error::Shipped CFBundleDisplayName is '$DISPLAY_NAME', expected 'Alphonso'."; exit 1; }
           MIC=$(/usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Info.plist" 2>/dev/null || echo MISSING)
-          EXPECTED_MIC="Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations. Recordings are sent for transcription and aren't stored."
+          EXPECTED_MIC="Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations, including Hector's hands-free mode, which keeps listening with the screen locked until you pause it. Recordings are sent for transcription and aren't stored."
           [ "$MIC" = "$EXPECTED_MIC" ] || { echo "::error::Shipped NSMicrophoneUsageDescription is '$MIC'."; exit 1; }
           echo "Display name and mic string OK."
 

@@ -36,6 +36,7 @@ class FakePort : PlayerPort {
     override fun currentMillis() = position
     override fun durationMillis() = duration
     override fun release() { calls.add("release") }
+    override fun stop() { calls.add("stop") }
 }
 
 class PodcastPlayerTest {
@@ -44,12 +45,15 @@ class PodcastPlayerTest {
     private fun episode(id: String = "e1", position: Int = 0, updatedAt: String? = null) =
         PodcastEpisode(id, "f1", id, "Episode $id", null, "https://cdn.example/$id.mp3", 300, position, updatedAt)
 
-    private fun server(stale: Boolean = false, unauthorized: Boolean = false) = FakeServer { req ->
+    /** The server stamps each stored row itself: "S1", "S2", ... (never the device clock). */
+    private val stamps = java.util.concurrent.atomic.AtomicInteger(0)
+
+    private fun server(stale: Boolean = false, unauthorized: Boolean = false, hold: kotlinx.coroutines.CompletableDeferred<Unit>? = null) = FakeServer { req ->
         when {
             req.path.endsWith("record_podcast_play_event") -> json("")
             req.path.endsWith("podcast_playback") && unauthorized -> json("{}", HttpStatusCode.Unauthorized)
             req.path.endsWith("podcast_playback") && stale && req.method == "PATCH" -> json("[]")
-            req.path.endsWith("podcast_playback") -> json("""[{"position_seconds":1}]""")
+            req.path.endsWith("podcast_playback") -> { hold?.await(); json("""[{"position_seconds":1,"updated_at":"S${stamps.incrementAndGet()}"}]""") }
             else -> json("[]")
         }
     }
@@ -90,26 +94,172 @@ class PodcastPlayerTest {
     }
 
     @Test
-    fun `a stale write clears the last seen mark so the next save posts, and a 401 disables saves`() = runBlocking {
+    fun `each save guards on the stamp the server stored for the previous one`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode(updatedAt = "S0"))
+        for (t in 0..10) port.onTick(t.toDouble())
+        awaitTrue("first save") { saves(s).size == 1 }
+        awaitTrue("stamp stored") { p.saveGate.lastSeenUpdatedAt == "S1" }
+        for (t in 11..21) port.onTick(t.toDouble())
+        awaitTrue("second save") { saves(s).size == 2 }
+        assertEquals("eq.S0", saves(s)[0].query["updated_at"])
+        assertEquals("the device clock never decides the guard", "eq.S1", saves(s)[1].query["updated_at"])
+    }
+
+    @Test
+    fun `a stale write stops saving until the learner acts, then the first save is an upsert`() = runBlocking {
         val s = server(stale = true)
         val port = FakePort()
         val p = player(s, port)
         p.play(episode(updatedAt = "2026-09-24T10:00:00Z"))
         for (t in 0..10) port.onTick(t.toDouble())
         awaitTrue("stale patch") { saves(s).size == 1 }
-        awaitTrue("stale processed") { p.lastSeenUpdatedAt == null }
-        for (t in 11..21) port.onTick(t.toDouble())
-        awaitTrue("post after stale") { saves(s).size == 2 }
-        assertEquals("POST", saves(s)[1].method)
+        awaitTrue("stale processed") { !p.saveGate.canSave }
+        for (t in 11..40) port.onTick(t.toDouble())
+        assertEquals("no saves while another device is ahead", 1, saves(s).size)
+        // The learner acts (pause then play again): a fresh observation, so saving resumes with an upsert.
+        p.toggle()
+        p.toggle()
+        for (t in 41..51) port.onTick(t.toDouble())
+        awaitTrue("post after the learner acted") { saves(s).any { it.method == "POST" } }
+        val post = saves(s).first { it.method == "POST" }
+        assertEquals("user_id,episode_id", post.query["on_conflict"])
+    }
 
+    @Test
+    fun `a 401 stops saving until the learner acts`() = runBlocking {
         val unauth = server(unauthorized = true)
-        val port2 = FakePort()
-        val p3 = player(unauth, port2)
-        p3.play(episode())
-        for (t in 0..10) port2.onTick(t.toDouble())
-        awaitTrue("401 seen") { p3.state.value.savesDisabled }
-        for (t in 11..40) port2.onTick(t.toDouble())
+        val port = FakePort()
+        val p = player(unauth, port)
+        p.play(episode())
+        for (t in 0..10) port.onTick(t.toDouble())
+        awaitTrue("401 seen") { p.state.value.savesDisabled }
+        for (t in 11..40) port.onTick(t.toDouble())
         assertEquals(1, saves(unauth).size)
+        p.toggle(); p.toggle() // pause, then play: the learner acted, so the session may have refreshed
+        assertFalse(p.state.value.savesDisabled)
+        for (t in 41..51) port.onTick(t.toDouble())
+        awaitTrue("tries again after the learner acted") { saves(unauth).size == 2 }
+    }
+
+    @Test
+    fun `replaying a row from the stale list starts from what this device last stored`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        val listed = episode(position = 0, updatedAt = "S0")
+        p.play(listed)
+        port.position = 95_000L
+        p.close() // saves 95 s
+        awaitTrue("stored") { saves(s).size == 1 }
+        awaitTrue("stamp recorded") { p.resumed(listed).positionSeconds == 95 }
+        // The learner taps the same (stale) row again.
+        assertEquals("S1", p.resumed(listed).playbackUpdatedAt)
+        port.calls.clear()
+        p.play(listed)
+        assertEquals("prepare(https://cdn.example/e1.mp3,95000)", port.calls.first())
+        for (t in 95..105) port.onTick(t.toDouble())
+        awaitTrue("second save") { saves(s).size == 2 }
+        assertEquals("the guard is the stamp this device stored, not the stale row's", "eq.S1", saves(s)[1].query["updated_at"])
+    }
+
+    @Test
+    fun `a row another device updated since wins over what this device remembers`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode(position = 0, updatedAt = "S0"))
+        port.position = 50_000L
+        p.close()
+        awaitTrue("stored") { saves(s).size == 1 }
+        awaitTrue("stamp recorded") { p.resumed(episode(updatedAt = "S0")).positionSeconds == 50 }
+        // A fresh list load brings a stamp this device never saw: another device wrote, and its position wins.
+        val fromOtherDevice = episode(position = 200, updatedAt = "X-other")
+        assertEquals(200, p.resumed(fromOtherDevice).positionSeconds)
+    }
+
+    @Test
+    fun `a save made after leaving an episode is still guarded on the stamp stored for it`() = runBlocking {
+        val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val s = server(hold = hold)
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode("e1", updatedAt = "S0"))
+        for (t in 0..10) port.onTick(t.toDouble()) // save 1 for e1 is now waiting on the server
+        p.play(episode("e2", updatedAt = "T0")) // the player leaves e1 while its save is still in flight
+        port.position = 20_000L
+        hold.complete(Unit)
+        awaitTrue("e1 stored") { saves(s).any { it.query["episode_id"] == "eq.e1" } }
+        awaitTrue("e1 stamp known") { p.resumed(episode("e1", updatedAt = "S0")).playbackUpdatedAt == "S1" }
+        // Leaving e2 later saves e2 under e2's own stamp, never e1's.
+        p.close()
+        awaitTrue("e2 saved") { saves(s).any { it.query["episode_id"] == "eq.e2" } }
+        assertEquals("eq.T0", saves(s).first { it.query["episode_id"] == "eq.e2" }.query["updated_at"])
+    }
+
+    @Test
+    fun `a chained save for an episode the player has left guards on the stamp the previous save stored`() = runBlocking {
+        val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val s = server(hold = hold)
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode("e1", updatedAt = "S0"))
+        for (t in 0..10) port.onTick(t.toDouble()) // save 1 (guard S0) is in flight
+        for (t in 11..21) port.onTick(t.toDouble()) // save 2 is requested behind it, while the observed stamp is still S0
+        awaitTrue("first request") { saves(s).size == 1 }
+        p.play(episode("e2", updatedAt = "T0")) // the player leaves e1 before either save finishes
+        hold.complete(Unit)
+        awaitTrue("second request") { saves(s).count { it.query["episode_id"] == "eq.e1" } == 2 }
+        val second = saves(s).filter { it.query["episode_id"] == "eq.e1" }[1]
+        assertEquals("eq.S1", second.query["updated_at"])
+    }
+
+    @Test
+    fun `saves run one after another, each reading the gate after the previous finished`() = runBlocking {
+        val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val s = server(hold = hold)
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode(updatedAt = "S0"))
+        for (t in 0..10) port.onTick(t.toDouble())
+        for (t in 11..21) port.onTick(t.toDouble()) // the second save is requested while the first is in flight
+        awaitTrue("first request") { saves(s).size == 1 }
+        Thread.sleep(100)
+        assertEquals("the second waits for the first", 1, saves(s).size)
+        hold.complete(Unit)
+        awaitTrue("second request") { saves(s).size == 2 }
+        assertEquals("eq.S1", saves(s)[1].query["updated_at"])
+    }
+
+    @Test
+    fun `sign-out stops the player, drops remembered positions and refuses a save chained from the old account`() = runBlocking {
+        val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val s = server(hold = hold)
+        val port = FakePort()
+        val p = player(s, port)
+        val listed = episode(position = 0, updatedAt = "S0")
+        p.play(listed)
+        for (t in 0..10) port.onTick(t.toDouble()) // a save is in flight
+        for (t in 11..21) port.onTick(t.toDouble()) // and another is chained behind it
+        awaitTrue("request in flight") { saves(s).size == 1 }
+        p.stopForAccountChange()
+        assertNull(p.state.value.episode)
+        assertFalse(p.state.value.isPlaying)
+        assertTrue("the loaded item is cleared, so a headset or notification button cannot replay it", port.calls.contains("stop"))
+        hold.complete(Unit)
+        Thread.sleep(150)
+        assertEquals("the chained save of the previous account never ran", 1, saves(s).size)
+        // The in-flight save of the previous account finished after the sign-out: account B inherits neither its position nor its stamp.
+        val unrelated = p.resumed(episode(position = 0, updatedAt = null))
+        assertEquals(0, unrelated.positionSeconds)
+        assertNull(unrelated.playbackUpdatedAt)
+        assertEquals("the old account's stamp is not remembered", listed, p.resumed(listed))
+        // A new account plays from a clean gate.
+        p.play(episode("e1", updatedAt = "N0"))
+        assertEquals("N0", p.saveGate.lastSeenUpdatedAt)
+        assertTrue(p.saveGate.canSave)
     }
 
     @Test

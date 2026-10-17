@@ -92,6 +92,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 RowButton("Save Name", enabled = !identity.saving && identity.displayName.isNotBlank()) { identityVm.saveName() }
                 identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
             }
+            AiFeaturesSection(container)
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->
                     val p = AlphonsoPalettes.light.getValue(id)
@@ -161,7 +162,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
 }
 
 @Composable
-private fun Section(title: String, footer: String? = null, content: @Composable () -> Unit) {
+internal fun Section(title: String, footer: String? = null, content: @Composable () -> Unit) {
     val palette = AlphonsoColor.palette
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         AlphonsoSectionHeader(title)
