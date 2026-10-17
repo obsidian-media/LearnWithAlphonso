@@ -23,6 +23,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -111,9 +112,7 @@ class LessonViewModel(
      * (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
      * Any other failure is not fatal: finish() starts a session itself when none is held.
      */
-    fun openSession() {
-        viewModelScope.launch { openSessionNow() }
-    }
+    fun openSession(): Job = viewModelScope.launch { openSessionNow() }
 
     private var opened = false
 
@@ -160,7 +159,9 @@ class LessonViewModel(
     }
 
     /** The countdown reached zero: ask the gate again (the server resolves a due refill first). */
-    fun onRefillDue() = openSession()
+    fun onRefillDue() {
+        openSession()
+    }
 
     fun begin() = _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
     fun startPractice() = _state.update { it.copy(phase = LessonPhase.Quiz) }

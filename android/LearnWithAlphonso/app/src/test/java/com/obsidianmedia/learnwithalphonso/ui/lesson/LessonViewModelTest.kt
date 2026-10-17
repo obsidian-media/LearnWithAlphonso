@@ -156,8 +156,7 @@ class LessonViewModelTest {
         val dueStore = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 0, 42.0, 0, "bronze")) }
         val server = okServer()
         val due = vm(server, dueStore, connected = false)
-        due.onScreenShown()
-        Thread.sleep(200)
+        due.openSession().join()
         assertNull(due.state.value.outOfHearts)
         assertEquals("offline makes no call", 0, server.seen.size)
     }
@@ -223,8 +222,9 @@ class LessonViewModelTest {
         }
         val store = MemorySyncStore()
         val v = vm(server, store)
-        v.onScreenShown()
-        awaitTrue("session opened") { tokens == 1 }
+        // Wait for the open to finish (token stored), not just for the server to have answered.
+        v.openSession().join()
+        assertEquals(1, tokens)
         v.begin(); v.startPractice()
         lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
         awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
