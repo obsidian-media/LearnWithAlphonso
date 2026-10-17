@@ -17,7 +17,10 @@ class AiConsentPolicyTest {
         assertEquals(AiItemMode.LOCAL_WITH_OPT_IN, AiConsentPolicy.translateMode(AiConsentSurface.LESSON, false))
         assertEquals(AiItemMode.LOCAL_WITH_OPT_IN, AiConsentPolicy.translateMode(AiConsentSurface.REVIEW, false))
         assertEquals(AiItemMode.AI, AiConsentPolicy.translateMode(AiConsentSurface.LESSON, true))
-        assertEquals(AiItemMode.LOCAL, AiConsentPolicy.translateMode(AiConsentSurface.PLACEMENT, true))
+        // Placement differs from iOS on purpose: a learner who allowed AI keeps the server grader there, one who did
+        // not is graded locally, and neither is ever asked.
+        assertEquals(AiItemMode.AI, AiConsentPolicy.translateMode(AiConsentSurface.PLACEMENT, true))
+        assertEquals(AiItemMode.LOCAL, AiConsentPolicy.translateMode(AiConsentSurface.PLACEMENT, false))
         assertEquals(AiItemMode.LOCAL, AiConsentPolicy.translateMode(AiConsentSurface.HECTOR, false))
     }
 
@@ -50,6 +53,15 @@ class AiConsentPolicyTest {
 
 class AiConsentGateTest {
     private fun p(status: AiConsentStatus, shown: Boolean, refreshed: Boolean) = AiConsentGate.presentation(status, shown, refreshed)
+
+    @Test
+    fun `the sheet is offered straight away only on a first visit with a definite no`() {
+        assertTrue(AiConsentGate.asksStraightAway(AiConsentStatus.DENIED, hasBeenShown = false))
+        assertFalse(AiConsentGate.asksStraightAway(AiConsentStatus.DENIED, hasBeenShown = true))
+        for (status in listOf(AiConsentStatus.LOADING, AiConsentStatus.UNAVAILABLE, AiConsentStatus.GRANTED)) {
+            assertFalse(AiConsentGate.asksStraightAway(status, hasBeenShown = false), "$status")
+        }
+    }
 
     @Test
     fun `a first visit waits for the read and never prompts a learner who may have consented elsewhere`() {

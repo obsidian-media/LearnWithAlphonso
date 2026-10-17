@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -129,3 +131,9 @@ class AiConsentStore(private val backend: AiConsentBackend, private val cache: A
         cache.write(userId, grantedAt)
     }
 }
+
+/**
+ * The callback the app hands `ApiHttp.onAiConsentRequired`: a 403 `ai-consent-required` from any AI call closes the
+ * gate at once and re-reads the account, without any screen having to forward it.
+ */
+fun AiConsentStore.consentRefusalHook(scope: CoroutineScope): () -> Unit = { scope.launch { serverRefusedForLackOfConsent() } }

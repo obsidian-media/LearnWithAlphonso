@@ -1229,7 +1229,10 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   withdrawal covers the live conversation); lessons and review are never
   walled, a translate answer is graded locally without consent and offers
   "Turn on AI grading", a speak question types instead and says why, and
-  placement asks the server grader only with consent. Settings has the
+  placement asks the server grader only with consent (a deliberate
+  difference from iOS, whose placement is graded on the device only: here a
+  learner who allowed AI keeps the AI second opinion on a written placement
+  answer, and neither is ever asked or walled). Settings has the
   "AI features" switch (on opens the same sheet, off withdraws at once). The
   old device-wide "Got it" flag is gone and is not carried to the account,
   because it was a forced acknowledgement, not an Allow naming the providers.

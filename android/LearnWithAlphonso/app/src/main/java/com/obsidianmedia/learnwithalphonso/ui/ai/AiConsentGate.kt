@@ -19,11 +19,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
@@ -62,16 +64,19 @@ fun AiConsentGate(container: AppContainer, onDecline: () -> Unit = {}, content: 
     val consentState by store.state.collectAsState()
     val status = store.statusOf(consentState)
     val isConnected by container.connectivity.isConnected.collectAsState()
-    var hasBeenShown by remember { mutableStateOf(false) }
-    var didRefresh by remember { mutableStateOf(false) }
-    var showDisclosure by remember { mutableStateOf(false) }
+    // Saveable: MainActivity handles no configuration changes, so a rotation recreates the composition. Losing
+    // `hasBeenShown` would turn a covered live conversation into a spinner and a first-visit prompt, where "Not now"
+    // goes back and throws the conversation away.
+    var hasBeenShown by rememberSaveable { mutableStateOf(false) }
+    var didRefresh by rememberSaveable { mutableStateOf(false) }
+    var showDisclosure by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(status) { if (status == AiConsentStatus.GRANTED) hasBeenShown = true }
     LaunchedEffect(Unit) {
         store.refresh()
         didRefresh = true
         // First visit with a definite "no": ask straight away. Mid-session, the learner chooses.
-        if (!hasBeenShown && store.statusOf() == AiConsentStatus.DENIED) showDisclosure = true
+        if (AiConsentGate.asksStraightAway(store.statusOf(), hasBeenShown)) showDisclosure = true
     }
 
     when (val presentation = AiConsentGate.presentation(status, hasBeenShown, didRefresh)) {
@@ -79,7 +84,7 @@ fun AiConsentGate(container: AppContainer, onDecline: () -> Unit = {}, content: 
             val covered = presentation.covered
             Box(Modifier.fillMaxSize()) {
                 // Covered content stays composed (a live conversation keeps its state) but is hidden from touch and TalkBack.
-                Box(Modifier.fillMaxSize().then(if (covered != null) Modifier.clearAndSetSemantics { } else Modifier)) { content() }
+                Box(Modifier.fillMaxSize().then(if (covered != null) Modifier.clearAndSetSemantics { }.focusProperties { canFocus = false } else Modifier)) { content() }
                 if (covered != null) {
                     Box(
                         Modifier.fillMaxSize().alpha(0.96f).background(palette.surface)
@@ -140,8 +145,8 @@ fun AiConsentDialog(store: AiConsentStore, onNotNow: () -> Unit, onAllowed: () -
     val palette = AlphonsoColor.palette
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
-    var saving by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var saving by rememberSaveable { mutableStateOf(false) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
 
     AlertDialog(
         onDismissRequest = { },

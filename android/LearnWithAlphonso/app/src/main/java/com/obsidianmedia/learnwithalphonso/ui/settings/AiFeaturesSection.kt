@@ -11,7 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,9 +36,9 @@ internal fun AiFeaturesSection(container: AppContainer) {
     val consent by store.state.collectAsState()
     val status = store.statusOf(consent)
     val scope = rememberCoroutineScope()
-    var updating by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var showConsent by remember { mutableStateOf(false) }
+    var updating by rememberSaveable { mutableStateOf(false) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    var showConsent by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { store.refresh() }
     LaunchedEffect(status) { error = null }

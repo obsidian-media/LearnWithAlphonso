@@ -31,7 +31,7 @@ class LessonViewModelTest {
 
     private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true) = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
-        isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L },
+        isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
     )
 
     private fun correctAnswer(q: Question): String = when (q) {
@@ -255,9 +255,9 @@ class LessonViewModelTest {
         assertEquals(unit.lessons[1].id, v.nextLessonId)
         val a1Units = testContent.bundle(Course.ENGLISH).units.filter { it.level == "A1" }
         val lastLesson = a1Units.last().lessons.last()
-        val last = LessonViewModel(lastLesson, Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(), { true }, { null }, {}, { 0 })
+        val last = LessonViewModel(lastLesson, Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(), { true }, { null }, {}, { 0 }, { true })
         assertNull(last.nextLessonId)
-        val endOfFirstUnit = LessonViewModel(a1Units[0].lessons.last(), Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(), { true }, { null }, {}, { 0 })
+        val endOfFirstUnit = LessonViewModel(a1Units[0].lessons.last(), Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(), { true }, { null }, {}, { 0 }, { true })
         assertEquals(a1Units[1].lessons.first().id, endOfFirstUnit.nextLessonId)
     }
 

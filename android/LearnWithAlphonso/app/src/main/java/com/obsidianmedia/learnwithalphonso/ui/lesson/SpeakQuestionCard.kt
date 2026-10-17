@@ -14,6 +14,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,7 +77,7 @@ class SpeakQuestionViewModel(
                     }
                     TurnEvent.Empty -> _state.update { it.copy(error = "Didn't catch that. Try again, or type the phrase.") }
                     TurnEvent.MicDenied -> _state.update { it.copy(micUnavailable = true, error = "Microphone access is off. Turn it on in Settings > Apps > Learn with Alphonso > Permissions, or type the phrase.") }
-                    is TurnEvent.Failed -> _state.update { it.copy(error = "Couldn't check that just now. Try again.") }
+                    is TurnEvent.Failed -> _state.update { it.copy(error = if (event.consentRequired) null else "Couldn't check that just now. Try again.") }
                 }
             }
         }
@@ -101,9 +103,10 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
     // Voice is AI: without the account's consent the learner types instead, and is offered the sheet. Never a wall.
     val consent by container.aiConsent.state.collectAsState()
     val hasAiConsent = container.aiConsent.statusOf(consent) == AiConsentStatus.GRANTED
-    var showConsent by remember { mutableStateOf(false) }
+    val consentStatus = container.aiConsent.statusOf(consent)
+    var showConsent by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val canCapture = isConnected && !state.micUnavailable && hasAiConsent
-    val voiceNeedsConsent = isConnected && !state.micUnavailable && !hasAiConsent
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         AlphonsoSectionHeader("Speaking")
@@ -132,15 +135,27 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
             }
         } else {
             Text(
-                AiConsentCopy.speakFallback(micUnavailable = state.micUnavailable, isConnected = isConnected, hasAiConsent = hasAiConsent),
+                // Only the account saying no reads "AI is turned off"; a setting still loading or unreadable must not claim it.
+                when {
+                    state.micUnavailable || !isConnected -> AiConsentCopy.speakFallback(micUnavailable = state.micUnavailable, isConnected = isConnected, hasAiConsent = false)
+                    consentStatus == AiConsentStatus.LOADING -> AiConsentCopy.checkingSetting
+                    consentStatus == AiConsentStatus.UNAVAILABLE -> AiConsentCopy.checkFailedTitle
+                    else -> AiConsentCopy.speakFallback(micUnavailable = false, isConnected = true, hasAiConsent = false)
+                },
                 style = MaterialTheme.typography.bodySmall, color = palette.inkSoft,
             )
-            if (voiceNeedsConsent) AlphonsoSecondaryButton(AiConsentCopy.useVoiceInstead, onClick = { showConsent = true }, fullWidth = false)
+            if (isConnected && !state.micUnavailable) {
+                when (consentStatus) {
+                    AiConsentStatus.DENIED -> AlphonsoSecondaryButton(AiConsentCopy.useVoiceInstead, onClick = { showConsent = true }, fullWidth = false)
+                    AiConsentStatus.UNAVAILABLE -> AlphonsoSecondaryButton(AiConsentCopy.retry, onClick = { scope.launch { container.aiConsent.refresh() } }, fullWidth = false)
+                    else -> Unit
+                }
+            }
             AnswerField(picked ?: "", onPick, "Type the phrase", enabled = !checked)
         }
-        // A voice failure from before consent was withdrawn would outlive the learner opting back in, and the typing
-        // fallback already says why voice is off.
-        state.error?.takeIf { hasAiConsent }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+        // A consent refusal has no line of its own: the typing fallback already says why voice is off, and a line left
+        // over from before would outlive the learner opting back in.
+        state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
         if (checked) ExplanationBlock(isCorrect, question.explanation)
     }

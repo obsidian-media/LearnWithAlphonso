@@ -13,6 +13,7 @@ import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
+import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
@@ -91,7 +92,7 @@ class AppContainer(context: Context) {
     private val apiHttp = ApiHttp(
         BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine,
         refresh = { session.freshAccessToken(force = true) },
-        onAiConsentRequired = { appScope.launch { aiConsent.serverRefusedForLackOfConsent() } },
+        onAiConsentRequired = aiConsent.consentRefusalHook(appScope),
     )
     val accountClient = AccountClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)

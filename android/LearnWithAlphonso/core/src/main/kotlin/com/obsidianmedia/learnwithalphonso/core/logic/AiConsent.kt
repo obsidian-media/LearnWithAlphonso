@@ -29,6 +29,9 @@ object AiConsentCopy {
     const val reportReviewNote = "We review reports within 24 hours."
 
     /** Shown in place of the check-failed pair when the device has no connection (iOS and Android only; the web has no offline mode). */
+    /** Android only: shown on a speak question while the account's setting is still being read. */
+    const val checkingSetting = "Checking your AI setting..."
+
     const val offlineTitle = "You're offline"
     const val offlineBody = "This needs a connection. Reconnect and try again."
 
@@ -71,9 +74,11 @@ object AiConsentPolicy {
     }
 
     fun translateMode(surface: AiConsentSurface, consentGranted: Boolean): AiItemMode = when (surface) {
-        AiConsentSurface.PLACEMENT -> AiItemMode.LOCAL
         AiConsentSurface.LESSON, AiConsentSurface.REVIEW -> if (consentGranted) AiItemMode.AI else AiItemMode.LOCAL_WITH_OPT_IN
-        AiConsentSurface.SAVE_WORD, AiConsentSurface.HECTOR, AiConsentSurface.CONVERSATION, AiConsentSurface.CAMPAIGN ->
+        // Deliberate difference from iOS, whose placement never uses AI: here a learner who allowed AI keeps the
+        // server grader's second opinion on a written placement answer, and one who did not is graded locally with
+        // no prompt (placement is never walled and never offers the sheet).
+        AiConsentSurface.PLACEMENT, AiConsentSurface.SAVE_WORD, AiConsentSurface.HECTOR, AiConsentSurface.CONVERSATION, AiConsentSurface.CAMPAIGN ->
             if (consentGranted) AiItemMode.AI else AiItemMode.LOCAL
     }
 
@@ -117,6 +122,9 @@ sealed interface AiConsentGatePresentation {
 }
 
 object AiConsentGate {
+    /** After the gate's first read: ask straight away only on a first visit with a definite "no". Mid-session the learner chooses. */
+    fun asksStraightAway(status: AiConsentStatus, hasBeenShown: Boolean): Boolean = !hasBeenShown && status == AiConsentStatus.DENIED
+
     /**
      * @param hasBeenShown the screen has been mounted before in this visit. Once it has, it is never unmounted, so a
      * live conversation keeps its transcript when consent is withdrawn elsewhere.

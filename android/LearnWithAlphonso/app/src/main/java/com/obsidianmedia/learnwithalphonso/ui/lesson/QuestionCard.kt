@@ -21,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,7 +109,7 @@ fun QuestionCard(
                 // is told so with a way to turn AI grading on. Never a wall: the lesson goes on. Only when the account
                 // itself said no: a setting still loading or unreadable offers nothing here.
                 val consent by container.aiConsent.state.collectAsState()
-                var showConsent by remember { mutableStateOf(false) }
+                var showConsent by rememberSaveable { mutableStateOf(false) }
                 if (!checked && AiConsentPolicy.offersAiGradingOptIn(surface, container.aiConsent.statusOf(consent))) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(AiConsentCopy.localGradingNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.weight(1f, fill = false))

@@ -83,7 +83,7 @@ class LessonViewModel(
     private val rememberTier: (String) -> Unit,
     private val now: () -> Long = System::currentTimeMillis,
     /** The account's AI consent. Without it a written answer never leaves the device (TranslationGradingPolicy). */
-    private val hasAiConsent: () -> Boolean = { true },
+    private val hasAiConsent: () -> Boolean,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()

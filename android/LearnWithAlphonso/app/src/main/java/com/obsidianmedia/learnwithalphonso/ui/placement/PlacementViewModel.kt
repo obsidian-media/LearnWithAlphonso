@@ -6,6 +6,9 @@ import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.PlacementQuestion
 import com.obsidianmedia.learnwithalphonso.core.content.placementOrder
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentPolicy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
+import com.obsidianmedia.learnwithalphonso.core.logic.AiItemMode
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.groupByBand
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
@@ -62,7 +65,7 @@ class PlacementViewModel(
     private val isConnected: () -> Boolean = { true },
     private val random: Random = Random.Default,
     /** The account's AI consent: the server grader is asked only when the learner allowed it. */
-    private val hasAiConsent: () -> Boolean = { true },
+    private val hasAiConsent: () -> Boolean,
 ) : ViewModel() {
     private val _state = MutableStateFlow(freshAttempt())
     val state: StateFlow<PlacementUiState> = _state.asStateFlow()
@@ -90,7 +93,8 @@ class PlacementViewModel(
         val token = attemptToken
         return viewModelScope.launch {
             var correct = isPlacementAnswerCorrect(q, picked)
-            if (!correct && q is PlacementQuestion.Translate && TranslationGradingPolicy.mayAskServer(isConnected = isConnected(), hasAccessToken = true, hasAiConsent = hasAiConsent())) {
+            if (!correct && q is PlacementQuestion.Translate && TranslationGradingPolicy.mayAskServer(isConnected = isConnected(), hasAccessToken = true, hasAiConsent = hasAiConsent()) &&
+                AiConsentPolicy.translateMode(AiConsentSurface.PLACEMENT, hasAiConsent()) == AiItemMode.AI) {
                 _state.update { it.copy(checking = true) }
                 val verdict = translation.gradePlacementTranslation(q.id, picked, course.code)
                 if (attemptToken != token) return@launch

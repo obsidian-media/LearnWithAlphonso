@@ -26,7 +26,7 @@ sealed interface TurnEvent {
     data class Transcribed(val text: String, val confidence: Double?, val debugTiming: String) : TurnEvent
     data object Empty : TurnEvent
     data object MicDenied : TurnEvent
-    data class Failed(val message: String) : TurnEvent
+    data class Failed(val message: String, val consentRequired: Boolean = false) : TurnEvent
 }
 
 /**
@@ -138,7 +138,10 @@ class ConversationTurnEngine(
             _phase.value = TurnPhase.IDLE
             result.fold(
                 onSuccess = { r -> if (r.text.isBlank()) _events.tryEmit(TurnEvent.Empty) else _events.tryEmit(TurnEvent.Transcribed(r.text.trim(), r.confidence, timing)) },
-                onFailure = { e -> _events.tryEmit(TurnEvent.Failed(e.message ?: "Couldn't check that just now. Try again.")) },
+                onFailure = { e ->
+                    val consentRefused = (e as? com.obsidianmedia.learnwithalphonso.core.net.AiConversationError.Server)?.code == "ai-consent-required"
+                    _events.tryEmit(TurnEvent.Failed(e.message ?: "Couldn't check that just now. Try again.", consentRequired = consentRefused))
+                },
             )
         }
     }

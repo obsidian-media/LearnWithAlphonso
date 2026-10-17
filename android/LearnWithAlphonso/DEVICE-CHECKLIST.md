@@ -119,7 +119,8 @@ Use a QA account that has never allowed AI (on the web, Settings > AI features i
 - [ ] A speaking question with consent off: "Speaking answers use AI, which is turned off. Type the phrase instead." with "Use your voice instead" (opens the sheet) and a typing field; after allowing, the hold-to-talk button appears.
 - [ ] Review translate card with consent off shows the same note and button.
 - [ ] Placement test: no sheet at any point; written answers are checked locally when consent is off.
-- [ ] Rotate the phone with the sheet open and on a covered conversation: nothing restarts.
+- [ ] Rotate the phone with the sheet open, and on a conversation that the gate covers (withdraw consent on the web first): the cover stays, the transcript is still there, "Not now" is not offered again by itself, and the sheet reopens only if it was open. The gate's flags are saved across rotation (`rememberSaveable`); this row is the only check of that, since Compose state is not unit tested.
+- [ ] A speaking question while the setting is still loading says "Checking your AI setting..." (never "AI is turned off"); with an unreadable setting it shows "Couldn't check your AI setting" with "Try again".
 
 ## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
 

@@ -134,14 +134,70 @@ class AiConsentStoreTest {
     }
 
     @Test
-    fun `a server refusal closes the gate at once and then re-reads the account`() = runTest {
+    fun `a server refusal closes the gate at once, before the re-read lands`() = runTest {
         val backend = FakeBackend().apply { server = "2026-10-01T00:00:00+00:00" }
         val store = AiConsentStore(backend, MemoryCache())
         store.refresh()
         assertTrue(store.isGranted)
+        // The re-read is held back: the gate must already be closed while it is in flight.
+        val gate = CompletableDeferred<Unit>()
+        backend.fetchGate = gate
+        backend.server = null
+        val refusal = async(start = CoroutineStart.UNDISPATCHED) { store.serverRefusedForLackOfConsent() }
+        assertEquals(AiConsentStatus.DENIED, store.statusOf())
+        assertFalse(store.isGranted)
+        gate.complete(Unit)
+        refusal.await()
+        assertEquals(AiConsentStatus.DENIED, store.statusOf())
+    }
+
+    @Test
+    fun `a read that began before a refusal cannot reopen the gate`() = runTest {
+        val backend = FakeBackend().apply { server = "2026-10-01T00:00:00+00:00" }
+        val store = AiConsentStore(backend, MemoryCache())
+        val gate = CompletableDeferred<Unit>()
+        backend.fetchGate = gate
+        // This read asked while the server still said "granted" and will answer that, late.
+        val staleRead = async(start = CoroutineStart.UNDISPATCHED) { store.refresh() }
+        backend.fetchGate = null
         backend.server = null
         store.serverRefusedForLackOfConsent()
         assertEquals(AiConsentStatus.DENIED, store.statusOf())
+        gate.complete(Unit)
+        staleRead.await()
+        assertEquals(AiConsentStatus.DENIED, store.statusOf())
+    }
+
+    @Test
+    fun `a read that fails after a local decision does not mark the setting unreadable`() = runTest {
+        val backend = FakeBackend()
+        val store = AiConsentStore(backend, MemoryCache())
+        val gate = CompletableDeferred<Unit>()
+        backend.fetchGate = gate
+        backend.fetchFails = true
+        val failingRead = async(start = CoroutineStart.UNDISPATCHED) { store.refresh() }
+        backend.fetchGate = null
+        store.set(true)
+        gate.complete(Unit)
+        failingRead.await()
+        // The failure is about an answer that no longer matters.
+        assertFalse(store.state.value.lastRefreshFailed)
+        assertEquals(AiConsentStatus.GRANTED, store.statusOf())
+    }
+
+    @Test
+    fun `a write that fails does not discard a read still in flight`() = runTest {
+        val backend = FakeBackend().apply { server = "2026-10-01T00:00:00+00:00" }
+        val store = AiConsentStore(backend, MemoryCache())
+        val gate = CompletableDeferred<Unit>()
+        backend.fetchGate = gate
+        val read = async(start = CoroutineStart.UNDISPATCHED) { store.refresh() }
+        backend.setFails = true
+        assertThrows(IOException::class.java) { kotlinx.coroutines.runBlocking { store.set(false) } }
+        gate.complete(Unit)
+        read.await()
+        // The failed write decided nothing, so the read's answer (granted) still lands.
+        assertEquals(AiConsentStatus.GRANTED, store.statusOf())
     }
 
     @Test
