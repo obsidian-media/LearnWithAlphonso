@@ -33,6 +33,8 @@ describe("native copy of the name-onboarding fixture", () => {
         ),
         "utf8",
       ),
-    ).toBe(fs.readFileSync(path.resolve(import.meta.dirname, "social-reason.fixtures.json"), "utf8"));
+    ).toBe(
+      fs.readFileSync(path.resolve(import.meta.dirname, "social-reason.fixtures.json"), "utf8"),
+    );
   });
 });
