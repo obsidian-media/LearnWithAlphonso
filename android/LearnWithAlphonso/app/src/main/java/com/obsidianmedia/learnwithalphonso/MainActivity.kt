@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch { container.syncCoordinator.triggerSync() }
+        lifecycleScope.launch { container.aiConsent.refresh() }
     }
 
     override fun onStop() {

@@ -50,6 +50,19 @@ class ConversationTurnEngineTest {
 
 
     @Test
+    fun `a transcription refused for lack of consent says so, any other failure does not`() {
+        var failure: Throwable = com.obsidianmedia.learnwithalphonso.core.net.AiConversationError.Server(403, null, "ai-consent-required")
+        runEngine(transcribe = { _, _ -> throw failure }) { engine, _, events ->
+            engine.pressBegan(); advanceTimeBy(500); engine.pressEnded(); advanceUntilIdle()
+            assertTrue((events.single() as TurnEvent.Failed).consentRequired)
+            events.clear()
+            failure = com.obsidianmedia.learnwithalphonso.core.net.AiConversationError.Server(500, null, "boom")
+            engine.pressBegan(); advanceTimeBy(500); engine.pressEnded(); advanceUntilIdle()
+            assertFalse((events.single() as TurnEvent.Failed).consentRequired)
+        }
+    }
+
+    @Test
     fun `a normal press records, waits the minimum, transcribes and emits`() = runEngine { engine, recorder, events ->
         engine.pressBegan()
         assertEquals(TurnPhase.RECORDING, engine.phase.value)

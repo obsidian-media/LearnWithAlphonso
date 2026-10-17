@@ -48,7 +48,7 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
     val palette = AlphonsoColor.palette
     val context = LocalContext.current
     val vm: PlacementViewModel = viewModel(key = "placement-${course.code}") {
-        PlacementViewModel(container.content, container.progressClient, container.translationGrading, course, isConnected = { container.connectivity.isConnected.value })
+        PlacementViewModel(container.content, container.progressClient, container.translationGrading, course, isConnected = { container.connectivity.isConnected.value }, hasAiConsent = { container.aiConsent.isGranted })
     }
     val state by vm.state.collectAsState()
 

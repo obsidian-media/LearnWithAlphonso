@@ -9,6 +9,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
 import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationAnswer
+import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.VocabItem
 import com.obsidianmedia.learnwithalphonso.core.logic.computeXpGain
 import com.obsidianmedia.learnwithalphonso.core.logic.deriveVocab
@@ -81,6 +82,8 @@ class LessonViewModel(
     private val lastKnownTier: () -> String?,
     private val rememberTier: (String) -> Unit,
     private val now: () -> Long = System::currentTimeMillis,
+    /** The account's AI consent. Without it a written answer never leaves the device (TranslationGradingPolicy). */
+    private val hasAiConsent: () -> Boolean,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
@@ -167,21 +170,22 @@ class LessonViewModel(
     fun startPractice() = _state.update { it.copy(phase = LessonPhase.Quiz) }
     fun pick(value: String?) = _state.update { if (it.checked) it else it.copy(picked = value) }
 
-    fun check() {
+    /** Returns the grading job (already complete for questions graded on the spot) so callers can join it. */
+    fun check(): Job {
         val s = _state.value
-        if (s.checked || s.picked.isNullOrBlank()) return
+        if (s.checked || s.picked.isNullOrBlank()) return NOTHING_TO_WAIT_FOR
         val q = s.currentQuestion
         if (q is Question.Translate) {
             _state.update { it.copy(isChecking = true) }
-            viewModelScope.launch {
+            return viewModelScope.launch {
                 val verdict = settleTranslation(q, s.picked)
                 _state.update { it.copy(isChecking = false, checked = true, translationVerdict = verdict) }
                 recordAnswer()
             }
-        } else {
-            _state.update { it.copy(checked = true) }
-            recordAnswer()
         }
+        _state.update { it.copy(checked = true) }
+        recordAnswer()
+        return NOTHING_TO_WAIT_FOR
     }
 
     fun continueOrFinish() {
@@ -218,7 +222,7 @@ class LessonViewModel(
     private suspend fun settleTranslation(q: Question.Translate, picked: String?): TranslationVerdict {
         val submission = (picked ?: "").trim()
         if (TranslationAnswer.matches(submission, q.acceptableAnswers)) return TranslationVerdict(true, null)
-        if (!isConnected()) return TranslationVerdict(false, null)
+        if (!TranslationGradingPolicy.mayAskServer(isConnected = isConnected(), hasAccessToken = true, hasAiConsent = hasAiConsent())) return TranslationVerdict(false, null)
         return translation.gradeLessonTranslation(_state.value.lesson.id, q.id, submission, course.code) ?: TranslationVerdict(false, null)
     }
 
@@ -285,3 +289,5 @@ class LessonViewModel(
         _state.update { it.copy(phase = LessonPhase.QueuedOffline(pending)) }
     }
 }
+
+private val NOTHING_TO_WAIT_FOR: Job = Job().also { it.complete() }

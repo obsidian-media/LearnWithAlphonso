@@ -12,6 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.SpokenAnswer
@@ -29,6 +36,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
@@ -69,7 +77,7 @@ class SpeakQuestionViewModel(
                     }
                     TurnEvent.Empty -> _state.update { it.copy(error = "Didn't catch that. Try again, or type the phrase.") }
                     TurnEvent.MicDenied -> _state.update { it.copy(micUnavailable = true, error = "Microphone access is off. Turn it on in Settings > Apps > Learn with Alphonso > Permissions, or type the phrase.") }
-                    is TurnEvent.Failed -> _state.update { it.copy(error = "Couldn't check that just now. Try again.") }
+                    is TurnEvent.Failed -> _state.update { it.copy(error = if (event.consentRequired) null else "Couldn't check that just now. Try again.") }
                 }
             }
         }
@@ -92,7 +100,13 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
     val phase by vm.engine.phase.collectAsState()
     // Cancel, not tearDown: the view model outlives a rotation and the next press must still work.
     DisposableEffect(Unit) { onDispose { vm.engine.cancel() } }
-    val canCapture = isConnected && !state.micUnavailable
+    // Voice is AI: without the account's consent the learner types instead, and is offered the sheet. Never a wall.
+    val consent by container.aiConsent.state.collectAsState()
+    val hasAiConsent = container.aiConsent.statusOf(consent) == AiConsentStatus.GRANTED
+    val consentStatus = container.aiConsent.statusOf(consent)
+    var showConsent by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val canCapture = isConnected && !state.micUnavailable && hasAiConsent
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         AlphonsoSectionHeader("Speaking")
@@ -121,12 +135,28 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
             }
         } else {
             Text(
-                if (state.micUnavailable) "The microphone isn't available. Type the phrase instead." else "You're offline, so speech can't be checked. Type the phrase instead.",
+                // Only the account saying no reads "AI is turned off"; a setting still loading or unreadable must not claim it.
+                when {
+                    state.micUnavailable || !isConnected -> AiConsentCopy.speakFallback(micUnavailable = state.micUnavailable, isConnected = isConnected, hasAiConsent = false)
+                    consentStatus == AiConsentStatus.LOADING -> AiConsentCopy.checkingSetting
+                    consentStatus == AiConsentStatus.UNAVAILABLE -> AiConsentCopy.checkFailedTitle
+                    else -> AiConsentCopy.speakFallback(micUnavailable = false, isConnected = true, hasAiConsent = false)
+                },
                 style = MaterialTheme.typography.bodySmall, color = palette.inkSoft,
             )
+            if (isConnected && !state.micUnavailable) {
+                when (consentStatus) {
+                    AiConsentStatus.DENIED -> AlphonsoSecondaryButton(AiConsentCopy.useVoiceInstead, onClick = { showConsent = true }, fullWidth = false)
+                    AiConsentStatus.UNAVAILABLE -> AlphonsoSecondaryButton(AiConsentCopy.retry, onClick = { scope.launch { container.aiConsent.refresh() } }, fullWidth = false)
+                    else -> Unit
+                }
+            }
             AnswerField(picked ?: "", onPick, "Type the phrase", enabled = !checked)
         }
+        // A consent refusal has no line of its own: the typing fallback already says why voice is off, and a line left
+        // over from before would outlive the learner opting back in.
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+        if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
         if (checked) ExplanationBlock(isCorrect, question.explanation)
     }
 }
