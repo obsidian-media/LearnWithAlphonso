@@ -10,7 +10,7 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
-**Android: end-of-test race closed for every view-model test (2026-10-16, #NNN; Android, no build yet).** `MainDispatcherRule` no longer resets Main when a test ends; Main becomes a dispatcher that drops late resumptions, so a view model still waiting on the mock server can no longer crash whichever test runs next. A rule test pins it (it fails with the old `resetMain`). The duel queue test ended in `assertTrue(true)`; it now asserts the queue join body and the cleared waiting flag. Tests only.
+**Android: end-of-test race closed for every view-model test (2026-10-16, #310; Android, no build yet).** `MainDispatcherRule` no longer resets Main when a test ends; Main becomes a dispatcher that drops late resumptions, so a view model still waiting on the mock server can no longer crash whichever test runs next. A rule test pins it (it fails with the old `resetMain`). The duel queue test ended in `assertTrue(true)`; it now asserts the queue join body and the cleared waiting flag. Tests only.
 
 **Android: flaky Learn view-model test fixed (2026-10-16, #307; Android, no build yet).** The level, course, refresh, claim and freeze actions in `LearnViewModel` now return their `Job`, and `LearnViewModelTest` joins them instead of polling the fake server. The old test could finish while the coroutine was still resuming after `Dispatchers.resetMain()`, which crashed the next test intermittently. A newer load now cancels the superseded one. No other behaviour change.
 
