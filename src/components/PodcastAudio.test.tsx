@@ -18,6 +18,7 @@ const episode = {
   audioUrl: "https://example.test/en/a1/ordering-coffee.mp3",
   durationSeconds: 300,
   positionSeconds: 0,
+  aiNarrated: false,
 };
 
 /** Stands in for two different pages rendered at the router's Outlet. */
