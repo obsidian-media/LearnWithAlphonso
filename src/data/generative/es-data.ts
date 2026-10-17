@@ -14,6 +14,8 @@ export type EsVerb = {
   presentAlt?: Partial<Record<Person, string[]>>;
   /** Absent when the library gets the preterite wrong: the verb is then not used in it. */
   preterite?: Six;
+  /** Tenses this verb may be used in; defaults to both. */
+  tenses?: ("present" | "preterite")[];
   en: EnglishVerb;
   uses: Use[];
 };
@@ -25,7 +27,12 @@ export const ES_VERBS: EsVerb[] = [
     preterite: ["comí", "comiste", "comió", "comimos", "comisteis", "comieron"],
     en: { base: "eat", third: "eats", past: "ate" },
     uses: [
-      { cls: "food-count", kinds: ["indefinite"] },
+      {
+        cls: "food-count",
+        kinds: ["indefinite"],
+        // a whole onion or lemon is not something one eats
+        nouns: ["manzana", "naranja", "pera", "plátano", "tomate", "zanahoria"],
+      },
       { cls: "food-mass", kinds: ["bare"] },
     ],
   },
@@ -56,8 +63,8 @@ export const ES_VERBS: EsVerb[] = [
     preterite: ["compré", "compraste", "compró", "compramos", "comprasteis", "compraron"],
     en: { base: "buy", third: "buys", past: "bought" },
     uses: [
-      { cls: "clothing", kinds: ["indefinite", "bare"] },
-      { cls: "school-object", kinds: ["indefinite", "bare"] },
+      { cls: "clothing", kinds: ["indefinite"] },
+      { cls: "school-object", kinds: ["indefinite"] },
       { cls: "household-object", kinds: ["indefinite"] },
     ],
   },
@@ -67,8 +74,8 @@ export const ES_VERBS: EsVerb[] = [
     preterite: ["busqué", "buscaste", "buscó", "buscamos", "buscasteis", "buscaron"],
     en: { base: "look for", third: "looks for", past: "looked for" },
     uses: [
-      { cls: "clothing", kinds: ["definite", "bare"] },
-      { cls: "school-object", kinds: ["definite", "bare"] },
+      { cls: "clothing", kinds: ["definite"] },
+      { cls: "school-object", kinds: ["definite"] },
       { cls: "household-object", kinds: ["definite"] },
     ],
   },
@@ -105,9 +112,12 @@ export const ES_VERBS: EsVerb[] = [
     inf: "tener",
     present: ["tengo", "tienes", "tiene", "tenemos", "tenéis", "tienen"],
     preterite: ["tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron"],
+    // The preterite of tener and querer changes meaning (tuve = I got, quise = I tried), so
+    // "Ayer, yo quise un perro" would be wrong: neither is used in the preterite.
+    tenses: ["present"],
     en: { base: "have", third: "has", past: "had" },
     uses: [
-      { cls: "animal", kinds: ["indefinite"] },
+      { cls: "animal", kinds: ["indefinite"], nouns: ["perro", "gato", "caballo", "conejo", "pájaro"] },
       { cls: "household-object", kinds: ["indefinite"] },
       { cls: "school-object", kinds: ["indefinite"] },
     ],
@@ -116,9 +126,12 @@ export const ES_VERBS: EsVerb[] = [
     inf: "querer",
     present: ["quiero", "quieres", "quiere", "queremos", "queréis", "quieren"],
     preterite: ["quise", "quisiste", "quiso", "quisimos", "quisisteis", "quisieron"],
+    // The preterite of tener and querer changes meaning (tuve = I got, quise = I tried), so
+    // "Ayer, yo quise un perro" would be wrong: neither is used in the preterite.
+    tenses: ["present"],
     en: { base: "want", third: "wants", past: "wanted" },
     uses: [
-      { cls: "animal", kinds: ["indefinite"] },
+      { cls: "animal", kinds: ["indefinite"], nouns: ["perro", "gato", "caballo", "conejo", "pájaro"] },
       { cls: "household-object", kinds: ["indefinite"] },
       { cls: "school-object", kinds: ["indefinite"] },
     ],
@@ -221,6 +234,6 @@ export const ES_NOUNS: Noun[] = [
   n("espejo", "m", ["household-object"], "esa1p7", "mirror", W),
   n("llave", "f", ["household-object"], "esa1p7", "key", W),
   n("reloj", "m", ["household-object"], "esa1p7", "clock", W),
-  n("puerta", "f", ["household-object", "openable"], "esa1p7", "door", C),
-  n("ventana", "f", ["household-object", "openable"], "esa1p7", "window", C),
+  n("puerta", "f", ["openable"], "esa1p7", "door", C),
+  n("ventana", "f", ["openable"], "esa1p7", "window", C),
 ];

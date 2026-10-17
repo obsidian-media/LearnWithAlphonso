@@ -333,7 +333,12 @@ function lexLess(a: number[], b: number[]): boolean {
  * uses of the verb, then the subject, then the object, then the article kind,
  * then a hash tie-break. Never emits two lines with the same prompt text.
  */
-function selectCount(spec: RomancePackSpec, pool: GeneratedItem[], count: number): GeneratedItem[] {
+function selectCount(
+  spec: RomancePackSpec,
+  pool: GeneratedItem[],
+  count: number,
+  salt: number,
+): GeneratedItem[] {
   const chosen: GeneratedItem[] = [];
   const used = new Set<string>();
   const uses = (field: (i: GeneratedItem) => string, value: string) =>
@@ -347,7 +352,7 @@ function selectCount(spec: RomancePackSpec, pool: GeneratedItem[], count: number
         uses((i) => i.subject, item.subject),
         uses((i) => i.object, item.object),
         uses((i) => i.articleKind, item.articleKind),
-        hash(`${spec.id}:${item.line}`),
+        hash(`${spec.id}:${salt}:${item.line}`),
       ];
       if (!best || lexLess(score, best.score)) best = { item, score };
     }
@@ -382,17 +387,22 @@ function hasThreeDistractors(pack: Pack): boolean {
  * bank-engine's distractor walk steps through the pool 7 at a time, so a pool
  * whose size is a multiple of 7 revisits the same few candidates and a
  * question can end up with fewer than three wrong options. The engine is
- * shared and unchanged, so the generator picks a pack size that avoids it:
- * the requested count first, then one or two fewer.
+ * shared and unchanged, so the generator varies WHICH sentences it picks (a
+ * salt in the tie-break) until the pack works. Lessons are five questions, so
+ * only multiples of five are accepted: the requested count first, then half.
  */
+const SALTS = 60;
 export function buildRomancePack(spec: RomancePackSpec): { pack: Pack; items: GeneratedItem[] } {
   const pool = specCandidates(spec);
-  for (const count of [spec.count, spec.count - 1, spec.count - 2, spec.count - 3]) {
-    const items = selectCount(spec, pool, count);
-    const pack = asPack(spec, items);
-    if (items.length >= 3 && hasThreeDistractors(pack)) return { pack, items };
+  for (const count of [spec.count, spec.count - 5]) {
+    for (let salt = 0; salt < SALTS; salt++) {
+      const items = selectCount(spec, pool, count, salt);
+      if (items.length !== count) break;
+      const pack = asPack(spec, items);
+      if (hasThreeDistractors(pack)) return { pack, items };
+    }
   }
-  throw new Error(`${spec.id}: no pack size gives every question three distinct wrong options`);
+  throw new Error(`${spec.id}: no multiple-of-five pack gives every question three distinct wrong options`);
 }
 
 export function levelOf(spec: RomancePackSpec): Level {

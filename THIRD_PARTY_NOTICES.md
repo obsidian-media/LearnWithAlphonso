@@ -21,6 +21,8 @@ imported by application code, and a guard test
   never imported by shipped code, and no extract of it is committed anywhere in this
   repository (our own verb tables are hand-written).
 
+- `french-verbs-transitive` and `french-contractions` (also from RosaeNLG) are pulled in by `french-verbs`. Their data is under CC BY-SA 3.0. They are development-only, never imported by application code, and no extract is committed.
+
 ## Wiktionary extracts (check-only, not committed)
 
 `scripts/check-wiktionary.ts` reads the kaikki.org extracts of Wiktionary (CC BY-SA 4.0)

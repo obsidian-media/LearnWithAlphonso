@@ -30,7 +30,7 @@ export const ES_SUBJECTS: EsSubject[] = [
 /** Which article kinds are grammatical for this noun at all. */
 export function esFeasibleKinds(noun: Noun): ArticleKind[] {
   if (!noun.count) return ["bare"];
-  if (noun.number === "p") return ["definite", "bare"];
+  if (noun.number === "p") return ["definite", "indefinite"];
   return ["indefinite", "definite"];
 }
 
@@ -41,8 +41,7 @@ export function esNounPhrase(noun: Noun, kind: ArticleKind): string {
     case "definite":
       return `${plural ? (m ? "los" : "las") : m ? "el" : "la"} ${noun.key}`;
     case "indefinite":
-      if (plural) throw new Error("plural indefinite is rendered bare");
-      return `${m ? "un" : "una"} ${noun.key}`;
+      return `${plural ? (m ? "unos" : "unas") : m ? "un" : "una"} ${noun.key}`;
     case "bare":
       return noun.key;
     case "partitive":
@@ -80,7 +79,7 @@ export function compileEs(
   const answer = table[subject.person];
   const accepted = [answer, ...(past ? [] : (verb.presentAlt?.[subject.person] ?? []))];
   const np = esNounPhrase(noun, kind);
-  const lead = past ? `Ayer, ${subject.word}` : capitalise(subject.word);
+  const lead = past ? `Ayer ${subject.word}` : capitalise(subject.word);
   const prompt = `${lead} ___ (${verb.inf}) ${np}.`;
   const third = subject.person === 2;
   const englishVerb = past ? verb.en.past : third ? verb.en.third : verb.en.base;
@@ -113,7 +112,9 @@ export function compileEs(
 export function esCandidates(template: RomanceTemplateId, verbInf: string): GeneratedItem[] {
   if (template !== "es-svo-present" && template !== "es-svo-preterite") return [];
   const verb = esVerb(verbInf);
-  if (template === "es-svo-preterite" && !verb.preterite) return [];
+  if (template === "es-svo-preterite" && (!verb.preterite || verb.tenses?.includes("preterite") === false))
+    return [];
+  if (template === "es-svo-present" && verb.tenses?.includes("present") === false) return [];
   const out: GeneratedItem[] = [];
   for (const subject of ES_SUBJECTS)
     for (const use of verb.uses)

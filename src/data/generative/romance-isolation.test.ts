@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { LEFFF_MARKERS, LEFFF_ROW_LIMIT, LEFFF_ROW_SHAPE } from "./lefff-markers";
+import { LEFFF_PATTERNS, findLefffLeak } from "./lefff-markers";
 import { REPO_ROOT } from "./romance-bank.testutil";
 
 /**
@@ -28,7 +28,8 @@ const rel = (f: string) => path.relative(REPO_ROOT, f).split(path.sep).join("/")
 /** Static import, export-from, dynamic import() and require() of any of the libraries. */
 export function importsLibrary(source: string): string | null {
   for (const lib of LIBS) {
-    const q = `["'\`]${lib.replace(/-/g, "\\-")}(?:/[^"'\`]*)?["'\`]`;
+    const escaped = lib.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+    const q = `["'\`]${escaped}(?:/[^"'\`]*)?["'\`]`;
     const patterns = [
       new RegExp(`\\bfrom\\s*${q}`),
       new RegExp(`\\bimport\\s*${q}`),
@@ -103,9 +104,8 @@ describe("gate 9: runtime and licence isolation", () => {
         const full = path.join(REPO_ROOT, file);
         if (!existsSync(full) || statSync(full).size > 8 * 1024 * 1024) continue;
         const text = readFileSync(full, "utf8");
-        if (LEFFF_MARKERS.some((m) => text.includes(m))) offenders.push(`${file} (marker)`);
-        else if ((text.match(LEFFF_ROW_SHAPE) ?? []).length > LEFFF_ROW_LIMIT)
-          offenders.push(`${file} (rows)`);
+        const leak = findLefffLeak(text);
+        if (leak) offenders.push(`${file} (${leak})`);
       }
       expect(offenders).toEqual([]);
     },
@@ -116,6 +116,6 @@ describe("gate 9: runtime and licence isolation", () => {
       path.join(REPO_ROOT, "node_modules/french-verbs-lefff/dist/conjugations.json"),
       "utf8",
     );
-    for (const marker of LEFFF_MARKERS) expect(lexicon.includes(marker), marker).toBe(true);
+    for (const pattern of LEFFF_PATTERNS) expect(pattern.test(lexicon), String(pattern)).toBe(true);
   });
 });

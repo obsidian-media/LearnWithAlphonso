@@ -124,7 +124,7 @@ function englishSubjectVerb(subject: FrSubject, verb: FrVerb, tense: "present" |
 
 function sentenceEn(prefixPast: boolean, body: string): string {
   const text = prefixPast ? `Yesterday, ${body}` : body;
-  return `${text.charAt(0).toUpperCase()}${text.slice(1)}.`.replace(/^I\b/, "I");
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
 }
 
 /** fr-svo-present and fr-svo-pc share the noun-phrase half. */

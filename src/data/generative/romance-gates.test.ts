@@ -40,10 +40,12 @@ const nounOf = (item: GeneratedItem): Noun | undefined =>
   (item.lang === "fr" ? FR_NOUNS : ES_NOUNS).find((n) => n.key === item.object);
 
 describe("the packs themselves", () => {
-  it("every spec produces a valid, deterministic cloze pack of at least 12 lines", () => {
+  it("every spec produces a valid, deterministic cloze pack whose size is a multiple of five", () => {
     for (const { spec, pack, items } of built) {
       expect(hasErrors(validatePack(pack)), spec.id).toBe(false);
-      expect(items.length, spec.id).toBeGreaterThanOrEqual(12);
+      // Lessons are five questions: a 14-question pack leaves a 4-question lesson.
+      expect(items.length % 5, spec.id).toBe(0);
+      expect(items.length, spec.id).toBeGreaterThanOrEqual(10);
       expect(items.length, spec.id).toBeLessThanOrEqual(spec.count);
       expect(buildRomancePack(spec).pack.data, spec.id).toBe(pack.data);
     }
@@ -90,9 +92,10 @@ describe("gate 2: agreement, countability and article kind (read off the rendere
         if (!noun.count) {
           expect(np, `${item.prompt}: mass noun must be bare`).toBe(noun.key);
         } else if (noun.number === "p") {
-          expect(np, item.prompt).toMatch(new RegExp(`^((los|las) )?${noun.key}$`));
-          if (/^(los|las) /.test(np))
-            expect(np.startsWith(noun.gender === "m" ? "los" : "las")).toBe(true);
+          const m = noun.gender === "m";
+          expect(np, item.prompt).toMatch(
+            new RegExp(`^(${m ? "los|unos" : "las|unas"}) ${noun.key}$`),
+          );
         } else {
           const m = noun.gender === "m";
           expect(np, item.prompt).toMatch(new RegExp(`^(${m ? "el|un" : "la|una"}) ${noun.key}$`));
@@ -130,13 +133,13 @@ describe("gate 2: agreement, countability and article kind (read off the rendere
     beber: { drink: ["bare"] },
     tomar: { drink: ["bare"] },
     comprar: {
-      clothing: ["indefinite", "bare"],
-      "school-object": ["indefinite", "bare"],
+      clothing: ["indefinite"],
+      "school-object": ["indefinite"],
       "household-object": ["indefinite"],
     },
     buscar: {
-      clothing: ["definite", "bare"],
-      "school-object": ["definite", "bare"],
+      clothing: ["definite"],
+      "school-object": ["definite"],
       "household-object": ["definite"],
     },
     ver: { animal: ["indefinite"] },
@@ -174,7 +177,6 @@ describe("gate 2: agreement, countability and article kind (read off the rendere
 /** Hand-written place phrases per verb, section 4.1 of the design. */
 const PLACE_PHRASES: Record<string, string[]> = {
   aller: [
-    "à la maison",
     "à l'école",
     "au marché",
     "au magasin",
@@ -187,7 +189,6 @@ const PLACE_PHRASES: Record<string, string[]> = {
     "à l'aéroport",
   ],
   venir: [
-    "de la maison",
     "de l'école",
     "du marché",
     "du magasin",
@@ -463,6 +464,27 @@ const FORBIDDEN: [string, string][] = [
   ["tener", "pan"],
   ["querer", "leche"],
   ["preparar", "libro"],
+  // doors and windows are not bought or owned
+  ["acheter", "fenêtre"],
+  ["acheter", "porte"],
+  ["tener", "puerta"],
+  ["tener", "ventana"],
+  ["comprar", "puerta"],
+  ["comprar", "ventana"],
+  ["buscar", "puerta"],
+  // not eaten whole
+  ["comer", "cebolla"],
+  ["comer", "limón"],
+  // pets only
+  ["tener", "elefante"],
+  ["tener", "tigre"],
+  ["querer", "oso"],
+];
+
+/** (verb, tense) uses that change meaning and must never be generated. */
+const FORBIDDEN_TENSE: [string, "past"][] = [
+  ["tener", "past"],
+  ["querer", "past"],
 ];
 
 describe("gate 7: the meaning allowlist", () => {
@@ -484,6 +506,22 @@ describe("gate 7: the meaning allowlist", () => {
         everything.filter((i) => i.verb === verb && i.object === noun).map((i) => i.prompt),
         `${verb} + ${noun}`,
       ).toEqual([]);
+  });
+
+  it("tener and querer are never used in the preterite", () => {
+    for (const [verb, tense] of FORBIDDEN_TENSE)
+      expect(
+        everything.filter((i) => i.verb === verb && i.tense === tense).map((i) => i.prompt),
+        verb,
+      ).toEqual([]);
+    expect(esCandidates("es-svo-preterite", "tener")).toEqual([]);
+    expect(esCandidates("es-svo-preterite", "querer")).toEqual([]);
+    expect(esCandidates("es-svo-present", "tener").length).toBeGreaterThan(0);
+  });
+
+  it("manger takes the indefinite only for the generic nouns fruit and légume", () => {
+    for (const item of everything.filter((i) => i.verb === "manger" && ["fruit", "légume"].includes(i.object)))
+      expect(item.articleKind, item.prompt).toBe("indefinite");
   });
 
   it("every generated (verb, object) is inside the hand-written class list, and mettre takes clothing only", () => {

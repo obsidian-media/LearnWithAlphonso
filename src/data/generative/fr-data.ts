@@ -40,7 +40,13 @@ export const FR_VERBS: FrVerb[] = [
     participle: "mangé",
     en: { base: "eat", third: "eats", past: "ate" },
     uses: [
-      { cls: "food-count", kinds: ["indefinite", "definite"] },
+      // "le fruit" / "le légume" read as generic nouns; only the indefinite is natural.
+      {
+        cls: "food-count",
+        kinds: ["indefinite", "definite"],
+        nouns: ["pomme", "banane", "orange", "gâteau", "œuf"],
+      },
+      { cls: "food-count", kinds: ["indefinite"], nouns: ["fruit", "légume"] },
       { cls: "food-mass", kinds: ["partitive"] },
     ],
   },
@@ -159,7 +165,6 @@ export const FR_VERBS: FrVerb[] = [
     places: {
       rel: "to",
       keys: [
-        "maison",
         "école",
         "marché",
         "magasin",
@@ -183,7 +188,7 @@ export const FR_VERBS: FrVerb[] = [
     en: { base: "come", third: "comes", past: "came" },
     places: {
       rel: "from",
-      keys: ["maison", "école", "marché", "magasin", "supermarché", "bibliothèque", "parc", "gare"],
+      keys: ["école", "marché", "magasin", "supermarché", "bibliothèque", "parc", "gare"],
     },
   },
   {
@@ -374,7 +379,7 @@ export const FR_NOUNS: Noun[] = [
   mass("jus", "m", ["drink"], "juice"),
   // clothing
   wear("chemise", "f", "shirt"),
-  wear("pantalon", "m", "trousers"),
+  wear("pantalon", "m", "pair of trousers"),
   wear("robe", "f", "dress"),
   wear("jupe", "f", "skirt"),
   wear("veste", "f", "jacket"),
@@ -425,8 +430,8 @@ export const FR_NOUNS: Noun[] = [
   home("lit", "m", "bed"),
   home("canapé", "m", "sofa"),
   home("tapis", "m", "rug"),
-  n("porte", "f", ["household-object", "openable"], "fra1p7", "door"),
-  n("fenêtre", "f", ["household-object", "openable"], "fra1p7", "window"),
+  n("porte", "f", ["openable"], "fra1p7", "door"),
+  n("fenêtre", "f", ["openable"], "fra1p7", "window"),
   // school and reading
   school("livre", "m", ["school-object", "readable", "openable"], "book"),
   school("cahier", "m", ["school-object", "openable"], "notebook"),
