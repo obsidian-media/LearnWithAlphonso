@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.hector
 
+import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import android.app.Activity
 import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
@@ -38,7 +39,7 @@ class HectorAndBillingTest {
     private fun server(tutorError: Boolean = false, hang: Boolean = false, practice: String = """{"questions":[{"prompt":"p1","choices":["a","b"],"answerIndex":0,"explanation":"e"},{"prompt":"p2","choices":["c","d"],"answerIndex":1,"explanation":"e2"}]}""") = FakeServer { req ->
         when {
             req.path.endsWith("/api/stt") -> json("""{"text":"hello hector"}""")
-            req.path.endsWith("/api/hector-respond") -> if (tutorError) json("""{"detail":"tutor is resting"}""", HttpStatusCode.ServiceUnavailable) else json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Hello! Ready to practise?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
+            req.path.endsWith("/api/hector-respond") -> if (tutorError) json("""{"error":"tutor-unavailable","detail":"tutor is resting"}""", HttpStatusCode.ServiceUnavailable) else json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Hello! Ready to practise?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
             req.path.endsWith("/api/generate-practice") -> { if (hang) delay(5_000); json(practice) }
             req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B2"}]""")
             req.path.endsWith("weakness_events") -> json("""[{"category":"past-tense","event_type":"detected","created_at":"2026-09-01T00:00:00+00:00"}]""")
@@ -77,12 +78,12 @@ class HectorAndBillingTest {
     }
 
     @Test
-    fun `a tutor detail error is shown verbatim`() = runBlocking {
+    fun `a tutor failure shows the generic copy, never the server detail text`() = runBlocking {
         val s = server(tutorError = true)
         val v = HectorViewModel(InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { true })
         v.pressBegan(); v.pressEnded()
         awaitTrue("error") { v.state.value.error != null }
-        assertEquals("tutor is resting", v.state.value.error)
+        assertEquals(AiErrorCopy.GENERIC, v.state.value.error)
     }
 
     private class FakePort(var pro: Boolean = false, val failPurchase: Boolean = false) : BillingPort {
