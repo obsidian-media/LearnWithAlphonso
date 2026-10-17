@@ -545,3 +545,23 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     });
   }
 });
+
+// Learner-facing text never uses "--" as a dash. Walks every string in
+// the course data, which is exactly what the iOS and Android bundles
+// are exported from.
+describe("no double hyphen in learner-facing text", () => {
+  function strings(value: unknown, path: string, out: { path: string; text: string }[]) {
+    if (typeof value === "string") out.push({ path, text: value });
+    else if (Array.isArray(value)) value.forEach((v, i) => strings(v, `${path}[${i}]`, out));
+    else if (value && typeof value === "object")
+      for (const [k, v] of Object.entries(value)) strings(v, `${path}.${k}`, out);
+    return out;
+  }
+
+  for (const { name, units } of courses) {
+    it(`${name}: no "--" in any course string`, () => {
+      const hits = strings(units, name, []).filter((s) => s.text.includes("--"));
+      expect(hits.slice(0, 5), `${hits.length} strings contain "--"`).toEqual([]);
+    });
+  }
+});

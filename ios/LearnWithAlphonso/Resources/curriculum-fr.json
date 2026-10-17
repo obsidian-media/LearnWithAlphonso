@@ -35340,7 +35340,7 @@
       "level": "C1",
       "eyebrow": "Unit 7",
       "title": "Literary Tenses",
-      "description": "Recognizing the passé simple — Passé simple recognition -- used in literature and formal narration, not spoken French.",
+      "description": "Recognizing the passé simple — Passé simple recognition: used in literature and formal narration, not spoken French.",
       "lessons": [
         {
           "id": "frc1p7l1",
@@ -35358,7 +35358,7 @@
                 "he believed"
               ],
               "answer": "he was",
-              "explanation": "il fut → he was. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il fut → he was. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q1",
@@ -35371,7 +35371,7 @@
                 "he said"
               ],
               "answer": 2,
-              "explanation": "il eut → he had. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il eut → he had. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q2",
@@ -35384,7 +35384,7 @@
                 "he did/made"
               ],
               "answer": "he did/made",
-              "explanation": "il fit → he did/made. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il fit → he did/made. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q3",
@@ -35397,7 +35397,7 @@
                 "he did/made"
               ],
               "answer": 0,
-              "explanation": "il alla → he went. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il alla → he went. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q4",
@@ -35410,7 +35410,7 @@
                 "he became"
               ],
               "answer": "he came",
-              "explanation": "il vint → he came. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il vint → he came. Passé simple recognition: used in literature and formal narration, not spoken French."
             }
           ]
         },
@@ -35430,7 +35430,7 @@
                 "he was"
               ],
               "answer": 2,
-              "explanation": "il dit → he said. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il dit → he said. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q6",
@@ -35443,7 +35443,7 @@
                 "he was born"
               ],
               "answer": "he saw",
-              "explanation": "il vit → he saw. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il vit → he saw. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q7",
@@ -35456,7 +35456,7 @@
                 "he received"
               ],
               "answer": 0,
-              "explanation": "il prit → he took. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il prit → he took. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q8",
@@ -35469,7 +35469,7 @@
                 "he knew"
               ],
               "answer": "he could",
-              "explanation": "il put → he could. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il put → he could. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q9",
@@ -35482,7 +35482,7 @@
                 "he lost"
               ],
               "answer": 2,
-              "explanation": "il voulut → he wanted. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il voulut → he wanted. Passé simple recognition: used in literature and formal narration, not spoken French."
             }
           ]
         },
@@ -35502,7 +35502,7 @@
                 "he died"
               ],
               "answer": 2,
-              "explanation": "il sut → he knew. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il sut → he knew. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q11",
@@ -35515,7 +35515,7 @@
                 "he knew/met"
               ],
               "answer": "he believed",
-              "explanation": "il crut → he believed. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il crut → he believed. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q12",
@@ -35528,7 +35528,7 @@
                 "he held"
               ],
               "answer": 0,
-              "explanation": "il naquit → he was born. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il naquit → he was born. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q13",
@@ -35541,7 +35541,7 @@
                 "he went out"
               ],
               "answer": "he died",
-              "explanation": "il mourut → he died. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il mourut → he died. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q14",
@@ -35554,7 +35554,7 @@
                 "he could"
               ],
               "answer": 2,
-              "explanation": "il devint → he became. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il devint → he became. Passé simple recognition: used in literature and formal narration, not spoken French."
             }
           ]
         },
@@ -35574,7 +35574,7 @@
                 "he was born"
               ],
               "answer": "he held",
-              "explanation": "il tint → he held. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il tint → he held. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q16",
@@ -35587,7 +35587,7 @@
                 "he knew"
               ],
               "answer": 0,
-              "explanation": "il écrivit → he wrote. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il écrivit → he wrote. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q17",
@@ -35600,7 +35600,7 @@
                 "he lived"
               ],
               "answer": "he lived",
-              "explanation": "il vécut → he lived. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il vécut → he lived. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q18",
@@ -35613,7 +35613,7 @@
                 "he lost"
               ],
               "answer": 2,
-              "explanation": "il partit → he left. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il partit → he left. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q19",
@@ -35626,7 +35626,7 @@
                 "he lived"
               ],
               "answer": "he went out",
-              "explanation": "il sortit → he went out. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il sortit → he went out. Passé simple recognition: used in literature and formal narration, not spoken French."
             }
           ]
         },
@@ -35646,7 +35646,7 @@
                 "he went out"
               ],
               "answer": "he answered",
-              "explanation": "il répondit → he answered. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il répondit → he answered. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q21",
@@ -35659,7 +35659,7 @@
                 "he could"
               ],
               "answer": 2,
-              "explanation": "il perdit → he lost. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il perdit → he lost. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q22",
@@ -35672,7 +35672,7 @@
                 "he understood"
               ],
               "answer": "he understood",
-              "explanation": "il comprit → he understood. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il comprit → he understood. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q23",
@@ -35685,7 +35685,7 @@
                 "he knew"
               ],
               "answer": 0,
-              "explanation": "il reçut → he received. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il reçut → he received. Passé simple recognition: used in literature and formal narration, not spoken French."
             },
             {
               "id": "frc1p7q24",
@@ -35698,7 +35698,7 @@
                 "he wanted"
               ],
               "answer": "he knew/met",
-              "explanation": "il connut → he knew/met. Passé simple recognition -- used in literature and formal narration, not spoken French."
+              "explanation": "il connut → he knew/met. Passé simple recognition: used in literature and formal narration, not spoken French."
             }
           ]
         }

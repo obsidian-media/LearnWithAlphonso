@@ -780,7 +780,7 @@ Vivo aquí.|Vivo aquí.`,
     title: "Write It Yourself: Everyday Needs",
     subtitle: "Say it your own way",
     kind: "translate",
-    note: "Greetings, needs and everyday small talk -- more than one wording is right.",
+    note: "Greetings, needs and everyday small talk, and more than one wording is right.",
     data: `Ask someone their name.|¿Cómo te llamas?;¿Cuál es tu nombre?;¿Cómo se llama usted?
 Say your name is Ana.|Me llamo Ana.;Mi nombre es Ana.;Soy Ana.
 Ask how someone is doing.|¿Cómo estás?;¿Qué tal?;¿Cómo te va?
@@ -1586,7 +1586,7 @@ Espero verte pronto.|Espero verte pronto.`,
     title: "Write It Yourself: Asking and Arranging",
     subtitle: "Say it your own way",
     kind: "translate",
-    note: "Asking, arranging and explaining -- more than one wording is right.",
+    note: "Asking, arranging and explaining, and more than one wording is right.",
     data: `Ask someone if they are free tonight.|¿Estás libre esta noche?;¿Tienes tiempo esta noche?;¿Puedes esta noche?
 Suggest meeting tomorrow.|¿Nos vemos mañana?;¿Quedamos mañana?;Podríamos vernos mañana.
 Say you have to leave now.|Tengo que irme ahora.;Debo irme ya.;Ya me tengo que ir.
@@ -2404,7 +2404,7 @@ Al final, todo salió bien.|Al final, todo salió bien.`,
     title: "Write It Yourself: Opinions and Reasons",
     subtitle: "Say it your own way",
     kind: "translate",
-    note: "Opinions, reasons and comparisons -- more than one wording is right.",
+    note: "Opinions, reasons and comparisons, and more than one wording is right.",
     data: `Say you think it's a good idea.|Creo que es una buena idea.;Pienso que es una buena idea.;Me parece una buena idea.
 Say in your opinion, he is right.|En mi opinión, él tiene razón.;A mi parecer, él tiene razón.;Yo creo que él tiene razón.
 Say you are not convinced by that argument.|No estoy convencido por ese argumento.;Ese argumento no me convence.;No me convence ese argumento.
@@ -3213,7 +3213,7 @@ El acuerdo beneficiará a ambas partes.|El acuerdo beneficiará a ambas partes.`
     title: "Write It Yourself: Multi-Clause Sentences",
     subtitle: "Say it your own way",
     kind: "translate",
-    note: "Multi-clause sentences -- more than one wording is right.",
+    note: "Multi-clause sentences, and more than one wording is right.",
     data: `Say that when you finish work, you'll go for a walk.|Cuando termine el trabajo, iré a caminar.;Cuando acabe el trabajo, saldré a caminar.;Iré a caminar cuando termine el trabajo.
 Say that if you have time, you could have lunch together.|Si tienes tiempo, podríamos almorzar juntos.;Si tienes tiempo, podríamos comer juntos.;Podríamos almorzar juntos si tienes tiempo.
 Say that although it's difficult, you're going to try.|Aunque es difícil, voy a intentarlo.;Aunque sea difícil, lo voy a intentar.;Voy a intentarlo aunque sea difícil.
@@ -4023,7 +4023,7 @@ Sin más preámbulos, comencemos.|Sin más preámbulos, comencemos.`,
     title: "Write It Yourself: Idiomatic and Formal Phrasing",
     subtitle: "Say it your own way",
     kind: "translate",
-    note: "Idiomatic and formal phrasing -- more than one wording is right.",
+    note: "Idiomatic and formal phrasing, and more than one wording is right.",
     data: `Say it goes without saying that this project is important.|Ni que decir tiene que este proyecto es importante.;Huelga decir que este proyecto es importante.;Sobra decir que este proyecto es importante.
 Say that goes without saying.|Eso ni se pregunta.;Eso se sobreentiende.;Ni hace falta decirlo.
 Say please excuse this delay.|Le ruego que disculpe este retraso.;Le pido disculpas por este retraso.;Disculpe usted este retraso, por favor.

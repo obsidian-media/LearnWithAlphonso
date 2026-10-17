@@ -179,7 +179,7 @@ export const advancedUnits: Unit[] = [
             answer: "in",
             // Was "Can I pay ___ card?", identical to u3l2:q6 including the
             // answer. This teaches the other half of the same rule instead.
-            explanation: '"Pay in cash" -- but "pay by card".',
+            explanation: '"Pay in cash", but "pay by card".',
           },
           {
             id: "q5",
