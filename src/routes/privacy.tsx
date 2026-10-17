@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "7 October 2026"; // same date on all four legal pages
+const UPDATED = "16 October 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -51,7 +51,7 @@ function Privacy() {
             "Practice items from your mistakes: after a conversation, our AI looks for mistakes you make often. If it finds one, we save a short practice item to your review queue (a label for the weak spot, a question, answer choices and an explanation) and a record of the type of mistake.",
             "Social data: your friends and friend requests, study buddy pairings and the preset messages you exchange, whether you are waiting for a matched study buddy and that you confirmed you are 13 or older to use matching, team membership and any team name you choose, duel invitations, learners you block, and reports you make or that are made about you.",
             "AI consent: whether you have allowed AI features on your account, and when.",
-            "Audio library use: which episodes you play, how far through you are, and which you download for offline listening.",
+            "Audio library use: which episodes you play, how far through you are, and which you download for offline listening. Episodes marked AI-narrated are read by a synthetic voice (Deepgram text-to-speech) from scripts we write; making them uses no personal data.",
             "Purchases: whether you hold an active Alphonso Pro subscription, and its status and renewal dates. We never receive or store your card details. Apple, or Google Play on Android, handles payment.",
             "Notifications: if you enable push notifications, a device token so we can send them. It is used for nothing else.",
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
@@ -168,7 +168,7 @@ function Privacy() {
             "Supabase: database, authentication and server functions. Holds your account and all learning data.",
             "Vercel: hosts the website and the server API that the apps call. It handles every request the apps and the website make, and keeps request logs (including IP address and device or browser type) for a limited period so we can keep the service secure and working.",
             "Resend: delivers the emails we send, such as your sign-in codes and password-reset links, and internal alerts to us when a learner files a report.",
-            "Deepgram: converts your recorded speech to text, and AI replies to spoken audio. It receives the recording or the reply text, not your account details. Deepgram does not keep your recordings or use them to train its models: we opt every request out of its model improvement program, so it keeps the data only as long as it needs to process the request.",
+            "Deepgram: converts your recorded speech to text, AI replies to spoken audio, and our audio library scripts to the AI-narrated episodes. It receives the recording or the reply text, not your account details. Deepgram does not keep your recordings or use them to train its models: we opt every request out of its model improvement program, so it keeps the data only as long as it needs to process the request.",
             "NVIDIA: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, and finds practice items in your conversation mistakes. It receives only the text needed for each task.",
             "RevenueCat: manages subscription status. It receives an account identifier and purchase and renewal information from Apple or Google, not your payment details.",
             "Apple: Sign in with Apple if you choose it, App Store billing for Alphonso Pro, and the Apple Push Notification service for notifications on iPhone.",
