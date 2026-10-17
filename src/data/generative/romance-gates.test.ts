@@ -9,7 +9,7 @@ import { ES_NOUNS, ES_VERBS } from "./es-data";
 import { esCandidates } from "./es-compile";
 import { frDefects } from "./fr-check";
 import { FR_AVOIR_PRESENT, FR_ETRE_PRESENT, FR_NOUNS, FR_VERBS } from "./fr-data";
-import { frCandidates, frVerbElides, frVerb } from "./fr-compile";
+import { frCandidates } from "./fr-compile";
 import { allPacks } from "./romance-bank.testutil";
 import { ROMANCE_PACK_SPECS, buildRomancePack, specCandidates } from "./romance-packs";
 import { completeSentence, type GeneratedItem, type Noun } from "./romance";
@@ -274,13 +274,13 @@ describe("gate 4: elision, contraction and typography on the COMPLETED sentence,
     for (const { spec, items } of built) {
       if (spec.lang !== "fr") continue;
       if (spec.template === "fr-svo-present") {
-        const flags = spec.verbs.map((v) => frVerbElides(frVerb(v)));
+        const flags = spec.verbs.map((v) => /^[aeiouhéèêàâîôû]/i.test(v));
         expect(new Set(flags).size, `${spec.id} mixes vowel and consonant verbs`).toBe(1);
       }
       for (const item of items)
         if (item.subject === "je") {
           expect(item.template, item.prompt).toBe("fr-svo-present");
-          expect(frVerbElides(frVerb(item.verb)), item.prompt).toBe(false);
+          expect(/^[aeiouhéèêàâîôû]/i.test(item.verb), item.prompt).toBe(false);
         }
     }
   });
