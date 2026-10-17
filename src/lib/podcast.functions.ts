@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PodcastFolder } from "./podcast-tree";
 import { buildIlikeOrFilter } from "./podcast-search";
+import { isAiNarrated } from "./podcast-label";
 
 /**
  * Read/write server functions for the podcast library (Phase 1a, see
@@ -14,8 +15,6 @@ import { buildIlikeOrFilter } from "./podcast-search";
  * (supabase/migrations/20260926010000_podcast_library.sql), so no handler
  * here re-checks it.
  */
-
-import { isAiNarrated } from "./podcast-label";
 
 const BUCKET = "podcast-audio";
 

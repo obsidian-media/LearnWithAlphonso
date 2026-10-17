@@ -81,6 +81,8 @@ final class PodcastClientTests: XCTestCase {
             "5:05 \u{00B7} Resume \u{00B7} AI-narrated"
         )
         XCTAssertEqual(PodcastLabel.rowSubtitle(durationSeconds: 61, resume: false, aiNarrated: true), "1:01 \u{00B7} AI-narrated")
+        XCTAssertEqual(PodcastLabel.downloadedSubtitle(aiNarrated: false), "Downloaded")
+        XCTAssertEqual(PodcastLabel.downloadedSubtitle(aiNarrated: true), "Downloaded \u{00B7} AI-narrated")
         XCTAssertFalse(PodcastLabel.isAiNarrated(source: nil))
         XCTAssertFalse(PodcastLabel.isAiNarrated(source: "upload"))
     }

@@ -526,7 +526,7 @@ private struct OfflineEpisodeList: View {
                         } label: {
                             AlphonsoRowCard(
                                 title: episode.title,
-                                subtitle: "Downloaded",
+                                subtitle: PodcastLabel.downloadedSubtitle(aiNarrated: episode.aiNarrated),
                                 leadingEmoji: "🎧"
                             )
                         }
