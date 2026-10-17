@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AI_NARRATED_LABEL } from "../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../lib/podcast-player";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
@@ -72,6 +73,9 @@ export function PodcastPlayer() {
         <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-ink">{episode.title}</p>
+            {episode.aiNarrated ? (
+              <p className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</p>
+            ) : null}
             {failed ? (
               <p className="text-xs text-rose-600">We couldn&apos;t play this episode.</p>
             ) : (

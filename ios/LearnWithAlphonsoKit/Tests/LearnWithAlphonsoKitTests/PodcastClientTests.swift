@@ -35,7 +35,7 @@ final class PodcastClientTests: XCTestCase {
         return (data, http)
     }
 
-    private func episodeRow(id: String = "e1", duration: Int = 300) -> [String: Any] {
+    private func episodeRow(id: String = "e1", duration: Int = 300, source: String = "tts") -> [String: Any] {
         [
             "id": id,
             "folder_id": "f1",
@@ -44,7 +44,47 @@ final class PodcastClientTests: XCTestCase {
             "description": NSNull(),
             "audio_path": "en/a1/ordering-coffee.mp3",
             "duration_seconds": duration,
+            "source": source,
         ]
+    }
+
+    // MARK: - AI-narrated label
+
+    func testBothEpisodeQueriesAskForTheSourceAndLabelOnlyTextToSpeech() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            let url = request.url!
+            if url.absoluteString.contains("podcast_episodes") {
+                return self.jsonResponse(for: url, body: [
+                    self.episodeRow(id: "e1", source: "tts"),
+                    self.episodeRow(id: "e2", source: "upload"),
+                ])
+            }
+            return self.jsonResponse(for: url, body: [])
+        }
+        let listed = try await client.fetchEpisodes(folderID: "f1")
+        XCTAssertEqual(listed.map(\.aiNarrated), [true, false])
+        let listQuery = await box.requests.first { $0.url!.absoluteString.contains("podcast_episodes") }!.url!.query ?? ""
+        XCTAssertTrue(listQuery.contains("source"), listQuery)
+
+        let found = try await client.searchEpisodes(query: "coffee")
+        XCTAssertEqual(found.map(\.aiNarrated), [true, false])
+        let searchQuery = await box.last!.url!.query ?? ""
+        XCTAssertTrue(searchQuery.contains("source"), searchQuery)
+    }
+
+    func testRowSubtitleAddsResumeAndTheLabelInOrder() {
+        XCTAssertEqual(PodcastLabel.rowSubtitle(durationSeconds: 305, resume: false, aiNarrated: false), "5:05")
+        XCTAssertEqual(
+            PodcastLabel.rowSubtitle(durationSeconds: 305, resume: true, aiNarrated: true),
+            "5:05 \u{00B7} Resume \u{00B7} AI-narrated"
+        )
+        XCTAssertEqual(PodcastLabel.rowSubtitle(durationSeconds: 61, resume: false, aiNarrated: true), "1:01 \u{00B7} AI-narrated")
+        XCTAssertEqual(PodcastLabel.downloadedSubtitle(aiNarrated: false), "Downloaded")
+        XCTAssertEqual(PodcastLabel.downloadedSubtitle(aiNarrated: true), "Downloaded \u{00B7} AI-narrated")
+        XCTAssertFalse(PodcastLabel.isAiNarrated(source: nil))
+        XCTAssertFalse(PodcastLabel.isAiNarrated(source: "upload"))
     }
 
     // MARK: - fetchFolders

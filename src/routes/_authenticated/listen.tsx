@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
+import { AI_NARRATED_LABEL } from "../../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../../lib/podcast-player";
 import {
   listEpisodes,
@@ -71,8 +72,11 @@ export function PodcastSearchResults({
             onClick={() => play(episode)}
             className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
           >
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
-              {episode.title}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-ink">{episode.title}</span>
+              {episode.aiNarrated ? (
+                <span className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+              ) : null}
             </span>
             <span className="tnum ml-3 text-xs text-ink-soft/70">
               {formatDuration(episode.durationSeconds)}
@@ -170,9 +174,12 @@ export function ListenFolderView({
                   <span className="block truncate text-sm font-semibold text-ink">
                     {episode.title}
                   </span>
-                  {episode.positionSeconds > 0 ? (
-                    <span className="text-xs text-moss">Resume</span>
-                  ) : null}
+                  <span className="flex gap-2 text-xs">
+                    {episode.positionSeconds > 0 ? <span className="text-moss">Resume</span> : null}
+                    {episode.aiNarrated ? (
+                      <span className="text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+                    ) : null}
+                  </span>
                 </span>
                 <span className="tnum ml-3 text-xs text-ink-soft/70">
                   {formatDuration(episode.durationSeconds)}
