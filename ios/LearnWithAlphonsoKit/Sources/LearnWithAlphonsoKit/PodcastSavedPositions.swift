@@ -67,6 +67,6 @@ public struct PodcastSavedPositions: Equatable, Sendable {
             id: episode.id, folderID: episode.folderID, slug: episode.slug, title: episode.title,
             description: episode.description, audioURL: episode.audioURL,
             durationSeconds: episode.durationSeconds, positionSeconds: entry.position,
-            playbackUpdatedAt: entry.updatedAt)
+            playbackUpdatedAt: entry.updatedAt, aiNarrated: episode.aiNarrated)
     }
 }

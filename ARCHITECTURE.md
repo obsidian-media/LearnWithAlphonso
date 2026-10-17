@@ -700,8 +700,14 @@ hand-authored one once it lands in `lesson-bank.ts`.
   committed file collapses an empty array onto one line, which a naive
   `"\n];"` search couldn't find).
 
+**French and Spanish (designed, not yet built):** the extension is
+specified in `docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md`
+(library spike results, templates, closed vocabulary taken only from the
+shipped course data, and the validation gates). This section is renamed
+when the implementation lands.
+
 **Known, documented limitations** (not silently solved): French/Spanish
-out of scope; cross-verb MC distractors reduced but not eliminated
+out of scope for the pilot itself; cross-verb MC distractors reduced but not eliminated
 (would need semantic verb/object modeling or a shared `bank-engine.ts`
 change, both out of scope for the pilot); a new LLM-proposed verb
 beyond the 7 spike-verified ones (have/go/do/walk/run/eat/play) is

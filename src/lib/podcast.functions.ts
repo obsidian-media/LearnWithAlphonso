@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PodcastFolder } from "./podcast-tree";
 import { buildIlikeOrFilter } from "./podcast-search";
+import { isAiNarrated } from "./podcast-label";
 
 /**
  * Read/write server functions for the podcast library (Phase 1a, see
@@ -26,6 +27,8 @@ export type PodcastEpisode = {
   audioUrl: string;
   durationSeconds: number;
   positionSeconds: number;
+  /** Read by a synthetic voice (`source = 'tts'`); the apps label these "AI-narrated". */
+  aiNarrated: boolean;
 };
 
 /**
@@ -38,6 +41,35 @@ export function clampPosition(position: number, durationSeconds: number): number
   if (!Number.isFinite(position) || position <= 0) return 0;
   if (position >= durationSeconds - 1) return 0;
   return position;
+}
+
+export type PodcastEpisodeRow = {
+  id: string;
+  folder_id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  duration_seconds: number;
+  source: string | null;
+};
+
+/** One row as the clients see it. Shared by the folder listing and search so both label episodes the same way. */
+export function toPodcastEpisode(
+  row: PodcastEpisodeRow,
+  audioUrl: string,
+  positionSeconds: number,
+): PodcastEpisode {
+  return {
+    id: row.id,
+    folderId: row.folder_id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    audioUrl,
+    durationSeconds: row.duration_seconds,
+    positionSeconds,
+    aiNarrated: isAiNarrated(row.source),
+  };
 }
 
 /** Every folder, flat. The clients build the tree (see podcast-tree.ts). */
@@ -70,7 +102,7 @@ export const listEpisodes = createServerFn({ method: "GET" })
 
     const episodesRes = await db
       .from("podcast_episodes")
-      .select("id, folder_id, slug, title, description, audio_path, duration_seconds")
+      .select("id, folder_id, slug, title, description, audio_path, duration_seconds, source")
       .eq("folder_id", data.folderId)
       .order("sort_order", { ascending: true });
     if (episodesRes.error) throw new Error(episodesRes.error.message);
@@ -105,16 +137,13 @@ export const listEpisodes = createServerFn({ method: "GET" })
       (playbackRes.data ?? []).map((row) => [row.episode_id, row.position_seconds]),
     );
 
-    return episodes.map((row) => ({
-      id: row.id,
-      folderId: row.folder_id,
-      slug: row.slug,
-      title: row.title,
-      description: row.description,
-      audioUrl: db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl,
-      durationSeconds: row.duration_seconds,
-      positionSeconds: clampPosition(positions.get(row.id) ?? 0, row.duration_seconds),
-    }));
+    return episodes.map((row) =>
+      toPodcastEpisode(
+        row,
+        db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl,
+        clampPosition(positions.get(row.id) ?? 0, row.duration_seconds),
+      ),
+    );
   });
 
 export const savePlaybackPosition = createServerFn({ method: "POST" })
@@ -196,25 +225,18 @@ export const searchEpisodes = createServerFn({ method: "GET" })
     const db = context.supabase;
     const { data: rows, error } = await db
       .from("podcast_episodes")
-      .select("id, folder_id, slug, title, description, audio_path, duration_seconds")
+      .select("id, folder_id, slug, title, description, audio_path, duration_seconds, source")
       .or(filter)
       .order("title", { ascending: true })
       .limit(50);
     if (error) throw new Error(error.message);
 
-    return (rows ?? []).map((row) => ({
-      id: row.id,
-      folderId: row.folder_id,
-      slug: row.slug,
-      title: row.title,
-      description: row.description,
-      audioUrl: db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl,
-      durationSeconds: row.duration_seconds,
-      // Resume position is deliberately not joined here: a search result is a
-      // way to find an episode, and the player reads the authoritative
-      // position when it opens one.
-      positionSeconds: 0,
-    }));
+    // Resume position is deliberately not joined here: a search result is a
+    // way to find an episode, and the player reads the authoritative
+    // position when it opens one.
+    return (rows ?? []).map((row) =>
+      toPodcastEpisode(row, db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl, 0),
+    );
   });
 
 /**
