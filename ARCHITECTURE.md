@@ -861,7 +861,14 @@ The server also owns the entry rule since 2026-10-08: a lesson cannot start
 at 0 hearts (see "Edge Functions"), the web lesson page and Learn's hearts
 dialog offer "Use 50 XP for a heart" and "Practice or review instead", and
 iOS starts the lesson session when a lesson opens and holds the token to the
-finish, so a heart lost mid-lesson never costs the lesson.
+finish, so a heart lost mid-lesson never costs the lesson. Android does the
+same since #303 (2026-10-16): `LessonViewModel.openSession` runs once per
+screen, a `409 out-of-hearts` becomes `ProgressSyncError.OutOfHearts` and the
+out-of-hearts screen replaces the lesson (countdown, "Use 50 XP for a heart"
+online only, "Review instead"); offline the cached hearts decide with
+`HeartsEconomy.gate`, and losing the last heart offline starts the 30-minute
+refill timer in the cache (`afterLosingHeart`). A held token older than the
+server's 3-hour limit is replaced once at finish on a 403.
 
 ## Themes
 
@@ -1243,6 +1250,13 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   and overtake messages. `app.widget.StreakWidget` (Glance) reads the
   `StreakWidgetSnapshot` JSON that `RoomSyncQueueStore.updateLastKnownProgress`
   publishes, the same funnel `WidgetProgressPublisher.swift` uses.
+- **AI errors** (#302, 2026-10-16). `AiConversationError.Server` and
+  `TutorConversationError.Server` carry the response's `error` code and
+  `resetsAt` apart from `serverMessage` (the human `detail` only), and every
+  conversation screen shows `core.net.AiErrorCopy.userMessage(e)`: the same
+  wording as the iOS Kit's `TutorError.userMessage` and the web's
+  `quotaExceededMessage`, never a machine code. `chat` retries once on
+  `502 {error:"empty-reply"}`, like `src/lib/chat-request.ts`.
 - **Release (Plan 5).** `.github/workflows/android-release.yml` is the
   counterpart of `ios-release.yml`: refuses without the four keystore
   secrets and a production RevenueCat key, decodes the upload keystore
@@ -1422,6 +1436,14 @@ separate PRs because the generated types had to be regenerated between them.
   at once (`BlockedUserSignal`, #270).
 - **Profile privacy.** `profiles` is own-row readable only (`130800`); the
   data export includes the new per-user tables.
+- **Name policy follow-ups.** `moderation_fold` maps nine more look-alike
+  letters (Cyrillic capitals identical to Latin ones, script a, dotless i,
+  script g, komi de; `20261016100000`, #292), so "ADMIN" with a Cyrillic M is
+  refused while real Cyrillic names stay allowed (49 pinned in tests). Digit
+  swaps were already folded (p0rn, k1ll yourself, 4dmin); the slang spellings
+  `noods` and `pron` were added as whole words in `20261018100000` (#304).
+  Every follow-up is tested by running the real migration files in PGlite,
+  before and after, with a false-positive list.
 
 ## Vocab images
 
@@ -1493,6 +1515,16 @@ until the fetch finished, made the largest-text layouts scroll as one column,
 made the lesson-finish headline follow the score, and made the podcast player
 remember the last position it stored (`PodcastSavedPositions`, compared by
 version-stamp identity, never by a client clock).
+
+#284, #291 and #293 (2026-10-12, build 51). A review grade carries an attempt
+id from the first try, so a lost response is replayed instead of graded twice,
+and a retry wakeup fires when a queued item becomes due. A failure with no
+connection waits 30 s and keeps its failure count instead of joining the
+server-trouble backoff. The Learn tab reloads the level after onboarding or a
+placement test, the widget's "Studied today" ends at the UTC day change, the
+practice gate says "You're offline" when it is, the queued-lesson screen says
+"Up to +N XP once it syncs", and a Learn-tab line counts work still waiting to
+sync with a **Sync now** button when online.
 
 ## Voice engine and podcast player (iOS)
 
@@ -1591,10 +1623,75 @@ pure tested module.
   `e2e/legal-ssr.spec.ts`); `scripts/check-ios-build-number.ts` is the build
   number guard.
 
+## Saves, scheduled maintenance and operations (server)
+
+Added 2026-10-12 (#283-#290, #295-#298). `docs/operations.md` is the runbook.
+
+- **One transaction per save.** `apply_lesson_completion` writes progress,
+  course XP, the completion, daily XP, missed-question review items and feed
+  events together or not at all, and rejects a stale snapshot so the caller
+  recomputes (the web server function retries up to three more times).
+  `apply_review_grade` grades, retires and records the resolution event in one
+  transaction and stores the result per attempt id (`review_grade_attempts`),
+  so a replay returns the original answer. Both are `SECURITY DEFINER`,
+  service-role only, and called by the web server functions and the Edge
+  Functions.
+- **Achievements** are skipped when their read fails (never rewritten from an
+  empty read), a failed write is logged, and the promotion count is the larger
+  of the stored counter and the saved promotion events (#289).
+- **Off switches and deadlines.** `app_switches` rows `ai` and `tutor` (30 s
+  cache; a failed read counts as on). With `ai` off every AI route answers
+  `503 ai-unavailable` and grading falls back to the curated answers. Model
+  calls get a 30 s default deadline; chat, STT and TTS answer a retryable
+  `504` on timeout; chat replies are capped at 1,024 tokens.
+- **Scheduled maintenance.** `pg_cron` runs `run_maintenance_sweep()` every 15
+  minutes: it prunes grade receipts older than 30 days and calls
+  `POST /api/internal/maintenance` (shared secret), which retries parked Apple
+  revocations (`apple_revocation_pending`, no link to the deleted account,
+  owner emailed after 7 days), retries RevenueCat subscriber erasure
+  (`revenuecat_erasure_pending`, owner emailed after 30 days), emails a digest
+  for undelivered moderation reports (`content_report_delivery`) and one
+  reminder for reports open after 20 hours. All four tables have RLS on, no
+  policies and no client privileges.
+- **Privacy in logs and fonts.** Account ids and model output are kept out of
+  the weakness-detection, account-deletion and Apple paths (#287, #298), so
+  server diagnostics are not linked to an account; the iOS privacy manifest
+  declares them as Performance Data and Other Diagnostic Data, not linked
+  (#297). The web fonts are bundled from `@fontsource` and served from the
+  site, so no visitor request goes to a font CDN (#288, guarded by
+  `e2e/fonts.spec.ts`).
+- **Data export** reads every page, includes the account email on the native
+  route, and fails loudly on a read error, a changed row count or a row read
+  twice (#284).
+- **Uptime and `main`.** `.github/workflows/uptime.yml` makes six public
+  requests every 15 minutes; a failed run is the alert (#290). `main` is
+  protected by a ruleset that requires seven checks (lint-and-typecheck,
+  web-build, admin-build, e2e, deno-tests, ios-swift-tests, ios-app-build); the
+  types-regeneration workflow pushes with a deploy key the ruleset exempts
+  (#296).
+
 ## Known rough edges
 
 (A full audit is kept locally, gitignored, not in this repo — see the
 note in README.md's Documentation section for why.)
+
+- **`net` (pg_net) is open to every role, and a migration cannot close it**
+  (found 2026-10-16). Supabase's defaults let `anon` and `authenticated`
+  execute `net.http_post` / `http_get` and read and write `net._http_response`;
+  the grants belong to `supabase_admin`, so a `REVOKE` run as `postgres` (every
+  migration) is a silent no-op (checked in a rolled-back transaction). Not
+  reachable today: the API exposes only `public` and `graphql_public`, and the
+  three callers (`notify_content_report`, `notify_nudge_push`,
+  `run_maintenance_sweep`) are `SECURITY DEFINER` owned by `postgres`. Keep
+  `net` out of the exposed schemas and never call it from a `SECURITY
+  INVOKER` function. The advisor's "extension in public" note is cosmetic:
+  pg_net puts no objects in `public`, and moving it means dropping and
+  recreating it in production.
+- **Android's `LearnViewModelTest` is flaky** ("selecting a level saves it to
+  the server without blocking"): it uses `MainDispatcherRule` with real-time
+  polling and fails now and then in CI; a re-run passes.
+- **Android hearts gate and AI error copy (#302, #303) have not run on a
+  device or emulator**; see `android/LearnWithAlphonso/DEVICE-CHECKLIST.md`.
 
 - **A custom SwiftUI color palette that doesn't set `.preferredColorScheme`
   will look broken on a device in system Dark Mode, even if every color

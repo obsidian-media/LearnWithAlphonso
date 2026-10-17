@@ -78,3 +78,15 @@ No request waits on a provider without a limit. A timeout returns a retryable `5
 `.github/workflows/uptime.yml` runs every 15 minutes from GitHub, outside the app. It makes six unauthenticated requests (landing page, privacy policy, a server route, the sign-in service, the database API, an Edge Function) and fails if any does not give the status a healthy service gives. A failed run is the alert: GitHub notifies people watching the repository's Actions. Turn that on under GitHub **Settings > Notifications > Actions** ("Send notifications for failed workflows only").
 
 It does not see slow responses, errors inside a signed-in session, or a scheduled job that stopped running. For the scheduled job use the queries above.
+
+## Outbound HTTP from the database (`net`)
+
+The scheduled pass, the report notification trigger and the push nudge trigger send HTTP requests through the `pg_net` extension (`net.http_post`). Supabase's defaults let every role, including `anon` and `authenticated`, call `net.http_*` and read and write `net._http_response`. Those grants belong to `supabase_admin`, so a migration (which runs as `postgres`) cannot revoke them: the `REVOKE` succeeds with a warning and changes nothing.
+
+They are safe today because the API serves only the `public` and `graphql_public` schemas, and the three callers are `SECURITY DEFINER` functions owned by `postgres`. Keep it that way:
+
+- Never add `net` to **Project Settings > API > Exposed schemas**.
+- Call `net.*` only from `SECURITY DEFINER` functions, never from a function a client can run as itself.
+- To check: `select has_function_privilege('anon', 'net.http_post(text,jsonb,jsonb,jsonb,integer)', 'EXECUTE');` is expected to be true; the API refusing `Accept-Profile: net` with `PGRST106` is what protects it.
+
+The advisor's "extension in public" note for `pg_net` is cosmetic: the extension puts no objects in `public`, and moving it means dropping and recreating it in production.

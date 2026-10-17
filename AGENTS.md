@@ -63,6 +63,9 @@ table and `ARCHITECTURE.md`'s "Native iOS app" section.
 | `android/LearnWithAlphonso/core/.../goal/{LearningGoal,GoalCopy,GoalCache,GoalCardModel}.kt`, `core/.../net/LearningGoalClient.kt`, `app/.../ui/learn/{GoalCard,GoalCardViewModel}.kt` | Android side of the goal planner. No plan maths on the device. The core tests decode `core/src/test/resources/learning-goal.fixtures.json`, a COPY of `src/lib/learning-goal.fixtures.json` that `src/lib/learning-goal-ios-fixtures.test.ts` keeps byte-identical (the iOS copy too: after changing the web fixtures, copy the file to BOTH). `GoalCopy.kt`, iOS `GoalCopy.swift` and `GoalCard.tsx` hold the same text: change all three together. Every request/response guard that matters (stale results, cache rules, cancellation) lives in the pure `GoalCardModel`/`LearningGoalClient` and is unit-tested; keep logic out of the Compose layer, which has no tests here. Run Gradle through the playground toolchain (see the Android toolchain note) |
 | `ios/LearnWithAlphonsoKit/.../{TeamMission,ProgressSyncClient+TeamMission}.swift`, `ios/LearnWithAlphonso/Sources/TeamMissionCardView.swift`, `android/LearnWithAlphonso/core/.../{team/TeamMission,team/TeamMissionModel,net/TeamMissionClient}.kt`, `app/.../ui/league/TeamMissionCard.kt` | Native side of the team mission. No mission maths on the device: `get_team_mission()` computes it. Both native test suites decode COPIES of `src/lib/team-mission.fixtures.json`, kept byte-identical by `src/lib/team-mission-ios-fixtures.test.ts`: change the web file, copy it to `ios/.../Tests/.../Fixtures/` and `android/.../core/src/test/resources/`, and keep the wording in `team-mission.ts`, `TeamMission.swift` and `TeamMission.kt` identical (the fixtures fail the others otherwise). A failed call shows no card; a server error or malformed row throws (never reads as "no team"). |
 | `src/lib/learning-goal.ts`, `learning-goal.server.ts`, `src/routes/api/learning-goal.ts`, `src/lib/learning-goal-client.ts`, `src/components/GoalCard.tsx` | Learning goal planner. The plan maths lives ONLY in `planGoal` (server); clients render the JSON and must not recompute it. `learning-goal.fixtures.json` is the cross-platform response contract (regenerate with `UPDATE_FIXTURES=1 bun run test src/lib/learning-goal.test.ts`, then read it); iOS and Android decode the same samples. Warning limits are the named constants `AMBITIOUS_PER_WEEK`/`UNREALISTIC_PER_WEEK`. `learning_goals` is SELECT-only for clients (writes go through the route), is in `USER_ID_EXPORT_TABLES`, and `completed_at` is the FIRST completion so replays cannot raise the pace |
+| `android/LearnWithAlphonso/core/.../net/AiErrorCopy.kt`, `core/.../net/AiConversationClient.kt` | Android AI error copy (#302). Screens show `AiErrorCopy.userMessage(e)`, never `serverMessage` or a machine code. The wording is a copy of iOS `TutorError.userMessage` and web `quotaExceededMessage` (`src/lib/quota-copy.ts`): change all three together, and add the vector to `AiConversationClientTest`. `Server.code` is the body's `error` field, `serverMessage` only its `detail`. `chat` retries once on `502 empty-reply` and never loops. |
+| `android/LearnWithAlphonso/app/.../ui/lesson/{LessonViewModel,LessonScreen}.kt`, `core/.../logic/HeartsEconomy.kt` (`gate`, `afterLosingHeart`, `OutOfHeartsModel`) | Android hearts gate (#303). The session opens when the lesson opens (`onScreenShown`, once per view model) and its token is reused at finish; a 403 with a held token mints one fresh token. Offline, only the cached hearts decide. Copy and countdown mirror iOS `OutOfHeartsModel` and the web `HeartsModal`. Tests that need the session open must `openSession().join()`, not poll the fake server (the server answering is not the token being stored). |
+| `supabase/migrations/*name_policy*`, `*name_fold*` | Public-name word lists. To add words, write a NEW migration that restates the whole `name_policy_terms()` array plus the new words (CREATE OR REPLACE keeps the service-role-only grants), probe production in a rolled-back transaction for existing names that would become blocked, and add a PGlite test that runs the real migrations before and after with a false-positive list (`src/lib/name-policy-slang-migration.test.ts` is the template). Terms match whole words only, after `moderation_fold`. |
 | `src/routes/api/define-word.ts`, `src/lib/saved-word.ts`, `src/lib/saved-word.server.ts`          | Save-any-word backend: one NVIDIA call turns a tapped word + its sentence into a stored multiple-choice `saved_word` review item. Check order is deliberate and tested: validate, already-saved (free), 500-per-course cap, `define` quota (40/day, 10/min), model, insert. Pure rules live in `saved-word.ts`; item key + prompt + the NVIDIA call in `saved-word.server.ts`. When changing the quota functions, base `CREATE OR REPLACE` on the LATEST definition (see `saved-word-migration.test.ts`). The model call has two 9 s attempts and retries only after a timeout, network error or 5xx; the quota is spent once, before it |
 | `src/routes/api/analyze-weaknesses.ts`                                                           | TanStack Start route (not an Edge Function — see `ARCHITECTURE.md`): NVIDIA NIM weakness detection after a Hector/free conversation, taxonomy-constrained, inserts synthetic `review_items` rows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/QuestionGrading.swift`                    | `isAnswerCorrect` (client-side optimistic grading) + `question(fromWeaknessItem:)` — builds a `Question` from a weakness-sourced `ReviewItem`'s embedded content instead of a bundled-lesson lookup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -235,7 +238,8 @@ smoke tests in `e2e/*.spec.ts`, scoped to unauthenticated routes (no
 seeded test account exists for CI to sign in with). `ios/LearnWithAlphonsoKit`
 has its own XCTest suite (SRS/progress-math/hearts/SyncEngine/weakness-
 detection-helper ports, network client tests via an injected requester
-closure — no real network in tests), 1,024 tests as of 2026-10-09 (#270). Lint,
+closure — no real network in tests), 1,040 tests as of 2026-10-16 (CI on main
+after #304). Lint,
 typecheck, Vitest, Playwright, and the Swift package's tests are all
 wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 `main` (both Swift jobs run on a macOS runner; Vitest runs as a step
@@ -244,10 +248,15 @@ miss when reading `gh pr checks` output; the Supabase generated-types
 freshness check is its own advisory `types-fresh` job that `deploy-supabase`
 does not wait on, so it can be red on a table-adding PR without blocking
 the deploy that fixes it; the jobs in `ci.yml` are `lint-and-typecheck`,
-`types-fresh`, `admin-build`, `e2e`, `deno-tests`, `deploy-supabase`,
-`ios-swift-tests` and `ios-app-build`, and `deploy-supabase` `needs` only
-`lint-and-typecheck`, `e2e` and `deno-tests`, so those three are what gate a
-deploy; `main` has no branch protection, so every other check is advisory) —
+`types-fresh`, `admin-build`, `web-build`, `e2e`, `deno-tests`,
+`deploy-supabase`, `ios-swift-tests` and `ios-app-build`, and `deploy-supabase`
+`needs` `lint-and-typecheck`, `web-build`, `admin-build`, `e2e` and
+`deno-tests`, so those five gate a deploy. Since 2026-10-12 `main` is protected
+by a ruleset that requires `lint-and-typecheck`, `web-build`, `admin-build`,
+`e2e`, `deno-tests`, `ios-swift-tests` and `ios-app-build` to pass, with no
+force-push or deletion; `types-fresh`, CodeQL, CodeRabbit and the Android jobs
+are not required. The types-regeneration workflow pushes with an exempt deploy
+key, and organisation admins can bypass, so merge on green by discipline) —
 `ios-app-build` additionally
 runs a real `xcodebuild` of the `LearnWithAlphonso` app target itself,
 the only compile verification that exists for it (no local Xcode/macOS
@@ -256,8 +265,8 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest. About 277 test files / 3,030 tests as of 2026-10-09
-                      # (the last full CI count, reported on #265),
+bun run test         # Vitest. 293 test files / 3,490 passed + 1 skipped as of
+                      # 2026-10-16 (CI on main after #304),
                       # taken from a CI run on main, NOT from this machine --
                       # see the verification-hygiene note below. Treat the CI
                       # number as the baseline: a local run reporting FEWER

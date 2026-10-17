@@ -40,18 +40,23 @@ Every tab is real, and all five plans are merged to `main` (the app arrived on
 owner's side of the release (`OWNER-SETUP.md`: Play account, subscription,
 RevenueCat Android key) and the device checklist below.
 
-## Not yet ported from iOS and web (as of 2026-10-09)
+## Not yet ported from iOS and web (as of 2026-10-16)
 
 The server now enforces an **account-level AI consent** on every AI endpoint
 (403 `ai-consent-required`), and Android has no consent screen or Settings
 switch yet; its disclosure gate is a per-device flag. Until it is ported, AI
 features on Android work only for an account that has already granted consent
-on web or iOS, and a refused call shows a raw error. This is a release gate
-for the first Play upload. Also missing on Android: the one-time public-name
-step, the hearts gate at lesson open ("out-of-hearts" and "empty-reply" copy),
-the report action on AI replies, French and Spanish conversation scenarios
+on web or iOS; a refused call now says "Turn on AI features to practise
+speaking with a tutor." but offers no switch. This is a release gate for the
+first Play upload. Also missing on Android: the one-time public-name step, the
+report action on AI replies, French and Spanish conversation scenarios
 (learners get the English ones), and the later iOS offline-queue and podcast
-player reliability work. Quota 429s show the raw `quota-exceeded` code.
+player reliability work.
+
+Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
+AI error copy that matches iOS and web, with one retry on an empty chat reply
+(#302), and the hearts gate at lesson open with the out-of-hearts screen
+(#303).
 
 ## Deviations from the spec worth knowing
 
