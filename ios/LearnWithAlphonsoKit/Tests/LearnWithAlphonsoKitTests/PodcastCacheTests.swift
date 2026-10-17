@@ -203,7 +203,8 @@ final class PodcastCacheTests: XCTestCase {
             audioURL: URL(string: "https://example.test/\(id).mp3")!,
             durationSeconds: 172,
             positionSeconds: 0,
-            playbackUpdatedAt: nil
+            playbackUpdatedAt: nil,
+            aiNarrated: false
         )
     }
 

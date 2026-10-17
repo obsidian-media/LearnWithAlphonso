@@ -150,7 +150,7 @@ public final class PodcastClient: Sendable {
     public func fetchEpisodes(folderID: String) async throws -> [PodcastEpisode] {
         let episodesRequest = request(
             path: "rest/v1/podcast_episodes",
-            query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds"
+            query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds,source"
                 + "&folder_id=eq.\(folderID)&order=sort_order.asc",
             method: "GET"
         )
@@ -207,7 +207,8 @@ public final class PodcastClient: Sendable {
                 audioURL: audioURL,
                 durationSeconds: duration,
                 positionSeconds: Int(clamped),
-                playbackUpdatedAt: saved?.updatedAt
+                playbackUpdatedAt: saved?.updatedAt,
+                aiNarrated: PodcastLabel.isAiNarrated(source: row["source"] as? String)
             )
         }
     }
@@ -237,7 +238,7 @@ public final class PodcastClient: Sendable {
         let encoded = PodcastSearch.percentEncodedFilter(filter)
         let request = request(
             path: "rest/v1/podcast_episodes",
-            query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds"
+            query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds,source"
                 + "&or=(\(encoded))&order=title.asc&limit=50",
             method: "GET"
         )
@@ -262,7 +263,8 @@ public final class PodcastClient: Sendable {
                 audioURL: audioURL,
                 durationSeconds: duration,
                 positionSeconds: 0,
-                playbackUpdatedAt: nil
+                playbackUpdatedAt: nil,
+                aiNarrated: PodcastLabel.isAiNarrated(source: row["source"] as? String)
             )
         }
     }

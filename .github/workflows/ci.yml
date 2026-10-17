@@ -182,6 +182,69 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
+  e2e-signed-in:
+    # The signed-in journey (e2e/signed-in.spec.ts): sign in with a password, pass the name prompt, finish the
+    # first English lesson, and check the save in the database. It runs against a throwaway local Supabase
+    # stack started from this repo's own migrations, so it never touches production and needs no secret: the
+    # keys below are the CLI's shared local development defaults (the start step prints them anyway; masking
+    # only keeps them out of later lines). It also proves every migration still applies to an
+    # empty database. Advisory for now (not in the ruleset, not a deploy dependency).
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.118.0
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: bunx playwright install --with-deps chromium
+
+      - name: Start a local Supabase stack from the migrations
+        run: supabase start -x studio,imgproxy,mailpit,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Point the app and the test at it
+        run: |
+          supabase status -o env > /tmp/local.env
+          set -a; . /tmp/local.env; set +a
+          # An empty value would make the spec skip and the job go green having tested nothing.
+          test -n "$API_URL" && test -n "$PUBLISHABLE_KEY" && test -n "$SERVICE_ROLE_KEY"
+          for v in "$ANON_KEY" "$PUBLISHABLE_KEY" "$SERVICE_ROLE_KEY" "$SECRET_KEY" "$JWT_SECRET"; do
+            [ -n "$v" ] && echo "::add-mask::$v"
+          done
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "VITE_SUPABASE_URL=$API_URL"
+            echo "SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+            echo "VITE_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "E2E_SUPABASE_URL=$API_URL"
+            echo "E2E_SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "E2E_REQUIRED=1"
+            echo "LESSON_SESSION_SECRET=$(openssl rand -hex 32)"
+          } >> "$GITHUB_ENV"
+
+      - name: Run the signed-in journey
+        run: bunx playwright test e2e/signed-in.spec.ts --reporter=github,html
+
+      - name: Upload Playwright report and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-signed-in
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   deno-tests:
     # Guards the hand-synced Deno ports of src/lib/srs.ts and hearts.ts
     # (supabase/functions/{grade-review,complete-lesson}/*.ts) against
