@@ -36,10 +36,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
-import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseSurface
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
@@ -57,16 +57,19 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 @Composable
 fun PracticeScreen(container: AppContainer, onOpenScenario: (String) -> Unit, onOpenCampaign: (String) -> Unit) {
     val palette = AlphonsoColor.palette
+    // Practice follows the course chosen on the Learn tab, so a French learner practises with the French partners.
+    val course by container.activeCourse.course.collectAsState()
+    val campaigns = container.content.campaigns(course)
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { Text("Practice speaking", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(bottom = 8.dp)) }
-        if (container.content.campaigns.isNotEmpty()) {
+        if (campaigns.isNotEmpty()) {
             item { AlphonsoSectionHeader("Campaigns") }
-            items(container.content.campaigns, key = { "c-${it.id}" }) { c ->
+            items(campaigns, key = { "c-${course.code}-${it.id}" }) { c ->
                 AlphonsoRowCard(c.title, c.blurb, leadingEmoji = c.emoji, modifier = Modifier.clickable { onOpenCampaign(c.id) })
             }
             item { AlphonsoSectionHeader("Scenarios", Modifier.padding(top = 8.dp)) }
         }
-        items(container.content.scenarios, key = { "s-${it.id}" }) { s ->
+        items(container.content.scenarios(course), key = { "s-${course.code}-${it.id}" }) { s ->
             AlphonsoRowCard(s.title, s.blurb, leadingEmoji = s.emoji, modifier = Modifier.clickable { onOpenScenario(s.id) })
         }
     }
@@ -134,17 +137,19 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
 
 @Composable
 fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBack: () -> Unit) {
-    val scenario = container.content.scenarios.firstOrNull { it.id == scenarioId } ?: run { onBack(); return }
+    // The course is fixed when the screen opens; the conversation stays in it. The view model is keyed by it.
+    val course = remember { container.activeCourse.course.value }
+    val scenario = container.content.scenarios(course).firstOrNull { it.id == scenarioId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
-    val vm: ScenarioConversationViewModel = viewModel(key = "scenario-$scenarioId") {
-        ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient) { playback.play(it) }
+    val vm: ScenarioConversationViewModel = viewModel(key = "scenario-${course.code}-$scenarioId") {
+        ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course)
     }
     val palette = AlphonsoColor.palette
     AiConsentGate(container, onDecline = onBack) {
         ConversationBody(
             vm, scenario.title, palette.moss, Color.White, onBack,
             reporting = ReplyReporting(container.aiReports) { message, _, reason ->
-                AiResponseReport(message, AiResponseSurface.CONVERSATION, "en", reason, scenarioId = scenario.id)
+                AiReplyReports.scenario(message, course.code, scenario.id, reason)
             },
         )
     }
@@ -152,10 +157,11 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
 
 @Composable
 fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBack: () -> Unit) {
-    val campaign = container.content.campaigns.firstOrNull { it.id == campaignId } ?: run { onBack(); return }
+    val course = remember { container.activeCourse.course.value }
+    val campaign = container.content.campaigns(course).firstOrNull { it.id == campaignId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
-    val vm: CampaignConversationViewModel = viewModel(key = "campaign-$campaignId") {
-        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient) { playback.play(it) }
+    val vm: CampaignConversationViewModel = viewModel(key = "campaign-${course.code}-$campaignId") {
+        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course)
     }
     val palette = AlphonsoColor.palette
     val progress by vm.campaignState.collectAsState()
@@ -164,7 +170,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
         ConversationBody(
             vm, campaign.title, palette.moss, Color.White, onBack,
             reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
-                AiResponseReport(message, AiResponseSurface.CAMPAIGN, "en", reason, campaignId = campaign.id, sceneIndex = sceneIndex)
+                AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
             },
             header = {
                 if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = MaterialTheme.typography.labelLarge, color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))

@@ -112,6 +112,18 @@ class AiResponseReport(
  * Which assistant turns can be reported, and which scene a turn belongs to (ConversationSnapshot in the iOS Kit).
  * Openers are tracked by position, so a model reply that repeats an opener's words is still a model reply.
  */
+object AiReplyReports {
+    /** A Hector reply, reported in the course the conversation is in. */
+    fun hector(message: String, course: String, reason: AiResponseReportReason) =
+        AiResponseReport(message, AiResponseSurface.HECTOR, course, reason)
+
+    fun scenario(message: String, course: String, scenarioId: String, reason: AiResponseReportReason) =
+        AiResponseReport(message, AiResponseSurface.CONVERSATION, course, reason, scenarioId = scenarioId)
+
+    fun campaign(message: String, course: String, campaignId: String, sceneIndex: Int, reason: AiResponseReportReason) =
+        AiResponseReport(message, AiResponseSurface.CAMPAIGN, course, reason, campaignId = campaignId, sceneIndex = sceneIndex)
+}
+
 object AiReplyReporting {
     /** The fixed first line of a scene is ours, not the model's: it is not an AI response. */
     fun isReportable(role: String, index: Int, openerIndices: Set<Int>): Boolean = role == "assistant" && index !in openerIndices

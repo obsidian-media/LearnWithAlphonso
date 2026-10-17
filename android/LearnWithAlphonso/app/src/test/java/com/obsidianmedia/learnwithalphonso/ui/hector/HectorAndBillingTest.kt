@@ -51,6 +51,22 @@ class HectorAndBillingTest {
     private fun tutor(s: FakeServer) = TutorConversationClient(ApiHttp("https://api.example", { "tok" }, s.engine), "dev-1")
 
     @Test
+    fun `hector follows the active course, in speech, level and the tutor's language`() = runBlocking {
+        val s = server()
+        val v = HectorViewModel(InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { true }, sessionId = "sess-fr", course = Course.FRENCH)
+        awaitTrue("memory") { v.historyForTutor().isNotEmpty() }
+        assertTrue("the level is the French course's", s.seen.any { it.query["select"] == "cefr_level" && it.query["language"] == "eq.fr" })
+        assertTrue("the priming turn names no particular language", !v.historyForTutor().single().content.contains("English"))
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("turn") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 2 }
+        val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject
+        assertEquals("fr", body["course"]!!.jsonPrimitive.content)
+        assertEquals("fr", body["language"]!!.jsonPrimitive.content)
+        assertEquals("the tutor is told the level", "B2", body["cefr_level"]!!.jsonPrimitive.content)
+        assertTrue(Regex("(?s)name=\"?course\"?.{0,80}?\r?\n\r?\nfr").containsMatchIn(s.seen.first { it.path.endsWith("/api/stt") }.body))
+    }
+
+    @Test
     fun `hector primes the tutor once with level and weak spots and keeps it at the head across turns`() = runBlocking {
         // Plan 3 Review Focus 4.
         val s = server()
@@ -59,7 +75,7 @@ class HectorAndBillingTest {
         awaitTrue("memory") { v.historyForTutor().isNotEmpty() }
         val priming = v.historyForTutor().single()
         assertEquals("user", priming.role)
-        assertTrue(priming.content.contains("their current English level is B2"))
+        assertTrue(priming.content.contains("their current level is B2"))
         assertTrue(priming.content.contains("past tense"))
         repeat(2) { i -> v.pressBegan(); v.pressEnded(); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 2 * (i + 1) } }
         val bodies = s.seen.filter { it.path.endsWith("/api/hector-respond") }.map { Json.parseToJsonElement(it.body).jsonObject }

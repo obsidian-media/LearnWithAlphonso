@@ -103,6 +103,18 @@ Two test accounts that are friends (A and B).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 
+## French and Spanish Practice (nothing here has been run on a device)
+
+Use a QA account with AI allowed.
+
+- [ ] Learn tab: switch to French. Open Practice: the campaigns and scenarios are the French ones (titles in French, the English gloss under each); the same for Spanish; switching back to English shows the English list.
+- [ ] Kill and reopen the app: Learn and Practice open on the course you last chose; sign in as another account: it opens on that account's own course (English if it never chose).
+- [ ] Open a French scenario: the first line is French, and holding the button and speaking French is transcribed as French; the reply comes back in French and is spoken with a French voice (not English). Same for Spanish.
+- [ ] A French campaign: scenes advance as in English, and the next scene's opening line is French.
+- [ ] Hector with French selected: Hector greets and answers in French, with a French voice; switching to Spanish on Learn gives a fresh Hector conversation in Spanish.
+- [ ] Rotate in a French conversation: the transcript stays and nothing restarts.
+- [ ] English still behaves exactly as before.
+
 ## Public-name step (nothing here has been run on a device)
 
 Use a fresh QA account (email sign-up) and a Google account whose name is set.
@@ -145,7 +157,7 @@ Use a QA account that has never allowed AI (on the web, Settings > AI features i
 Use a QA account with AI allowed. Reports are emailed to the owner by the report trigger, so tell them before testing.
 
 - [ ] Hector: long-press one of Hector's replies: a "Report this response" menu appears; tapping it shows the four reasons (Inappropriate or offensive, Harmful or unsafe, Wrong or misleading, Something else) and "We review reports within 24 hours.". Long-pressing your own message does nothing.
-- [ ] Pick a reason: "Thanks. We'll review this response."; a row appears in `content_reports` with kind `ai_response`, no reported user, the reply text in `context.message`, `surface` `hector`, `course` `en`, `platform` `android`.
+- [ ] Pick a reason: "Thanks. We'll review this response."; a row appears in `content_reports` with kind `ai_response`, no reported user, the reply text in `context.message`, `surface` `hector`, `course` the conversation's (`fr` when French is selected on Learn), `platform` `android`.
 - [ ] Practice scenario: the scene's first line (written by us) cannot be reported; every later assistant reply can, and the row has `surface` `conversation` and the scenario id.
 - [ ] Campaign: report a reply in scene 1, continue to scene 2 and report a reply there: the rows have `scene_index` 0 and 1. The opener of scene 2 is not reportable. After "Restart scene" the earlier scene's replies still are.
 - [ ] Tap a reason twice quickly, or report again while "Sending your report..." shows: only one row is created and the reasons are disabled meanwhile. Rotate while it sends: the result still appears.

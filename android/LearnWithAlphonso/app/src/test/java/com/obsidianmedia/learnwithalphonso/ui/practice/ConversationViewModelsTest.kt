@@ -70,6 +70,36 @@ class ConversationViewModelsTest {
     }
 
     @Test
+    fun `a French conversation uses the French scenario and speaks, hears and levels in French`() = runBlocking {
+        val s = server(transcript = "Je voudrais un cafe")
+        val scenario = testContent.scenarios(Course.FRENCH).first()
+        val v = ScenarioConversationViewModel(scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player, Course.FRENCH)
+        awaitTrue("level") { v.state.value.cefrLevel == "B1" }
+        assertEquals(scenario.opener, v.state.value.turns.single().content)
+        assertTrue("the level is the French course's", s.seen.any { it.query["select"] == "cefr_level" && it.query["language"] == "eq.fr" })
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val chat = s.seen.first { it.path.endsWith("/api/chat") }
+        assertTrue(chat.body.contains(""""systemPrompt":"${scenario.systemPrompt.take(20)}"""))
+        assertTrue(chat.body.contains(""""course":"fr""""))
+        assertTrue(s.seen.first { it.path.endsWith("/api/tts") }.body.contains(""""course":"fr""""))
+        assertTrue("speech is transcribed as French", Regex("(?s)name=\"?course\"?.{0,80}?\r?\n\r?\nfr").containsMatchIn(s.seen.first { it.path.endsWith("/api/stt") }.body))
+    }
+
+    @Test
+    fun `a French campaign follows the same rule`() = runBlocking {
+        val s = server()
+        val campaign = testContent.campaigns(Course.FRENCH).first()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player, Course.FRENCH)
+        assertEquals(campaign.scenes[0].opener, v.state.value.turns.single().content)
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val chat = s.seen.first { it.path.endsWith("/api/chat") }
+        assertTrue(chat.body.contains(campaign.premise.take(15)))
+        assertTrue(chat.body.contains(""""course":"fr""""))
+    }
+
+    @Test
     fun `a quota error from chat shows the quota copy, never the raw server text`() = runBlocking {
         val v = scenarioVm(server(chatError = true))
         v.pressBegan(); v.pressEnded()

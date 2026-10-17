@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.ui.practice
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.Campaign
+import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Scenario
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
@@ -50,16 +51,18 @@ abstract class BaseConversationViewModel(
     private val progress: ProgressSyncClient,
     private val player: ReplyPlayer,
     opener: String,
+    /** The course the conversation is in: its scenario text, and the language of transcription, replies and speech. */
+    protected val course: Course = Course.ENGLISH,
 ) : ViewModel() {
     protected val _state = MutableStateFlow(ConversationUiState(turns = listOf(ChatMessage("assistant", opener))))
     val state: StateFlow<ConversationUiState> = _state.asStateFlow()
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", null, timing) }, viewModelScope)
+    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var analysed = false
 
     protected abstract fun systemPrompt(): String
 
     init {
-        viewModelScope.launch { _state.update { it.copy(cefrLevel = runCatching { progress.fetchCefrLevel("en") }.getOrNull()) } }
+        viewModelScope.launch { _state.update { it.copy(cefrLevel = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()) } }
         viewModelScope.launch {
             engine.events.collect { event ->
                 when (event) {
@@ -84,10 +87,10 @@ abstract class BaseConversationViewModel(
             )
         }
         try {
-            val reply = ai.chat(_state.value.turns, systemPrompt(), _state.value.cefrLevel)
+            val reply = ai.chat(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code)
             _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING) }
             onReply(reply)
-            val audio = ai.synthesizeSpeech(reply)
+            val audio = ai.synthesizeSpeech(reply, course = course.code)
             if (!player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
@@ -107,7 +110,7 @@ abstract class BaseConversationViewModel(
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript) } }
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript, course.code) } }
     }
 
     companion object {
@@ -122,7 +125,8 @@ abstract class BaseConversationViewModel(
 class ScenarioConversationViewModel(
     val scenario: Scenario,
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener) {
+    course: Course = Course.ENGLISH,
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course) {
     override fun systemPrompt(): String = scenario.systemPrompt
 }
 
@@ -132,7 +136,8 @@ data class CampaignProgress(val sceneIndex: Int = 0, val sceneAnchor: Int = 0, v
 class CampaignConversationViewModel(
     val campaign: Campaign,
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener) {
+    course: Course = Course.ENGLISH,
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course) {
     private val _campaign = MutableStateFlow(CampaignProgress())
     val campaignState: StateFlow<CampaignProgress> = _campaign.asStateFlow()
 

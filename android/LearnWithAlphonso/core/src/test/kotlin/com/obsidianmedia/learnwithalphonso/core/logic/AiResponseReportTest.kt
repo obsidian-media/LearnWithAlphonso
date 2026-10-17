@@ -123,6 +123,23 @@ class AiResponseReportTest {
     }
 
     @Test
+    fun `a report carries the course of the conversation it came from, on every surface`() {
+        fun course(r: AiResponseReport) = r.toRow()["context"]!!.jsonObject["course"]!!.jsonPrimitive.content
+        for (code in listOf("en", "fr", "es")) {
+            assertEquals(code, course(AiReplyReports.hector("m", code, AiResponseReportReason.OTHER)))
+            assertEquals(code, course(AiReplyReports.scenario("m", code, "coffee", AiResponseReportReason.OTHER)))
+            assertEquals(code, course(AiReplyReports.campaign("m", code, "city", 1, AiResponseReportReason.OTHER)))
+        }
+        val campaign = AiReplyReports.campaign("Bonjour", "fr", "city", 2, AiResponseReportReason.HARMFUL).toRow()["context"]!!.jsonObject
+        assertEquals("campaign", campaign["surface"]!!.jsonPrimitive.content)
+        assertEquals("city", campaign["campaign_id"]!!.jsonPrimitive.content)
+        assertEquals("fr", campaign["course"]!!.jsonPrimitive.content)
+        val scenario = AiReplyReports.scenario("Hola", "es", "coffee", AiResponseReportReason.OTHER).toRow()["context"]!!.jsonObject
+        assertEquals("conversation", scenario["surface"]!!.jsonPrimitive.content)
+        assertEquals("coffee", scenario["scenario_id"]!!.jsonPrimitive.content)
+    }
+
+    @Test
     fun `openers are not reportable, model replies are, even if they repeat an opener's words`() {
         val openers = setOf(0, 4)
         assertFalse(AiReplyReporting.isReportable("assistant", 0, openers))

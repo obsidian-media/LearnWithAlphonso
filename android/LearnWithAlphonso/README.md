@@ -42,9 +42,13 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-Missing on Android: French and Spanish conversation scenarios (learners get the English
-ones), save-any-word, and the later iOS offline-queue and podcast player
+Missing on Android: save-any-word, and the later iOS offline-queue and podcast player
 reliability work.
+
+Ported on 2026-10-17, not yet run on a device: French and Spanish Practice
+scenarios and Campaigns, and Hector in the active course. Practice and Hector
+follow the course chosen on the Learn tab (remembered per account); speech is
+transcribed, replied to and spoken in that course, and the level comes from it.
 
 Ported on 2026-10-17, not yet run on a device: "Report this response" on AI
 replies. Long-press (or the TalkBack custom action on) a Hector, Practice or

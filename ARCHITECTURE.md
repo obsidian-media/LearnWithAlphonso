@@ -1294,8 +1294,23 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   (`ConversationUiState.openerIndices`, updated by a campaign's next scene and
   restart), so a model reply that repeats an opener's words is still reportable
   and a report records the scene the reply was made in
-  (`AiReplyReporting`). Courses are `en` throughout today (Android is English
-  only), so the report carries `en`.
+  (`AiReplyReporting`). A report carries the course of the conversation it came
+  from (`AiReplyReports`, with `course` `fr` for a French scenario, campaign or
+  Hector).
+- **Conversation content per course.** `scripts/export-android-content.ts`
+  now also writes `scenarios-fr.json`, `scenarios-es.json`, `campaigns-fr.json`
+  and `campaigns-es.json` (the same builders as the iOS export; the English
+  files keep their names and bytes, since earlier builds send those exact
+  prompts and `/api/chat` only accepts prompts it knows). `ContentStore`
+  exposes `scenarios(course)` / `campaigns(course)`. The active course is
+  `ActiveCourseStore` (core, over the `activeCourse.<userId>` preference, as on
+  iOS): Learn sets it from its course picker and opens on the account's own
+  choice, Practice and Hector follow it, and an account change loads that
+  account's course (English when it has none). A conversation fixes its course
+  when it opens (its view model is keyed by it) and sends it with chat, speech
+  synthesis, speech to text, weakness analysis and the Hector tutor call, so the
+  voice, transcription language and replies match; the level read is that
+  course's, and the tutor call carries `cefr_level`. Hector's priming turn no longer says "English" (as on iOS). The course is loaded while composing `RootScreen`, before any screen reads it (a restored session is signed in without suspending, so an effect would run after Learn had already written its default back); Learn writes the course only when the learner picks one. The weakness trend Hector reads covers every course, as on iOS.
 - **One-time public-name step.** After the first sign-in `SignedInApp`
   reads `get_my_name_status` (`fetchNameStatus`) in its own coroutine, started
   before sync, billing sign-in, reminders and push registration; while
