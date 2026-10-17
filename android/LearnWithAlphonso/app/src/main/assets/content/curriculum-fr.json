@@ -16630,221 +16630,221 @@
       "level": "A2",
       "eyebrow": "Unit 24",
       "title": "Sentences: Eating",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p1l1",
           "title": "Sentences: Eating 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p1q0",
               "type": "fill",
-              "prompt": "Tu ___ (manger) du beurre.",
+              "prompt": "Ils ___ (manger) l'œuf.",
               "bank": [
                 "manges",
-                "mangez",
+                "mangent",
                 "mange",
                 "mangeons"
               ],
-              "answer": "manges",
-              "explanation": "\"manges\" is correct here. Present tense: choose the verb form that matches the subject."
+              "answer": "mangent",
+              "explanation": "\"mangent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q1",
               "type": "mc",
-              "prompt": "Elles ___ (manger) le gâteau.",
+              "prompt": "Tu ___ (manger) une orange.",
               "choices": [
-                "mangent",
-                "mangez",
+                "manges",
+                "mangeons",
                 "mange",
-                "manges"
+                "mangent"
               ],
               "answer": 0,
-              "explanation": "\"mangent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"manges\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q2",
               "type": "fill",
-              "prompt": "Ils ___ (manger) un fruit.",
+              "prompt": "Il ___ (manger) du riz.",
               "bank": [
-                "manges",
                 "mangent",
                 "mange",
-                "mangez"
+                "mangez",
+                "mangeons"
               ],
-              "answer": "mangent",
-              "explanation": "\"mangent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "answer": "mange",
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q3",
               "type": "mc",
-              "prompt": "Elle ___ (manger) de la viande.",
+              "prompt": "Vous ___ (manger) la pomme.",
               "choices": [
-                "mangez",
-                "mangent",
+                "manges",
                 "mange",
+                "mangez",
                 "mangeons"
               ],
               "answer": 2,
-              "explanation": "\"mange\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mangez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q4",
               "type": "fill",
-              "prompt": "Je ___ (manger) la pomme.",
+              "prompt": "Je ___ (manger) un gâteau.",
               "bank": [
+                "manges",
                 "mangent",
-                "mangez",
                 "mange",
                 "mangeons"
               ],
               "answer": "mange",
-              "explanation": "\"mange\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p1l2",
           "title": "Sentences: Eating 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p1q5",
               "type": "mc",
-              "prompt": "Nous ___ (manger) une banane.",
+              "prompt": "Elle ___ (manger) de la soupe.",
               "choices": [
-                "mangeons",
-                "mangent",
                 "mange",
-                "manges"
+                "mangent",
+                "mangez",
+                "mangeons"
               ],
               "answer": 0,
-              "explanation": "\"mangeons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q6",
               "type": "fill",
-              "prompt": "Vous ___ (manger) l'orange.",
+              "prompt": "Nous ___ (manger) des légumes.",
               "bank": [
                 "manges",
-                "mangez",
+                "mangent",
                 "mange",
                 "mangeons"
               ],
-              "answer": "mangez",
-              "explanation": "\"mangez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "answer": "mangeons",
+              "explanation": "\"mangeons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q7",
               "type": "mc",
-              "prompt": "Il ___ (manger) du fromage.",
+              "prompt": "Elles ___ (manger) de la viande.",
               "choices": [
-                "mangeons",
-                "mangent",
                 "mange",
-                "manges"
+                "mangez",
+                "mangent",
+                "mangeons"
               ],
               "answer": 2,
-              "explanation": "\"mange\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mangent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q8",
               "type": "fill",
-              "prompt": "Je ___ (manger) un légume.",
+              "prompt": "Vous ___ (manger) la banane.",
               "bank": [
+                "manges",
                 "mange",
                 "mangent",
-                "mangez",
-                "mangeons"
+                "mangez"
               ],
-              "answer": "mange",
-              "explanation": "\"mange\" is correct here. Present tense: choose the verb form that matches the subject."
+              "answer": "mangez",
+              "explanation": "\"mangez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p1q9",
               "type": "mc",
-              "prompt": "Nous ___ (manger) de la soupe.",
+              "prompt": "Il ___ (manger) du fromage.",
               "choices": [
-                "mangeons",
-                "manges",
                 "mange",
-                "mangez"
+                "mangez",
+                "mangent",
+                "mangeons"
               ],
               "answer": 0,
-              "explanation": "\"mangeons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p1l3",
           "title": "Sentences: Eating 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p1q10",
               "type": "mc",
-              "prompt": "Ils ___ (manger) l'œuf.",
+              "prompt": "Nous ___ (manger) un fruit.",
               "choices": [
-                "mangent",
+                "mangeons",
                 "mange",
-                "mangez",
-                "manges"
-              ],
-              "answer": 0,
-              "explanation": "\"mangent\" is correct here. Present tense: choose the verb form that matches the subject."
-            },
-            {
-              "id": "frga2p1q11",
-              "type": "fill",
-              "prompt": "Elles ___ (manger) du pain.",
-              "bank": [
-                "mangez",
-                "mangent",
-                "mange",
-                "manges"
-              ],
-              "answer": "mangent",
-              "explanation": "\"mangent\" is correct here. Present tense: choose the verb form that matches the subject."
-            },
-            {
-              "id": "frga2p1q12",
-              "type": "mc",
-              "prompt": "Tu ___ (manger) du riz.",
-              "choices": [
-                "mange",
-                "mangent",
-                "manges",
-                "mangeons"
-              ],
-              "answer": 2,
-              "explanation": "\"manges\" is correct here. Present tense: choose the verb form that matches the subject."
-            },
-            {
-              "id": "frga2p1q13",
-              "type": "fill",
-              "prompt": "Vous ___ (manger) une pomme.",
-              "bank": [
-                "mangez",
-                "mange",
-                "mangent",
-                "manges"
-              ],
-              "answer": "mangez",
-              "explanation": "\"mangez\" is correct here. Present tense: choose the verb form that matches the subject."
-            },
-            {
-              "id": "frga2p1q14",
-              "type": "mc",
-              "prompt": "Il ___ (manger) la banane.",
-              "choices": [
-                "mange",
-                "manges",
                 "mangent",
                 "mangez"
               ],
               "answer": 0,
-              "explanation": "\"mange\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"mangeons\" is correct here. Choose the verb form that matches the subject."
+            },
+            {
+              "id": "frga2p1q11",
+              "type": "fill",
+              "prompt": "Ils ___ (manger) du pain.",
+              "bank": [
+                "mangez",
+                "mangeons",
+                "mangent",
+                "mange"
+              ],
+              "answer": "mangent",
+              "explanation": "\"mangent\" is correct here. Choose the verb form that matches the subject."
+            },
+            {
+              "id": "frga2p1q12",
+              "type": "mc",
+              "prompt": "Elle ___ (manger) la pomme.",
+              "choices": [
+                "mangeons",
+                "manges",
+                "mange",
+                "mangent"
+              ],
+              "answer": 2,
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
+            },
+            {
+              "id": "frga2p1q13",
+              "type": "fill",
+              "prompt": "Tu ___ (manger) l'orange.",
+              "bank": [
+                "mangez",
+                "mange",
+                "mangent",
+                "manges"
+              ],
+              "answer": "manges",
+              "explanation": "\"manges\" is correct here. Choose the verb form that matches the subject."
+            },
+            {
+              "id": "frga2p1q14",
+              "type": "mc",
+              "prompt": "Je ___ (manger) une banane.",
+              "choices": [
+                "mange",
+                "mangeons",
+                "manges",
+                "mangent"
+              ],
+              "answer": 0,
+              "explanation": "\"mange\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -16855,12 +16855,12 @@
       "level": "A2",
       "eyebrow": "Unit 25",
       "title": "Sentences: Drinking",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p2l1",
           "title": "Sentences: Drinking 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p2q0",
@@ -16873,7 +16873,7 @@
                 "bois"
               ],
               "answer": 2,
-              "explanation": "\"boivent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boivent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q1",
@@ -16886,7 +16886,7 @@
                 "bois"
               ],
               "answer": "boit",
-              "explanation": "\"boit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q2",
@@ -16899,7 +16899,7 @@
                 "boit"
               ],
               "answer": 0,
-              "explanation": "\"buvons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"buvons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q3",
@@ -16912,7 +16912,7 @@
                 "bois"
               ],
               "answer": "bois",
-              "explanation": "\"bois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"bois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q4",
@@ -16925,14 +16925,14 @@
                 "bois"
               ],
               "answer": 2,
-              "explanation": "\"buvez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"buvez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p2l2",
           "title": "Sentences: Drinking 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p2q5",
@@ -16945,7 +16945,7 @@
                 "boivent"
               ],
               "answer": "bois",
-              "explanation": "\"bois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"bois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q6",
@@ -16958,7 +16958,7 @@
                 "bois"
               ],
               "answer": 0,
-              "explanation": "\"boivent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boivent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q7",
@@ -16971,7 +16971,7 @@
                 "boivent"
               ],
               "answer": "boit",
-              "explanation": "\"boit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q8",
@@ -16984,7 +16984,7 @@
                 "buvons"
               ],
               "answer": 2,
-              "explanation": "\"boivent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boivent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q9",
@@ -16997,14 +16997,14 @@
                 "bois"
               ],
               "answer": "buvez",
-              "explanation": "\"buvez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"buvez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p2l3",
           "title": "Sentences: Drinking 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p2q10",
@@ -17017,7 +17017,7 @@
                 "bois"
               ],
               "answer": "bois",
-              "explanation": "\"bois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"bois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q11",
@@ -17030,7 +17030,7 @@
                 "boivent"
               ],
               "answer": 0,
-              "explanation": "\"buvons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"buvons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q12",
@@ -17043,7 +17043,7 @@
                 "bois"
               ],
               "answer": "bois",
-              "explanation": "\"bois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"bois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q13",
@@ -17056,7 +17056,7 @@
                 "buvons"
               ],
               "answer": 2,
-              "explanation": "\"boivent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boivent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p2q14",
@@ -17069,7 +17069,7 @@
                 "bois"
               ],
               "answer": "boit",
-              "explanation": "\"boit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"boit\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -17080,12 +17080,12 @@
       "level": "A2",
       "eyebrow": "Unit 26",
       "title": "Sentences: Wearing Clothes",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p3l1",
           "title": "Sentences: Wearing Clothes 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p3q0",
@@ -17098,7 +17098,7 @@
                 "portez"
               ],
               "answer": "porte",
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q1",
@@ -17111,7 +17111,7 @@
                 "porte"
               ],
               "answer": 2,
-              "explanation": "\"portez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q2",
@@ -17124,7 +17124,7 @@
                 "portez"
               ],
               "answer": "porte",
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q3",
@@ -17137,7 +17137,7 @@
                 "porte"
               ],
               "answer": 0,
-              "explanation": "\"portes\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portes\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q4",
@@ -17150,14 +17150,14 @@
                 "portons"
               ],
               "answer": "porte",
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p3l2",
           "title": "Sentences: Wearing Clothes 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p3q5",
@@ -17170,7 +17170,7 @@
                 "portes"
               ],
               "answer": 2,
-              "explanation": "\"portent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q6",
@@ -17183,7 +17183,7 @@
                 "portez"
               ],
               "answer": "portons",
-              "explanation": "\"portons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q7",
@@ -17196,7 +17196,7 @@
                 "portez"
               ],
               "answer": 0,
-              "explanation": "\"portent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q8",
@@ -17209,7 +17209,7 @@
                 "portez"
               ],
               "answer": "porte",
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q9",
@@ -17222,14 +17222,14 @@
                 "portes"
               ],
               "answer": 2,
-              "explanation": "\"portent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portent\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p3l3",
           "title": "Sentences: Wearing Clothes 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p3q10",
@@ -17242,7 +17242,7 @@
                 "portent"
               ],
               "answer": 2,
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q11",
@@ -17255,7 +17255,7 @@
                 "portez"
               ],
               "answer": "porte",
-              "explanation": "\"porte\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"porte\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q12",
@@ -17268,7 +17268,7 @@
                 "portons"
               ],
               "answer": 0,
-              "explanation": "\"portez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q13",
@@ -17281,7 +17281,7 @@
                 "portez"
               ],
               "answer": "portes",
-              "explanation": "\"portes\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portes\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p3q14",
@@ -17294,7 +17294,7 @@
                 "portes"
               ],
               "answer": 2,
-              "explanation": "\"portons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"portons\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -17305,12 +17305,12 @@
       "level": "A2",
       "eyebrow": "Unit 27",
       "title": "Sentences: Buying Things",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p4l1",
           "title": "Sentences: Buying Things 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p4q0",
@@ -17323,7 +17323,7 @@
                 "achètes"
               ],
               "answer": 0,
-              "explanation": "\"achète\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achète\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q1",
@@ -17336,7 +17336,7 @@
                 "achetez"
               ],
               "answer": "achètes",
-              "explanation": "\"achètes\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètes\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q2",
@@ -17349,7 +17349,7 @@
                 "achète"
               ],
               "answer": 2,
-              "explanation": "\"achètent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q3",
@@ -17362,7 +17362,7 @@
                 "achète"
               ],
               "answer": "achètent",
-              "explanation": "\"achètent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q4",
@@ -17375,14 +17375,14 @@
                 "achète"
               ],
               "answer": 0,
-              "explanation": "\"achetez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achetez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p4l2",
           "title": "Sentences: Buying Things 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p4q5",
@@ -17395,7 +17395,7 @@
                 "achetez"
               ],
               "answer": "achetons",
-              "explanation": "\"achetons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achetons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q6",
@@ -17408,7 +17408,7 @@
                 "achetons"
               ],
               "answer": 2,
-              "explanation": "\"achète\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achète\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q7",
@@ -17421,7 +17421,7 @@
                 "achète"
               ],
               "answer": "achète",
-              "explanation": "\"achète\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achète\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q8",
@@ -17434,7 +17434,7 @@
                 "achetons"
               ],
               "answer": 0,
-              "explanation": "\"achètent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q9",
@@ -17447,14 +17447,14 @@
                 "achète"
               ],
               "answer": "achètes",
-              "explanation": "\"achètes\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètes\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p4l3",
           "title": "Sentences: Buying Things 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p4q10",
@@ -17467,7 +17467,7 @@
                 "achetez"
               ],
               "answer": "achetez",
-              "explanation": "\"achetez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achetez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q11",
@@ -17480,7 +17480,7 @@
                 "achète"
               ],
               "answer": 2,
-              "explanation": "\"achetons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achetons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q12",
@@ -17493,7 +17493,7 @@
                 "achètent"
               ],
               "answer": "achètent",
-              "explanation": "\"achètent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achètent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q13",
@@ -17506,7 +17506,7 @@
                 "achètent"
               ],
               "answer": 0,
-              "explanation": "\"achète\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achète\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p4q14",
@@ -17519,7 +17519,7 @@
                 "achetez"
               ],
               "answer": "achetez",
-              "explanation": "\"achetez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"achetez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -17530,12 +17530,12 @@
       "level": "A2",
       "eyebrow": "Unit 28",
       "title": "Sentences: Seeing Animals and Vehicles",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p5l1",
           "title": "Sentences: Seeing Animals and Vehicles 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p5q0",
@@ -17548,7 +17548,7 @@
                 "vois"
               ],
               "answer": "vois",
-              "explanation": "\"vois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"vois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q1",
@@ -17561,7 +17561,7 @@
                 "voyons"
               ],
               "answer": 0,
-              "explanation": "\"voient\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voient\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q2",
@@ -17574,7 +17574,7 @@
                 "vois"
               ],
               "answer": "voyons",
-              "explanation": "\"voyons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voyons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q3",
@@ -17587,7 +17587,7 @@
                 "voit"
               ],
               "answer": 2,
-              "explanation": "\"voient\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voient\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q4",
@@ -17600,14 +17600,14 @@
                 "vois"
               ],
               "answer": "voyez",
-              "explanation": "\"voyez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voyez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p5l2",
           "title": "Sentences: Seeing Animals and Vehicles 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p5q5",
@@ -17620,7 +17620,7 @@
                 "voyons"
               ],
               "answer": 0,
-              "explanation": "\"vois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"vois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q6",
@@ -17633,7 +17633,7 @@
                 "vois"
               ],
               "answer": "voit",
-              "explanation": "\"voit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q7",
@@ -17646,7 +17646,7 @@
                 "voient"
               ],
               "answer": 2,
-              "explanation": "\"voit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q8",
@@ -17659,7 +17659,7 @@
                 "voient"
               ],
               "answer": "vois",
-              "explanation": "\"vois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"vois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q9",
@@ -17672,14 +17672,14 @@
                 "voient"
               ],
               "answer": 0,
-              "explanation": "\"voyez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voyez\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p5l3",
           "title": "Sentences: Seeing Animals and Vehicles 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p5q10",
@@ -17692,7 +17692,7 @@
                 "voit"
               ],
               "answer": 0,
-              "explanation": "\"voient\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voient\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q11",
@@ -17705,7 +17705,7 @@
                 "voit"
               ],
               "answer": "voyons",
-              "explanation": "\"voyons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voyons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q12",
@@ -17718,7 +17718,7 @@
                 "voyons"
               ],
               "answer": 2,
-              "explanation": "\"vois\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"vois\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q13",
@@ -17731,7 +17731,7 @@
                 "voit"
               ],
               "answer": "voient",
-              "explanation": "\"voient\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voient\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p5q14",
@@ -17744,7 +17744,7 @@
                 "voyons"
               ],
               "answer": 0,
-              "explanation": "\"voit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"voit\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -17755,12 +17755,12 @@
       "level": "A2",
       "eyebrow": "Unit 29",
       "title": "Sentences: Reading",
-      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "description": "Present tense in short sentences — Choose the verb form that matches the subject.",
       "lessons": [
         {
           "id": "frga2p6l1",
           "title": "Sentences: Reading 1",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p6q0",
@@ -17773,7 +17773,7 @@
                 "lisons"
               ],
               "answer": 2,
-              "explanation": "\"lisent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q1",
@@ -17786,7 +17786,7 @@
                 "lisent"
               ],
               "answer": "lis",
-              "explanation": "\"lis\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lis\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q2",
@@ -17799,7 +17799,7 @@
                 "lisent"
               ],
               "answer": 0,
-              "explanation": "\"lis\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lis\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q3",
@@ -17812,7 +17812,7 @@
                 "lisent"
               ],
               "answer": "lisez",
-              "explanation": "\"lisez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q4",
@@ -17825,14 +17825,14 @@
                 "lisons"
               ],
               "answer": 2,
-              "explanation": "\"lisent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisent\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p6l2",
           "title": "Sentences: Reading 2",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p6q5",
@@ -17845,7 +17845,7 @@
                 "lisent"
               ],
               "answer": "lit",
-              "explanation": "\"lit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q6",
@@ -17858,7 +17858,7 @@
                 "lis"
               ],
               "answer": 0,
-              "explanation": "\"lisons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisons\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q7",
@@ -17871,7 +17871,7 @@
                 "lisent"
               ],
               "answer": "lit",
-              "explanation": "\"lit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q8",
@@ -17884,7 +17884,7 @@
                 "lisez"
               ],
               "answer": 2,
-              "explanation": "\"lit\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lit\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q9",
@@ -17897,14 +17897,14 @@
                 "lit"
               ],
               "answer": "lis",
-              "explanation": "\"lis\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lis\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         },
         {
           "id": "frga2p6l3",
           "title": "Sentences: Reading 3",
-          "subtitle": "Generated practice: present tense",
+          "subtitle": "Present tense in short sentences",
           "questions": [
             {
               "id": "frga2p6q10",
@@ -17917,7 +17917,7 @@
                 "lisons"
               ],
               "answer": "lisent",
-              "explanation": "\"lisent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q11",
@@ -17930,7 +17930,7 @@
                 "lit"
               ],
               "answer": 0,
-              "explanation": "\"lisent\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisent\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q12",
@@ -17943,7 +17943,7 @@
                 "lisez"
               ],
               "answer": "lis",
-              "explanation": "\"lis\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lis\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q13",
@@ -17956,7 +17956,7 @@
                 "lis"
               ],
               "answer": 2,
-              "explanation": "\"lisez\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisez\" is correct here. Choose the verb form that matches the subject."
             },
             {
               "id": "frga2p6q14",
@@ -17969,7 +17969,7 @@
                 "lisons"
               ],
               "answer": "lisons",
-              "explanation": "\"lisons\" is correct here. Present tense: choose the verb form that matches the subject."
+              "explanation": "\"lisons\" is correct here. Choose the verb form that matches the subject."
             }
           ]
         }
@@ -26189,38 +26189,38 @@
       "level": "B1",
       "eyebrow": "Unit 24",
       "title": "Yesterday: Eating",
-      "description": "Generated practice: past tense — Passé composé: the auxiliary and the participle go together.",
+      "description": "Passé composé in short sentences — The auxiliary and the participle go together.",
       "lessons": [
         {
           "id": "frgb1p1l1",
           "title": "Yesterday: Eating 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p1q0",
               "type": "fill",
               "prompt": "Hier, elle ___ (manger) un fruit.",
               "bank": [
-                "avez mangé",
                 "ont mangé",
                 "avons mangé",
-                "a mangé"
+                "a mangé",
+                "as mangé"
               ],
               "answer": "a mangé",
-              "explanation": "\"a mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q1",
               "type": "mc",
               "prompt": "Hier, nous ___ (manger) la pomme.",
               "choices": [
+                "ont mangé",
                 "as mangé",
-                "a mangé",
                 "avons mangé",
-                "ont mangé"
+                "a mangé"
               ],
               "answer": 2,
-              "explanation": "\"avons mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avons mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q2",
@@ -26229,11 +26229,11 @@
               "bank": [
                 "avez mangé",
                 "ont mangé",
-                "avons mangé",
-                "as mangé"
+                "as mangé",
+                "a mangé"
               ],
               "answer": "ont mangé",
-              "explanation": "\"ont mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q3",
@@ -26242,44 +26242,44 @@
               "choices": [
                 "a mangé",
                 "ont mangé",
-                "avez mangé",
+                "avons mangé",
                 "as mangé"
               ],
               "answer": 0,
-              "explanation": "\"a mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q4",
               "type": "fill",
               "prompt": "Hier, ils ___ (manger) l'œuf.",
               "bank": [
-                "avez mangé",
                 "ont mangé",
                 "avons mangé",
+                "a mangé",
                 "as mangé"
               ],
               "answer": "ont mangé",
-              "explanation": "\"ont mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont mangé\" is correct here. The auxiliary and the participle go together."
             }
           ]
         },
         {
           "id": "frgb1p1l2",
           "title": "Yesterday: Eating 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p1q5",
               "type": "mc",
               "prompt": "Hier, vous ___ (manger) du riz.",
               "choices": [
-                "as mangé",
+                "a mangé",
                 "ont mangé",
                 "avez mangé",
-                "a mangé"
+                "avons mangé"
               ],
               "answer": 2,
-              "explanation": "\"avez mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avez mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q6",
@@ -26292,7 +26292,7 @@
                 "as mangé"
               ],
               "answer": "as mangé",
-              "explanation": "\"as mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"as mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q7",
@@ -26301,11 +26301,11 @@
               "choices": [
                 "a mangé",
                 "ont mangé",
-                "avez mangé",
+                "avons mangé",
                 "as mangé"
               ],
               "answer": 0,
-              "explanation": "\"a mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q8",
@@ -26318,79 +26318,79 @@
                 "as mangé"
               ],
               "answer": "ont mangé",
-              "explanation": "\"ont mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q9",
               "type": "mc",
-              "prompt": "Hier, ils ___ (manger) un légume.",
+              "prompt": "Hier, ils ___ (manger) des légumes.",
               "choices": [
-                "avons mangé",
+                "as mangé",
                 "a mangé",
                 "ont mangé",
-                "as mangé"
+                "avez mangé"
               ],
               "answer": 2,
-              "explanation": "\"ont mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont mangé\" is correct here. The auxiliary and the participle go together."
             }
           ]
         },
         {
           "id": "frgb1p1l3",
           "title": "Yesterday: Eating 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p1q10",
               "type": "mc",
-              "prompt": "Hier, tu ___ (manger) du beurre.",
+              "prompt": "Hier, vous ___ (manger) de la soupe.",
               "choices": [
                 "ont mangé",
                 "avons mangé",
-                "as mangé",
-                "avez mangé"
+                "avez mangé",
+                "a mangé"
               ],
               "answer": 2,
-              "explanation": "\"as mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avez mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q11",
               "type": "fill",
-              "prompt": "Hier, vous ___ (manger) de la soupe.",
+              "prompt": "Hier, elle ___ (manger) de la viande.",
               "bank": [
                 "as mangé",
                 "ont mangé",
-                "avez mangé",
+                "avons mangé",
                 "a mangé"
               ],
-              "answer": "avez mangé",
-              "explanation": "\"avez mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "answer": "a mangé",
+              "explanation": "\"a mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q12",
               "type": "mc",
-              "prompt": "Hier, elle ___ (manger) de la viande.",
+              "prompt": "Hier, nous ___ (manger) la banane.",
               "choices": [
+                "avons mangé",
+                "ont mangé",
                 "a mangé",
-                "as mangé",
-                "avez mangé",
-                "ont mangé"
+                "avez mangé"
               ],
               "answer": 0,
-              "explanation": "\"a mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avons mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q13",
               "type": "fill",
-              "prompt": "Hier, nous ___ (manger) la banane.",
+              "prompt": "Hier, tu ___ (manger) une pomme.",
               "bank": [
                 "as mangé",
                 "avons mangé",
                 "ont mangé",
                 "a mangé"
               ],
-              "answer": "avons mangé",
-              "explanation": "\"avons mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "answer": "as mangé",
+              "explanation": "\"as mangé\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p1q14",
@@ -26403,7 +26403,7 @@
                 "a mangé"
               ],
               "answer": 2,
-              "explanation": "\"ont mangé\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont mangé\" is correct here. The auxiliary and the participle go together."
             }
           ]
         }
@@ -26414,12 +26414,12 @@
       "level": "B1",
       "eyebrow": "Unit 25",
       "title": "Yesterday: Buying Things",
-      "description": "Generated practice: past tense — Passé composé: the auxiliary and the participle go together.",
+      "description": "Passé composé in short sentences — The auxiliary and the participle go together.",
       "lessons": [
         {
           "id": "frgb1p2l1",
           "title": "Yesterday: Buying Things 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p2q0",
@@ -26429,36 +26429,36 @@
                 "a acheté",
                 "avez acheté",
                 "ont acheté",
-                "as acheté"
+                "avons acheté"
               ],
               "answer": 0,
-              "explanation": "\"a acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q1",
               "type": "fill",
-              "prompt": "Hier, elle ___ (acheter) la clé.",
+              "prompt": "Hier, vous ___ (acheter) le livre.",
               "bank": [
                 "ont acheté",
-                "as acheté",
                 "a acheté",
+                "avons acheté",
                 "avez acheté"
               ],
-              "answer": "a acheté",
-              "explanation": "\"a acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "answer": "avez acheté",
+              "explanation": "\"avez acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q2",
               "type": "mc",
-              "prompt": "Hier, vous ___ (acheter) une chaise.",
+              "prompt": "Hier, elles ___ (acheter) un pantalon.",
               "choices": [
+                "as acheté",
+                "a acheté",
                 "ont acheté",
-                "avons acheté",
-                "avez acheté",
-                "as acheté"
+                "avons acheté"
               ],
               "answer": 2,
-              "explanation": "\"avez acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q3",
@@ -26471,79 +26471,79 @@
                 "a acheté"
               ],
               "answer": "avons acheté",
-              "explanation": "\"avons acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avons acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q4",
               "type": "mc",
-              "prompt": "Hier, elles ___ (acheter) un pantalon.",
+              "prompt": "Hier, ils ___ (acheter) une écharpe.",
               "choices": [
                 "ont acheté",
                 "a acheté",
-                "as acheté",
-                "avons acheté"
+                "avons acheté",
+                "avez acheté"
               ],
               "answer": 0,
-              "explanation": "\"ont acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont acheté\" is correct here. The auxiliary and the participle go together."
             }
           ]
         },
         {
           "id": "frgb1p2l2",
           "title": "Yesterday: Buying Things 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p2q5",
               "type": "fill",
-              "prompt": "Hier, ils ___ (acheter) la chemise.",
+              "prompt": "Hier, tu ___ (acheter) le chapeau.",
               "bank": [
                 "ont acheté",
+                "as acheté",
                 "avons acheté",
-                "a acheté",
-                "avez acheté"
+                "a acheté"
               ],
-              "answer": "ont acheté",
-              "explanation": "\"ont acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "answer": "as acheté",
+              "explanation": "\"as acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q6",
               "type": "mc",
-              "prompt": "Hier, tu ___ (acheter) une table.",
+              "prompt": "Hier, elle ___ (acheter) un crayon.",
               "choices": [
-                "avez acheté",
-                "a acheté",
                 "as acheté",
-                "avons acheté"
+                "avons acheté",
+                "a acheté",
+                "ont acheté"
               ],
               "answer": 2,
-              "explanation": "\"as acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q7",
               "type": "fill",
-              "prompt": "Hier, vous ___ (acheter) le livre.",
+              "prompt": "Hier, ils ___ (acheter) la chemise.",
               "bank": [
                 "ont acheté",
+                "as acheté",
                 "avons acheté",
-                "a acheté",
-                "avez acheté"
+                "a acheté"
               ],
-              "answer": "avez acheté",
-              "explanation": "\"avez acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "answer": "ont acheté",
+              "explanation": "\"ont acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q8",
               "type": "mc",
-              "prompt": "Hier, ils ___ (acheter) une écharpe.",
+              "prompt": "Hier, vous ___ (acheter) une chaise.",
               "choices": [
-                "ont acheté",
                 "avez acheté",
                 "as acheté",
-                "a acheté"
+                "a acheté",
+                "ont acheté"
               ],
               "answer": 0,
-              "explanation": "\"ont acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"avez acheté\" is correct here. The auxiliary and the participle go together."
             },
             {
               "id": "frgb1p2q9",
@@ -26553,74 +26553,22 @@
                 "ont acheté",
                 "as acheté",
                 "a acheté",
-                "avez acheté"
+                "avons acheté"
               ],
               "answer": "a acheté",
-              "explanation": "\"a acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"a acheté\" is correct here. The auxiliary and the participle go together."
             }
           ]
         },
         {
           "id": "frgb1p2l3",
           "title": "Yesterday: Buying Things 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p2q10",
               "type": "fill",
-              "prompt": "Hier, elle ___ (acheter) un crayon.",
-              "bank": [
-                "as acheté",
-                "ont acheté",
-                "a acheté",
-                "avez acheté"
-              ],
-              "answer": "a acheté",
-              "explanation": "\"a acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
-            },
-            {
-              "id": "frgb1p2q11",
-              "type": "mc",
               "prompt": "Hier, elles ___ (acheter) le sac.",
-              "choices": [
-                "a acheté",
-                "as acheté",
-                "ont acheté",
-                "avons acheté"
-              ],
-              "answer": 2,
-              "explanation": "\"ont acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
-            },
-            {
-              "id": "frgb1p2q12",
-              "type": "fill",
-              "prompt": "Hier, nous ___ (acheter) une calculatrice.",
-              "bank": [
-                "ont acheté",
-                "a acheté",
-                "avez acheté",
-                "avons acheté"
-              ],
-              "answer": "avons acheté",
-              "explanation": "\"avons acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
-            },
-            {
-              "id": "frgb1p2q13",
-              "type": "mc",
-              "prompt": "Hier, tu ___ (acheter) le chapeau.",
-              "choices": [
-                "as acheté",
-                "ont acheté",
-                "a acheté",
-                "avez acheté"
-              ],
-              "answer": 0,
-              "explanation": "\"as acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
-            },
-            {
-              "id": "frgb1p2q14",
-              "type": "fill",
-              "prompt": "Hier, ils ___ (acheter) le dictionnaire.",
               "bank": [
                 "ont acheté",
                 "a acheté",
@@ -26628,7 +26576,59 @@
                 "avons acheté"
               ],
               "answer": "ont acheté",
-              "explanation": "\"ont acheté\" is correct here. Passé composé: the auxiliary and the participle go together."
+              "explanation": "\"ont acheté\" is correct here. The auxiliary and the participle go together."
+            },
+            {
+              "id": "frgb1p2q11",
+              "type": "mc",
+              "prompt": "Hier, nous ___ (acheter) une calculatrice.",
+              "choices": [
+                "ont acheté",
+                "a acheté",
+                "avons acheté",
+                "avez acheté"
+              ],
+              "answer": 2,
+              "explanation": "\"avons acheté\" is correct here. The auxiliary and the participle go together."
+            },
+            {
+              "id": "frgb1p2q12",
+              "type": "fill",
+              "prompt": "Hier, tu ___ (acheter) une table.",
+              "bank": [
+                "as acheté",
+                "ont acheté",
+                "a acheté",
+                "avez acheté"
+              ],
+              "answer": "as acheté",
+              "explanation": "\"as acheté\" is correct here. The auxiliary and the participle go together."
+            },
+            {
+              "id": "frgb1p2q13",
+              "type": "mc",
+              "prompt": "Hier, elle ___ (acheter) le cahier.",
+              "choices": [
+                "a acheté",
+                "ont acheté",
+                "avez acheté",
+                "avons acheté"
+              ],
+              "answer": 0,
+              "explanation": "\"a acheté\" is correct here. The auxiliary and the participle go together."
+            },
+            {
+              "id": "frgb1p2q14",
+              "type": "fill",
+              "prompt": "Hier, ils ___ (acheter) le dictionnaire.",
+              "bank": [
+                "as acheté",
+                "ont acheté",
+                "avez acheté",
+                "avons acheté"
+              ],
+              "answer": "ont acheté",
+              "explanation": "\"ont acheté\" is correct here. The auxiliary and the participle go together."
             }
           ]
         }
@@ -26639,12 +26639,12 @@
       "level": "B1",
       "eyebrow": "Unit 26",
       "title": "Yesterday: Going Places",
-      "description": "Generated practice: past tense — Passé composé with être: the participle agrees with the subject.",
+      "description": "Passé composé in short sentences — The participle agrees with the subject.",
       "lessons": [
         {
           "id": "frgb1p3l1",
           "title": "Yesterday: Going Places 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p3q0",
@@ -26657,7 +26657,7 @@
                 "sont allés"
               ],
               "answer": "est allée",
-              "explanation": "\"est allée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q1",
@@ -26670,7 +26670,7 @@
                 "sont allées"
               ],
               "answer": 0,
-              "explanation": "\"sont allés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q2",
@@ -26683,7 +26683,7 @@
                 "sont allés"
               ],
               "answer": "est allé",
-              "explanation": "\"est allé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q3",
@@ -26696,7 +26696,7 @@
                 "sont allés"
               ],
               "answer": 2,
-              "explanation": "\"sont allées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q4",
@@ -26709,14 +26709,14 @@
                 "sont allés"
               ],
               "answer": "sont allés",
-              "explanation": "\"sont allés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allés\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p3l2",
           "title": "Yesterday: Going Places 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p3q5",
@@ -26729,7 +26729,7 @@
                 "sont allées"
               ],
               "answer": 0,
-              "explanation": "\"est allé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q6",
@@ -26742,7 +26742,7 @@
                 "sont allés"
               ],
               "answer": "est allée",
-              "explanation": "\"est allée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q7",
@@ -26755,7 +26755,7 @@
                 "est allé"
               ],
               "answer": 2,
-              "explanation": "\"sont allées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q8",
@@ -26768,7 +26768,7 @@
                 "est allé"
               ],
               "answer": "est allée",
-              "explanation": "\"est allée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q9",
@@ -26781,14 +26781,14 @@
                 "est allée"
               ],
               "answer": 0,
-              "explanation": "\"sont allées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allées\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p3l3",
           "title": "Yesterday: Going Places 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p3q10",
@@ -26801,7 +26801,7 @@
                 "sont allées"
               ],
               "answer": 0,
-              "explanation": "\"est allé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q11",
@@ -26814,7 +26814,7 @@
                 "sont allées"
               ],
               "answer": "sont allés",
-              "explanation": "\"sont allés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q12",
@@ -26827,7 +26827,7 @@
                 "sont allés"
               ],
               "answer": 2,
-              "explanation": "\"est allée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q13",
@@ -26840,7 +26840,7 @@
                 "sont allées"
               ],
               "answer": "est allé",
-              "explanation": "\"est allé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est allé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p3q14",
@@ -26853,7 +26853,7 @@
                 "est allé"
               ],
               "answer": 0,
-              "explanation": "\"sont allés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont allés\" is correct here. The participle agrees with the subject."
             }
           ]
         }
@@ -26864,12 +26864,12 @@
       "level": "B1",
       "eyebrow": "Unit 27",
       "title": "Yesterday: Coming From Places",
-      "description": "Generated practice: past tense — Passé composé with être: the participle agrees with the subject.",
+      "description": "Passé composé in short sentences — The participle agrees with the subject.",
       "lessons": [
         {
           "id": "frgb1p4l1",
           "title": "Yesterday: Coming From Places 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p4q0",
@@ -26882,7 +26882,7 @@
                 "est venu"
               ],
               "answer": 2,
-              "explanation": "\"sont venus\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venus\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q1",
@@ -26895,7 +26895,7 @@
                 "sont venus"
               ],
               "answer": "est venu",
-              "explanation": "\"est venu\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venu\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q2",
@@ -26908,7 +26908,7 @@
                 "est venue"
               ],
               "answer": 0,
-              "explanation": "\"sont venues\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venues\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q3",
@@ -26921,7 +26921,7 @@
                 "sont venus"
               ],
               "answer": "est venue",
-              "explanation": "\"est venue\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venue\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q4",
@@ -26934,14 +26934,14 @@
                 "est venu"
               ],
               "answer": 2,
-              "explanation": "\"sont venues\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venues\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p4l2",
           "title": "Yesterday: Coming From Places 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p4q5",
@@ -26954,7 +26954,7 @@
                 "sont venus"
               ],
               "answer": "est venue",
-              "explanation": "\"est venue\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venue\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q6",
@@ -26967,7 +26967,7 @@
                 "est venue"
               ],
               "answer": 0,
-              "explanation": "\"est venu\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venu\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q7",
@@ -26980,7 +26980,7 @@
                 "sont venus"
               ],
               "answer": "sont venus",
-              "explanation": "\"sont venus\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venus\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q8",
@@ -26993,7 +26993,7 @@
                 "est venu"
               ],
               "answer": 2,
-              "explanation": "\"est venue\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venue\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q9",
@@ -27006,14 +27006,14 @@
                 "est venue"
               ],
               "answer": "sont venues",
-              "explanation": "\"sont venues\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venues\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p4l3",
           "title": "Yesterday: Coming From Places 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p4q10",
@@ -27026,7 +27026,7 @@
                 "sont venues"
               ],
               "answer": "est venu",
-              "explanation": "\"est venu\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venu\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q11",
@@ -27039,7 +27039,7 @@
                 "est venu"
               ],
               "answer": 0,
-              "explanation": "\"sont venus\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venus\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q12",
@@ -27052,7 +27052,7 @@
                 "sont venues"
               ],
               "answer": "est venue",
-              "explanation": "\"est venue\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est venue\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q13",
@@ -27065,7 +27065,7 @@
                 "est venue"
               ],
               "answer": 2,
-              "explanation": "\"sont venues\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venues\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p4q14",
@@ -27078,7 +27078,7 @@
                 "sont venues"
               ],
               "answer": "sont venus",
-              "explanation": "\"sont venus\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont venus\" is correct here. The participle agrees with the subject."
             }
           ]
         }
@@ -27089,12 +27089,12 @@
       "level": "B1",
       "eyebrow": "Unit 28",
       "title": "Yesterday: Arriving",
-      "description": "Generated practice: past tense — Passé composé with être: the participle agrees with the subject.",
+      "description": "Passé composé in short sentences — The participle agrees with the subject.",
       "lessons": [
         {
           "id": "frgb1p5l1",
           "title": "Yesterday: Arriving 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p5q0",
@@ -27107,7 +27107,7 @@
                 "sont arrivées"
               ],
               "answer": "sont arrivés",
-              "explanation": "\"sont arrivés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q1",
@@ -27120,7 +27120,7 @@
                 "sont arrivés"
               ],
               "answer": 2,
-              "explanation": "\"est arrivée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q2",
@@ -27133,7 +27133,7 @@
                 "est arrivé"
               ],
               "answer": "est arrivé",
-              "explanation": "\"est arrivé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q3",
@@ -27146,7 +27146,7 @@
                 "est arrivée"
               ],
               "answer": 0,
-              "explanation": "\"sont arrivées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q4",
@@ -27159,14 +27159,14 @@
                 "sont arrivées"
               ],
               "answer": "sont arrivés",
-              "explanation": "\"sont arrivés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivés\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p5l2",
           "title": "Yesterday: Arriving 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p5q5",
@@ -27179,7 +27179,7 @@
                 "sont arrivés"
               ],
               "answer": 2,
-              "explanation": "\"sont arrivées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q6",
@@ -27192,7 +27192,7 @@
                 "est arrivé"
               ],
               "answer": "est arrivé",
-              "explanation": "\"est arrivé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q7",
@@ -27205,7 +27205,7 @@
                 "sont arrivées"
               ],
               "answer": 0,
-              "explanation": "\"est arrivée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q8",
@@ -27218,7 +27218,7 @@
                 "est arrivé"
               ],
               "answer": "sont arrivés",
-              "explanation": "\"sont arrivés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q9",
@@ -27231,14 +27231,14 @@
                 "est arrivée"
               ],
               "answer": 2,
-              "explanation": "\"est arrivé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivé\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p5l3",
           "title": "Yesterday: Arriving 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p5q10",
@@ -27251,7 +27251,7 @@
                 "est arrivée"
               ],
               "answer": 2,
-              "explanation": "\"sont arrivées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q11",
@@ -27264,7 +27264,7 @@
                 "sont arrivées"
               ],
               "answer": "est arrivée",
-              "explanation": "\"est arrivée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q12",
@@ -27277,7 +27277,7 @@
                 "sont arrivés"
               ],
               "answer": 0,
-              "explanation": "\"est arrivé\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est arrivé\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q13",
@@ -27290,7 +27290,7 @@
                 "sont arrivées"
               ],
               "answer": "sont arrivées",
-              "explanation": "\"sont arrivées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p5q14",
@@ -27303,7 +27303,7 @@
                 "est arrivé"
               ],
               "answer": 2,
-              "explanation": "\"sont arrivés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont arrivés\" is correct here. The participle agrees with the subject."
             }
           ]
         }
@@ -27314,12 +27314,12 @@
       "level": "B1",
       "eyebrow": "Unit 29",
       "title": "Yesterday: Staying",
-      "description": "Generated practice: past tense — Passé composé with être: the participle agrees with the subject.",
+      "description": "Passé composé in short sentences — The participle agrees with the subject.",
       "lessons": [
         {
           "id": "frgb1p6l1",
           "title": "Yesterday: Staying 1",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p6q0",
@@ -27332,7 +27332,7 @@
                 "sont restées"
               ],
               "answer": 0,
-              "explanation": "\"sont restés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q1",
@@ -27345,7 +27345,7 @@
                 "est resté"
               ],
               "answer": "est resté",
-              "explanation": "\"est resté\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est resté\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q2",
@@ -27358,7 +27358,7 @@
                 "est restée"
               ],
               "answer": 2,
-              "explanation": "\"sont restées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q3",
@@ -27371,7 +27371,7 @@
                 "est resté"
               ],
               "answer": "est restée",
-              "explanation": "\"est restée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est restée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q4",
@@ -27384,14 +27384,14 @@
                 "sont restés"
               ],
               "answer": 0,
-              "explanation": "\"sont restées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restées\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p6l2",
           "title": "Yesterday: Staying 2",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p6q5",
@@ -27404,7 +27404,7 @@
                 "est resté"
               ],
               "answer": "est resté",
-              "explanation": "\"est resté\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est resté\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q6",
@@ -27417,7 +27417,7 @@
                 "est resté"
               ],
               "answer": 2,
-              "explanation": "\"est restée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est restée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q7",
@@ -27430,7 +27430,7 @@
                 "est resté"
               ],
               "answer": "sont restés",
-              "explanation": "\"sont restés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q8",
@@ -27443,7 +27443,7 @@
                 "est resté"
               ],
               "answer": 0,
-              "explanation": "\"est restée\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est restée\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q9",
@@ -27456,14 +27456,14 @@
                 "est resté"
               ],
               "answer": "est resté",
-              "explanation": "\"est resté\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est resté\" is correct here. The participle agrees with the subject."
             }
           ]
         },
         {
           "id": "frgb1p6l3",
           "title": "Yesterday: Staying 3",
-          "subtitle": "Generated practice: past tense",
+          "subtitle": "Passé composé in short sentences",
           "questions": [
             {
               "id": "frgb1p6q10",
@@ -27476,7 +27476,7 @@
                 "sont restées"
               ],
               "answer": "sont restés",
-              "explanation": "\"sont restés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restés\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q11",
@@ -27489,7 +27489,7 @@
                 "est resté"
               ],
               "answer": 2,
-              "explanation": "\"sont restées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q12",
@@ -27502,7 +27502,7 @@
                 "sont restées"
               ],
               "answer": "est resté",
-              "explanation": "\"est resté\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"est resté\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q13",
@@ -27515,7 +27515,7 @@
                 "est resté"
               ],
               "answer": 0,
-              "explanation": "\"sont restées\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restées\" is correct here. The participle agrees with the subject."
             },
             {
               "id": "frgb1p6q14",
@@ -27528,7 +27528,7 @@
                 "sont restées"
               ],
               "answer": "sont restés",
-              "explanation": "\"sont restés\" is correct here. Passé composé with être: the participle agrees with the subject."
+              "explanation": "\"sont restés\" is correct here. The participle agrees with the subject."
             }
           ]
         }

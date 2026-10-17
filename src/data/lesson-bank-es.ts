@@ -1649,9 +1649,9 @@ Guardé la taza favorita en el estante.|Guardé la taza favorita en el estante.`
   {
     id: "esga2p1",
     title: "Sentences: Eating",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Ustedes ___ (comer) arroz.|comen
 Nosotros ___ (comer) un plátano.|comemos
 Tú ___ (comer) una manzana.|comes
@@ -1671,9 +1671,9 @@ Yo ___ (comer) una naranja.|como`,
   {
     id: "esga2p2",
     title: "Sentences: Drinking",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Él ___ (beber) té.|bebe
 Nosotros ___ (beber) café.|bebemos
 Ellas ___ (beber) leche.|beben
@@ -1693,9 +1693,9 @@ Tú ___ (beber) té.|bebes`,
   {
     id: "esga2p3",
     title: "Sentences: Buying Things",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Ustedes ___ (comprar) un abrigo.|compran
 Ellas ___ (comprar) un vestido.|compran
 Él ___ (comprar) un lápiz.|compra
@@ -1715,9 +1715,9 @@ Nosotros ___ (comprar) una bufanda.|compramos`,
   {
     id: "esga2p4",
     title: "Sentences: Seeing Animals",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Él ___ (ver) un tigre.|ve
 Ella ___ (ver) una serpiente.|ve
 Ustedes ___ (ver) un gato.|ven
@@ -1737,9 +1737,9 @@ Yo ___ (ver) un caballo.|veo`,
   {
     id: "esga2p5",
     title: "Sentences: Reading",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Él ___ (leer) un libro.|lee
 Ellos ___ (leer) la revista.|leen
 Nosotros ___ (leer) un periódico.|leemos
@@ -1759,9 +1759,9 @@ Ustedes ___ (leer) la revista.|leen`,
   {
     id: "esga2p6",
     title: "Sentences: Having Things",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Yo ___ (tener) un lápiz.|tengo
 Ellas ___ (tener) un perro.|tienen
 Él ___ (tener) un pájaro.|tiene
@@ -1771,9 +1771,9 @@ Ustedes ___ (tener) un conejo.|tienen
 Tú ___ (tener) un reloj.|tienes
 Ella ___ (tener) una cama.|tiene
 Ellas ___ (tener) una silla.|tienen
-Yo ___ (tener) una goma.|tengo
 Ellos ___ (tener) un bolígrafo.|tienen
 Nosotros ___ (tener) unas tijeras.|tenemos
+Yo ___ (tener) una llave.|tengo
 Ustedes ___ (tener) una mesa.|tienen
 Tú ___ (tener) un espejo.|tienes
 Él ___ (tener) un libro.|tiene`,
@@ -1781,9 +1781,9 @@ Tú ___ (tener) un espejo.|tienes
   {
     id: "esga2p7",
     title: "Yesterday: Eating",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Preterite in short sentences",
     kind: "cloze",
-    note: "Preterite: choose the past form that matches the subject.",
+    note: "Choose the past form that matches the subject.",
     data: `Ayer ellas ___ (comer) fruta.|comieron
 Ayer ustedes ___ (comer) un tomate.|comieron
 Ayer ellos ___ (comer) pan.|comieron
@@ -1803,9 +1803,9 @@ Ayer ellos ___ (comer) una pera.|comieron`,
   {
     id: "esga2p8",
     title: "Yesterday: Buying Things",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Preterite in short sentences",
     kind: "cloze",
-    note: "Preterite: choose the past form that matches the subject.",
+    note: "Choose the past form that matches the subject.",
     data: `Ayer ustedes ___ (comprar) una bufanda.|compraron
 Ayer nosotros ___ (comprar) unos pantalones.|compramos
 Ayer ellas ___ (comprar) un cuaderno.|compraron
@@ -1825,9 +1825,9 @@ Ayer ella ___ (comprar) un abrigo.|compró`,
   {
     id: "esga2p9",
     title: "Yesterday: Seeing Animals",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Preterite in short sentences",
     kind: "cloze",
-    note: "Preterite: choose the past form that matches the subject.",
+    note: "Choose the past form that matches the subject.",
     data: `Ayer ustedes ___ (ver) un caballo.|vieron
 Ayer tú ___ (ver) un conejo.|viste
 Ayer nosotros ___ (ver) un perro.|vimos

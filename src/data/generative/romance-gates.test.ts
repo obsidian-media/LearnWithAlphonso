@@ -62,6 +62,9 @@ describe("the packs themselves", () => {
   });
 });
 
+/** Singular entries that read naturally only as a plural indefinite after manger. */
+const PLURAL_ONLY_IN_USE = new Set(["légume"]);
+
 describe("gate 2: agreement, countability and article kind (read off the rendered text)", () => {
   it("French articles match the noun's gender, number and countability", () => {
     for (const { items } of built)
@@ -72,11 +75,14 @@ describe("gate 2: agreement, countability and article kind (read off the rendere
         const partitive = /^(du|de la|de l'|des) /.test(np) || /^de l'/.test(np);
         if (!noun.count) {
           expect(partitive, `${item.prompt}: mass noun needs the partitive`).toBe(true);
-        } else if (noun.number === "s") {
+        } else if (noun.number === "s" && !PLURAL_ONLY_IN_USE.has(noun.key)) {
           expect(partitive, `${item.prompt}: count noun must not take the partitive`).toBe(false);
         }
         if (noun.number === "p") {
           expect(np, item.prompt).toMatch(new RegExp(`^(les|des) ${noun.key}$`));
+        } else if (PLURAL_ONLY_IN_USE.has(noun.key) && item.verb === "manger") {
+          // "un légume" is not idiomatic: written out by hand, the plural is the only form.
+          expect(np, item.prompt).toBe(`des ${noun.key}s`);
         } else if (noun.gender === "m") {
           expect(np, item.prompt).toMatch(new RegExp(`^(le|l'|un|du|de l') ?${noun.key}$`));
         } else {
@@ -451,6 +457,9 @@ const FORBIDDEN: [string, string][] = [
   ["ouvrir", "pomme"],
   ["ouvrir", "chien"],
   ["acheter", "chien"],
+  ["acheter", "clé"],
+  ["manger", "beurre"],
+  ["cuisiner", "beurre"],
   ["cuisiner", "chaise"],
   ["comer", "silla"],
   ["comer", "libro"],
@@ -521,11 +530,12 @@ describe("gate 7: the meaning allowlist", () => {
     expect(esCandidates("es-svo-present", "tener").length).toBeGreaterThan(0);
   });
 
-  it("manger takes the indefinite only for the generic nouns fruit and légume", () => {
-    for (const item of everything.filter(
-      (i) => i.verb === "manger" && ["fruit", "légume"].includes(i.object),
-    ))
-      expect(item.articleKind, item.prompt).toBe("indefinite");
+  it("manger takes the indefinite only for fruit, and only the plural for légume", () => {
+    for (const item of everything.filter((i) => i.verb === "manger" && i.object === "fruit"))
+      expect(item.prompt, item.prompt).toMatch(/ un fruit\.$/);
+    const veg = everything.filter((i) => i.verb === "manger" && i.object === "légume");
+    expect(veg.length).toBeGreaterThan(0);
+    for (const item of veg) expect(item.prompt, item.prompt).toMatch(/ des légumes\.$/);
   });
 
   it("every generated (verb, object) is inside the hand-written class list, and mettre takes clothing only", () => {

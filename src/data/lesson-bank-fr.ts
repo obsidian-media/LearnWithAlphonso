@@ -1553,31 +1553,31 @@ On se retrouve devant la gare.|On se retrouve devant la gare.
   {
     id: "frga2p1",
     title: "Sentences: Eating",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
-    data: `Tu ___ (manger) du beurre.|manges
-Elles ___ (manger) le gâteau.|mangent
-Ils ___ (manger) un fruit.|mangent
-Elle ___ (manger) de la viande.|mange
-Je ___ (manger) la pomme.|mange
-Nous ___ (manger) une banane.|mangeons
-Vous ___ (manger) l'orange.|mangez
+    note: "Choose the verb form that matches the subject.",
+    data: `Ils ___ (manger) l'œuf.|mangent
+Tu ___ (manger) une orange.|manges
+Il ___ (manger) du riz.|mange
+Vous ___ (manger) la pomme.|mangez
+Je ___ (manger) un gâteau.|mange
+Elle ___ (manger) de la soupe.|mange
+Nous ___ (manger) des légumes.|mangeons
+Elles ___ (manger) de la viande.|mangent
+Vous ___ (manger) la banane.|mangez
 Il ___ (manger) du fromage.|mange
-Je ___ (manger) un légume.|mange
-Nous ___ (manger) de la soupe.|mangeons
-Ils ___ (manger) l'œuf.|mangent
-Elles ___ (manger) du pain.|mangent
-Tu ___ (manger) du riz.|manges
-Vous ___ (manger) une pomme.|mangez
-Il ___ (manger) la banane.|mange`,
+Nous ___ (manger) un fruit.|mangeons
+Ils ___ (manger) du pain.|mangent
+Elle ___ (manger) la pomme.|mange
+Tu ___ (manger) l'orange.|manges
+Je ___ (manger) une banane.|mange`,
   },
   {
     id: "frga2p2",
     title: "Sentences: Drinking",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Elles ___ (boire) du vin.|boivent
 Elle ___ (boire) du lait.|boit
 Nous ___ (boire) du café.|buvons
@@ -1597,9 +1597,9 @@ Elle ___ (boire) de l'eau.|boit`,
   {
     id: "frga2p3",
     title: "Sentences: Wearing Clothes",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Il ___ (porter) des bottes.|porte
 Vous ___ (porter) le pull.|portez
 Elle ___ (porter) une ceinture.|porte
@@ -1619,9 +1619,9 @@ Nous ___ (porter) des bottes.|portons`,
   {
     id: "frga2p4",
     title: "Sentences: Buying Things",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Elle ___ (acheter) le pull.|achète
 Tu ___ (acheter) une chaise.|achètes
 Elles ___ (acheter) le crayon.|achètent
@@ -1641,9 +1641,9 @@ Vous ___ (acheter) un manteau.|achetez`,
   {
     id: "frga2p5",
     title: "Sentences: Seeing Animals and Vehicles",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Je ___ (voir) une voiture.|vois
 Ils ___ (voir) l'avion.|voient
 Nous ___ (voir) un lion.|voyons
@@ -1663,9 +1663,9 @@ Elle ___ (voir) un mouton.|voit`,
   {
     id: "frga2p6",
     title: "Sentences: Reading",
-    subtitle: "Generated practice: present tense",
+    subtitle: "Present tense in short sentences",
     kind: "cloze",
-    note: "Present tense: choose the verb form that matches the subject.",
+    note: "Choose the verb form that matches the subject.",
     data: `Ils ___ (lire) le dictionnaire.|lisent
 Je ___ (lire) un journal.|lis
 Tu ___ (lire) le livre.|lis
@@ -2437,9 +2437,9 @@ Finalement, je suis d'accord.|Finalement, je suis d'accord.`,
   {
     id: "frgb1p1",
     title: "Yesterday: Eating",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé: the auxiliary and the participle go together.",
+    note: "The auxiliary and the participle go together.",
     data: `Hier, elle ___ (manger) un fruit.|a mangé
 Hier, nous ___ (manger) la pomme.|avons mangé
 Hier, elles ___ (manger) du fromage.|ont mangé
@@ -2449,41 +2449,41 @@ Hier, vous ___ (manger) du riz.|avez mangé
 Hier, tu ___ (manger) un gâteau.|as mangé
 Hier, il ___ (manger) du pain.|a mangé
 Hier, elles ___ (manger) l'orange.|ont mangé
-Hier, ils ___ (manger) un légume.|ont mangé
-Hier, tu ___ (manger) du beurre.|as mangé
+Hier, ils ___ (manger) des légumes.|ont mangé
 Hier, vous ___ (manger) de la soupe.|avez mangé
 Hier, elle ___ (manger) de la viande.|a mangé
 Hier, nous ___ (manger) la banane.|avons mangé
+Hier, tu ___ (manger) une pomme.|as mangé
 Hier, elles ___ (manger) l'œuf.|ont mangé`,
   },
   {
     id: "frgb1p2",
     title: "Yesterday: Buying Things",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé: the auxiliary and the participle go together.",
+    note: "The auxiliary and the participle go together.",
     data: `Hier, il ___ (acheter) une jupe.|a acheté
-Hier, elle ___ (acheter) la clé.|a acheté
-Hier, vous ___ (acheter) une chaise.|avez acheté
-Hier, nous ___ (acheter) le tapis.|avons acheté
-Hier, elles ___ (acheter) un pantalon.|ont acheté
-Hier, ils ___ (acheter) la chemise.|ont acheté
-Hier, tu ___ (acheter) une table.|as acheté
 Hier, vous ___ (acheter) le livre.|avez acheté
+Hier, elles ___ (acheter) un pantalon.|ont acheté
+Hier, nous ___ (acheter) le tapis.|avons acheté
 Hier, ils ___ (acheter) une écharpe.|ont acheté
-Hier, il ___ (acheter) la robe.|a acheté
+Hier, tu ___ (acheter) le chapeau.|as acheté
 Hier, elle ___ (acheter) un crayon.|a acheté
+Hier, ils ___ (acheter) la chemise.|ont acheté
+Hier, vous ___ (acheter) une chaise.|avez acheté
+Hier, il ___ (acheter) la robe.|a acheté
 Hier, elles ___ (acheter) le sac.|ont acheté
 Hier, nous ___ (acheter) une calculatrice.|avons acheté
-Hier, tu ___ (acheter) le chapeau.|as acheté
+Hier, tu ___ (acheter) une table.|as acheté
+Hier, elle ___ (acheter) le cahier.|a acheté
 Hier, ils ___ (acheter) le dictionnaire.|ont acheté`,
   },
   {
     id: "frgb1p3",
     title: "Yesterday: Going Places",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé with être: the participle agrees with the subject.",
+    note: "The participle agrees with the subject.",
     data: `Hier, elle ___ (aller) à la gare.|est allée
 Hier, ils ___ (aller) au marché.|sont allés
 Hier, il ___ (aller) au théâtre.|est allé
@@ -2503,9 +2503,9 @@ Hier, ils ___ (aller) au magasin.|sont allés`,
   {
     id: "frgb1p4",
     title: "Yesterday: Coming From Places",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé with être: the participle agrees with the subject.",
+    note: "The participle agrees with the subject.",
     data: `Hier, ils ___ (venir) de la bibliothèque.|sont venus
 Hier, il ___ (venir) du supermarché.|est venu
 Hier, elles ___ (venir) du magasin.|sont venues
@@ -2525,9 +2525,9 @@ Hier, ils ___ (venir) du supermarché.|sont venus`,
   {
     id: "frgb1p5",
     title: "Yesterday: Arriving",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé with être: the participle agrees with the subject.",
+    note: "The participle agrees with the subject.",
     data: `Hier, ils ___ (arriver) au magasin.|sont arrivés
 Hier, elle ___ (arriver) à la gare.|est arrivée
 Hier, il ___ (arriver) au supermarché.|est arrivé
@@ -2547,9 +2547,9 @@ Hier, ils ___ (arriver) à l'aéroport.|sont arrivés`,
   {
     id: "frgb1p6",
     title: "Yesterday: Staying",
-    subtitle: "Generated practice: past tense",
+    subtitle: "Passé composé in short sentences",
     kind: "cloze",
-    note: "Passé composé with être: the participle agrees with the subject.",
+    note: "The participle agrees with the subject.",
     data: `Hier, ils ___ (rester) à la maison.|sont restés
 Hier, il ___ (rester) au parc.|est resté
 Hier, elles ___ (rester) à la bibliothèque.|sont restées
