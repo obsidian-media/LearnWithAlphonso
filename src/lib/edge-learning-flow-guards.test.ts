@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 /**
  * Wiring guards for edge functions whose index.ts cannot be imported (Deno.serve at module scope).
  * The decisions themselves are unit-tested in supabase/functions/_shared/hearts.test.ts and
- * complete-lesson/lesson-version.test.ts; these pin that index.ts actually uses them.
+ * complete-lesson/lesson-version.test.ts; these pin that the entry code actually uses them.
+ * complete-lesson's handler is in handler.ts and is also driven end to end by handler.test.ts.
  */
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const read = (f: string) => fs.readFileSync(path.join(ROOT, f), "utf8");
@@ -30,7 +31,7 @@ describe("start-lesson-session hearts gate", () => {
 });
 
 describe("complete-lesson version mismatch", () => {
-  const src = read("supabase/functions/complete-lesson/index.ts");
+  const src = read("supabase/functions/complete-lesson/handler.ts");
   it("returns 409 lesson-version-mismatch and no longer 400s a mismatched payload", () => {
     expect(src).toMatch(/lessonPayloadMatches\(found, total, answers\)/);
     expect(src).toMatch(/jsonResponse\(\{ error: "lesson-version-mismatch" \}, 409\)/);

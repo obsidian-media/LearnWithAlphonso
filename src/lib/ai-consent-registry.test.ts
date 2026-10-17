@@ -72,8 +72,10 @@ describe("AI consent registry", () => {
   });
 
   it("edge functions that grade with AI read consent and pass it to the grader", () => {
-    for (const fn of ["complete-lesson", "grade-review"]) {
-      const src = read(`supabase/functions/${fn}/index.ts`);
+    // complete-lesson's handler lives in handler.ts (index.ts only serves it).
+    for (const file of ["complete-lesson/handler.ts", "grade-review/index.ts"]) {
+      const fn = file;
+      const src = read(`supabase/functions/${file}`);
       expect(src, fn).toContain("hasAiConsent(admin, userId)");
       expect(src, fn).toMatch(/deriveAnswerCorrectness\([^)]*, ai\)/);
     }
