@@ -37,6 +37,11 @@ class ApiHttp(
     private val accessToken: suspend () -> String?,
     engine: HttpClientEngine,
     private val refresh: (suspend () -> String?)? = null,
+    /**
+     * Called when any response is a 403 `ai-consent-required`: the server has no AI consent for this account, so the
+     * app's consent store can close its gate at once and read the truth (AIConsentSignal on iOS).
+     */
+    private val onAiConsentRequired: (() -> Unit)? = null,
 ) {
     private val client = HttpClient(engine) { expectSuccess = false }
 
@@ -85,9 +90,18 @@ class ApiHttp(
 
     private suspend fun withRetry(call: suspend (String?) -> HttpResponse): HttpResponse {
         val first = call(accessToken())
-        if (first.status != HttpStatusCode.Unauthorized || refresh == null) return first
+        if (first.status != HttpStatusCode.Unauthorized || refresh == null) return noteConsentRefusal(first)
         val fresh = refresh.invoke() ?: return first
-        return call(fresh)
+        return noteConsentRefusal(call(fresh))
+    }
+
+    /** Only a 403 whose body says `ai-consent-required`; a 503 `consent-check-failed` is not a consent problem. */
+    private suspend fun noteConsentRefusal(response: HttpResponse): HttpResponse {
+        if (onAiConsentRequired != null && response.status == HttpStatusCode.Forbidden) {
+            val code = runCatching { ServerErrorBody.parse(response.bodyAsText()).code }.getOrNull()
+            if (code == "ai-consent-required") onAiConsentRequired.invoke()
+        }
+        return response
     }
 
     private suspend fun send(

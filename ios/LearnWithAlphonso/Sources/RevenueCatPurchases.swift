@@ -47,6 +47,7 @@ final class RevenueCatPurchases: PurchasesProviding {
                 id: storeProduct.productIdentifier,
                 localizedTitle: storeProduct.localizedTitle,
                 localizedPriceString: storeProduct.localizedPriceString,
+                price: storeProduct.price,
                 period: storeProduct.subscriptionPeriod.flatMap(Self.period),
                 eligibleFreeTrial: await Self.eligibleFreeTrial(for: storeProduct)
             ))
@@ -58,8 +59,12 @@ final class RevenueCatPurchases: PurchasesProviding {
     /// RevenueCat 5.x's async purchase THROWS purchaseCancelledError on a cancel (its
     /// continuation resumes with the error even though userCancelled is true), and
     /// paymentPendingError for Ask to Buy / SCA. Both are outcomes, not failures.
-    func purchase(productID: String) async throws -> PurchaseOutcome {
+    func purchase(productID: String, source: PaywallSource?) async throws -> PurchaseOutcome {
         guard let package = packagesByProductID[productID] else { throw AdapterError.productNotLoaded }
+        // Which entry point sold it. A custom attribute on the customer; RevenueCat syncs it with the purchase.
+        if let source {
+            Purchases.shared.attribution.setAttributes([PaywallSource.attributeKey: source.rawValue])
+        }
         do {
             let result = try await Purchases.shared.purchase(package: package)
             if result.userCancelled { return .cancelled }

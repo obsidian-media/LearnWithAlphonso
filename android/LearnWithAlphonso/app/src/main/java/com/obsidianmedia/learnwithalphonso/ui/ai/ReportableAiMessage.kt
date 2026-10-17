@@ -21,7 +21,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.obsidianmedia.learnwithalphonso.core.logic.AiReportCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
@@ -56,30 +56,30 @@ fun ReportableAiMessage(
 
     content(
         Modifier
-            .combinedClickable(onClick = {}, onLongClick = { showMenu = true }, onLongClickLabel = AiReportCopy.reportAction)
-            .semantics { customActions = listOf(CustomAccessibilityAction(AiReportCopy.reportAction) { showReasons = true; true }) },
+            .combinedClickable(onClick = {}, onLongClick = { showMenu = true }, onLongClickLabel = AiConsentCopy.reportAction)
+            .semantics { customActions = listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true }) },
     )
     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-        DropdownMenuItem(text = { Text(AiReportCopy.reportAction) }, onClick = { showMenu = false; showReasons = true })
+        DropdownMenuItem(text = { Text(AiConsentCopy.reportAction) }, onClick = { showMenu = false; showReasons = true })
     }
     if (showReasons) {
         AlertDialog(
             onDismissRequest = { showReasons = false },
-            title = { Text(AiReportCopy.reportAction) },
+            title = { Text(AiConsentCopy.reportAction) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(AiReportCopy.reportReviewNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    Text(AiConsentCopy.reportReviewNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                     AiResponseReportReason.entries.forEach { reason ->
                         TextButton(onClick = {
                             showReasons = false
                             scope.launch {
                                 result = try {
                                     client.reportAiResponse(makeReport(reason))
-                                    AiReportCopy.reportThanks
+                                    AiConsentCopy.reportThanks
                                 } catch (e: CancellationException) {
                                     throw e
                                 } catch (e: Exception) {
-                                    AiReportCopy.reportFailed
+                                    AiConsentCopy.reportFailed
                                 }
                             }
                         }) { Text(reason.label, color = palette.ink) }

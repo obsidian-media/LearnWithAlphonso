@@ -4,14 +4,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/** Report strings, the same text as the iOS Kit's AIConsentCopy.swift and src/lib/ai-consent-copy.ts (ai-consent-copy-parity.test.ts). */
-object AiReportCopy {
-    const val reportAction = "Report this response"
-    const val reportThanks = "Thanks. We'll review this response."
-    const val reportFailed = "Couldn't send your report. Check your connection and try again."
-    const val reportReviewNote = "We review reports within 24 hours."
-}
-
 enum class AiResponseSurface(val wire: String) { HECTOR("hector"), CONVERSATION("conversation"), CAMPAIGN("campaign") }
 
 /** The codes and labels are the web's AI_REPORT_REASONS, in the same order. */

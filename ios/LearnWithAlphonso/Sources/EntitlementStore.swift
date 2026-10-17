@@ -39,6 +39,8 @@ final class EntitlementStore: EntitlementResetting {
     func login(userID: String) async { await controller.login(userID: userID) }
     func loadOffering() async { await controller.loadOffering() }
     func purchase() async { await controller.purchase() }
+    func select(productID: String) { controller.select(productID: productID) }
+    func presented(from source: PaywallSource) { controller.presented(from: source) }
     func restorePurchases() async { await controller.restore() }
 
     /// SessionLifecycle handler (AccountDataCleanup.HandlerID.entitlements).

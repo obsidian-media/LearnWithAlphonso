@@ -19,6 +19,9 @@ public enum VoicePhase: Equatable, Sendable {
             return nil
         }
     }
+    /// True when no recording, transcription, reply or permission request is in progress (idle or failed), so
+    /// nothing is using the audio session.
+    public var isQuiet: Bool { generation == nil }
 }
 
 /// Side effects the app-target controller performs. The reducer itself
