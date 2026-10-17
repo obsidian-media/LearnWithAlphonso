@@ -10,7 +10,7 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
-**Android: flaky Learn view-model test fixed (2026-10-17, #NNN; Android, no build yet).** The level, course, claim and freeze actions in `LearnViewModel` now return their `Job`, and `LearnViewModelTest` joins them instead of polling the fake server. The old test could finish while the coroutine was still resuming after `Dispatchers.resetMain()`, which crashed the next test intermittently. No behaviour change.
+**Android: flaky Learn view-model test fixed (2026-10-17, #307; Android, no build yet).** The level, course, claim and freeze actions in `LearnViewModel` now return their `Job`, and `LearnViewModelTest` joins them instead of polling the fake server. The old test could finish while the coroutine was still resuming after `Dispatchers.resetMain()`, which crashed the next test intermittently. No behaviour change.
 
 **Name filter: two slang spellings (2026-10-16, #304; server only, no app change).** `noods` and `pron` are blocked as whole words in display and team names (migration `20261018100000`). Digit swaps such as `n00ds` and `pr0n` already folded onto them; the words themselves were missing. Noodle, Pronto, Pronoun and Apron stay allowed, and a rolled-back production check found no existing name affected.
 
