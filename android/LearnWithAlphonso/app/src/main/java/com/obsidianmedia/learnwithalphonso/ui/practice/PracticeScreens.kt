@@ -37,7 +37,7 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
-import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
@@ -120,7 +120,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
         ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient) { playback.play(it) }
     }
     val palette = AlphonsoColor.palette
-    AiDisclosureGate(container.prefs) {
+    AiConsentGate(container, onDecline = onBack) {
         ConversationBody(vm, scenario.title, palette.moss, Color.White, onBack)
     }
 }
@@ -135,7 +135,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val palette = AlphonsoColor.palette
     val progress by vm.campaignState.collectAsState()
     val state by vm.state.collectAsState()
-    AiDisclosureGate(container.prefs) {
+    AiConsentGate(container, onDecline = onBack) {
         ConversationBody(
             vm, campaign.title, palette.moss, Color.White, onBack,
             header = {

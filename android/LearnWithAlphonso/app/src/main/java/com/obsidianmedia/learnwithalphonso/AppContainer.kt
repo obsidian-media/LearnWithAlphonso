@@ -12,6 +12,7 @@ import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
@@ -22,12 +23,14 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
+import com.obsidianmedia.learnwithalphonso.data.AiConsentPrefsCache
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
 import com.obsidianmedia.learnwithalphonso.data.GoalPrefsStore
 import com.obsidianmedia.learnwithalphonso.data.LeaderboardSnapshotCache
 import com.obsidianmedia.learnwithalphonso.data.LeagueTierCache
 import com.obsidianmedia.learnwithalphonso.data.NudgeCooldownCache
 import com.obsidianmedia.learnwithalphonso.data.RoomSyncQueueStore
+import com.obsidianmedia.learnwithalphonso.data.SessionAiConsentBackend
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import com.obsidianmedia.learnwithalphonso.data.WeeklyRecapCache
 import com.obsidianmedia.learnwithalphonso.net.ConnectivityMonitor
@@ -82,7 +85,14 @@ class AppContainer(context: Context) {
     val progressClient = ProgressSyncClient(supabaseHttp)
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
 
-    private val apiHttp = ApiHttp(BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine) { session.freshAccessToken(force = true) }
+    /** The account's AI consent (profiles.ai_consent_at), shared by every screen that asks. */
+    val aiConsent = AiConsentStore(SessionAiConsentBackend(session, progressClient), AiConsentPrefsCache(prefs))
+
+    private val apiHttp = ApiHttp(
+        BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine,
+        refresh = { session.freshAccessToken(force = true) },
+        onAiConsentRequired = { appScope.launch { aiConsent.serverRefusedForLackOfConsent() } },
+    )
     val accountClient = AccountClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)

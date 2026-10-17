@@ -6,6 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.PlacementQuestion
 import com.obsidianmedia.learnwithalphonso.core.content.placementOrder
+import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.groupByBand
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.core.logic.nextAdaptiveBand
@@ -14,6 +15,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.playablePlacementPool
 import com.obsidianmedia.learnwithalphonso.core.logic.scorePlacement
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,6 +61,8 @@ class PlacementViewModel(
     private val canPlayAudio: Boolean = true,
     private val isConnected: () -> Boolean = { true },
     private val random: Random = Random.Default,
+    /** The account's AI consent: the server grader is asked only when the learner allowed it. */
+    private val hasAiConsent: () -> Boolean = { true },
 ) : ViewModel() {
     private val _state = MutableStateFlow(freshAttempt())
     val state: StateFlow<PlacementUiState> = _state.asStateFlow()
@@ -78,14 +82,15 @@ class PlacementViewModel(
         _state.value = freshAttempt()
     }
 
-    fun submit() {
+    /** Returns the grading job so callers (tests) can join it. */
+    fun submit(): Job {
         val s = _state.value
-        val picked = s.picked?.takeIf { it.isNotBlank() } ?: return
-        val q = s.currentQuestion ?: return
+        val picked = s.picked?.takeIf { it.isNotBlank() } ?: return NOTHING_TO_WAIT_FOR
+        val q = s.currentQuestion ?: return NOTHING_TO_WAIT_FOR
         val token = attemptToken
-        viewModelScope.launch {
+        return viewModelScope.launch {
             var correct = isPlacementAnswerCorrect(q, picked)
-            if (!correct && q is PlacementQuestion.Translate && isConnected()) {
+            if (!correct && q is PlacementQuestion.Translate && TranslationGradingPolicy.mayAskServer(isConnected = isConnected(), hasAccessToken = true, hasAiConsent = hasAiConsent())) {
                 _state.update { it.copy(checking = true) }
                 val verdict = translation.gradePlacementTranslation(q.id, picked, course.code)
                 if (attemptToken != token) return@launch
@@ -128,3 +133,5 @@ class PlacementViewModel(
         runCatching { client.savePlacementResult(course.code, s.level, s.correctTotal) }
     }
 }
+
+private val NOTHING_TO_WAIT_FOR: Job = Job().also { it.complete() }

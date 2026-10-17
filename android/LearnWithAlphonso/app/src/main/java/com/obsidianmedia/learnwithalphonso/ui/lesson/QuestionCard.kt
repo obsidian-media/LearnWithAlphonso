@@ -15,11 +15,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -28,7 +31,11 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentPolicy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
@@ -53,6 +60,8 @@ fun QuestionCard(
     picked: String?,
     onPick: (String?) -> Unit,
     translationVerdict: TranslationVerdict? = null,
+    /** Which player this card sits in; the account's AI consent decides what it offers there (AiConsentPolicy). */
+    surface: AiConsentSurface = AiConsentSurface.LESSON,
 ) {
     val palette = AlphonsoColor.palette
     val context = LocalContext.current
@@ -95,6 +104,18 @@ fun QuestionCard(
                 AlphonsoSectionHeader("Write it yourself")
                 Prompt(question.prompt)
                 AnswerField(picked ?: "", onPick, "Write your answer", enabled = !checked, multiline = true)
+                // Without the account's AI consent the written answer is checked against our list only, and the learner
+                // is told so with a way to turn AI grading on. Never a wall: the lesson goes on. Only when the account
+                // itself said no: a setting still loading or unreadable offers nothing here.
+                val consent by container.aiConsent.state.collectAsState()
+                var showConsent by remember { mutableStateOf(false) }
+                if (!checked && AiConsentPolicy.offersAiGradingOptIn(surface, container.aiConsent.statusOf(consent))) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(AiConsentCopy.localGradingNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.weight(1f, fill = false))
+                        TextButton(onClick = { showConsent = true }) { Text(AiConsentCopy.turnOnAiGrading, color = palette.moss) }
+                    }
+                }
+                if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
                 if (checked && translationVerdict?.correct == false) {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.surface).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         translationVerdict.reason?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = palette.ink) }
