@@ -15,7 +15,7 @@ class FakeDb {
   rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
   upserts: { table: string; rows: Row[] }[] = [];
   rpcResult: { data: unknown; error: unknown } = { data: { status: "applied" }, error: null };
-  lesson: Row | null = null;
+  lesson: (Row & { id: string; course: string }) | null = null;
 
   from(table: string) {
     return new Query(this, table);
@@ -70,8 +70,6 @@ class Query {
   private rows(): Row[] {
     return (this.db.tables[this.table] ?? []).filter((r) =>
       this.filters.every((f) => {
-        // "units.course" filters the lessons join; the fake lesson is already the right course.
-        if (f.col.includes(".")) return true;
         const v = r[f.col];
         if (f.op === "eq") return v === f.val;
         if (f.op === "in") return (f.val as unknown[]).includes(v);
@@ -82,7 +80,14 @@ class Query {
   }
   private result() {
     if (this.db.failReads.has(this.table)) return { data: null, error: { message: "read failed" }, count: null };
-    if (this.table === "lessons") return { data: this.db.lesson, error: null, count: null };
+    if (this.table === "lessons") {
+      // The handler scopes the lesson to the claimed course through the units join ("units.course").
+      const l = this.db.lesson;
+      const match = l && this.filters.every((f) =>
+        f.col === "id" ? f.val === l.id : f.col === "units.course" ? f.val === l.course : false
+      );
+      return { data: match ? l : null, error: null, count: null };
+    }
     const rows = this.rows();
     return this.countHead ? { data: null, error: null, count: rows.length } : { data: rows, error: null, count: rows.length };
   }
@@ -102,25 +107,34 @@ const QUESTIONS = [
 ];
 const NOW = new Date("2026-10-17T12:00:00Z");
 
-function setup(opts: { tokenOk?: boolean; auth?: Response; pushFails?: boolean } = {}) {
+function setup(opts: { tokenOk?: boolean; auth?: Response; pushFails?: boolean; consent?: boolean } = {}) {
   const db = new FakeDb();
-  db.lesson = { id: "u1l1", units: { level_id: "A2" }, questions: QUESTIONS };
+  db.lesson = { id: "u1l1", course: "fr", units: { level_id: "A2" }, questions: QUESTIONS };
   db.tables.achievements = [{ id: "first_lesson", category: "lessons", threshold: 1 }];
   const pushes: string[] = [];
+  const tokenClaims: Row[] = [];
+  const consentReads: string[] = [];
   const deps: CompleteLessonDeps = {
     authenticate: () => Promise.resolve(opts.auth ?? { userId: USER, userClient: db.client() }),
     admin: () => db.client(),
     translateQuotaCheck: () => () => Promise.resolve(true),
-    hasAiConsent: () => Promise.resolve(true),
-    verifySessionToken: () => opts.tokenOk ?? true,
+    hasAiConsent: (_admin, userId) => {
+      consentReads.push(userId);
+      return Promise.resolve(opts.consent ?? true);
+    },
+    verifySessionToken: (_token, claim) => {
+      tokenClaims.push(claim as unknown as Row);
+      return opts.tokenOk ?? true;
+    },
     sendPush: (_admin, userId) => {
       pushes.push(userId);
-      if (opts.pushFails) throw new Error("push down");
+      // The real sendPushToUser fails asynchronously, so the fake rejects rather than throws.
+      if (opts.pushFails) return Promise.reject(new Error("push down"));
       return Promise.resolve({ sent: 1, skipped: null });
     },
     now: () => NOW,
   };
-  return { db, pushes, handler: createCompleteLessonHandler(deps) };
+  return { db, pushes, tokenClaims, consentReads, handler: createCompleteLessonHandler(deps) };
 }
 
 function post(body: unknown, method = "POST") {
@@ -144,6 +158,7 @@ Deno.test("rejects a non-POST, an unauthenticated call and a malformed body befo
   assertEquals((await handler(post(null, "GET"))).status, 405);
   const denied = setup({ auth: new Response("{}", { status: 401 }) });
   assertEquals((await denied.handler(post(body(["a", "d"])))).status, 401);
+  assertEquals(denied.db.rpcCalls.length, 0);
   assertEquals((await handler(post({ lessonId: "u1l1" }))).status, 400);
   assertEquals(db.rpcCalls.length, 0);
 });
@@ -157,8 +172,17 @@ Deno.test("a payload that no longer matches the lesson is a 409 lesson-version-m
 });
 
 Deno.test("an invalid lesson session token is a 403 and saves nothing", async () => {
-  const { db, handler } = setup({ tokenOk: false });
+  const { db, handler, tokenClaims } = setup({ tokenOk: false });
   assertEquals((await handler(post(body(["a", "d"])))).status, 403);
+  assertEquals(db.rpcCalls.length, 0);
+  // The token is checked against this user, this lesson and this course, never the client's say-so.
+  assertEquals(tokenClaims, [{ userId: USER, lessonId: "u1l1", course: "fr" }]);
+});
+
+Deno.test("another course's lesson id is a 409 and saves nothing", async () => {
+  const { db, handler } = setup();
+  const res = await handler(post({ ...body(["a", "d"]), course: "es" }));
+  assertEquals(res.status, 409);
   assertEquals(db.rpcCalls.length, 0);
 });
 
@@ -273,4 +297,59 @@ Deno.test("a friend passed on the leaderboard gets an overtake push; a push fail
   const saved = await failing.handler(post(body(["a", "d"])));
   assertEquals(saved.status, 200);
   assertEquals(failing.pushes, ["friend-1"]);
+});
+
+Deno.test("a stored promotion counter larger than the saved events is kept", async () => {
+  const { db, handler } = setup();
+  db.tables.achievements = [{ id: "league_promote_3", category: "league", threshold: 3 }];
+  db.tables.user_achievements = [{ user_id: USER, achievement_id: "league_promote_3", progress: 5 }];
+  db.tables.friend_activity_events = [{ id: 1, user_id: USER, event_type: "league_promotion" }];
+  await handler(post(body(["a", "d"])));
+  assertEquals(db.upserts[0].rows[0].progress, 5);
+});
+
+Deno.test("hearts refill against the injected clock, not the machine clock", async () => {
+  const { db, handler } = setup();
+  // Due one minute before the handler's 'now'; a real clock in 2026-10 or later would also see it due, so
+  // also check the not-yet-due case one minute after.
+  db.tables.user_progress = [{
+    user_id: USER, streak: 0, longest_streak: 0, last_active_date: null, hearts: 0,
+    hearts_refill_at: new Date(NOW.getTime() - 60_000).toISOString(), streak_freezes: 0, updated_at: "t0",
+  }];
+  assertEquals((await (await handler(post(body(["a", "c"])))).json()).progress.hearts, 5);
+
+  const later = setup();
+  later.db.tables.user_progress = [{
+    user_id: USER, streak: 0, longest_streak: 0, last_active_date: null, hearts: 0,
+    hearts_refill_at: new Date(NOW.getTime() + 60_000).toISOString(), streak_freezes: 0, updated_at: "t0",
+  }];
+  assertEquals((await (await later.handler(post(body(["a", "c"])))).json()).progress.hearts, 0);
+});
+
+Deno.test("a translate answer outside the curated list asks for AI consent, and without it counts as missed", async () => {
+  const { db, handler, consentReads } = setup({ consent: false });
+  db.lesson = {
+    id: "u1l1", course: "fr", units: { level_id: "A2" },
+    questions: [
+      QUESTIONS[0],
+      { id: "q2", type: "translate", prompt: "p2", choices: null, bank: ["the cat"], answer_index: null, answer_text: "the cat" },
+    ],
+  };
+  const res = await handler(post(body(["a", "a feline"])));
+  assertEquals(res.status, 200);
+  assertEquals(consentReads, [USER]);
+  assertEquals(db.rpcCalls[0].args._missed_question_ids, ["q2"]);
+});
+
+Deno.test("only friends actually passed get an overtake push", async () => {
+  const { db, handler, pushes } = setup();
+  const xp = computeXpGain(2, 2);
+  db.tables.friendships = ["ahead", "passed", "behind"].map((f) => ({ user_id: USER, friend_id: f, status: "accepted" }));
+  db.tables.language_progress = [
+    { user_id: "ahead", language: "fr", xp: xp + 1 },
+    { user_id: "passed", language: "fr", xp: 1 },
+    { user_id: "behind", language: "fr", xp: 0 },
+  ];
+  await handler(post(body(["a", "d"])));
+  assertEquals(pushes, ["passed"]);
 });
