@@ -178,7 +178,7 @@ private struct HectorConversationView: View {
 
     /// While hands-free is on there is no hold button: a status line, and one Pause or Resume button.
     private var handsFreeControls: some View {
-        let status = voice.handsFree.status
+        let status = voice.handsFreeStatus
         let paused: Bool = { if case .paused = status { return true } else { return false } }()
         return VStack(spacing: 8) {
             if let line = HandsFreeCopy.statusLine(status) {
@@ -193,20 +193,27 @@ private struct HectorConversationView: View {
             }
             .buttonStyle(.alphonsoSecondary)
             .accessibilityIdentifier("hectorHandsFreePause")
-            if voice.microphoneUnavailable {
-                Text(VoiceCopy.microphoneOff)
+            if voice.microphoneUnavailable || voice.recorderStartFailed {
+                Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.destructive)
                     .multilineTextAlignment(.center)
             }
         }
         .padding(.horizontal, AlphonsoSpacing.md)
+        .onChange(of: status) { _, new in
+            // A pause is a safety stop the learner must hear about; updatesFrequently does not announce it.
+            if case .paused = new, let line = HandsFreeCopy.statusLine(new) {
+                AccessibilityNotification.Announcement(line).post()
+            }
+            if new == .listening { notice = nil }
+        }
     }
 
     private var micButton: some View {
         VStack(spacing: 6) {
             Toggle(HandsFreeCopy.toggle, isOn: Binding(
-                get: { voice.handsFree.isOn },
+                get: { voice.isHandsFreeOn },
                 set: { on in
                     if on, !handsFreeNoteSeen {
                         showHandsFreeNote = true
@@ -220,7 +227,7 @@ private struct HectorConversationView: View {
             .padding(.horizontal, AlphonsoSpacing.md)
             .accessibilityIdentifier("hectorHandsFreeToggle")
 
-            if voice.handsFree.isOn {
+            if voice.isHandsFreeOn {
                 handsFreeControls
             } else if voice.isBusy {
                 ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
@@ -261,7 +268,8 @@ private struct HectorConversationView: View {
     private func handle(_ capture: VoiceCapture) async {
         switch capture {
         case .tooShort:
-            notice = "Didn't catch that. Hold the button while you speak."
+            // Hands-free has no button to hold; its own status line says what happens next.
+            notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
         case let .audio(audio, generation, debugTiming):
             await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
         }
@@ -284,7 +292,12 @@ private struct HectorConversationView: View {
                 audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
             let text = stt.text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty else {
-                notice = "Didn't catch that — try again."
+                if voice.isHandsFreeOn {
+                    // Background noise, not speech: pause rather than keep sending what the room sounds like.
+                    voice.handsFreeHeardNoWords()
+                } else {
+                    notice = "Didn't catch that — try again."
+                }
                 return
             }
             var snapshot = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
