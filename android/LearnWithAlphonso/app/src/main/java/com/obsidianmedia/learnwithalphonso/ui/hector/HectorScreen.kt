@@ -49,6 +49,7 @@ import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
+import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
@@ -94,16 +95,18 @@ class HectorViewModel(
     private val progress: ProgressSyncClient,
     private val player: ReplyPlayer,
     private val sessionId: String = UUID.randomUUID().toString(),
+    /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
+    private val course: Course = Course.ENGLISH,
 ) : ViewModel() {
     private val _state = MutableStateFlow(HectorUiState())
     val state: StateFlow<HectorUiState> = _state.asStateFlow()
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", null, timing) }, viewModelScope)
+    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var memoryContext: ChatMessage? = null
     private var analysed = false
 
     init {
         viewModelScope.launch {
-            val level = runCatching { progress.fetchCefrLevel("en") }.getOrNull()
+            val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
             val open = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList()).filter { it.openCount > 0 }.map { it.category }
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
         }
@@ -128,7 +131,7 @@ class HectorViewModel(
     private suspend fun sendTurn(text: String) {
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
-            val reply = tutor.respond(sessionId, text, "en", historyForTutor())
+            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code)
             _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = ConversationPhase.SPEAKING) }
             reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
@@ -145,7 +148,7 @@ class HectorViewModel(
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript) } }
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript, course.code) } }
     }
 }
 
@@ -195,8 +198,10 @@ fun PaywallScreen(container: AppContainer) {
 private fun HectorConversation(container: AppContainer) {
     val palette = AlphonsoColor.palette
     val playback = remember { container.newPlayback() }
-    val vm: HectorViewModel = viewModel {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) })
+    // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
+    val course by container.activeCourse.course.collectAsState()
+    val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course)
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()

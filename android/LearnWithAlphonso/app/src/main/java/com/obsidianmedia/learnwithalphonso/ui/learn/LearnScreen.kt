@@ -66,8 +66,11 @@ fun LearnScreen(
     onOpenPlacement: (Course) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore) }
+    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value) }
     val state by vm.state.collectAsState()
+    // Learn sets the active course (Practice and Hector follow it) and follows it when the account changes.
+    LaunchedEffect(state.course) { container.activeCourse.set(state.course) }
+    LaunchedEffect(Unit) { container.activeCourse.course.collect { if (it != vm.state.value.course) vm.selectCourse(it) } }
     val progress by vm.progress.collectAsState()
     val dueCount by vm.dueCount.collectAsState()
     val palette = AlphonsoColor.palette

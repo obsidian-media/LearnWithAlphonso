@@ -50,6 +50,16 @@ class LearnViewModelTest {
     }
 
     @Test
+    fun `Learn opens on the account's remembered course and loads that course`() = runBlocking {
+        val s = server()
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore(), initialCourse = Course.SPANISH)
+        v.initialLoad.join()
+        assertEquals(Course.SPANISH, v.state.value.course)
+        assertTrue(s.seen.any { it.query["language"] == "eq.es" })
+        assertTrue(s.seen.none { it.query["language"] == "eq.en" })
+    }
+
+    @Test
     fun `an untaken placement and a missing level fall back to A1 and show the banner`() = runBlocking {
         val v = LearnViewModel(testContent, server(level = null, completed = emptyList(), placementTaken = false).progressClient, MemorySyncStore())
         v.initialLoad.join()

@@ -43,11 +43,12 @@ sealed class AiConversationError(message: String) : Exception(message) {
 class AiConversationClient(private val http: ApiHttp) {
     private val json = ContentJson.json
 
-    suspend fun chat(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null): String {
+    suspend fun chat(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null): String {
         val body = buildJsonObject {
             putJsonArray("messages") { messages.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
             if (systemPrompt != null) put("systemPrompt", systemPrompt)
             if (cefrLevel != null) put("cefrLevel", cefrLevel)
+            if (course != null) put("course", course)
         }
         // The server says 502 empty-reply when the model returned nothing. One retry, never a loop.
         val first = http.post("api/chat", body)
@@ -60,8 +61,9 @@ class AiConversationClient(private val http: ApiHttp) {
         return obj.str("content") ?: throw AiConversationError.InvalidPayload()
     }
 
-    suspend fun synthesizeSpeech(text: String, voice: String? = null): ByteArray {
-        val response = http.post("api/tts", buildJsonObject { put("text", text); if (voice != null) put("voice", voice) })
+    /** `course` picks the course's native voice; an explicit `voice` still wins. */
+    suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null): ByteArray {
+        val response = http.post("api/tts", buildJsonObject { put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course) })
         requireSuccess(response)
         return response.readRawBytes()
     }
@@ -77,8 +79,11 @@ class AiConversationClient(private val http: ApiHttp) {
         return SttResult(obj.str("text") ?: throw AiConversationError.InvalidPayload(), obj["confidence"]?.jsonPrimitive?.doubleOrNull)
     }
 
-    suspend fun analyzeWeaknesses(transcript: List<ChatMessage>): Int {
-        val body = buildJsonObject { putJsonArray("messages") { transcript.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } } }
+    suspend fun analyzeWeaknesses(transcript: List<ChatMessage>, course: String? = null): Int {
+        val body = buildJsonObject {
+            putJsonArray("messages") { transcript.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
+            if (course != null) put("course", course)
+        }
         val obj = objectOf(http.post("api/analyze-weaknesses", body))
         return obj["weaknessesDetected"]?.jsonPrimitive?.intOrNull ?: throw AiConversationError.InvalidPayload()
     }
@@ -169,11 +174,14 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
         agentId: String = "tutor",
         ttsModel: String = "magpie",
         piperVoice: String = "mana",
+        /** The conversation's course; the server resolves the prompt, voice and reply language from it. */
+        course: String? = null,
     ): TutorReply {
         val body = buildJsonObject {
             put("session_id", sessionId)
             put("text", text)
             put("language", language)
+            if (course != null) put("course", course)
             put("agent_id", agentId)
             put("tts_model", ttsModel)
             put("piper_voice", piperVoice)

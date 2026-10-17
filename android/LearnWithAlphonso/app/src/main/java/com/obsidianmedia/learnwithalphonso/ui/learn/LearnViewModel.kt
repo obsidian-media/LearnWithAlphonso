@@ -58,9 +58,11 @@ class LearnViewModel(
     private val content: ContentStore,
     private val client: ProgressSyncClient,
     private val syncStore: SyncQueueStore,
+    /** The account's remembered course, so Learn opens on it. */
+    initialCourse: Course = Course.ENGLISH,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(LearnUiState())
+    private val _state = MutableStateFlow(LearnUiState(course = initialCourse))
     val state: StateFlow<LearnUiState> = _state.asStateFlow()
 
     val progress: StateFlow<LessonCompletionProgress?> = syncStore.progress.stateIn(viewModelScope, SharingStarted.Eagerly, null)

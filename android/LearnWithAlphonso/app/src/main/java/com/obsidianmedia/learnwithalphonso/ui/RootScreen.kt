@@ -78,6 +78,10 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val palette = AlphonsoColor.palette
 
     LaunchedEffect(Unit) { session.restore() }
+    // The active course is the signed-in account's own (English while signed out or never chosen).
+    LaunchedEffect((state as? AuthState.SignedIn)?.session?.userId) {
+        container.activeCourse.accountChanged((state as? AuthState.SignedIn)?.session?.userId)
+    }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
     val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }

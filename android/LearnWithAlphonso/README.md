@@ -43,9 +43,13 @@ RevenueCat Android key) and the device checklist below.
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
 Missing on Android: the one-time public-name step, the report action on AI
-replies, French and Spanish conversation scenarios (learners get the English
-ones), save-any-word, and the later iOS offline-queue and podcast player
+replies, save-any-word, and the later iOS offline-queue and podcast player
 reliability work.
+
+Ported on 2026-10-17, not yet run on a device: French and Spanish Practice
+scenarios and Campaigns, and Hector in the active course. Practice and Hector
+follow the course chosen on the Learn tab (remembered per account); speech is
+transcribed, replied to and spoken in that course, and the level comes from it.
 
 Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
 the account-level AI consent (the sheet with Allow and Not now, the Settings
