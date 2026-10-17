@@ -12,6 +12,10 @@ import LearnWithAlphonsoKit
 /// style is at least the trial style.
 struct PaywallView: View {
     let entitlementStore: EntitlementStore
+    /// Why it opened; recorded on the RevenueCat customer when a purchase starts.
+    let source: PaywallSource
+    /// Set when the paywall is a sheet: a Close button, and it closes itself once Pro is active.
+    var onClose: (() -> Void)? = nil
 
     // Apple's own recommendation is a direct in-app path to subscription management, not
     // just instructions to go find Settings yourself. manageSubscriptionsSheet is the
@@ -63,7 +67,10 @@ struct PaywallView: View {
             .frame(maxWidth: .infinity)
         }
         .background(AlphonsoColor.surface)
-        .task { await entitlementStore.loadOffering() }
+        .task {
+            entitlementStore.presented(from: source)
+            await entitlementStore.loadOffering()
+        }
         .onChange(of: state.notice) { _, notice in
             // Purchase and restore results appear below the buttons; tell VoiceOver.
             guard let notice else { return }
@@ -73,6 +80,18 @@ struct PaywallView: View {
             }
         }
         .manageSubscriptionsSheet(isPresented: $isPresentingManageSubscriptions)
+        .onChange(of: entitlementStore.isPro) { _, isPro in
+            if isPro { onClose?() }
+        }
+        .overlay(alignment: .topTrailing) {
+            if let onClose {
+                Button("Close", action: onClose)
+                    .font(AlphonsoFont.sans(15, weight: .medium))
+                    .foregroundStyle(AlphonsoColor.moss)
+                    .padding(AlphonsoSpacing.md)
+                    .accessibilityIdentifier("paywallClose")
+            }
+        }
     }
 
     @ViewBuilder
@@ -106,6 +125,9 @@ struct PaywallView: View {
 
         case .loaded:
             VStack(spacing: AlphonsoSpacing.sm) {
+                if !presentation.options.isEmpty {
+                    planPicker(presentation.options, disabled: state.isPurchasing || state.isRestoring)
+                }
                 if let priceLine = presentation.priceLine {
                     Text(priceLine)
                         .font(font(presentation.priceStyle))
@@ -133,6 +155,47 @@ struct PaywallView: View {
                     .disabled(state.isPurchasing || state.isRestoring)
                     .accessibilityLabel(ctaTitle)
                 }
+            }
+        }
+    }
+
+    /// One card per plan. The selected plan's price, trial and renewal lines show below, so the
+    /// learner always reads the terms of the plan the button buys.
+    private func planPicker(_ options: [PaywallPlanOption], disabled: Bool) -> some View {
+        VStack(spacing: AlphonsoSpacing.sm) {
+            ForEach(options) { option in
+                Button {
+                    entitlementStore.select(productID: option.id)
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(option.title).font(AlphonsoFont.sans(16, weight: .semiBold))
+                            Text(option.priceLine).font(AlphonsoFont.sans(14))
+                            if let trial = option.trialNote {
+                                Text(trial).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.moss)
+                            }
+                        }
+                        Spacer()
+                        if let savings = option.savingsLine {
+                            Text(savings)
+                                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.moss)
+                        }
+                        Image(systemName: option.isSelected ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(option.isSelected ? AlphonsoColor.moss : AlphonsoColor.inkSoft)
+                            .accessibilityHidden(true)
+                    }
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .padding(AlphonsoSpacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(option.isSelected ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: option.isSelected ? 2 : 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(disabled)
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(option.isSelected ? [.isButton, .isSelected] : .isButton)
             }
         }
     }

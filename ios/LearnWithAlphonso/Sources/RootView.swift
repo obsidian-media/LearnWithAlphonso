@@ -108,7 +108,7 @@ struct RootView: View {
                         )
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Listen", systemImage: "headphones") }
-                        ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore)
+                        ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore, entitlementStore: entitlementStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
                         HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore)
@@ -256,7 +256,7 @@ struct RootView: View {
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
-            PaywallView(entitlementStore: entitlementStore)
+            PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
         }
         .overlay(alignment: .topLeading) {
             if Self.uiTestLayoutProbe {

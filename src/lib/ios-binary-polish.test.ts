@@ -18,7 +18,7 @@ const appTarget = yamlTarget(projectYml, "LearnWithAlphonso");
 const widgetTarget = yamlTarget(projectYml, "LearnWithAlphonsoWidget");
 
 const MIC_PURPOSE =
-  "Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations. Recordings are sent for transcription and aren't stored.";
+  "Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations, including Hector's hands-free mode, which keeps listening with the screen locked until you pause it. Recordings are sent for transcription and aren't stored.";
 
 function swiftFilesIn(dir: string): string[] {
   return fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((e) => {

@@ -1,7 +1,9 @@
 import AVFoundation
 import Foundation
 import Observation
+import QuartzCore
 import SwiftUI
+import UIKit
 import LearnWithAlphonsoKit
 
 /// Other in-app audio a voice turn must silence first. PodcastAudioPlayer
@@ -49,6 +51,12 @@ final class VoiceSessionController {
     @ObservationIgnored private var playbackDelegate: PlaybackDelegate?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var pressBeganAt: Date?
+    /// Hands-free turn-taking (Hector only). Off unless the screen turns it on. Not observed: a level sample
+    /// changes it ten times a second; the screen observes `handsFreeStatus`, which changes only on a transition.
+    @ObservationIgnored private var handsFree = HandsFreeLoop()
+    private(set) var handsFreeStatus: HandsFreeLoop.Status = .off
+    var isHandsFreeOn: Bool { handsFreeStatus != .off }
+    @ObservationIgnored private var levelTask: Task<Void, Never>?
     /// Identifies the recording the current press started, so a finish that outlives its recording cannot stop a newer one.
     @ObservationIgnored private var activeRecordingToken: Int?
 
@@ -71,9 +79,27 @@ final class VoiceSessionController {
     }
 
     func disappeared() {
+        // Leaving the screen (not locking the phone: SwiftUI does not disappear on lock) ends hands-free.
+        setHandsFree(false)
         send(.disappeared)
         removeObservers()
     }
+
+    /// Turns hands-free on or off. On: the microphone opens now if nothing else is happening, and again after each
+    /// reply. Off: an open microphone is cancelled and the audio session is handed back when idle.
+    func setHandsFree(_ on: Bool) {
+        let wasOn = handsFree.isOn
+        runHandsFree(handsFree.handle(on ? .enable : .disable))
+        // Only a session hands-free was holding is handed back: leaving any other voice screen must not stop a
+        // podcast or a lesson's speech that is still playing.
+        if !on, wasOn, state.phase.isQuiet { deactivateSession() }
+    }
+
+    /// The finished turn's transcript was empty (noise, not speech): hands-free pauses instead of listening again.
+    func handsFreeHeardNoWords() { runHandsFree(handsFree.handle(.turnHadNoWords)) }
+
+    /// The learner's pause or resume button.
+    func toggleHandsFreePause() { runHandsFree(handsFree.handle(.togglePause)) }
 
     /// Returns true when the press actually started a recording attempt.
     /// DragGesture calls this on every .onChanged; the repeats are ignored.
@@ -128,7 +154,58 @@ final class VoiceSessionController {
     // MARK: - Effects
 
     private func send(_ event: VoiceSessionState.Event) {
+        let before = state.phase
         for effect in state.handle(event) { run(effect) }
+        guard state.phase != before else { return }
+        // Always delivered, also while off, so the loop never starts from a stale phase.
+        runHandsFree(handsFree.handle(.voicePhase(state.phase)))
+    }
+
+    private func runHandsFree(_ effects: [HandsFreeLoop.Effect]) {
+        for effect in effects {
+            switch effect {
+            case .beginTurn: pressBegan()
+            case .endTurn: pressEnded()
+            case .cancelTurn: send(.interrupted)
+            }
+        }
+        let status = handsFree.status
+        if status != handsFreeStatus {
+            handsFreeStatus = status
+            // Paused holds nothing: hand the session back so other apps' audio can resume.
+            if case .paused = status, state.phase.isQuiet { deactivateSession() }
+        }
+        updateLevelSampling()
+    }
+
+    private var holdsSessionForHandsFree: Bool {
+        switch handsFree.status {
+        case .waiting, .listening, .hearing: return true
+        case .off, .paused: return false
+        }
+    }
+
+    private func deactivateSession() {
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    }
+
+    /// Feeds the recorder's level to hands-free ten times a second while it is on and recording.
+    private func updateLevelSampling() {
+        let wanted = handsFree.isOn && isRecording
+        if wanted, levelTask == nil {
+            levelTask = Task { [weak self] in
+                while !Task.isCancelled {
+                    guard let self else { return }
+                    if let level = self.recorder.currentLevel() {
+                        self.runHandsFree(self.handsFree.handle(.level(dBFS: level, at: CACurrentMediaTime())))
+                    }
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                }
+            }
+        } else if !wanted, let task = levelTask {
+            task.cancel()
+            levelTask = nil
+        }
     }
 
     private func run(_ effect: VoiceEffect) {
@@ -160,6 +237,9 @@ final class VoiceSessionController {
             player = nil
             playbackDelegate = nil
         case .deactivateAudioSession:
+            // Hands-free keeps the session between turns while it is listening: deactivating it would stop the
+            // next turn from starting while the screen is locked. Pausing or turning it off hands it back.
+            guard !holdsSessionForHandsFree else { return }
             // Hands the session back; .notifyOthersOnDeactivation lets other
             // apps' audio resume. PodcastAudioPlayer is never auto-resumed.
             try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
@@ -183,6 +263,10 @@ final class VoiceSessionController {
             await onCapture?(.tooShort(generation: generation))
             return
         }
+        // With the screen locked (hands-free), there is no audio while the turn is transcribed and answered, so
+        // iOS could suspend the app mid-request. A background task keeps it running until the turn is done.
+        let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "hector-turn")
+        defer { if backgroundTask != .invalid { UIApplication.shared.endBackgroundTask(backgroundTask) } }
         // TEMPORARY (2026-09-28): see AIConversationClient.transcribe's debugTiming.
         let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
             " capture=\(captureElapsed.map { String(format: "%.2f", $0) } ?? "?")"
@@ -200,7 +284,10 @@ final class VoiceSessionController {
         ) { [weak self] notification in
             guard let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
                   AVAudioSession.InterruptionType(rawValue: raw) == .began else { return }
-            MainActor.assumeIsolated { self?.send(.interrupted) }
+            MainActor.assumeIsolated {
+                self?.pauseHandsFreeForInterruption()
+                self?.send(.interrupted)
+            }
         })
         observers.append(center.addObserver(
             forName: AVAudioSession.routeChangeNotification, object: session, queue: .main
@@ -208,8 +295,15 @@ final class VoiceSessionController {
             guard let raw = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
                   AVAudioSession.RouteChangeReason(rawValue: raw) == .oldDeviceUnavailable else { return }
             // Headphones pulled mid-reply: stop rather than continue out loud.
-            MainActor.assumeIsolated { self?.send(.outputRouteLost) }
+            MainActor.assumeIsolated {
+                self?.pauseHandsFreeForInterruption()
+                self?.send(.outputRouteLost)
+            }
         })
+    }
+
+    private func pauseHandsFreeForInterruption() {
+        runHandsFree(handsFree.handle(.audioInterrupted))
     }
 
     private func removeObservers() {
@@ -279,6 +373,8 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
             ]
             let newRecorder = try AVAudioRecorder(url: url, settings: settings)
             newRecorder.delegate = self
+            // Read by hands-free mode only; metering costs nothing measurable.
+            newRecorder.isMeteringEnabled = true
             guard newRecorder.record() else { throw VoiceRecorderError.recordCallFailed }
             recorder = newRecorder
             fileURL = url
@@ -293,6 +389,13 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
     }
 
     func isCurrent(_ token: Int) -> Bool { activeToken == token }
+
+    /// The current input level in dBFS (-160 silent, 0 loudest), or nil when not recording.
+    func currentLevel() -> Double? {
+        guard let recorder, recorder.isRecording else { return nil }
+        recorder.updateMeters()
+        return Double(recorder.averagePower(forChannel: 0))
+    }
 
     func remainingTimeToMinimumDuration() -> TimeInterval? {
         guard let startedAt else { return nil }

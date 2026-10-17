@@ -61,7 +61,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
-import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -204,7 +204,7 @@ private fun HectorConversation(container: AppContainer) {
     DisposableEffect(Unit) { onDispose { vm.onLeave() } }
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
 
-    AiDisclosureGate(container.prefs) {
+    AiConsentGate(container) {
         Column(Modifier.fillMaxSize().background(palette.surface)) {
             Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp))
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

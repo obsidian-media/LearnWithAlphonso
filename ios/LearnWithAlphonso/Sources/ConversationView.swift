@@ -8,12 +8,33 @@ struct ConversationView: View {
     let session: Session
     let activeCourse: ActiveCourseModel
     let conversationStore: ConversationStore
+    let entitlementStore: EntitlementStore
+
+    @State private var showHectorPaywall = false
 
     var body: some View {
         let course = activeCourse.course
         let campaigns = contentStore.campaigns(for: course)
         NavigationStack {
             List {
+                // Pro's one feature is Hector, so this is the honest place to offer it: where a
+                // learner is already practising speaking. Hidden for Pro.
+                if !entitlementStore.isPro {
+                    Section {
+                        Button {
+                            showHectorPaywall = true
+                        } label: {
+                            AlphonsoRowCard(
+                                title: PaywallCopy.practiceCardTitle,
+                                subtitle: PaywallCopy.practiceCardSubtitle,
+                                leadingEmoji: "\u{2728}"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("practiceHectorCard")
+                    }
+                    .listRowBackground(Color.clear)
+                }
                 // V4 candidate #4: connected multi-scene campaigns, additive
                 // alongside the scenarios below. See CampaignView.swift.
                 if !campaigns.isEmpty {
@@ -50,6 +71,9 @@ struct ConversationView: View {
         // course), so nothing from the old language carries over.
         .id(course)
         .tint(AlphonsoColor.moss)
+        .sheet(isPresented: $showHectorPaywall) {
+            PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: { showHectorPaywall = false })
+        }
     }
 }
 

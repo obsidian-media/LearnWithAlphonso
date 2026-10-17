@@ -92,6 +92,9 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     LaunchedEffect((state as? AuthState.SignedIn)?.session?.userId) {
         if (state !is AuthState.SignedIn) container.onboarding.reset()
     }
+    // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
+    val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
+    LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {
         when {
