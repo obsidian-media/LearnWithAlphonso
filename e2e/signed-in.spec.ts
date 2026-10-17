@@ -16,6 +16,17 @@ const NAME_ONBOARDING_COPY = nameFixtures.copy;
 const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 
+// In the CI job a missing variable is a failure, never a silent skip (E2E_REQUIRED=1 there).
+if (process.env.E2E_REQUIRED === "1" && (!SUPABASE_URL || !SERVICE_KEY)) {
+  throw new Error(
+    "E2E_REQUIRED is set but E2E_SUPABASE_URL or E2E_SUPABASE_SERVICE_ROLE_KEY is empty",
+  );
+}
+// It creates and deletes auth users with the service key: never point it at a hosted project.
+if (SUPABASE_URL && !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(SUPABASE_URL)) {
+  throw new Error(`E2E_SUPABASE_URL must be a local stack, got ${new URL(SUPABASE_URL).host}`);
+}
+
 test.skip(
   !SUPABASE_URL || !SERVICE_KEY,
   "needs a local Supabase stack (E2E_SUPABASE_URL, E2E_SUPABASE_SERVICE_ROLE_KEY)",
@@ -55,6 +66,7 @@ test.afterAll(async () => {
 
 /** Answers whichever lesson question is on screen with its correct answer, the way a learner would. */
 async function answerCurrentQuestion(page: Page) {
+  await expect(page.getByRole("button", { name: "Check", exact: true })).toBeVisible();
   for (const q of LESSON.questions) {
     if (
       !(await page
@@ -79,14 +91,14 @@ async function answerCurrentQuestion(page: Page) {
 test("a learner signs in, names themselves, finishes a lesson and it is saved", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
+  // Answer the cookie banner before the app starts, so it can never appear later over the lesson buttons.
+  await page.addInitScript(() =>
+    window.localStorage.setItem("lingua.cookie-consent.v1", "essential"),
+  );
   await page.goto("/auth");
   // Typing before hydration is lost when React takes over the inputs.
   await page.waitForLoadState("networkidle");
-  const cookies = page.getByRole("dialog", { name: "Cookie choices" });
-  if (await cookies.isVisible().catch(() => false)) {
-    await cookies.getByRole("button", { name: "Essential only" }).click();
-    await expect(cookies).toBeHidden();
-  }
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -101,8 +113,11 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
 
   await page.goto(`/lesson/${LESSON.id}`);
   await page.getByRole("button", { name: "Begin lesson" }).click();
+  // A lesson with vocabulary shows it first; one without goes straight to the first question.
   const startPractice = page.getByRole("button", { name: "Start practice" });
-  if (await startPractice.isVisible().catch(() => false)) await startPractice.click();
+  const check = page.getByRole("button", { name: "Check", exact: true });
+  await expect(startPractice.or(check)).toBeVisible();
+  if (await startPractice.isVisible()) await startPractice.click();
 
   for (let i = 0; i < LESSON.questions.length; i++) {
     await answerCurrentQuestion(page);

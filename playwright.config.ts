@@ -1,15 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Scoped to routes that render without a real Supabase backend: none of
+ * Most specs cover routes that render without a real Supabase backend: none of
  * `/`, `/auth`, `/privacy`, `/terms`, `/cookies`, `/reset-password` require
- * an authenticated
- * session, and Supabase's client-side `getSession()` resolves from local
- * storage without a network call when there's no stored session -- so
- * these render fine even against placeholder credentials. Anything behind
- * `_authenticated` (learn, lesson, review, profile, league, converse)
- * needs a real signed-in session and a seeded test account; add it here
- * once that exists (see ARCHITECTURE.md / AUDIT.md "Still open").
+ * an authenticated session, and Supabase's client-side `getSession()`
+ * resolves from local storage without a network call when there's no stored
+ * session -- so these render fine even against placeholder credentials.
+ * `e2e/signed-in.spec.ts` is the signed-in journey; it needs a local Supabase
+ * stack (CI job `e2e-signed-in`) and skips without one.
  */
 // Overridable for a machine where 8080 is taken; CI uses the default.
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080";
