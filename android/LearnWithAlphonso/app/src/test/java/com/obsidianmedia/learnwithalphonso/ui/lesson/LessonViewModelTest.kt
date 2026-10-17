@@ -133,6 +133,122 @@ class LessonViewModelTest {
     }
 
     @Test
+    fun `opening the lesson at 0 hearts blocks it with the server's refill time`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"out-of-hearts","refillAt":"2026-10-16T20:30:00Z"}""", HttpStatusCode.Conflict) else json("[]")
+        }
+        val v = vm(server)
+        v.onScreenShown()
+        awaitTrue("blocked") { v.state.value.outOfHearts != null }
+        assertEquals(1_792_182_600_000L, v.state.value.outOfHearts!!.refillAt)
+        v.onScreenShown()
+        assertEquals("the screen opens one session", 1, server.seen.count { it.path.endsWith("start-lesson-session") })
+    }
+
+    @Test
+    fun `offline, the cached hearts decide the gate and a due refill opens it`() = runBlocking {
+        val blockedStore = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 0, 1_000.0, 0, "bronze")) }
+        val blocked = vm(okServer(), blockedStore, connected = false)
+        blocked.onScreenShown()
+        awaitTrue("blocked offline") { blocked.state.value.outOfHearts != null }
+        assertEquals(1_000L, blocked.state.value.outOfHearts!!.refillAt)
+
+        val dueStore = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 0, 42.0, 0, "bronze")) }
+        val server = okServer()
+        val due = vm(server, dueStore, connected = false)
+        due.onScreenShown()
+        Thread.sleep(200)
+        assertNull(due.state.value.outOfHearts)
+        assertEquals("offline makes no call", 0, server.seen.size)
+    }
+
+    @Test
+    fun `buying a heart unblocks the lesson and reuses the new session at finish`() = runBlocking {
+        var blocked = true
+        val server = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") ->
+                    if (blocked) json("""{"error":"out-of-hearts","refillAt":null}""", HttpStatusCode.Conflict) else json("""{"token":"fresh"}""")
+                req.path.endsWith("buy_heart_with_xp") -> { blocked = false; json("""[{"ok":true,"reason":null,"hearts":1,"xp":10}]""") }
+                req.path.endsWith("complete-lesson") -> json("""{"xpGain":50,"newlyUnlocked":[],"heartsBonus":null,"progress":$PROGRESS_JSON}""")
+                else -> json("[]")
+            }
+        }
+        val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(60, 0, 0, null, 0, null, 0, "bronze")) }
+        val v = vm(server, store)
+        v.onScreenShown()
+        awaitTrue("blocked") { v.state.value.outOfHearts != null }
+        v.buyHeart()
+        awaitTrue("unblocked") { v.state.value.outOfHearts == null && !v.state.value.buyingHeart }
+        assertEquals(1, store.lastKnownProgress()!!.hearts)
+        v.begin(); v.startPractice()
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        assertEquals(2, server.seen.count { it.path.endsWith("start-lesson-session") })
+        val completeBody = Json.parseToJsonElement(server.seen.single { it.path.endsWith("complete-lesson") }.body).jsonObject
+        assertEquals("fresh", completeBody["sessionToken"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a failed buy keeps the lesson blocked and says why`() = runBlocking {
+        val server = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"error":"out-of-hearts","refillAt":null}""", HttpStatusCode.Conflict)
+                req.path.endsWith("buy_heart_with_xp") -> json("""[{"ok":false,"reason":"insufficient-xp","hearts":0,"xp":20}]""")
+                else -> json("[]")
+            }
+        }
+        val v = vm(server)
+        v.onScreenShown()
+        awaitTrue("blocked") { v.state.value.outOfHearts != null }
+        v.buyHeart()
+        awaitTrue("message") { v.state.value.buyMessage != null }
+        assertEquals("Not enough XP for a heart. You have 20 XP in this course.", v.state.value.buyMessage)
+        assertNotNull(v.state.value.outOfHearts)
+    }
+
+    @Test
+    fun `an expired held token is replaced once at finish`() = runBlocking {
+        var tokens = 0
+        val server = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> { tokens++; json("""{"token":"t$tokens"}""") }
+                req.path.endsWith("complete-lesson") -> {
+                    val sent = Json.parseToJsonElement(req.body).jsonObject["sessionToken"]!!.jsonPrimitive.content
+                    if (sent == "t1") json("""{"error":"Invalid or expired lesson session"}""", HttpStatusCode.Forbidden)
+                    else json("""{"xpGain":50,"newlyUnlocked":[],"heartsBonus":null,"progress":$PROGRESS_JSON}""")
+                }
+                else -> json("[]")
+            }
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        v.onScreenShown()
+        awaitTrue("session opened") { tokens == 1 }
+        v.begin(); v.startPractice()
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        assertEquals(2, tokens)
+        val sent = server.seen.filter { it.path.endsWith("complete-lesson") }
+            .map { Json.parseToJsonElement(it.body).jsonObject["sessionToken"]!!.jsonPrimitive.content }
+        assertEquals("the held token first, then one fresh token", listOf("t1", "t2"), sent)
+        assertEquals("nothing queued", 0, store.completions.size)
+    }
+
+    @Test
+    fun `losing the last heart offline starts the refill timer in the cache`() = runBlocking {
+        val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 1, null, 0, "bronze")) }
+        val server = okServer()
+        val v = vm(server, store)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check()
+        // The cache is written before lose_heart is sent.
+        awaitTrue("lose_heart call") { server.seen.count { it.path.endsWith("lose_heart") } == 1 }
+        assertEquals(0, store.lastKnownProgress()!!.hearts)
+        assertEquals(42.0 + 30 * 60 * 1000, store.lastKnownProgress()!!.heartsRefillAt)
+    }
+
+    @Test
     fun `next lesson crosses unit boundaries within a level and is null at the end`() = runBlocking {
         val v = vm(okServer())
         val unit = testContent.findLesson("u1l1", Course.ENGLISH)!!.first

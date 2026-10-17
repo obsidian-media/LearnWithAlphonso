@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -58,8 +59,31 @@ class ProgressSyncClient(
 
     /** The HMAC session token complete-lesson requires as proof the lesson was opened. */
     suspend fun startLessonSession(lessonId: String, course: String): String {
-        val obj = objectOf(http.function("start-lesson-session", buildJsonObject { put("lessonId", lessonId); put("course", course) }))
+        val response = http.function("start-lesson-session", buildJsonObject { put("lessonId", lessonId); put("course", course) })
+        if (response.status.value == 409) {
+            val body = runCatching { http.json.parseToJsonElement(response.bodyAsText()).jsonObject }.getOrNull()
+            if (body?.string("error") == "out-of-hearts") {
+                throw ProgressSyncError.OutOfHearts(body.string("refillAt")?.let(::parsePostgresTimestampMillis)?.toLong())
+            }
+        }
+        val obj = objectOf(response)
         return obj.string("token") ?: throw ProgressSyncError.InvalidPayload()
+    }
+
+    /**
+     * Spends the fixed heart price in XP of `course` for one heart, through the same `buy_heart_with_xp` RPC as
+     * the web and iOS. Hearts-full and insufficient XP are outcomes, not errors.
+     */
+    suspend fun buyHeartWithXp(course: String): BuyHeartResult {
+        val row = rowsOf(http.rpc("buy_heart_with_xp", buildJsonObject { put("_course", course) })).firstOrNull()
+            ?: throw ProgressSyncError.InvalidPayload()
+        val ok = row.field("ok")?.jsonPrimitive?.booleanOrNull ?: throw ProgressSyncError.InvalidPayload()
+        if (ok) return BuyHeartResult.Ok(row.int("hearts") ?: 0, row.int("xp") ?: 0)
+        return when (row.string("reason")) {
+            "hearts-full" -> BuyHeartResult.HeartsFull(row.int("hearts"))
+            "unauthenticated" -> BuyHeartResult.SignedOut
+            else -> BuyHeartResult.InsufficientXp(row.int("xp"))
+        }
     }
 
     suspend fun completeLesson(

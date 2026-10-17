@@ -6,15 +6,19 @@ import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Lesson
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
+import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationAnswer
 import com.obsidianmedia.learnwithalphonso.core.logic.VocabItem
 import com.obsidianmedia.learnwithalphonso.core.logic.computeXpGain
 import com.obsidianmedia.learnwithalphonso.core.logic.deriveVocab
 import com.obsidianmedia.learnwithalphonso.core.logic.isAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.core.logic.pickReinforcementQuestion
+import com.obsidianmedia.learnwithalphonso.core.net.BuyHeartResult
 import com.obsidianmedia.learnwithalphonso.core.net.LessonAnswer
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionResult
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
@@ -48,6 +52,10 @@ data class LessonUiState(
     val translationVerdict: TranslationVerdict? = null,
     val isChecking: Boolean = false,
     val isSubmitting: Boolean = false,
+    /** Non-null while the hearts gate blocks this lesson: the out-of-hearts screen replaces the lesson. */
+    val outOfHearts: OutOfHeartsModel? = null,
+    val buyingHeart: Boolean = false,
+    val buyMessage: String? = null,
 ) {
     val total: Int get() = lesson.questions.size
     val isReinforcing: Boolean get() = activeReinforcement != null
@@ -76,6 +84,8 @@ class LessonViewModel(
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
     private var attemptSeed = UUID.randomUUID().toString()
+    /** The start-lesson-session token taken when the lesson opened; finish() mints one if none is held. */
+    private var sessionToken: String? = null
 
     val vocab: List<VocabItem> get() = deriveVocab(_state.value.lesson, content.vocabImages)
 
@@ -95,6 +105,62 @@ class LessonViewModel(
             val ui = sameLevel.indexOfFirst { it.id == u.id }
             return sameLevel.getOrNull(ui + 1)?.lessons?.firstOrNull()?.id
         }
+
+    /**
+     * The lesson session starts when the lesson opens, which is where the server's hearts gate applies
+     * (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
+     * Any other failure is not fatal: finish() starts a session itself when none is held.
+     */
+    fun openSession() {
+        viewModelScope.launch { openSessionNow() }
+    }
+
+    private var opened = false
+
+    /** Called by the screen when it first shows; the view model survives rotation, so this opens one session. */
+    fun onScreenShown() {
+        if (opened) return
+        opened = true
+        openSession()
+    }
+
+    private suspend fun openSessionNow() {
+        sessionToken = null
+        if (!isConnected()) {
+            val cached = syncStore.lastKnownProgress() ?: return
+            val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now())
+            _state.update { it.copy(outOfHearts = (decision as? HeartsEconomy.GateDecision.OutOfHearts)?.let { d -> OutOfHeartsModel(d.refillAt) }) }
+            return
+        }
+        try {
+            sessionToken = client.startLessonSession(_state.value.lesson.id, course.code)
+            _state.update { it.copy(outOfHearts = null, buyMessage = null) }
+        } catch (e: ProgressSyncError.OutOfHearts) {
+            _state.update { it.copy(outOfHearts = OutOfHeartsModel(e.refillAt)) }
+        } catch (e: Exception) {
+            // Best effort: finish() starts a session when none is held.
+        }
+    }
+
+    /** "Use 50 XP for a heart": the same buy_heart_with_xp RPC as web and iOS, then the gate is asked again. */
+    fun buyHeart() {
+        if (_state.value.buyingHeart) return
+        _state.update { it.copy(buyingHeart = true, buyMessage = null) }
+        viewModelScope.launch {
+            val result = runCatching { client.buyHeartWithXp(course.code) }.getOrNull()
+            if (result is BuyHeartResult.Ok) {
+                syncStore.lastKnownProgress()?.let { syncStore.updateLastKnownProgress(it.copy(hearts = result.hearts, heartsRefillAt = null)) }
+                openSessionNow()
+                _state.update { it.copy(buyingHeart = false) }
+            } else {
+                val message = result?.let(BuyHeartResult::failureMessage) ?: "Couldn't reach the server. Check your connection and try again."
+                _state.update { it.copy(buyingHeart = false, buyMessage = message) }
+            }
+        }
+    }
+
+    /** The countdown reached zero: ask the gate again (the server resolves a due refill first). */
+    fun onRefillDue() = openSession()
 
     fun begin() = _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
     fun startPractice() = _state.update { it.copy(phase = LessonPhase.Quiz) }
@@ -139,6 +205,7 @@ class LessonViewModel(
         val found = content.findLesson(next, course) ?: return
         attemptSeed = UUID.randomUUID().toString()
         _state.value = LessonUiState(found.second)
+        openSession()
     }
 
     /** True when the current answer is correct, for the explanation block; translate uses the settled verdict. */
@@ -172,7 +239,10 @@ class LessonViewModel(
 
     private fun spendHeart() {
         viewModelScope.launch {
-            syncStore.lastKnownProgress()?.takeIf { it.hearts > 0 }?.let { syncStore.updateLastKnownProgress(it.copy(hearts = it.hearts - 1)) }
+            syncStore.lastKnownProgress()?.takeIf { it.hearts > 0 }?.let {
+                val after = HeartsEconomy.afterLosingHeart(it.hearts, it.heartsRefillAt?.toLong(), now())
+                syncStore.updateLastKnownProgress(it.copy(hearts = after.hearts, heartsRefillAt = after.heartsRefillAt?.toDouble()))
+            }
             runCatching { client.loseHeart() }
         }
     }
@@ -182,8 +252,19 @@ class LessonViewModel(
         _state.update { it.copy(isSubmitting = true) }
         try {
             if (!isConnected()) { queueOffline(); return }
-            val token = client.startLessonSession(s.lesson.id, course.code)
-            val result = client.completeLesson(s.lesson.id, s.total, s.answers, course.code, token)
+            val held = sessionToken
+            val result = if (held == null) {
+                client.completeLesson(s.lesson.id, s.total, s.answers, course.code, client.startLessonSession(s.lesson.id, course.code))
+            } else {
+                try {
+                    client.completeLesson(s.lesson.id, s.total, s.answers, course.code, held)
+                } catch (e: ProgressSyncError.Server) {
+                    // A token held since the lesson opened expires after 3 hours: mint a fresh one once.
+                    if (e.status != 403) throw e
+                    client.completeLesson(s.lesson.id, s.total, s.answers, course.code, client.startLessonSession(s.lesson.id, course.code))
+                }
+            }
+            sessionToken = null
             val previousTier = lastKnownTier()
             rememberTier(result.progress.leagueTier)
             val promoted = previousTier != null && previousTier != result.progress.leagueTier
