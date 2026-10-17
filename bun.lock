@@ -50,11 +50,14 @@
         "eslint-plugin-prettier": "^5.5.6",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.26",
+        "french-verbs": "5.4.0",
+        "french-verbs-lefff": "3.4.0",
         "globals": "^15.15.0",
         "jsdom": "^30.1.0",
         "nitro": "3.0.260603-beta",
         "prettier": "^3.9.6",
         "sharp": "^0.35.5",
+        "spanish-verbs": "3.4.0",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.70.0",
         "vite": "^8.3.0",
@@ -662,6 +665,14 @@
 
     "framer-motion": ["framer-motion@12.43.0", "", { "dependencies": { "motion-dom": "^12.43.0", "motion-utils": "^12.39.0", "tslib": "^2.4.0" }, "peerDependencies": { "@emotion/is-prop-valid": "*", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@emotion/is-prop-valid", "react", "react-dom"] }, "sha512-1eaL3RvR/kAlbG7UYcpMptEyzPoENO0c6w7ZnB3/hh2vSAz/6uGAFn6fdoqTBguNstf3MsFhJHsD/0DHiclG+g=="],
 
+    "french-contractions": ["french-contractions@5.4.0", "", {}, "sha512-joMnWmU7t55Zaumc/9QBERtJneIRorlMPAM18HB2g2etFvygRU10fsXwrEKoHZTWaqcR0jazsCLaq3VlIPfg0w=="],
+
+    "french-verbs": ["french-verbs@5.4.0", "", { "dependencies": { "french-contractions": "5.4.0", "french-verbs-transitive": "3.4.0" } }, "sha512-yPpqkBa9mOjGz60l4mDNdTahZzPklwGkokmHvSvJ+XyA0Xwx56owQJNsF3GRJyLvD3Du1sya3UQZp+pxk0jOeQ=="],
+
+    "french-verbs-lefff": ["french-verbs-lefff@3.4.0", "", {}, "sha512-fHpP4sewTSJ4GYxKpIuUhJq/5F1x7Giyw3Tq4hxHumlNaAgF1Jz9T97AYsHo/LejDbTQaTGaX3jppkvIhgId0w=="],
+
+    "french-verbs-transitive": ["french-verbs-transitive@3.4.0", "", {}, "sha512-1YxSv4taaFvB86saX3h6a9OYLfxr/WceNmseLhfNy8RZoh2FIO5KLn/zOA3erBP/CKLUfiZuaz2m2W11q5IVfQ=="],
+
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
     "function-bind": ["function-bind@1.1.2", "", {}, "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="],
@@ -1003,6 +1014,8 @@
     "source-map": ["source-map@0.7.6", "", {}, "sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ=="],
 
     "source-map-js": ["source-map-js@1.2.2", "", {}, "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw=="],
+
+    "spanish-verbs": ["spanish-verbs@3.4.0", "", {}, "sha512-S8vKdPDYF/i485hww+zEG/260hYpvrg2sNFaKrWX1t1KANIjzldzUiKW2aH+cnL+xgeB7Il4gccDioZN0EsyEA=="],
 
     "srvx": ["srvx@0.11.22", "", { "bin": { "srvx": "bin/srvx.mjs" } }, "sha512-LqZxxBDMKuMAZzFzJnDCkFOrs9MZQZr0LvHiO/SuSZVdQaXD7xQ5UWTUxheJrQPve1qk9MG2B/yttUvJxw8egQ=="],
 

@@ -44,6 +44,7 @@ import { draftPack } from "../src/lib/pack-draft-generation.server";
 import { GENERATIVE_VOCAB } from "../src/data/generative/vocab";
 import { TEMPLATES } from "../src/data/generative/templates";
 import { expandTemplate } from "../src/data/generative/expand";
+import { ROMANCE_PACK_SPECS, buildRomancePack } from "../src/data/generative/romance-packs";
 import { proposeVocabForTopic } from "../src/lib/generative-vocab.server";
 import { replaceVocabArrayInSource } from "../src/lib/generative-vocab-authoring";
 
@@ -213,13 +214,43 @@ async function cmdDraft(flags: Flags) {
 
 const VOCAB_FILE = "src/data/generative/vocab.ts";
 
+/**
+ * French and Spanish do not use the LLM vocabulary proposer. Their words come
+ * from the committed lexicons (src/data/generative/fr-data.ts, es-data.ts),
+ * which are built only from nouns and verbs already in the shipped course, and
+ * every pack is a named plan in romance-packs.ts. Design:
+ * docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md
+ */
+function cmdGenerateRomance(course: "fr" | "es", flags: Flags) {
+  const id = requireString(
+    flags,
+    "pack",
+    `one of ${ROMANCE_PACK_SPECS.filter((s) => s.lang === course)
+      .map((s) => s.id)
+      .join(", ")}`,
+  );
+  const spec = ROMANCE_PACK_SPECS.find((s) => s.id === id && s.lang === course);
+  if (!spec) fail(`unknown --pack "${id}" for course ${course}`);
+  const out = typeof flags.out === "string" ? flags.out : `drafts/${id}.json`;
+  const { pack, items } = buildRomancePack(spec!);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, JSON.stringify(pack, null, 2) + "\n");
+  console.log(`Draft pack written to ${out} (${items.length} lines, level ${spec!.level}).`);
+  console.log(previewPack(pack));
+  console.log("\nValidation:");
+  printIssues(validatePack(pack));
+  console.log(`\nNext:`);
+  console.log(`  bun run scripts/pack-tool.ts validate ${out} --course ${course}`);
+  console.log(
+    `  bun run scripts/pack-tool.ts apply ${out} --course ${course} --level ${spec!.level} --confirm`,
+  );
+}
+
 async function cmdGenerate(flags: Flags) {
   const course = requireCourse(flags);
-  if (course !== "en") {
-    fail(
-      '--course must be "en" -- this pilot is English-only, see ' +
-        "docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md",
-    );
+  if (course === "fr" || course === "es") {
+    cmdGenerateRomance(course, flags);
+    return;
   }
   const level = requireLevel(flags);
   const id = requireString(flags, "id", "e.g. a1gen1");
@@ -406,6 +437,7 @@ function printHelp(exitCode: number) {
       "  new      --course <en|fr|es> --level <A1..C1> --id <id> [--kind pair|cloze] [--out <path>]",
       "  draft    --course <en|fr|es> --level <A1..C1> --id <id> --topic <topic> [--kind pair|cloze] [--lines N] [--out <path>]",
       "  generate --course en --level <A1..C1> --id <id> --template <svo-present|svo-past> --topic <topic> [--count N] [--out <path>]",
+      "  generate --course <fr|es> --pack <id> [--out <path>]   (planned packs in romance-packs.ts, no LLM)",
       "  validate <file.json> [--course <en|fr|es>]",
       "  preview  <file.json>",
       "  apply    <file.json> --course <en|fr|es> --level <A1..C1> [--confirm]",
