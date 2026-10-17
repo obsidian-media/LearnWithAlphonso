@@ -127,8 +127,11 @@ describe("Spanish cloze distractor cross-verb measurement", () => {
     // needs a Spanish morphology decision (generate the answer verb's OTHER
     // forms as distractors, mirroring French's own recommendation) that is
     // explicitly not this session's to make -- see spec §5 and §9.
-    expect(verbHintedQuestions).toBe(645);
-    expect(sameVerb).toBe(84);
+    // Re-pinned when the 9 generated one-verb Spanish packs (esga2p1-9, 135 questions)
+    // were added: they add 135 verb-hinted questions and 405 same-verb distractors and
+    // no cross-verb ones, so crossVerb and unresolved are exactly as before.
+    expect(verbHintedQuestions).toBe(780);
+    expect(sameVerb).toBe(489);
     expect(crossVerb).toBe(1611);
     expect(unresolved).toBe(103);
   });

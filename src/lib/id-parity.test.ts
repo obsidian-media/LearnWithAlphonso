@@ -78,7 +78,13 @@ describe.each(COURSES)(
         // A short pack silently produces short lessons with no test failure
         // otherwise -- spec section 6.3 item 2.
         const stats = packLineStats(course);
+        // Generated packs (id prefix frg) are deliberately 15 or 10 questions: single-verb
+        // drills sized in multiples of five. Every other pack must be 25.
         for (const [packId, s] of Object.entries(stats)) {
+          if (packId.startsWith("frg")) {
+            expect(s.lines % 5, `generated pack ${packId}`).toBe(0);
+            continue;
+          }
           expect(s.lines, `pack ${packId} has ${s.lines} lines, expected 25`).toBe(25);
         }
       });
@@ -95,13 +101,14 @@ describe.each(COURSES)(
         // by construction): +5 for the translate packs, +5 for the listening
         // packs, +5 for the speak packs (docs/superpowers/specs/2026-09-25-
         // spanish-content-audit-design.md §7 step 7, PRs 2-4) -- all four
-        // Spanish Phase 2 PRs now landed.
+        // Spanish Phase 2 PRs now landed. The 15 bucket also gained the 9 generated
+        // one-verb packs (esga2p1-9), 15 questions each.
         const stats = packLineStats(course);
         const distribution: Record<number, number> = {};
         for (const s of Object.values(stats)) {
           distribution[s.lines] = (distribution[s.lines] ?? 0) + 1;
         }
-        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 62 });
+        expect(distribution).toEqual({ 10: 3, 15: 62, 20: 27, 25: 62 });
       });
     }
 

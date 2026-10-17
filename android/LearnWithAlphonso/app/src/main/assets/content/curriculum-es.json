@@ -16515,6 +16515,2031 @@
       ]
     },
     {
+      "id": "esga2p1u1",
+      "level": "A2",
+      "eyebrow": "Unit 30",
+      "title": "Sentences: Eating",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p1l1",
+          "title": "Sentences: Eating 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p1q0",
+              "type": "fill",
+              "prompt": "Ustedes ___ (comer) arroz.",
+              "bank": [
+                "comes",
+                "comen",
+                "come",
+                "comemos"
+              ],
+              "answer": "comen",
+              "explanation": "\"comen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q1",
+              "type": "mc",
+              "prompt": "Nosotros ___ (comer) un plátano.",
+              "choices": [
+                "comemos",
+                "comen",
+                "come",
+                "como"
+              ],
+              "answer": 0,
+              "explanation": "\"comemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q2",
+              "type": "fill",
+              "prompt": "Tú ___ (comer) una manzana.",
+              "bank": [
+                "comes",
+                "comen",
+                "como",
+                "come"
+              ],
+              "answer": "comes",
+              "explanation": "\"comes\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q3",
+              "type": "mc",
+              "prompt": "Ellos ___ (comer) fruta.",
+              "choices": [
+                "come",
+                "comemos",
+                "comen",
+                "comes"
+              ],
+              "answer": 2,
+              "explanation": "\"comen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q4",
+              "type": "fill",
+              "prompt": "Él ___ (comer) una zanahoria.",
+              "bank": [
+                "comen",
+                "como",
+                "come",
+                "comemos"
+              ],
+              "answer": "come",
+              "explanation": "\"come\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p1l2",
+          "title": "Sentences: Eating 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p1q5",
+              "type": "mc",
+              "prompt": "Yo ___ (comer) pan.",
+              "choices": [
+                "como",
+                "comen",
+                "comemos",
+                "comes"
+              ],
+              "answer": 0,
+              "explanation": "\"como\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q6",
+              "type": "fill",
+              "prompt": "Ella ___ (comer) una pera.",
+              "bank": [
+                "comen",
+                "como",
+                "come",
+                "comemos"
+              ],
+              "answer": "come",
+              "explanation": "\"come\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q7",
+              "type": "mc",
+              "prompt": "Ellas ___ (comer) pollo.",
+              "choices": [
+                "como",
+                "comes",
+                "comen",
+                "comemos"
+              ],
+              "answer": 2,
+              "explanation": "\"comen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q8",
+              "type": "fill",
+              "prompt": "Nosotros ___ (comer) una naranja.",
+              "bank": [
+                "comen",
+                "come",
+                "como",
+                "comemos"
+              ],
+              "answer": "comemos",
+              "explanation": "\"comemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q9",
+              "type": "mc",
+              "prompt": "Tú ___ (comer) un tomate.",
+              "choices": [
+                "comes",
+                "comemos",
+                "comen",
+                "come"
+              ],
+              "answer": 0,
+              "explanation": "\"comes\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p1l3",
+          "title": "Sentences: Eating 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p1q10",
+              "type": "mc",
+              "prompt": "Ustedes ___ (comer) fruta.",
+              "choices": [
+                "comen",
+                "comemos",
+                "come",
+                "comes"
+              ],
+              "answer": 0,
+              "explanation": "\"comen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q11",
+              "type": "fill",
+              "prompt": "Él ___ (comer) arroz.",
+              "bank": [
+                "como",
+                "comen",
+                "come",
+                "comemos"
+              ],
+              "answer": "come",
+              "explanation": "\"come\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q12",
+              "type": "mc",
+              "prompt": "Ellas ___ (comer) una manzana.",
+              "choices": [
+                "como",
+                "come",
+                "comen",
+                "comes"
+              ],
+              "answer": 2,
+              "explanation": "\"comen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q13",
+              "type": "fill",
+              "prompt": "Ella ___ (comer) pan.",
+              "bank": [
+                "como",
+                "comen",
+                "come",
+                "comemos"
+              ],
+              "answer": "come",
+              "explanation": "\"come\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p1q14",
+              "type": "mc",
+              "prompt": "Yo ___ (comer) una naranja.",
+              "choices": [
+                "como",
+                "come",
+                "comen",
+                "comemos"
+              ],
+              "answer": 0,
+              "explanation": "\"como\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p2u1",
+      "level": "A2",
+      "eyebrow": "Unit 31",
+      "title": "Sentences: Drinking",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p2l1",
+          "title": "Sentences: Drinking 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p2q0",
+              "type": "mc",
+              "prompt": "Él ___ (beber) té.",
+              "choices": [
+                "beben",
+                "bebo",
+                "bebe",
+                "bebemos"
+              ],
+              "answer": 2,
+              "explanation": "\"bebe\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q1",
+              "type": "fill",
+              "prompt": "Nosotros ___ (beber) café.",
+              "bank": [
+                "bebes",
+                "beben",
+                "bebe",
+                "bebemos"
+              ],
+              "answer": "bebemos",
+              "explanation": "\"bebemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q2",
+              "type": "mc",
+              "prompt": "Ellas ___ (beber) leche.",
+              "choices": [
+                "beben",
+                "bebemos",
+                "bebo",
+                "bebe"
+              ],
+              "answer": 0,
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q3",
+              "type": "fill",
+              "prompt": "Yo ___ (beber) té.",
+              "bank": [
+                "beben",
+                "bebe",
+                "bebemos",
+                "bebo"
+              ],
+              "answer": "bebo",
+              "explanation": "\"bebo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q4",
+              "type": "mc",
+              "prompt": "Ellos ___ (beber) leche.",
+              "choices": [
+                "bebo",
+                "bebes",
+                "beben",
+                "bebe"
+              ],
+              "answer": 2,
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p2l2",
+          "title": "Sentences: Drinking 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p2q5",
+              "type": "fill",
+              "prompt": "Ustedes ___ (beber) café.",
+              "bank": [
+                "beben",
+                "bebe",
+                "bebemos",
+                "bebo"
+              ],
+              "answer": "beben",
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q6",
+              "type": "mc",
+              "prompt": "Ella ___ (beber) té.",
+              "choices": [
+                "bebe",
+                "beben",
+                "bebemos",
+                "bebes"
+              ],
+              "answer": 0,
+              "explanation": "\"bebe\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q7",
+              "type": "fill",
+              "prompt": "Tú ___ (beber) café.",
+              "bank": [
+                "bebes",
+                "beben",
+                "bebemos",
+                "bebo"
+              ],
+              "answer": "bebes",
+              "explanation": "\"bebes\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q8",
+              "type": "mc",
+              "prompt": "Yo ___ (beber) leche.",
+              "choices": [
+                "bebemos",
+                "beben",
+                "bebo",
+                "bebe"
+              ],
+              "answer": 2,
+              "explanation": "\"bebo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q9",
+              "type": "fill",
+              "prompt": "Él ___ (beber) café.",
+              "bank": [
+                "bebes",
+                "beben",
+                "bebe",
+                "bebemos"
+              ],
+              "answer": "bebe",
+              "explanation": "\"bebe\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p2l3",
+          "title": "Sentences: Drinking 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p2q10",
+              "type": "fill",
+              "prompt": "Ustedes ___ (beber) leche.",
+              "bank": [
+                "beben",
+                "bebes",
+                "bebe",
+                "bebo"
+              ],
+              "answer": "beben",
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q11",
+              "type": "mc",
+              "prompt": "Ellos ___ (beber) té.",
+              "choices": [
+                "beben",
+                "bebo",
+                "bebe",
+                "bebemos"
+              ],
+              "answer": 0,
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q12",
+              "type": "fill",
+              "prompt": "Ellas ___ (beber) café.",
+              "bank": [
+                "beben",
+                "bebe",
+                "bebemos",
+                "bebo"
+              ],
+              "answer": "beben",
+              "explanation": "\"beben\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q13",
+              "type": "mc",
+              "prompt": "Nosotros ___ (beber) leche.",
+              "choices": [
+                "bebe",
+                "beben",
+                "bebemos",
+                "bebes"
+              ],
+              "answer": 2,
+              "explanation": "\"bebemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p2q14",
+              "type": "fill",
+              "prompt": "Tú ___ (beber) té.",
+              "bank": [
+                "bebes",
+                "bebe",
+                "bebemos",
+                "bebo"
+              ],
+              "answer": "bebes",
+              "explanation": "\"bebes\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p3u1",
+      "level": "A2",
+      "eyebrow": "Unit 32",
+      "title": "Sentences: Buying Things",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p3l1",
+          "title": "Sentences: Buying Things 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p3q0",
+              "type": "fill",
+              "prompt": "Ustedes ___ (comprar) un abrigo.",
+              "bank": [
+                "compran",
+                "compras",
+                "compramos",
+                "compro"
+              ],
+              "answer": "compran",
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q1",
+              "type": "mc",
+              "prompt": "Ellas ___ (comprar) un vestido.",
+              "choices": [
+                "compras",
+                "compra",
+                "compran",
+                "compramos"
+              ],
+              "answer": 2,
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q2",
+              "type": "fill",
+              "prompt": "Él ___ (comprar) un lápiz.",
+              "bank": [
+                "compra",
+                "compran",
+                "compramos",
+                "compro"
+              ],
+              "answer": "compra",
+              "explanation": "\"compra\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q3",
+              "type": "mc",
+              "prompt": "Tú ___ (comprar) unas tijeras.",
+              "choices": [
+                "compras",
+                "compramos",
+                "compran",
+                "compro"
+              ],
+              "answer": 0,
+              "explanation": "\"compras\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q4",
+              "type": "fill",
+              "prompt": "Nosotros ___ (comprar) una chaqueta.",
+              "bank": [
+                "compra",
+                "compran",
+                "compramos",
+                "compro"
+              ],
+              "answer": "compramos",
+              "explanation": "\"compramos\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p3l2",
+          "title": "Sentences: Buying Things 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p3q5",
+              "type": "mc",
+              "prompt": "Ellos ___ (comprar) unos pantalones.",
+              "choices": [
+                "compramos",
+                "compras",
+                "compran",
+                "compro"
+              ],
+              "answer": 2,
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q6",
+              "type": "fill",
+              "prompt": "Ella ___ (comprar) un sombrero.",
+              "bank": [
+                "compra",
+                "compran",
+                "compramos",
+                "compro"
+              ],
+              "answer": "compra",
+              "explanation": "\"compra\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q7",
+              "type": "mc",
+              "prompt": "Yo ___ (comprar) unos zapatos.",
+              "choices": [
+                "compro",
+                "compran",
+                "compra",
+                "compras"
+              ],
+              "answer": 0,
+              "explanation": "\"compro\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q8",
+              "type": "fill",
+              "prompt": "Ustedes ___ (comprar) un libro.",
+              "bank": [
+                "compra",
+                "compran",
+                "compras",
+                "compro"
+              ],
+              "answer": "compran",
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q9",
+              "type": "mc",
+              "prompt": "Él ___ (comprar) unos guantes.",
+              "choices": [
+                "compramos",
+                "compran",
+                "compra",
+                "compro"
+              ],
+              "answer": 2,
+              "explanation": "\"compra\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p3l3",
+          "title": "Sentences: Buying Things 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p3q10",
+              "type": "mc",
+              "prompt": "Tú ___ (comprar) un bolígrafo.",
+              "choices": [
+                "compramos",
+                "compran",
+                "compras",
+                "compro"
+              ],
+              "answer": 2,
+              "explanation": "\"compras\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q11",
+              "type": "fill",
+              "prompt": "Ellos ___ (comprar) una regla.",
+              "bank": [
+                "compramos",
+                "compran",
+                "compro",
+                "compra"
+              ],
+              "answer": "compran",
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q12",
+              "type": "mc",
+              "prompt": "Ellas ___ (comprar) un cuaderno.",
+              "choices": [
+                "compran",
+                "compras",
+                "compramos",
+                "compro"
+              ],
+              "answer": 0,
+              "explanation": "\"compran\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q13",
+              "type": "fill",
+              "prompt": "Yo ___ (comprar) una camiseta.",
+              "bank": [
+                "compramos",
+                "compran",
+                "compro",
+                "compra"
+              ],
+              "answer": "compro",
+              "explanation": "\"compro\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p3q14",
+              "type": "mc",
+              "prompt": "Nosotros ___ (comprar) una bufanda.",
+              "choices": [
+                "compro",
+                "compra",
+                "compramos",
+                "compran"
+              ],
+              "answer": 2,
+              "explanation": "\"compramos\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p4u1",
+      "level": "A2",
+      "eyebrow": "Unit 33",
+      "title": "Sentences: Seeing Animals",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p4l1",
+          "title": "Sentences: Seeing Animals 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p4q0",
+              "type": "mc",
+              "prompt": "Él ___ (ver) un tigre.",
+              "choices": [
+                "ve",
+                "ven",
+                "vemos",
+                "ves"
+              ],
+              "answer": 0,
+              "explanation": "\"ve\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q1",
+              "type": "fill",
+              "prompt": "Ella ___ (ver) una serpiente.",
+              "bank": [
+                "ven",
+                "ves",
+                "veo",
+                "ve"
+              ],
+              "answer": "ve",
+              "explanation": "\"ve\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q2",
+              "type": "mc",
+              "prompt": "Ustedes ___ (ver) un gato.",
+              "choices": [
+                "vemos",
+                "ves",
+                "ven",
+                "ve"
+              ],
+              "answer": 2,
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q3",
+              "type": "fill",
+              "prompt": "Nosotros ___ (ver) un elefante.",
+              "bank": [
+                "ven",
+                "vemos",
+                "ves",
+                "veo"
+              ],
+              "answer": "vemos",
+              "explanation": "\"vemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q4",
+              "type": "mc",
+              "prompt": "Ellos ___ (ver) un caballo.",
+              "choices": [
+                "ven",
+                "ves",
+                "vemos",
+                "ve"
+              ],
+              "answer": 0,
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p4l2",
+          "title": "Sentences: Seeing Animals 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p4q5",
+              "type": "fill",
+              "prompt": "Ellas ___ (ver) una tortuga.",
+              "bank": [
+                "ven",
+                "vemos",
+                "veo",
+                "ve"
+              ],
+              "answer": "ven",
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q6",
+              "type": "mc",
+              "prompt": "Yo ___ (ver) un pato.",
+              "choices": [
+                "ven",
+                "ve",
+                "veo",
+                "vemos"
+              ],
+              "answer": 2,
+              "explanation": "\"veo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q7",
+              "type": "fill",
+              "prompt": "Tú ___ (ver) un conejo.",
+              "bank": [
+                "ven",
+                "ves",
+                "veo",
+                "ve"
+              ],
+              "answer": "ves",
+              "explanation": "\"ves\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q8",
+              "type": "mc",
+              "prompt": "Ella ___ (ver) un mono.",
+              "choices": [
+                "ve",
+                "veo",
+                "ven",
+                "vemos"
+              ],
+              "answer": 0,
+              "explanation": "\"ve\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q9",
+              "type": "fill",
+              "prompt": "Ellas ___ (ver) una vaca.",
+              "bank": [
+                "ven",
+                "vemos",
+                "veo",
+                "ve"
+              ],
+              "answer": "ven",
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p4l3",
+          "title": "Sentences: Seeing Animals 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p4q10",
+              "type": "fill",
+              "prompt": "Ellos ___ (ver) un perro.",
+              "bank": [
+                "ve",
+                "ves",
+                "ven",
+                "veo"
+              ],
+              "answer": "ven",
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q11",
+              "type": "mc",
+              "prompt": "Ustedes ___ (ver) un oso.",
+              "choices": [
+                "vemos",
+                "ves",
+                "ven",
+                "ve"
+              ],
+              "answer": 2,
+              "explanation": "\"ven\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q12",
+              "type": "fill",
+              "prompt": "Tú ___ (ver) un pájaro.",
+              "bank": [
+                "ves",
+                "ven",
+                "veo",
+                "vemos"
+              ],
+              "answer": "ves",
+              "explanation": "\"ves\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q13",
+              "type": "mc",
+              "prompt": "Nosotros ___ (ver) una rana.",
+              "choices": [
+                "vemos",
+                "ven",
+                "ves",
+                "veo"
+              ],
+              "answer": 0,
+              "explanation": "\"vemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p4q14",
+              "type": "fill",
+              "prompt": "Yo ___ (ver) un caballo.",
+              "bank": [
+                "ves",
+                "ven",
+                "veo",
+                "vemos"
+              ],
+              "answer": "veo",
+              "explanation": "\"veo\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p5u1",
+      "level": "A2",
+      "eyebrow": "Unit 34",
+      "title": "Sentences: Reading",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p5l1",
+          "title": "Sentences: Reading 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p5q0",
+              "type": "fill",
+              "prompt": "Él ___ (leer) un libro.",
+              "bank": [
+                "leen",
+                "lee",
+                "leo",
+                "leemos"
+              ],
+              "answer": "lee",
+              "explanation": "\"lee\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q1",
+              "type": "mc",
+              "prompt": "Ellos ___ (leer) la revista.",
+              "choices": [
+                "leen",
+                "lees",
+                "lee",
+                "leemos"
+              ],
+              "answer": 0,
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q2",
+              "type": "fill",
+              "prompt": "Nosotros ___ (leer) un periódico.",
+              "bank": [
+                "leen",
+                "lee",
+                "leo",
+                "leemos"
+              ],
+              "answer": "leemos",
+              "explanation": "\"leemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q3",
+              "type": "mc",
+              "prompt": "Ellas ___ (leer) el libro.",
+              "choices": [
+                "lees",
+                "leo",
+                "leen",
+                "lee"
+              ],
+              "answer": 2,
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q4",
+              "type": "fill",
+              "prompt": "Ella ___ (leer) una revista.",
+              "bank": [
+                "leen",
+                "lee",
+                "leemos",
+                "lees"
+              ],
+              "answer": "lee",
+              "explanation": "\"lee\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p5l2",
+          "title": "Sentences: Reading 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p5q5",
+              "type": "mc",
+              "prompt": "Yo ___ (leer) el periódico.",
+              "choices": [
+                "leo",
+                "leemos",
+                "leen",
+                "lee"
+              ],
+              "answer": 0,
+              "explanation": "\"leo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q6",
+              "type": "fill",
+              "prompt": "Ustedes ___ (leer) un libro.",
+              "bank": [
+                "leen",
+                "lee",
+                "leo",
+                "leemos"
+              ],
+              "answer": "leen",
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q7",
+              "type": "mc",
+              "prompt": "Tú ___ (leer) la revista.",
+              "choices": [
+                "leen",
+                "lee",
+                "lees",
+                "leemos"
+              ],
+              "answer": 2,
+              "explanation": "\"lees\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q8",
+              "type": "fill",
+              "prompt": "Él ___ (leer) el periódico.",
+              "bank": [
+                "leen",
+                "lee",
+                "leemos",
+                "lees"
+              ],
+              "answer": "lee",
+              "explanation": "\"lee\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q9",
+              "type": "mc",
+              "prompt": "Tú ___ (leer) una revista.",
+              "choices": [
+                "lees",
+                "leen",
+                "lee",
+                "leo"
+              ],
+              "answer": 0,
+              "explanation": "\"lees\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p5l3",
+          "title": "Sentences: Reading 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p5q10",
+              "type": "mc",
+              "prompt": "Nosotros ___ (leer) el libro.",
+              "choices": [
+                "leemos",
+                "leen",
+                "lees",
+                "lee"
+              ],
+              "answer": 0,
+              "explanation": "\"leemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q11",
+              "type": "fill",
+              "prompt": "Yo ___ (leer) un periódico.",
+              "bank": [
+                "lee",
+                "leo",
+                "lees",
+                "leen"
+              ],
+              "answer": "leo",
+              "explanation": "\"leo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q12",
+              "type": "mc",
+              "prompt": "Ellas ___ (leer) el periódico.",
+              "choices": [
+                "leemos",
+                "lee",
+                "leen",
+                "leo"
+              ],
+              "answer": 2,
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q13",
+              "type": "fill",
+              "prompt": "Ellos ___ (leer) un libro.",
+              "bank": [
+                "lee",
+                "leo",
+                "lees",
+                "leen"
+              ],
+              "answer": "leen",
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p5q14",
+              "type": "mc",
+              "prompt": "Ustedes ___ (leer) la revista.",
+              "choices": [
+                "leen",
+                "lees",
+                "lee",
+                "leemos"
+              ],
+              "answer": 0,
+              "explanation": "\"leen\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p6u1",
+      "level": "A2",
+      "eyebrow": "Unit 35",
+      "title": "Sentences: Having Things",
+      "description": "Generated practice: present tense — Present tense: choose the verb form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p6l1",
+          "title": "Sentences: Having Things 1",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p6q0",
+              "type": "mc",
+              "prompt": "Yo ___ (tener) un lápiz.",
+              "choices": [
+                "tienen",
+                "tenemos",
+                "tengo",
+                "tienes"
+              ],
+              "answer": 2,
+              "explanation": "\"tengo\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q1",
+              "type": "fill",
+              "prompt": "Ellas ___ (tener) un perro.",
+              "bank": [
+                "tenemos",
+                "tengo",
+                "tiene",
+                "tienen"
+              ],
+              "answer": "tienen",
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q2",
+              "type": "mc",
+              "prompt": "Él ___ (tener) un pájaro.",
+              "choices": [
+                "tiene",
+                "tienen",
+                "tienes",
+                "tengo"
+              ],
+              "answer": 0,
+              "explanation": "\"tiene\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q3",
+              "type": "fill",
+              "prompt": "Nosotros ___ (tener) un cuaderno.",
+              "bank": [
+                "tenemos",
+                "tengo",
+                "tiene",
+                "tienen"
+              ],
+              "answer": "tenemos",
+              "explanation": "\"tenemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q4",
+              "type": "mc",
+              "prompt": "Ellos ___ (tener) una mochila.",
+              "choices": [
+                "tienes",
+                "tengo",
+                "tienen",
+                "tiene"
+              ],
+              "answer": 2,
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p6l2",
+          "title": "Sentences: Having Things 2",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p6q5",
+              "type": "fill",
+              "prompt": "Ustedes ___ (tener) un conejo.",
+              "bank": [
+                "tenemos",
+                "tengo",
+                "tiene",
+                "tienen"
+              ],
+              "answer": "tienen",
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q6",
+              "type": "mc",
+              "prompt": "Tú ___ (tener) un reloj.",
+              "choices": [
+                "tienes",
+                "tenemos",
+                "tienen",
+                "tiene"
+              ],
+              "answer": 0,
+              "explanation": "\"tienes\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q7",
+              "type": "fill",
+              "prompt": "Ella ___ (tener) una cama.",
+              "bank": [
+                "tenemos",
+                "tengo",
+                "tiene",
+                "tienen"
+              ],
+              "answer": "tiene",
+              "explanation": "\"tiene\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q8",
+              "type": "mc",
+              "prompt": "Ellas ___ (tener) una silla.",
+              "choices": [
+                "tenemos",
+                "tiene",
+                "tienen",
+                "tengo"
+              ],
+              "answer": 2,
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q9",
+              "type": "fill",
+              "prompt": "Yo ___ (tener) una goma.",
+              "bank": [
+                "tenemos",
+                "tengo",
+                "tienes",
+                "tienen"
+              ],
+              "answer": "tengo",
+              "explanation": "\"tengo\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p6l3",
+          "title": "Sentences: Having Things 3",
+          "subtitle": "Generated practice: present tense",
+          "questions": [
+            {
+              "id": "esga2p6q10",
+              "type": "fill",
+              "prompt": "Ellos ___ (tener) un bolígrafo.",
+              "bank": [
+                "tiene",
+                "tengo",
+                "tienen",
+                "tenemos"
+              ],
+              "answer": "tienen",
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q11",
+              "type": "mc",
+              "prompt": "Nosotros ___ (tener) unas tijeras.",
+              "choices": [
+                "tenemos",
+                "tienen",
+                "tengo",
+                "tiene"
+              ],
+              "answer": 0,
+              "explanation": "\"tenemos\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q12",
+              "type": "fill",
+              "prompt": "Ustedes ___ (tener) una mesa.",
+              "bank": [
+                "tiene",
+                "tengo",
+                "tienen",
+                "tenemos"
+              ],
+              "answer": "tienen",
+              "explanation": "\"tienen\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q13",
+              "type": "mc",
+              "prompt": "Tú ___ (tener) un espejo.",
+              "choices": [
+                "tenemos",
+                "tienen",
+                "tienes",
+                "tiene"
+              ],
+              "answer": 2,
+              "explanation": "\"tienes\" is correct here. Present tense: choose the verb form that matches the subject."
+            },
+            {
+              "id": "esga2p6q14",
+              "type": "fill",
+              "prompt": "Él ___ (tener) un libro.",
+              "bank": [
+                "tiene",
+                "tengo",
+                "tienen",
+                "tenemos"
+              ],
+              "answer": "tiene",
+              "explanation": "\"tiene\" is correct here. Present tense: choose the verb form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p7u1",
+      "level": "A2",
+      "eyebrow": "Unit 36",
+      "title": "Yesterday: Eating",
+      "description": "Generated practice: past tense — Preterite: choose the past form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p7l1",
+          "title": "Yesterday: Eating 1",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p7q0",
+              "type": "fill",
+              "prompt": "Ayer ellas ___ (comer) fruta.",
+              "bank": [
+                "comieron",
+                "comiste",
+                "comió",
+                "comí"
+              ],
+              "answer": "comieron",
+              "explanation": "\"comieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q1",
+              "type": "mc",
+              "prompt": "Ayer ustedes ___ (comer) un tomate.",
+              "choices": [
+                "comimos",
+                "comió",
+                "comieron",
+                "comí"
+              ],
+              "answer": 2,
+              "explanation": "\"comieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q2",
+              "type": "fill",
+              "prompt": "Ayer ellos ___ (comer) pan.",
+              "bank": [
+                "comieron",
+                "comiste",
+                "comió",
+                "comimos"
+              ],
+              "answer": "comieron",
+              "explanation": "\"comieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q3",
+              "type": "mc",
+              "prompt": "Ayer tú ___ (comer) una naranja.",
+              "choices": [
+                "comiste",
+                "comieron",
+                "comió",
+                "comimos"
+              ],
+              "answer": 0,
+              "explanation": "\"comiste\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q4",
+              "type": "fill",
+              "prompt": "Ayer nosotros ___ (comer) arroz.",
+              "bank": [
+                "comieron",
+                "comiste",
+                "comimos",
+                "comí"
+              ],
+              "answer": "comimos",
+              "explanation": "\"comimos\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p7l2",
+          "title": "Yesterday: Eating 2",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p7q5",
+              "type": "mc",
+              "prompt": "Ayer yo ___ (comer) una zanahoria.",
+              "choices": [
+                "comieron",
+                "comió",
+                "comí",
+                "comimos"
+              ],
+              "answer": 2,
+              "explanation": "\"comí\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q6",
+              "type": "fill",
+              "prompt": "Ayer él ___ (comer) pollo.",
+              "bank": [
+                "comieron",
+                "comió",
+                "comimos",
+                "comí"
+              ],
+              "answer": "comió",
+              "explanation": "\"comió\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q7",
+              "type": "mc",
+              "prompt": "Ayer ella ___ (comer) una manzana.",
+              "choices": [
+                "comió",
+                "comí",
+                "comieron",
+                "comimos"
+              ],
+              "answer": 0,
+              "explanation": "\"comió\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q8",
+              "type": "fill",
+              "prompt": "Ayer yo ___ (comer) un plátano.",
+              "bank": [
+                "comieron",
+                "comiste",
+                "comió",
+                "comí"
+              ],
+              "answer": "comí",
+              "explanation": "\"comí\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q9",
+              "type": "mc",
+              "prompt": "Ayer tú ___ (comer) una pera.",
+              "choices": [
+                "comieron",
+                "comí",
+                "comiste",
+                "comió"
+              ],
+              "answer": 2,
+              "explanation": "\"comiste\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p7l3",
+          "title": "Yesterday: Eating 3",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p7q10",
+              "type": "mc",
+              "prompt": "Ayer él ___ (comer) fruta.",
+              "choices": [
+                "comieron",
+                "comí",
+                "comió",
+                "comimos"
+              ],
+              "answer": 2,
+              "explanation": "\"comió\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q11",
+              "type": "fill",
+              "prompt": "Ayer nosotros ___ (comer) pollo.",
+              "bank": [
+                "comió",
+                "comimos",
+                "comí",
+                "comieron"
+              ],
+              "answer": "comimos",
+              "explanation": "\"comimos\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q12",
+              "type": "mc",
+              "prompt": "Ayer ella ___ (comer) una naranja.",
+              "choices": [
+                "comió",
+                "comiste",
+                "comieron",
+                "comí"
+              ],
+              "answer": 0,
+              "explanation": "\"comió\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q13",
+              "type": "fill",
+              "prompt": "Ayer ellas ___ (comer) arroz.",
+              "bank": [
+                "comió",
+                "comimos",
+                "comí",
+                "comieron"
+              ],
+              "answer": "comieron",
+              "explanation": "\"comieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p7q14",
+              "type": "mc",
+              "prompt": "Ayer ellos ___ (comer) una pera.",
+              "choices": [
+                "comimos",
+                "comió",
+                "comieron",
+                "comí"
+              ],
+              "answer": 2,
+              "explanation": "\"comieron\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p8u1",
+      "level": "A2",
+      "eyebrow": "Unit 37",
+      "title": "Yesterday: Buying Things",
+      "description": "Generated practice: past tense — Preterite: choose the past form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p8l1",
+          "title": "Yesterday: Buying Things 1",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p8q0",
+              "type": "mc",
+              "prompt": "Ayer ustedes ___ (comprar) una bufanda.",
+              "choices": [
+                "compraron",
+                "compraste",
+                "compramos",
+                "compró"
+              ],
+              "answer": 0,
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q1",
+              "type": "fill",
+              "prompt": "Ayer nosotros ___ (comprar) unos pantalones.",
+              "bank": [
+                "compraron",
+                "compré",
+                "compró",
+                "compramos"
+              ],
+              "answer": "compramos",
+              "explanation": "\"compramos\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q2",
+              "type": "mc",
+              "prompt": "Ayer ellas ___ (comprar) un cuaderno.",
+              "choices": [
+                "compraste",
+                "compramos",
+                "compraron",
+                "compró"
+              ],
+              "answer": 2,
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q3",
+              "type": "fill",
+              "prompt": "Ayer ella ___ (comprar) un libro.",
+              "bank": [
+                "compraron",
+                "compré",
+                "compró",
+                "compramos"
+              ],
+              "answer": "compró",
+              "explanation": "\"compró\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q4",
+              "type": "mc",
+              "prompt": "Ayer ellos ___ (comprar) un vestido.",
+              "choices": [
+                "compraron",
+                "compraste",
+                "compró",
+                "compré"
+              ],
+              "answer": 0,
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p8l2",
+          "title": "Yesterday: Buying Things 2",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p8q5",
+              "type": "fill",
+              "prompt": "Ayer yo ___ (comprar) unas tijeras.",
+              "bank": [
+                "compraron",
+                "compré",
+                "compró",
+                "compraste"
+              ],
+              "answer": "compré",
+              "explanation": "\"compré\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q6",
+              "type": "mc",
+              "prompt": "Ayer tú ___ (comprar) un lápiz.",
+              "choices": [
+                "compré",
+                "compraron",
+                "compraste",
+                "compró"
+              ],
+              "answer": 2,
+              "explanation": "\"compraste\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q7",
+              "type": "fill",
+              "prompt": "Ayer él ___ (comprar) un bolígrafo.",
+              "bank": [
+                "compraron",
+                "compró",
+                "compramos",
+                "compraste"
+              ],
+              "answer": "compró",
+              "explanation": "\"compró\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q8",
+              "type": "mc",
+              "prompt": "Ayer ustedes ___ (comprar) una mochila.",
+              "choices": [
+                "compraron",
+                "compró",
+                "compré",
+                "compramos"
+              ],
+              "answer": 0,
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q9",
+              "type": "fill",
+              "prompt": "Ayer nosotros ___ (comprar) unos guantes.",
+              "bank": [
+                "compraron",
+                "compró",
+                "compré",
+                "compramos"
+              ],
+              "answer": "compramos",
+              "explanation": "\"compramos\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p8l3",
+          "title": "Yesterday: Buying Things 3",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p8q10",
+              "type": "fill",
+              "prompt": "Ayer yo ___ (comprar) una regla.",
+              "bank": [
+                "compraste",
+                "compré",
+                "compró",
+                "compraron"
+              ],
+              "answer": "compré",
+              "explanation": "\"compré\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q11",
+              "type": "mc",
+              "prompt": "Ayer ellos ___ (comprar) una falda.",
+              "choices": [
+                "compraste",
+                "compramos",
+                "compraron",
+                "compró"
+              ],
+              "answer": 2,
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q12",
+              "type": "fill",
+              "prompt": "Ayer ellas ___ (comprar) unos calcetines.",
+              "bank": [
+                "compramos",
+                "compré",
+                "compró",
+                "compraron"
+              ],
+              "answer": "compraron",
+              "explanation": "\"compraron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q13",
+              "type": "mc",
+              "prompt": "Ayer tú ___ (comprar) unos zapatos.",
+              "choices": [
+                "compraste",
+                "compramos",
+                "compraron",
+                "compré"
+              ],
+              "answer": 0,
+              "explanation": "\"compraste\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p8q14",
+              "type": "fill",
+              "prompt": "Ayer ella ___ (comprar) un abrigo.",
+              "bank": [
+                "compraste",
+                "compramos",
+                "compró",
+                "compraron"
+              ],
+              "answer": "compró",
+              "explanation": "\"compró\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esga2p9u1",
+      "level": "A2",
+      "eyebrow": "Unit 38",
+      "title": "Yesterday: Seeing Animals",
+      "description": "Generated practice: past tense — Preterite: choose the past form that matches the subject.",
+      "lessons": [
+        {
+          "id": "esga2p9l1",
+          "title": "Yesterday: Seeing Animals 1",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p9q0",
+              "type": "fill",
+              "prompt": "Ayer ustedes ___ (ver) un caballo.",
+              "bank": [
+                "vimos",
+                "vi",
+                "vieron",
+                "vio"
+              ],
+              "answer": "vieron",
+              "explanation": "\"vieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q1",
+              "type": "mc",
+              "prompt": "Ayer tú ___ (ver) un conejo.",
+              "choices": [
+                "viste",
+                "vieron",
+                "vio",
+                "vi"
+              ],
+              "answer": 0,
+              "explanation": "\"viste\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q2",
+              "type": "fill",
+              "prompt": "Ayer nosotros ___ (ver) un perro.",
+              "bank": [
+                "vimos",
+                "viste",
+                "vieron",
+                "vio"
+              ],
+              "answer": "vimos",
+              "explanation": "\"vimos\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q3",
+              "type": "mc",
+              "prompt": "Ayer él ___ (ver) una vaca.",
+              "choices": [
+                "viste",
+                "vieron",
+                "vio",
+                "vi"
+              ],
+              "answer": 2,
+              "explanation": "\"vio\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q4",
+              "type": "fill",
+              "prompt": "Ayer ellos ___ (ver) una rana.",
+              "bank": [
+                "vimos",
+                "vi",
+                "viste",
+                "vieron"
+              ],
+              "answer": "vieron",
+              "explanation": "\"vieron\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p9l2",
+          "title": "Yesterday: Seeing Animals 2",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p9q5",
+              "type": "mc",
+              "prompt": "Ayer ella ___ (ver) un mono.",
+              "choices": [
+                "vio",
+                "vi",
+                "vieron",
+                "vimos"
+              ],
+              "answer": 0,
+              "explanation": "\"vio\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q6",
+              "type": "fill",
+              "prompt": "Ayer yo ___ (ver) un tigre.",
+              "bank": [
+                "vimos",
+                "vi",
+                "vieron",
+                "vio"
+              ],
+              "answer": "vi",
+              "explanation": "\"vi\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q7",
+              "type": "mc",
+              "prompt": "Ayer ellas ___ (ver) un elefante.",
+              "choices": [
+                "vio",
+                "vi",
+                "vieron",
+                "viste"
+              ],
+              "answer": 2,
+              "explanation": "\"vieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q8",
+              "type": "fill",
+              "prompt": "Ayer ustedes ___ (ver) un gato.",
+              "bank": [
+                "vi",
+                "viste",
+                "vieron",
+                "vio"
+              ],
+              "answer": "vieron",
+              "explanation": "\"vieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q9",
+              "type": "mc",
+              "prompt": "Ayer él ___ (ver) una serpiente.",
+              "choices": [
+                "vio",
+                "vieron",
+                "vi",
+                "vimos"
+              ],
+              "answer": 0,
+              "explanation": "\"vio\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        },
+        {
+          "id": "esga2p9l3",
+          "title": "Yesterday: Seeing Animals 3",
+          "subtitle": "Generated practice: past tense",
+          "questions": [
+            {
+              "id": "esga2p9q10",
+              "type": "mc",
+              "prompt": "Ayer yo ___ (ver) un pato.",
+              "choices": [
+                "vi",
+                "vio",
+                "vimos",
+                "viste"
+              ],
+              "answer": 0,
+              "explanation": "\"vi\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q11",
+              "type": "fill",
+              "prompt": "Ayer tú ___ (ver) un oso.",
+              "bank": [
+                "vieron",
+                "vio",
+                "viste",
+                "vi"
+              ],
+              "answer": "viste",
+              "explanation": "\"viste\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q12",
+              "type": "mc",
+              "prompt": "Ayer ella ___ (ver) una tortuga.",
+              "choices": [
+                "vi",
+                "viste",
+                "vio",
+                "vieron"
+              ],
+              "answer": 2,
+              "explanation": "\"vio\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q13",
+              "type": "fill",
+              "prompt": "Ayer ellas ___ (ver) un pájaro.",
+              "bank": [
+                "vieron",
+                "vimos",
+                "viste",
+                "vi"
+              ],
+              "answer": "vieron",
+              "explanation": "\"vieron\" is correct here. Preterite: choose the past form that matches the subject."
+            },
+            {
+              "id": "esga2p9q14",
+              "type": "mc",
+              "prompt": "Ayer nosotros ___ (ver) un conejo.",
+              "choices": [
+                "vimos",
+                "vieron",
+                "viste",
+                "vio"
+              ],
+              "answer": 0,
+              "explanation": "\"vimos\" is correct here. Preterite: choose the past form that matches the subject."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb1p1u1",
       "level": "B1",
       "eyebrow": "Unit 1",

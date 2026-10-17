@@ -10,6 +10,8 @@ import { esCandidates } from "./es-compile";
 import { frDefects } from "./fr-check";
 import { FR_AVOIR_PRESENT, FR_ETRE_PRESENT, FR_NOUNS, FR_VERBS } from "./fr-data";
 import { frCandidates } from "./fr-compile";
+import { BANK_ES } from "../lesson-bank-es";
+import { BANK_FR } from "../lesson-bank-fr";
 import { allPacks } from "./romance-bank.testutil";
 import { ROMANCE_PACK_SPECS, buildRomancePack, specCandidates } from "./romance-packs";
 import { completeSentence, type GeneratedItem, type Noun } from "./romance";
@@ -549,5 +551,28 @@ describe("gate 7: the meaning allowlist", () => {
   it("the spec candidates never leave the spec's own verbs", () => {
     for (const spec of ROMANCE_PACK_SPECS)
       for (const item of specCandidates(spec)) expect(spec.verbs).toContain(item.verb);
+  });
+});
+
+describe("the applied packs are exactly what the plan generates", () => {
+  it("every planned pack is in its course bank at its level, with the generated lines", () => {
+    for (const { spec, pack } of built) {
+      const bank = spec.lang === "fr" ? BANK_FR : BANK_ES;
+      const found = bank[spec.level].find((p) => p.id === spec.id);
+      expect(found, `${spec.id} missing from the ${spec.lang} ${spec.level} bank`).toBeDefined();
+      expect(found!.data, `${spec.id} was edited after generation`).toBe(pack.data);
+      expect(found!.title).toBe(pack.title);
+      expect(found!.kind).toBe("cloze");
+    }
+  });
+
+  it("no generated pack sits in the bank without a plan", () => {
+    const planned = new Set(ROMANCE_PACK_SPECS.map((s) => s.id));
+    for (const [prefix, bank] of [
+      ["frg", BANK_FR],
+      ["esg", BANK_ES],
+    ] as const)
+      for (const pack of Object.values(bank).flat())
+        if (pack.id.startsWith(prefix)) expect(planned.has(pack.id), pack.id).toBe(true);
   });
 });

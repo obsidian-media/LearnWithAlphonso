@@ -1550,6 +1550,138 @@ Je ne suis pas d'accord.|Je ne suis pas d'accord.
 On se retrouve devant la gare.|On se retrouve devant la gare.
 À demain !|À demain !`,
   },
+  {
+    id: "frga2p1",
+    title: "Sentences: Eating",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Tu ___ (manger) du beurre.|manges
+Elles ___ (manger) le gâteau.|mangent
+Ils ___ (manger) un fruit.|mangent
+Elle ___ (manger) de la viande.|mange
+Je ___ (manger) la pomme.|mange
+Nous ___ (manger) une banane.|mangeons
+Vous ___ (manger) l'orange.|mangez
+Il ___ (manger) du fromage.|mange
+Je ___ (manger) un légume.|mange
+Nous ___ (manger) de la soupe.|mangeons
+Ils ___ (manger) l'œuf.|mangent
+Elles ___ (manger) du pain.|mangent
+Tu ___ (manger) du riz.|manges
+Vous ___ (manger) une pomme.|mangez
+Il ___ (manger) la banane.|mange`,
+  },
+  {
+    id: "frga2p2",
+    title: "Sentences: Drinking",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Elles ___ (boire) du vin.|boivent
+Elle ___ (boire) du lait.|boit
+Nous ___ (boire) du café.|buvons
+Je ___ (boire) du thé.|bois
+Vous ___ (boire) de l'eau.|buvez
+Tu ___ (boire) du jus.|bois
+Ils ___ (boire) du jus.|boivent
+Il ___ (boire) du café.|boit
+Elles ___ (boire) du thé.|boivent
+Vous ___ (boire) du lait.|buvez
+Tu ___ (boire) du vin.|bois
+Nous ___ (boire) de l'eau.|buvons
+Je ___ (boire) du lait.|bois
+Ils ___ (boire) du thé.|boivent
+Elle ___ (boire) de l'eau.|boit`,
+  },
+  {
+    id: "frga2p3",
+    title: "Sentences: Wearing Clothes",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Il ___ (porter) des bottes.|porte
+Vous ___ (porter) le pull.|portez
+Elle ___ (porter) une ceinture.|porte
+Tu ___ (porter) le manteau.|portes
+Je ___ (porter) des gants.|porte
+Elles ___ (porter) la jupe.|portent
+Nous ___ (porter) un chapeau.|portons
+Ils ___ (porter) le pantalon.|portent
+Il ___ (porter) l'écharpe.|porte
+Elles ___ (porter) une chemise.|portent
+Elle ___ (porter) une veste.|porte
+Je ___ (porter) les chaussettes.|porte
+Vous ___ (porter) une robe.|portez
+Tu ___ (porter) les chaussures.|portes
+Nous ___ (porter) des bottes.|portons`,
+  },
+  {
+    id: "frga2p4",
+    title: "Sentences: Buying Things",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Elle ___ (acheter) le pull.|achète
+Tu ___ (acheter) une chaise.|achètes
+Elles ___ (acheter) le crayon.|achètent
+Ils ___ (acheter) un lit.|achètent
+Vous ___ (acheter) la veste.|achetez
+Nous ___ (acheter) une lampe.|achetons
+Il ___ (acheter) un chapeau.|achète
+Elle ___ (acheter) la chemise.|achète
+Ils ___ (acheter) le sac.|achètent
+Tu ___ (acheter) un livre.|achètes
+Vous ___ (acheter) le miroir.|achetez
+Nous ___ (acheter) un journal.|achetons
+Elles ___ (acheter) le magazine.|achètent
+Il ___ (acheter) des chaussettes.|achète
+Vous ___ (acheter) un manteau.|achetez`,
+  },
+  {
+    id: "frga2p5",
+    title: "Sentences: Seeing Animals and Vehicles",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Je ___ (voir) une voiture.|vois
+Ils ___ (voir) l'avion.|voient
+Nous ___ (voir) un lion.|voyons
+Elles ___ (voir) le loup.|voient
+Vous ___ (voir) un taxi.|voyez
+Tu ___ (voir) le chien.|vois
+Il ___ (voir) le camion.|voit
+Elle ___ (voir) un chat.|voit
+Je ___ (voir) le vélo.|vois
+Vous ___ (voir) un bateau.|voyez
+Elles ___ (voir) un renard.|voient
+Nous ___ (voir) la vache.|voyons
+Tu ___ (voir) un bus.|vois
+Ils ___ (voir) la moto.|voient
+Elle ___ (voir) un mouton.|voit`,
+  },
+  {
+    id: "frga2p6",
+    title: "Sentences: Reading",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Ils ___ (lire) le dictionnaire.|lisent
+Je ___ (lire) un journal.|lis
+Tu ___ (lire) le livre.|lis
+Vous ___ (lire) un article.|lisez
+Elles ___ (lire) le magazine.|lisent
+Elle ___ (lire) un livre.|lit
+Nous ___ (lire) un dictionnaire.|lisons
+Il ___ (lire) l'article.|lit
+Il ___ (lire) un journal.|lit
+Je ___ (lire) le magazine.|lis
+Ils ___ (lire) un livre.|lisent
+Elles ___ (lire) le dictionnaire.|lisent
+Tu ___ (lire) un magazine.|lis
+Vous ___ (lire) le journal.|lisez
+Nous ___ (lire) l'article.|lisons`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -2301,6 +2433,138 @@ Nous devons prendre une décision.|Nous devons prendre une décision.
 C'est la meilleure solution possible.|C'est la meilleure solution possible.
 Je comprends ton point de vue.|Je comprends ton point de vue.
 Finalement, je suis d'accord.|Finalement, je suis d'accord.`,
+  },
+  {
+    id: "frgb1p1",
+    title: "Yesterday: Eating",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé: the auxiliary and the participle go together.",
+    data: `Hier, elle ___ (manger) un fruit.|a mangé
+Hier, nous ___ (manger) la pomme.|avons mangé
+Hier, elles ___ (manger) du fromage.|ont mangé
+Hier, il ___ (manger) une banane.|a mangé
+Hier, ils ___ (manger) l'œuf.|ont mangé
+Hier, vous ___ (manger) du riz.|avez mangé
+Hier, tu ___ (manger) un gâteau.|as mangé
+Hier, il ___ (manger) du pain.|a mangé
+Hier, elles ___ (manger) l'orange.|ont mangé
+Hier, ils ___ (manger) un légume.|ont mangé
+Hier, tu ___ (manger) du beurre.|as mangé
+Hier, vous ___ (manger) de la soupe.|avez mangé
+Hier, elle ___ (manger) de la viande.|a mangé
+Hier, nous ___ (manger) la banane.|avons mangé
+Hier, elles ___ (manger) l'œuf.|ont mangé`,
+  },
+  {
+    id: "frgb1p2",
+    title: "Yesterday: Buying Things",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé: the auxiliary and the participle go together.",
+    data: `Hier, il ___ (acheter) une jupe.|a acheté
+Hier, elle ___ (acheter) la clé.|a acheté
+Hier, vous ___ (acheter) une chaise.|avez acheté
+Hier, nous ___ (acheter) le tapis.|avons acheté
+Hier, elles ___ (acheter) un pantalon.|ont acheté
+Hier, ils ___ (acheter) la chemise.|ont acheté
+Hier, tu ___ (acheter) une table.|as acheté
+Hier, vous ___ (acheter) le livre.|avez acheté
+Hier, ils ___ (acheter) une écharpe.|ont acheté
+Hier, il ___ (acheter) la robe.|a acheté
+Hier, elle ___ (acheter) un crayon.|a acheté
+Hier, elles ___ (acheter) le sac.|ont acheté
+Hier, nous ___ (acheter) une calculatrice.|avons acheté
+Hier, tu ___ (acheter) le chapeau.|as acheté
+Hier, ils ___ (acheter) le dictionnaire.|ont acheté`,
+  },
+  {
+    id: "frgb1p3",
+    title: "Yesterday: Going Places",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé with être: the participle agrees with the subject.",
+    data: `Hier, elle ___ (aller) à la gare.|est allée
+Hier, ils ___ (aller) au marché.|sont allés
+Hier, il ___ (aller) au théâtre.|est allé
+Hier, elles ___ (aller) au magasin.|sont allées
+Hier, ils ___ (aller) au supermarché.|sont allés
+Hier, il ___ (aller) à l'école.|est allé
+Hier, elle ___ (aller) à l'aéroport.|est allée
+Hier, elles ___ (aller) à la bibliothèque.|sont allées
+Hier, elle ___ (aller) au cinéma.|est allée
+Hier, elles ___ (aller) au parc.|sont allées
+Hier, il ___ (aller) au marché.|est allé
+Hier, ils ___ (aller) à l'aéroport.|sont allés
+Hier, elle ___ (aller) au supermarché.|est allée
+Hier, il ___ (aller) à la gare.|est allé
+Hier, ils ___ (aller) au magasin.|sont allés`,
+  },
+  {
+    id: "frgb1p4",
+    title: "Yesterday: Coming From Places",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé with être: the participle agrees with the subject.",
+    data: `Hier, ils ___ (venir) de la bibliothèque.|sont venus
+Hier, il ___ (venir) du supermarché.|est venu
+Hier, elles ___ (venir) du magasin.|sont venues
+Hier, elle ___ (venir) de l'école.|est venue
+Hier, elles ___ (venir) du marché.|sont venues
+Hier, elle ___ (venir) de la gare.|est venue
+Hier, il ___ (venir) du parc.|est venu
+Hier, ils ___ (venir) de l'école.|sont venus
+Hier, elle ___ (venir) du supermarché.|est venue
+Hier, elles ___ (venir) de la gare.|sont venues
+Hier, il ___ (venir) du marché.|est venu
+Hier, ils ___ (venir) du magasin.|sont venus
+Hier, elle ___ (venir) du parc.|est venue
+Hier, elles ___ (venir) de la bibliothèque.|sont venues
+Hier, ils ___ (venir) du supermarché.|sont venus`,
+  },
+  {
+    id: "frgb1p5",
+    title: "Yesterday: Arriving",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé with être: the participle agrees with the subject.",
+    data: `Hier, ils ___ (arriver) au magasin.|sont arrivés
+Hier, elle ___ (arriver) à la gare.|est arrivée
+Hier, il ___ (arriver) au supermarché.|est arrivé
+Hier, elles ___ (arriver) à l'école.|sont arrivées
+Hier, ils ___ (arriver) à la bibliothèque.|sont arrivés
+Hier, elles ___ (arriver) à l'aéroport.|sont arrivées
+Hier, il ___ (arriver) au parc.|est arrivé
+Hier, elle ___ (arriver) à l'aéroport.|est arrivée
+Hier, ils ___ (arriver) à l'école.|sont arrivés
+Hier, il ___ (arriver) à la gare.|est arrivé
+Hier, elles ___ (arriver) au parc.|sont arrivées
+Hier, elle ___ (arriver) au supermarché.|est arrivée
+Hier, il ___ (arriver) au magasin.|est arrivé
+Hier, elles ___ (arriver) à la bibliothèque.|sont arrivées
+Hier, ils ___ (arriver) à l'aéroport.|sont arrivés`,
+  },
+  {
+    id: "frgb1p6",
+    title: "Yesterday: Staying",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Passé composé with être: the participle agrees with the subject.",
+    data: `Hier, ils ___ (rester) à la maison.|sont restés
+Hier, il ___ (rester) au parc.|est resté
+Hier, elles ___ (rester) à la bibliothèque.|sont restées
+Hier, elle ___ (rester) à l'école.|est restée
+Hier, elles ___ (rester) à la maison.|sont restées
+Hier, il ___ (rester) à l'école.|est resté
+Hier, elle ___ (rester) au parc.|est restée
+Hier, ils ___ (rester) à la bibliothèque.|sont restés
+Hier, elle ___ (rester) à la maison.|est restée
+Hier, il ___ (rester) à la bibliothèque.|est resté
+Hier, ils ___ (rester) à l'école.|sont restés
+Hier, elles ___ (rester) au parc.|sont restées
+Hier, il ___ (rester) à la maison.|est resté
+Hier, elles ___ (rester) à l'école.|sont restées
+Hier, ils ___ (rester) au parc.|sont restés`,
   },
 ];
 

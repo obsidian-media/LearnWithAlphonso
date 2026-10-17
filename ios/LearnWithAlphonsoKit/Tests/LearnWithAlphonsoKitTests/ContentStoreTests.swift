@@ -15,7 +15,9 @@ final class ContentStoreTests: XCTestCase {
         // is hardcoded in more than one place, so adding a pack is never only
         // a content change. Kept as a literal deliberately -- it is the thing
         // under test, and it caught all three additions exactly as intended.
-        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 575)
+        // 611 = 575 + 36 lessons from the 12 generated one-verb packs (frga2p1-6, frgb1p1-6,
+        // 15 questions = 3 lessons each).
+        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 611)
     }
 
     func testFindsLessonById() throws {

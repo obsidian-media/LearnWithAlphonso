@@ -1646,6 +1646,204 @@ Alguien había dejado la taza en la cocina.|Alguien había dejado la taza en la 
 Alguien había dejado la tasa en la cocina.|Alguien había dejado la tasa en la cocina.
 Guardé la taza favorita en el estante.|Guardé la taza favorita en el estante.`,
   },
+  {
+    id: "esga2p1",
+    title: "Sentences: Eating",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Ustedes ___ (comer) arroz.|comen
+Nosotros ___ (comer) un plátano.|comemos
+Tú ___ (comer) una manzana.|comes
+Ellos ___ (comer) fruta.|comen
+Él ___ (comer) una zanahoria.|come
+Yo ___ (comer) pan.|como
+Ella ___ (comer) una pera.|come
+Ellas ___ (comer) pollo.|comen
+Nosotros ___ (comer) una naranja.|comemos
+Tú ___ (comer) un tomate.|comes
+Ustedes ___ (comer) fruta.|comen
+Él ___ (comer) arroz.|come
+Ellas ___ (comer) una manzana.|comen
+Ella ___ (comer) pan.|come
+Yo ___ (comer) una naranja.|como`,
+  },
+  {
+    id: "esga2p2",
+    title: "Sentences: Drinking",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Él ___ (beber) té.|bebe
+Nosotros ___ (beber) café.|bebemos
+Ellas ___ (beber) leche.|beben
+Yo ___ (beber) té.|bebo
+Ellos ___ (beber) leche.|beben
+Ustedes ___ (beber) café.|beben
+Ella ___ (beber) té.|bebe
+Tú ___ (beber) café.|bebes
+Yo ___ (beber) leche.|bebo
+Él ___ (beber) café.|bebe
+Ustedes ___ (beber) leche.|beben
+Ellos ___ (beber) té.|beben
+Ellas ___ (beber) café.|beben
+Nosotros ___ (beber) leche.|bebemos
+Tú ___ (beber) té.|bebes`,
+  },
+  {
+    id: "esga2p3",
+    title: "Sentences: Buying Things",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Ustedes ___ (comprar) un abrigo.|compran
+Ellas ___ (comprar) un vestido.|compran
+Él ___ (comprar) un lápiz.|compra
+Tú ___ (comprar) unas tijeras.|compras
+Nosotros ___ (comprar) una chaqueta.|compramos
+Ellos ___ (comprar) unos pantalones.|compran
+Ella ___ (comprar) un sombrero.|compra
+Yo ___ (comprar) unos zapatos.|compro
+Ustedes ___ (comprar) un libro.|compran
+Él ___ (comprar) unos guantes.|compra
+Tú ___ (comprar) un bolígrafo.|compras
+Ellos ___ (comprar) una regla.|compran
+Ellas ___ (comprar) un cuaderno.|compran
+Yo ___ (comprar) una camiseta.|compro
+Nosotros ___ (comprar) una bufanda.|compramos`,
+  },
+  {
+    id: "esga2p4",
+    title: "Sentences: Seeing Animals",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Él ___ (ver) un tigre.|ve
+Ella ___ (ver) una serpiente.|ve
+Ustedes ___ (ver) un gato.|ven
+Nosotros ___ (ver) un elefante.|vemos
+Ellos ___ (ver) un caballo.|ven
+Ellas ___ (ver) una tortuga.|ven
+Yo ___ (ver) un pato.|veo
+Tú ___ (ver) un conejo.|ves
+Ella ___ (ver) un mono.|ve
+Ellas ___ (ver) una vaca.|ven
+Ellos ___ (ver) un perro.|ven
+Ustedes ___ (ver) un oso.|ven
+Tú ___ (ver) un pájaro.|ves
+Nosotros ___ (ver) una rana.|vemos
+Yo ___ (ver) un caballo.|veo`,
+  },
+  {
+    id: "esga2p5",
+    title: "Sentences: Reading",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Él ___ (leer) un libro.|lee
+Ellos ___ (leer) la revista.|leen
+Nosotros ___ (leer) un periódico.|leemos
+Ellas ___ (leer) el libro.|leen
+Ella ___ (leer) una revista.|lee
+Yo ___ (leer) el periódico.|leo
+Ustedes ___ (leer) un libro.|leen
+Tú ___ (leer) la revista.|lees
+Él ___ (leer) el periódico.|lee
+Tú ___ (leer) una revista.|lees
+Nosotros ___ (leer) el libro.|leemos
+Yo ___ (leer) un periódico.|leo
+Ellas ___ (leer) el periódico.|leen
+Ellos ___ (leer) un libro.|leen
+Ustedes ___ (leer) la revista.|leen`,
+  },
+  {
+    id: "esga2p6",
+    title: "Sentences: Having Things",
+    subtitle: "Generated practice: present tense",
+    kind: "cloze",
+    note: "Present tense: choose the verb form that matches the subject.",
+    data: `Yo ___ (tener) un lápiz.|tengo
+Ellas ___ (tener) un perro.|tienen
+Él ___ (tener) un pájaro.|tiene
+Nosotros ___ (tener) un cuaderno.|tenemos
+Ellos ___ (tener) una mochila.|tienen
+Ustedes ___ (tener) un conejo.|tienen
+Tú ___ (tener) un reloj.|tienes
+Ella ___ (tener) una cama.|tiene
+Ellas ___ (tener) una silla.|tienen
+Yo ___ (tener) una goma.|tengo
+Ellos ___ (tener) un bolígrafo.|tienen
+Nosotros ___ (tener) unas tijeras.|tenemos
+Ustedes ___ (tener) una mesa.|tienen
+Tú ___ (tener) un espejo.|tienes
+Él ___ (tener) un libro.|tiene`,
+  },
+  {
+    id: "esga2p7",
+    title: "Yesterday: Eating",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Preterite: choose the past form that matches the subject.",
+    data: `Ayer ellas ___ (comer) fruta.|comieron
+Ayer ustedes ___ (comer) un tomate.|comieron
+Ayer ellos ___ (comer) pan.|comieron
+Ayer tú ___ (comer) una naranja.|comiste
+Ayer nosotros ___ (comer) arroz.|comimos
+Ayer yo ___ (comer) una zanahoria.|comí
+Ayer él ___ (comer) pollo.|comió
+Ayer ella ___ (comer) una manzana.|comió
+Ayer yo ___ (comer) un plátano.|comí
+Ayer tú ___ (comer) una pera.|comiste
+Ayer él ___ (comer) fruta.|comió
+Ayer nosotros ___ (comer) pollo.|comimos
+Ayer ella ___ (comer) una naranja.|comió
+Ayer ellas ___ (comer) arroz.|comieron
+Ayer ellos ___ (comer) una pera.|comieron`,
+  },
+  {
+    id: "esga2p8",
+    title: "Yesterday: Buying Things",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Preterite: choose the past form that matches the subject.",
+    data: `Ayer ustedes ___ (comprar) una bufanda.|compraron
+Ayer nosotros ___ (comprar) unos pantalones.|compramos
+Ayer ellas ___ (comprar) un cuaderno.|compraron
+Ayer ella ___ (comprar) un libro.|compró
+Ayer ellos ___ (comprar) un vestido.|compraron
+Ayer yo ___ (comprar) unas tijeras.|compré
+Ayer tú ___ (comprar) un lápiz.|compraste
+Ayer él ___ (comprar) un bolígrafo.|compró
+Ayer ustedes ___ (comprar) una mochila.|compraron
+Ayer nosotros ___ (comprar) unos guantes.|compramos
+Ayer yo ___ (comprar) una regla.|compré
+Ayer ellos ___ (comprar) una falda.|compraron
+Ayer ellas ___ (comprar) unos calcetines.|compraron
+Ayer tú ___ (comprar) unos zapatos.|compraste
+Ayer ella ___ (comprar) un abrigo.|compró`,
+  },
+  {
+    id: "esga2p9",
+    title: "Yesterday: Seeing Animals",
+    subtitle: "Generated practice: past tense",
+    kind: "cloze",
+    note: "Preterite: choose the past form that matches the subject.",
+    data: `Ayer ustedes ___ (ver) un caballo.|vieron
+Ayer tú ___ (ver) un conejo.|viste
+Ayer nosotros ___ (ver) un perro.|vimos
+Ayer él ___ (ver) una vaca.|vio
+Ayer ellos ___ (ver) una rana.|vieron
+Ayer ella ___ (ver) un mono.|vio
+Ayer yo ___ (ver) un tigre.|vi
+Ayer ellas ___ (ver) un elefante.|vieron
+Ayer ustedes ___ (ver) un gato.|vieron
+Ayer él ___ (ver) una serpiente.|vio
+Ayer yo ___ (ver) un pato.|vi
+Ayer tú ___ (ver) un oso.|viste
+Ayer ella ___ (ver) una tortuga.|vio
+Ayer ellas ___ (ver) un pájaro.|vieron
+Ayer nosotros ___ (ver) un conejo.|vimos`,
+  },
 ];
 
 const B1: Pack[] = [
