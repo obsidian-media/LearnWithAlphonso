@@ -78,7 +78,11 @@ private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
     val dismissals = remember { DeadLetterDismissals(container.prefs) }
     val uriHandler = LocalUriHandler.current
     var dismissed by remember { mutableStateOf(dismissals.dismissed) }
-    LaunchedEffect(dead) { dismissals.prune(dead.map { it.identity }); dismissed = dismissals.dismissed }
+    // The list starts empty before the first read: pruning then would forget every dismissal.
+    LaunchedEffect(dead) {
+        dismissals.prune(dead.map { it.identity })
+        dismissed = dismissals.dismissed
+    }
 
     PendingSyncNotice.message(lessons, reviewAnswers, isConnected)?.let { message ->
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -95,7 +99,8 @@ private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
             Row {
                 TextButton(onClick = {
                     val reasons = dead.filter { it.identity in visible }.map { it.reason }
-                    uriHandler.openUri(DeadLetterNotice.supportMailUri(visible, reasons, BuildConfig.VERSION_NAME))
+                    // No mail app installed: the notice stays, and there is nothing to crash on.
+                    runCatching { uriHandler.openUri(DeadLetterNotice.supportMailUri(visible, reasons, BuildConfig.VERSION_NAME)) }
                 }) { Text(DeadLetterNotice.CONTACT_TITLE, color = palette.moss) }
                 TextButton(onClick = { dismissals.dismiss(visible); dismissed = dismissals.dismissed }) { Text(DeadLetterNotice.DISMISS_TITLE, color = palette.inkSoft) }
             }
@@ -112,7 +117,7 @@ fun LearnScreen(
     onOpenPlacement: (Course) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value) }
+    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value, userId = container.session.userId) }
     val state by vm.state.collectAsState()
     // Learn follows the active course when the account changes. It writes the course only when the learner picks one
     // (below), never its initial state: a screen built from the default must not overwrite the account's saved choice.

@@ -83,6 +83,13 @@ sealed class LessonCompletionError : Exception() {
             InvalidPayload -> "invalid-payload"
         }
 
+    /**
+     * A 401 that survives the HTTP seam's single refresh means either "signed out" or "the refresh could not reach the
+     * server". Only the first is the learner's problem; while the session is still there the finish is queued like any
+     * other connection trouble (LessonPlayerView's `.unreachable` versus `.signedOut`).
+     */
+    fun whileSession(stillSignedIn: Boolean): LessonCompletionError = if (this == Unauthorized && stillSignedIn) Offline else this
+
     companion object {
         const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
         private val STABLE_CODE = Regex("^[a-z][a-z0-9-]*$")

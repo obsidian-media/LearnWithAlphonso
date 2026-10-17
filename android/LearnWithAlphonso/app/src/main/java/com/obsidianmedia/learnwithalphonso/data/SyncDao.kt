@@ -32,6 +32,16 @@ interface SyncDao {
     @Query("SELECT COUNT(*) FROM pending_lesson_completions")
     fun pendingLessonCompletionCount(): Flow<Int>
 
+    /** What is waiting for this account: rows with no owner (queued by an older build) are synced as the account's, so they count. */
+    @Query("SELECT COUNT(*) FROM pending_lesson_completions WHERE ownerUserId IS NULL OR ownerUserId = :userId")
+    fun pendingLessonCompletionCountFor(userId: String): Flow<Int>
+
+    @Query("DELETE FROM pending_lesson_completions WHERE ownerUserId IS NULL")
+    suspend fun deleteOwnerlessLessonCompletions()
+
+    @Query("DELETE FROM pending_lesson_completions")
+    suspend fun clearLessonCompletions()
+
     @Query("SELECT * FROM pending_review_grades ORDER BY queuedAt ASC")
     suspend fun pendingReviewGrades(): List<PendingReviewGradeRecord>
 
@@ -50,14 +60,31 @@ interface SyncDao {
     @Query("SELECT COUNT(*) FROM pending_review_grades")
     fun pendingReviewGradeCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM pending_review_grades WHERE ownerUserId IS NULL OR ownerUserId = :userId")
+    fun pendingReviewGradeCountFor(userId: String): Flow<Int>
+
+    @Query("DELETE FROM pending_review_grades WHERE ownerUserId IS NULL")
+    suspend fun deleteOwnerlessReviewGrades()
+
+    @Query("DELETE FROM pending_review_grades")
+    suspend fun clearReviewGrades()
+
     @Insert
     suspend fun insertDeadLetter(record: DeadLetterRecord)
 
-    @Query("SELECT * FROM dead_letters ORDER BY deadAt ASC")
-    fun deadLetters(): Flow<List<DeadLetterRecord>>
+    /** Lesson completions the server permanently rejected for this account, newest first. A lost grade only reschedules a card, so grades are not shown. */
+    @Query("SELECT * FROM dead_letters WHERE kind = 'lesson' AND ownerUserId = :userId ORDER BY deadAt DESC, id DESC")
+    fun lessonDeadLetters(userId: String): Flow<List<DeadLetterRecord>>
+
+    /** Keeps the newest 50 for diagnosis. */
+    @Query("DELETE FROM dead_letters WHERE id NOT IN (SELECT id FROM dead_letters ORDER BY deadAt DESC, id DESC LIMIT 50)")
+    suspend fun trimDeadLetters()
 
     @Query("DELETE FROM dead_letters")
     suspend fun clearDeadLetters()
+
+    @Query("DELETE FROM app_sync_state")
+    suspend fun clearSyncState()
 
     @Query("SELECT * FROM cached_due_reviews")
     suspend fun cachedDueReviews(): List<CachedDueReviewRecord>
@@ -87,7 +114,7 @@ interface SyncDao {
 @Database(
     entities = [PendingLessonCompletionRecord::class, PendingReviewGradeRecord::class, CachedDueReviewRecord::class, AppSyncStateRecord::class, PodcastDownloadRecord::class, DeadLetterRecord::class],
     version = 3,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AlphonsoDatabase : RoomDatabase() {
     abstract fun syncDao(): SyncDao
@@ -108,9 +135,10 @@ abstract class AlphonsoDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `pending_review_grades` ADD COLUMN `ownerUserId` TEXT")
                 db.execSQL("ALTER TABLE `pending_review_grades` ADD COLUMN `attemptCount` INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE `pending_review_grades` ADD COLUMN `nextAttemptAt` INTEGER")
+                db.execSQL("ALTER TABLE `app_sync_state` ADD COLUMN `orphansResolved` INTEGER NOT NULL DEFAULT 0")
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `dead_letters` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `kind` TEXT NOT NULL, " +
-                        "`identity` TEXT NOT NULL, `reason` TEXT NOT NULL, `deadAt` INTEGER NOT NULL)",
+                        "`identity` TEXT NOT NULL, `reason` TEXT NOT NULL, `deadAt` INTEGER NOT NULL, `ownerUserId` TEXT)",
                 )
             }
         }

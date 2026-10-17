@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.data
 
 import android.content.SharedPreferences
+import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterNotice
 
 /**
  * Which dead letters the learner dismissed (DeadLetterDismissals in DeadLetterNotice.swift). Dismissing hides the
@@ -15,7 +16,7 @@ class DeadLetterDismissals(private val prefs: SharedPreferences) {
 
     /** Forgets dismissals whose record no longer exists, so the key cannot grow forever. */
     fun prune(keeping: List<String>) {
-        val kept = dismissed.intersect(keeping.toSet())
+        val kept = DeadLetterNotice.reconcile(dismissed, keeping)
         if (kept != dismissed) prefs.edit().putStringSet(KEY, kept).apply()
     }
 

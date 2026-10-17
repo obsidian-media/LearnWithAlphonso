@@ -7,6 +7,8 @@ import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
+import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
+import com.obsidianmedia.learnwithalphonso.core.sync.PendingReviewGrade
 import com.obsidianmedia.learnwithalphonso.testContent
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
@@ -148,5 +150,35 @@ class LearnViewModelTest {
         v.initialLoad.join()
         assertTrue(first.isCompleted && v.initialLoad.isCompleted && second.isCompleted)
         assertEquals(Course.SPANISH, v.state.value.course)
+    }
+
+    private fun queued(owner: String?) = PendingLessonCompletion("u1l1", 5, emptyList(), "en", 1_000, 50, ownerUserId = owner)
+
+    @Test
+    fun `the waiting line counts only this account's queued work`() = runBlocking {
+        val store = MemorySyncStore().apply {
+            completions.add(queued("u1")); completions.add(queued("u2").copy(queuedAt = 2_000))
+            grades.add(PendingReviewGrade("en:l1:q1", "cat", "en", 1_000, ownerUserId = "u2"))
+        }
+        val mine = LearnViewModel(testContent, server().progressClient, store, userId = "u1")
+        mine.initialLoad.join()
+        awaitTrue("counts") { mine.pendingLessons.value == 1 }
+        assertEquals("the other account's review answer is not mine", 0, mine.pendingReviewAnswers.value)
+        val nobody = LearnViewModel(testContent, server().progressClient, store, userId = null)
+        nobody.initialLoad.join()
+        assertEquals(0, nobody.pendingLessons.value)
+    }
+
+    @Test
+    fun `the lost-lesson notice lists this account's lesson dead letters only, never a lost review grade`() = runBlocking {
+        val store = MemorySyncStore().apply {
+            deadRows.add(MemorySyncStore.DeadRow("lesson", "u1l1|en|1", "lesson-version-mismatch", "u1"))
+            deadRows.add(MemorySyncStore.DeadRow("grade", "en:l1:q1|en|2", "rejected", "u1"))
+            deadRows.add(MemorySyncStore.DeadRow("lesson", "u1l2|en|3", "rejected", "u2"))
+        }
+        val v = LearnViewModel(testContent, server().progressClient, store, userId = "u1")
+        v.initialLoad.join()
+        awaitTrue("dead letters") { v.deadLetters.value.isNotEmpty() }
+        assertEquals(listOf("u1l1|en|1"), v.deadLetters.value.map { it.identity })
     }
 }

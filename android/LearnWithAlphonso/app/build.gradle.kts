@@ -12,6 +12,11 @@ if (file("google-services.json").exists()) {
     apply(plugin = "com.google.gms.google-services")
 }
 
+// Room writes the schema of every version here; the migration test replays them (MigrationTestHelper).
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.obsidianmedia.learnwithalphonso"
     // Android now ships minor SDK releases; current AndroidX artifacts require 37.2 to compile.
@@ -78,6 +83,8 @@ android {
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 
     testOptions { unitTests.isReturnDefaultValues = true }
+    // The exported schemas are the migration test's starting points.
+    sourceSets.getByName("androidTest").assets.directories.add("$projectDir/schemas")
 }
 
 kotlin {
@@ -119,6 +126,7 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

@@ -52,10 +52,12 @@ say the lesson is saved; a rejected 4xx (including a lesson that changed) is nev
 offline; sync backs each item off (30 s doubling to 6 h) and keeps retrying transient failures forever, treats
 no connection as the shortest wait with no growing backoff, waits for a heart refill without spending an
 attempt, and moves only permanent rejections to a dead-letter table that the Learn tab reports with a Contact
-support link. Rows queued by another account are dropped unsent, rows from before owners were recorded are
-adopted by the first account that syncs, a review answer is sent with a stable attempt id so a lost response is
-replayed instead of graded twice, the queue wakes itself when the next item is due, and the Learn tab says how
-many lessons and review answers are waiting, with a Sync now button.
+support link (lesson completions only). Rows queued by another account are dropped unsent, rows from before owners
+were recorded are adopted once by the account restored at the first launch after the upgrade and dropped after
+that, signing out clears the queue, a review answer is sent with a stable attempt id so a lost response is
+replayed instead of graded twice, the queue wakes itself when the next item is due and when work is queued, a pass
+starts when the connection comes back, and the Learn tab says how many lessons and review answers are waiting for
+this account, with a Sync now button.
 
 Ported on 2026-10-17, not yet run on a device: the "AI-narrated" label on Listen rows (episodes whose `source` is
 `tts`; "5:05 · Resume · AI-narrated", and "Downloaded · AI-narrated" offline), and the iOS resume

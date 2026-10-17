@@ -1,0 +1,207 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "f38e7708b76e51b5eb92658da0609674",
+    "entities": [
+      {
+        "tableName": "pending_lesson_completions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `lessonId` TEXT NOT NULL, `total` INTEGER NOT NULL, `answersJson` TEXT NOT NULL, `course` TEXT NOT NULL, `queuedAt` INTEGER NOT NULL, `optimisticXpEstimate` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lessonId",
+            "columnName": "lessonId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "total",
+            "columnName": "total",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "answersJson",
+            "columnName": "answersJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "course",
+            "columnName": "course",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "queuedAt",
+            "columnName": "queuedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "optimisticXpEstimate",
+            "columnName": "optimisticXpEstimate",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "pending_review_grades",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemKey` TEXT NOT NULL, `answer` TEXT NOT NULL, `course` TEXT NOT NULL, `queuedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemKey",
+            "columnName": "itemKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "answer",
+            "columnName": "answer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "course",
+            "columnName": "course",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "queuedAt",
+            "columnName": "queuedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cached_due_reviews",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemKey` TEXT NOT NULL, `json` TEXT NOT NULL, PRIMARY KEY(`itemKey`))",
+        "fields": [
+          {
+            "fieldPath": "itemKey",
+            "columnName": "itemKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "json",
+            "columnName": "json",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "itemKey"
+          ]
+        }
+      },
+      {
+        "tableName": "app_sync_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `lastSyncedAt` INTEGER, `progressJson` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncedAt",
+            "columnName": "lastSyncedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "progressJson",
+            "columnName": "progressJson",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "podcast_downloads",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`episodeId` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `etag` TEXT, `storedDurationSeconds` INTEGER NOT NULL, `lastPlayed` INTEGER, `downloadedAt` INTEGER NOT NULL, PRIMARY KEY(`episodeId`))",
+        "fields": [
+          {
+            "fieldPath": "episodeId",
+            "columnName": "episodeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytes",
+            "columnName": "bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etag",
+            "columnName": "etag",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "storedDurationSeconds",
+            "columnName": "storedDurationSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPlayed",
+            "columnName": "lastPlayed",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "downloadedAt",
+            "columnName": "downloadedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "episodeId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f38e7708b76e51b5eb92658da0609674')"
+    ]
+  }
+}

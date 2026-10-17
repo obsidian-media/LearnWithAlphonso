@@ -61,6 +61,8 @@ class LearnViewModel(
     private val syncStore: SyncQueueStore,
     /** The account's remembered course, so Learn opens on it. */
     initialCourse: Course = Course.ENGLISH,
+    /** The signed-in account: queued work and lost lessons are shown for this account only. */
+    userId: String? = null,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LearnUiState(course = initialCourse))
@@ -71,11 +73,11 @@ class LearnViewModel(
     val dueCount: StateFlow<Int> = syncStore.dueCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     /** Finished lessons and review answers still waiting to reach the server. */
-    val pendingLessons: StateFlow<Int> = syncStore.pendingLessonCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
-    val pendingReviewAnswers: StateFlow<Int> = syncStore.pendingReviewGradeCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+    val pendingLessons: StateFlow<Int> = syncStore.pendingLessonCount(userId).stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+    val pendingReviewAnswers: StateFlow<Int> = syncStore.pendingReviewGradeCount(userId).stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     /** Lesson completions the server permanently rejected. */
-    val deadLetters: StateFlow<List<DeadLetterInfo>> = syncStore.deadLetters.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val deadLetters: StateFlow<List<DeadLetterInfo>> = syncStore.lessonDeadLetters(userId).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private var loadJob: Job? = null
 

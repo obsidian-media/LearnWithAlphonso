@@ -81,6 +81,8 @@ data class DeadLetterRecord(
     val identity: String,
     val reason: String,
     val deadAt: Long,
+    /** Who queued it, so one account never sees (or mails support about) another's lost lesson. */
+    val ownerUserId: String? = null,
 )
 
 @Entity(tableName = "cached_due_reviews")
@@ -101,6 +103,8 @@ data class AppSyncStateRecord(
     @PrimaryKey val id: Int = 1,
     val lastSyncedAt: Long? = null,
     val progressJson: String? = null,
+    /** True once rows queued by a build that did not record an owner have been adopted (or dropped); it happens once. */
+    @ColumnInfo(defaultValue = "0") val orphansResolved: Boolean = false,
 ) {
     fun progress(): LessonCompletionProgress? =
         progressJson?.let { runCatching { ContentJson.json.decodeFromString(LessonCompletionProgress.serializer(), it) }.getOrNull() }

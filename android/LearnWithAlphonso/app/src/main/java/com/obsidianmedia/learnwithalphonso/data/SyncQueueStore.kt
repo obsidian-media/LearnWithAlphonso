@@ -8,6 +8,8 @@ import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingReviewGrade
 import com.obsidianmedia.learnwithalphonso.core.sync.SyncResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /** The one seam every screen uses for offline state. Port of SyncQueueStore.swift over Room. */
@@ -20,8 +22,17 @@ interface SyncQueueStore {
     suspend fun appendReviewGrade(pending: PendingReviewGrade)
     suspend fun removeSyncedReviewGrades(synced: List<PendingReviewGrade>)
 
-    /** Rows queued by a build that did not record an owner belong to the first account that syncs. */
-    suspend fun adoptOrphanedRows(userId: String)
+    /**
+     * Rows queued by a build that did not record an owner: adopted by the account restored at the first launch after
+     * the upgrade, and dropped on every later call, so they can never move to a different account.
+     */
+    suspend fun resolveOrphanedRows(userId: String)
+
+    /**
+     * Everything here belongs to the account that was signed in: queued work, dead letters, the due-review cache and
+     * the last-known progress. The next account on this device starts with none of it.
+     */
+    suspend fun clearAll()
 
     /**
      * Applies a whole sync pass: removes what synced, keeps what was rescheduled with its new attempt count and time,
@@ -30,11 +41,15 @@ interface SyncQueueStore {
      */
     suspend fun applySyncResult(result: SyncResult, nowMillis: Long)
 
-    val pendingLessonCount: Flow<Int>
-    val pendingReviewGradeCount: Flow<Int>
+    /** What is waiting for this account (0 with no account). */
+    fun pendingLessonCount(userId: String?): Flow<Int>
+    fun pendingReviewGradeCount(userId: String?): Flow<Int>
 
-    /** Items the server will never accept, newest last. The Learn tab shows a notice with a support address. */
-    val deadLetters: Flow<List<DeadLetterInfo>>
+    /** Emits whenever something is queued or leaves the queue, so the sync wake-up can be re-armed. */
+    val queueChanges: Flow<Pair<Int, Int>>
+
+    /** Lesson completions the server will never accept for this account, newest first. The Learn tab shows a notice with a support address. */
+    fun lessonDeadLetters(userId: String?): Flow<List<DeadLetterInfo>>
 
     suspend fun lastKnownDueReviews(): List<ReviewItem>
     /** Replaces the whole cache after an authoritative online fetch. */
@@ -54,6 +69,8 @@ class RoomSyncQueueStore(
     private val dao: SyncDao,
     /** Plan 4: the widget publisher; every progress update funnels through here, as WidgetProgressPublisher does on iOS. */
     private val onProgressUpdated: suspend (LessonCompletionProgress) -> Unit = {},
+    /** Runs the block as one database transaction (AppContainer passes the database's). */
+    private val inTransaction: suspend (suspend () -> Unit) -> Unit = { it() },
     /** Last on purpose: a trailing lambda at call sites is the clock (SyncQueueStoreTest passes one). */
     private val now: () -> Long = System::currentTimeMillis,
 ) : SyncQueueStore {
@@ -69,31 +86,51 @@ class RoomSyncQueueStore(
         synced.forEach { dao.deleteReviewGrade(it.itemKey, it.queuedAt) }
     }
 
-    override suspend fun adoptOrphanedRows(userId: String) {
-        dao.adoptLessonCompletions(userId)
-        dao.adoptReviewGrades(userId)
+    override suspend fun resolveOrphanedRows(userId: String) = inTransaction {
+        val state = dao.syncState() ?: AppSyncStateRecord()
+        if (state.orphansResolved) {
+            dao.deleteOwnerlessLessonCompletions()
+            dao.deleteOwnerlessReviewGrades()
+        } else {
+            dao.adoptLessonCompletions(userId)
+            dao.adoptReviewGrades(userId)
+            dao.upsertSyncState(state.copy(orphansResolved = true))
+        }
     }
 
-    override suspend fun applySyncResult(result: SyncResult, nowMillis: Long) {
+    override suspend fun clearAll() = inTransaction {
+        dao.clearLessonCompletions()
+        dao.clearReviewGrades()
+        dao.clearCachedDueReviews()
+        dao.clearDeadLetters()
+        dao.clearSyncState()
+        // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
+        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+    }
+
+    override suspend fun applySyncResult(result: SyncResult, nowMillis: Long) = inTransaction {
         removeSyncedLessonCompletions(result.syncedLessonCompletions)
         removeSyncedReviewGrades(result.syncedReviewGrades)
         result.rescheduledLessonCompletions.forEach { dao.rescheduleLessonCompletion(it.lessonId, it.course, it.queuedAt, it.attemptCount, it.nextAttemptAt ?: nowMillis) }
         result.rescheduledReviewGrades.forEach { dao.rescheduleReviewGrade(it.itemKey, it.course, it.queuedAt, it.attemptCount, it.nextAttemptAt ?: nowMillis) }
         result.deadLetteredLessonCompletions.forEach {
-            dao.insertDeadLetter(DeadLetterRecord(kind = "lesson", identity = it.item.queueIdentity, reason = it.reason, deadAt = nowMillis))
+            dao.insertDeadLetter(DeadLetterRecord(kind = "lesson", identity = it.item.queueIdentity, reason = it.reason, deadAt = nowMillis, ownerUserId = it.item.ownerUserId))
             dao.deleteLessonCompletion(it.item.lessonId, it.item.queuedAt)
         }
         result.deadLetteredReviewGrades.forEach {
-            dao.insertDeadLetter(DeadLetterRecord(kind = "grade", identity = it.item.queueIdentity, reason = it.reason, deadAt = nowMillis))
+            dao.insertDeadLetter(DeadLetterRecord(kind = "grade", identity = it.item.queueIdentity, reason = it.reason, deadAt = nowMillis, ownerUserId = it.item.ownerUserId))
             dao.deleteReviewGrade(it.item.itemKey, it.item.queuedAt)
         }
         removeSyncedLessonCompletions(result.droppedForeignLessonCompletions)
         removeSyncedReviewGrades(result.droppedForeignReviewGrades)
+        dao.trimDeadLetters()
     }
 
-    override val pendingLessonCount: Flow<Int> get() = dao.pendingLessonCompletionCount()
-    override val pendingReviewGradeCount: Flow<Int> get() = dao.pendingReviewGradeCount()
-    override val deadLetters: Flow<List<DeadLetterInfo>> get() = dao.deadLetters().map { rows -> rows.map { DeadLetterInfo(it.identity, it.reason) } }
+    override fun pendingLessonCount(userId: String?): Flow<Int> = if (userId == null) flowOf(0) else dao.pendingLessonCompletionCountFor(userId)
+    override fun pendingReviewGradeCount(userId: String?): Flow<Int> = if (userId == null) flowOf(0) else dao.pendingReviewGradeCountFor(userId)
+    override val queueChanges: Flow<Pair<Int, Int>> get() = combine(dao.pendingLessonCompletionCount(), dao.pendingReviewGradeCount()) { l, g -> l to g }
+    override fun lessonDeadLetters(userId: String?): Flow<List<DeadLetterInfo>> =
+        if (userId == null) flowOf(emptyList()) else dao.lessonDeadLetters(userId).map { rows -> rows.map { DeadLetterInfo(it.identity, it.reason) } }
 
     override suspend fun lastKnownDueReviews() = dao.cachedDueReviews().map { it.asReviewItem() }
     override suspend fun replaceLastKnownDueReviews(items: List<ReviewItem>) {

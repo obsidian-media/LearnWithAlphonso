@@ -33,6 +33,13 @@ object DeadLetterNotice {
     const val CONTACT_TITLE = "Contact support"
     const val DISMISS_TITLE = "Dismiss"
 
+    /**
+     * The dismissals worth keeping given the dead letters that exist now. An empty list says nothing: the Learn tab's
+     * flow starts empty before its first read, and pruning against it would forget every dismissal.
+     */
+    fun reconcile(dismissed: Set<String>, present: List<String>): Set<String> =
+        if (present.isEmpty()) dismissed else dismissed.intersect(present.toSet())
+
     fun visible(lessonIdentities: List<String>, dismissed: Set<String>): List<String> = lessonIdentities.filter { it !in dismissed }
 
     fun message(count: Int): String? = when {

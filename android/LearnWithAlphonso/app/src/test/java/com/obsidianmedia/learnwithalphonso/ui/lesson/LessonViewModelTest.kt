@@ -29,10 +29,10 @@ class LessonViewModelTest {
     private val lesson = testContent.findLesson("u1l1", Course.ENGLISH)!!.second
     private var tier: String? = "bronze"
 
-    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true) = LessonViewModel(
+    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1") = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
         isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
-        ownerUserId = { "u1" },
+        ownerUserId = { owner },
     )
 
     private suspend fun playThrough(v: LessonViewModel) {
@@ -344,5 +344,34 @@ class LessonViewModelTest {
         assertTrue(finished.isLeaguePromotion)
         assertEquals("silver", tier)
         assertEquals("perfect", finished.result.heartsBonus)
+    }
+
+    private fun unauthorizedServer() = FakeServer { req ->
+        when {
+            req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+            req.path.endsWith("complete-lesson") -> json("""{"error":"jwt expired"}""", HttpStatusCode.Unauthorized)
+            else -> json("[]")
+        }
+    }
+
+    @Test
+    fun `a 401 at the finish line while still signed in is queued, not reported as signed out`() = runBlocking {
+        // The refresh could not reach the server, so the request stayed a 401: the lesson is not lost and not "signed out".
+        val store = MemorySyncStore()
+        val v = vm(unauthorizedServer(), store, owner = "u1")
+        playThrough(v)
+        awaitTrue("queued") { v.state.value.phase is LessonPhase.QueuedOffline }
+        assertEquals(1, store.completions.size)
+        assertEquals("u1", store.completions.single().ownerUserId)
+    }
+
+    @Test
+    fun `a 401 at the finish line with no session left says signed out and queues nothing`() = runBlocking {
+        val store = MemorySyncStore()
+        val v = vm(unauthorizedServer(), store, owner = null)
+        playThrough(v)
+        awaitTrue("failure shown") { v.state.value.phase is LessonPhase.SaveFailed }
+        assertTrue((v.state.value.phase as LessonPhase.SaveFailed).message.contains("signed out"))
+        assertTrue(store.completions.isEmpty())
     }
 }

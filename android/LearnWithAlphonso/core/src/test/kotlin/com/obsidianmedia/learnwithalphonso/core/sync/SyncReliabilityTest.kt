@@ -204,7 +204,7 @@ class SyncReliabilityTest {
                 req.path.endsWith("start-lesson-session") -> json("""{"token":"fresh"}""")
                 else -> {
                     completes++
-                    if (completes == 1) json("""{"error":"session-expired"}""", HttpStatusCode.Forbidden) else json(done)
+                    if (completes == 1) json("""{"error":"Invalid or expired lesson session"}""", HttpStatusCode.Forbidden) else json(done)
                 }
             }
         }
@@ -217,9 +217,10 @@ class SyncReliabilityTest {
 
     @Test
     fun `a 403 on a token minted just now is not retried forever`() = runTest {
-        val fake = lessonServer(complete = { """{"error":"forbidden"}""" to HttpStatusCode.Forbidden })
+        // The server's real 403 body is a sentence, not a code: it dead-letters with the generic reason.
+        val fake = lessonServer(complete = { """{"error":"Invalid or expired lesson session"}""" to HttpStatusCode.Forbidden })
         val result = sync(fake, listOf(completion(token = null)))
-        assertEquals("forbidden", result.deadLetteredLessonCompletions.single().reason)
+        assertEquals("rejected", result.deadLetteredLessonCompletions.single().reason)
         assertEquals(1, fake.seen.count { it.path.endsWith("complete-lesson") })
     }
 
@@ -325,5 +326,23 @@ class SyncReliabilityTest {
         assertTrue(uri.startsWith("mailto:support@alphonsoecosystem.app?subject=A%20lesson%20couldn%27t%20be%20saved&body="), uri)
         assertTrue(uri.contains("u1l1%7Cen%7C10%20%28lesson-version-mismatch%29"), uri)
         assertTrue(uri.contains("App%3A%201.2.3"), uri)
+    }
+
+    @Test
+    fun `a 401 that survives the refresh is connection trouble while the session is still there, signed out only when it is gone`() {
+        assertEquals(LessonCompletionError.Offline, LessonCompletionError.Unauthorized.whileSession(stillSignedIn = true))
+        assertEquals(LessonCompletionError.Unauthorized, LessonCompletionError.Unauthorized.whileSession(stillSignedIn = false))
+        // Only a 401 is reinterpreted: a rejection stays a rejection however the session looks.
+        val rejected = LessonCompletionError.Rejected("lesson-version-mismatch")
+        assertEquals(rejected, rejected.whileSession(stillSignedIn = true))
+        assertTrue(LessonCompletionError.Unauthorized.whileSession(stillSignedIn = true).shouldQueue)
+    }
+
+    @Test
+    fun `dismissals are only forgotten against a non-empty list of dead letters`() {
+        val dismissed = setOf("a", "b")
+        // The Learn tab's flow starts empty before its first read: that says nothing about what exists.
+        assertEquals(dismissed, DeadLetterNotice.reconcile(dismissed, emptyList()))
+        assertEquals(setOf("a"), DeadLetterNotice.reconcile(dismissed, listOf("a", "c")))
     }
 }

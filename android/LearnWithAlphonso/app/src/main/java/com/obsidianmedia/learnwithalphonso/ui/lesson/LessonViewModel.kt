@@ -273,7 +273,8 @@ class LessonViewModel(
             )
             val error = outcome.exceptionOrNull()
             if (error != null) {
-                val classified = LessonCompletionError.classify(error)
+                // A refresh that could not reach the server leaves the session in place: that is connection trouble, not a sign-out.
+                val classified = LessonCompletionError.classify(error).whileSession(stillSignedIn = ownerUserId() != null)
                 when (classified.finishDisposition) {
                     // Everything waiting can fix is queued and said to be saved; a rejection is never called offline.
                     LessonCompletionError.FinishDisposition.QUEUE -> queueOffline(classified)

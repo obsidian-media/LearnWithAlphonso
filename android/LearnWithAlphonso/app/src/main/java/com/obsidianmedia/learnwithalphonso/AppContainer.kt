@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
 import com.obsidianmedia.learnwithalphonso.audio.MicPermission
 import com.obsidianmedia.learnwithalphonso.audio.RecordingState
@@ -124,7 +125,7 @@ class AppContainer(context: Context) {
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
         .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3)
         .build()
-    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) })
+    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } })
 
     val syncCoordinator = SyncCoordinator(
         store = syncStore,
@@ -132,7 +133,7 @@ class AppContainer(context: Context) {
         currentUserId = { session.userId },
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
-    )
+    ).also { it.start(connectivity.isConnected) }
 
     // ---- Plan 4: podcasts, reminders, push ----
 

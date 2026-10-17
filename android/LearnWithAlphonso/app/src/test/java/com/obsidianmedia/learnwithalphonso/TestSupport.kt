@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
@@ -130,7 +131,10 @@ class FakeServer(private val respond: suspend MockRequestHandleScope.(SeenReques
     }
 }
 
-/** In-memory SyncQueueStore for view-model tests. */
+/**
+ * In-memory SyncQueueStore for view-model tests. Its suspend functions yield first, like a database call: a caller that
+ * has been cancelled finds out at the next one, which is what a real store does and what hid the self-cancelling wake-up.
+ */
 class MemorySyncStore : SyncQueueStore {
     val completions: MutableList<PendingLessonCompletion> = Collections.synchronizedList(ArrayList())
     val grades: MutableList<PendingReviewGrade> = Collections.synchronizedList(ArrayList())
@@ -138,18 +142,47 @@ class MemorySyncStore : SyncQueueStore {
     private val progressFlow = MutableStateFlow<LessonCompletionProgress?>(null)
     var syncedAt: Long? = null
 
-    override suspend fun pendingLessonCompletions() = completions.sortedBy { it.queuedAt }
-    override suspend fun appendLessonCompletion(pending: PendingLessonCompletion) { completions.add(pending); counts.value = completions.size to grades.size }
-    override suspend fun removeSyncedLessonCompletions(synced: List<PendingLessonCompletion>) { completions.removeAll(synced.toSet()); counts.value = completions.size to grades.size }
-    override suspend fun pendingReviewGrades() = grades.sortedBy { it.queuedAt }
-    override suspend fun appendReviewGrade(pending: PendingReviewGrade) { grades.add(pending); counts.value = completions.size to grades.size }
-    override suspend fun removeSyncedReviewGrades(synced: List<PendingReviewGrade>) { grades.removeAll(synced.toSet()); counts.value = completions.size to grades.size }
-    val deadLetterRows: MutableList<com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo> = Collections.synchronizedList(ArrayList())
-    override suspend fun adoptOrphanedRows(userId: String) {
-        synchronized(completions) { completions.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
-        synchronized(grades) { grades.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
+    /** Dead letters in the order they were written (oldest first). */
+    class DeadRow(val kind: String, val identity: String, val reason: String, val ownerUserId: String?)
+    val deadRows: MutableList<DeadRow> = Collections.synchronizedList(ArrayList())
+    val deadLetterRows get() = deadRows.map { com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo(it.identity, it.reason) }
+
+    var orphansResolved = false
+    var clearedAll = 0
+    private val counts = MutableStateFlow(0 to 0)
+    private val deadFlow = MutableStateFlow(0)
+    private fun publish() { counts.value = completions.size to grades.size }
+
+    override suspend fun pendingLessonCompletions(): List<PendingLessonCompletion> { yield(); return completions.sortedBy { it.queuedAt } }
+    override suspend fun appendLessonCompletion(pending: PendingLessonCompletion) { yield(); completions.add(pending); publish() }
+    override suspend fun removeSyncedLessonCompletions(synced: List<PendingLessonCompletion>) { yield(); completions.removeAll(synced.toSet()); publish() }
+    override suspend fun pendingReviewGrades(): List<PendingReviewGrade> { yield(); return grades.sortedBy { it.queuedAt } }
+    override suspend fun appendReviewGrade(pending: PendingReviewGrade) { yield(); grades.add(pending); publish() }
+    override suspend fun removeSyncedReviewGrades(synced: List<PendingReviewGrade>) { yield(); grades.removeAll(synced.toSet()); publish() }
+
+    override suspend fun resolveOrphanedRows(userId: String) {
+        yield()
+        if (orphansResolved) {
+            completions.removeAll { it.ownerUserId == null }
+            grades.removeAll { it.ownerUserId == null }
+        } else {
+            synchronized(completions) { completions.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
+            synchronized(grades) { grades.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
+            orphansResolved = true
+        }
+        publish()
     }
+
+    override suspend fun clearAll() {
+        yield()
+        completions.clear(); grades.clear(); deadRows.clear(); due.value = emptyList(); progressFlow.value = null; syncedAt = null
+        orphansResolved = true
+        clearedAll++
+        publish(); deadFlow.value++
+    }
+
     override suspend fun applySyncResult(result: com.obsidianmedia.learnwithalphonso.core.sync.SyncResult, nowMillis: Long) {
+        yield()
         fun lesson(p: PendingLessonCompletion) = p.lessonId to p.queuedAt
         fun grade(p: PendingReviewGrade) = p.itemKey to p.queuedAt
         val gone = (result.syncedLessonCompletions + result.deadLetteredLessonCompletions.map { it.item } + result.droppedForeignLessonCompletions).map(::lesson).toSet()
@@ -158,15 +191,22 @@ class MemorySyncStore : SyncQueueStore {
         val goneGrades = (result.syncedReviewGrades + result.deadLetteredReviewGrades.map { it.item } + result.droppedForeignReviewGrades).map(::grade).toSet()
         grades.removeAll { grade(it) in goneGrades }
         result.rescheduledReviewGrades.forEach { r -> grades.replaceAll { if (grade(it) == grade(r)) r else it } }
-        result.deadLetteredLessonCompletions.forEach { deadLetterRows.add(com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo(it.item.queueIdentity, it.reason)) }
-        result.deadLetteredReviewGrades.forEach { deadLetterRows.add(com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo(it.item.queueIdentity, it.reason)) }
-        counts.value = completions.size to grades.size
+        result.deadLetteredLessonCompletions.forEach { deadRows.add(DeadRow("lesson", it.item.queueIdentity, it.reason, it.item.ownerUserId)) }
+        result.deadLetteredReviewGrades.forEach { deadRows.add(DeadRow("grade", it.item.queueIdentity, it.reason, it.item.ownerUserId)) }
+        while (deadRows.size > 50) deadRows.removeAt(0)
+        publish(); deadFlow.value++
     }
-    private val counts = MutableStateFlow(0 to 0)
-    override val pendingLessonCount get() = counts.map { it.first }
-    override val pendingReviewGradeCount get() = counts.map { it.second }
-    override val deadLetters get() = MutableStateFlow(deadLetterRows.toList())
-    override suspend fun lastKnownDueReviews() = due.value
+
+    override fun pendingLessonCount(userId: String?) =
+        counts.map { userId?.let { u -> completions.count { c -> c.ownerUserId == null || c.ownerUserId == u } } ?: 0 }
+    override fun pendingReviewGradeCount(userId: String?) =
+        counts.map { userId?.let { u -> grades.count { g -> g.ownerUserId == null || g.ownerUserId == u } } ?: 0 }
+    override val queueChanges get() = counts
+    override fun lessonDeadLetters(userId: String?) = deadFlow.map {
+        deadRows.filter { r -> r.kind == "lesson" && userId != null && r.ownerUserId == userId }.reversed()
+            .map { r -> com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo(r.identity, r.reason) }
+    }
+    override suspend fun lastKnownDueReviews(): List<ReviewItem> { yield(); return due.value }
     override suspend fun replaceLastKnownDueReviews(items: List<ReviewItem>) { due.value = items }
     override suspend fun removeCachedDueReview(itemKey: String) { due.value = due.value.filterNot { it.itemKey == itemKey } }
     override val dueCount get() = due.map { it.size }
