@@ -36,7 +36,7 @@ class ConversationViewModelsTest {
     private fun server(transcript: String = "I would like a coffee", chatError: Boolean = false) = FakeServer { req ->
         when {
             req.path.endsWith("/api/stt") -> json("""{"text":"$transcript","confidence":0.9}""")
-            req.path.endsWith("/api/chat") -> if (chatError) json("""{"error":"AI quota reached for today"}""", HttpStatusCode.TooManyRequests) else json("""{"content":"Certainly, what size?"}""")
+            req.path.endsWith("/api/chat") -> if (chatError) json("""{"error":"quota-exceeded","resetsAt":null,"message":"AI quota reached for today"}""", HttpStatusCode.TooManyRequests) else json("""{"content":"Certainly, what size?"}""")
             req.path.endsWith("/api/tts") -> respond(byteArrayOf(1, 2, 3), HttpStatusCode.OK)
             req.path.endsWith("/api/analyze-weaknesses") -> json("""{"weaknessesDetected":1}""")
             req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B1"}]""")
@@ -69,11 +69,11 @@ class ConversationViewModelsTest {
     }
 
     @Test
-    fun `a server error message from chat is shown verbatim`() = runBlocking {
+    fun `a quota error from chat shows the quota copy, never the raw server text`() = runBlocking {
         val v = scenarioVm(server(chatError = true))
         v.pressBegan(); v.pressEnded()
         awaitTrue("error") { v.state.value.error != null }
-        assertEquals("AI quota reached for today", v.state.value.error)
+        assertEquals("You've reached today's AI practice limit. Try again tomorrow.", v.state.value.error)
         assertEquals(2, v.state.value.turns.size)
     }
 
