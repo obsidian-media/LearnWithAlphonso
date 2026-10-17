@@ -92,7 +92,7 @@ final class VoiceSessionController {
         runHandsFree(handsFree.handle(on ? .enable : .disable))
         // Only a session hands-free was holding is handed back: leaving any other voice screen must not stop a
         // podcast or a lesson's speech that is still playing.
-        if !on, wasOn, state.phase.generation == nil { deactivateSession() }
+        if !on, wasOn, state.phase.isQuiet { deactivateSession() }
     }
 
     /// The finished turn's transcript was empty (noise, not speech): hands-free pauses instead of listening again.
@@ -173,7 +173,7 @@ final class VoiceSessionController {
         if status != handsFreeStatus {
             handsFreeStatus = status
             // Paused holds nothing: hand the session back so other apps' audio can resume.
-            if case .paused = status, state.phase.generation == nil { deactivateSession() }
+            if case .paused = status, state.phase.isQuiet { deactivateSession() }
         }
         updateLevelSampling()
     }
