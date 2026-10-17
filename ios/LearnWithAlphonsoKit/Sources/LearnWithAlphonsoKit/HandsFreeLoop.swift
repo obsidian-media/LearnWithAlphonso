@@ -7,11 +7,14 @@ import Foundation
 /// timestamp, and performs the effects through the existing `VoiceSessionController` (`beginTurn` is a press,
 /// `endTurn` a release, `cancelTurn` an interruption). Nothing here touches audio.
 ///
-/// Safety and privacy rules it enforces:
-/// - it never opens the microphone on its own after a failure (a failed turn pauses hands-free);
-/// - a turn in which nobody speaks for `noSpeechTimeout` is cancelled and hands-free pauses, so the microphone is
-///   never left open indefinitely; one tap resumes;
-/// - a turn is capped at `maxTurn` seconds.
+/// Safety and privacy rules it enforces (each pauses hands-free; one tap resumes):
+/// - a failure, a refused microphone, a phone call, Siri or lost earbuds;
+/// - a turn in which nobody speaks for `noSpeechTimeout` (cancelled, nothing sent);
+/// - a turn still going after `maxTurn` (cancelled, nothing sent: continuous sound for that long is a TV or a
+///   crowd far more often than a learner);
+/// - a turn whose transcript came back empty (background noise, not speech);
+/// - `maxTurnsWithoutTouch` turns in a row without the learner touching the screen.
+/// So a noisy room cannot keep sending bystanders' audio indefinitely.
 public struct HandsFreeLoop: Equatable, Sendable {
     public struct Tuning: Equatable, Sendable {
         /// How far above the measured background level counts as speech.
@@ -29,8 +32,12 @@ public struct HandsFreeLoop: Equatable, Sendable {
         public var endOfTurnSilence: TimeInterval = 1.2
         /// Nothing said for this long: cancel the turn and pause hands-free.
         public var noSpeechTimeout: TimeInterval = 8
-        /// A turn never runs longer than this.
+        /// A turn still going after this is cancelled and hands-free pauses.
         public var maxTurn: TimeInterval = 30
+        /// Readings below this are the recorder warming up (it reports -160 before any audio), not the room.
+        public var ignoreBelow: Double = -100
+        /// Turns in a row without a touch before hands-free pauses.
+        public var maxTurnsWithoutTouch = 20
 
         public init() {}
     }
@@ -44,6 +51,10 @@ public struct HandsFreeLoop: Equatable, Sendable {
         case voicePhase(VoicePhase)
         /// One recorder level sample while recording.
         case level(dBFS: Double, at: TimeInterval)
+        /// The finished turn's transcript was empty: it was noise, not speech.
+        case turnHadNoWords
+        /// A phone call, Siri or another app took the audio, or the earbuds were removed.
+        case audioInterrupted
     }
 
     public enum Effect: Equatable, Sendable {
@@ -67,6 +78,10 @@ public struct HandsFreeLoop: Equatable, Sendable {
         case byLearner
         case noSpeech
         case failure
+        case longTurn
+        case noWords
+        case turnLimit
+        case interrupted
     }
 
     public let tuning: Tuning
@@ -78,6 +93,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
     private var lastLoudAt: TimeInterval?
     private var heardSpeech = false
     private var turnEnding = false
+    private var turnsWithoutTouch = 0
 
     public init(tuning: Tuning = Tuning()) {
         self.tuning = tuning
@@ -90,6 +106,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
         case .enable:
             guard status == .off else { return [] }
             status = .waiting
+            turnsWithoutTouch = 0
             return startIfReady()
 
         case .disable:
@@ -104,6 +121,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
                 return []
             case .paused:
                 status = .waiting
+                turnsWithoutTouch = 0
                 return startIfReady()
             case .waiting, .listening, .hearing:
                 let wasRecording = isRecording
@@ -112,7 +130,22 @@ public struct HandsFreeLoop: Equatable, Sendable {
                 return wasRecording ? [.cancelTurn] : []
             }
 
+        case .turnHadNoWords:
+            guard isOn else { return [] }
+            if case .paused = status { return [] }
+            status = .paused(.noWords)
+            return []
+
+        case .audioInterrupted:
+            guard isOn else { return [] }
+            if case .paused = status { return [] }
+            // The voice engine cancels the recording or reply itself; this only stops the next turn.
+            status = .paused(.interrupted)
+            resetTurn()
+            return []
+
         case let .voicePhase(next):
+            // Always recorded, even while off, so turning hands-free on mid-reply waits for the reply to end.
             let previous = phase
             phase = next
             guard isOn else { return [] }
@@ -145,6 +178,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
 
         case let .level(dBFS, at):
             guard isRecording, status == .listening || status == .hearing, !turnEnding else { return [] }
+            guard dBFS >= tuning.ignoreBelow else { return [] }
             if turnStartedAt == nil { turnStartedAt = at }
             let started = turnStartedAt ?? at
 
@@ -170,7 +204,8 @@ public struct HandsFreeLoop: Equatable, Sendable {
 
             if at - started >= tuning.maxTurn {
                 turnEnding = true
-                return heardSpeech ? [.endTurn] : cancelForNoSpeech()
+                status = .paused(heardSpeech ? .longTurn : .noSpeech)
+                return [.cancelTurn]
             }
             if heardSpeech, let last = lastLoudAt, at - last >= tuning.endOfTurnSilence {
                 turnEnding = true
@@ -190,7 +225,17 @@ public struct HandsFreeLoop: Equatable, Sendable {
     }
 
     private mutating func startIfReady() -> [Effect] {
-        guard status == .waiting, phase == .idle else { return [] }
+        guard status == .waiting else { return [] }
+        // The voice engine accepts a new press from idle or after a failure.
+        switch phase {
+        case .idle, .failed: break
+        default: return []
+        }
+        turnsWithoutTouch += 1
+        if turnsWithoutTouch > tuning.maxTurnsWithoutTouch {
+            status = .paused(.turnLimit)
+            return []
+        }
         return [.beginTurn]
     }
 
@@ -213,7 +258,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
 public enum HandsFreeCopy {
     public static let toggle = "Hands-free"
     public static let firstUseTitle = "Talk without holding the button"
-    public static let firstUseBody = "Hector listens after each reply and answers when you pause. It keeps working with the screen locked. It stops listening after 8 seconds of quiet. Don't use it while driving or anywhere you need your full attention."
+    public static let firstUseBody = "Hector listens after each reply and answers when you pause, also with the screen locked. It pauses after 8 seconds of quiet, after background noise, and after 20 turns, and anything it hears is sent for transcription like a held recording. Don't use it while driving or anywhere you need your full attention."
     public static let firstUseConfirm = "Turn on hands-free"
     public static let listening = "Listening. Just talk."
     public static let hearing = "Hearing you..."
@@ -221,6 +266,10 @@ public enum HandsFreeCopy {
     public static let pausedByLearner = "Hands-free is paused."
     public static let pausedNoSpeech = "Paused because nobody spoke. Tap Resume to keep talking."
     public static let pausedFailure = "Paused after a problem. Tap Resume to try again."
+    public static let pausedLongTurn = "Paused after a very long turn. Tap Resume to keep talking."
+    public static let pausedNoWords = "Paused because it only heard background noise. Tap Resume to keep talking."
+    public static let pausedTurnLimit = "Paused after 20 turns. Tap Resume to keep talking."
+    public static let pausedInterrupted = "Paused because the audio was interrupted. Tap Resume to keep talking."
     public static let pause = "Pause"
     public static let resume = "Resume"
 
@@ -233,6 +282,10 @@ public enum HandsFreeCopy {
         case .paused(.byLearner): return pausedByLearner
         case .paused(.noSpeech): return pausedNoSpeech
         case .paused(.failure): return pausedFailure
+        case .paused(.longTurn): return pausedLongTurn
+        case .paused(.noWords): return pausedNoWords
+        case .paused(.turnLimit): return pausedTurnLimit
+        case .paused(.interrupted): return pausedInterrupted
         }
     }
 }
