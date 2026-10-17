@@ -30,7 +30,7 @@ describe("start-lesson-session hearts gate", () => {
 });
 
 describe("complete-lesson version mismatch", () => {
-  const src = read("supabase/functions/complete-lesson/index.ts");
+  const src = read("supabase/functions/complete-lesson/handler.ts");
   it("returns 409 lesson-version-mismatch and no longer 400s a mismatched payload", () => {
     expect(src).toMatch(/lessonPayloadMatches\(found, total, answers\)/);
     expect(src).toMatch(/jsonResponse\(\{ error: "lesson-version-mismatch" \}, 409\)/);

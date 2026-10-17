@@ -235,6 +235,12 @@ jobs:
 
       - name: Test complete-lesson's lesson-version rule
         run: deno test supabase/functions/complete-lesson/lesson-version.test.ts
+      # Drives the real complete-lesson handler (handler.ts) with fake dependencies: no network, no database.
+      # Also type-checks the deployed entry point, which nothing else in CI did.
+      - name: Test the complete-lesson handler
+        run: |
+          deno check supabase/functions/complete-lesson/index.ts
+          deno test supabase/functions/complete-lesson/handler.test.ts
 
       - name: Test the shared FCM sender (Android push)
         # No network and no key material: the test generates its own RSA key
