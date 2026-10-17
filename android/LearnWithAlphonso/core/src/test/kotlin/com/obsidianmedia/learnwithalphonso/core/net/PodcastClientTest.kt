@@ -65,6 +65,15 @@ class PodcastClientTest {
     }
 
     @Test
+    fun `a server-format stamp with a plus sign is sent percent-encoded so it still matches`() = runTest {
+        val fake = FakeSupabase { json("""[{"position_seconds":30,"updated_at":"2026-09-24T10:00:08+00:00"}]""") }
+        client(fake).savePlaybackPosition("e1", 30, false, "2026-09-24T10:00:07.123456+00:00")
+        val encoded = fake.seen.single().encodedQuery
+        assertTrue(encoded.contains("%2B"), encoded)
+        assertTrue(!encoded.contains("+00:00"), "a literal plus would decode as a space on the server")
+    }
+
+    @Test
     fun `episodes carry the source, and only a tts source is AI-narrated`() = runTest {
         fun row(id: String, source: String?) = episodeRow(id).dropLast(1) + (if (source == null) ""","source":null}""" else ""","source":"$source"}""")
         val fake = FakeSupabase { req -> if (req.path.endsWith("podcast_episodes")) json("[${row("e1", "tts")},${row("e2", "upload")},${row("e3", null)}]") else json("[]") }

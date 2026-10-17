@@ -137,6 +137,8 @@ fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: S
 private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId: String?, onOpenFolder: (String) -> Unit) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
+    // Rows show what this device last stored: refresh them when that changes (for example after closing the player).
+    val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
     val scope = rememberCoroutineScope()
     val children = PodcastTree.children(folderId, state.folders)
     val episodes = folderId?.let { state.episodesByFolder[it] } ?: emptyList()
@@ -149,7 +151,7 @@ private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId
         }
         items(episodes, key = { "e-" + it.id }) { episode ->
             // The list is a snapshot from when the folder opened: show the position this device last stored, if newer.
-            val shown = container.podcastPlayer.resumed(episode)
+            val shown = remember(positionsRevision, episode) { container.podcastPlayer.resumed(episode) }
             EpisodeRow(container, shown, subtitle = PodcastLabel.rowSubtitle(shown.durationSeconds, resume = shown.positionSeconds > 0, aiNarrated = shown.aiNarrated), onPlay = { scope.launch { play(container, episode, episodes) } })
         }
         if (children.isEmpty() && episodes.isEmpty() && !loading) {

@@ -31,6 +31,9 @@ interface PlayerPort {
     /** Media duration when known, else null (the row's duration is the fallback). */
     fun durationMillis(): Long?
     fun release()
+
+    /** Stops playback and clears the loaded item, so a headset or notification button cannot replay it. */
+    fun stop()
     var onTick: (Double) -> Unit
     var onEnded: () -> Unit
     /** The player's own play state: the system pauses on focus loss and unplugged headphones without us asking. */
@@ -84,6 +87,9 @@ class PodcastPlayer(
 
     /** The episode as the learner should see it: with the position this device last stored, if newer. */
     fun resumed(episode: PodcastEpisode): PodcastEpisode = savedPositions.applying(episode)
+
+    /** Changes whenever what this device remembers does, so a list showing [resumed] rows recomposes. */
+    val positionsRevision: StateFlow<Int> get() = savedPositions.revision
 
     init {
         port.onTick = ::tick
@@ -155,7 +161,7 @@ class PodcastPlayer(
         saveJob = null
         saveGate.resetForAccountChange()
         savedPositions.reset()
-        if (_state.value.episode != null) port.pause()
+        port.stop()
         tracker.reset()
         _state.value = PodcastPlayerState()
     }

@@ -36,6 +36,7 @@ class FakePort : PlayerPort {
     override fun currentMillis() = position
     override fun durationMillis() = duration
     override fun release() { calls.add("release") }
+    override fun stop() { calls.add("stop") }
 }
 
 class PodcastPlayerTest {
@@ -246,10 +247,14 @@ class PodcastPlayerTest {
         p.stopForAccountChange()
         assertNull(p.state.value.episode)
         assertFalse(p.state.value.isPlaying)
-        assertTrue(port.calls.contains("pause"))
+        assertTrue("the loaded item is cleared, so a headset or notification button cannot replay it", port.calls.contains("stop"))
         hold.complete(Unit)
         Thread.sleep(150)
         assertEquals("the chained save of the previous account never ran", 1, saves(s).size)
+        // The in-flight save of the previous account finished after the sign-out: account B inherits neither its position nor its stamp.
+        val unrelated = p.resumed(episode(position = 0, updatedAt = null))
+        assertEquals(0, unrelated.positionSeconds)
+        assertNull(unrelated.playbackUpdatedAt)
         assertEquals("the old account's stamp is not remembered", listed, p.resumed(listed))
         // A new account plays from a clean gate.
         p.play(episode("e1", updatedAt = "N0"))

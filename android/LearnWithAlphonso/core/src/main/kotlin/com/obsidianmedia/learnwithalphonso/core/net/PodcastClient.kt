@@ -33,8 +33,8 @@ sealed class PodcastClientError(message: String) : Exception(message) {
 
 /**
  * Port of PodcastClient.swift over the shared SupabaseHttp seam. One
- * deliberate difference: a first save POSTs `user_id` too, as the web upsert
- * does, because podcast_playback.user_id has no column default.
+ * deliberate difference: a first save still sends `user_id`, as the web upsert does. The column has defaulted to
+ * auth.uid() since migration 20261012500000 (iOS relies on that), so it is redundant now and harmless.
  */
 class PodcastClient(
     private val http: SupabaseHttp,

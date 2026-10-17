@@ -109,6 +109,22 @@ class PodcastSavedPositionsTest {
     }
 
     @Test
+    fun `the revision moves whenever what is remembered changes, so a list can refresh`() {
+        val p = PodcastSavedPositions()
+        val start = p.revision.value
+        p.record("e1", 10, "a")
+        assertEquals(start + 1, p.revision.value)
+        p.record("e1", 20, null)
+        assertEquals(start + 1, p.revision.value, "a save with no stamp changes nothing")
+        p.noteSeen(ep(0, "a"))
+        assertEquals(start + 1, p.revision.value, "seeing a stamp this device already knows changes nothing")
+        p.noteSeen(ep(0, "foreign"))
+        assertEquals(start + 2, p.revision.value)
+        p.reset()
+        assertEquals(start + 3, p.revision.value)
+    }
+
+    @Test
     fun `another account never inherits positions`() {
         val p = PodcastSavedPositions()
         p.record("e1", 120, "t1")

@@ -1333,7 +1333,7 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   stops the player on sign-out. `PodcastLabel` is the iOS helper: an episode
   is AI-narrated when `podcast_episodes.source = 'tts'` (selected by the
   episode and search queries), and the row subtitle is
-  "5:05 \u00B7 Resume \u00B7 AI-narrated" with the middle dot.
+  "5:05 · Resume · AI-narrated" with the middle dot.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

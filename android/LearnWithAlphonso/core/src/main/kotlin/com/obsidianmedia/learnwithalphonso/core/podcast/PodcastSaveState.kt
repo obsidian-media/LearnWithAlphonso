@@ -1,5 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.podcast
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
 /**
  * Bookkeeping for resume-position saves (PodcastSaveGate.swift, kept out of the app so it can be tested).
  *
@@ -81,6 +86,11 @@ class PodcastSaveGate(lastSeenUpdatedAt: String? = null) {
 class PodcastSavedPositions {
     private class Entry(val position: Int, val updatedAt: String, val known: Set<String>)
 
+    private val _revision = MutableStateFlow(0)
+
+    /** Changes whenever what this device remembers does, so a list showing resumed rows can refresh. */
+    val revision: StateFlow<Int> = _revision.asStateFlow()
+
     private val entries = HashMap<String, Entry>()
 
     /** Snapshot stamps seen at play time, kept until a save creates the entry they belong to. */
@@ -92,6 +102,7 @@ class PodcastSavedPositions {
         val known = (entries[episodeId]?.known ?: seenBeforeSave[episodeId] ?: emptySet()) + updatedAt
         entries[episodeId] = Entry(maxOf(0, position), updatedAt, known)
         seenBeforeSave.remove(episodeId)
+        _revision.update { it + 1 }
     }
 
     /** Playback started from this snapshot, so its stamp is part of this device's own history. */
@@ -104,6 +115,7 @@ class PodcastSavedPositions {
             if (stamp !in entry.known) {
                 entries.remove(episode.id)
                 seenBeforeSave[episode.id] = setOf(stamp)
+                _revision.update { it + 1 }
             }
         } else {
             seenBeforeSave[episode.id] = (seenBeforeSave[episode.id] ?: emptySet()) + stamp
@@ -117,6 +129,7 @@ class PodcastSavedPositions {
     fun reset() {
         entries.clear()
         seenBeforeSave.clear()
+        _revision.update { it + 1 }
     }
 
     fun applying(episode: PodcastEpisode): PodcastEpisode {

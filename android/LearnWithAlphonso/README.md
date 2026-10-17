@@ -47,7 +47,7 @@ reliability work, and the rest of the iOS podcast player work (the playback stat
 messages with Retry, download validation, and removing downloads of unpublished episodes).
 
 Ported on 2026-10-17, not yet run on a device: the "AI-narrated" label on Listen rows (episodes whose `source` is
-`tts`; "5:05 \u00B7 Resume \u00B7 AI-narrated", and "Downloaded \u00B7 AI-narrated" offline), and the iOS resume
+`tts`; "5:05 · Resume · AI-narrated", and "Downloaded · AI-narrated" offline), and the iOS resume
 reliability work: saves guard on the `updated_at` the server stored, run one at a time, pause after a stale write or a
 401 until the learner acts, remember what this device last stored per episode (so a stale list row never wins), still
 guard a save made after leaving an episode, and stop on sign-out.
