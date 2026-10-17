@@ -14,6 +14,7 @@ const episode = {
   audioUrl: "https://example.test/en/a1/ordering-coffee.mp3",
   durationSeconds: 300,
   positionSeconds: 0,
+  aiNarrated: true,
 };
 
 beforeEach(() => {
@@ -36,6 +37,16 @@ describe("PodcastPlayer (mini-bar)", () => {
     usePodcastPlayer.getState().play(episode);
     render(<PodcastPlayer />);
     expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
+  });
+
+  it("labels an AI-narrated episode, and not a recorded one", () => {
+    usePodcastPlayer.getState().play(episode);
+    const { unmount } = render(<PodcastPlayer />);
+    expect(screen.getByText("AI-narrated")).toBeInTheDocument();
+    unmount();
+    usePodcastPlayer.getState().play({ ...episode, id: "e2", aiNarrated: false });
+    render(<PodcastPlayer />);
+    expect(screen.queryByText("AI-narrated")).not.toBeInTheDocument();
   });
 
   it("shows elapsed time against the episode length", () => {
