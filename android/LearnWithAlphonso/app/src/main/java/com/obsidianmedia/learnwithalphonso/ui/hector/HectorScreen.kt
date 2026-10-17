@@ -56,11 +56,10 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
 import com.obsidianmedia.learnwithalphonso.core.logic.billingPeriodDescription
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
-import com.obsidianmedia.learnwithalphonso.core.net.AiConversationError
+import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
-import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationError
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
@@ -134,8 +133,7 @@ class HectorViewModel(
             reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
-            val message = (e as? TutorConversationError.Server)?.serverMessage ?: (e as? AiConversationError.Server)?.serverMessage
-            _state.update { it.copy(error = message?.takeIf { m -> m.isNotEmpty() } ?: "Something went wrong. Try again.", phase = ConversationPhase.IDLE) }
+            _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
         }
     }
 

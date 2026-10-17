@@ -71,16 +71,71 @@ class AiConversationClientTest {
     }
 
     @Test
-    fun `server errors surface the error field and generate-practice decodes questions`() = runBlocking {
-        val err = AiConversationClient(http(ArrayList()) { """{"error":"quota exhausted"}""".toByteArray() to HttpStatusCode.TooManyRequests })
+    fun `server errors carry the code and reset time apart from the detail, and generate-practice decodes questions`() = runBlocking {
+        val err = AiConversationClient(http(ArrayList()) {
+            """{"error":"quota-exceeded","resetsAt":"2026-10-17T00:00:00.000Z","message":"Daily limit"}""".toByteArray() to HttpStatusCode.TooManyRequests
+        })
         val e = runCatching { err.chat(listOf(ChatMessage("user", "x"))) }.exceptionOrNull() as AiConversationError.Server
         assertEquals(429, e.status)
-        assertEquals("quota exhausted", e.serverMessage)
+        assertEquals("quota-exceeded", e.code)
+        assertEquals("2026-10-17T00:00:00.000Z", e.resetsAt)
+        assertNull(e.serverMessage)
         val seen = ArrayList<Seen>()
         val ok = AiConversationClient(http(seen) { """{"questions":[{"prompt":"p","choices":["a","b"],"answerIndex":1,"explanation":"e"},{"prompt":"bad"}]}""".toByteArray() to HttpStatusCode.OK })
         val qs = ok.generatePractice("u1l1", "en")
         assertEquals(listOf(GeneratedPracticeQuestion("p", listOf("a", "b"), 1, "e")), qs)
         assertEquals("""{"lessonId":"u1l1","course":"en"}""", seen.single().body.decodeToString())
+    }
+
+    @Test
+    fun `chat retries once on an empty reply`() = runTest {
+        val seen = ArrayList<Seen>()
+        val c = AiConversationClient(http(seen) {
+            if (seen.size == 1) """{"error":"empty-reply"}""".toByteArray() to HttpStatusCode.BadGateway
+            else """{"content":"Hola"}""".toByteArray() to HttpStatusCode.OK
+        })
+        assertEquals("Hola", c.chat(listOf(ChatMessage("user", "hi"))))
+        assertEquals(2, seen.size)
+        assertEquals(seen[0].body.decodeToString(), seen[1].body.decodeToString())
+    }
+
+    @Test
+    fun `chat gives up after a second empty reply and does not retry other 502s`() = runTest {
+        val seen = ArrayList<Seen>()
+        val c = AiConversationClient(http(seen) { """{"error":"empty-reply"}""".toByteArray() to HttpStatusCode.BadGateway })
+        val e = runCatching { c.chat(listOf(ChatMessage("user", "hi"))) }.exceptionOrNull() as AiConversationError.Server
+        assertEquals("empty-reply", e.code)
+        assertEquals(2, seen.size)
+        assertEquals(AiErrorCopy.GENERIC, AiErrorCopy.userMessage(e))
+
+        val other = ArrayList<Seen>()
+        val c2 = AiConversationClient(http(other) { """{"error":"something-else"}""".toByteArray() to HttpStatusCode.BadGateway })
+        runCatching { c2.chat(listOf(ChatMessage("user", "hi"))) }
+        assertEquals(1, other.size)
+    }
+
+    @Test
+    fun `error copy matches iOS and web and never shows a machine code`() {
+        val now = java.time.Instant.parse("2026-10-16T20:00:00Z")
+        val utc = java.time.ZoneId.of("UTC")
+        fun msg(status: Int, code: String?, resetsAt: String? = null) =
+            AiErrorCopy.userMessage(AiConversationError.Server(status, null, code, resetsAt), now, utc)
+        assertEquals("You've reached today's AI practice limit. Try again tomorrow.", msg(429, "quota-exceeded"))
+        assertEquals("You've reached today's AI practice limit. It resets at 12:00 AM.", msg(429, "quota-exceeded", "2026-10-17T00:00:00.000Z"))
+        assertEquals("Too many requests. Wait a minute and try again.", msg(429, "quota-exceeded", "2026-10-16T20:01:00Z"))
+        assertEquals("Hector is part of Alphonso Pro.", msg(403, "not-entitled"))
+        assertEquals("We can't check your Pro access right now. Please try again shortly.", msg(503, "entitlement-unavailable"))
+        assertEquals("Turn on AI features to practise speaking with a tutor.", msg(403, "ai-consent-required"))
+        assertEquals("You've been signed out. Please sign in again.", msg(401, "unauthorized"))
+        // An upstream 429 without the quota code is not the learner's daily cap.
+        assertEquals(AiErrorCopy.GENERIC, msg(429, null))
+        assertEquals(AiErrorCopy.GENERIC, msg(502, "empty reply from model"))
+        assertEquals(
+            "Hector is part of Alphonso Pro.",
+            AiErrorCopy.userMessage(TutorConversationError.Server(403, null, "not-entitled"), now, utc),
+        )
+        assertEquals(AiErrorCopy.CONNECTION, AiErrorCopy.userMessage(java.io.IOException("offline"), now, utc))
+        assertEquals(AiErrorCopy.GENERIC, AiErrorCopy.userMessage(IllegalStateException("x"), now, utc))
     }
 
     @Test
@@ -105,9 +160,10 @@ class AiConversationClientTest {
         assertEquals("/api/hector-respond", seen.single().path)
         assertEquals("device-1", seen.single().headers["X-Alphonso-Device-Id"])
         assertEquals("""{"session_id":"s1","text":"hi","language":"en","agent_id":"tutor","tts_model":"magpie","piper_voice":"mana","history":[{"role":"user","content":"hi"}]}""", seen.single().body.decodeToString())
-        val down = TutorConversationClient(http(ArrayList()) { """{"detail":"tutor offline"}""".toByteArray() to HttpStatusCode.ServiceUnavailable }, "d")
+        val down = TutorConversationClient(http(ArrayList()) { """{"error":"tutor-unavailable","detail":"tutor offline"}""".toByteArray() to HttpStatusCode.ServiceUnavailable }, "d")
         val e = runCatching { down.respond("s", "t", "en", emptyList()) }.exceptionOrNull() as TutorConversationError.Server
         assertEquals("tutor offline", e.serverMessage)
+        assertEquals("tutor-unavailable", e.code)
         assertNull(TutorReply("", "", "", "x", "", "", "", "", "", null).audioBytes())
     }
 

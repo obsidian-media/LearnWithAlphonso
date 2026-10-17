@@ -8,7 +8,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
-import com.obsidianmedia.learnwithalphonso.core.net.AiConversationError
+import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import kotlinx.coroutines.CoroutineScope
@@ -86,8 +86,7 @@ abstract class BaseConversationViewModel(
             if (!player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
-            val message = (e as? AiConversationError.Server)?.serverMessage?.takeIf { it.isNotEmpty() } ?: "Something went wrong. Try again."
-            _state.update { it.copy(error = message, phase = ConversationPhase.IDLE) }
+            _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
         }
     }
 

@@ -24,8 +24,14 @@ data class SttResult(val text: String, val confidence: Double?)
 
 data class GeneratedPracticeQuestion(val prompt: String, val choices: List<String>, val answerIndex: Int, val explanation: String)
 
+/**
+ * `code` is the stable machine code from the body's `error` field (`quota-exceeded`, `not-entitled`, ...) and is
+ * never shown. `serverMessage` is only the human `detail` text, kept for diagnostics. Screens show
+ * [AiErrorCopy.userMessage], same split as the iOS Kit's TutorError.
+ */
 sealed class AiConversationError(message: String) : Exception(message) {
-    class Server(val status: Int, val serverMessage: String?) : AiConversationError("AI API returned $status")
+    class Server(val status: Int, val serverMessage: String?, val code: String? = null, val resetsAt: String? = null) :
+        AiConversationError("AI API returned $status")
     class InvalidPayload : AiConversationError("Unexpected AI response shape")
     class Timeout : AiConversationError("The request took too long")
 }
@@ -43,7 +49,14 @@ class AiConversationClient(private val http: ApiHttp) {
             if (systemPrompt != null) put("systemPrompt", systemPrompt)
             if (cefrLevel != null) put("cefrLevel", cefrLevel)
         }
-        val obj = objectOf(http.post("api/chat", body))
+        // The server says 502 empty-reply when the model returned nothing. One retry, never a loop.
+        val first = http.post("api/chat", body)
+        val response = if (first.status.value == 502 && ServerErrorBody.parse(first.bodyAsText()).code == "empty-reply") {
+            http.post("api/chat", body)
+        } else {
+            first
+        }
+        val obj = objectOf(response)
         return obj.str("content") ?: throw AiConversationError.InvalidPayload()
     }
 
@@ -97,12 +110,12 @@ class AiConversationClient(private val http: ApiHttp) {
 
     private suspend fun requireSuccess(response: HttpResponse): String {
         val text = response.bodyAsText()
-        if (response.status.value !in 200..299) throw AiConversationError.Server(response.status.value, errorOf(text))
+        if (response.status.value !in 200..299) {
+            val e = ServerErrorBody.parse(text)
+            throw AiConversationError.Server(response.status.value, e.detail, e.code, e.resetsAt)
+        }
         return text
     }
-
-    private fun errorOf(text: String): String? =
-        runCatching { json.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
 
     private fun JsonObject.str(key: String): String? = this[key]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
 
@@ -137,8 +150,10 @@ data class TutorReply(
     fun audioBytes(): ByteArray? = audioBase64.takeIf { it.isNotEmpty() }?.let { runCatching { Base64.getDecoder().decode(it) }.getOrNull() }
 }
 
+/** Same `code` / `serverMessage` split as [AiConversationError.Server]. */
 sealed class TutorConversationError(message: String) : Exception(message) {
-    class Server(val status: Int, val serverMessage: String?) : TutorConversationError("Tutor API returned $status")
+    class Server(val status: Int, val serverMessage: String?, val code: String? = null, val resetsAt: String? = null) :
+        TutorConversationError("Tutor API returned $status")
     class InvalidPayload : TutorConversationError("Unexpected tutor response shape")
 }
 
@@ -167,8 +182,8 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
         val response = http.post("api/hector-respond", body, extraHeaders = mapOf("X-Alphonso-Device-Id" to deviceId))
         val textBody = response.bodyAsText()
         if (response.status.value !in 200..299) {
-            val detail = runCatching { json.parseToJsonElement(textBody).jsonObject["detail"]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
-            throw TutorConversationError.Server(response.status.value, detail)
+            val e = ServerErrorBody.parse(textBody)
+            throw TutorConversationError.Server(response.status.value, e.detail, e.code, e.resetsAt)
         }
         val o = runCatching { json.parseToJsonElement(textBody).jsonObject }.getOrElse { throw TutorConversationError.InvalidPayload() }
         fun s(k: String) = o[k]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
