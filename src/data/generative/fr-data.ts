@@ -46,8 +46,11 @@ export const FR_VERBS: FrVerb[] = [
         kinds: ["indefinite", "definite"],
         nouns: ["pomme", "banane", "orange", "gâteau", "œuf"],
       },
-      { cls: "food-count", kinds: ["indefinite"], nouns: ["fruit", "légume"] },
-      { cls: "food-mass", kinds: ["partitive"] },
+      { cls: "food-count", kinds: ["indefinite"], nouns: ["fruit"] },
+      // "un légume" is not how anyone says it: the plural is.
+      { cls: "food-count", kinds: ["indefinite"], nouns: ["légume"], pluralIndefinite: true },
+      // "du beurre" on its own is odd as something one eats.
+      { cls: "food-mass", kinds: ["partitive"], except: ["beurre"] },
     ],
   },
   {
@@ -57,7 +60,7 @@ export const FR_VERBS: FrVerb[] = [
     participle: "cuisiné",
     en: { base: "cook", third: "cooks", past: "cooked" },
     uses: [
-      { cls: "food-mass", kinds: ["partitive"] },
+      { cls: "food-mass", kinds: ["partitive"], except: ["beurre"] },
       { cls: "food-count", kinds: ["indefinite"], nouns: ["œuf", "gâteau"] },
     ],
   },
@@ -104,7 +107,8 @@ export const FR_VERBS: FrVerb[] = [
     uses: [
       { cls: "clothing", kinds: ["indefinite", "definite"] },
       { cls: "school-object", kinds: ["indefinite", "definite"] },
-      { cls: "household-object", kinds: ["indefinite", "definite"] },
+      // A key is something one is given, not something one buys.
+      { cls: "household-object", kinds: ["indefinite", "definite"], except: ["clé"] },
       { cls: "readable", kinds: ["indefinite", "definite"] },
     ],
   },

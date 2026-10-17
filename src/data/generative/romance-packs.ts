@@ -40,11 +40,18 @@ export type RomancePackSpec = {
   count: number;
 };
 
+// Learner-facing: the unit description is "<subtitle> — <note>" and the
+// explanation after an answer ends with the note, so both read as plain copy.
 const NOTE = {
-  present: "Present tense: choose the verb form that matches the subject.",
-  frPc: "Passé composé: the auxiliary and the participle go together.",
-  frEtre: "Passé composé with être: the participle agrees with the subject.",
-  preterite: "Preterite: choose the past form that matches the subject.",
+  present: "Choose the verb form that matches the subject.",
+  frPc: "The auxiliary and the participle go together.",
+  frEtre: "The participle agrees with the subject.",
+  preterite: "Choose the past form that matches the subject.",
+};
+const SUBTITLE = {
+  present: "Present tense in short sentences",
+  frPc: "Passé composé in short sentences",
+  preterite: "Preterite in short sentences",
 };
 
 function spec(
@@ -66,7 +73,12 @@ function spec(
     verbs: [verb],
     nounClasses,
     title,
-    subtitle: `Generated practice: ${kind === "present" ? "present tense" : "past tense"}`,
+    subtitle:
+      kind === "present"
+        ? SUBTITLE.present
+        : template === "es-svo-preterite"
+          ? SUBTITLE.preterite
+          : SUBTITLE.frPc,
     note,
     count: 15,
   };

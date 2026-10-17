@@ -2,7 +2,9 @@ package com.obsidianmedia.learnwithalphonso.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.obsidianmedia.learnwithalphonso.core.logic.NameReasonCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
 import com.obsidianmedia.learnwithalphonso.core.net.fetchProfileIdentity
 import com.obsidianmedia.learnwithalphonso.core.net.updateProfileAvatarSeed
 import com.obsidianmedia.learnwithalphonso.core.net.updateProfileDisplayName
@@ -36,8 +38,11 @@ class IdentityViewModel(private val client: ProgressSyncClient, private val user
         if (trimmed.isEmpty()) return
         _state.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
-            val ok = runCatching { client.updateProfileDisplayName(trimmed, id) }.isSuccess
-            _state.update { it.copy(saving = false, displayName = if (ok) trimmed else it.displayName, error = if (ok) null else "Couldn't save your name. Try again.") }
+            val failure = runCatching { client.updateProfileDisplayName(trimmed, id) }.exceptionOrNull()
+            // A name the server filter refuses says so ("That name isn't allowed. Try another."), not a generic failure.
+            val server = failure as? ProgressSyncError.Server
+            val error = failure?.let { NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = it is java.io.IOException || it is ProgressSyncError.InvalidPayload) }
+            _state.update { it.copy(saving = false, displayName = if (failure == null) trimmed else it.displayName, error = error) }
         }
     }
 
