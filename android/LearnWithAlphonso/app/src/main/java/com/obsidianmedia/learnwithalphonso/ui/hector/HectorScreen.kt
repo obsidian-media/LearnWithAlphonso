@@ -50,6 +50,7 @@ import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
@@ -63,6 +64,8 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
+import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -96,7 +99,7 @@ class HectorViewModel(
     private val player: ReplyPlayer,
     private val sessionId: String = UUID.randomUUID().toString(),
     /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
-    private val course: Course = Course.ENGLISH,
+    val course: Course = Course.ENGLISH,
 ) : ViewModel() {
     private val _state = MutableStateFlow(HectorUiState())
     val state: StateFlow<HectorUiState> = _state.asStateFlow()
@@ -213,6 +216,7 @@ private fun HectorConversation(container: AppContainer) {
 
     AiConsentGate(container) {
         Column(Modifier.fillMaxSize().background(palette.surface)) {
+            AiReportStatusHost(container.aiReports)
             Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp))
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { _, turn ->
@@ -221,11 +225,17 @@ private fun HectorConversation(container: AppContainer) {
                         if (!isUser) Image(painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop, modifier = Modifier.size(26.dp).clip(CircleShape))
                         else Spacer(Modifier.width(40.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text(
-                            turn.content,
-                            modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
-                            style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink,
-                        )
+                        // Every Hector reply is the model's (there is no fixed opening line), so every one is reportable.
+                        ReportableAiMessage(
+                            enabled = !isUser, sender = container.aiReports,
+                            makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
+                        ) { reportModifier ->
+                            Text(
+                                turn.content,
+                                modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
+                                style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink,
+                            )
+                        }
                     }
                 }
             }

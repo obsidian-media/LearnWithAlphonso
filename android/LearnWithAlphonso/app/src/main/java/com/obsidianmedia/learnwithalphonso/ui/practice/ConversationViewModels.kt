@@ -29,6 +29,11 @@ data class ConversationUiState(
     val error: String? = null,
     val confidenceByTurn: Map<Int, Double> = emptyMap(),
     val cefrLevel: String? = null,
+    /**
+     * Positions of turns we wrote ourselves (a scene's fixed opening line) as opposed to model replies. Tracked by
+     * position, so a model reply that repeats an opener's words is still a model reply (and reportable).
+     */
+    val openerIndices: Set<Int> = setOf(0),
 )
 
 /** Plays reply audio; the app passes AudioPlayback, tests a no-op. */
@@ -147,11 +152,12 @@ class CampaignConversationViewModel(
         if (!canContinue) return
         if (isLastScene) { _campaign.update { it.copy(finished = true) }; return }
         val next = campaign.scenes[_campaign.value.sceneIndex + 1]
-        _state.update { it.copy(turns = it.turns + ChatMessage("assistant", next.opener), error = null) }
+        _state.update { it.copy(turns = it.turns + ChatMessage("assistant", next.opener), openerIndices = it.openerIndices + it.turns.size, error = null) }
         _campaign.update { it.copy(sceneIndex = it.sceneIndex + 1, sceneAnchor = _state.value.turns.size - 1) }
     }
 
     fun restartScene() {
-        _state.update { it.copy(turns = it.turns.take(_campaign.value.sceneAnchor + 1), error = null) }
+        val anchor = _campaign.value.sceneAnchor
+        _state.update { it.copy(turns = it.turns.take(anchor + 1), openerIndices = it.openerIndices.filter { i -> i <= anchor }.toSet(), error = null) }
     }
 }

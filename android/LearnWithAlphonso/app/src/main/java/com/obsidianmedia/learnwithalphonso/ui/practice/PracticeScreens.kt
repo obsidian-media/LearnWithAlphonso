@@ -35,8 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
+import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
+import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
+import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -68,18 +75,23 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String) -> Unit, on
     }
 }
 
+/** What a conversation screen needs to report one of its replies: the client and how to build the report for a turn. */
+private class ReplyReporting(val sender: AiReportSender, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
+
 @Composable
-private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color) {
+private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport) {
     val palette = AlphonsoColor.palette
     val isUser = turn.role == "user"
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
             if (isUser) Spacer(Modifier.width(40.dp))
-            Text(
-                turn.content,
-                modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
-                style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink,
-            )
+            ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier ->
+                Text(
+                    turn.content,
+                    modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink,
+                )
+            }
             if (!isUser) Spacer(Modifier.width(40.dp))
         }
         confidence?.let { Text(BaseConversationViewModel.clarityLabel(it), style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, modifier = Modifier.padding(end = 6.dp)) }
@@ -87,7 +99,7 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
 }
 
 @Composable
-private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
+private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
@@ -96,10 +108,18 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size) }
 
     Column(Modifier.fillMaxSize().background(palette.surface)) {
+        AiReportStatusHost(reporting.sender)
         ScreenHeader(title, onBack, actions)
         header()
         LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            itemsIndexed(state.turns) { index, turn -> Bubble(turn, state.confidenceByTurn[index], tint, userText) }
+            itemsIndexed(state.turns) { index, turn ->
+                Bubble(
+                    turn, state.confidenceByTurn[index], tint, userText,
+                    reportable = AiReplyReporting.isReportable(turn.role, index, state.openerIndices),
+                    sender = reporting.sender,
+                    makeReport = { reason -> reporting.makeReport(turn.content, AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },
+                )
+            }
             item { footer() }
         }
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
@@ -126,7 +146,12 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     }
     val palette = AlphonsoColor.palette
     AiConsentGate(container, onDecline = onBack) {
-        ConversationBody(vm, scenario.title, palette.moss, Color.White, onBack)
+        ConversationBody(
+            vm, scenario.title, palette.moss, Color.White, onBack,
+            reporting = ReplyReporting(container.aiReports) { message, _, reason ->
+                AiReplyReports.scenario(message, course.code, scenario.id, reason)
+            },
+        )
     }
 }
 
@@ -144,6 +169,9 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     AiConsentGate(container, onDecline = onBack) {
         ConversationBody(
             vm, campaign.title, palette.moss, Color.White, onBack,
+            reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
+                AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
+            },
             header = {
                 if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = MaterialTheme.typography.labelLarge, color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
             },
