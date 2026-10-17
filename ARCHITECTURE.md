@@ -1336,6 +1336,25 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
   Android has no Apple given-name source. `NameReasonCopy` words the refusal
   codes for this prompt and for Settings' name save.
+- **Podcast resume reliability and the AI-narrated label.** Ports of
+  PodcastSaveGate.swift and PodcastSavedPositions.swift (`core.podcast`):
+  `PodcastClient.savePlaybackPosition` returns the `updated_at` the SERVER
+  stored (the device clock never matched what the database kept, so every
+  second save looked stale), and with no row known it is an upsert on
+  `(user_id, episode_id)` (`Prefer: resolution=merge-duplicates`), so it also
+  works when the row exists but this device forgot it. `PodcastPlayer` chains
+  its saves one after another, each reading `PodcastSaveGate` after the
+  previous finished; a stale write or a 401 pauses saving until the learner
+  acts (play or resume, a fresh observation); an account change bumps the
+  gate's epoch so a save chained from the previous account is refused;
+  `PodcastSavedPositions` applies what this device last stored to a stale list
+  row (stamps compared by identity, never by order; a stamp this device never
+  saw came from another device and wins) and guards a save made after the
+  player left an episode on the stamp stored for that episode. `RootScreen`
+  stops the player on sign-out. `PodcastLabel` is the iOS helper: an episode
+  is AI-narrated when `podcast_episodes.source = 'tts'` (selected by the
+  episode and search queries), and the row subtitle is
+  "5:05 · Resume · AI-narrated" with the middle dot.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

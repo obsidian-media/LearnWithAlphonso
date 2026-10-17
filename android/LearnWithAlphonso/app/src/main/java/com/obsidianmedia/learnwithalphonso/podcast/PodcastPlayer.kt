@@ -4,15 +4,17 @@ import com.obsidianmedia.learnwithalphonso.core.net.PodcastClient
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClientError
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayback
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSaveGate
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSavedPositions
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSessionTracker
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 /**
@@ -29,6 +31,9 @@ interface PlayerPort {
     /** Media duration when known, else null (the row's duration is the fallback). */
     fun durationMillis(): Long?
     fun release()
+
+    /** Stops playback and clears the loaded item, so a headset or notification button cannot replay it. */
+    fun stop()
     var onTick: (Double) -> Unit
     var onEnded: () -> Unit
     /** The player's own play state: the system pauses on focus loss and unplugged headphones without us asking. */
@@ -69,9 +74,22 @@ class PodcastPlayer(
     val state: StateFlow<PodcastPlayerState> = _state.asStateFlow()
 
     private val tracker = PodcastSessionTracker()
-    /** Internal so a test can observe a stale write being processed. */
-    internal var lastSeenUpdatedAt: String? = null
+
+    /** Internal so a test can observe the gate (what was last seen, whether saving is paused). */
+    internal val saveGate = PodcastSaveGate()
+
+    /** The last position this device stored per episode, so a stale list row never wins. */
+    private val savedPositions = PodcastSavedPositions()
+
+    /** Saves run one after another, so each one guards on what the previous one stored. */
+    private var saveJob: Job? = null
     private var pausedByRecording = false
+
+    /** The episode as the learner should see it: with the position this device last stored, if newer. */
+    fun resumed(episode: PodcastEpisode): PodcastEpisode = savedPositions.applying(episode)
+
+    /** Changes whenever what this device remembers does, so a list showing [resumed] rows recomposes. */
+    val positionsRevision: StateFlow<Int> get() = savedPositions.revision
 
     init {
         port.onTick = ::tick
@@ -94,11 +112,18 @@ class PodcastPlayer(
     }
 
     /** Plays an episode, preferring a downloaded copy; a non-empty queue replaces the current one. */
-    fun play(episode: PodcastEpisode, localUri: String? = null, queue: List<PodcastEpisode> = emptyList()) {
+    fun play(listed: PodcastEpisode, localUri: String? = null, queue: List<PodcastEpisode> = emptyList()) {
+        // The list's copy can predate a listen made since it loaded: start from what this device last stored.
+        val episode = savedPositions.applying(listed)
+        // Playback starts from this snapshot, so its stamp is part of this device's own history.
+        savedPositions.noteSeen(listed)
         if (queue.isNotEmpty()) _state.update { it.copy(queue = queue) }
+        // A learner action is a fresh observation: saving paused by a stale write or a 401 may resume.
+        saveGate.userStartedPlayback()
+        _state.update { it.copy(savesDisabled = false) }
         if (_state.value.episode?.id != episode.id) {
             if (_state.value.episode != null) flushPlayEvent(_state.value.episode!!)
-            lastSeenUpdatedAt = episode.playbackUpdatedAt
+            saveGate.beginEpisode(episode.playbackUpdatedAt)
             val start = PodcastPlayback.clampPosition(episode.positionSeconds.toDouble(), episode.durationSeconds.toDouble())
             tracker.reset(start)
             _state.update { it.copy(episode = episode, elapsedSeconds = start, failed = false) }
@@ -119,9 +144,26 @@ class PodcastPlayer(
             save(port.currentMillis() / 1000.0, completed = false)
         } else {
             pausedByRecording = false
+            saveGate.userStartedPlayback()
+            _state.update { it.copy(savesDisabled = false) }
             port.play()
             _state.update { it.copy(isPlaying = true) }
         }
+    }
+
+    /**
+     * Sign-out or account deletion. The next account on this device must not hear, see in the notification, or resume
+     * the previous account's episode. No final save: the session's token is already gone, and the position is at most
+     * ten seconds behind. The gate keeps counting epochs, so a save already chained from the previous account is refused.
+     */
+    fun stopForAccountChange() {
+        saveJob?.cancel()
+        saveJob = null
+        saveGate.resetForAccountChange()
+        savedPositions.reset()
+        port.stop()
+        tracker.reset()
+        _state.value = PodcastPlayerState()
     }
 
     fun skip(seconds: Double) {
@@ -163,20 +205,39 @@ class PodcastPlayer(
         flushPlayEvent(episode)
     }
 
+    /**
+     * Chained: each save starts after the previous one finished and reads the gate then, so it guards on what the
+     * previous save stored. An episode the player has since left is still guarded, on the stamp this device last stored
+     * for it (else the stamp observed at request time), so it cannot overwrite another device's newer row.
+     */
     private fun save(position: Double, completed: Boolean) {
-        val s = _state.value
-        if (s.savesDisabled || !position.isFinite()) return
-        val episode = s.episode ?: return
+        if (!saveGate.canSave || !position.isFinite()) return
+        val episode = _state.value.episode ?: return
         val c = client() ?: return
-        val seen = lastSeenUpdatedAt
-        scope.launch {
+        val episodeId = episode.id
+        val seconds = position.roundToInt()
+        val epoch = saveGate.epoch
+        val observedWhenRequested = saveGate.lastSeenUpdatedAt
+        val previous = saveJob
+        saveJob = scope.launch {
+            previous?.join()
+            if (!saveGate.accepts(epoch) || !saveGate.canSave) return@launch
+            val isCurrent = _state.value.episode?.id == episodeId
+            val seen = if (isCurrent) saveGate.lastSeenUpdatedAt else (savedPositions.lastStoredStamp(episodeId) ?: observedWhenRequested)
             try {
-                c.savePlaybackPosition(episode.id, position.roundToInt(), completed, seen)
-                lastSeenUpdatedAt = DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(nowMillis()))
+                val stored = c.savePlaybackPosition(episodeId, seconds, completed, seen)
+                if (saveGate.accepts(epoch)) savedPositions.record(episodeId, if (completed) 0 else seconds, stored)
+                if (saveGate.accepts(epoch) && _state.value.episode?.id == episodeId) saveGate.recordSaved(stored)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: PodcastClientError.StaleWrite) {
-                lastSeenUpdatedAt = null
+                if (saveGate.accepts(epoch) && _state.value.episode?.id == episodeId) saveGate.recordStale()
             } catch (e: PodcastClientError.Unauthorized) {
-                _state.update { it.copy(savesDisabled = true) }
+                if (saveGate.accepts(epoch)) {
+                    saveGate.recordUnauthorized()
+                    // Pretending saves land is how resume silently stops working: the mini bar can say so.
+                    _state.update { it.copy(savesDisabled = true) }
+                }
             } catch (e: Exception) {
                 // Best-effort: a failed save leaves the last known position alone.
             }
