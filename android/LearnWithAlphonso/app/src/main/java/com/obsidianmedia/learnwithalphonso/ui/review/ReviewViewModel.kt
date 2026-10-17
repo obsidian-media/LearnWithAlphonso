@@ -14,6 +14,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.questionFromWeaknessItem
 import com.obsidianmedia.learnwithalphonso.core.logic.utcDateString
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
+import com.obsidianmedia.learnwithalphonso.core.net.ReviewGradeOutcome
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingReviewGrade
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
@@ -52,7 +53,9 @@ class ReviewViewModel(
     private val isConnected: () -> Boolean,
     private val course: Course,
     private val now: () -> Long = System::currentTimeMillis,
-    /** Plan 4: the due-review nudge reuses this fetch (no second round trip), as ReviewQueueView.swift does. */
+    /** The signed-in account, recorded on a queued grade so another account never syncs it. */
+    private val ownerUserId: () -> String? = { null },
+    /** Plan 4: the due-review nudge reuses this fetch (no second round trip), as ReviewQueueView.swift does. Last, so a trailing lambda lands here. */
     private val onQueueFetched: (List<ReviewItem>) -> Unit = {},
 ) : ViewModel() {
     private val _state = MutableStateFlow(ReviewUiState())
@@ -65,6 +68,28 @@ class ReviewViewModel(
         val found = content.findLesson(item.lessonId, course) ?: return null
         val questionId = item.itemKey.substringAfterLast(':')
         return found.second.questions.firstOrNull { it.id == questionId }
+    }
+
+    /**
+     * The current answer's submission, created before the first network attempt and reused by every retry (Check,
+     * Next, and the offline queue). Its `queueIdentity` is the attempt id the server stores with the result, so a
+     * grade whose response was lost is replayed instead of being graded a second time.
+     */
+    private var gradeAttempt: PendingReviewGrade? = null
+
+    /** Matched on the card alone: the first submission for a card is the one that stands, even if a later tap sends different text. */
+    private fun attempt(item: ReviewItem, answer: String): PendingReviewGrade {
+        gradeAttempt?.takeIf { it.itemKey == item.itemKey }?.let { return it }
+        return PendingReviewGrade(item.itemKey, answer, course.code, now(), ownerUserId()).also { gradeAttempt = it }
+    }
+
+    /**
+     * Applies the server's own scheduling answer to the cached due list. Only the offline path used to touch the cache,
+     * so an item graded online stayed counted and the Learn tab badge kept showing it after the queue was cleared.
+     * A wrong answer stays due today, so `isStillDue` keeps it counted.
+     */
+    private suspend fun dropFromDueCacheIfNoLongerDue(outcome: ReviewGradeOutcome, itemKey: String) {
+        if (!outcome.isStillDue(utcDateString(now()))) syncStore.removeCachedDueReview(itemKey)
     }
 
     fun pick(value: String?) = _state.update { if (it.checked) it else it.copy(picked = value) }
@@ -105,8 +130,10 @@ class ReviewViewModel(
                     return@launch
                 }
                 if (isConnected()) {
-                    val ok = runCatching { client.gradeReview(item.itemKey, picked, course.code) }.isSuccess
-                    if (ok) {
+                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity) }.getOrNull()
+                    if (outcome != null) {
+                        // Before advance(): the current item moves on with idx.
+                        dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
                         advance()
                         claimBonusIfCleared()
                         return@launch
@@ -143,7 +170,8 @@ class ReviewViewModel(
         val submission = (picked ?: "").trim()
         val local = TranslationVerdict(TranslationAnswer.matches(submission, q.acceptableAnswers), null)
         if (!isConnected()) return local to false
-        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code) }.getOrNull() ?: return local to false
+        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity) }.getOrNull() ?: return local to false
+        dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
         val correct = outcome.correct ?: return local to false
         return TranslationVerdict(correct, null) to true
     }
@@ -153,14 +181,18 @@ class ReviewViewModel(
         val correct = isAnswerCorrect(q, answer, course)
         val input = ReviewGradeInput(correct, item.ease, item.intervalDays, item.repetitions, 0, item.intervalDays)
         val outcome = computeReviewOutcome(input, today) { days -> Instant.ofEpochMilli(now()).atZone(ZoneOffset.UTC).toLocalDate().plusDays(days.toLong()).toString() }
-        syncStore.appendReviewGrade(PendingReviewGrade(item.itemKey, answer, course.code, now()))
+        // The same submission the online attempt used, so the queued retry carries the same attempt id.
+        syncStore.appendReviewGrade(attempt(item, answer))
         when (outcome) {
             is ReviewOutcome.Retired -> syncStore.removeCachedDueReview(item.itemKey)
             is ReviewOutcome.Rescheduled -> if (outcome.dueOn > today) syncStore.removeCachedDueReview(item.itemKey)
         }
     }
 
-    private fun advance() = _state.update { it.copy(idx = it.idx + 1, picked = null, checked = false, translationVerdict = null, alreadySubmitted = false) }
+    private fun advance() {
+        gradeAttempt = null
+        _state.update { it.copy(idx = it.idx + 1, picked = null, checked = false, translationVerdict = null, alreadySubmitted = false) }
+    }
 
     private suspend fun claimBonusIfCleared() {
         val s = _state.value

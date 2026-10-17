@@ -50,6 +50,9 @@ data class PendingReviewGrade(
     fun rescheduled(attemptCount: Int, nextAttemptAt: Long): PendingReviewGrade = copy(attemptCount = attemptCount, nextAttemptAt = nextAttemptAt)
 }
 
+/** What the Learn tab knows about a dead-lettered item: which one (its queue identity) and the stable reason. */
+data class DeadLetterInfo(val identity: String, val reason: String)
+
 /** An item that will never succeed, with a stable reason for the dead-letter store. */
 data class DeadLetter<T>(val item: T, val reason: String)
 

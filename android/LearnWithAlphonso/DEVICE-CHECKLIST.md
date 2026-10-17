@@ -54,6 +54,19 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Restore Purchases on a fresh install of the same Google account unlocks Hector.
 - [ ] Manage Subscription opens the Play subscriptions page.
 
+## Offline queue reliability (nothing here has been run on a device)
+
+Use a QA account. Airplane mode for the offline rows.
+
+- [ ] Finish a lesson in airplane mode: "Saved. It will sync when you're back online." Turn airplane mode off: within a minute the Learn tab line "1 lesson is saved on this phone and waiting to sync." disappears by itself and XP updates (no need to leave the app).
+- [ ] With airplane mode on, the Learn tab line says it will sync when you're back online; "Sync now" with no connection ends without an error.
+- [ ] Finish a review answer offline, then answer two more: the line counts "N review answers"; reconnect and "Sync now": the count drops to zero and the queue order was kept.
+- [ ] At 0 hearts, finish a lesson that was started earlier (or queue one offline, then drain hearts): it says "Saved. It will sync when your hearts refill." and syncs after the refill without a "couldn't save" notice.
+- [ ] Sign in as account A, queue a lesson offline, sign out and in as account B, go online: B's Learn tab does not show A's pending line and A's lesson is never sent (check the account's XP did not change).
+- [ ] A lesson the server rejects (for example after a content update changed the lesson: ask the owner to bump a lesson version on the QA server): the finish shows "This lesson changed since you started it..." with the support email line and nothing is queued; if it was queued earlier, the Learn tab shows "1 lesson couldn't be saved. Contact support." with Contact support (opens a mail draft listing the lesson) and Dismiss (the notice stays gone after a relaunch).
+- [ ] Server trouble (ask the owner to make complete-lesson return 503 on the QA server): the finish says "Our server had a problem. Your lesson is saved and will sync automatically." and it syncs by itself later without reopening the app.
+- [ ] Review: answer an item online, then check the Learn tab review badge: it drops by one right away.
+
 ## Learning goal (planner part 3, nothing here has been run on a device)
 
 - [ ] Learn tab, no goal yet: the card says "Set a learning goal"; tapping it opens the dialog with 6 months pre-filled and a "N lessons a week" preview.

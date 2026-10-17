@@ -79,10 +79,13 @@ class SyncEngineTest {
         val first = grade("en:l1:q1", now - 60_000)
         val second = grade("en:l1:q2", now)
         val called = ArrayList<String>()
-        val fake = FakeSupabase { req -> called.add(itemKeyOf(req.body)); json("""{"error":"not due yet"}""", HttpStatusCode.BadRequest) }
-        val result = SyncEngine.sync(emptyList(), listOf(first, second), ProgressSyncClient(fake.http) { now })
+        val fake = FakeSupabase { req -> called.add(itemKeyOf(req.body)); json("""{"error":"overloaded"}""", HttpStatusCode.ServiceUnavailable) }
+        val result = SyncEngine.sync(emptyList(), listOf(first, second), ProgressSyncClient(fake.http) { now }, nowMillis = now)
         assertEquals(listOf("en:l1:q1"), called)
         assertTrue(result.syncedReviewGrades.isEmpty())
+        // The failed grade backs off (30 s, then doubling); the later one is untouched and waits behind it.
+        assertEquals(listOf(now + 30_000), result.rescheduledReviewGrades.map { it.nextAttemptAt })
+        assertEquals(listOf(1), result.rescheduledReviewGrades.map { it.attemptCount })
     }
 
     @Test

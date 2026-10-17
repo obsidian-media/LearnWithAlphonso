@@ -1315,6 +1315,34 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
   Android has no Apple given-name source. `NameReasonCopy` words the refusal
   codes for this prompt and for Settings' name save.
+- **Offline queue reliability (iOS #261, #284, #291, #293).** `core.sync` has
+  `LessonCompletionError` (offline, timeout, server 5xx and 429, a rejected 4xx
+  with its stable code, unauthorized, invalid payload; `shouldQueue`,
+  `finishDisposition`, the learner copy, a support line and a reason code),
+  `LessonCompletionService` (one attempt shared by the live finish and the
+  queue; a held session token is used as is and replaced once on a 403) and the
+  rewritten `SyncEngine`. Per item, transient failures reschedule with
+  `SyncRetryPolicy` (30 s doubling, capped at 6 h) and are never dead-lettered;
+  no connection waits the base delay and keeps the failure count (a lesson
+  finished on a train must not wait hours); out of hearts waits for a refill
+  and keeps the count; a 401 leaves the row alone; only a permanent rejection
+  becomes a `DeadLetter`. Grades still stop at a transient failure to keep
+  SM-2 order and carry `queueIdentity` as the server's `attemptId`; a rejected
+  grade is dead-lettered and the next continues. Rows with another owner are
+  dropped unsent and rows with no owner are adopted by the first account to
+  sync. Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt
+  count and next attempt on both queues, and a `dead_letters` table).
+  `SyncCoordinator` applies a whole pass (`applySyncResult`), exposes
+  `syncing`, and after each pass sleeps until the next due item
+  (`SyncWakeup`, with a 30 s floor that stops a loop; skipped offline or after
+  an account change). The lesson finish says it is saved only for causes
+  waiting can fix and otherwise shows `LessonPhase.SaveFailed` with the reason
+  and a support line. The review screen creates its submission before the first
+  network attempt and reuses it for Check, Next and the queue, and drops an item
+  from the due cache once the server says it is no longer due. The Learn tab
+  shows `PendingSyncNotice` with "Sync now" and the dead-letter notice
+  ("N lessons couldn't be saved. Contact support." with the queue identities and
+  reason codes in a mailto; dismissals are kept in preferences and pruned).
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and
