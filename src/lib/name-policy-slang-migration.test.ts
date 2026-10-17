@@ -16,7 +16,18 @@ const MAIN_MAX_AT_AUTHORING = "20261017100000_revenuecat_erasure_pending.sql";
 const SLANG_NAMES = ["noods", "n00ds", "NOODS", "n o o d s", "pron", "pr0n", "PRON", "Pron Star"];
 
 /** Real names and words that contain the new terms. A whole-word list must leave every one of them alone. */
-const STILL_ALLOWED = ["Noodle", "Nood", "Noodles Fan", "Pronto", "Pronoun", "Apron", "Pronk", "Prona", "Leo", "Hector"];
+const STILL_ALLOWED = [
+  "Noodle",
+  "Nood",
+  "Noodles Fan",
+  "Pronto",
+  "Pronoun",
+  "Apron",
+  "Pronk",
+  "Prona",
+  "Leo",
+  "Hector",
+];
 
 async function database(withSlang: boolean) {
   const db = new PGlite();
@@ -67,9 +78,9 @@ describe("slang spellings in names", () => {
 
   it("replaces only the word list, pins search_path, stays ASCII and has a rollback", () => {
     const sql = read(SLANG);
-    expect([...sql.matchAll(/CREATE OR REPLACE FUNCTION public\.(\w+)\(/g)].map((m) => m[1])).toEqual([
-      "name_policy_terms",
-    ]);
+    expect(
+      [...sql.matchAll(/CREATE OR REPLACE FUNCTION public\.(\w+)\(/g)].map((m) => m[1]),
+    ).toEqual(["name_policy_terms"]);
     expect(sql).toContain("SET search_path = ''");
     expect(sql).not.toMatch(/GRANT /);
     expect(sql).not.toMatch(/[^\x20-\x7E\n]/);
