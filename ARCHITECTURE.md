@@ -652,7 +652,7 @@ Server-side score validation (`completeLessonRemote` in
 server's source of truth for "does this lesson exist and how many
 questions does it have."
 
-## Generative content pipeline (pilot, English-only, `src/data/generative/`)
+## Generative content pipeline (`src/data/generative/`: English pilot, French and Spanish)
 
 Added 2026-09-22 (PR #76) — a `generate` subcommand on
 `scripts/pack-tool.ts` that produces real course content from
@@ -700,11 +700,39 @@ hand-authored one once it lands in `lesson-bank.ts`.
   committed file collapses an empty array onto one line, which a naive
   `"\n];"` search couldn't find).
 
-**French and Spanish (designed, not yet built):** the extension is
-specified in `docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md`
-(library spike results, templates, closed vocabulary taken only from the
-shipped course data, and the validation gates). This section is renamed
-when the implementation lands.
+**French and Spanish (2026-10-17).** A second, separate path in the same
+folder, specified in
+`docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md`. It has
+no LLM step: words come only from the committed lexicons, which are built from
+nouns and verbs already in the shipped course.
+
+- `fr-data.ts` / `es-data.ts` — the authority: hand-written verb tables
+  (present, preterite, passé composé participles, English glosses, a
+  hand-written meaning allowlist per verb) and noun lexicons (gender,
+  number, countability, classes, source pack). The conjugation libraries
+  (`french-verbs`, `french-verbs-lefff`, `spanish-verbs`, devDependencies)
+  are a second source that has to agree; they are imported only by
+  `romance-libs.testutil.ts`.
+- `fr-compile.ts` / `es-compile.ts` — pure compilers from (subject, verb,
+  noun, article kind) to a `"prompt|answer"` cloze line: French partitive for
+  mass nouns, elision, contractions; Spanish bare mass nouns, animals
+  indefinite only. `je` never meets a vowel-initial verb, and the avoir
+  passé composé never uses `je`, so the blank never needs `J'___`.
+- `romance-packs.ts` — the named pack plans (one verb per pack), balanced
+  deterministic selection, the existing-prompt filter, and a pack size chosen
+  so every question has three distinct wrong options (`bank-engine`'s
+  distractor walk steps by 7).
+- `fr-check.ts` / `es-check.ts` — independent surface checkers run on the
+  completed sentence for every choice. `romance-gates.test.ts`,
+  `fr-data.test.ts`, `es-data.test.ts`, `romance-isolation.test.ts` are the
+  gates; the in-repo cross-check compares the tables with the existing
+  hand-written cloze lines, and `docs/superpowers/generative-wiktionary-check.json`
+  is the committed summary of the local Wiktionary check
+  (`scripts/check-wiktionary.ts`; the data itself is not committed).
+- `bun scripts/pack-tool.ts generate --course fr|es --pack <id>` writes a
+  draft; `scripts/romance-sample.ts` prints an owner spot-check sample with
+  English meanings (never stored in the banks). Licensing of the Lefff data:
+  `THIRD_PARTY_NOTICES.md`; `scripts/check-no-lefff-in-bundle.ts` runs in CI.
 
 **Known, documented limitations** (not silently solved): French/Spanish
 out of scope for the pilot itself; cross-verb MC distractors reduced but not eliminated

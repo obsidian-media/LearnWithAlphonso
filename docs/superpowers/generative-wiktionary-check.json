@@ -1,0 +1,1497 @@
+{
+  "generated": "2026-10-17",
+  "source": "kaikki.org Wiktionary extracts (CC BY-SA 4.0), run locally by scripts/check-wiktionary.ts; the data is not committed",
+  "fr": {
+    "verbs": {
+      "manger": {
+        "present": [
+          "mange",
+          "manges",
+          "mange",
+          "mangeons",
+          "mangez",
+          "mangent"
+        ],
+        "participles": [
+          "mangé"
+        ],
+        "status": "agree"
+      },
+      "cuisiner": {
+        "present": [
+          "cuisine",
+          "cuisines",
+          "cuisine",
+          "cuisinons",
+          "cuisinez",
+          "cuisinent"
+        ],
+        "participles": [
+          "cuisiné"
+        ],
+        "status": "agree"
+      },
+      "boire": {
+        "present": [
+          "bois",
+          "bois",
+          "boit",
+          "buvons",
+          "buvez",
+          "boivent"
+        ],
+        "participles": [
+          "bu"
+        ],
+        "status": "agree"
+      },
+      "prendre": {
+        "present": [
+          "prends",
+          "prends",
+          "prend",
+          "prenons",
+          "prenez",
+          "prennent"
+        ],
+        "participles": [
+          "pris"
+        ],
+        "status": "agree"
+      },
+      "porter": {
+        "present": [
+          "porte",
+          "portes",
+          "porte",
+          "portons",
+          "portez",
+          "portent"
+        ],
+        "participles": [
+          "porté"
+        ],
+        "status": "agree"
+      },
+      "mettre": {
+        "present": [
+          "mets",
+          "mets",
+          "met",
+          "mettons",
+          "mettez",
+          "mettent"
+        ],
+        "participles": [
+          "mis"
+        ],
+        "status": "agree"
+      },
+      "acheter": {
+        "present": [
+          "achète",
+          "achètes",
+          "achète",
+          "achetons",
+          "achetez",
+          "achètent"
+        ],
+        "participles": [
+          "acheté"
+        ],
+        "status": "agree"
+      },
+      "ouvrir": {
+        "present": [
+          "ouvre",
+          "ouvres",
+          "ouvre",
+          "ouvrons",
+          "ouvrez",
+          "ouvrent"
+        ],
+        "participles": [
+          "ouvert"
+        ],
+        "status": "agree"
+      },
+      "voir": {
+        "present": [
+          "vois",
+          "vois",
+          "voit",
+          "voyons",
+          "voyez",
+          "voient"
+        ],
+        "participles": [
+          "vu"
+        ],
+        "status": "agree"
+      },
+      "regarder": {
+        "present": [
+          "regarde",
+          "regardes",
+          "regarde",
+          "regardons",
+          "regardez",
+          "regardent"
+        ],
+        "participles": [
+          "regardé"
+        ],
+        "status": "agree"
+      },
+      "lire": {
+        "present": [
+          "lis",
+          "lis",
+          "lit",
+          "lisons",
+          "lisez",
+          "lisent"
+        ],
+        "participles": [
+          "lu"
+        ],
+        "status": "agree"
+      },
+      "choisir": {
+        "present": [
+          "choisis",
+          "choisis",
+          "choisit",
+          "choisissons",
+          "choisissez",
+          "choisissent"
+        ],
+        "participles": [
+          "choisi"
+        ],
+        "status": "agree"
+      },
+      "aller": {
+        "present": [
+          "vais",
+          "vas",
+          "va",
+          "allons",
+          "allez",
+          "vont"
+        ],
+        "participles": [
+          "allé",
+          "allée",
+          "allés",
+          "allées"
+        ],
+        "status": "agree"
+      },
+      "venir": {
+        "present": [
+          "viens",
+          "viens",
+          "vient",
+          "venons",
+          "venez",
+          "viennent"
+        ],
+        "participles": [
+          "venu",
+          "venue",
+          "venus",
+          "venues"
+        ],
+        "status": "agree"
+      },
+      "arriver": {
+        "present": [
+          "arrive",
+          "arrives",
+          "arrive",
+          "arrivons",
+          "arrivez",
+          "arrivent"
+        ],
+        "participles": [
+          "arrivé",
+          "arrivée",
+          "arrivés",
+          "arrivées"
+        ],
+        "status": "agree"
+      },
+      "rester": {
+        "present": [
+          "reste",
+          "restes",
+          "reste",
+          "restons",
+          "restez",
+          "restent"
+        ],
+        "participles": [
+          "resté",
+          "restée",
+          "restés",
+          "restées"
+        ],
+        "status": "agree"
+      },
+      "rentrer": {
+        "present": [
+          "rentre",
+          "rentres",
+          "rentre",
+          "rentrons",
+          "rentrez",
+          "rentrent"
+        ],
+        "participles": [
+          "rentré",
+          "rentrée",
+          "rentrés",
+          "rentrées"
+        ],
+        "status": "agree"
+      }
+    },
+    "nouns": {
+      "pomme": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "banane": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "orange": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f",
+          "m"
+        ]
+      },
+      "gâteau": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "œuf": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "fruit": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "légume": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "f",
+          "m"
+        ]
+      },
+      "pain": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "fromage": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "beurre": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "riz": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "viande": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "soupe": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "eau": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "vin": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "café": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "thé": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "lait": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "jus": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "chemise": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "pantalon": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "robe": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "jupe": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "veste": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "manteau": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "chapeau": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "écharpe": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "pull": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "ceinture": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "chaussures": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "chaussettes": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "gants": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "bottes": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "chien": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "chat": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "cheval": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "vache": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "cochon": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "mouton": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "lapin": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "oiseau": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "éléphant": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "lion": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "tigre": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "singe": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "loup": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "renard": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "canard": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "ours": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "grenouille": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "voiture": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "bus": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "f",
+          "m"
+        ]
+      },
+      "train": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "avion": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "vélo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "moto": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "bateau": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "camion": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "taxi": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "télévision": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "table": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "chaise": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "lampe": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "miroir": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "clé": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "lit": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "canapé": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "tapis": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "porte": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "fenêtre": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "livre": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m",
+          "f"
+        ]
+      },
+      "cahier": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "stylo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "crayon": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "gomme": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "règle": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "dictionnaire": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "calculatrice": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "ciseaux": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "sac": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "journal": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "magazine": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "article": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      }
+    }
+  },
+  "es": {
+    "verbs": {
+      "comer": {
+        "present": [
+          "como",
+          "comes",
+          "come",
+          "comemos",
+          "coméis",
+          "comen"
+        ],
+        "preterite": [
+          "comí",
+          "comiste",
+          "comió",
+          "comimos",
+          "comisteis",
+          "comieron"
+        ],
+        "status": "agree"
+      },
+      "preparar": {
+        "present": [
+          "preparo",
+          "preparas",
+          "prepara",
+          "preparamos",
+          "preparáis",
+          "preparan"
+        ],
+        "preterite": [
+          "preparé",
+          "preparaste",
+          "preparó",
+          "preparamos",
+          "preparasteis",
+          "prepararon"
+        ],
+        "status": "agree"
+      },
+      "beber": {
+        "present": [
+          "bebo",
+          "bebes",
+          "bebe",
+          "bebemos",
+          "bebéis",
+          "beben"
+        ],
+        "preterite": [
+          "bebí",
+          "bebiste",
+          "bebió",
+          "bebimos",
+          "bebisteis",
+          "bebieron"
+        ],
+        "status": "agree"
+      },
+      "tomar": {
+        "present": [
+          "tomo",
+          "tomas",
+          "toma",
+          "tomamos",
+          "tomáis",
+          "toman"
+        ],
+        "preterite": [
+          "tomé",
+          "tomaste",
+          "tomó",
+          "tomamos",
+          "tomasteis",
+          "tomaron"
+        ],
+        "status": "agree"
+      },
+      "comprar": {
+        "present": [
+          "compro",
+          "compras",
+          "compra",
+          "compramos",
+          "compráis",
+          "compran"
+        ],
+        "preterite": [
+          "compré",
+          "compraste",
+          "compró",
+          "compramos",
+          "comprasteis",
+          "compraron"
+        ],
+        "status": "agree"
+      },
+      "buscar": {
+        "present": [
+          "busco",
+          "buscas",
+          "busca",
+          "buscamos",
+          "buscáis",
+          "buscan"
+        ],
+        "preterite": [
+          "busqué",
+          "buscaste",
+          "buscó",
+          "buscamos",
+          "buscasteis",
+          "buscaron"
+        ],
+        "status": "agree"
+      },
+      "ver": {
+        "present": [
+          "veo",
+          "ves",
+          "ve",
+          "vemos",
+          "veis",
+          "ven"
+        ],
+        "preterite": [
+          "vi",
+          "viste",
+          "vio",
+          "vimos",
+          "visteis",
+          "vieron"
+        ],
+        "status": "agree"
+      },
+      "mirar": {
+        "present": [
+          "miro",
+          "miras",
+          "mira",
+          "miramos",
+          "miráis",
+          "miran"
+        ],
+        "preterite": [
+          "miré",
+          "miraste",
+          "miró",
+          "miramos",
+          "mirasteis",
+          "miraron"
+        ],
+        "status": "agree"
+      },
+      "leer": {
+        "present": [
+          "leo",
+          "lees",
+          "lee",
+          "leemos",
+          "leéis",
+          "leen"
+        ],
+        "preterite": [],
+        "status": "agree"
+      },
+      "abrir": {
+        "present": [
+          "abro",
+          "abres",
+          "abre",
+          "abrimos",
+          "abrís",
+          "abren"
+        ],
+        "preterite": [
+          "abrí",
+          "abriste",
+          "abrió",
+          "abrimos",
+          "abristeis",
+          "abrieron"
+        ],
+        "status": "agree"
+      },
+      "tener": {
+        "present": [
+          "tengo",
+          "tienes",
+          "tiene",
+          "tenemos",
+          "tenéis",
+          "tienen"
+        ],
+        "preterite": [
+          "tuve",
+          "tuviste",
+          "tuvo",
+          "tuvimos",
+          "tuvisteis",
+          "tuvieron"
+        ],
+        "status": "agree"
+      },
+      "querer": {
+        "present": [
+          "quiero",
+          "quieres",
+          "quiere",
+          "queremos",
+          "queréis",
+          "quieren"
+        ],
+        "preterite": [
+          "quise",
+          "quisiste",
+          "quiso",
+          "quisimos",
+          "quisisteis",
+          "quisieron"
+        ],
+        "status": "agree"
+      }
+    },
+    "nouns": {
+      "manzana": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "naranja": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f",
+          "m"
+        ]
+      },
+      "pera": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "plátano": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "limón": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "tomate": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "zanahoria": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "cebolla": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "pan": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "arroz": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "pollo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "fruta": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "leche": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "café": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "té": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "camisa": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "camiseta": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "falda": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "chaqueta": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "vestido": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "abrigo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "sombrero": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "bufanda": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "zapatos": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "calcetines": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "guantes": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "pantalones": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "perro": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "gato": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "caballo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "vaca": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "conejo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "pájaro": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "pato": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "mono": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "elefante": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "tigre": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "oso": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "serpiente": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "rana": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "tortuga": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "libro": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "cuaderno": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "lápiz": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "bolígrafo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "mochila": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "regla": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "goma": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "tijeras": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "periódico": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "revista": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "mesa": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "silla": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "cama": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "lámpara": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "espejo": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "llave": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "reloj": {
+        "gender": "m",
+        "status": "agree",
+        "wiktionary": [
+          "m"
+        ]
+      },
+      "puerta": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      },
+      "ventana": {
+        "gender": "f",
+        "status": "agree",
+        "wiktionary": [
+          "f"
+        ]
+      }
+    }
+  },
+  "disagreements": []
+}
