@@ -28,6 +28,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +61,7 @@ import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 @Composable
-fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit) {
+fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit, onReviewInstead: () -> Unit = onExit) {
     val palette = AlphonsoColor.palette
     val found = container.content.findLesson(lessonId, course)
     if (found == null) {
@@ -69,6 +78,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         )
     }
     val state by vm.state.collectAsState()
+    LaunchedEffect(vm) { vm.onScreenShown() }
     val finished = state.phase as? LessonPhase.Finished
     LaunchedEffect(finished?.result?.progress?.lastActiveDate, finished != null) {
         if (finished != null) {
@@ -84,7 +94,14 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
             Text(state.lesson.title, style = MaterialTheme.typography.titleMedium, color = palette.ink)
         }
-        when (val phase = state.phase) {
+        val gate = state.outOfHearts
+        if (gate != null) {
+            OutOfHeartsContent(
+                model = gate, isOnline = container.connectivity.isConnected.collectAsState().value,
+                buying = state.buyingHeart, buyMessage = state.buyMessage,
+                onBuy = vm::buyHeart, onRefillDue = vm::onRefillDue, onReviewInstead = onReviewInstead,
+            )
+        } else when (val phase = state.phase) {
             LessonPhase.Overview -> OverviewScreen(state.lesson, vm.vocab, state.total, onStart = vm::begin)
             LessonPhase.Vocab -> VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
             LessonPhase.Quiz -> QuizBody(vm, state, course, container)
@@ -218,5 +235,53 @@ private fun OfflineFinishScreen(estimate: Int, correct: Int, total: Int) {
         Text("Saved. This will sync when you're back online", style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
         Text("~+$estimate XP (estimated)", style = MaterialTheme.typography.headlineMedium, color = palette.ember)
         Text("$correct/$total correct", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+    }
+}
+
+/**
+ * Shown instead of the lesson when it cannot start at 0 hearts, matching iOS OutOfHeartsSheet and the web's
+ * HeartsModal: a live countdown to the refill, "Use 50 XP for a heart" (online only) and "Review instead",
+ * because review and practice never cost hearts. Every path leads somewhere.
+ */
+@Composable
+private fun OutOfHeartsContent(
+    model: OutOfHeartsModel,
+    isOnline: Boolean,
+    buying: Boolean,
+    buyMessage: String?,
+    onBuy: () -> Unit,
+    onRefillDue: () -> Unit,
+    onReviewInstead: () -> Unit,
+) {
+    val palette = AlphonsoColor.palette
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(model) {
+        var refillHandled = false
+        while (true) {
+            now = System.currentTimeMillis()
+            if (!refillHandled && model.isRefillDue(now)) {
+                refillHandled = true
+                onRefillDue()
+            }
+            delay(1_000)
+        }
+    }
+    Column(
+        Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+    ) {
+        Text("💔", fontSize = 44.sp, modifier = Modifier.clearAndSetSemantics {})
+        Text(OutOfHeartsModel.TITLE, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
+        Text(
+            model.message(now), style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        if (model.showsBuy(isOnline)) {
+            if (buying) CircularProgressIndicator(color = palette.moss)
+            else AlphonsoPrimaryButton(OutOfHeartsModel.BUY_TITLE, onClick = onBuy)
+        }
+        buyMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center) }
+        TextButton(onClick = onReviewInstead) { Text(OutOfHeartsModel.REVIEW_INSTEAD_TITLE, color = palette.moss) }
     }
 }

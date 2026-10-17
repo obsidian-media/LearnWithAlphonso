@@ -56,6 +56,31 @@ class ProgressSyncClientTest {
     }
 
     @Test
+    fun `startLessonSession at 0 hearts throws OutOfHearts with the refill time, other 409s stay server errors`() = runTest {
+        val blocked = FakeSupabase { json("""{"error":"out-of-hearts","refillAt":"2026-10-16T20:30:00.000Z"}""", HttpStatusCode.Conflict) }
+        val e = runCatching { client(blocked).startLessonSession("u1l1", "en") }.exceptionOrNull()
+        assertEquals(1_792_182_600_000L, (e as ProgressSyncError.OutOfHearts).refillAt)
+        val noTimer = FakeSupabase { json("""{"error":"out-of-hearts","refillAt":null}""", HttpStatusCode.Conflict) }
+        assertNull((runCatching { client(noTimer).startLessonSession("u1l1", "en") }.exceptionOrNull() as ProgressSyncError.OutOfHearts).refillAt)
+        val other = FakeSupabase { json("""{"error":"something-else"}""", HttpStatusCode.Conflict) }
+        assertEquals(409, (runCatching { client(other).startLessonSession("u1l1", "en") }.exceptionOrNull() as ProgressSyncError.Server).status)
+    }
+
+    @Test
+    fun `buyHeartWithXp sends the course and maps every outcome`() = runTest {
+        val ok = FakeSupabase { json("""[{"ok":true,"reason":null,"hearts":1,"xp":150}]""") }
+        assertEquals(BuyHeartResult.Ok(1, 150), client(ok).buyHeartWithXp("fr"))
+        assertEquals("/rest/v1/rpc/buy_heart_with_xp", ok.seen.single().path)
+        assertEquals("""{"_course":"fr"}""", ok.seen.single().body)
+        assertEquals(BuyHeartResult.HeartsFull(5), client(FakeSupabase { json("""[{"ok":false,"reason":"hearts-full","hearts":5,"xp":200}]""") }).buyHeartWithXp("en"))
+        assertEquals(BuyHeartResult.InsufficientXp(20), client(FakeSupabase { json("""[{"ok":false,"reason":"insufficient-xp","hearts":0,"xp":20}]""") }).buyHeartWithXp("en"))
+        assertEquals(BuyHeartResult.SignedOut, client(FakeSupabase { json("""[{"ok":false,"reason":"unauthenticated","hearts":null,"xp":null}]""") }).buyHeartWithXp("en"))
+        assertEquals("Not enough XP for a heart. You have 20 XP in this course.", BuyHeartResult.failureMessage(BuyHeartResult.InsufficientXp(20)))
+        assertEquals("Not enough XP for a heart.", BuyHeartResult.failureMessage(BuyHeartResult.InsufficientXp(null)))
+        assertNull(BuyHeartResult.failureMessage(BuyHeartResult.Ok(1, 0)))
+    }
+
+    @Test
     fun `completeLesson sends one answer object per question and decodes a null heartsBonus`() = runTest {
         val fake = FakeSupabase { json("""{"xpGain":50,"newlyUnlocked":["first_lesson"],"heartsBonus":null,"progress":$progressJson}""") }
         val result = client(fake).completeLesson(

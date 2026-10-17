@@ -61,4 +61,37 @@ class HeartsEconomyTest {
         assertEquals(XpPurchaseResult.InsufficientXp, HeartsEconomy.buyHeartWithXp(2, 49))
         assertEquals(XpPurchaseResult.Ok(3, 0), HeartsEconomy.buyHeartWithXp(2, 50))
     }
+
+    @Test
+    fun `the offline gate blocks only at 0 hearts with no due refill`() {
+        assertEquals(HeartsEconomy.GateDecision.Open, HeartsEconomy.gate(1, null, now))
+        assertEquals(HeartsEconomy.GateDecision.OutOfHearts(now + 60_000), HeartsEconomy.gate(0, now + 60_000, now))
+        assertEquals(HeartsEconomy.GateDecision.OutOfHearts(null), HeartsEconomy.gate(0, null, now))
+        // A refill that is due resolves first, as the server does.
+        assertEquals(HeartsEconomy.GateDecision.Open, HeartsEconomy.gate(0, now, now))
+    }
+
+    @Test
+    fun `losing the last heart starts the refill timer once`() {
+        assertEquals(HeartsState(2, null), HeartsEconomy.afterLosingHeart(3, null, now))
+        assertEquals(HeartsState(0, now + HeartsEconomy.HEART_REFILL_MS), HeartsEconomy.afterLosingHeart(1, null, now))
+        assertEquals(HeartsState(0, now + 5), HeartsEconomy.afterLosingHeart(1, now + 5, now))
+        assertEquals(HeartsState(0, now + 5), HeartsEconomy.afterLosingHeart(0, now + 5, now))
+    }
+
+    @Test
+    fun `out-of-hearts countdown and copy match iOS and web`() {
+        val model = OutOfHeartsModel(now + 90_500)
+        assertEquals("1:31", model.countdown(now))
+        assertEquals("You've used all your hearts for now. They refill automatically in 1:31.", model.message(now))
+        assertEquals("0:01", model.countdown(now + 90_000))
+        assertEquals(null, model.countdown(now + 90_500))
+        assertEquals("You've used all your hearts for now. They'll refill again shortly.", model.message(now + 90_500))
+        assertFalse(model.isRefillDue(now))
+        assertTrue(model.isRefillDue(now + 90_500))
+        assertFalse(OutOfHeartsModel(null).isRefillDue(now))
+        assertEquals("Use 50 XP for a heart", OutOfHeartsModel.BUY_TITLE)
+        assertTrue(model.showsBuy(isOnline = true))
+        assertFalse(model.showsBuy(isOnline = false))
+    }
 }

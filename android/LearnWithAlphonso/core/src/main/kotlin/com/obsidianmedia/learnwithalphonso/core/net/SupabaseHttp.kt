@@ -24,6 +24,9 @@ sealed class ProgressSyncError(message: String) : Exception(message) {
         ProgressSyncError("Server returned $status${serverMessage?.let { ": $it" } ?: ""}")
 
     class InvalidPayload : ProgressSyncError("Unexpected response shape")
+
+    /** start-lesson-session's 409 at 0 hearts. `refillAt` (epoch ms) is null when the server has no refill timer. */
+    class OutOfHearts(val refillAt: Long?) : ProgressSyncError("Out of hearts")
 }
 
 /**

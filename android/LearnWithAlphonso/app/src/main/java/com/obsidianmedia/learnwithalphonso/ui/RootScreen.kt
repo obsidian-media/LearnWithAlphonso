@@ -192,7 +192,10 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.LESSON) { entry ->
                 val course = Course.fromCode(entry.arguments?.getString("course") ?: "en")
                 val lessonId = entry.arguments?.getString("lessonId") ?: ""
-                LessonScreen(container, course, lessonId, onExit = { nav.popBackStack() })
+                LessonScreen(
+                    container, course, lessonId, onExit = { nav.popBackStack() },
+                    onReviewInstead = { nav.popBackStack(); nav.navigate(Routes.review(course.code)) },
+                )
             }
             composable(Routes.REVIEW) { entry ->
                 ReviewScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onExit = { nav.popBackStack() })
