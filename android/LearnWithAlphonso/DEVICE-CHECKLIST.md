@@ -34,6 +34,10 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Download an episode, airplane mode on, kill and reopen the app: the Listen tab shows "Offline, showing your downloads" and the episode plays.
 - [ ] Delete a downloaded episode while it plays: playback stops first, no crash.
 - [ ] Close the app mid-episode, reopen: the episode row shows "Resume" and resumes near the same position.
+- [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
+- [ ] Listen on two devices with the same account: play on A, then on B past A's position; going back to A and playing does not rewind B's position (A may resume from B's after it reloads the list).
+- [ ] An AI-narrated episode (podcast voice episodes) shows "5:05 · AI-narrated" (plus "Resume" when it has a position); an uploaded recording shows no label; the offline list shows "Downloaded · AI-narrated" for a downloaded AI-narrated one.
+- [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)
 

@@ -80,6 +80,11 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     override fun currentMillis(): Long = controller?.currentPosition ?: 0L
     override fun durationMillis(): Long? = controller?.duration?.takeIf { it > 0 }
 
+    override fun stop() = withController {
+        it.stop()
+        it.clearMediaItems()
+    }
+
     override fun release() {
         ticker?.cancel()
         controller?.removeListener(listener)
