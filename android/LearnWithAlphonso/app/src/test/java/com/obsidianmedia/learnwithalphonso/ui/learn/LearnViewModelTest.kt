@@ -8,6 +8,7 @@ import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
 import com.obsidianmedia.learnwithalphonso.testContent
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -43,8 +44,9 @@ class LearnViewModelTest {
         assertEquals("u1l2", s.mostRecentlyCompletedLessonId)
         assertEquals(true, s.placementTaken)
         assertNull("continue target is in A1, not the selected B1 band", s.continueLessonId(testContent))
-        v.selectLevel("A1")
+        val saving = v.selectLevel("A1")
         assertEquals("u1l3", v.state.value.continueLessonId(testContent))
+        saving.join()
     }
 
     @Test
@@ -101,5 +103,38 @@ class LearnViewModelTest {
         assertEquals("C1", v.state.value.selectedLevel)
         saving.join()
         assertTrue(s.seen.any { it.path.endsWith("set_cefr_level") && it.body == """{"_language":"en","_level":"C1"}""" })
+    }
+
+    @Test
+    fun `selectLevel returns at once while the save is still in flight`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = FakeServer { req ->
+            if (req.path.endsWith("set_cefr_level")) { gate.await(); json("") } else json("[]")
+        }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore())
+        v.initialLoad.join()
+        // Safety valve: a selectLevel that blocks on the save would otherwise hang the run, so release it late and let the assertions fail.
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(3_000); gate.complete(Unit) }
+        val saving = v.selectLevel("C1")
+        assertEquals("C1", v.state.value.selectedLevel)
+        assertTrue("the save must still be pending, not awaited by selectLevel", saving.isActive)
+        gate.complete(Unit)
+        saving.join()
+        assertTrue(s.seen.any { it.path.endsWith("set_cefr_level") })
+    }
+
+    @Test
+    fun `two quick course switches leave no load running`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = FakeServer { req -> if (req.query["select"] == "cefr_level") { gate.await(); json("[]") } else json("[]") }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore())
+        val first = v.selectCourse(Course.FRENCH)
+        val second = v.selectCourse(Course.SPANISH)
+        assertTrue("the superseded load is cancelled", first.isCancelled)
+        assertTrue("the initial load is cancelled", v.initialLoad.isCancelled)
+        gate.complete(Unit)
+        second.join()
+        assertTrue(first.isCompleted && v.initialLoad.isCompleted && second.isCompleted)
+        assertEquals(Course.SPANISH, v.state.value.course)
     }
 }

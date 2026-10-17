@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
@@ -27,6 +28,8 @@ import kotlinx.coroutines.launch
 
 /** The five CEFR bands, same ids, order and names as src/data/levels.ts. */
 val LEVELS: List<Pair<String, String>> = listOf("A1" to "Beginner", "A2" to "Elementary", "B1" to "Intermediate", "B2" to "Upper Int.", "C1" to "Advanced")
+
+private val COMPLETED: Job = Job().also { it.complete() }
 
 data class LearnUiState(
     val course: Course = Course.ENGLISH,
@@ -64,12 +67,15 @@ class LearnViewModel(
     val dueBadge: StateFlow<String?> = syncStore.dueCount.map(ReviewBadge::text).stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val dueCount: StateFlow<Int> = syncStore.dueCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
+    private var loadJob: Job? = null
+
     /** The first load, so tests can join it instead of polling. */
+    @VisibleForTesting
     val initialLoad: Job = load()
 
     /** Every action returns its Job so callers (tests) can join it rather than wait on a side effect. */
     fun selectCourse(course: Course): Job {
-        if (course == _state.value.course) return Job().also { it.complete() }
+        if (course == _state.value.course) return COMPLETED
         _state.value = LearnUiState(course = course)
         return load()
     }
@@ -116,7 +122,9 @@ class LearnViewModel(
 
     fun clearNotice() = _state.update { it.copy(notice = null) }
 
+    /** A newer load supersedes (cancels) the previous one, so nothing is left running after a course switch. */
     private fun load(): Job {
+        loadJob?.cancel()
         val course = _state.value.course
         return viewModelScope.launch {
             val level = runCatching { client.fetchCefrLevel(course.code) }.getOrNull()?.takeIf { it.isNotEmpty() && LEVELS.any { l -> l.first == it } }
@@ -133,6 +141,6 @@ class LearnViewModel(
                     challenges = challenges,
                 )
             }
-        }
+        }.also { loadJob = it }
     }
 }
