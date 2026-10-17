@@ -144,6 +144,8 @@ class LearnViewModelTest {
         assertTrue("the initial load is cancelled", v.initialLoad.isCancelled)
         gate.complete(Unit)
         second.join()
+        first.join()
+        v.initialLoad.join()
         assertTrue(first.isCompleted && v.initialLoad.isCompleted && second.isCompleted)
         assertEquals(Course.SPANISH, v.state.value.course)
     }

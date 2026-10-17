@@ -102,12 +102,14 @@ class HectorViewModel(
     val state: StateFlow<HectorUiState> = _state.asStateFlow()
     val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var memoryContext: ChatMessage? = null
+    private var cefrLevel: String? = null
     private var analysed = false
 
     init {
         viewModelScope.launch {
             val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
             val open = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList()).filter { it.openCount > 0 }.map { it.category }
+            cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
         }
         viewModelScope.launch {
@@ -131,7 +133,7 @@ class HectorViewModel(
     private suspend fun sendTurn(text: String) {
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
-            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code)
+            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel)
             _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = ConversationPhase.SPEAKING) }
             reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }

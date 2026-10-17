@@ -176,6 +176,8 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
         piperVoice: String = "mana",
         /** The conversation's course; the server resolves the prompt, voice and reply language from it. */
         course: String? = null,
+        /** The learner's level in this course, so the tutor's system prompt can pitch its replies. Omitted when unknown. */
+        cefrLevel: String? = null,
     ): TutorReply {
         val body = buildJsonObject {
             put("session_id", sessionId)
@@ -185,6 +187,7 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
             put("agent_id", agentId)
             put("tts_model", ttsModel)
             put("piper_voice", piperVoice)
+            if (!cefrLevel.isNullOrEmpty()) put("cefr_level", cefrLevel)
             putJsonArray("history") { history.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
         }
         val response = http.post("api/hector-respond", body, extraHeaders = mapOf("X-Alphonso-Device-Id" to deviceId))

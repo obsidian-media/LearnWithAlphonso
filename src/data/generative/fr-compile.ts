@@ -235,6 +235,14 @@ export function frCandidates(template: RomanceTemplateId, verbInf: string): Gene
       for (const noun of FR_NOUNS) {
         if (!noun.classes.includes(use.cls)) continue;
         if (use.nouns && !use.nouns.includes(noun.key)) continue;
+        if (use.except?.includes(noun.key)) continue;
+        if (use.pluralIndefinite) {
+          // Rendered as the regular plural; the item still names the singular noun.
+          const plural: Noun = { ...noun, key: `${noun.key}s`, number: "p", en: `${noun.en}s` };
+          const item = compileFrObject(template, subject, verb, plural, "indefinite");
+          out.push({ ...item, object: noun.key });
+          continue;
+        }
         for (const kind of use.kinds) {
           if (!frFeasibleKinds(noun).includes(kind)) continue;
           out.push(compileFrObject(template, subject, verb, noun, kind));

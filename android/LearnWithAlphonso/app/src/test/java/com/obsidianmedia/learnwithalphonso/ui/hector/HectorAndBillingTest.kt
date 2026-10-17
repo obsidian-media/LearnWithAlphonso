@@ -62,6 +62,7 @@ class HectorAndBillingTest {
         val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject
         assertEquals("fr", body["course"]!!.jsonPrimitive.content)
         assertEquals("fr", body["language"]!!.jsonPrimitive.content)
+        assertEquals("the tutor is told the level", "B2", body["cefr_level"]!!.jsonPrimitive.content)
         assertTrue(Regex("(?s)name=\"?course\"?.{0,80}?\r?\n\r?\nfr").containsMatchIn(s.seen.first { it.path.endsWith("/api/stt") }.body))
     }
 

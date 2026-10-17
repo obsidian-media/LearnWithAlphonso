@@ -55,6 +55,27 @@ class AiConversationClientTest {
         assertEquals("""{"text":"salut","course":"fr"}""", seen[1].body.decodeToString())
         c.analyzeWeaknesses(listOf(ChatMessage("user", "a")), course = "es")
         assertTrue(seen[2].body.decodeToString().endsWith(""","course":"es"}"""))
+        // And absent when not given: an older caller's bodies are unchanged.
+        c.chat(listOf(ChatMessage("user", "hi")))
+        c.synthesizeSpeech("salut")
+        c.analyzeWeaknesses(listOf(ChatMessage("user", "a")))
+        assertTrue(seen.drop(3).none { it.body.decodeToString().contains("course") })
+    }
+
+    @Test
+    fun `the tutor call carries the course and the level when given, and neither when not`() = runTest {
+        val seen = ArrayList<Seen>()
+        val reply = """{"request_id":"r","session_id":"s","agent":"tutor","reply":"Salut","audio_base64":"","tts_model":"m","tts_provider":"p","language":"fr","state":"ok"}"""
+        val t = TutorConversationClient(http(seen) { reply.toByteArray() to HttpStatusCode.OK }, "d")
+        t.respond("s", "hi", "fr", emptyList(), course = "fr", cefrLevel = "B1")
+        val with = seen[0].body.decodeToString()
+        assertTrue(with.contains(""""course":"fr""""), with)
+        assertTrue(with.contains(""""cefr_level":"B1""""), with)
+        t.respond("s", "hi", "en", emptyList(), course = "en", cefrLevel = "")
+        assertTrue(!seen[1].body.decodeToString().contains("cefr_level"))
+        t.respond("s", "hi", "en", emptyList())
+        val bare = seen[2].body.decodeToString()
+        assertTrue(!bare.contains("\"course\"") && !bare.contains("cefr_level"), bare)
     }
 
     @Test

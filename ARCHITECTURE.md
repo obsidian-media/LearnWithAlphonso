@@ -729,6 +729,7 @@ nouns and verbs already in the shipped course.
   hand-written cloze lines, and `docs/superpowers/generative-wiktionary-check.json`
   is the committed summary of the local Wiktionary check
   (`scripts/check-wiktionary.ts`; the data itself is not committed).
+- Shipped 2026-10-17: the 21 planned packs are applied (`frga2p1-6` A2, `frgb1p1-6` B1, `esga2p1-9` A2). Regenerating a pack from the plan must give the committed lines (the gate tests check it).
 - `bun scripts/pack-tool.ts generate --course fr|es --pack <id>` writes a
   draft; `scripts/romance-sample.ts` prints an owner spot-check sample with
   English meanings (never stored in the banks). Licensing of the Lefff data:
@@ -1288,7 +1289,32 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   when it opens (its view model is keyed by it) and sends it with chat, speech
   synthesis, speech to text, weakness analysis and the Hector tutor call, so the
   voice, transcription language and replies match; the level read is that
-  course's. Hector's priming turn no longer says "English" (as on iOS).
+  course's, and the tutor call carries `cefr_level`. Hector's priming turn no longer says "English" (as on iOS). The course is loaded while composing `RootScreen`, before any screen reads it (a restored session is signed in without suspending, so an effect would run after Learn had already written its default back); Learn writes the course only when the learner picks one. The weakness trend Hector reads covers every course, as on iOS.
+- **One-time public-name step.** After the first sign-in `SignedInApp`
+  reads `get_my_name_status` (`fetchNameStatus`) in its own coroutine, started
+  before sync, billing sign-in, reminders and push registration; while
+  `name_confirmed_at` is NULL a full-screen `NameOnboardingScreen` covers the
+  app, then English placement follows. The order is `OnboardingSequence`, and
+  `OnboardingFlow` (held by `AppContainer`, so for the life of the process)
+  keeps its inputs and the steps already done: the launch work runs once per
+  account (a rotation neither redoes it nor loses the prompt; a run cancelled
+  half way is run again), each prompt has its own id which keys its view
+  model, and an account change or sign-out drops the previous account's
+  prompt and prefilled name. All rules and copy are core's
+  `DisplayNameOnboarding` (length 2 to 40 in code points, the prefill order
+  given name then first word of full or short name, the generated
+  `Learner-XXXX` handle shown as a hint and never as text), decoded from the
+  same `name-onboarding.fixtures.json` as the web and iOS (the Android copy is
+  byte-checked by `name-onboarding-native-fixtures.test.ts`). The live check
+  is a debounced `display_name_problem` call whose answer is dropped when the
+  text changed meanwhile; an unreachable filter still allows Save because
+  `confirm_display_name` checks again; a refused save (`blocked-content`,
+  `invalid-name`) becomes the field's problem. Skip calls
+  `skip_display_name_prompt` and always closes the prompt, even offline
+  (nothing is stamped, so it returns next launch). Names come from
+  `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
+  Android has no Apple given-name source. `NameReasonCopy` words the refusal
+  codes for this prompt and for Settings' name save.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

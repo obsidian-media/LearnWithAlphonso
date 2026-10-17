@@ -68,8 +68,8 @@ fun LearnScreen(
 ) {
     val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value) }
     val state by vm.state.collectAsState()
-    // Learn sets the active course (Practice and Hector follow it) and follows it when the account changes.
-    LaunchedEffect(state.course) { container.activeCourse.set(state.course) }
+    // Learn follows the active course when the account changes. It writes the course only when the learner picks one
+    // (below), never its initial state: a screen built from the default must not overwrite the account's saved choice.
     LaunchedEffect(Unit) { container.activeCourse.course.collect { if (it != vm.state.value.course) vm.selectCourse(it) } }
     val progress by vm.progress.collectAsState()
     val dueCount by vm.dueCount.collectAsState()
@@ -99,7 +99,7 @@ fun LearnScreen(
 
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            CoursePicker(state.course, onSelect = vm::selectCourse)
+            CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
             Spacer(Modifier.weight(1f))
             Text("Learn with Alphonso", style = MaterialTheme.typography.titleMedium, color = palette.ink)
             Spacer(Modifier.weight(1f))

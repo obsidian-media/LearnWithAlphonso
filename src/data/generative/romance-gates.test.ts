@@ -10,6 +10,8 @@ import { esCandidates } from "./es-compile";
 import { frDefects } from "./fr-check";
 import { FR_AVOIR_PRESENT, FR_ETRE_PRESENT, FR_NOUNS, FR_VERBS } from "./fr-data";
 import { frCandidates } from "./fr-compile";
+import { BANK_ES } from "../lesson-bank-es";
+import { BANK_FR } from "../lesson-bank-fr";
 import { allPacks } from "./romance-bank.testutil";
 import { ROMANCE_PACK_SPECS, buildRomancePack, specCandidates } from "./romance-packs";
 import { completeSentence, type GeneratedItem, type Noun } from "./romance";
@@ -60,6 +62,9 @@ describe("the packs themselves", () => {
   });
 });
 
+/** Singular entries that read naturally only as a plural indefinite after manger. */
+const PLURAL_ONLY_IN_USE = new Set(["légume"]);
+
 describe("gate 2: agreement, countability and article kind (read off the rendered text)", () => {
   it("French articles match the noun's gender, number and countability", () => {
     for (const { items } of built)
@@ -70,11 +75,14 @@ describe("gate 2: agreement, countability and article kind (read off the rendere
         const partitive = /^(du|de la|de l'|des) /.test(np) || /^de l'/.test(np);
         if (!noun.count) {
           expect(partitive, `${item.prompt}: mass noun needs the partitive`).toBe(true);
-        } else if (noun.number === "s") {
+        } else if (noun.number === "s" && !PLURAL_ONLY_IN_USE.has(noun.key)) {
           expect(partitive, `${item.prompt}: count noun must not take the partitive`).toBe(false);
         }
         if (noun.number === "p") {
           expect(np, item.prompt).toMatch(new RegExp(`^(les|des) ${noun.key}$`));
+        } else if (PLURAL_ONLY_IN_USE.has(noun.key) && item.verb === "manger") {
+          // "un légume" is not idiomatic: written out by hand, the plural is the only form.
+          expect(np, item.prompt).toBe(`des ${noun.key}s`);
         } else if (noun.gender === "m") {
           expect(np, item.prompt).toMatch(new RegExp(`^(le|l'|un|du|de l') ?${noun.key}$`));
         } else {
@@ -449,6 +457,9 @@ const FORBIDDEN: [string, string][] = [
   ["ouvrir", "pomme"],
   ["ouvrir", "chien"],
   ["acheter", "chien"],
+  ["acheter", "clé"],
+  ["manger", "beurre"],
+  ["cuisiner", "beurre"],
   ["cuisiner", "chaise"],
   ["comer", "silla"],
   ["comer", "libro"],
@@ -519,11 +530,12 @@ describe("gate 7: the meaning allowlist", () => {
     expect(esCandidates("es-svo-present", "tener").length).toBeGreaterThan(0);
   });
 
-  it("manger takes the indefinite only for the generic nouns fruit and légume", () => {
-    for (const item of everything.filter(
-      (i) => i.verb === "manger" && ["fruit", "légume"].includes(i.object),
-    ))
-      expect(item.articleKind, item.prompt).toBe("indefinite");
+  it("manger takes the indefinite only for fruit, and only the plural for légume", () => {
+    for (const item of everything.filter((i) => i.verb === "manger" && i.object === "fruit"))
+      expect(item.prompt, item.prompt).toMatch(/ un fruit\.$/);
+    const veg = everything.filter((i) => i.verb === "manger" && i.object === "légume");
+    expect(veg.length).toBeGreaterThan(0);
+    for (const item of veg) expect(item.prompt, item.prompt).toMatch(/ des légumes\.$/);
   });
 
   it("every generated (verb, object) is inside the hand-written class list, and mettre takes clothing only", () => {
@@ -549,5 +561,28 @@ describe("gate 7: the meaning allowlist", () => {
   it("the spec candidates never leave the spec's own verbs", () => {
     for (const spec of ROMANCE_PACK_SPECS)
       for (const item of specCandidates(spec)) expect(spec.verbs).toContain(item.verb);
+  });
+});
+
+describe("the applied packs are exactly what the plan generates", () => {
+  it("every planned pack is in its course bank at its level, with the generated lines", () => {
+    for (const { spec, pack } of built) {
+      const bank = spec.lang === "fr" ? BANK_FR : BANK_ES;
+      const found = bank[spec.level].find((p) => p.id === spec.id);
+      expect(found, `${spec.id} missing from the ${spec.lang} ${spec.level} bank`).toBeDefined();
+      expect(found!.data, `${spec.id} was edited after generation`).toBe(pack.data);
+      expect(found!.title).toBe(pack.title);
+      expect(found!.kind).toBe("cloze");
+    }
+  });
+
+  it("no generated pack sits in the bank without a plan", () => {
+    const planned = new Set(ROMANCE_PACK_SPECS.map((s) => s.id));
+    for (const [prefix, bank] of [
+      ["frg", BANK_FR],
+      ["esg", BANK_ES],
+    ] as const)
+      for (const pack of Object.values(bank).flat())
+        if (pack.id.startsWith(prefix)) expect(planned.has(pack.id), pack.id).toBe(true);
   });
 });

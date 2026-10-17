@@ -33,6 +33,10 @@ export type Use = {
   kinds: ArticleKind[];
   /** Finer than a class: when set, only these noun keys are allowed. */
   nouns?: string[];
+  /** Noun keys that are NOT allowed with this use, even though their class is. */
+  except?: string[];
+  /** French only: render the noun as a plural indefinite ("des légumes"). */
+  pluralIndefinite?: boolean;
 };
 
 export type EnglishVerb = { base: string; third: string; past: string };

@@ -230,7 +230,6 @@ export const ES_NOUNS: Noun[] = [
   n("bolígrafo", "m", ["school-object"], "esa1p7", "pen", W),
   n("mochila", "f", ["school-object", "openable"], "esa1p13", "backpack", W),
   n("regla", "f", ["school-object"], "esa1p13", "ruler", W),
-  n("goma", "f", ["school-object"], "esa1p13", "eraser", W),
   n("tijeras", "f", ["school-object"], "esa1p13", "scissors", W, { number: "p" }),
   n("periódico", "m", ["readable"], "esb2p17", "newspaper", C),
   n("revista", "f", ["readable"], "esa2p28", "magazine", C),

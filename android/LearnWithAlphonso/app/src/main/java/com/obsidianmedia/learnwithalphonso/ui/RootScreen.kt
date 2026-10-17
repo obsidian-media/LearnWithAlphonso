@@ -20,7 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -29,6 +32,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingStep
+import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
+import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
@@ -78,12 +88,16 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val palette = AlphonsoColor.palette
 
     LaunchedEffect(Unit) { session.restore() }
-    // The active course is the signed-in account's own (English while signed out or never chosen).
-    LaunchedEffect((state as? AuthState.SignedIn)?.session?.userId) {
-        container.activeCourse.accountChanged((state as? AuthState.SignedIn)?.session?.userId)
+    val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
+    // The active course is the signed-in account's own (English while signed out or never chosen). It is loaded
+    // while composing, before any screen reads it: `session.restore()` sets SignedIn without suspending, so an effect
+    // would run after Learn had already built its view model from the default and written it back over the saved choice.
+    remember(signedInUserId) { container.activeCourse.accountChanged(signedInUserId); signedInUserId }
+    // Signing out drops everything onboarding held for the account.
+    LaunchedEffect(signedInUserId) {
+        if (state !is AuthState.SignedIn) container.onboarding.reset()
     }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
-    val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {
@@ -110,16 +124,53 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     val currentRoute = backStack?.destination?.route
     val showBar = currentRoute in Routes.tabs
     val userId = container.session.userId
+    val flow = container.onboarding
+    val namePresentation by flow.name.collectAsState()
+
+    // The step after the name prompt: English placement, driven by OnboardingSequence so the order lives in one place.
+    val advanceOnboarding: () -> Unit = {
+        val id = userId
+        if (id != null && flow.next(id) == OnboardingStep.PLACEMENT) {
+            flow.finish(id, OnboardingStep.PLACEMENT)
+            nav.navigate(Routes.placement("en"))
+        }
+    }
 
     LaunchedEffect(userId) {
-        container.syncCoordinator.triggerSync()
-        runCatching { userId?.let { container.progressClient.fetchProfileTheme(it) } }.getOrNull()?.let(container.themeManager::hydrateFromServer)
-        userId?.let { container.entitlements.login(it) }
-        container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
-        container.pushRegistrar.registerIfAuthorized()
-        val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
-        if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
-            nav.navigate(Routes.placement("en"))
+        val id = userId ?: return@LaunchedEffect
+        // Once per account per process: a rotation neither redoes the launch work nor loses the prompt. If this run is
+        // cancelled before it finishes, the next composition runs it again.
+        if (!flow.tryBegin(id)) return@LaunchedEffect
+        try {
+            coroutineScope {
+                // The onboarding checks start first, in their own coroutine, so they never wait behind sync, sign-in
+                // to billing, reminders or push registration. A failed check skips its step this launch, never blocks.
+                launch {
+                    val status = runCatching { container.progressClient.fetchNameStatus() }.getOrNull()
+                    val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
+                    val placementTaken = when {
+                        placed != null -> true
+                        runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess -> false
+                        else -> null
+                    }
+                    flow.record(id, nameConfirmed = status?.nameConfirmed, placementTaken = placementTaken)
+                    if (flow.next(id) == OnboardingStep.DISPLAY_NAME) {
+                        val names = container.session.fetchUserNames()
+                        flow.presentName(id, status?.let { DisplayNameOnboarding.start(DisplayNameOnboarding.prefill(names, it.displayName), it.displayName) })
+                    }
+                    advanceOnboarding()
+                }
+                launch {
+                    container.syncCoordinator.triggerSync()
+                    runCatching { container.progressClient.fetchProfileTheme(id) }.getOrNull()?.let(container.themeManager::hydrateFromServer)
+                    container.entitlements.login(id)
+                    container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
+                    container.pushRegistrar.registerIfAuthorized()
+                }
+            }
+        } catch (e: CancellationException) {
+            flow.abandon(id)
+            throw e
         }
     }
 
@@ -211,6 +262,15 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
             }
             composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }) }
+        }
+    }
+
+    // The one-time public-name prompt covers the app until the learner saves or skips; placement follows.
+    // Only a prompt that belongs to the signed-in account is ever shown.
+    namePresentation?.takeIf { it.userId == userId }?.let { presentation ->
+        NameOnboardingScreen(container, presentation) {
+            userId?.let { flow.finish(it, OnboardingStep.DISPLAY_NAME) }
+            advanceOnboarding()
         }
     }
 }

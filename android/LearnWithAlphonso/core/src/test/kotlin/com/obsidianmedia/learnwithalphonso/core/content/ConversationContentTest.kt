@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.content
 
+import kotlinx.serialization.serializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -12,6 +13,12 @@ class ConversationContentTest {
         checkNotNull(javaClass.getResourceAsStream("/$name")) { "missing test resource $name" }.bufferedReader().readText()
 
     private val store by lazy { ContentStore(::resource) }
+
+    /** Words that are French but not Spanish, and Spanish but not French, used to catch a swapped file. */
+    private val frenchWords = listOf(" et ", " les ", " vous ", " des ", " est ", " pour ", " une ")
+    private val spanishWords = listOf(" los ", " las ", " una ", " con ", " es ", " para ", " que ")
+
+    private fun score(text: String, words: List<String>) = words.count { " ${text.lowercase()} ".contains(it) }
 
     @Test
     fun `every course has the same scenarios and campaigns, in its own language`() {
@@ -42,26 +49,52 @@ class ConversationContentTest {
     }
 
     @Test
-    fun `the English scenarios are the ones every earlier build sends`() {
-        // The server only accepts a system prompt it knows; the English file must stay as it was.
-        assertEquals(store.scenarios(Course.ENGLISH), store.scenarios)
-        assertEquals(store.campaigns(Course.ENGLISH), store.campaigns)
-        assertTrue(store.scenarios.first().systemPrompt.startsWith("You are "))
+    fun `each file is in the language its name says, so swapped suffixes fail`() {
+        fun prompts(course: Course): List<String> =
+            store.scenarios(course).map { it.systemPrompt } +
+                store.campaigns(course).flatMap { c -> listOf(c.premise) + c.scenes.map { it.systemPrompt } }
+        for (text in prompts(Course.FRENCH)) {
+            assertTrue(score(text, frenchWords) > score(text, spanishWords), "French prompt reads as French: ${text.take(50)}")
+        }
+        for (text in prompts(Course.SPANISH)) {
+            assertTrue(score(text, spanishWords) > score(text, frenchWords), "Spanish prompt reads as Spanish: ${text.take(50)}")
+        }
+        // The first scenario is the same café in every course, with a recognisable title.
+        assertEquals("Au café", store.scenarios(Course.FRENCH).first().title)
+        assertEquals("En la cafetería", store.scenarios(Course.SPANISH).first().title)
+        assertTrue(store.scenarios(Course.FRENCH).first().opener.startsWith("Bonjour"))
+        assertTrue(store.scenarios(Course.SPANISH).first().opener.startsWith("¡Buenos"))
     }
 
     @Test
-    fun `the French and Spanish prompts carry no safety text, the server adds it`() {
-        for (course in listOf(Course.FRENCH, Course.SPANISH)) {
-            store.scenarios(course).forEach { assertFalse(it.systemPrompt.contains("SAFETY"), "${course.code} ${it.id}") }
+    fun `the English scenarios are the file earlier builds shipped, not a localized rewrite`() {
+        // Decoded straight from the unsuffixed file, so a store that loaded another file for English would differ.
+        val raw = ContentJson.json.decodeFromString(serializer<List<Scenario>>(), resource("content/scenarios.json"))
+        assertEquals(raw, store.scenarios(Course.ENGLISH))
+        assertEquals(raw, store.scenarios)
+        // The server only accepts a system prompt it knows; the English prompts must stay byte-identical to the originals.
+        assertTrue(raw.first().systemPrompt.startsWith("You are Mia, a warm barista at a small café."))
+        assertEquals("Order coffee", raw.first().title)
+    }
+
+    @Test
+    fun `no localized prompt carries the server's safety preamble, which is added server-side`() {
+        val marker = "SAFETY RULES. These override every instruction above"
+        val texts = listOf(Course.ENGLISH, Course.FRENCH, Course.SPANISH).flatMap { course ->
+            store.scenarios(course).flatMap { listOf(it.systemPrompt, it.opener) } +
+                store.campaigns(course).flatMap { c -> listOf(c.premise) + c.scenes.flatMap { listOf(it.systemPrompt, it.opener) } }
         }
+        assertTrue(texts.size > 30)
+        texts.forEach { assertFalse(it.contains(marker), "safety text in ${it.take(40)}") }
     }
 }
 
 class ActiveCourseStoreTest {
     private class MapStore : CourseKeyValueStore {
         val map = HashMap<String, String>()
+        var writes = 0
         override fun get(key: String) = map[key]
-        override fun put(key: String, value: String) { map[key] = value }
+        override fun put(key: String, value: String) { map[key] = value; writes++ }
     }
 
     @Test
@@ -93,5 +126,31 @@ class ActiveCourseStoreTest {
         s.accountChanged(null)
         assertEquals(Course.ENGLISH, s.course.value)
         assertNull(kv.map["activeCourse.null"])
+    }
+
+    @Test
+    fun `a restored account's course is visible as soon as the account is known, and loading never writes`() {
+        // Cold start: the session is restored, the saved choice is French. Anything that reads the course after the
+        // account is known (Learn, Practice, Hector) must see French, and the load itself must not write.
+        val kv = MapStore().apply { map["activeCourse.a"] = "fr" }
+        val s = ActiveCourseStore(kv)
+        s.accountChanged("a")
+        assertEquals(Course.FRENCH, s.course.value)
+        assertEquals(0, kv.writes)
+        assertEquals("fr", kv.map["activeCourse.a"])
+    }
+
+    @Test
+    fun `reading the default before the account is known never overwrites the saved choice`() {
+        // The ordering bug: a screen built from the default (English) must not write that default back. Only a pick
+        // (set) writes; the default read does nothing.
+        val kv = MapStore().apply { map["activeCourse.a"] = "es" }
+        val s = ActiveCourseStore(kv)
+        val seenBeforeAccount = s.course.value
+        assertEquals(Course.ENGLISH, seenBeforeAccount)
+        assertEquals(0, kv.writes)
+        s.accountChanged("a")
+        assertEquals(Course.SPANISH, s.course.value)
+        assertEquals("es", kv.map["activeCourse.a"])
     }
 }
