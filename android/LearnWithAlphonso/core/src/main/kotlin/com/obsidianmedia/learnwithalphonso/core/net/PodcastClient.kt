@@ -42,7 +42,7 @@ class PodcastClient(
     private val userId: () -> String?,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) {
-    private companion object {
+    internal companion object {
         const val PUBLISHED_INDEX_PAGE_SIZE = 500
         const val EPISODE_SELECT = "id,folder_id,slug,title,description,audio_path,duration_seconds,source"
     }

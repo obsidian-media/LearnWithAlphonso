@@ -37,6 +37,14 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
 - [ ] Listen on two devices with the same account: play on A, then on B past A's position; going back to A and playing does not rewind B's position (A may resume from B's after it reloads the list).
 - [ ] An AI-narrated episode (podcast voice episodes) shows "5:05 · AI-narrated" (plus "Resume" when it has a position); an uploaded recording shows no label; the offline list shows "Downloaded · AI-narrated" for a downloaded AI-narrated one.
+- [ ] Tap an episode on a slow connection: the mini bar shows a spinner (not Pause) until sound starts, then Pause.
+- [ ] Airplane mode on, tap an episode that is not downloaded: the mini bar says "Download this episode to listen offline." with Retry; a downloaded one plays.
+- [ ] Ask the owner to unpublish an episode you are not playing, reopen Listen: the episode and (if it was the last one) its folder are gone, and a download of it is removed. The episode playing at the time keeps playing.
+- [ ] A broken or removed audio file (ask the owner to rename it in the bucket): playing it shows "This episode isn't available right now." with Retry, never a Pause that does nothing.
+- [ ] Kill the network mid-episode: after about 20 seconds the player shows "Buffering..." and then the connection message with Retry; Retry resumes from where it stopped once the network is back.
+- [ ] Let an episode play to the end: it shows Play, the position is back at the start and the row no longer says Resume.
+- [ ] Switch the course on the Learn tab to French, then open Listen: only French (and course-less) folders show; a course with no episodes says "No French episodes yet" with Refresh.
+- [ ] Download a file that the server answers with a JSON error (ask the owner for a missing path): the download fails with "This episode isn't available to download right now." and nothing is stored.
 - [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)

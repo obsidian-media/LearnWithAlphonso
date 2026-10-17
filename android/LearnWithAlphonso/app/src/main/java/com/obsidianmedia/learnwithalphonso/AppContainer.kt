@@ -143,7 +143,7 @@ class AppContainer(context: Context) {
         RecordingState.isRecording,
         appScope,
         isOnline = { connectivity.isConnected.value },
-        probe = PodcastProbe(okHttp),
+        probe = PodcastProbe(okHttp)::invoke,
     )
     val reminders = ReminderHooks(WorkManagerReminderScheduler(app))
     val pushRegistrar = PushRegistrar(

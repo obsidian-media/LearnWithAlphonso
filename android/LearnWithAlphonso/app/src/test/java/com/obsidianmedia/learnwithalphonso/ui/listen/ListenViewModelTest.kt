@@ -74,4 +74,51 @@ class ListenViewModelTest {
         assertNull(gone.state.value.error)
         assertEquals(emptyList<String>(), gone.state.value.offline?.map { it.title })
     }
+
+    private fun courseServer(folders: String = FOLDERS, fail: Boolean = false) = FakeServer { req ->
+        when {
+            fail -> json("{}", HttpStatusCode.ServiceUnavailable)
+            req.path.endsWith("podcast_folders") -> json(folders)
+            req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" -> json("""[{"id":"e1","folder_id":"f1"},{"id":"e2","folder_id":"f2"}]""")
+            else -> json("[]")
+        }
+    }
+
+    @Test
+    fun `Listen shows the active course's folders and follows a course change`() = runBlocking {
+        val vm = ListenViewModel(client(courseServer()), { emptyList() }, { true }, { "en" }, searchDebounceMillis = 0)
+        awaitTrue("loaded") { !vm.state.value.isLoading }
+        assertEquals(listOf("f1"), vm.state.value.folders.map { it.id })
+        vm.courseChanged("fr")
+        assertEquals(listOf("f2"), vm.state.value.folders.map { it.id })
+        vm.courseChanged("es")
+        assertTrue("a course with nothing published is an empty list, not another course's", vm.state.value.folders.isEmpty())
+    }
+
+    @Test
+    fun `a successful read removes downloads of unpublished episodes but keeps the one playing`() = runBlocking {
+        val removed = ArrayList<String>()
+        val vm = ListenViewModel(
+            client(courseServer()), { listOf(entry("e1"), entry("old"), entry("playing")) }, { true }, { "en" },
+            { ids -> removed.addAll(ids) }, { "playing" }, searchDebounceMillis = 0,
+        )
+        awaitTrue("loaded") { !vm.state.value.isLoading }
+        assertEquals(listOf("old"), removed)
+    }
+
+    @Test
+    fun `a failed read or a library with no folders removes nothing`() = runBlocking {
+        val removed = ArrayList<String>()
+        val failing = ListenViewModel(client(courseServer(fail = true)), { listOf(entry("old")) }, { true }, { "en" }, { removed.addAll(it) }, searchDebounceMillis = 0)
+        awaitTrue("failed") { !failing.state.value.isLoading }
+        assertEquals("a failed read says nothing about what is published", emptyList<String>(), removed)
+        val empty = ListenViewModel(client(courseServer(folders = "[]")), { listOf(entry("old")) }, { true }, { "en" }, { removed.addAll(it) }, searchDebounceMillis = 0)
+        awaitTrue("empty") { !empty.state.value.isLoading }
+        assertEquals("no folders is a role problem, not an empty library", emptyList<String>(), removed)
+    }
+
+    private companion object {
+        const val FOLDERS = """[{"id":"f1","parent_id":null,"slug":"en","title":"English","description":null,"sort_order":0,"course":"en"},
+            {"id":"f2","parent_id":null,"slug":"fr","title":"French","description":null,"sort_order":1,"course":"fr"}]"""
+    }
 }

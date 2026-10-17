@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.onboarding
 
 import com.obsidianmedia.learnwithalphonso.FakeServer
+import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
@@ -66,7 +67,10 @@ class NameOnboardingViewModelTest {
         }
         val v = vm(s)
         val firstEdit = async(start = CoroutineStart.UNDISPATCHED) { v.edit("Ana").join() }
-        // The first check is in flight; the learner types again, which cancels it and starts the second.
+        // The first check must really be in flight (its request sent and parked) before the learner types again:
+        // otherwise the second edit cancels it before it ever asked, takes the first call's slot and waits on the gate forever.
+        awaitTrue("the first check is in flight") { calls == 1 }
+        // The learner types again, which cancels the first check and starts the second.
         v.edit("Anas").join()
         gate.complete(Unit)
         firstEdit.await()

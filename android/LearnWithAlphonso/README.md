@@ -42,9 +42,14 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-Missing on Android: save-any-word, the later iOS offline-queue
-reliability work, and the rest of the iOS podcast player work (the playback state machine and its failure
-messages with Retry, download validation, and removing downloads of unpublished episodes).
+Missing on Android: save-any-word and the later iOS offline-queue reliability work.
+
+Ported on 2026-10-17, not yet run on a device: the rest of the iOS podcast player work. Playback shows as playing
+only once the player confirms it, a missing, broken or offline episode shows the reason with a Retry button (a
+HEAD request tells a missing file from a dead network; a load or a stall that never recovers times out after 20
+seconds), finishing rewinds and marks complete, downloads are validated (200, an audio type, the declared length,
+2,000 bytes a second at least), Listen shows the active course's folders (an empty course says so), and downloads
+of unpublished episodes are removed after a successful read of what is published.
 
 Ported on 2026-10-17, not yet run on a device: the "AI-narrated" label on Listen rows (episodes whose `source` is
 `tts`; "5:05 · Resume · AI-narrated", and "Downloaded · AI-narrated" offline), and the iOS resume
