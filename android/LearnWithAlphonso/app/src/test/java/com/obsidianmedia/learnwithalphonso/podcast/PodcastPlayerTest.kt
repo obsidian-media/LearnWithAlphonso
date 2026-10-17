@@ -199,6 +199,23 @@ class PodcastPlayerTest {
     }
 
     @Test
+    fun `a chained save for an episode the player has left guards on the stamp the previous save stored`() = runBlocking {
+        val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val s = server(hold = hold)
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode("e1", updatedAt = "S0"))
+        for (t in 0..10) port.onTick(t.toDouble()) // save 1 (guard S0) is in flight
+        for (t in 11..21) port.onTick(t.toDouble()) // save 2 is requested behind it, while the observed stamp is still S0
+        awaitTrue("first request") { saves(s).size == 1 }
+        p.play(episode("e2", updatedAt = "T0")) // the player leaves e1 before either save finishes
+        hold.complete(Unit)
+        awaitTrue("second request") { saves(s).count { it.query["episode_id"] == "eq.e1" } == 2 }
+        val second = saves(s).filter { it.query["episode_id"] == "eq.e1" }[1]
+        assertEquals("eq.S1", second.query["updated_at"])
+    }
+
+    @Test
     fun `saves run one after another, each reading the gate after the previous finished`() = runBlocking {
         val hold = kotlinx.coroutines.CompletableDeferred<Unit>()
         val s = server(hold = hold)

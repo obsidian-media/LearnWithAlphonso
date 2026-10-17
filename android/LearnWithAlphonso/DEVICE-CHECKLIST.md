@@ -34,6 +34,10 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Download an episode, airplane mode on, kill and reopen the app: the Listen tab shows "Offline, showing your downloads" and the episode plays.
 - [ ] Delete a downloaded episode while it plays: playback stops first, no crash.
 - [ ] Close the app mid-episode, reopen: the episode row shows "Resume" and resumes near the same position.
+- [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
+- [ ] Listen on two devices with the same account: play on A, then on B past A's position; going back to A and playing does not rewind B's position (A may resume from B's after it reloads the list).
+- [ ] An AI-narrated episode (podcast voice episodes) shows "5:05 \u00B7 AI-narrated" (plus "Resume" when it has a position); an uploaded recording shows no label; the offline list shows "Downloaded \u00B7 AI-narrated" for a downloaded AI-narrated one.
+- [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)
 
@@ -102,6 +106,18 @@ Two test accounts that are friends (A and B).
 - [ ] Matching (two test accounts that are NOT friends, same course, similar level, neither with a buddy): A sees the opt-in explanation, an "I'm 13 or older" checkbox and "Find me a study buddy (English)" (disabled until the box is ticked); ticking it and tapping shows "Looking for a study buddy learning English at your level." with Stop looking. B taps the same: both now show each other with "Matched learner" and the more-options menu (Block User / Report User).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
+
+## French and Spanish Practice (nothing here has been run on a device)
+
+Use a QA account with AI allowed.
+
+- [ ] Learn tab: switch to French. Open Practice: the campaigns and scenarios are the French ones (titles in French, the English gloss under each); the same for Spanish; switching back to English shows the English list.
+- [ ] Kill and reopen the app: Learn and Practice open on the course you last chose; sign in as another account: it opens on that account's own course (English if it never chose).
+- [ ] Open a French scenario: the first line is French, and holding the button and speaking French is transcribed as French; the reply comes back in French and is spoken with a French voice (not English). Same for Spanish.
+- [ ] A French campaign: scenes advance as in English, and the next scene's opening line is French.
+- [ ] Hector with French selected: Hector greets and answers in French, with a French voice; switching to Spanish on Learn gives a fresh Hector conversation in Spanish.
+- [ ] Rotate in a French conversation: the transcript stays and nothing restarts.
+- [ ] English still behaves exactly as before.
 
 ## Public-name step (nothing here has been run on a device)
 

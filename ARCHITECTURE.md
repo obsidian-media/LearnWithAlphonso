@@ -1276,6 +1276,20 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.
+- **Conversation content per course.** `scripts/export-android-content.ts`
+  now also writes `scenarios-fr.json`, `scenarios-es.json`, `campaigns-fr.json`
+  and `campaigns-es.json` (the same builders as the iOS export; the English
+  files keep their names and bytes, since earlier builds send those exact
+  prompts and `/api/chat` only accepts prompts it knows). `ContentStore`
+  exposes `scenarios(course)` / `campaigns(course)`. The active course is
+  `ActiveCourseStore` (core, over the `activeCourse.<userId>` preference, as on
+  iOS): Learn sets it from its course picker and opens on the account's own
+  choice, Practice and Hector follow it, and an account change loads that
+  account's course (English when it has none). A conversation fixes its course
+  when it opens (its view model is keyed by it) and sends it with chat, speech
+  synthesis, speech to text, weakness analysis and the Hector tutor call, so the
+  voice, transcription language and replies match; the level read is that
+  course's, and the tutor call carries `cefr_level`. Hector's priming turn no longer says "English" (as on iOS). The course is loaded while composing `RootScreen`, before any screen reads it (a restored session is signed in without suspending, so an effect would run after Learn had already written its default back); Learn writes the course only when the learner picks one. The weakness trend Hector reads covers every course, as on iOS.
 - **One-time public-name step.** After the first sign-in `SignedInApp`
   reads `get_my_name_status` (`fetchNameStatus`) in its own coroutine, started
   before sync, billing sign-in, reminders and push registration; while
@@ -1301,6 +1315,25 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
   Android has no Apple given-name source. `NameReasonCopy` words the refusal
   codes for this prompt and for Settings' name save.
+- **Podcast resume reliability and the AI-narrated label.** Ports of
+  PodcastSaveGate.swift and PodcastSavedPositions.swift (`core.podcast`):
+  `PodcastClient.savePlaybackPosition` returns the `updated_at` the SERVER
+  stored (the device clock never matched what the database kept, so every
+  second save looked stale), and with no row known it is an upsert on
+  `(user_id, episode_id)` (`Prefer: resolution=merge-duplicates`), so it also
+  works when the row exists but this device forgot it. `PodcastPlayer` chains
+  its saves one after another, each reading `PodcastSaveGate` after the
+  previous finished; a stale write or a 401 pauses saving until the learner
+  acts (play or resume, a fresh observation); an account change bumps the
+  gate's epoch so a save chained from the previous account is refused;
+  `PodcastSavedPositions` applies what this device last stored to a stale list
+  row (stamps compared by identity, never by order; a stamp this device never
+  saw came from another device and wins) and guards a save made after the
+  player left an episode on the stamp stored for that episode. `RootScreen`
+  stops the player on sign-out. `PodcastLabel` is the iOS helper: an episode
+  is AI-narrated when `podcast_episodes.source = 'tts'` (selected by the
+  episode and search queries), and the row subtitle is
+  "5:05 \u00B7 Resume \u00B7 AI-narrated" with the middle dot.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

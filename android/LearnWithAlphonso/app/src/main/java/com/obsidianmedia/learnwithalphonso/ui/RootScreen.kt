@@ -88,8 +88,13 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val palette = AlphonsoColor.palette
 
     LaunchedEffect(Unit) { session.restore() }
+    val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
+    // The active course is the signed-in account's own (English while signed out or never chosen). It is loaded
+    // while composing, before any screen reads it: `session.restore()` sets SignedIn without suspending, so an effect
+    // would run after Learn had already built its view model from the default and written it back over the saved choice.
+    remember(signedInUserId) { container.activeCourse.accountChanged(signedInUserId); signedInUserId }
     // Signing out drops everything onboarding held for the account.
-    LaunchedEffect((state as? AuthState.SignedIn)?.session?.userId) {
+    LaunchedEffect(signedInUserId) {
         if (state !is AuthState.SignedIn) {
             container.onboarding.reset()
             // The next account on this device must not hear, see or resume the previous account's episode.
@@ -97,7 +102,6 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
         }
     }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
-    val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {

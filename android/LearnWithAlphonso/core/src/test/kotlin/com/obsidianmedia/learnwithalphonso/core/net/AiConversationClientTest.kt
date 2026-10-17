@@ -40,6 +40,45 @@ class AiConversationClientTest {
     }
 
     @Test
+    fun `the conversation's course rides on chat, speech, analysis and the tutor, and is absent when not given`() = runTest {
+        val seen = ArrayList<Seen>()
+        val c = AiConversationClient(http(seen) { s ->
+            when {
+                s.path.endsWith("tts") -> byteArrayOf(1) to HttpStatusCode.OK
+                s.path.endsWith("analyze-weaknesses") -> """{"weaknessesDetected":0}""".toByteArray() to HttpStatusCode.OK
+                else -> """{"content":"Bonjour"}""".toByteArray() to HttpStatusCode.OK
+            }
+        })
+        c.chat(listOf(ChatMessage("user", "hi")), systemPrompt = "P", cefrLevel = "B1", course = "fr")
+        assertEquals("""{"messages":[{"role":"user","content":"hi"}],"systemPrompt":"P","cefrLevel":"B1","course":"fr"}""", seen[0].body.decodeToString())
+        c.synthesizeSpeech("salut", course = "fr")
+        assertEquals("""{"text":"salut","course":"fr"}""", seen[1].body.decodeToString())
+        c.analyzeWeaknesses(listOf(ChatMessage("user", "a")), course = "es")
+        assertTrue(seen[2].body.decodeToString().endsWith(""","course":"es"}"""))
+        // And absent when not given: an older caller's bodies are unchanged.
+        c.chat(listOf(ChatMessage("user", "hi")))
+        c.synthesizeSpeech("salut")
+        c.analyzeWeaknesses(listOf(ChatMessage("user", "a")))
+        assertTrue(seen.drop(3).none { it.body.decodeToString().contains("course") })
+    }
+
+    @Test
+    fun `the tutor call carries the course and the level when given, and neither when not`() = runTest {
+        val seen = ArrayList<Seen>()
+        val reply = """{"request_id":"r","session_id":"s","agent":"tutor","reply":"Salut","audio_base64":"","tts_model":"m","tts_provider":"p","language":"fr","state":"ok"}"""
+        val t = TutorConversationClient(http(seen) { reply.toByteArray() to HttpStatusCode.OK }, "d")
+        t.respond("s", "hi", "fr", emptyList(), course = "fr", cefrLevel = "B1")
+        val with = seen[0].body.decodeToString()
+        assertTrue(with.contains(""""course":"fr""""), with)
+        assertTrue(with.contains(""""cefr_level":"B1""""), with)
+        t.respond("s", "hi", "en", emptyList(), course = "en", cefrLevel = "")
+        assertTrue(!seen[1].body.decodeToString().contains("cefr_level"))
+        t.respond("s", "hi", "en", emptyList())
+        val bare = seen[2].body.decodeToString()
+        assertTrue(!bare.contains("\"course\"") && !bare.contains("cefr_level"), bare)
+    }
+
+    @Test
     fun `tts returns raw bytes and analyze decodes the count`() = runTest {
         val seen = ArrayList<Seen>()
         val c = AiConversationClient(http(seen) { s -> if (s.path.endsWith("tts")) byteArrayOf(1, 2, 3) to HttpStatusCode.OK else """{"weaknessesDetected":2}""".toByteArray() to HttpStatusCode.OK })
@@ -172,11 +211,11 @@ class AiConversationClientTest {
         assertNull(TutorMemoryContext.buildPrimingMessage(null, emptyList()))
         assertNull(TutorMemoryContext.buildPrimingMessage("", emptyList()))
         assertEquals(
-            ChatMessage("user", "[Background for you, the tutor, not part of what the learner said: their current English level is B1. Use this naturally if it's relevant, but don't just recite it back.]"),
+            ChatMessage("user", "[Background for you, the tutor, not part of what the learner said: their current level is B1. Use this naturally if it's relevant, but don't just recite it back.]"),
             TutorMemoryContext.buildPrimingMessage("B1", emptyList()),
         )
         assertEquals(
-            "[Background for you, the tutor, not part of what the learner said: their current English level is A2; they've recently been working on: past tense, articles, plurals. Use this naturally if it's relevant, but don't just recite it back.]",
+            "[Background for you, the tutor, not part of what the learner said: their current level is A2; they've recently been working on: past tense, articles, plurals. Use this naturally if it's relevant, but don't just recite it back.]",
             TutorMemoryContext.buildPrimingMessage("A2", listOf("past-tense", "articles", "plurals", "fourth"))!!.content,
         )
         assertEquals("Billed monthly", billingPeriodDescription(BillingPeriodUnit.MONTH, 1))
