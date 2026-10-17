@@ -1220,6 +1220,24 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.
+- **One-time public-name step.** After the first sign-in `SignedInApp`
+  reads `get_my_name_status` (`fetchNameStatus`); while `name_confirmed_at`
+  is NULL a full-screen `NameOnboardingScreen` covers the app, then English
+  placement follows (`OnboardingSequence`). All rules and copy are core's
+  `DisplayNameOnboarding` (length 2 to 40 in code points, the prefill order
+  given name then first word of full or short name, the generated
+  `Learner-XXXX` handle shown as a hint and never as text), decoded from the
+  same `name-onboarding.fixtures.json` as the web and iOS (the Android copy is
+  byte-checked by `name-onboarding-native-fixtures.test.ts`). The live check
+  is a debounced `display_name_problem` call whose answer is dropped when the
+  text changed meanwhile; an unreachable filter still allows Save because
+  `confirm_display_name` checks again; a refused save (`blocked-content`,
+  `invalid-name`) becomes the field's problem. Skip calls
+  `skip_display_name_prompt` and always closes the prompt, even offline
+  (nothing is stamped, so it returns next launch). Names come from
+  `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
+  Android has no Apple given-name source. `NameReasonCopy` words the refusal
+  codes for this prompt and for Settings' name save.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

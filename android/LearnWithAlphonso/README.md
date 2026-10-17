@@ -48,10 +48,17 @@ switch yet; its disclosure gate is a per-device flag. Until it is ported, AI
 features on Android work only for an account that has already granted consent
 on web or iOS; a refused call now says "Turn on AI features to practise
 speaking with a tutor." but offers no switch. This is a release gate for the
-first Play upload. Also missing on Android: the one-time public-name step, the
+first Play upload. Also missing on Android: the
 report action on AI replies, French and Spanish conversation scenarios
 (learners get the English ones), and the later iOS offline-queue and podcast
 player reliability work.
+
+Ported on 2026-10-17, not yet run on a device (see `DEVICE-CHECKLIST.md`):
+the one-time public-name step (a full-screen "What should other learners call
+you?" prompt after the first sign-in and before placement, with a live check
+through `display_name_problem`, Save through `confirm_display_name`, and Skip
+that never traps the learner), and Settings now words a refused name the same
+way,
 
 Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
 AI error copy that matches iOS and web, with one retry on an empty chat reply

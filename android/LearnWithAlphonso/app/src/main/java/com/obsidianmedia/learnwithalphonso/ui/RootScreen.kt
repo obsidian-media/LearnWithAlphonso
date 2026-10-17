@@ -20,7 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -29,6 +32,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
+import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
+import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
+import kotlinx.coroutines.launch
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
@@ -103,6 +110,14 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     val currentRoute = backStack?.destination?.route
     val showBar = currentRoute in Routes.tabs
     val userId = container.session.userId
+    var nameStep by remember(userId) { mutableStateOf<DisplayNameOnboarding?>(null) }
+    val scope = rememberCoroutineScope()
+    val runPlacementStep: suspend () -> Unit = {
+        val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
+        if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
+            nav.navigate(Routes.placement("en"))
+        }
+    }
 
     LaunchedEffect(userId) {
         container.syncCoordinator.triggerSync()
@@ -110,9 +125,15 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         userId?.let { container.entitlements.login(it) }
         container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
         container.pushRegistrar.registerIfAuthorized()
-        val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
-        if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
-            nav.navigate(Routes.placement("en"))
+        // Onboarding: the one-time public-name prompt first, then English placement (OnboardingSequence). A failed
+        // check skips its step this launch instead of blocking the app.
+        nameStep = null
+        val status = runCatching { container.progressClient.fetchNameStatus() }.getOrNull()
+        if (status != null && status.needsPrompt) {
+            val names = container.session.fetchUserNames()
+            nameStep = DisplayNameOnboarding.start(DisplayNameOnboarding.prefill(names, status.displayName), status.displayName)
+        } else {
+            runPlacementStep()
         }
     }
 
@@ -204,6 +225,14 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
             }
             composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }) }
+        }
+    }
+
+    // The one-time public-name prompt covers the app until the learner saves or skips; placement follows.
+    nameStep?.let { step ->
+        NameOnboardingScreen(container, step) {
+            nameStep = null
+            scope.launch { runPlacementStep() }
         }
     }
 }

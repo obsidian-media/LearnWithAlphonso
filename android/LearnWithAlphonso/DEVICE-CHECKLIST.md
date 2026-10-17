@@ -103,6 +103,21 @@ Two test accounts that are friends (A and B).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 
+## Public-name step (nothing here has been run on a device)
+
+Use a fresh QA account (email sign-up) and a Google account whose name is set.
+
+- [ ] First sign-in on a new email account: the "What should other learners call you?" screen covers the app before anything else, with the public-name note, an empty field showing the generated `Learner-XXXX` handle as a hint, a disabled "Save name", and "Skip for now" with "If you skip, you'll appear as Learner-XXXX." Back does nothing.
+- [ ] Type one letter: "That name is too short or too long." immediately. Type a normal name: "Checking…" then "Looks good." and Save enables. Clear it: no message at all.
+- [ ] Type a name the filter blocks: "That name isn't allowed. Try another." and Save stays disabled.
+- [ ] Save a good name: the app opens (or placement, for a new account) and Settings > Display name shows the cleaned name (spaces collapsed).
+- [ ] Airplane mode while typing: no error line, Save stays available; Save then says "Couldn't reach the server. Check your connection and try again." and the prompt stays.
+- [ ] Skip: the prompt closes and the name stays `Learner-XXXX`; skip in airplane mode also closes it, and the prompt comes back on the next launch.
+- [ ] Google account: the field is prefilled with the first name from the Google profile and checks itself; a name that is an email address is never prefilled.
+- [ ] An account that already confirmed its name never sees the prompt; killing the app on the prompt and reopening shows it again.
+- [ ] Settings > Display name with a blocked name: "That name isn't allowed. Try another." (not a generic failure).
+- [ ] Rotate the phone on the prompt with a name typed: the typed text and result stay.
+
 ## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
 
 Use a QA account, never the App Review account. Drain its hearts by answering five questions wrong.
