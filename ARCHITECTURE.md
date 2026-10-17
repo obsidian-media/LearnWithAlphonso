@@ -1276,6 +1276,27 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.
+- **Report an AI reply.** `AiResponseReport` (core) is the iOS Kit's
+  `AIResponseReport` and the web's `ai-report-budget.ts`: the message is
+  stripped of U+0000 and lone surrogates and cut to 2500 code points and to the
+  database's 8192-byte budget on the JSON text of the context (escapes cost
+  2 or 6 bytes, an emoji 4), always on a code point boundary;
+  `ai-consent-copy-parity.test.ts` pins the cap, the budget, and the reason
+  codes and labels to the web. `ProgressSyncClient.reportAiResponse` is a plain
+  insert into `content_reports` (kind `ai_response`, `platform` `android`, no
+  reported user, RLS `content_reports_insert_own`). `ReportableAiMessage` wraps
+  a bubble with a long-press menu and TalkBack long-click and custom actions
+  (no click handler, so a plain tap is inert); `AiReportSender` (core, owned by
+  `AppContainer`) sends one report at a time on the app scope, ignoring a second
+  while one is in flight, and `AiReportStatusHost` shows its progress and result
+  once per screen; only assistant
+  turns that are not an opener are reportable. Openers are tracked by position
+  (`ConversationUiState.openerIndices`, updated by a campaign's next scene and
+  restart), so a model reply that repeats an opener's words is still reportable
+  and a report records the scene the reply was made in
+  (`AiReplyReporting`). A report carries the course of the conversation it came
+  from (`AiReplyReports`, with `course` `fr` for a French scenario, campaign or
+  Hector).
 - **Conversation content per course.** `scripts/export-android-content.ts`
   now also writes `scenarios-fr.json`, `scenarios-es.json`, `campaigns-fr.json`
   and `campaigns-es.json` (the same builders as the iOS export; the English

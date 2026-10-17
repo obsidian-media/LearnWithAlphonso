@@ -42,7 +42,7 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-Missing on Android: the report action on AI replies, save-any-word, and the rest of the iOS podcast player
+Missing on Android: save-any-word and the rest of the iOS podcast player
 work (the playback state machine and its failure messages with Retry, download validation, and removing
 downloads of unpublished episodes).
 
@@ -69,6 +69,12 @@ Ported on 2026-10-17, not yet run on a device: French and Spanish Practice
 scenarios and Campaigns, and Hector in the active course. Practice and Hector
 follow the course chosen on the Learn tab (remembered per account); speech is
 transcribed, replied to and spoken in that course, and the level comes from it.
+
+Ported on 2026-10-17, not yet run on a device: "Report this response" on AI
+replies. Long-press (or the TalkBack custom action on) a Hector, Practice or
+Campaign reply, pick a reason, and it goes into the moderation queue as an
+`ai_response` row in `content_reports`; the scene's fixed opening line, which
+we wrote, is not reportable.
 
 Ported on 2026-10-17, not yet run on a device (see `DEVICE-CHECKLIST.md`):
 the one-time public-name step (a full-screen "What should other learners call
