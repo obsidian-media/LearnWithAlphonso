@@ -46,7 +46,7 @@ class ReviewViewModelTest {
     }
 
     private fun vm(s: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true) =
-        ReviewViewModel(testContent, s.progressClient, store, { connected }, Course.ENGLISH) { now }
+        ReviewViewModel(testContent, s.progressClient, store, { connected }, Course.ENGLISH, now = { now }, ownerUserId = { "u1" })
 
     @Test
     fun `online grade posts to grade-review, advances, and claims the bonus on the last item`() = runBlocking {
@@ -79,6 +79,45 @@ class ReviewViewModelTest {
         awaitTrue("second grade queued") { store.grades.size == 2 && v.state.value.isDone }
         assertEquals(listOf("en:u1l1:${q1.id}"), store.lastKnownDueReviews().map { it.itemKey })
         assertTrue(v.state.value.isDone)
+    }
+
+    @Test
+    fun `the queued retry of a failed online grade carries the same attempt id as the online attempt`() = runBlocking {
+        val s = server(listOf(item(q1)), gradeOk = false)
+        val store = MemorySyncStore()
+        val v = vm(s, store)
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        v.pick(q1.choices[q1.answer]); v.check(); v.next()
+        awaitTrue("fell back to queue") { store.grades.size == 1 && v.state.value.isDone }
+        val queued = store.grades.single()
+        val sent = s.seen.filter { it.path.endsWith("grade-review") }.map { kotlinx.serialization.json.Json.parseToJsonElement(it.body) as kotlinx.serialization.json.JsonObject }
+        assertEquals("the online attempt sent the identity the queue keeps", queued.queueIdentity, sent.single()["attemptId"].toString().trim('"'))
+        assertEquals("u1", queued.ownerUserId)
+    }
+
+    @Test
+    fun `every network attempt for a card reuses the first submission, even as time moves on`() = runBlocking {
+        val clock = java.util.concurrent.atomic.AtomicLong(now)
+        val s = server(listOf(item(q1)), gradeOk = false)
+        val store = MemorySyncStore()
+        val v = ReviewViewModel(testContent, s.progressClient, store, { true }, Course.ENGLISH, now = { clock.getAndAdd(60_000) }, ownerUserId = { "u1" })
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        v.pick(q1.choices[q1.answer]); v.check(); v.next()
+        awaitTrue("fell back to queue") { store.grades.size == 1 && v.state.value.isDone }
+        val sentId = kotlinx.serialization.json.Json.parseToJsonElement(s.seen.first { it.path.endsWith("grade-review") }.body).let { (it as kotlinx.serialization.json.JsonObject)["attemptId"].toString().trim('"') }
+        assertEquals("the queued row keeps the identity the online attempt sent", sentId, store.grades.single().queueIdentity)
+    }
+
+    @Test
+    fun `an item graded online leaves the due cache when the server retired or rescheduled it`() = runBlocking {
+        val s = server(listOf(item(q1), item(q2)))
+        val store = MemorySyncStore().apply { replaceLastKnownDueReviews(listOf(item(q1), item(q2))) }
+        val v = vm(s, store)
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        v.pick(q1.choices[q1.answer]); v.check(); v.next()
+        awaitTrue("first graded") { v.state.value.idx == 1 && !v.state.value.isSubmitting }
+        // The fake answers dueOn 2025-09-19, after the fake clock's today: no longer due, so no longer counted.
+        assertEquals(listOf("en:u1l1:${q2.id}"), store.lastKnownDueReviews().map { it.itemKey })
     }
 
     @Test

@@ -28,6 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.obsidianmedia.learnwithalphonso.data.DeadLetterDismissals
+import com.obsidianmedia.learnwithalphonso.core.sync.PendingSyncNotice
+import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterNotice
+import com.obsidianmedia.learnwithalphonso.BuildConfig
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +62,52 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 val Course.flag: String get() = when (this) { Course.ENGLISH -> "🇬🇧"; Course.FRENCH -> "🇫🇷"; Course.SPANISH -> "🇪🇸" }
 val Course.displayName: String get() = when (this) { Course.ENGLISH -> "English"; Course.FRENCH -> "French"; Course.SPANISH -> "Spanish" }
 
+/**
+ * The two lines about queued work (LessonBrowserView.swift): finished lessons and review answers still saved only on
+ * this phone, with a "Sync now" that survives the screen, and lessons the server permanently rejected, with a way to
+ * contact support. Outside the lazy list so it never shifts the continue-lesson scroll target.
+ */
+@Composable
+private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
+    val palette = AlphonsoColor.palette
+    val lessons by vm.pendingLessons.collectAsState()
+    val reviewAnswers by vm.pendingReviewAnswers.collectAsState()
+    val syncing by container.syncCoordinator.syncing.collectAsState()
+    val isConnected by container.connectivity.isConnected.collectAsState()
+    val dead by vm.deadLetters.collectAsState()
+    val dismissals = remember { DeadLetterDismissals(container.prefs) }
+    val uriHandler = LocalUriHandler.current
+    var dismissed by remember { mutableStateOf(dismissals.dismissed) }
+    // The list starts empty before the first read: pruning then would forget every dismissal.
+    LaunchedEffect(dead) {
+        dismissals.prune(dead.map { it.identity })
+        dismissed = dismissals.dismissed
+    }
+
+    PendingSyncNotice.message(lessons, reviewAnswers, isConnected)?.let { message ->
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(message, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.weight(1f))
+            TextButton(onClick = { container.syncCoordinator.syncNow() }, enabled = !syncing) {
+                Text(if (syncing) PendingSyncNotice.SYNCING_TITLE else PendingSyncNotice.SYNC_NOW_TITLE, color = palette.moss)
+            }
+        }
+    }
+    val visible = DeadLetterNotice.visible(dead.map { it.identity }, dismissed)
+    DeadLetterNotice.message(visible.size)?.let { message ->
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+            Text(message, style = MaterialTheme.typography.bodySmall, color = palette.destructive)
+            Row {
+                TextButton(onClick = {
+                    val reasons = dead.filter { it.identity in visible }.map { it.reason }
+                    // No mail app installed: the notice stays, and there is nothing to crash on.
+                    runCatching { uriHandler.openUri(DeadLetterNotice.supportMailUri(visible, reasons, BuildConfig.VERSION_NAME)) }
+                }) { Text(DeadLetterNotice.CONTACT_TITLE, color = palette.moss) }
+                TextButton(onClick = { dismissals.dismiss(visible); dismissed = dismissals.dismissed }) { Text(DeadLetterNotice.DISMISS_TITLE, color = palette.inkSoft) }
+            }
+        }
+    }
+}
+
 /** Port of LessonBrowserView.swift: header, review row, placement banner, band picker, units and lessons. */
 @Composable
 fun LearnScreen(
@@ -66,7 +117,7 @@ fun LearnScreen(
     onOpenPlacement: (Course) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value) }
+    val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value, userId = container.session.userId) }
     val state by vm.state.collectAsState()
     // Learn follows the active course when the account changes. It writes the course only when the learner picks one
     // (below), never its initial state: a screen built from the default must not overwrite the account's saved choice.
@@ -106,6 +157,7 @@ fun LearnScreen(
             IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = palette.moss) }
         }
         ToastBanner(state.notice, onClear = vm::clearNotice)
+        SyncNotices(container, vm)
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // Stable keys on every item: the header, challenges and placement card come and go as data loads,
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
