@@ -9,9 +9,32 @@ const ios = path.resolve(
   import.meta.dirname,
   "../../ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures/name-onboarding.fixtures.json",
 );
+const android = path.resolve(
+  import.meta.dirname,
+  "../../android/LearnWithAlphonso/core/src/test/resources/name-onboarding.fixtures.json",
+);
 
 describe("native copy of the name-onboarding fixture", () => {
   it("the iOS copy is byte-for-byte the web file", () => {
     expect(fs.readFileSync(ios, "utf8")).toBe(fs.readFileSync(web, "utf8"));
+  });
+
+  it("the Android copy is byte-for-byte the web file", () => {
+    expect(fs.readFileSync(android, "utf8")).toBe(fs.readFileSync(web, "utf8"));
+  });
+
+  // The name prompt words its refusals from the social-reason fixture; Android pins them to a copy of it.
+  it("the Android copy of the social-reason fixture is byte-for-byte the web file", () => {
+    expect(
+      fs.readFileSync(
+        path.resolve(
+          import.meta.dirname,
+          "../../android/LearnWithAlphonso/core/src/test/resources/social-reason.fixtures.json",
+        ),
+        "utf8",
+      ),
+    ).toBe(
+      fs.readFileSync(path.resolve(import.meta.dirname, "social-reason.fixtures.json"), "utf8"),
+    );
   });
 });

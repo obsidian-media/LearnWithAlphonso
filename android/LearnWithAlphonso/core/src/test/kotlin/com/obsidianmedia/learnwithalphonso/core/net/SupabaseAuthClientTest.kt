@@ -20,6 +20,20 @@ class SupabaseAuthClientTest {
     }
 
     @Test
+    fun `user names come from user_metadata through the bearer token`() = runTest {
+        val seen = ArrayList<String>()
+        val engine = MockEngine { req ->
+            seen.add("${req.method.value} ${req.url.encodedPath} ${req.headers["Authorization"]} ${req.headers["apikey"]}")
+            respond("""{"id":"u1","user_metadata":{"given_name":"Ana","full_name":"Ana Lima","name":"Ana L"}}""", HttpStatusCode.OK)
+        }
+        val client = SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }
+        assertEquals(com.obsidianmedia.learnwithalphonso.core.logic.AuthUserNames("Ana", "Ana Lima", "Ana L"), client.fetchUserNames("tok"))
+        assertEquals("GET /auth/v1/user Bearer tok pk", seen.single())
+        val bare = SupabaseAuthClient("https://x.supabase.co", "pk", MockEngine { respond("""{"id":"u1"}""", HttpStatusCode.OK) }) { now }
+        assertNull(bare.fetchUserNames("tok"))
+    }
+
+    @Test
     fun `otp request and verify hit GoTrue with the publishable key`() = runTest {
         val seen = ArrayList<String>()
         val client = SupabaseAuthClient("https://x.supabase.co", "pk", engine { p, q, b, k -> seen.add("$p?$q $b $k"); sessionJson to HttpStatusCode.OK }) { now }

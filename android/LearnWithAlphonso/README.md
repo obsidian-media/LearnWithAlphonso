@@ -42,10 +42,16 @@ RevenueCat Android key) and the device checklist below.
 
 ## Not yet ported from iOS and web (as of 2026-10-16)
 
-Missing on Android: the one-time public-name step, the report action on AI
-replies, French and Spanish conversation scenarios (learners get the English
+Missing on Android: the report action on AI replies, French and Spanish conversation scenarios (learners get the English
 ones), save-any-word, and the later iOS offline-queue and podcast player
 reliability work.
+
+Ported on 2026-10-17, not yet run on a device (see `DEVICE-CHECKLIST.md`):
+the one-time public-name step (a full-screen "What should other learners call
+you?" prompt after the first sign-in and before placement, with a live check
+through `display_name_problem`, Save through `confirm_display_name`, and Skip
+that never traps the learner), and Settings now words a refused name the same
+way.
 
 Ported on 2026-10-16, not yet run on a device (see `DEVICE-CHECKLIST.md`):
 the account-level AI consent (the sheet with Allow and Not now, the Settings

@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.auth
 
+import com.obsidianmedia.learnwithalphonso.core.logic.AuthUserNames
 import com.obsidianmedia.learnwithalphonso.core.net.OAuthPkce
 import com.obsidianmedia.learnwithalphonso.core.net.PkceChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
@@ -56,6 +57,12 @@ class SessionManager(
 
     /** The current token without refreshing; SupabaseHttp's 401 retry calls freshAccessToken(force = true). */
     fun currentAccessToken(): String? = (_state.value as? AuthState.SignedIn)?.session?.accessToken
+
+    /** The names in the signed-in account's auth record, or null when unreadable (the prompt then just has no prefill). */
+    suspend fun fetchUserNames(): AuthUserNames? {
+        val token = freshAccessToken() ?: return null
+        return runCatching { auth.fetchUserNames(token) }.getOrNull()
+    }
 
     /**
      * A token valid right now, refreshing when within 60 seconds of expiry
