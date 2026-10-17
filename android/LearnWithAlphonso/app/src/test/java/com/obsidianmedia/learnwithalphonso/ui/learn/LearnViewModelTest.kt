@@ -36,7 +36,7 @@ class LearnViewModelTest {
     fun `loads the saved level, completion dots, continue target and placement flag`() = runBlocking {
         val store = MemorySyncStore()
         val v = LearnViewModel(testContent, server().progressClient, store)
-        awaitTrue("loaded") { v.state.value.placementTaken != null }
+        v.initialLoad.join()
         val s = v.state.value
         assertEquals("B1", s.selectedLevel)
         assertEquals(setOf("u1l1", "u1l2"), s.completedLessonIds)
@@ -50,7 +50,7 @@ class LearnViewModelTest {
     @Test
     fun `an untaken placement and a missing level fall back to A1 and show the banner`() = runBlocking {
         val v = LearnViewModel(testContent, server(level = null, completed = emptyList(), placementTaken = false).progressClient, MemorySyncStore())
-        awaitTrue("loaded") { v.state.value.placementTaken != null }
+        v.initialLoad.join()
         assertEquals("A1", v.state.value.selectedLevel)
         assertEquals(false, v.state.value.placementTaken)
         assertTrue(v.state.value.completedLessonIds.isEmpty())
@@ -61,14 +61,13 @@ class LearnViewModelTest {
         val s = server()
         val store = MemorySyncStore()
         val v = LearnViewModel(testContent, s.progressClient, store)
-        awaitTrue("loaded") { v.state.value.placementTaken != null }
-        v.selectCourse(Course.FRENCH)
-        awaitTrue("reloaded for fr") { v.state.value.course == Course.FRENCH && v.state.value.placementTaken != null }
+        v.initialLoad.join()
+        v.selectCourse(Course.FRENCH).join()
         assertEquals(Course.FRENCH, v.state.value.course)
         assertTrue(s.seen.any { it.query["language"] == "eq.fr" })
         assertTrue(v.state.value.unitsForLevel(testContent).all { it.level == v.state.value.selectedLevel })
         store.replaceLastKnownDueReviews(List(120) { ReviewItem("k$it", "u1l1", "A1", 2.5, 1, 0, "2026-01-01") })
-        awaitTrue("badge") { v.dueBadge.value == "99+" }
+        awaitTrue("badge") { v.dueBadge.value == "99+" } // stateIn on a flow, no Job to join
         assertEquals(120, v.dueCount.value)
     }
 
@@ -77,20 +76,19 @@ class LearnViewModelTest {
         val s = server()
         val store = MemorySyncStore()
         val v = LearnViewModel(testContent, s.progressClient, store) { 1_790_726_400_000L } // Wed 2026-09-30
-        awaitTrue("loaded") { v.state.value.challenges.isNotEmpty() }
-        v.claimChallenge(v.state.value.challenges.single())
-        awaitTrue("claimed") { v.state.value.notice == "+100 XP claimed!" }
+        v.initialLoad.join()
+        v.claimChallenge(v.state.value.challenges.single()).join()
+        assertEquals("+100 XP claimed!", v.state.value.notice)
         assertEquals("""{"_quest_id":"t1","_course":"en","_week_start":"2026-09-28"}""", s.seen.first { it.path.endsWith("claim_weekly_quest") }.body)
         assertTrue(v.state.value.claimedChallengeIds.contains("t1"))
-        awaitTrue("progress refreshed") { store.progress.value?.xp == 900 }
+        assertEquals(900, store.progress.value?.xp)
     }
 
     @Test
     fun `an insufficient-xp streak freeze purchase explains the cost`() = runBlocking {
         val v = LearnViewModel(testContent, server().progressClient, MemorySyncStore())
-        awaitTrue("loaded") { v.state.value.placementTaken != null }
-        v.buyStreakFreeze()
-        awaitTrue("notice") { v.state.value.notice != null }
+        v.initialLoad.join()
+        v.buyStreakFreeze().join()
         assertEquals("Not enough XP. A streak freeze costs 50 XP.", v.state.value.notice)
     }
 
@@ -98,9 +96,10 @@ class LearnViewModelTest {
     fun `selecting a level saves it to the server without blocking`() = runBlocking {
         val s = server()
         val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore())
-        awaitTrue("loaded") { v.state.value.placementTaken != null }
-        v.selectLevel("C1")
+        v.initialLoad.join()
+        val saving = v.selectLevel("C1")
         assertEquals("C1", v.state.value.selectedLevel)
-        awaitTrue("level saved") { s.seen.any { it.path.endsWith("set_cefr_level") && it.body == """{"_language":"en","_level":"C1"}""" } }
+        saving.join()
+        assertTrue(s.seen.any { it.path.endsWith("set_cefr_level") && it.body == """{"_language":"en","_level":"C1"}""" })
     }
 }

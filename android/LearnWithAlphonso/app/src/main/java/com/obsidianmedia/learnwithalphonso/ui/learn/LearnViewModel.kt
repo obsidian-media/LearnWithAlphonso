@@ -15,6 +15,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.buyStreakFreezeWithXp
 import com.obsidianmedia.learnwithalphonso.core.net.claimWeeklyQuest
 import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyChallenges
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -63,27 +64,29 @@ class LearnViewModel(
     val dueBadge: StateFlow<String?> = syncStore.dueCount.map(ReviewBadge::text).stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val dueCount: StateFlow<Int> = syncStore.dueCount.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
-    init { load() }
+    /** The first load, so tests can join it instead of polling. */
+    val initialLoad: Job = load()
 
-    fun selectCourse(course: Course) {
-        if (course == _state.value.course) return
+    /** Every action returns its Job so callers (tests) can join it rather than wait on a side effect. */
+    fun selectCourse(course: Course): Job {
+        if (course == _state.value.course) return Job().also { it.complete() }
         _state.value = LearnUiState(course = course)
-        load()
+        return load()
     }
 
     /** Local band switch is instant; the server save is fire-and-forget, mirroring the web's pick(). */
-    fun selectLevel(level: String) {
+    fun selectLevel(level: String): Job {
         _state.update { it.copy(selectedLevel = level) }
         val course = _state.value.course
-        viewModelScope.launch { runCatching { client.setCefrLevel(course.code, level) } }
+        return viewModelScope.launch { runCatching { client.setCefrLevel(course.code, level) } }
     }
 
-    fun refresh() = load()
+    fun refresh(): Job = load()
 
     /** Claims a completed challenge for this week's Monday; the reward shows as a notice. */
-    fun claimChallenge(challenge: WeeklyChallenge) {
+    fun claimChallenge(challenge: WeeklyChallenge): Job {
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             val r = runCatching { client.claimWeeklyQuest(challenge.templateId, course.code, mondayDateString(0, nowMillis())) }.getOrNull()
             when {
                 r == null -> _state.update { it.copy(notice = "Check your connection and try again.") }
@@ -97,9 +100,9 @@ class LearnViewModel(
     }
 
     /** Spends 50 XP on a streak freeze, same RPC the web app calls. */
-    fun buyStreakFreeze() {
+    fun buyStreakFreeze(): Job {
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             when (val r = runCatching { client.buyStreakFreezeWithXp(course.code) }.getOrNull()) {
                 null -> _state.update { it.copy(notice = "Check your connection and try again.") }
                 is BuyStreakFreezeResult.Ok -> {
@@ -113,9 +116,9 @@ class LearnViewModel(
 
     fun clearNotice() = _state.update { it.copy(notice = null) }
 
-    private fun load() {
+    private fun load(): Job {
         val course = _state.value.course
-        viewModelScope.launch {
+        return viewModelScope.launch {
             val level = runCatching { client.fetchCefrLevel(course.code) }.getOrNull()?.takeIf { it.isNotEmpty() && LEVELS.any { l -> l.first == it } }
             val ids = runCatching { client.fetchCompletedLessonIds(course.code) }.getOrDefault(emptyList())
             val placed = runCatching { client.fetchPlacementTakenAt(course.code) }
