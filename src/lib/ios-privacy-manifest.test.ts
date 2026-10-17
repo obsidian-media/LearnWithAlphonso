@@ -216,7 +216,10 @@ describe("app privacy manifest: collected data types (match the App Store Connec
       );
     }
     for (const [type, evidence] of Object.entries(ALSO_ANALYTICS)) {
-      expect(evidence.test(appCode), `${type}: analytics declared but no code evidence ${evidence}`).toBe(true);
+      expect(
+        evidence.test(appCode),
+        `${type}: analytics declared but no code evidence ${evidence}`,
+      ).toBe(true);
     }
     expect(xml).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
     expect(xml).toMatch(/<key>NSPrivacyTrackingDomains<\/key>\s*<array\/>/);
