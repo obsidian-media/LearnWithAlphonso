@@ -221,8 +221,10 @@ class PodcastPlayerMachine {
                 return listOf(PodcastPlayerEffect.Play, PodcastPlayerEffect.ScheduleLoadTimeout(stallGeneration))
             }
             PodcastPlayerEvent.ResumedExternally -> {
-                // The player is already playing: no Play effect and no load timeout, which would fail a healthy stream.
-                if (phase == PodcastPlayerPhase.Paused || phase == PodcastPlayerPhase.Finished) phase = PodcastPlayerPhase.Playing
+                // The player is already playing: no Play effect and no load timeout, which would fail a healthy stream. A
+                // failure the player contradicts by playing (a notification's Play on an item that works again) is cleared:
+                // sound under a failure banner would be the worst of both. If it fails again, ItemFailed says so again.
+                if (phase == PodcastPlayerPhase.Paused || phase == PodcastPlayerPhase.Finished || phase is PodcastPlayerPhase.Failed) phase = PodcastPlayerPhase.Playing
                 resumeAfterInterruption = false
                 return emptyList()
             }

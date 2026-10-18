@@ -200,4 +200,15 @@ class PodcastClientTest {
         }
         assertEquals(total, client(fake).fetchPublishedIndex().size)
     }
+
+    @Test
+    fun `a server that never ends the list is refused after 200 pages, so nothing is pruned against it`() = runTest {
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            json("""[{"id":"e$offset","folder_id":"f1"}]""")
+        }
+        val e = runCatching { client(fake).fetchPublishedIndex() }.exceptionOrNull()
+        assertTrue(e is PodcastClientError.InvalidPayload)
+        assertEquals(PodcastClient.MAX_PUBLISHED_INDEX_PAGES, fake.seen.size)
+    }
 }

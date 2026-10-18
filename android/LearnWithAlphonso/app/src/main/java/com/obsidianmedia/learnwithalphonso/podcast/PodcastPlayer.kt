@@ -60,6 +60,9 @@ interface PlayerPort {
      * player suppresses itself and resumes by itself, and the learner still expects sound.
      */
     var onPaused: (PauseCause) -> Unit
+
+    /** Playback is suppressed (true) or no longer suppressed (false) by a transient audio-focus loss: a call, a prompt. */
+    var onSuppressionChanged: (Boolean) -> Unit
 }
 
 enum class PauseCause { USER_REQUEST, FOCUS_LOST, BECAME_NOISY }
@@ -137,6 +140,12 @@ class PodcastPlayer(
     /** A failure is being probed: the result belongs to this start, so a tap must not start another one and drop it. */
     private var probing = false
 
+    /** Which failure's probe is the latest; an older one finishing late must not clear the flag of a newer one, but must clear its own. */
+    private var probeSeq = 0
+
+    /** Playback is suppressed by a transient focus loss: the player resumes by itself, so no timeout may fail it meanwhile. */
+    private var suppressed = false
+
     /** The episode as the learner should see it: with the position this device last stored, if newer. */
     fun resumed(episode: PodcastEpisode): PodcastEpisode = savedPositions.applying(episode)
 
@@ -150,6 +159,7 @@ class PodcastPlayer(
         // mini bar showing "playing" and the next tap had to pause a paused player first.
         port.onPlayingChanged = ::playerPlayingChanged
         port.onPaused = ::playerPaused
+        port.onSuppressionChanged = ::suppressionChanged
         port.onError = ::playerFailed
         port.onStalled = { dispatch(PodcastPlayerEvent.Stalled) }
         scope.launch {
@@ -265,9 +275,11 @@ class PodcastPlayer(
         flushPlayEvent(episode)
         timeoutJob?.cancel()
         probing = false
-        // Idle first: our own pause is echoed back by the player as a pause cause, which must not save a second time.
+        // Idle first: our own stop is echoed back by the player as a pause cause, which must not save a second time.
         machine.send(PodcastPlayerEvent.Closed)
-        port.pause()
+        // Stop and clear the loaded item, as sign-out does: a paused item would still sit in the notification and a headset or
+        // lock-screen button could play the episode the learner just closed.
+        port.stop()
         source = null
         _state.value = PodcastPlayerState(queue = _state.value.queue, savesDisabled = _state.value.savesDisabled)
     }
@@ -297,7 +309,7 @@ class PodcastPlayer(
         if (_state.value.episode == null || !playing) return
         // Already paused or finished and the player is playing: something outside the app pressed play (notification,
         // lock screen, headset). Nothing is loading, so there is nothing to wait for.
-        if (machine.phase == PodcastPlayerPhase.Paused || machine.phase == PodcastPlayerPhase.Finished) dispatch(PodcastPlayerEvent.ResumedExternally)
+        if (machine.phase == PodcastPlayerPhase.Paused || machine.phase == PodcastPlayerPhase.Finished || machine.phase is PodcastPlayerPhase.Failed) dispatch(PodcastPlayerEvent.ResumedExternally)
         else dispatch(PodcastPlayerEvent.PlayerPlaying)
     }
 
@@ -315,10 +327,12 @@ class PodcastPlayer(
         val local = sourceIsLocal
         val url = source
         probing = true
+        val mine = ++probeSeq
         scope.launch {
             val probed = if (local || url == null) PodcastProbeResult.NotRun else runCatching { probe(url) }.getOrDefault(PodcastProbeResult.NoResponse)
+            // Whether the verdict is used or thrown away, this probe is over: a flag left set would ignore every later tap.
+            if (mine == probeSeq) probing = false
             if (_state.value.episode?.id != episode.id || machine.stallGeneration != generation || machine.phase == PodcastPlayerPhase.Idle) return@launch
-            probing = false
             dispatch(PodcastPlayerEvent.ItemFailed(PodcastPlaybackClassifier.classify(errorCode, httpStatus, probed, local, isOnline())))
         }
     }
@@ -352,9 +366,28 @@ class PodcastPlayer(
         }
     }
 
+    /**
+     * A transient focus loss (a call) suppresses playback and the player resumes by itself, so the wait for sound is not a
+     * network failure: the timer stops while suppressed and starts again, from the full time, when it ends.
+     */
+    private fun suppressionChanged(isSuppressed: Boolean) {
+        suppressed = isSuppressed
+        if (isSuppressed) {
+            timeoutJob?.cancel()
+            return
+        }
+        val generation = machine.stallGeneration
+        when (machine.phase) {
+            PodcastPlayerPhase.Loading -> schedule(loadTimeoutMillis) { dispatch(PodcastPlayerEvent.LoadTimedOut(generation)) }
+            PodcastPlayerPhase.Buffering -> schedule(stallTimeoutMillis) { dispatch(PodcastPlayerEvent.StallTimedOut(generation)) }
+            else -> Unit
+        }
+    }
+
     /** One timeout at a time; the machine ignores one whose generation is stale. */
     private fun schedule(millis: Long, action: () -> Unit) {
         timeoutJob?.cancel()
+        if (suppressed) return
         timeoutJob = scope.launch {
             delay(millis)
             action()
