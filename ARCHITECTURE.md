@@ -1351,9 +1351,16 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   SM-2 order and carry `queueIdentity` as the server's `attemptId`; a rejected
   grade is dead-lettered and the next continues. Rows with another owner are
   dropped unsent. Rows with no owner (queued before owners were recorded) are
-  adopted once, by the account restored at the first launch after the upgrade,
-  and dropped on every later pass, so they can never move to a different
-  account. Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt
+  adopted once, by the account restored at the first launch after the upgrade
+  (`AppContainer` restores the session and calls `resolveOrphanedRows` with the
+  restored user, or null, before any pass: the coordinator's `startup` gate holds
+  every pass until then), and dropped otherwise, so they can never move to a
+  different account. The engine asks `isCurrentAccount` before every request
+  and stops the pass the moment the account changes, so one account's rows are
+  never sent under another account's token. The read-modify-write of the
+  sync-state row (progress, last-synced time, the orphan flag) runs in a
+  transaction. The sign-out clear runs in the app scope (`SignOutCleanup`), so
+  it happens with no screen composed and cannot be cancelled by one. Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt
   count and next attempt on both queues, an `orphansResolved` flag, and a
   `dead_letters` table that records its owner; the newest 50 are kept).
   `SyncCoordinator` applies a whole pass in one transaction

@@ -369,4 +369,11 @@ class SyncReliabilityTest {
         assertEquals(0, result.syncedReviewGrades.size, "the grade was not sent either")
         assertEquals(1, fake.seen.count { it.path.endsWith("complete-lesson") })
     }
+
+    @Test
+    fun `a review grade is not sent once the account is no longer the current one`() = runTest {
+        val fake = lessonServer()
+        SyncEngine.sync(emptyList(), listOf(grade(owner = "u1")), ProgressSyncClient(fake.http) { now }.let { ProgressSyncApi(it) }, "u1", now, isCurrentAccount = { false })
+        assertEquals(0, fake.seen.size, "no request left for an account that is no longer signed in")
+    }
 }
