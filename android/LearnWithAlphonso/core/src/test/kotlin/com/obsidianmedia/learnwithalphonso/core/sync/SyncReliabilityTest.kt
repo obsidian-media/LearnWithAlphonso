@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso.core.sync
 
 import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
 import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase
+import com.obsidianmedia.learnwithalphonso.core.net.LessonAnswer
 import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase.Companion.json
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
@@ -344,5 +345,35 @@ class SyncReliabilityTest {
         // The Learn tab's flow starts empty before its first read: that says nothing about what exists.
         assertEquals(dismissed, DeadLetterNotice.reconcile(dismissed, emptyList()))
         assertEquals(setOf("a"), DeadLetterNotice.reconcile(dismissed, listOf("a", "c")))
+    }
+
+    @Test
+    fun `a pass stops sending once the account is no longer the current one`() = runTest {
+        val fake = lessonServer()
+        var current = true
+        // The first row's request is the last one: after it the account changes.
+        val real = ProgressSyncClient(fake.http) { now }
+        val client = object : SyncApi {
+            override suspend fun startLessonSession(lessonId: String, course: String) = real.startLessonSession(lessonId, course)
+            override suspend fun completeLesson(lessonId: String, total: Int, answers: List<LessonAnswer>, course: String, sessionToken: String) =
+                real.completeLesson(lessonId, total, answers, course, sessionToken).also { current = false }
+            override suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?) {
+                real.gradeReview(itemKey, answer, course, attemptId)
+            }
+        }
+        val result = SyncEngine.sync(
+            listOf(completion("a", queuedAt = now - 2000, owner = "u1"), completion("b", queuedAt = now - 1000, owner = "u1")),
+            listOf(grade(owner = "u1")), client, "u1", now, isCurrentAccount = { current },
+        )
+        assertEquals(listOf("a"), result.syncedLessonCompletions.map { it.lessonId })
+        assertEquals(0, result.syncedReviewGrades.size, "the grade was not sent either")
+        assertEquals(1, fake.seen.count { it.path.endsWith("complete-lesson") })
+    }
+
+    @Test
+    fun `a review grade is not sent once the account is no longer the current one`() = runTest {
+        val fake = lessonServer()
+        SyncEngine.sync(emptyList(), listOf(grade(owner = "u1")), ProgressSyncClient(fake.http) { now }.let { ProgressSyncApi(it) }, "u1", now, isCurrentAccount = { false })
+        assertEquals(0, fake.seen.size, "no request left for an account that is no longer signed in")
     }
 }

@@ -32,6 +32,9 @@ class ProgressSyncClient(
     internal val http: SupabaseHttp,
     internal val nowMillis: () -> Long = System::currentTimeMillis,
 ) : LessonCompletionApi {
+    /** Closes the underlying HTTP client (not the shared engine). Only for a client that was built for one piece of work. */
+    fun close() = http.close()
+
     suspend fun loseHeart(): HeartsResult {
         val rows = rowsOf(http.rpc("lose_heart", buildJsonObject {}))
         val hearts = rows.firstOrNull()?.int("hearts") ?: throw ProgressSyncError.InvalidPayload()

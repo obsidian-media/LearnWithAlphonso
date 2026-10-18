@@ -42,6 +42,9 @@ interface SyncDao {
     @Query("DELETE FROM pending_lesson_completions")
     suspend fun clearLessonCompletions()
 
+    @Query("DELETE FROM pending_lesson_completions WHERE ownerUserId = :userId OR ownerUserId IS NULL")
+    suspend fun clearLessonCompletionsOf(userId: String)
+
     @Query("SELECT * FROM pending_review_grades ORDER BY queuedAt ASC")
     suspend fun pendingReviewGrades(): List<PendingReviewGradeRecord>
 
@@ -69,6 +72,9 @@ interface SyncDao {
     @Query("DELETE FROM pending_review_grades")
     suspend fun clearReviewGrades()
 
+    @Query("DELETE FROM pending_review_grades WHERE ownerUserId = :userId OR ownerUserId IS NULL")
+    suspend fun clearReviewGradesOf(userId: String)
+
     @Insert
     suspend fun insertDeadLetter(record: DeadLetterRecord)
 
@@ -82,6 +88,9 @@ interface SyncDao {
 
     @Query("DELETE FROM dead_letters")
     suspend fun clearDeadLetters()
+
+    @Query("DELETE FROM dead_letters WHERE ownerUserId = :userId OR ownerUserId IS NULL")
+    suspend fun clearDeadLettersOf(userId: String)
 
     @Query("DELETE FROM app_sync_state")
     suspend fun clearSyncState()
@@ -124,7 +133,7 @@ abstract class AlphonsoDatabase : RoomDatabase() {
         /**
          * Offline-sync reliability (iOS SyncSchemaV2): who queued each row, the session token held when the lesson
          * opened, retry bookkeeping, and the dead-letter table. Rows written before this have no owner; the first
-         * account that syncs adopts them.
+         * account restored at the first launch after the upgrade adopts them (see SyncQueueStore.resolveOrphanedRows).
          */
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {

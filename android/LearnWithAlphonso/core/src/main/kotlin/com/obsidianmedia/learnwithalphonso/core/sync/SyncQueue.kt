@@ -16,7 +16,7 @@ data class PendingLessonCompletion(
     val course: String,
     val queuedAt: Long,
     val optimisticXpEstimate: Int,
-    /** The account that played this lesson. Null only for rows written before the owner was recorded; the first account to sync adopts those. */
+    /** The account that played this lesson. Null only for rows written before the owner was recorded; the account restored at the first launch after the upgrade adopts those, and later they are dropped. */
     val ownerUserId: String? = null,
     /** The start-lesson-session token from when the lesson opened, if it was online then. */
     val sessionToken: String? = null,

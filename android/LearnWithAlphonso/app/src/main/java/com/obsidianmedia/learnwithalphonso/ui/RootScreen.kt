@@ -56,7 +56,6 @@ import com.obsidianmedia.learnwithalphonso.ui.league.TeamsScreen
 import com.obsidianmedia.learnwithalphonso.ui.profile.ProfileHubScreen
 import com.obsidianmedia.learnwithalphonso.ui.learn.LearnScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonScreen
-import com.obsidianmedia.learnwithalphonso.sync.SignOutWatcher
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
@@ -88,7 +87,6 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val state by session.state.collectAsState()
     val palette = AlphonsoColor.palette
 
-    LaunchedEffect(Unit) { session.restore() }
     val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
     // The active course is the signed-in account's own (English while signed out or never chosen). It is loaded
     // while composing, before any screen reads it: `session.restore()` sets SignedIn without suspending, so an effect
@@ -102,10 +100,6 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
             container.podcastPlayer.stopForAccountChange()
         }
     }
-    // Queued work, lost-lesson records and cached progress belong to the account that was signed in. Only a real
-    // sign-out clears them: at cold launch nobody is signed in yet, and the queue must survive the restore.
-    val signOutWatcher = remember { SignOutWatcher() }
-    LaunchedEffect(signedInUserId) { if (signOutWatcher.signedOut(signedInUserId)) container.syncStore.clearAll() }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
 

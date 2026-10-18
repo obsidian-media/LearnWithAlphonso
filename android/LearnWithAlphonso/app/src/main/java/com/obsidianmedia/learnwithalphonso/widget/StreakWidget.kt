@@ -48,6 +48,16 @@ object WidgetPublisher {
     fun read(prefs: SharedPreferences): StreakWidgetSnapshot? =
         prefs.getString(STREAK_WIDGET_SNAPSHOT_KEY, null)?.let { runCatching { ContentJson.json.decodeFromString(StreakWidgetSnapshot.serializer(), it) }.getOrNull() }
 
+    /** Forgets the snapshot, so the next account never sees the previous account's streak. */
+    fun clear(prefs: SharedPreferences) {
+        prefs.edit().remove(STREAK_WIDGET_SNAPSHOT_KEY).apply()
+    }
+
+    suspend fun clear(context: Context) {
+        clear(prefs(context))
+        runCatching { StreakWidget().updateAll(context) }
+    }
+
     suspend fun publish(context: Context, progress: LessonCompletionProgress) {
         write(prefs(context), progress)
         runCatching { StreakWidget().updateAll(context) }
