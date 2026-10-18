@@ -50,7 +50,8 @@ vi.mock("../../lib/speech", () => ({
 }));
 
 const savePlacementResult = vi.fn();
-vi.mock("../../lib/sync.functions", () => ({ savePlacementResult }));
+const fetchProgress = vi.fn();
+vi.mock("../../lib/sync.functions", () => ({ savePlacementResult, fetchProgress }));
 
 // A fixed, deterministic 2-question A1 set instead of the real random
 // 15-question pool, so the placement flow (score -> next-level placement)
@@ -230,6 +231,11 @@ const pickPlacement = vi.fn((canPlayAudio = true): PlacementQuestion[] =>
   canPlayAudio ? FIXED_QUESTIONS : FIXED_QUESTIONS.filter((q) => q.type !== "listening"),
 );
 vi.mock("../../data/courses", () => ({
+  COURSES: [
+    { id: "en", label: "English", flag: "EN", targetLanguage: "English" },
+    { id: "fr", label: "French", flag: "FR", targetLanguage: "French" },
+    { id: "es", label: "Spanish", flag: "ES", targetLanguage: "Spanish" },
+  ],
   getCourse: () => ({ pickPlacement }),
   // Omitting this made the Play-audio handler unclickable in tests: vitest
   // throws on an export a mock factory does not define, so the button could
@@ -263,6 +269,68 @@ beforeEach(() => {
   // mockReturnValue above wins over the factory implementation, so tests that
   // care about the argument re-establish it themselves.
   useProgress.getState().reset();
+  fetchProgress.mockReset();
+  // Most tests below are the RETAKE path: this course already has a placement, so the page goes
+  // straight to the questions. The language chooser (only for a course with no placement) has its own
+  // describe block, which clears this again.
+  useProgress.setState({ placementTakenAt: "2026-01-01T00:00:00.000Z" });
+});
+
+describe("Placement language choice", () => {
+  beforeEach(() => {
+    useProgress.setState({ placementTakenAt: null });
+  });
+
+  it("asks which language before the first question when this course has no placement", () => {
+    renderPage();
+    expect(
+      screen.getByRole("heading", { name: /which language do you want to learn/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /english/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /french/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /spanish/i })).toBeInTheDocument();
+    expect(screen.queryByText("Pick 2")).not.toBeInTheDocument();
+  });
+
+  it("switches the course and loads that course's progress before starting the test", async () => {
+    fetchProgress.mockResolvedValue({ course: "fr", xp: 0 });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /french/i }));
+    expect(useProgress.getState().course).toBe("fr");
+    expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "fr" } });
+    expect(await screen.findByText("Pick 2")).toBeInTheDocument();
+  });
+
+  it("does not reload progress when the learner keeps the current course", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /english/i }));
+    expect(fetchProgress).not.toHaveBeenCalled();
+    expect(await screen.findByText("Pick 2")).toBeInTheDocument();
+  });
+
+  it("still starts the test in the chosen course when loading progress fails (offline)", async () => {
+    fetchProgress.mockRejectedValue(new Error("offline"));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /spanish/i }));
+    expect(useProgress.getState().course).toBe("es");
+    expect(await screen.findByText("Pick 2")).toBeInTheDocument();
+  });
+
+  it("is skipped on a retake (a placement already exists)", () => {
+    useProgress.setState({ placementTakenAt: "2026-01-01T00:00:00.000Z" });
+    renderPage();
+    expect(screen.queryByRole("heading", { name: /which language/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Pick 2")).toBeInTheDocument();
+  });
+
+  it("does not flash the chooser before the account has loaded", () => {
+    useProgress.setState({ hydrated: false, placementTakenAt: null });
+    renderPage();
+    expect(screen.queryByRole("heading", { name: /which language/i })).not.toBeInTheDocument();
+  });
 });
 
 describe("Placement test", () => {

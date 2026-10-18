@@ -11,10 +11,10 @@ import {
   scorePlacement,
   type PlacementQuestion,
 } from "../../data/placement";
-import { getCourse, localeForCourse } from "../../data/courses";
+import { COURSES, getCourse, localeForCourse, type Course } from "../../data/courses";
 import { canSpeak, speak } from "../../lib/speech";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
-import { savePlacementResult } from "../../lib/sync.functions";
+import { fetchProgress, savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { LEVELS, type Level } from "../../data/levels";
@@ -71,6 +71,16 @@ function PlacementPage() {
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
   const course = useProgress((s) => s.course);
+  const setCourse = useProgress((s) => s.setCourse);
+  const hydrate = useProgress((s) => s.hydrate);
+  const hydrated = useProgress((s) => s.hydrated);
+  const placementTakenAt = useProgress((s) => s.placementTakenAt);
+  const loadProgress = useServerFn(fetchProgress);
+  // A new account's course is "en" until the learner changes it on the Learn screen, so without this
+  // step a French or Spanish learner sat the English test first. Shown only when this course has no
+  // placement yet (a retake goes straight to the questions).
+  const [languageChosen, setLanguageChosen] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const [session, setSession] = useState<Session>(() =>
     startSession(getCourse(course).pickPlacement(canSpeak())),
   );
@@ -105,6 +115,28 @@ function PlacementPage() {
 
   const q = session.shown[step];
   const total = session.shown.length;
+
+  async function chooseLanguage(next: Course) {
+    if (switching) return;
+    setSwitching(true);
+    try {
+      if (next !== course) {
+        setCourse(next);
+        // Same as the Learn screen's course switch; if it fails (offline) the test still starts in the
+        // chosen course and the progress loads on the next visit to Learn.
+        try {
+          hydrate(await loadProgress({ data: { course: next } }));
+        } catch {
+          // keep going
+        }
+      }
+      setLanguageChosen(true);
+    } finally {
+      setSwitching(false);
+    }
+  }
+
+  const needsLanguage = hydrated && !placementTakenAt && !languageChosen && !done;
 
   const result = useMemo(() => {
     if (!done) return null;
@@ -168,6 +200,36 @@ function PlacementPage() {
       bandStart: session.shown.length,
     });
     setStep(step + 1);
+  }
+
+  if (needsLanguage) {
+    return (
+      <LessonFrame>
+        <div className="flex flex-1 flex-col items-center justify-center px-7 text-center">
+          <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
+            Which language do you want to learn?
+          </h1>
+          <p className="mt-2 max-w-[280px] text-sm text-ink-soft/80">
+            The level test is in the language you pick. You can add the others later from the Learn
+            screen.
+          </p>
+          <div className="mt-8 flex w-full max-w-[300px] flex-col gap-3">
+            {COURSES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                disabled={switching}
+                aria-pressed={c.id === course}
+                onClick={() => void chooseLanguage(c.id)}
+                className="rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-left text-base font-semibold text-ink transition hover:bg-parchment disabled:opacity-60"
+              >
+                {c.flag} {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </LessonFrame>
+    );
   }
 
   if (done && result) {
