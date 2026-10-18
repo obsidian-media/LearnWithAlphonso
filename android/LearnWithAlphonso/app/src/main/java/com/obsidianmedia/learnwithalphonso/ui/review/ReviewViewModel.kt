@@ -64,7 +64,7 @@ class ReviewViewModel(
     init { viewModelScope.launch { loadQueue() } }
 
     fun questionFor(item: ReviewItem): Question? {
-        if (item.source == "weakness") return questionFromWeaknessItem(item)
+        if (item.isSelfContained) return questionFromWeaknessItem(item)
         val found = content.findLesson(item.lessonId, course) ?: return null
         val questionId = item.itemKey.substringAfterLast(':')
         return found.second.questions.firstOrNull { it.id == questionId }

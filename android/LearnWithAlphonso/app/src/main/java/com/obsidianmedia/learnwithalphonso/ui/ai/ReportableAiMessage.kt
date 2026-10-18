@@ -1,6 +1,5 @@
 package com.obsidianmedia.learnwithalphonso.ui.ai
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onLongClick
@@ -45,10 +43,10 @@ fun ReportableAiMessage(
     enabled: Boolean,
     sender: AiReportSender,
     makeReport: (AiResponseReportReason) -> AiResponseReport,
-    content: @Composable (Modifier) -> Unit,
+    content: @Composable (modifier: Modifier, actions: List<CustomAccessibilityAction>) -> Unit,
 ) {
     if (!enabled) {
-        content(Modifier)
+        content(Modifier, emptyList())
         return
     }
     val palette = AlphonsoColor.palette
@@ -58,13 +56,15 @@ fun ReportableAiMessage(
 
     // A long press, not a click: a plain tap does nothing, shows no ripple and is not announced as a button. TalkBack
     // gets the same action as a long click and as a named custom action.
+    //
+    // The long press is watched before the children (see [longPressAnywhere]), so it also works over a word that is a
+    // link. The custom action is handed to the content rather than set here: a text with its own custom actions (the
+    // save-a-word list) must put both in ONE list, because two semantics modifiers on one node do not add them up.
     content(
         Modifier
-            .pointerInput(Unit) { detectTapGestures(onLongPress = { showMenu = true }) }
-            .semantics {
-                onLongClick(label = AiConsentCopy.reportAction) { showReasons = true; true }
-                customActions = listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true })
-            },
+            .longPressAnywhere { showMenu = true }
+            .semantics { onLongClick(label = AiConsentCopy.reportAction) { showReasons = true; true } },
+        listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true }),
     )
     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
         DropdownMenuItem(
@@ -121,3 +121,7 @@ fun AiReportStatusHost(sender: AiReportSender) {
         )
     }
 }
+
+/** Applies the actions [ReportableAiMessage] hands its content to a plain (non-tappable) text. */
+fun Modifier.accessibilityActions(actions: List<CustomAccessibilityAction>): Modifier =
+    if (actions.isEmpty()) this else semantics { customActions = actions }

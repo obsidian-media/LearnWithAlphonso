@@ -3,6 +3,8 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -43,11 +45,17 @@ class ApiHttp(
      */
     private val onAiConsentRequired: (() -> Unit)? = null,
 ) {
-    private val client = HttpClient(engine) { expectSuccess = false }
+    // The timeout plugin changes nothing until a request asks for one (`timeoutMillis` below): the default stays the engine's.
+    private val client = HttpClient(engine) {
+        expectSuccess = false
+        install(HttpTimeout)
+    }
 
-    suspend fun post(path: String, body: JsonObject?, extraHeaders: Map<String, String> = emptyMap()): HttpResponse =
+    /** [timeoutMillis] raises the read and request timeout for this one call (a slow model call); null keeps the client's default. */
+    suspend fun post(path: String, body: JsonObject?, extraHeaders: Map<String, String> = emptyMap(), timeoutMillis: Long? = null): HttpResponse =
         withRetry { token ->
             send(path, token) {
+                timeoutMillis?.let { timeout { requestTimeoutMillis = it; socketTimeoutMillis = it } }
                 extraHeaders.forEach { (k, v) -> header(k, v) }
                 if (body != null) setBody(TextContent(body.toString(), ContentType.Application.Json))
             }

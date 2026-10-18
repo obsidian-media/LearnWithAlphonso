@@ -40,7 +40,6 @@ import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
-import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -157,6 +156,6 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
         // over from before would outlive the learner opting back in.
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
-        if (checked) ExplanationBlock(isCorrect, question.explanation)
+        if (checked) Explanation(container, isCorrect, question.explanation, course)
     }
 }
