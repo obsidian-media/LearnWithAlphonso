@@ -53,7 +53,16 @@ interface PlayerPort {
     var onStalled: () -> Unit
     /** The player's own play state: the system pauses on focus loss and unplugged headphones without us asking. */
     var onPlayingChanged: (Boolean) -> Unit
+
+    /**
+     * The player stopped because of [PauseCause]: a pause button (app, notification, lock screen, headset), permanent
+     * audio-focus loss, or headphones pulled. A transient focus loss (a call, a navigation prompt) is NOT reported: the
+     * player suppresses itself and resumes by itself, and the learner still expects sound.
+     */
+    var onPaused: (PauseCause) -> Unit
 }
+
+enum class PauseCause { USER_REQUEST, FOCUS_LOST, BECAME_NOISY }
 
 data class PodcastPlayerState(
     val episode: PodcastEpisode? = null,
@@ -125,6 +134,9 @@ class PodcastPlayer(
     private var startMillis = 0L
     private var timeoutJob: Job? = null
 
+    /** A failure is being probed: the result belongs to this start, so a tap must not start another one and drop it. */
+    private var probing = false
+
     /** The episode as the learner should see it: with the position this device last stored, if newer. */
     fun resumed(episode: PodcastEpisode): PodcastEpisode = savedPositions.applying(episode)
 
@@ -137,6 +149,7 @@ class PodcastPlayer(
         // Review 2026-09-30: a system pause (audio focus lost, headphones unplugged) left the
         // mini bar showing "playing" and the next tap had to pause a paused player first.
         port.onPlayingChanged = ::playerPlayingChanged
+        port.onPaused = ::playerPaused
         port.onError = ::playerFailed
         port.onStalled = { dispatch(PodcastPlayerEvent.Stalled) }
         scope.launch {
@@ -188,6 +201,7 @@ class PodcastPlayer(
     /** Starts the current episode from its source: first play, and Retry after a failure. */
     private fun startCurrent() {
         timeoutJob?.cancel()
+        probing = false
         dispatch(PodcastPlayerEvent.Start(isRemote = !sourceIsLocal, isOnline = isOnline()))
         // An offline start never reaches the player: stop whatever was loaded before.
         if (machine.phase is PodcastPlayerPhase.Failed) port.pause()
@@ -195,7 +209,7 @@ class PodcastPlayer(
 
     fun toggle() {
         val s = _state.value
-        if (s.episode == null) return
+        if (s.episode == null || probing) return
         when (machine.phase) {
             is PodcastPlayerPhase.Failed -> {
                 startMillis = (s.elapsedSeconds * 1000).toLong()
@@ -231,6 +245,7 @@ class PodcastPlayer(
         port.stop()
         tracker.reset()
         timeoutJob?.cancel()
+        probing = false
         machine.send(PodcastPlayerEvent.Closed)
         source = null
         _state.value = PodcastPlayerState()
@@ -248,9 +263,11 @@ class PodcastPlayer(
         val episode = _state.value.episode ?: return
         save(port.currentMillis() / 1000.0, completed = false)
         flushPlayEvent(episode)
-        port.pause()
         timeoutJob?.cancel()
+        probing = false
+        // Idle first: our own pause is echoed back by the player as a pause cause, which must not save a second time.
         machine.send(PodcastPlayerEvent.Closed)
+        port.pause()
         source = null
         _state.value = PodcastPlayerState(queue = _state.value.queue, savesDisabled = _state.value.savesDisabled)
     }
@@ -277,13 +294,17 @@ class PodcastPlayer(
     }
 
     private fun playerPlayingChanged(playing: Boolean) {
+        if (_state.value.episode == null || !playing) return
+        // Already paused or finished and the player is playing: something outside the app pressed play (notification,
+        // lock screen, headset). Nothing is loading, so there is nothing to wait for.
+        if (machine.phase == PodcastPlayerPhase.Paused || machine.phase == PodcastPlayerPhase.Finished) dispatch(PodcastPlayerEvent.ResumedExternally)
+        else dispatch(PodcastPlayerEvent.PlayerPlaying)
+    }
+
+    /** Every real pause stays paused until the learner (or the system's own media button) plays again; nothing here resumes by itself. */
+    private fun playerPaused(cause: PauseCause) {
         if (_state.value.episode == null) return
-        when {
-            playing && machine.phase == PodcastPlayerPhase.Paused -> dispatch(PodcastPlayerEvent.InterruptionEnded(shouldResume = true))
-            playing -> dispatch(PodcastPlayerEvent.PlayerPlaying)
-            // The system paused us (audio focus lost, headphones unplugged). It may resume on its own after a call.
-            else -> dispatch(PodcastPlayerEvent.PausedExternally(resumable = true))
-        }
+        dispatch(PodcastPlayerEvent.PausedExternally(resumable = false))
     }
 
     /** The item failed. A remote one is probed first, because the player cannot tell a missing object from a dead network. */
@@ -293,9 +314,11 @@ class PodcastPlayer(
         val generation = machine.stallGeneration
         val local = sourceIsLocal
         val url = source
+        probing = true
         scope.launch {
             val probed = if (local || url == null) PodcastProbeResult.NotRun else runCatching { probe(url) }.getOrDefault(PodcastProbeResult.NoResponse)
             if (_state.value.episode?.id != episode.id || machine.stallGeneration != generation || machine.phase == PodcastPlayerPhase.Idle) return@launch
+            probing = false
             dispatch(PodcastPlayerEvent.ItemFailed(PodcastPlaybackClassifier.classify(errorCode, httpStatus, probed, local, isOnline())))
         }
     }
@@ -316,6 +339,8 @@ class PodcastPlayer(
             PodcastPlayerEffect.Play -> port.play()
             PodcastPlayerEffect.Pause -> port.pause()
             PodcastPlayerEffect.SeekToStart -> {
+                // At the end the player keeps playWhenReady, so seeking to the start would play the episode again.
+                port.pause()
                 port.seekTo(0)
                 _state.update { it.copy(elapsedSeconds = 0.0) }
             }

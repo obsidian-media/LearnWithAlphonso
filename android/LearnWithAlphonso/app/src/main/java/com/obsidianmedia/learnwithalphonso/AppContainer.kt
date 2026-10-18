@@ -143,7 +143,7 @@ class AppContainer(context: Context) {
 
     // ---- Plan 4: podcasts, reminders, push ----
 
-    val downloads = PodcastDownloadManager(app, database.podcastDownloadDao(), okHttp).also { d -> appScope.launch { d.reconcile() } }
+    val downloads = PodcastDownloadManager(app, database.podcastDownloadDao(), okHttp, isOnline = { connectivity.isConnected.value }).also { d -> appScope.launch { d.reconcile() } }
     val podcastPlayer = PodcastPlayer(
         MediaControllerPort(app, appScope),
         { if (session.currentAccessToken() != null) podcastClient else null },

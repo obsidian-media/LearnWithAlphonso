@@ -1425,7 +1425,19 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   the active course and by "has a published episode beneath it";
   `PodcastClient.fetchPublishedIndex` pages the published ids, and after a
   successful read that returned folders `ListenViewModel` removes downloads of
-  unpublished episodes (not the one playing).
+  unpublished episodes (not the one playing). The index is read until an
+  empty page, so a server that caps pages below the requested size cannot
+  truncate the set downloads are pruned against; an unreadable index (500,
+  401) removes nothing. Media3 wiring: `onIsPlayingChanged(true)` is the only
+  "playing" signal; a transient audio-focus loss suppresses playback with
+  `playWhenReady` still true and is not reported (the player resumes by
+  itself); a real pause arrives through `onPlayWhenReadyChanged(false, reason)`
+  as a `PauseCause` (pause button, permanent focus loss, headphones pulled),
+  none of which resumes by itself; buffering while `playWhenReady` is a stall.
+  At the end of the media `playWhenReady` stays true, so the player is paused
+  before it is rewound. Parity with iOS: search results are limited to the
+  visible folders, and the offline listing is every download whatever its
+  course.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and

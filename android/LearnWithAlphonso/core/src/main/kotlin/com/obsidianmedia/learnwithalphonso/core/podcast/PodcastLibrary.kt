@@ -23,7 +23,7 @@ sealed interface PodcastDownloadFailure {
 
 /** Every check a finished transfer must pass before it may become a downloaded episode. */
 object PodcastDownloadValidation {
-    /** 16 kbps. Episodes are ~64 kbps, so anything under a quarter of that for its duration is not the episode. */
+    /** 16 kbps. Episodes are ~48 kbps, so anything under a third of that for its duration is not the episode. */
     const val MINIMUM_BYTES_PER_SECOND = 2_000L
 
     /**
@@ -49,13 +49,18 @@ object PodcastDownloadValidation {
         return if (actualBytes >= floor) null else PodcastDownloadFailure.Incomplete(null, actualBytes)
     }
 
-    /** A thrown error, by its whole cause chain. */
-    fun classify(error: Throwable): PodcastDownloadFailure {
+    /**
+     * A thrown error, by its whole cause chain. A failed connect or lookup is "offline" only when the device says it has
+     * no connection; with one, it is the network (a server or DNS that is down is not the learner's airplane mode).
+     */
+    fun classify(error: Throwable, isOnline: Boolean = false): PodcastDownloadFailure {
         val chain = generateSequence(error) { it.cause }.take(8).toList()
         if (chain.any { it is IOException && (it.message.orEmpty().contains("ENOSPC") || it.message.orEmpty().contains("No space left", ignoreCase = true)) }) {
             return PodcastDownloadFailure.NoSpace
         }
-        if (chain.any { it is UnknownHostException || it is NoRouteToHostException || (it is ConnectException) }) return PodcastDownloadFailure.Offline
+        if (chain.any { it is UnknownHostException || it is NoRouteToHostException || it is ConnectException }) {
+            return if (isOnline) PodcastDownloadFailure.Network else PodcastDownloadFailure.Offline
+        }
         return PodcastDownloadFailure.Network
     }
 }

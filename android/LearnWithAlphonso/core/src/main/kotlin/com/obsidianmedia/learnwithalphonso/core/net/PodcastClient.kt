@@ -63,7 +63,7 @@ class PodcastClient(
 
     /**
      * Every published episode's id and folder. RLS already hides unpublished rows; the explicit filter states the
-     * intent. Paged (ordered by id) until a short page, because one request returns at most `max_rows`: a larger
+     * intent. Paged (ordered by id) until an empty page, because one request returns at most `max_rows`: a larger
      * catalogue would otherwise be truncated, and the caller treats this list as the whole published set when it
      * removes downloads.
      */
@@ -82,8 +82,10 @@ class PodcastClient(
                 val folderId = row.str("folder_id")
                 if (id != null && folderId != null) refs.add(PodcastPublishedEpisodeRef(id, folderId))
             }
-            if (page.size < PUBLISHED_INDEX_PAGE_SIZE) return refs
-            offset += PUBLISHED_INDEX_PAGE_SIZE
+            // Only an empty page ends the list: a server may cap a page below what was asked, and a short page would then
+            // look like the end and silently truncate the set that downloads are pruned against.
+            if (page.isEmpty()) return refs
+            offset += page.size
         }
     }
 

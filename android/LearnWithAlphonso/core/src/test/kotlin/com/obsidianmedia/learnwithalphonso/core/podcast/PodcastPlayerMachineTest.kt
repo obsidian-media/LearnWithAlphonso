@@ -266,4 +266,31 @@ class PodcastPlayerMachineTest {
         assertEquals("No French episodes yet", PodcastLibrary.emptyTitle("fr"))
         assertEquals("No episodes yet", PodcastLibrary.emptyTitle("de"))
     }
+
+    @Test
+    fun `play pressed outside the app resumes a paused or finished episode with no effects and no load timer`() {
+        val paused = playing()
+        paused.send(Ev.PausedExternally(resumable = false))
+        assertEquals(emptyList<Fx>(), paused.send(Ev.ResumedExternally))
+        assertEquals(Ph.Playing, paused.phase)
+
+        val finished = playing()
+        finished.send(Ev.PlayedToEnd)
+        assertEquals(emptyList<Fx>(), finished.send(Ev.ResumedExternally))
+        assertEquals(Ph.Playing, finished.phase)
+
+        val failed = PodcastPlayerMachine()
+        failed.send(Ev.Start(isRemote = true, isOnline = true))
+        failed.send(Ev.ItemFailed(PodcastPlaybackFailure.NOT_FOUND))
+        failed.send(Ev.ResumedExternally)
+        assertEquals(PodcastPlaybackFailure.NOT_FOUND, failed.failure, "an outside play does not revive a failed item")
+    }
+
+    @Test
+    fun `a failed connect is the network when the device has a connection, offline only when it has none`() {
+        val refused = IOException("failed", ConnectException("refused"))
+        assertEquals(PodcastDownloadFailure.Network, PodcastDownloadValidation.classify(refused, isOnline = true))
+        assertEquals(PodcastDownloadFailure.Offline, PodcastDownloadValidation.classify(refused, isOnline = false))
+        assertEquals(PodcastDownloadFailure.Network, PodcastDownloadValidation.classify(UnknownHostException("dns"), isOnline = true))
+    }
 }

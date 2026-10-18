@@ -26,29 +26,78 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * A player that behaves like Media3's controller where it matters here: play() while already playing says nothing,
+ * playWhenReady stays true at the end of the media (so seeking from the end replays), a transient focus loss suppresses
+ * playback without any callback, and a real pause reports its cause.
+ */
 class FakePort : PlayerPort {
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
+    override var onPaused: (PauseCause) -> Unit = {}
     override var onError: (Int?, Int?) -> Unit = { _, _ -> }
     override var onStalled: () -> Unit = {}
 
-    /** A real player confirms playback a moment after play(); tests that need it unconfirmed turn this off. */
-    var confirmPlay = true
     val calls = ArrayList<String>()
     var position = 0L
     var duration: Long? = null
-    override fun prepare(uri: String, startMillis: Long) { calls.add("prepare($uri,$startMillis)"); position = startMillis }
+
+    var playWhenReady = false
+        private set
+    var playing = false
+        private set
+    var ended = false
+        private set
+    private var suppressed = false
+    private var ready = true
+
+    /** A real player confirms playback a moment after play(); tests that need it unconfirmed turn this off, then back on. */
+    var confirmPlay: Boolean
+        get() = ready
+        set(value) { ready = value; update() }
+
+    private fun update() {
+        val now = playWhenReady && ready && !ended && !suppressed
+        if (now != playing) {
+            playing = now
+            // Media3 reports isPlaying becoming true; "not playing" is explained by a pause cause, a stall or nothing.
+            if (now) onPlayingChanged(true)
+        }
+    }
+
+    override fun prepare(uri: String, startMillis: Long) { calls.add("prepare($uri,$startMillis)"); position = startMillis; ended = false }
     override fun play() {
         calls.add("play")
-        if (confirmPlay) onPlayingChanged(true)
+        if (ended) { ended = false; position = 0 }
+        playWhenReady = true
+        update()
     }
-    override fun pause() { calls.add("pause") }
-    override fun seekTo(millis: Long) { calls.add("seek($millis)"); position = millis }
+    override fun pause() {
+        calls.add("pause")
+        if (!playWhenReady) return
+        playWhenReady = false
+        update()
+        onPaused(PauseCause.USER_REQUEST)
+    }
+    override fun seekTo(millis: Long) { calls.add("seek($millis)"); position = millis; if (ended) { ended = false; update() } }
     override fun currentMillis() = position
     override fun durationMillis() = duration
     override fun release() { calls.add("release") }
     override fun stop() { calls.add("stop") }
+
+    /** The media ran out. playWhenReady stays true, as in Media3. */
+    fun endPlayback() { ended = true; update(); onEnded() }
+
+    /** Headphones pulled, audio focus lost for good, or a pause from the notification, lock screen or headset. */
+    fun externalPause(cause: PauseCause) { playWhenReady = false; update(); onPaused(cause) }
+
+    /** Play pressed outside the app (notification, lock screen, headset, Bluetooth). */
+    fun externalPlay() { playWhenReady = true; update() }
+
+    /** A call or a navigation prompt: playback is suppressed, playWhenReady stays true, nothing is reported. */
+    fun suppress() { suppressed = true; update() }
+    fun unsuppress() { suppressed = false; update() }
 }
 
 class PodcastPlayerTest {
@@ -104,7 +153,7 @@ class PodcastPlayerTest {
         assertEquals(52, Json.parseToJsonElement(patch.body).jsonObject["position_seconds"]!!.jsonPrimitive.content.toInt())
         port.onTick(20.0) // backward skip: 32 away from the last save
         awaitTrue("second save") { saves(s).size == 2 }
-        port.onEnded()
+        port.endPlayback()
         awaitTrue("completion save") { saves(s).size == 3 }
         val done = Json.parseToJsonElement(saves(s).last().body).jsonObject
         assertEquals(0, done["position_seconds"]!!.jsonPrimitive.content.toInt())
@@ -309,7 +358,7 @@ class PodcastPlayerTest {
         val p = player(s, port)
         p.play(episode())
         assertTrue(p.state.value.isPlaying)
-        port.onPlayingChanged(false) // headphones unplugged: ExoPlayer paused itself
+        port.externalPause(PauseCause.BECAME_NOISY) // headphones unplugged: ExoPlayer paused itself
         assertFalse(p.state.value.isPlaying)
         p.toggle()
         assertTrue(p.state.value.isPlaying)
@@ -343,7 +392,7 @@ class PodcastPlayerTest {
         assertEquals(PodcastPlayerPhase.Loading, p.state.value.phase)
         assertFalse("play() was called but nothing is audible yet", p.state.value.isPlaying)
         assertEquals(PodcastPlayerControl.SPINNER, p.state.value.control)
-        port.onPlayingChanged(true)
+        port.confirmPlay = true
         assertTrue(p.state.value.isPlaying)
         assertEquals(PodcastPlayerControl.PAUSE, p.state.value.control)
     }
@@ -391,7 +440,7 @@ class PodcastPlayerTest {
         port.onError(PlayerCodes.BAD_STATUS, null)
         p.play(episode("e2"))
         gate.complete(Unit)
-        port.onPlayingChanged(true)
+        port.confirmPlay = true
         awaitTrue("playing e2") { p.state.value.isPlaying }
         assertEquals("e2", p.state.value.episode?.id)
         assertNull(p.state.value.failure)
@@ -443,12 +492,101 @@ class PodcastPlayerTest {
         val port = FakePort()
         val p = player(s, port)
         p.play(episode(position = 42))
-        port.onEnded()
+        port.endPlayback()
         assertEquals(PodcastPlayerPhase.Finished, p.state.value.phase)
         assertEquals(PodcastPlayerControl.PLAY, p.state.value.control)
         assertTrue(port.calls.contains("seek(0)"))
         assertEquals(0.0, p.state.value.elapsedSeconds, 0.0)
         awaitTrue("completion save") { saves(s).any { Json.parseToJsonElement(it.body).jsonObject.containsKey("completed_at") } }
+    }
+
+    @Test
+    fun `reaching the end pauses before rewinding, so the episode does not play again`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port)
+        p.play(episode())
+        port.endPlayback()
+        assertEquals(PodcastPlayerPhase.Finished, p.state.value.phase)
+        assertFalse("the player is not playing after the end", port.playing)
+        assertTrue("paused first, then rewound", port.calls.lastIndexOf("pause") < port.calls.lastIndexOf("seek(0)"))
+        // The bar says Play, and tapping it plays from the start without a false network failure.
+        assertEquals(PodcastPlayerControl.PLAY, p.state.value.control)
+        p.toggle()
+        assertTrue(p.state.value.isPlaying)
+        assertTrue(port.playing)
+        assertNull(p.state.value.failure)
+    }
+
+    @Test
+    fun `playing again after the end does not time out as a network failure`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port, timeoutMillis = 100)
+        p.play(episode())
+        port.endPlayback()
+        p.toggle()
+        kotlinx.coroutines.delay(300)
+        assertTrue("the load timer saw the player playing", p.state.value.isPlaying)
+        assertNull(p.state.value.failure)
+    }
+
+    @Test
+    fun `play pressed outside the app resumes a paused episode without a spinner or a false failure`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port, timeoutMillis = 100)
+        p.play(episode())
+        port.externalPause(PauseCause.USER_REQUEST) // the notification's pause button
+        assertEquals(PodcastPlayerPhase.Paused, p.state.value.phase)
+        port.externalPlay() // the notification's play button, or the headset's
+        assertEquals(PodcastPlayerPhase.Playing, p.state.value.phase)
+        kotlinx.coroutines.delay(300)
+        assertTrue(p.state.value.isPlaying)
+        assertNull("no spinner timed out into a network failure", p.state.value.failure)
+        assertEquals("the app never called play() itself for an outside resume", 1, port.calls.count { it == "play" })
+    }
+
+    @Test
+    fun `a call or a prompt that suppresses playback is not a pause, and the player resumes by itself`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port)
+        p.play(episode())
+        port.suppress()
+        assertEquals(PodcastPlayerPhase.Playing, p.state.value.phase)
+        assertEquals("the app did not pause a player that resumes by itself", 0, port.calls.count { it == "pause" })
+        port.unsuppress()
+        assertTrue(p.state.value.isPlaying)
+        assertEquals(1, port.calls.count { it == "play" })
+    }
+
+    @Test
+    fun `headphones pulled and permanent focus loss leave it paused, and nothing resumes it by itself`() = runBlocking {
+        for (cause in listOf(PauseCause.BECAME_NOISY, PauseCause.FOCUS_LOST)) {
+            val port = FakePort()
+            val p = player(server(), port)
+            p.play(episode())
+            port.externalPause(cause)
+            assertEquals(cause.name, PodcastPlayerPhase.Paused, p.state.value.phase)
+            assertEquals(PodcastPlayerControl.PLAY, p.state.value.control)
+            assertEquals("not resumed on its own", 1, port.calls.count { it == "play" })
+            p.toggle()
+            assertTrue(p.state.value.isPlaying)
+        }
+    }
+
+    @Test
+    fun `a tap while a failure is being probed does not start another load and drop the verdict`() = runBlocking {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val port = FakePort().apply { confirmPlay = false }
+        val p = player(server(), port, probe = { gate.await(); PodcastProbeResult.Status(404) })
+        p.play(episode())
+        port.onError(PlayerCodes.BAD_STATUS, null)
+        // Pause then play from the lock screen or notification while the probe is out: the second press would start a
+        // new load, bump the generation and drop the verdict, leaving a spinner that ends in a false network failure.
+        p.toggle()
+        p.toggle()
+        assertEquals("both presses were ignored", 1, port.calls.count { it == "play" })
+        gate.complete(Unit)
+        awaitTrue("verdict") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.NOT_FOUND, p.state.value.failure)
     }
 }
 

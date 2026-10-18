@@ -37,6 +37,7 @@ class PodcastDownloadManager(
     private val http: OkHttpClient,
     val budgetBytes: Long = PodcastCacheBudget.DEFAULT_BYTES,
     private val now: () -> Long = System::currentTimeMillis,
+    private val isOnline: () -> Boolean = { true },
 ) {
     /** filesDir, not cacheDir: the system may purge caches, and a deliberate download should not evaporate. */
     private val directory: File = File(context.filesDir, "podcast-audio").apply { mkdirs() }
@@ -100,7 +101,7 @@ class PodcastDownloadManager(
             }
             // Atomic move last: a file at the final path always means a complete, accounted-for download.
             final.delete()
-            if (!staging.renameTo(final)) throw PodcastDownloadRefusal.TransferFailed(PodcastDownloadFailure.NoSpace)
+            if (!staging.renameTo(final)) throw PodcastDownloadRefusal.TransferFailed(PodcastDownloadFailure.Network)
             dao.upsert(PodcastDownloadRecord(episode.id, bytes, etag, episode.durationSeconds, null, now()))
             _states.update { it + (episode.id to PodcastDownloadState.Downloaded(bytes)) }
         } catch (refusal: PodcastDownloadRefusal.BudgetExceeded) {
@@ -108,7 +109,7 @@ class PodcastDownloadManager(
             throw refusal
         } catch (e: Exception) {
             staging.delete()
-            val refusal = e as? PodcastDownloadRefusal.TransferFailed ?: PodcastDownloadRefusal.TransferFailed(PodcastDownloadValidation.classify(e))
+            val refusal = e as? PodcastDownloadRefusal.TransferFailed ?: PodcastDownloadRefusal.TransferFailed(PodcastDownloadValidation.classify(e, isOnline()))
             _states.update { it + (episode.id to PodcastDownloadState.Failed(refusal.message ?: "download failed")) }
             throw refusal
         }

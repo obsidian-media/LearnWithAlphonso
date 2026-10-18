@@ -169,7 +169,7 @@ class PodcastClientTest {
         val refs = client(fake).fetchPublishedIndex()
         assertEquals(total, refs.size, "a catalogue larger than one page is not truncated")
         assertEquals(PodcastPublishedEpisodeRef("e0", "f0"), refs.first())
-        assertEquals(listOf("0", PodcastClient.PUBLISHED_INDEX_PAGE_SIZE.toString()), fake.seen.map { it.query["offset"] })
+        assertEquals(listOf("0", PodcastClient.PUBLISHED_INDEX_PAGE_SIZE.toString(), (PodcastClient.PUBLISHED_INDEX_PAGE_SIZE + 3).toString()), fake.seen.map { it.query["offset"] })
         assertEquals("eq.true", fake.seen.first().query["published"])
         assertEquals("id.asc", fake.seen.first().query["order"])
     }
@@ -178,5 +178,26 @@ class PodcastClientTest {
     fun `fetchPublishedIndex skips rows missing an id or folder`() = runTest {
         val fake = FakeSupabase { json("""[{"id":"e1","folder_id":"f1"},{"id":"e2"},{"folder_id":"f2"}]""") }
         assertEquals(listOf(PodcastPublishedEpisodeRef("e1", "f1")), client(fake).fetchPublishedIndex())
+    }
+
+    @Test
+    fun `exactly one full page still asks for the next, and only an empty page ends the list`() = runTest {
+        val size = PodcastClient.PUBLISHED_INDEX_PAGE_SIZE
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            json((offset until minOf(offset + size, size)).joinToString(",", "[", "]") { """{"id":"e$it","folder_id":"f1"}""" })
+        }
+        assertEquals(size, client(fake).fetchPublishedIndex().size)
+        assertEquals(2, fake.seen.size, "a full page is never taken as the end")
+    }
+
+    @Test
+    fun `a server that caps pages below the requested size does not truncate the index`() = runTest {
+        val total = 250
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            json((offset until minOf(offset + 100, total)).joinToString(",", "[", "]") { """{"id":"e$it","folder_id":"f1"}""" })
+        }
+        assertEquals(total, client(fake).fetchPublishedIndex().size)
     }
 }

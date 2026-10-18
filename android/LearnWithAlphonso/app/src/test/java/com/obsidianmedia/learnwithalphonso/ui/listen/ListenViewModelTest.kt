@@ -23,6 +23,8 @@ class ListenViewModelTest {
     private fun server(offline: Boolean = false) = FakeServer { req ->
         when {
             offline -> json("{}", HttpStatusCode.ServiceUnavailable)
+            // The published index is paged until an empty page: only the first page has rows.
+            req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" && req.query["offset"] != "0" -> json("[]")
             req.path.endsWith("podcast_folders") -> json("""[{"id":"f1","parent_id":null,"slug":"en","title":"English","description":null,"sort_order":0}]""")
             req.path.endsWith("podcast_episodes") && req.query.containsKey("or") -> json("[${row("s1", "Coffee talk")}]")
             req.path.endsWith("podcast_episodes") -> json("[${row("b", "Bravo")},${row("a", "Alpha")}]")
@@ -75,10 +77,12 @@ class ListenViewModelTest {
         assertEquals(emptyList<String>(), gone.state.value.offline?.map { it.title })
     }
 
-    private fun courseServer(folders: String = FOLDERS, fail: Boolean = false) = FakeServer { req ->
+    private fun courseServer(folders: String = FOLDERS, fail: Boolean = false, indexStatus: HttpStatusCode = HttpStatusCode.OK) = FakeServer { req ->
         when {
             fail -> json("{}", HttpStatusCode.ServiceUnavailable)
+            req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" && indexStatus != HttpStatusCode.OK -> json("{}", indexStatus)
             req.path.endsWith("podcast_folders") -> json(folders)
+            req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" && req.query["offset"] != "0" -> json("[]")
             req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" -> json("""[{"id":"e1","folder_id":"f1"},{"id":"e2","folder_id":"f2"}]""")
             else -> json("[]")
         }
@@ -120,5 +124,17 @@ class ListenViewModelTest {
     private companion object {
         const val FOLDERS = """[{"id":"f1","parent_id":null,"slug":"en","title":"English","description":null,"sort_order":0,"course":"en"},
             {"id":"f2","parent_id":null,"slug":"fr","title":"French","description":null,"sort_order":1,"course":"fr"}]"""
+    }
+
+    @Test
+    fun `folders that load while the published index fails remove nothing`() = runBlocking {
+        for (status in listOf(HttpStatusCode.InternalServerError, HttpStatusCode.Unauthorized)) {
+            val removed = ArrayList<String>()
+            val vm = ListenViewModel(
+                client(courseServer(indexStatus = status)), { listOf(entry("old")) }, { true }, { "en" }, { removed.addAll(it) }, searchDebounceMillis = 0,
+            )
+            awaitTrue("loaded $status") { !vm.state.value.isLoading }
+            assertEquals("an unreadable index says nothing about what is published ($status)", emptyList<String>(), removed)
+        }
     }
 }

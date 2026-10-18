@@ -99,6 +99,9 @@ sealed interface PodcastPlayerEvent {
     /** The system or the app paused us: audio focus lost to a call (resumable), headphones pulled or a voice turn (not resumable). */
     data class PausedExternally(val resumable: Boolean) : PodcastPlayerEvent
     data class InterruptionEnded(val shouldResume: Boolean) : PodcastPlayerEvent
+
+    /** Something outside the app started playback again (notification, lock screen, headset button) and the player confirmed it. */
+    data object ResumedExternally : PodcastPlayerEvent
     data object Closed : PodcastPlayerEvent
 }
 
@@ -216,6 +219,12 @@ class PodcastPlayerMachine {
                 phase = PodcastPlayerPhase.Loading
                 stallGeneration += 1
                 return listOf(PodcastPlayerEffect.Play, PodcastPlayerEffect.ScheduleLoadTimeout(stallGeneration))
+            }
+            PodcastPlayerEvent.ResumedExternally -> {
+                // The player is already playing: no Play effect and no load timeout, which would fail a healthy stream.
+                if (phase == PodcastPlayerPhase.Paused || phase == PodcastPlayerPhase.Finished) phase = PodcastPlayerPhase.Playing
+                resumeAfterInterruption = false
+                return emptyList()
             }
             PodcastPlayerEvent.Closed -> {
                 phase = PodcastPlayerPhase.Idle

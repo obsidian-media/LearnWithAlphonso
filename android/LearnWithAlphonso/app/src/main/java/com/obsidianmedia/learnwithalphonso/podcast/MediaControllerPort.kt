@@ -24,6 +24,7 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
+    override var onPaused: (PauseCause) -> Unit = {}
     override var onError: (Int?, Int?) -> Unit = { _, _ -> }
     override var onStalled: () -> Unit = {}
 
@@ -40,10 +41,28 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startTicker() else ticker?.cancel()
-            // Media3 reports "not playing" while it buffers, and the order against the state change is not fixed.
-            val buffering = controller?.let { it.playbackState == Player.STATE_BUFFERING && it.playWhenReady } == true
-            if (!isPlaying && buffering) onStalled() else onPlayingChanged(isPlaying)
+            if (isPlaying) {
+                startTicker()
+                onPlayingChanged(true)
+            } else {
+                ticker?.cancel()
+                // "Not playing" has three different meanings, told apart elsewhere: buffering (a stall, below), a
+                // transient focus loss (suppressed, playWhenReady still true: the player resumes by itself, so nothing
+                // is reported) and a real pause (onPlayWhenReadyChanged).
+                val c = controller
+                if (c != null && c.playWhenReady && c.playbackState == Player.STATE_BUFFERING) onStalled()
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (playWhenReady) return
+            onPaused(
+                when (reason) {
+                    Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS -> PauseCause.FOCUS_LOST
+                    Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY -> PauseCause.BECAME_NOISY
+                    else -> PauseCause.USER_REQUEST
+                },
+            )
         }
 
         override fun onPlayerError(error: PlaybackException) {
