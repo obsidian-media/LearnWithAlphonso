@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useProgress } from "../lib/progress";
+import { transcriptSaveCourse } from "../lib/podcast-tree";
 import { AI_NARRATED_LABEL } from "../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../lib/podcast-player";
+import type { SavedWordCourse } from "../lib/saved-word";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
 /**
@@ -22,9 +25,14 @@ export function PodcastPlayer() {
 
   const [showTranscript, setShowTranscript] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
+  const activeCourse = useProgress((s) => s.course);
+  // Null until the folders are read; the active course stands in, never a fixed one.
+  const [episodeCourse, setEpisodeCourse] = useState<SavedWordCourse | null>(null);
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
 
   const episodeId = episode?.id ?? null;
+  const folderId = episode?.folderId ?? null;
+  const ownCourse = episode?.course ?? null;
 
   // Plain state rather than useQuery, deliberately. This bar is mounted in
   // AppShell, so a TanStack Query dependency here would require a
@@ -40,9 +48,15 @@ export function PodcastPlayer() {
     setIsLoadingTranscript(true);
     void (async () => {
       try {
-        const { fetchTranscript } = await import("../lib/podcast.functions");
+        const { fetchTranscript, listFolders } = await import("../lib/podcast.functions");
+        const folders = await listFolders().catch(() => null);
         const text = await fetchTranscript({ data: { episodeId } });
-        if (!cancelled) setTranscript(text);
+        if (!cancelled) {
+          setEpisodeCourse(
+            transcriptSaveCourse(folders ?? [], folderId ?? "", activeCourse, ownCourse),
+          );
+          setTranscript(text);
+        }
       } catch {
         // The panel shows "no transcript" either way. Distinguishing a
         // missing transcript from a failed fetch would be better, and is
@@ -55,7 +69,7 @@ export function PodcastPlayer() {
     return () => {
       cancelled = true;
     };
-  }, [showTranscript, episodeId]);
+  }, [showTranscript, episodeId, folderId, ownCourse, activeCourse]);
 
   if (!episode) return null;
 
@@ -65,6 +79,7 @@ export function PodcastPlayer() {
         <PodcastTranscriptPanel
           title={episode.title}
           transcript={transcript}
+          course={episodeCourse ?? activeCourse}
           isLoading={isLoadingTranscript}
           onClose={() => setShowTranscript(false)}
         />

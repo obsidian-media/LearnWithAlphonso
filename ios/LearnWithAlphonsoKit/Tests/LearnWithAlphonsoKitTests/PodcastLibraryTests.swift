@@ -79,4 +79,18 @@ final class PodcastLibraryTests: XCTestCase {
         XCTAssertEqual(PodcastLibraryCopy.emptyTitle(courseCode: "xx"), "No episodes yet")
         XCTAssertFalse(PodcastLibraryCopy.emptyMessage.contains("--"))
     }
+
+    func testTranscriptWordsAreSavedUnderTheEpisodesCourse() {
+        // The episode's own course wins, then the root folder's, then the active course.
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: "es", folderID: "fr-a1", folders: tree, activeCourseCode: "en"), "es")
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: nil, folderID: "fr-a1", folders: tree, activeCourseCode: "en"), "fr")
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: nil, folderID: "en-series-1", folders: tree, activeCourseCode: "fr"), "en")
+    }
+
+    func testTranscriptCourseFallsBackToTheActiveCourseNotToEnglish() {
+        // A root with no course, an unknown folder and an invalid code all fall back.
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: nil, folderID: "shared-tips", folders: tree, activeCourseCode: "fr"), "fr")
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: nil, folderID: "missing", folders: tree, activeCourseCode: "es"), "es")
+        XCTAssertEqual(PodcastLibrary.transcriptSaveCourse(episodeCourse: "xx", folderID: "shared-tips", folders: tree, activeCourseCode: "es"), "es")
+    }
 }

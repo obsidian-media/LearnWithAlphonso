@@ -71,6 +71,8 @@ public struct PodcastEpisode: Sendable, Equatable, Identifiable {
     public let playbackUpdatedAt: String?
     /// Read by a synthetic voice (`source = 'tts'`); the Listen screens label it `PodcastLabel.aiNarrated`.
     public let aiNarrated: Bool
+    /// The episode's own course code (`en`, `fr`, `es`), or nil when unset.
+    public let course: String?
 
     public init(
         id: String,
@@ -82,7 +84,8 @@ public struct PodcastEpisode: Sendable, Equatable, Identifiable {
         durationSeconds: Int,
         positionSeconds: Int,
         playbackUpdatedAt: String?,
-        aiNarrated: Bool
+        aiNarrated: Bool,
+        course: String? = nil
     ) {
         self.id = id
         self.folderID = folderID
@@ -94,6 +97,7 @@ public struct PodcastEpisode: Sendable, Equatable, Identifiable {
         self.positionSeconds = positionSeconds
         self.playbackUpdatedAt = playbackUpdatedAt
         self.aiNarrated = aiNarrated
+        self.course = course
     }
 }
 

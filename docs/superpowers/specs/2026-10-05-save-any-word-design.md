@@ -219,8 +219,10 @@ would file an English word under French. So lessons offer tap-to-save only in th
 never give an answer away), enforced by `SavedWordPolicy.allowsSaving(inCourse:)`
 in the Kit. Prompts, and the French and Spanish courses, wait until the app can
 tell course-language text from interface text. Transcripts: an iOS reader exists
-(`PodcastTranscriptSheet`); episodes are English (the podcast models carry no
-language field), so a tapped transcript word is filed under `en`.
+(`PodcastTranscriptSheet`); a transcript is wholly in its episode's language, so a
+tapped word is filed under the episode's course (its own `course`, else its root
+folder's, else the learner's active course), and French and Spanish transcripts are
+tappable on web too (the English-only rule is for lesson text, which mixes in English).
 
 No iOS build is cut by any phase. Merging to main is allowed; shipping a build
 is the owner's call.
