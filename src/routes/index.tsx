@@ -8,23 +8,32 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Learn with Alphonso — English, French and Spanish, one lesson at a time" },
+      { title: "Learn With Alphonso: Learn English, French and Spanish" },
       {
         name: "description",
         content:
-          "A calm, gamified way to build real English, French or Spanish skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices.",
+          "Learn English, French or Spanish in a few minutes a day. Free account, a short level test to find your starting point, then 1,800+ short lessons with a daily review of the words you are about to forget.",
       },
       {
         property: "og:title",
-        content: "Learn with Alphonso — English, French and Spanish, one lesson at a time",
+        content: "Learn With Alphonso: Learn English, French and Spanish",
       },
       {
         property: "og:description",
         content:
-          "Bite-size lessons in English, French or Spanish, with streaks and leagues that stay with you.",
+          "Learn English, French or Spanish in a few minutes a day. Free on the web, iPhone beta open.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Learn With Alphonso" },
+      { property: "og:image", content: "https://learn.alphonsoecosystem.app/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      {
+        property: "og:image:alt",
+        content: "Alphonso the llama, mascot of Learn With Alphonso",
+      },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://learn.alphonsoecosystem.app/og-image.png" },
     ],
   }),
 });
@@ -47,9 +56,7 @@ function Landing() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center gap-2"
         >
-          <div className="grid size-8 place-items-center rounded-lg bg-moss text-surface">
-            <span className="font-display text-sm font-semibold">A</span>
-          </div>
+          <img src="/icon-192.png" alt="" width={32} height={32} className="size-8 rounded-lg" />
           <span className="font-display text-[16px] font-semibold tracking-tight text-ink">
             Alphonso
           </span>
@@ -62,14 +69,14 @@ function Landing() {
           className="mt-16"
         >
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-            English, French &amp; Spanish, quietly built
+            English, French &amp; Spanish, free
           </p>
           <h1 className="text-balance font-display text-[40px] font-semibold leading-[1.02] tracking-tight text-ink">
-            Learn English, French or Spanish with lessons that actually stick.
+            Learn English, French or Spanish in a few minutes a day
           </h1>
           <p className="mt-4 max-w-[320px] text-[15px] leading-relaxed text-ink-soft">
-            Bite-size lessons, warm gamified streaks, and weekly leagues — synced to your account so
-            your progress follows you anywhere.
+            Make a free account, take a short level test to find your starting point, then start
+            your first lesson. Your progress follows you across devices.
           </p>
         </motion.div>
 
@@ -83,9 +90,15 @@ function Landing() {
           className={isStudioInk ? "mt-10 divide-y divide-hairline" : "mt-10 space-y-3"}
         >
           {[
-            { t: "Bite-size lessons", d: "5-minute reps designed to build real fluency." },
-            { t: "Streaks & freezes", d: "Warm gamification that respects your time." },
-            { t: "Weekly leagues", d: "Global, friends and country boards to compete." },
+            { t: "Short lessons", d: "1,800+ lessons from A1 to C1 across all three languages." },
+            {
+              t: "Streaks & freezes",
+              d: "Study daily to build a streak. A freeze saves it if you miss a day, and you earn one every 10th streak day.",
+            },
+            {
+              t: "Leagues",
+              d: "Earn XP to climb five league tiers, from Sprout to Summit, and compare weekly with everyone, your friends or your country.",
+            },
           ].map((f) => (
             <motion.li
               key={f.t}
@@ -123,7 +136,7 @@ function Landing() {
             Get started — it's free
           </Link>
           <p className="mt-3 text-center text-[11px] text-ink-soft/70">
-            Sign in to sync your streak across devices.
+            Free account with email or Google.
           </p>
           <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-ink-soft/60">
             <Link to="/support" className="hover:text-ink">
