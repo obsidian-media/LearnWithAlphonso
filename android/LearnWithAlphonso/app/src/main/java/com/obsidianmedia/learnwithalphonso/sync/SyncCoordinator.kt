@@ -6,6 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.sync.SyncWakeup
 import com.obsidianmedia.learnwithalphonso.core.sync.sync
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -33,13 +34,24 @@ import kotlinx.coroutines.sync.withLock
  */
 class SyncCoordinator(
     private val store: SyncQueueStore,
-    private val client: () -> ProgressSyncClient?,
+    /**
+     * A client for ONE pass of [userId]'s: its token reads and refreshes are for that account only and fail (nothing is
+     * sent) once another account is signed in. The app builds it over `SessionManager.freshAccessTokenFor`.
+     */
+    private val client: (userId: String) -> ProgressSyncClient?,
     private val currentUserId: () -> String? = { null },
     private val isConnected: () -> Boolean = { true },
     private val scope: CoroutineScope? = null,
     private val now: () -> Long = System::currentTimeMillis,
     /** How long to sleep for an item due at the first argument; the floor keeps a loop from starting. Tests shorten it. */
     private val wakeupDelayMillis: (dueAtMillis: Long, nowMillis: Long) -> Long = SyncWakeup::delayMillis,
+    /**
+     * Completed once the session has been restored and the ownerless rows resolved. A pass waits for it, so no pass
+     * can run (and adopt nothing, or send under the wrong account) before that decision is made.
+     */
+    private val startup: Deferred<Unit>? = null,
+    /** Releases a pass's client when the pass ends, whichever way it ends (the app's per-pass clients own an HTTP client). */
+    private val closeClient: (ProgressSyncClient) -> Unit = {},
 ) {
     private val lock = Mutex()
 
@@ -68,13 +80,22 @@ class SyncCoordinator(
     }
 
     suspend fun triggerSync() {
-        val userId = currentUserId()
+        startup?.await()
+        val userId = currentUserId() ?: return
         lock.withLock {
-            val c = client() ?: return
+            val c = client(userId) ?: return
             _syncing.value = true
             try {
-                userId?.let { store.resolveOrphanedRows(it) }
-                val result = SyncEngine.sync(store.pendingLessonCompletions(), store.pendingReviewGrades(), c, userId, now())
+                // After startup a row with no owner belongs to nobody (the startup step gave the old ones to the restored
+                // account or dropped them): it is removed, never sent.
+                val lessons = store.pendingLessonCompletions()
+                val grades = store.pendingReviewGrades()
+                store.removeSyncedLessonCompletions(lessons.filter { it.ownerUserId == null })
+                store.removeSyncedReviewGrades(grades.filter { it.ownerUserId == null })
+                val result = SyncEngine.sync(
+                    lessons.filter { it.ownerUserId != null }, grades.filter { it.ownerUserId != null }, c, userId, now(),
+                    isCurrentAccount = { currentUserId() == userId },
+                )
                 if (currentUserId() != userId) return
                 store.applySyncResult(result, now())
                 val progress = result.lastKnownProgress ?: runCatching { c.fetchProgress() }.getOrNull()
@@ -82,9 +103,18 @@ class SyncCoordinator(
                 if (progress != null) store.updateLastKnownProgress(progress) else store.markSyncedNow()
             } finally {
                 _syncing.value = false
+                closeClient(c)
             }
         }
         scheduleWakeup(userId)
+    }
+
+    /**
+     * The account [userId] ended. Under the pass lock, so a pass that is still writing cannot put a row back after this
+     * cleared it, and only that account's rows go (see [SyncQueueStore.clearAccount]).
+     */
+    suspend fun clearAccount(userId: String) {
+        lock.withLock { store.clearAccount(userId) }
     }
 
     /** The Learn tab's "Sync now": a pass that survives the screen. */

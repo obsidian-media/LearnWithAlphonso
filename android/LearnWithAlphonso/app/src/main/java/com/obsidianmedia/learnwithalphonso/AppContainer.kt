@@ -2,6 +2,13 @@ package com.obsidianmedia.learnwithalphonso
 
 import android.content.Context
 import androidx.room.Room
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.sync.PassClients
+import com.obsidianmedia.learnwithalphonso.sync.SessionStartup
+import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
 import com.obsidianmedia.learnwithalphonso.audio.MicPermission
@@ -131,15 +138,29 @@ class AppContainer(context: Context) {
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
         .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3)
         .build()
-    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } })
+    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
+
+    /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
+    private val startup = CompletableDeferred<Unit>()
 
     val syncCoordinator = SyncCoordinator(
         store = syncStore,
-        client = { if (session.currentAccessToken() != null) progressClient else null },
+        // A client of its own for each pass, bound to the account that started it (see PassClients), closed when the pass ends.
+        client = PassClients.factory(session, BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_PUBLISHABLE_KEY, engine),
+        closeClient = { it.close() },
         currentUserId = { session.userId },
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
+        startup = startup,
     ).also { it.start(connectivity.isConnected) }
+
+    init {
+        // Restore here, not in a screen: a sync, a sign-out or a rejected refresh can happen with no screen composed.
+        appScope.launch { SessionStartup(session::restore, { session.userId }, syncStore, startup).run() }
+    }
+
+    /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
+    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended -> syncCoordinator.clearAccount(ended) }
 
     // ---- Plan 4: podcasts, reminders, push ----
 

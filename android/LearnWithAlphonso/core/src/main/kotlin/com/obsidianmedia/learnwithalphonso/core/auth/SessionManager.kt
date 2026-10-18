@@ -30,6 +30,9 @@ sealed interface AuthState {
  * established, and the token-refresh policy every client shares.
  * Pure Kotlin so the state machine is unit-tested on the JVM.
  */
+/** A request was about to be made for one account while another (or none) is signed in: it is not sent. */
+class AccountChangedException : java.io.IOException("The signed-in account changed")
+
 class SessionManager(
     private val auth: SupabaseAuthClient,
     private val store: SessionStore,
@@ -71,15 +74,39 @@ class SessionManager(
      * 2026-09-29 audit); being offline or rate-limited used to sign the
      * learner out too, which this port had copied before that fix.
      */
-    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock {
-        val current = (_state.value as? AuthState.SignedIn)?.session ?: return null
+    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock { freshLocked(currentSession(), force) }
+
+    private fun currentSession(): SupabaseSession? = (_state.value as? AuthState.SignedIn)?.session
+
+    /**
+     * Like [freshAccessToken], for work that belongs to ONE account (a sync pass). The account is checked inside the
+     * refresh lock, so the token handed back is always that account's, and a refresh (including the HTTP seam's retry
+     * after a 401) can never mint or return another account's token for a request that carries this account's data.
+     * Throws [AccountChangedException] when a different account (or none) is signed in, which the HTTP layer surfaces
+     * as a failed request: nothing is sent.
+     */
+    suspend fun freshAccessTokenFor(userId: String, force: Boolean = false): String? = refreshLock.withLock {
+        // Read once: the session checked is the session used.
+        val current = currentSession()
+        if (current?.userId != userId) throw AccountChangedException()
+        freshLocked(current, force)
+    }
+
+    /** Must be called with [refreshLock] held; `current` is the one session read for this call. */
+    private suspend fun freshLocked(current: SupabaseSession?, force: Boolean): String? {
+        if (current == null) return null
         if (!force && current.expiresAtEpochSeconds > nowSeconds() + 60) return current.accessToken
-        try {
+        return try {
             val refreshed = auth.refresh(current)
+            // The refresh took a while on the network. If a different account (or none) is signed in now, its result is for
+            // the account that left: storing it would put that account's session over the new one's, and its token must not
+            // be handed to a request for anyone else.
+            if (currentSession()?.userId != current.userId) return null
             establish(refreshed)
             refreshed.accessToken
         } catch (e: Exception) {
-            if (isRejectedRefreshToken(e)) signOut()
+            // A rejected refresh token ends the session it belonged to, not whichever session is signed in by now.
+            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) signOut()
             null
         }
     }
