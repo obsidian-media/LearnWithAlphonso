@@ -24,7 +24,7 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalPage title="Cookie Policy" updated="17 October 2026">
+    <LegalPage title="Cookie Policy" updated="18 October 2026">
       <Section heading="What this covers">
         <p>
           The Learn with Alphonso website stores a few small items in your browser, in cookies or in
@@ -55,11 +55,15 @@ function Cookies() {
 
       <Section heading="Optional">
         <p>
-          On learn.alphonsoecosystem.app we do not set any optional cookies or storage today: no
-          analytics, no advertising and no cross-site tracking. If we ever add optional analytics
-          here, we will list it here first and only use it if you choose Accept all in the banner.
-          Our marketing website, discover.alphonsoecosystem.app, uses Vercel Web Analytics, which
-          does not use cookies and counts page views and events only in aggregate.
+          On learn.alphonsoecosystem.app the only optional storage is a campaign tag. If you arrive
+          through a link that carries utm_source, utm_medium or utm_campaign (for example from a
+          post or from our marketing website) and you choose Accept all, we keep those tags and the
+          time you arrived in your browser's local storage. Until you choose, they are held only for
+          the current tab. When you create an account we save them once to your account (see the
+          Privacy Policy) and remove them from your browser. If you choose Essential only they are
+          discarded. We set no analytics, advertising or cross-site tracking cookies. Our marketing
+          website, discover.alphonsoecosystem.app, uses Vercel Web Analytics, which does not use
+          cookies and counts page views and events only in aggregate.
         </p>
       </Section>
 

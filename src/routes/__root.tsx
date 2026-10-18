@@ -13,6 +13,7 @@ import { MotionConfig } from "framer-motion";
 import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
+import { AttributionBridge } from "../components/AttributionBridge";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
@@ -164,6 +165,7 @@ function RootComponent() {
           "reduce motion" setting automatically, with no per-component work. */}
       <MotionConfig reducedMotion="user">
         <AuthSync />
+        <AttributionBridge />
         <Outlet />
         <CookieConsent />
       </MotionConfig>

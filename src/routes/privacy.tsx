@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "17 October 2026"; // same date on all four legal pages
+const UPDATED = "18 October 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -55,6 +55,7 @@ function Privacy() {
             "Purchases: whether you hold an active Alphonso Pro subscription, and its status and renewal dates. We never receive or store your card details. Apple, or Google Play on Android, handles payment.",
             "Notifications: if you enable push notifications, a device token so we can send them. It is used for nothing else.",
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
+            "Where you came from: if you chose Accept all in the cookie banner and arrived through a link that carries campaign tags (utm_source, utm_medium, utm_campaign), those tags and the time you arrived, saved once when you create your account. For this we do not store your IP address, device, browser or the page you came from.",
             "Technical data: request logs and error reports needed to keep the service running and secure, including IP address, device or browser type, and the time and address of each request.",
           ]}
         />
@@ -114,6 +115,7 @@ function Privacy() {
             "To send push notifications you have enabled (your consent, which you can withdraw in your device settings at any time).",
             "To review reports, enforce our Terms of Use and keep learners safe (our legitimate interests and our legal obligations).",
             "To prevent abuse and control cost, including per-account daily limits on AI features (our legitimate interests).",
+            "To count which links and communities bring new learners, using the campaign tags above (your consent, given by choosing Accept all; if you choose Essential only nothing is saved). The tags are deleted with your account.",
             "To keep the app secure and diagnose faults (our legitimate interests).",
           ]}
         />
