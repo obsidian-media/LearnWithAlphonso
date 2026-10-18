@@ -27,7 +27,7 @@ class RoomSyncQueueStoreTest {
         }
     }
 
-    private fun store(r: Recorder): RoomSyncQueueStore {
+    private fun store(r: Recorder, onCleared: suspend () -> Unit = {}): RoomSyncQueueStore {
         val dao = Proxy.newProxyInstance(SyncDao::class.java.classLoader, arrayOf(SyncDao::class.java)) { _, method, args ->
             when (method.name) {
                 "syncState" -> { r.calls.add("read:${r.inTransaction}"); r.state }
@@ -50,7 +50,7 @@ class RoomSyncQueueStoreTest {
                 r.inTransaction = false
                 if (r.concurrentWriterPending) { r.concurrentWriterPending = false; r.concurrentWrite() }
             }
-        }) { 5_000L }
+        }, onCleared = onCleared) { 5_000L }
     }
 
     private val progress = LessonCompletionProgress(120, 3, 5, "2026-09-14", 4, null, 1, "silver")
@@ -109,5 +109,15 @@ class RoomSyncQueueStoreTest {
         store(r).resolveOrphanedRows("u2")
         assertFalse(r.calls.any { it.startsWith("adopt") })
         assertTrue(r.calls.contains("deleteOwnerlessLessonCompletions"))
+    }
+
+    @Test
+    fun `whatever else shows an account's data is told to forget it once the clear has finished`() = runBlocking {
+        for (clear in listOf<suspend (RoomSyncQueueStore) -> Unit>({ it.clearAccount("u1") }, { it.clearAll() })) {
+            val r = Recorder()
+            var told: Boolean? = null
+            clear(store(r) { told = r.inTransaction })
+            assertEquals("told, and only after the transaction ended", false, told)
+        }
     }
 }

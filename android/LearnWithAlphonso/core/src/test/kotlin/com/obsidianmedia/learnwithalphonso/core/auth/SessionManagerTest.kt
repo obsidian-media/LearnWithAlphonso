@@ -184,4 +184,20 @@ class SessionManagerTest {
         m.signOut()
         assertTrue(runCatching { m.freshAccessTokenFor("u1") }.exceptionOrNull() is AccountChangedException)
     }
+
+    @Test
+    fun `a refresh that finishes after the account left is thrown away, not stored over whoever is signed in`() = runTest {
+        lateinit var m: SessionManager
+        val store = MemoryStore(valid())
+        val engine = MockEngine { req ->
+            // While the refresh is on the network, the learner signs out.
+            if (req.url.encodedQuery.contains("refresh_token")) m.signOut()
+            respond("""{"access_token":"new-at","refresh_token":"new-rt","expires_in":3600,"user":{"id":"u1"}}""", HttpStatusCode.OK)
+        }
+        m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }, store) { now }
+        m.restore()
+        assertNull(m.freshAccessToken(force = true), "the old account's new token is handed to nobody")
+        assertEquals(AuthState.SignedOut, m.state.value)
+        assertNull(store.session, "and its session is not written back over the sign-out")
+    }
 }

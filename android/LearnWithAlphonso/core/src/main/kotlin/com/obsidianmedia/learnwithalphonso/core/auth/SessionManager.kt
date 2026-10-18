@@ -74,7 +74,9 @@ class SessionManager(
      * 2026-09-29 audit); being offline or rate-limited used to sign the
      * learner out too, which this port had copied before that fix.
      */
-    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock { freshLocked(force) }
+    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock { freshLocked(currentSession(), force) }
+
+    private fun currentSession(): SupabaseSession? = (_state.value as? AuthState.SignedIn)?.session
 
     /**
      * Like [freshAccessToken], for work that belongs to ONE account (a sync pass). The account is checked inside the
@@ -84,20 +86,27 @@ class SessionManager(
      * as a failed request: nothing is sent.
      */
     suspend fun freshAccessTokenFor(userId: String, force: Boolean = false): String? = refreshLock.withLock {
-        if (this.userId != userId) throw AccountChangedException()
-        freshLocked(force)
+        // Read once: the session checked is the session used.
+        val current = currentSession()
+        if (current?.userId != userId) throw AccountChangedException()
+        freshLocked(current, force)
     }
 
-    /** Must be called with [refreshLock] held. */
-    private suspend fun freshLocked(force: Boolean): String? {
-        val current = (_state.value as? AuthState.SignedIn)?.session ?: return null
+    /** Must be called with [refreshLock] held; `current` is the one session read for this call. */
+    private suspend fun freshLocked(current: SupabaseSession?, force: Boolean): String? {
+        if (current == null) return null
         if (!force && current.expiresAtEpochSeconds > nowSeconds() + 60) return current.accessToken
         return try {
             val refreshed = auth.refresh(current)
+            // The refresh took a while on the network. If a different account (or none) is signed in now, its result is for
+            // the account that left: storing it would put that account's session over the new one's, and its token must not
+            // be handed to a request for anyone else.
+            if (currentSession()?.userId != current.userId) return null
             establish(refreshed)
             refreshed.accessToken
         } catch (e: Exception) {
-            if (isRejectedRefreshToken(e)) signOut()
+            // A rejected refresh token ends the session it belonged to, not whichever session is signed in by now.
+            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) signOut()
             null
         }
     }

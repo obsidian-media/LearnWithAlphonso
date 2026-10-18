@@ -50,6 +50,8 @@ class SyncCoordinator(
      * can run (and adopt nothing, or send under the wrong account) before that decision is made.
      */
     private val startup: Deferred<Unit>? = null,
+    /** Releases a pass's client when the pass ends, whichever way it ends (the app's per-pass clients own an HTTP client). */
+    private val closeClient: (ProgressSyncClient) -> Unit = {},
 ) {
     private val lock = Mutex()
 
@@ -101,6 +103,7 @@ class SyncCoordinator(
                 if (progress != null) store.updateLastKnownProgress(progress) else store.markSyncedNow()
             } finally {
                 _syncing.value = false
+                closeClient(c)
             }
         }
         scheduleWakeup(userId)

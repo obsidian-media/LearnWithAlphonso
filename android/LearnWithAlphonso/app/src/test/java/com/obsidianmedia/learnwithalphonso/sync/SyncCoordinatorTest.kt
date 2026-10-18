@@ -363,4 +363,24 @@ class SyncCoordinatorTest {
         assertEquals(1, s.seen.size)
         assertEquals(1, store.completions.size)
     }
+
+    @Test
+    fun `a pass closes its client however it ends`() = runBlocking {
+        val closed = java.util.concurrent.atomic.AtomicInteger(0)
+        val ok = server(failFirst = 0)
+        val store = MemorySyncStore().apply { completions.add(row()) }
+        SyncCoordinator(store, { ok.progressClient }, { "u1" }, { true }, null, { now }, closeClient = { closed.incrementAndGet() }).triggerSync()
+        assertEquals("a normal pass", 1, closed.get())
+
+        // The account changes while the pass runs: it returns early, and still releases its client.
+        var user = "u1"
+        val switching = FakeServer { req -> if (req.path.endsWith("complete-lesson")) { user = "u2" }; json(done) }
+        val store2 = MemorySyncStore().apply { completions.add(row()) }
+        SyncCoordinator(store2, { switching.progressClient }, { user }, { true }, null, { now }, closeClient = { closed.incrementAndGet() }).triggerSync()
+        assertEquals("a pass cut short by an account change", 2, closed.get())
+
+        // Nothing to sync and no session: no client is made, so nothing is closed.
+        SyncCoordinator(MemorySyncStore(), { null }, { "u1" }, { true }, null, { now }, closeClient = { closed.incrementAndGet() }).triggerSync()
+        assertEquals(2, closed.get())
+    }
 }

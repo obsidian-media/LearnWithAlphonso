@@ -22,4 +22,13 @@ class WidgetPublisherTest {
         assertFalse(WidgetPublisher.write(prefs, progress.copy(lastActiveDate = "2026-09-12"), now).studiedToday)
         assertEquals(4, WidgetPublisher.read(prefs)!!.streak)
     }
+
+    @Test
+    fun `clearing forgets the snapshot, so the next account does not see the last one's streak`() {
+        val prefs = MemoryPrefs()
+        val progress = LessonCompletionProgress(xp = 120, streak = 4, longestStreak = 12, lastActiveDate = "2026-09-13", hearts = 5, streakFreezes = 0, leagueTier = "bronze")
+        WidgetPublisher.write(prefs, progress)
+        WidgetPublisher.clear(prefs)
+        assertNull(WidgetPublisher.read(prefs))
+    }
 }

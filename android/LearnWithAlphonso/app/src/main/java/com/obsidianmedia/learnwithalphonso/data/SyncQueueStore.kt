@@ -80,6 +80,8 @@ class RoomSyncQueueStore(
     private val onProgressUpdated: suspend (LessonCompletionProgress) -> Unit = {},
     /** Runs the block as one database transaction (AppContainer passes the database's). */
     private val inTransaction: suspend (suspend () -> Unit) -> Unit = { it() },
+    /** After an account's data was cleared: whatever else shows it (the home-screen widget) must forget it too. */
+    private val onCleared: suspend () -> Unit = {},
     /** Last on purpose: a trailing lambda at call sites is the clock (SyncQueueStoreTest passes one). */
     private val now: () -> Long = System::currentTimeMillis,
 ) : SyncQueueStore {
@@ -107,23 +109,29 @@ class RoomSyncQueueStore(
         if (!state.orphansResolved) dao.upsertSyncState(state.copy(orphansResolved = true))
     }
 
-    override suspend fun clearAccount(userId: String) = inTransaction {
-        dao.clearLessonCompletionsOf(userId)
-        dao.clearReviewGradesOf(userId)
-        dao.clearDeadLettersOf(userId)
-        dao.clearCachedDueReviews()
-        dao.clearSyncState()
-        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+    override suspend fun clearAccount(userId: String) {
+        inTransaction {
+            dao.clearLessonCompletionsOf(userId)
+            dao.clearReviewGradesOf(userId)
+            dao.clearDeadLettersOf(userId)
+            dao.clearCachedDueReviews()
+            dao.clearSyncState()
+            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+        }
+        runCatching { onCleared() }
     }
 
-    override suspend fun clearAll() = inTransaction {
-        dao.clearLessonCompletions()
-        dao.clearReviewGrades()
-        dao.clearCachedDueReviews()
-        dao.clearDeadLetters()
-        dao.clearSyncState()
-        // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
-        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+    override suspend fun clearAll() {
+        inTransaction {
+            dao.clearLessonCompletions()
+            dao.clearReviewGrades()
+            dao.clearCachedDueReviews()
+            dao.clearDeadLetters()
+            dao.clearSyncState()
+            // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
+            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+        }
+        runCatching { onCleared() }
     }
 
     override suspend fun applySyncResult(result: SyncResult, nowMillis: Long) = inTransaction {

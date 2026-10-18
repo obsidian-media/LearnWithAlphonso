@@ -6,6 +6,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.sync.PassClients
 import com.obsidianmedia.learnwithalphonso.sync.SessionStartup
 import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
@@ -137,27 +138,16 @@ class AppContainer(context: Context) {
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
         .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3)
         .build()
-    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } })
+    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
 
     /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
     private val startup = CompletableDeferred<Unit>()
 
     val syncCoordinator = SyncCoordinator(
         store = syncStore,
-        client = { userId ->
-            // A client of its own for this pass: every token read and refresh is checked against the pass's account inside
-            // the session's refresh lock, so a switch of account mid-pass sends nothing under the new account's token.
-            if (session.currentAccessToken() == null) null
-            else ProgressSyncClient(
-                SupabaseHttp(
-                    baseUrl = BuildConfig.SUPABASE_URL,
-                    anonKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
-                    accessToken = { session.freshAccessTokenFor(userId) },
-                    engine = engine,
-                    refresh = { session.freshAccessTokenFor(userId, force = true) },
-                ),
-            )
-        },
+        // A client of its own for each pass, bound to the account that started it (see PassClients), closed when the pass ends.
+        client = PassClients.factory(session, BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_PUBLISHABLE_KEY, engine),
+        closeClient = { it.close() },
         currentUserId = { session.userId },
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
