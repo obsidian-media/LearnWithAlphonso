@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPublishedEpisodeRef
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -22,14 +23,16 @@ class PodcastClientTest {
 
     @Test
     fun `fetchFolders maps snake_case rows`() = runTest {
-        val fake = FakeSupabase { json("""[{"id":"f1","parent_id":null,"slug":"en","title":"English","description":"All English audio","sort_order":2}]""") }
+        val fake = FakeSupabase { json("""[{"id":"f1","parent_id":null,"slug":"en","title":"English","description":"All English audio","sort_order":2,"course":"fr"},{"id":"f2","parent_id":"f1","slug":"x","title":"X","description":null,"sort_order":3,"course":null}]""") }
         val folders = client(fake).fetchFolders()
-        assertEquals(1, folders.size)
+        assertEquals(2, folders.size)
         assertEquals("f1", folders[0].id)
+        assertEquals("fr", folders[0].course)
+        assertNull(folders[1].course)
         assertNull(folders[0].parentId)
         assertEquals("en", folders[0].slug)
         assertEquals(2, folders[0].sortOrder)
-        assertEquals("id,parent_id,slug,title,description,sort_order", fake.seen.single().query["select"])
+        assertEquals("id,parent_id,slug,title,description,sort_order,course", fake.seen.single().query["select"])
     }
 
     @Test
@@ -153,5 +156,48 @@ class PodcastClientTest {
         val done = FakeSupabase { json("""[{"position_seconds":0}]""") }
         client(done).savePlaybackPosition("e1", 0, true, "2026-09-24T10:00:00Z")
         assertEquals("2025-09-16T05:20:00Z", Json.parseToJsonElement(done.seen.single().body).jsonObject["completed_at"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `fetchPublishedIndex pages until a short page and asks only for published rows`() = runTest {
+        val total = PodcastClient.PUBLISHED_INDEX_PAGE_SIZE + 3
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            val count = minOf(PodcastClient.PUBLISHED_INDEX_PAGE_SIZE, total - offset)
+            json((offset until offset + count).joinToString(",", "[", "]") { """{"id":"e$it","folder_id":"f${it % 2}"}""" })
+        }
+        val refs = client(fake).fetchPublishedIndex()
+        assertEquals(total, refs.size, "a catalogue larger than one page is not truncated")
+        assertEquals(PodcastPublishedEpisodeRef("e0", "f0"), refs.first())
+        assertEquals(listOf("0", PodcastClient.PUBLISHED_INDEX_PAGE_SIZE.toString(), (PodcastClient.PUBLISHED_INDEX_PAGE_SIZE + 3).toString()), fake.seen.map { it.query["offset"] })
+        assertEquals("eq.true", fake.seen.first().query["published"])
+        assertEquals("id.asc", fake.seen.first().query["order"])
+    }
+
+    @Test
+    fun `fetchPublishedIndex skips rows missing an id or folder`() = runTest {
+        val fake = FakeSupabase { req -> json(if (req.query["offset"] == "0") """[{"id":"e1","folder_id":"f1"},{"id":"e2"},{"folder_id":"f2"}]""" else "[]") }
+        assertEquals(listOf(PodcastPublishedEpisodeRef("e1", "f1")), client(fake).fetchPublishedIndex())
+    }
+
+    @Test
+    fun `exactly one full page still asks for the next, and only an empty page ends the list`() = runTest {
+        val size = PodcastClient.PUBLISHED_INDEX_PAGE_SIZE
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            json((offset until minOf(offset + size, size)).joinToString(",", "[", "]") { """{"id":"e$it","folder_id":"f1"}""" })
+        }
+        assertEquals(size, client(fake).fetchPublishedIndex().size)
+        assertEquals(2, fake.seen.size, "a full page is never taken as the end")
+    }
+
+    @Test
+    fun `a server that caps pages below the requested size does not truncate the index`() = runTest {
+        val total = 250
+        val fake = FakeSupabase { req ->
+            val offset = req.query["offset"]!!.toInt()
+            json((offset until minOf(offset + 100, total)).joinToString(",", "[", "]") { """{"id":"e$it","folder_id":"f1"}""" })
+        }
+        assertEquals(total, client(fake).fetchPublishedIndex().size)
     }
 }

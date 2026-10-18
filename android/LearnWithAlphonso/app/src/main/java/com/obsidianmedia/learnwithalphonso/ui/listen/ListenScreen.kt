@@ -59,7 +59,13 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadCopy
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadFailure
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLibrary
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlaybackCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTranscript
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTree
@@ -77,7 +83,9 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     val isConnected by container.connectivity.isConnected.collectAsState()
+    val course by container.activeCourse.course.collectAsState()
     val scope = rememberCoroutineScope()
+    LaunchedEffect(course) { vm.courseChanged(course.code) }
 
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Text("Listen", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp))
@@ -88,7 +96,11 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
         )
         Spacer(Modifier.height(8.dp))
         when {
-            state.query.isNotEmpty() -> SearchResults(container, state, onPlay = { episode -> scope.launch { play(container, episode, state.searchResults) } })
+            state.query.isNotEmpty() -> {
+                // Only this course's episodes: a search must not reach into another course's folders.
+                val results = PodcastLibrary.episodes(state.searchResults, state.folders)
+                SearchResults(container, state, results, onPlay = { episode -> scope.launch { play(container, episode, results) } })
+            }
             state.isLoading -> Centered { CircularProgressIndicator(color = palette.moss) }
             state.offline != null || (!isConnected && state.folders.isEmpty()) -> {
                 val offline = state.offline ?: emptyList()
@@ -111,6 +123,12 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                 Text("Couldn't load episodes", style = MaterialTheme.typography.titleMedium, color = palette.ink)
                 Text(state.error!!, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
                 AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+            }
+            state.folders.isEmpty() -> Centered {
+                // A course with nothing published is a stated state, not a blank list.
+                Text(PodcastLibrary.emptyTitle(state.courseCode), style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                Text(PodcastLibrary.EMPTY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
+                AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
             }
             else -> FolderListing(container, vm, folderId = null, onOpenFolder = onOpenFolder)
         }
@@ -162,14 +180,14 @@ private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId
 }
 
 @Composable
-private fun SearchResults(container: AppContainer, state: ListenUiState, onPlay: (PodcastEpisode) -> Unit) {
+private fun SearchResults(container: AppContainer, state: ListenUiState, results: List<PodcastEpisode>, onPlay: (PodcastEpisode) -> Unit) {
     val palette = AlphonsoColor.palette
     when {
         PodcastSearch.normalizeQuery(state.query) == null -> Message("Keep typing to search episodes.")
         state.isSearching -> Message("Searching…")
-        state.searchResults.isEmpty() -> Message("No episodes match “${state.query}”.")
+        results.isEmpty() -> Message("No episodes match “${state.query}”.")
         else -> LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(state.searchResults, key = { it.id }) { episode ->
+            items(results, key = { it.id }) { episode ->
                 EpisodeRow(container, episode, subtitle = PodcastLabel.rowSubtitle(episode.durationSeconds, resume = false, aiNarrated = episode.aiNarrated), onPlay = { onPlay(episode) })
             }
         }
@@ -228,16 +246,14 @@ private fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
     }
 
     refusal?.let { r ->
-        val message = when (r) {
-            is PodcastDownloadRefusal.BudgetExceeded ->
-                if (r.candidates.isEmpty()) "This episode is larger than the space set aside for downloads."
-                else "Remove ${r.candidates.size} downloaded episode${if (r.candidates.size == 1) "" else "s"} to make room, starting with the ones you haven't played."
-            is PodcastDownloadRefusal.TransferFailed -> "That download didn't finish. Please try again."
+        val failure = when (r) {
+            is PodcastDownloadRefusal.BudgetExceeded -> PodcastDownloadFailure.BudgetExceeded(r.candidates, r.neededBytes)
+            is PodcastDownloadRefusal.TransferFailed -> r.failure
         }
         AlertDialog(
             onDismissRequest = { refusal = null },
-            title = { Text(if (r is PodcastDownloadRefusal.BudgetExceeded) "Not enough space set aside" else "Download failed") },
-            text = { Text(message) },
+            title = { Text(PodcastDownloadCopy.title(failure)) },
+            text = { Text(PodcastDownloadCopy.message(failure)) },
             confirmButton = { TextButton(onClick = { refusal = null }) { Text("OK") } },
         )
     }
@@ -260,10 +276,28 @@ fun PodcastMiniBar(container: AppContainer) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Column(Modifier.weight(1f)) {
                 Text(episode.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${length(state.elapsedSeconds.toInt())} / ${length(episode.durationSeconds)}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                val failure = state.failure
+                when {
+                    failure != null -> Text(PodcastPlaybackCopy.message(failure), style = MaterialTheme.typography.bodySmall, color = palette.destructive)
+                    state.phase == PodcastPlayerPhase.Buffering -> Text(PodcastPlaybackCopy.BUFFERING_LABEL, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    else -> Text("${length(state.elapsedSeconds.toInt())} / ${length(episode.durationSeconds)}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                }
             }
-            IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(40.dp).background(palette.moss, CircleShape)) {
-                Icon(if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (state.isPlaying) "Pause" else "Play", tint = palette.onPrimary)
+            // Only a confirmed player shows Pause; a loading one shows a spinner; a failed one offers Retry.
+            Box(Modifier.size(40.dp).background(palette.moss, CircleShape), contentAlignment = Alignment.Center) {
+                when (state.control) {
+                    PodcastPlayerControl.SPINNER -> {
+                        CircularProgressIndicator(color = palette.onPrimary, strokeWidth = 2.dp, modifier = Modifier.size(22.dp).semantics { contentDescription = "Loading" })
+                    }
+                    else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(40.dp)) {
+                        val (icon, label) = when (state.control) {
+                            PodcastPlayerControl.PAUSE -> Icons.Filled.Pause to "Pause"
+                            PodcastPlayerControl.RETRY -> Icons.Filled.Refresh to PodcastPlaybackCopy.RETRY_TITLE
+                            else -> Icons.Filled.PlayArrow to "Play"
+                        }
+                        Icon(icon, contentDescription = label, tint = palette.onPrimary)
+                    }
+                }
             }
             state.nextEpisode?.let { next ->
                 IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = palette.inkSoft) }

@@ -11,6 +11,8 @@ data class PodcastFolder(
     val title: String,
     val description: String?,
     val sortOrder: Int,
+    /** The root folder's course code (`en`, `fr`, `es`); null means shown for every course. */
+    val course: String? = null,
 )
 
 data class PodcastEpisode(
