@@ -48,6 +48,9 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Pull the headphones (or switch Bluetooth off): playback pauses and stays paused; it does not play out of the speaker. Start a different audio app while an episode plays: the episode stays paused.
 - [ ] Switch the course on the Learn tab to French, then open Listen: only French (and course-less) folders show; a course with no episodes says "No French episodes yet" with Refresh.
 - [ ] Download a file that the server answers with a JSON error (ask the owner for a missing path): the download fails with "This episode isn't available to download right now." and nothing is stored.
+- [ ] Close the player (the X) while an episode plays or is paused: the notification disappears, and a headset or lock-screen play button does not start the closed episode.
+- [ ] While an episode is still loading (slow connection), take a phone call and hang up: no "Couldn't reach the server" appears for the time the call took; the episode starts or fails normally afterwards.
+- [ ] Make an episode fail (airplane mode, tap a streamed episode) and press Play in the notification once the network is back: the bar leaves the error and plays, and shows the error again only if it fails again.
 - [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)

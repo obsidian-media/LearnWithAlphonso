@@ -1459,7 +1459,13 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   as a `PauseCause` (pause button, permanent focus loss, headphones pulled),
   none of which resumes by itself; buffering while `playWhenReady` is a stall.
   At the end of the media `playWhenReady` stays true, so the player is paused
-  before it is rewound. Parity with iOS: search results are limited to the
+  before it is rewound. A transient focus loss (a call) suppresses playback, and
+  while it lasts the wait for sound does not run: the player resumes by itself,
+  and the timer starts again, from the full time, when the suppression ends. The
+  player playing again after a failure (a notification's Play) clears the failure
+  rather than sounding under the banner. `close()` stops the controller and clears
+  its item, as sign-out does. The published index is read page by page and refused
+  after 200 pages. Parity with iOS: search results are limited to the
   visible folders, and the offline listing is every download whatever its
   course.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds

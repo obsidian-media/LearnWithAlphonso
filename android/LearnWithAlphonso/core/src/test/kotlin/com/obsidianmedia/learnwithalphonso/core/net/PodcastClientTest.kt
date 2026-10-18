@@ -209,6 +209,6 @@ class PodcastClientTest {
         }
         val e = runCatching { client(fake).fetchPublishedIndex() }.exceptionOrNull()
         assertTrue(e is PodcastClientError.InvalidPayload)
-        assertEquals(PodcastClient.MAX_PUBLISHED_INDEX_PAGES, fake.seen.size)
+        assertEquals(200, fake.seen.size, "the 200th page is the last one asked for")
     }
 }
