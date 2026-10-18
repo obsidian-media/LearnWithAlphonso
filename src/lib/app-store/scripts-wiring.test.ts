@@ -96,10 +96,29 @@ describe("asc-release-ops testflight", () => {
     expect(fn.slice(0, gate)).not.toMatch(/"(PATCH|POST|DELETE)"/);
   });
 
-  it("never adds a build to a group or submits it for Beta App Review", () => {
+  it("never adds a build to a group, anywhere in the script", () => {
     expect(src).not.toMatch(
-      /betaAppReviewSubmissions|buildBetaNotifications|relationships\/builds|relationships\/betaGroups|\/betaGroups[`"],\s*"POST"/,
+      /buildBetaNotifications|relationships\/builds|relationships\/betaGroups|\/betaGroups[`"],\s*"POST"/,
     );
+  });
+
+  it("the testflight command never submits a build for Beta App Review", () => {
+    expect(fn).not.toMatch(/betaAppReviewSubmissions/);
+  });
+
+  // The one place that submits: a named build, only after the problems check and the apply gate.
+  it("submits for Beta App Review only in submitBetaReview, after the checks and the apply gate", () => {
+    expect(src.match(/betaAppReviewSubmissions/g)).toHaveLength(2); // the path and the resource type
+    const submit = src.slice(
+      src.indexOf("async function submitBetaReview"),
+      src.indexOf("/** External TestFlight readiness"),
+    );
+    expect(submit).toContain("betaSubmissionProblems(");
+    const gate = submit.indexOf("if (!APPLY)");
+    expect(gate).toBeGreaterThan(-1);
+    expect(submit.indexOf("betaAppReviewSubmissions")).toBeGreaterThan(gate);
+    expect(submit.indexOf("betaSubmissionProblems(")).toBeLessThan(gate);
+    expect(submit.slice(0, gate)).not.toMatch(/"(PATCH|POST|DELETE)"/);
   });
 
   it("fails the run on a read-back mismatch", () => {
