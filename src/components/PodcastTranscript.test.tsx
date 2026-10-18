@@ -15,6 +15,7 @@ describe("PodcastTranscriptPanel", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript={"Hello there.\n\nWhat can I get you?"}
+        course="en"
         isLoading={false}
         onClose={() => {}}
       />,
@@ -28,6 +29,7 @@ describe("PodcastTranscriptPanel", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript={null}
+        course="en"
         isLoading
         onClose={() => {}}
       />,
@@ -44,6 +46,7 @@ describe("PodcastTranscriptPanel", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript={null}
+        course="en"
         isLoading={false}
         onClose={() => {}}
       />,
@@ -56,6 +59,7 @@ describe("PodcastTranscriptPanel", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript="Hello."
+        course="en"
         isLoading={false}
         onClose={() => {}}
       />,
@@ -70,6 +74,7 @@ describe("PodcastTranscriptPanel saving words", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript={"Hello there."}
+        course="en"
         isLoading={false}
         onClose={() => {}}
       />,
@@ -86,6 +91,7 @@ describe("PodcastTranscriptPanel keyboard access to words", () => {
       <PodcastTranscriptPanel
         title="Ordering Coffee"
         transcript={"Hello there friend."}
+        course="en"
         isLoading={false}
         onClose={() => {}}
       />,
@@ -131,7 +137,13 @@ describe("PodcastTranscriptPanel keyboard access to words", () => {
 
   it("does not offer the control when there is no transcript", () => {
     render(
-      <PodcastTranscriptPanel title="x" transcript={null} isLoading={false} onClose={() => {}} />,
+      <PodcastTranscriptPanel
+        title="x"
+        transcript={null}
+        course="en"
+        isLoading={false}
+        onClose={() => {}}
+      />,
     );
     expect(screen.queryByRole("button", { name: /browse words/i })).not.toBeInTheDocument();
   });

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   buildFolderTree,
+  episodeCourse,
   findCycle,
   isValidSlug,
   resolveFolderPath,
   slugPathFor,
+  transcriptSaveCourse,
 } from "./podcast-tree";
 
 const f = (id: string, parentId: string | null, slug: string, sortOrder = 0) => ({
@@ -95,5 +97,45 @@ describe("isValidSlug", () => {
     for (const bad of ["Cafe", "a b", "a/b", "", "-lead", "trail-", "a--b", "é"]) {
       expect(isValidSlug(bad)).toBe(false);
     }
+  });
+});
+
+describe("episodeCourse / transcriptSaveCourse", () => {
+  const f = (id: string, parentId: string | null, course?: "en" | "fr" | "es" | null) => ({
+    id,
+    parentId,
+    slug: id,
+    title: id,
+    description: null,
+    sortOrder: 0,
+    course,
+  });
+  const folders = [
+    f("fr", null, "fr"),
+    f("a1", "fr"),
+    f("s", "a1"),
+    f("any", null, null),
+    f("x", "any"),
+  ];
+
+  it("reads the course from the root folder above the episode's folder", () => {
+    expect(episodeCourse(folders, "s")).toBe("fr");
+    expect(episodeCourse(folders, "fr")).toBe("fr");
+  });
+
+  it("is null for a root with no course, an unknown folder or a broken chain", () => {
+    expect(episodeCourse(folders, "x")).toBeNull();
+    expect(episodeCourse(folders, "nope")).toBeNull();
+    expect(episodeCourse([f("orphan", "gone")], "orphan")).toBeNull();
+    expect(episodeCourse([f("a", "b"), f("b", "a")], "a")).toBeNull();
+  });
+
+  it("falls back to the active course, not to English, when the episode's is unknown", () => {
+    expect(transcriptSaveCourse(folders, "s", "en")).toBe("fr");
+    expect(transcriptSaveCourse(folders, "x", "es")).toBe("es");
+  });
+
+  it("prefers the episode's own course over its folder's", () => {
+    expect(transcriptSaveCourse(folders, "s", "en", "es")).toBe("es");
   });
 });

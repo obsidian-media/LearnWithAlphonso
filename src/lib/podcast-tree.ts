@@ -19,6 +19,8 @@ export type PodcastFolder = {
   title: string;
   description: string | null;
   sortOrder: number;
+  /** Set on root folders (`en`, `fr`, `es`); null/absent on nested folders and on a root shown to every course. */
+  course?: "en" | "fr" | "es" | null;
 };
 
 export type FolderNode = PodcastFolder & { children: FolderNode[] };
@@ -111,4 +113,36 @@ export function findCycle(folders: PodcastFolder[]): string[] | null {
     }
   }
   return null;
+}
+
+/**
+ * The course an episode is in: the `course` of the root folder above its folder.
+ * Null when the root carries none (it is shown to every course), the folder is
+ * unknown, or the parent chain is broken or cyclic.
+ */
+export function episodeCourse(
+  folders: PodcastFolder[],
+  folderId: string,
+): "en" | "fr" | "es" | null {
+  const byId = new Map(folders.map((f) => [f.id, f]));
+  let current = byId.get(folderId);
+  for (let depth = 0; current && depth < 64; depth++) {
+    if (current.parentId === null) return current.course ?? null;
+    current = byId.get(current.parentId);
+  }
+  return null;
+}
+
+/**
+ * The course a tapped transcript word is saved under: the episode's own course,
+ * else its root folder's, and only when both are unknown the learner's active
+ * course, never a fixed one.
+ */
+export function transcriptSaveCourse(
+  folders: PodcastFolder[],
+  folderId: string,
+  activeCourse: "en" | "fr" | "es",
+  ownCourse: "en" | "fr" | "es" | null = null,
+): "en" | "fr" | "es" {
+  return ownCourse ?? episodeCourse(folders, folderId) ?? activeCourse;
 }

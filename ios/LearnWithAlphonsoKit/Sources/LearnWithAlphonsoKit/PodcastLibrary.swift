@@ -33,6 +33,31 @@ public enum PodcastLibrary {
         return folders.filter { nonEmpty.contains($0.id) }
     }
 
+    /// The course a tapped transcript word is saved under: the episode's own course, else the
+    /// course of the root folder above its folder, and only when both are unknown the learner's
+    /// active course. Never a fixed one: a French episode's words are French.
+    public static func transcriptSaveCourse(
+        episodeCourse: String?,
+        folderID: String,
+        folders: [PodcastFolder],
+        activeCourseCode: String
+    ) -> String {
+        let valid: Set<String> = ["en", "fr", "es"]
+        if let own = episodeCourse, valid.contains(own) { return own }
+        let byID = Dictionary(folders.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var current = byID[folderID]
+        var depth = 0
+        while let folder = current, depth < 64 {
+            guard let parent = folder.parentID else {
+                if let root = folder.course, valid.contains(root) { return root }
+                break
+            }
+            current = byID[parent]
+            depth += 1
+        }
+        return activeCourseCode
+    }
+
     public static func episodes(_ episodes: [PodcastEpisode], inFolders folders: [PodcastFolder]) -> [PodcastEpisode] {
         let visible = Set(folders.map(\.id))
         return episodes.filter { visible.contains($0.folderID) }
