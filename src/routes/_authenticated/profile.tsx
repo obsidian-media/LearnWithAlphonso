@@ -301,6 +301,15 @@ function ProfilePage() {
           Sign out
         </button>
 
+        {/* A visible way to report a problem or send feedback (the page has the address and the answers
+            people arrive with). The iOS Settings screen has no equivalent yet; that needs a build. */}
+        <Link
+          to="/support"
+          className="mt-3 block w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-center text-sm font-medium text-ink-soft hover:text-ink"
+        >
+          Help and feedback
+        </Link>
+
         <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
           <Link to="/privacy" className="hover:text-ink">
             Privacy

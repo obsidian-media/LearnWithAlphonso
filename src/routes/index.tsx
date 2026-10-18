@@ -139,6 +139,10 @@ function Landing() {
             Free account with email or Google.
           </p>
           <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-ink-soft/60">
+            <Link to="/support" className="hover:text-ink">
+              Support
+            </Link>
+            <span aria-hidden>·</span>
             <Link to="/privacy" className="hover:text-ink">
               Privacy
             </Link>

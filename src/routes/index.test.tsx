@@ -106,6 +106,13 @@ describe("Landing route", () => {
     expect(byKey("description")).not.toMatch(/\$|Pro\b|Duolingo/);
   });
 
+  it("links to Support so a visitor can report a problem", () => {
+    getSession.mockResolvedValue({ data: { session: null } });
+    const Landing = Route.options.component!;
+    render(<Landing />);
+    expect(screen.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
+  });
+
   it("links to the legal pages", () => {
     getSession.mockResolvedValue({ data: { session: null } });
     const Landing = Route.options.component!;
