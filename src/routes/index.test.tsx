@@ -62,7 +62,7 @@ describe("Landing route", () => {
     const Landing = Route.options.component!;
     const { container } = render(<Landing />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Learn English, French or Spanish in 5 minutes a day",
+      "Learn English, French or Spanish in a few minutes a day",
     );
     const text = container.textContent ?? "";
     expect(text).toMatch(/free account/i);

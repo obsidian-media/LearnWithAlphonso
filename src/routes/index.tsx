@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Learn English, French or Spanish in 5 minutes a day. Free account, a short level test to find your starting point, then 1,800+ short lessons with a daily review of the words you are about to forget.",
+          "Learn English, French or Spanish in a few minutes a day. Free account, a short level test to find your starting point, then 1,800+ short lessons with a daily review of the words you are about to forget.",
       },
       {
         property: "og:title",
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Learn English, French or Spanish in 5 minutes a day. Free on the web, iPhone beta open.",
+          "Learn English, French or Spanish in a few minutes a day. Free on the web, iPhone beta open.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Learn With Alphonso" },
@@ -72,7 +72,7 @@ function Landing() {
             English, French &amp; Spanish, free
           </p>
           <h1 className="text-balance font-display text-[40px] font-semibold leading-[1.02] tracking-tight text-ink">
-            Learn English, French or Spanish in 5 minutes a day
+            Learn English, French or Spanish in a few minutes a day
           </h1>
           <p className="mt-4 max-w-[320px] text-[15px] leading-relaxed text-ink-soft">
             Make a free account, take a short level test to find your starting point, then start
