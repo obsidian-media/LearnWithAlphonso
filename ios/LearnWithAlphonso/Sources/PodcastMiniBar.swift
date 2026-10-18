@@ -44,6 +44,8 @@ struct PodcastMiniBar: View {
     @State private var showTranscript = false
     @State private var transcript: String?
     @State private var isLoadingTranscript = false
+    /// Nil until the folders are read; the active course stands in, never a fixed one.
+    @State private var transcriptCourse: String?
 
     var body: some View {
         if let episode = player.episode {
@@ -166,6 +168,7 @@ struct PodcastMiniBar: View {
                 PodcastTranscriptSheet(
                     title: episode.title,
                     transcript: transcript,
+                    course: transcriptCourse ?? ActiveCoursePreference.load(for: session.userID, from: .standard).wireCode,
                     isLoading: isLoadingTranscript,
                     session: session
                 )
@@ -174,7 +177,7 @@ struct PodcastMiniBar: View {
             // episodes while the sheet is open reloads rather than showing
             // the previous one's text.
             .task(id: TranscriptRequest(episodeID: episode.id, isOpen: showTranscript)) {
-                await loadTranscript(episodeID: episode.id)
+                await loadTranscript(episode: episode)
             }
         }
     }
@@ -187,10 +190,24 @@ struct PodcastMiniBar: View {
         let isOpen: Bool
     }
 
-    private func loadTranscript(episodeID: String) async {
+    private func loadTranscript(episode: PodcastEpisode) async {
         guard showTranscript, let client = makePodcastClient(session: session) else { return }
         isLoadingTranscript = true
-        transcript = (try? await client.fetchTranscript(episodeID: episodeID)) ?? nil
+        // Both reads start together; the folder read is skipped when the episode carries its own course.
+        async let fetchedTranscript = try? await client.fetchTranscript(episodeID: episode.id)
+        var folders: [PodcastFolder] = []
+        if episode.course == nil {
+            folders = (try? await client.fetchFolders()) ?? []
+        }
+        let text = (await fetchedTranscript) ?? nil
+        guard !Task.isCancelled else { return }
+        transcriptCourse = PodcastLibrary.transcriptSaveCourse(
+            episodeCourse: episode.course,
+            folderID: episode.folderID,
+            folders: folders,
+            activeCourseCode: ActiveCoursePreference.load(for: session.userID, from: .standard).wireCode
+        )
+        transcript = text
         isLoadingTranscript = false
     }
 
@@ -214,6 +231,8 @@ struct PodcastMiniBar: View {
 private struct PodcastTranscriptSheet: View {
     let title: String
     let transcript: String?
+    /// The episode's course: a tapped word is saved under it.
+    let course: String
     let isLoading: Bool
     /// Needed only to open a save sheet when a word is tapped.
     let session: Session
@@ -247,12 +266,9 @@ private struct PodcastTranscriptSheet: View {
                                     .font(AlphonsoFont.sans(12))
                                     .foregroundStyle(AlphonsoColor.inkSoft)
                                 ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
-                                    // Episodes are English (the podcast models carry no
-                                    // language field), so a tapped word is an English word.
-                                    // If episodes ever gain a language, derive the course
-                                    // from it and route it through `SavedWordPolicy`.
+                                    // A transcript is wholly in its episode's course language.
                                     TappableText(
-                                        text: paragraph, color: AlphonsoColor.ink, course: "en"
+                                        text: paragraph, color: AlphonsoColor.ink, course: course
                                     ) { savingWord = $0 }
                                     .font(AlphonsoFont.sans(15))
                                     .frame(maxWidth: .infinity, alignment: .leading)

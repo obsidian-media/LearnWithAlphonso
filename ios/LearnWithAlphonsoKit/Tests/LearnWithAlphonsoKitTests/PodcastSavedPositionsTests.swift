@@ -2,11 +2,12 @@ import XCTest
 @testable import LearnWithAlphonsoKit
 
 final class PodcastSavedPositionsTests: XCTestCase {
-    private func episode(position: Int, updatedAt: String?, aiNarrated: Bool = false) -> PodcastEpisode {
+    private func episode(position: Int, updatedAt: String?, aiNarrated: Bool = false, course: String? = nil) -> PodcastEpisode {
         PodcastEpisode(
             id: "e1", folderID: "f1", slug: "s", title: "T", description: nil,
             audioURL: URL(string: "https://example.com/a.mp3")!, durationSeconds: 300,
-            positionSeconds: position, playbackUpdatedAt: updatedAt, aiNarrated: aiNarrated)
+            positionSeconds: position, playbackUpdatedAt: updatedAt, aiNarrated: aiNarrated,
+            course: course)
     }
 
     func testResumingAnEpisodeKeepsItsAINarratedLabel() {
@@ -17,6 +18,16 @@ final class PodcastSavedPositionsTests: XCTestCase {
         let resumed = saved.applying(to: listed)
         XCTAssertEqual(resumed.positionSeconds, 45, "the rebuilt copy is the one under test")
         XCTAssertTrue(resumed.aiNarrated)
+    }
+
+    func testResumingAnEpisodeKeepsItsOwnCourse() {
+        var saved = PodcastSavedPositions()
+        let listed = episode(position: 6, updatedAt: "2026-10-09T10:00:06Z", course: "fr")
+        saved.noteSeen(listed)
+        saved.record(episodeID: "e1", position: 45, updatedAt: "2026-10-09T10:00:45Z")
+        let resumed = saved.applying(to: listed)
+        XCTAssertEqual(resumed.positionSeconds, 45, "the rebuilt copy is the one under test")
+        XCTAssertEqual(resumed.course, "fr")
     }
 
     func testAnEpisodeListedBeforeThePlayWasSavedResumesWhereTheLearnerStopped() {

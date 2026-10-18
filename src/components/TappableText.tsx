@@ -4,6 +4,8 @@ import { allowsSaving } from "../lib/saved-word-client";
 import { isSavableWord, saveRequestFor, segmentText } from "../lib/word-segmenter";
 import { useSaveWord } from "./SaveWord";
 
+const isCourse = (c: string) => c === "en" || c === "fr" || c === "es";
+
 /**
  * Text whose words open the save dialog. Plain text when there is no
  * `SaveWordProvider` above it or the course does not allow saving, so a screen
@@ -12,18 +14,24 @@ import { useSaveWord } from "./SaveWord";
  * `focusable={false}` takes the words out of the tab order, for long text (a
  * transcript) where hundreds of tab stops would bury the page's real controls;
  * they remain clickable and in the accessibility tree.
+ *
+ * `wholeCourseLanguage` is for text that is wholly in the course's language (a
+ * French episode's transcript), where the English-only rule for lesson text,
+ * which mixes in English instructions, does not apply.
  */
 export const TappableText = memo(function TappableText({
   text,
   course,
   focusable = true,
+  wholeCourseLanguage = false,
 }: {
   text: string;
   course: string;
   focusable?: boolean;
+  wholeCourseLanguage?: boolean;
 }) {
   const open = useSaveWord();
-  if (!open || !allowsSaving(course)) return <>{text}</>;
+  if (!open || !(wholeCourseLanguage ? isCourse(course) : allowsSaving(course))) return <>{text}</>;
 
   return (
     <>

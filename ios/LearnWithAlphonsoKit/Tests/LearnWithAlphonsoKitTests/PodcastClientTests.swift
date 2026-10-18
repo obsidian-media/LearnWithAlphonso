@@ -35,7 +35,7 @@ final class PodcastClientTests: XCTestCase {
         return (data, http)
     }
 
-    private func episodeRow(id: String = "e1", duration: Int = 300, source: String = "tts") -> [String: Any] {
+    private func episodeRow(id: String = "e1", duration: Int = 300, source: String = "tts", course: Any = NSNull()) -> [String: Any] {
         [
             "id": id,
             "folder_id": "f1",
@@ -45,6 +45,7 @@ final class PodcastClientTests: XCTestCase {
             "audio_path": "en/a1/ordering-coffee.mp3",
             "duration_seconds": duration,
             "source": source,
+            "course": course,
         ]
     }
 
@@ -72,6 +73,30 @@ final class PodcastClientTests: XCTestCase {
         XCTAssertEqual(found.map(\.aiNarrated), [true, false])
         let searchQuery = await box.last!.url!.query ?? ""
         XCTAssertTrue(searchQuery.contains("source"), searchQuery)
+    }
+
+    func testBothEpisodeQueriesSelectAndDecodeTheEpisodesCourse() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            let url = request.url!
+            if url.absoluteString.contains("podcast_episodes") {
+                return self.jsonResponse(for: url, body: [
+                    self.episodeRow(id: "e1", course: "fr"),
+                    self.episodeRow(id: "e2"),
+                ])
+            }
+            return self.jsonResponse(for: url, body: [])
+        }
+        let listed = try await client.fetchEpisodes(folderID: "f1")
+        XCTAssertEqual(listed.map(\.course), ["fr", nil])
+        let listQuery = await box.requests.first { $0.url!.absoluteString.contains("podcast_episodes") }!.url!.query ?? ""
+        XCTAssertTrue(listQuery.contains("course"), listQuery)
+
+        let found = try await client.searchEpisodes(query: "coffee")
+        XCTAssertEqual(found.map(\.course), ["fr", nil])
+        let searchQuery = await box.last!.url!.query ?? ""
+        XCTAssertTrue(searchQuery.contains("course"), searchQuery)
     }
 
     func testRowSubtitleAddsResumeAndTheLabelInOrder() {
