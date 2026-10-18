@@ -43,6 +43,9 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 });
 
 vi.mock("../components/CookieConsent", () => ({ CookieConsent: () => null }));
+// AttributionBridge shares the auth mock but has its own test (components/AttributionBridge.test.tsx);
+// here it would add a second subscription and break the AuthSync call-count assertions.
+vi.mock("../components/AttributionBridge", () => ({ AttributionBridge: () => null }));
 
 const getSession = vi.fn();
 const onAuthStateChange = vi.fn();
