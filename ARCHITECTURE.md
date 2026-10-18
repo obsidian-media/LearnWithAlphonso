@@ -1409,13 +1409,22 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   would refuse is never sent and a word the segmenter links is one the server accepts. `AiConversationClient.defineWord`
   posts to `/api/define-word` (the shared `ApiHttp`, so the 401 refresh and the 403 `ai-consent-required` hook apply) and
   maps 400/401/403/409/429/other to `SavedWordError` with the iOS copy; a 200 of the wrong shape is "unavailable", never a
-  save. `SaveWordViewModel` is the sheet's flow (iOS `SaveWordSheet.save()`): one save in flight, the account's consent
+  save. `SaveWordFlow` is the sheet's flow (iOS `SaveWordSheet.save()`): one save in flight, the account's consent
   read again unless known granted, a setting that cannot be read never treated as off, a denial or a server consent refusal
-  shows the usual consent choice and carries on if allowed, a transport failure is offline. `TappableText` builds one `Text`
-  from an `AnnotatedString` whose savable words are `LinkAnnotation.Clickable`s (TalkBack lists them as links); `SaveWordHost`
-  gives a screen the handler (`LocalSaveWordHandler`) and the sheet, and the shared explanation views read it. Lessons and
-  review offer it in the English course only (`SavedWordPolicy`); Hector, Practice, Campaign and the transcript do not
-  need that gate (their text is wholly in the course's language, and episodes are English). `ReviewItem.isSelfContained`
+  shows the usual consent choice and carries on if allowed, a transport failure is offline. The flow is a plain class on the
+  sheet's own composition scope (not an Activity-scoped ViewModel: the transcript sheet lives outside the NavHost, where a
+  ViewModel key is shared by every sheet and the second one showed the first one's word), and every tap gets a fresh UUID
+  (`SaveWordTaps`). `define-word` is a model call and asks for a 60 s timeout (`ApiHttp.post(timeoutMillis)`), like iOS.
+  `TappableText` builds one `Text` from an `AnnotatedString` whose savable words are `LinkAnnotation.Clickable`s. For
+  TalkBack the text is ONE element that reads as written (the links are not separate swipe stops), with a custom action
+  "Save a word" that lists the words (the counterpart of iOS's rotor) beside "Report this response", which
+  `ReportableAiMessage` hands to its content so both sit in one actions list. `longPressAnywhere` watches for the long
+  press on the Initial pointer pass, so it works over a word that is a link (a link consumes its press, which hid the usual
+  `detectTapGestures(onLongPress)`), and swallows the rest of that press. `SaveWordHost` gives a screen the handler
+  (`LocalSaveWordHandler`) and the sheet, and the shared explanation views read it. Lessons and review offer it in the English
+  course only (`SavedWordPolicy`); Hector, Practice and Campaign do not need that gate (their text is wholly in the course's
+  language). A transcript saves under its episode's ROOT FOLDER's course (`PodcastLibrary.courseOf`; a root with no course
+  is English; unreadable folders mean no saving). `ReviewItem.isSelfContained`
   is true for `weakness` and `saved_word`, so the review screen builds a saved word's card from the row.
 - **Podcast playback and downloads (iOS PodcastPlayerMachine, PodcastPlaybackFailure,
   PodcastDownloadValidation, PodcastLibrary).** `core.podcast.PodcastPlayerMachine`

@@ -222,12 +222,16 @@ Use a QA account with AI allowed. The server writes a real review item each time
 - [ ] Practice and a Campaign reply: words are tappable, the hint says "Tap any word in a reply to save it.", and saving works in French and Spanish with the right language in the card.
 - [ ] A lesson in the English course: answer a question; the explanation's words are tappable (right answer: the grey line, wrong answer: Alphonso's tip), and "Tap a word to save it." shows for the first three explanations only, then never again. In a French or Spanish lesson the explanation is plain text (no hint).
 - [ ] Review (English course): the explanation after answering is tappable the same way.
-- [ ] A podcast transcript (the notes button on the player): "Tap any word to save it."; tapping saves the word under English.
+- [ ] A podcast transcript (the notes button on the player): "Tap any word to save it."; tapping saves the word under the episode's course, which is its root folder's course (a French folder's episode saves under French). Open the transcript of an English episode, save a word, close it, then open the transcript of a different episode and tap a word: the sheet shows the NEW word and a Save button, never the previous word with "Saved". Reopen the same transcript a third time: same.
 - [ ] Review: a saved word appears as a multiple-choice card ("What does "tea" mean here?" with the sentence), grades like any card, and shows the meaning after answering. It appears in the course it was saved under.
-- [ ] TalkBack: the explanation or reply reads normally, and its words are reachable through the Links action of the TalkBack menu; Save word, Try again and Done are announced as buttons.
+- [ ] TalkBack: a reply, an explanation or a transcript paragraph is ONE element that reads as written (swiping does not stop on every word); its actions menu has "Save a word" (a list of the words, each saving the sentence it first appears in), and on a reply also "Report this response". A right-answer explanation is announced starting "Correct.". Save word, Try again and Done are announced as buttons.
 - [ ] Airplane mode: tap a word and Save: "Saving a word needs a connection." with Try again; reconnect and Try again saves it.
 - [ ] Account with AI turned off (Settings): tap a word in a lesson, Save: the usual AI consent choice opens; Allow saves the word, Not now returns to the Save button with nothing sent. Withdraw AI on the web while the sheet is open and tap Save: the same choice appears.
 - [ ] Two quick taps on Save: one request only (check that the daily AI use goes up by one).
 - [ ] Reach the 500-word limit (or ask the owner to set a QA account there): "You've reached the limit of 500 saved words. Finish some reviews first." and no Try again button.
 - [ ] Rotate the phone with the sheet open and a long sentence: the sheet stays, the sentence scrolls, Done stays reachable.
 - [ ] A very long reply: tapping a word near the end saves a sentence of at most 300 characters that still contains the word.
+
+- [ ] Long-press over a word (not between words) in a Hector, Practice or Campaign reply: the "Report this response" menu opens, and releasing does not also open the save sheet. A quick tap on the same word opens the save sheet and not the menu. Scrolling the list with a finger that starts on a word does neither.
+- [ ] A slow lookup (say 20 to 40 seconds on a poor connection): "Looking it up..." keeps waiting and the word is saved, instead of failing after about 10 seconds.
+- [ ] Rotate the phone while "Looking it up..." shows: the sheet comes back at the Save button (the lookup was cancelled); saving again gives "Already saved" if the first one landed.
