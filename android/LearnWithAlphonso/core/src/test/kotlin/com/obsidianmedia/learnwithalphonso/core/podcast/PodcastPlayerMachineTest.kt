@@ -268,7 +268,7 @@ class PodcastPlayerMachineTest {
     }
 
     @Test
-    fun `play pressed outside the app resumes a paused or finished episode with no effects and no load timer`() {
+    fun `play pressed outside the app resumes a paused, finished or failed episode with no effects and no load timer`() {
         val paused = playing()
         paused.send(Ev.PausedExternally(resumable = false))
         assertEquals(emptyList<Fx>(), paused.send(Ev.ResumedExternally))
@@ -283,7 +283,10 @@ class PodcastPlayerMachineTest {
         failed.send(Ev.Start(isRemote = true, isOnline = true))
         failed.send(Ev.ItemFailed(PodcastPlaybackFailure.NOT_FOUND))
         failed.send(Ev.ResumedExternally)
-        assertEquals(PodcastPlaybackFailure.NOT_FOUND, failed.failure, "an outside play does not revive a failed item")
+        assertEquals(Ph.Playing, failed.phase, "sound under a failure banner is the worst of both: the player playing clears the failure")
+        assertNull(failed.failure)
+        failed.send(Ev.ItemFailed(PodcastPlaybackFailure.NETWORK))
+        assertEquals(PodcastPlaybackFailure.NETWORK, failed.failure, "and a failure after that is reported again")
     }
 
     @Test

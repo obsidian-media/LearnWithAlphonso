@@ -25,6 +25,7 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
     override var onPaused: (PauseCause) -> Unit = {}
+    override var onSuppressionChanged: (Boolean) -> Unit = {}
     override var onError: (Int?, Int?) -> Unit = { _, _ -> }
     override var onStalled: () -> Unit = {}
 
@@ -52,6 +53,10 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
                 val c = controller
                 if (c != null && c.playWhenReady && c.playbackState == Player.STATE_BUFFERING) onStalled()
             }
+        }
+
+        override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
+            onSuppressionChanged(playbackSuppressionReason != Player.PLAYBACK_SUPPRESSION_REASON_NONE)
         }
 
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
