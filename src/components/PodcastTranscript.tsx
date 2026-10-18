@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { transcriptParagraphs } from "../lib/podcast-transcript";
+import type { SavedWordCourse } from "../lib/saved-word";
 import { SaveWordHint, SaveWordProvider } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
@@ -16,6 +17,8 @@ import { TappableText } from "./TappableText";
 type PanelProps = {
   title: string;
   transcript: string | null;
+  /** The episode's course: tapped words are saved under it. */
+  course: SavedWordCourse;
   isLoading: boolean;
   onClose: () => void;
 };
@@ -29,7 +32,7 @@ export function PodcastTranscriptPanel(props: PanelProps) {
   );
 }
 
-function TranscriptPanelBody({ title, transcript, isLoading, onClose }: PanelProps) {
+function TranscriptPanelBody({ title, transcript, course, isLoading, onClose }: PanelProps) {
   const paragraphs = transcript ? transcriptParagraphs(transcript) : [];
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -104,9 +107,15 @@ function TranscriptPanelBody({ title, transcript, isLoading, onClose }: PanelPro
             </div>
             {paragraphs.map((paragraph, index) => (
               <p key={index} className="text-sm leading-relaxed text-ink">
-                {/* Episodes are English (the podcast tables carry no language column).
-                    Words stay out of the tab order: a transcript is hundreds of them. */}
-                <TappableText text={paragraph} course="en" focusable={false} />
+                {/* A transcript is wholly in its episode's course language, so a tapped
+                    word is saved under that course. Words stay out of the tab order:
+                    a transcript is hundreds of them. */}
+                <TappableText
+                  text={paragraph}
+                  course={course}
+                  focusable={false}
+                  wholeCourseLanguage
+                />
               </p>
             ))}
           </div>

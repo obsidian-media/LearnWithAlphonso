@@ -44,6 +44,7 @@ class PodcastClient(
 ) {
     internal companion object {
         const val PUBLISHED_INDEX_PAGE_SIZE = 500
+        const val MAX_PUBLISHED_INDEX_PAGES = 200
         const val EPISODE_SELECT = "id,folder_id,slug,title,description,audio_path,duration_seconds,source"
     }
 
@@ -70,7 +71,11 @@ class PodcastClient(
     suspend fun fetchPublishedIndex(): List<PodcastPublishedEpisodeRef> {
         val refs = ArrayList<PodcastPublishedEpisodeRef>()
         var offset = 0
+        var pages = 0
         while (true) {
+            // A server that keeps answering with rows (a paging mistake) must not loop for ever, and must not be taken for the
+            // whole published set: throwing leaves the caller with nothing to prune against.
+            if (++pages > MAX_PUBLISHED_INDEX_PAGES) throw PodcastClientError.InvalidPayload()
             val page = rows(
                 http.rest(
                     HttpMethod.Get, "podcast_episodes",

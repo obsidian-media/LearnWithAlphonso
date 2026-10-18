@@ -204,7 +204,8 @@ final class PodcastCacheTests: XCTestCase {
             durationSeconds: 172,
             positionSeconds: 0,
             playbackUpdatedAt: nil,
-            aiNarrated: false
+            aiNarrated: false,
+            course: nil
         )
     }
 

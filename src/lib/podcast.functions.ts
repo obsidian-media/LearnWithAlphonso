@@ -29,6 +29,8 @@ export type PodcastEpisode = {
   positionSeconds: number;
   /** Read by a synthetic voice (`source = 'tts'`); the apps label these "AI-narrated". */
   aiNarrated: boolean;
+  /** The episode's own course (`en`, `fr`, `es`), or null/absent when unset. */
+  course?: "en" | "fr" | "es" | null;
 };
 
 /**
@@ -51,6 +53,7 @@ export type PodcastEpisodeRow = {
   description: string | null;
   duration_seconds: number;
   source: string | null;
+  course?: string | null;
 };
 
 /** One row as the clients see it. Shared by the folder listing and search so both label episodes the same way. */
@@ -69,6 +72,7 @@ export function toPodcastEpisode(
     durationSeconds: row.duration_seconds,
     positionSeconds,
     aiNarrated: isAiNarrated(row.source),
+    course: row.course === "en" || row.course === "fr" || row.course === "es" ? row.course : null,
   };
 }
 
@@ -79,7 +83,7 @@ export const listFolders = createServerFn({ method: "GET" })
     const db = context.supabase;
     const { data, error } = await db
       .from("podcast_folders")
-      .select("id, parent_id, slug, title, description, sort_order")
+      .select("id, parent_id, slug, title, description, sort_order, course")
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []).map((row) => ({
@@ -89,6 +93,7 @@ export const listFolders = createServerFn({ method: "GET" })
       title: row.title,
       description: row.description,
       sortOrder: row.sort_order,
+      course: row.course as PodcastFolder["course"],
     }));
   });
 
@@ -102,7 +107,9 @@ export const listEpisodes = createServerFn({ method: "GET" })
 
     const episodesRes = await db
       .from("podcast_episodes")
-      .select("id, folder_id, slug, title, description, audio_path, duration_seconds, source")
+      .select(
+        "id, folder_id, slug, title, description, audio_path, duration_seconds, source, course",
+      )
       .eq("folder_id", data.folderId)
       .order("sort_order", { ascending: true });
     if (episodesRes.error) throw new Error(episodesRes.error.message);
@@ -225,7 +232,9 @@ export const searchEpisodes = createServerFn({ method: "GET" })
     const db = context.supabase;
     const { data: rows, error } = await db
       .from("podcast_episodes")
-      .select("id, folder_id, slug, title, description, audio_path, duration_seconds, source")
+      .select(
+        "id, folder_id, slug, title, description, audio_path, duration_seconds, source, course",
+      )
       .or(filter)
       .order("title", { ascending: true })
       .limit(50);
