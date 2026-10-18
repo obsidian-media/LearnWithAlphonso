@@ -2230,8 +2230,8 @@ deploy`, both easy to forget (this bit a real session that added several
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
-  2026-10-09 there are about 277 web test files (3,030 tests in the last full
-  CI run reported on #265) and 1,024 Swift Kit tests (#270); run `bun run
+  2026-10-18 there are 301 web test files (3,612 tests in CI on main after
+  #326), 1,080 Swift Kit tests and 758 Android JVM tests; run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
