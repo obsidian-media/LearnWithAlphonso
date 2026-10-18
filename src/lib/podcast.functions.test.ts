@@ -50,7 +50,13 @@ describe("toPodcastEpisode", () => {
       durationSeconds: 120,
       positionSeconds: 30,
       aiNarrated: true,
+      course: null,
     });
+  });
+
+  it("carries the episode's own course and ignores an unknown code", () => {
+    expect(toPodcastEpisode({ ...row, course: "fr" }, "u", 0).course).toBe("fr");
+    expect(toPodcastEpisode({ ...row, course: "de" }, "u", 0).course).toBeNull();
   });
 
   it("does not label an uploaded recording", () => {
