@@ -125,6 +125,22 @@ object PodcastLibrary {
     fun unpublishedDownloads(entries: List<PodcastCacheEntry>, publishedEpisodeIds: Set<String>, playingEpisodeId: String?): List<String> =
         entries.map { it.episodeId }.filter { it !in publishedEpisodeIds && it != playingEpisodeId }
 
+    /**
+     * The course an episode in [folderId] is in: its ROOT folder's course. A root with no course is shown to every
+     * course and its episodes are English, so that is "en". Null when the folder is not in [folders] (not loaded, or a
+     * parent cycle), so the caller does not guess a language for text it cannot place.
+     */
+    fun courseOf(folderId: String, folders: List<PodcastFolder>): String? {
+        val byId = folders.associateBy { it.id }
+        var current = byId[folderId] ?: return null
+        var depth = 0
+        while (current.parentId != null) {
+            current = byId[current.parentId] ?: return null
+            if (++depth >= 64) return null
+        }
+        return current.course ?: "en"
+    }
+
     fun emptyTitle(courseCode: String): String = when (courseCode) {
         "en" -> "No English episodes yet"
         "fr" -> "No French episodes yet"

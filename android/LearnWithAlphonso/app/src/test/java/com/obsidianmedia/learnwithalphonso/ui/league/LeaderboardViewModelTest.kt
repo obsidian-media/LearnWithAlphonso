@@ -72,6 +72,8 @@ class LeaderboardViewModelTest {
         awaitTrue("loaded") { !v.state.value.isLoading }
         v.block(SocialTarget("bob", "Nbob"))
         awaitTrue("row removed") { v.state.value.rows.none { it.userId == "bob" } }
+        // The row and the toast are separate state updates: wait for the toast instead of assuming it is already there.
+        awaitTrue("toast") { v.state.value.toast != null }
         assertEquals("Nbob blocked.", v.state.value.toast)
         assertTrue(s.seen.any { it.path.endsWith("block_user") && it.body == """{"_target":"bob"}""" })
     }

@@ -65,5 +65,12 @@ class QuestionGradingTest {
         assertEquals(1, q.answer)
         assertNull(questionFromWeaknessItem(row.copy(choices = null)))
         assertNull(questionFromWeaknessItem(row.copy(source = "lesson")))
+        // A saved word is the same shape and builds the same card.
+        val saved = questionFromWeaknessItem(row.copy(source = "saved_word")) as Question.MultipleChoice
+        assertEquals("w1", saved.id)
+        assertEquals(1, saved.answer)
+        assertTrue(row.copy(source = "saved_word").isSelfContained)
+        assertTrue(row.isSelfContained)
+        assertFalse(row.copy(source = "lesson").isSelfContained)
     }
 }

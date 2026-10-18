@@ -44,7 +44,13 @@ data class ReviewItem(
     val choices: List<String>? = null,
     @SerialName("answer_index") val answerIndex: Int? = null,
     val explanation: String? = null,
-)
+) {
+    /**
+     * Carries its own question instead of pointing at a bundled lesson question: Hector weakness items and saved words.
+     * The review screen builds the card from the row itself.
+     */
+    val isSelfContained: Boolean get() = source == "weakness" || source == "saved_word"
+}
 
 @Serializable
 data class DueReviews(val due: List<ReviewItem>, val total: Int)
