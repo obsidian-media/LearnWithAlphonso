@@ -176,7 +176,7 @@ class PodcastClientTest {
 
     @Test
     fun `fetchPublishedIndex skips rows missing an id or folder`() = runTest {
-        val fake = FakeSupabase { json("""[{"id":"e1","folder_id":"f1"},{"id":"e2"},{"folder_id":"f2"}]""") }
+        val fake = FakeSupabase { req -> json(if (req.query["offset"] == "0") """[{"id":"e1","folder_id":"f1"},{"id":"e2"},{"folder_id":"f2"}]""" else "[]") }
         assertEquals(listOf(PodcastPublishedEpisodeRef("e1", "f1")), client(fake).fetchPublishedIndex())
     }
 
