@@ -53,6 +53,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
@@ -73,6 +74,10 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
 import com.obsidianmedia.learnwithalphonso.ui.practice.ReplyPlayer
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
+import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -215,9 +220,13 @@ private fun HectorConversation(container: AppContainer) {
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
 
     AiConsentGate(container) {
+      SaveWordHost(container) {
+        val saveWord = LocalSaveWordHandler.current
         Column(Modifier.fillMaxSize().background(palette.surface)) {
             AiReportStatusHost(container.aiReports)
-            Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp))
+            Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
+            // Words are plain-looking links, so say they are tappable.
+            SaveWordHintLine(container, SavedWordCopy.HECTOR_HINT, limited = false)
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { _, turn ->
                     val isUser = turn.role == "user"
@@ -230,11 +239,13 @@ private fun HectorConversation(container: AppContainer) {
                             enabled = !isUser, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier ->
-                            Text(
-                                turn.content,
-                                modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
-                                style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink,
-                            )
+                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
+                            // Hector's replies are in the language being practised, so every word is a word of the course.
+                            if (!isUser && saveWord != null) {
+                                TappableText(turn.content, vm.course.code, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            } else {
+                                Text(turn.content, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
+                            }
                         }
                     }
                 }
@@ -249,5 +260,6 @@ private fun HectorConversation(container: AppContainer) {
                 )
             }
         }
+      }
     }
 }

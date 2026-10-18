@@ -1,6 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.logic.BillingPeriodUnit
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
 import com.obsidianmedia.learnwithalphonso.core.logic.billingPeriodDescription
 import io.ktor.client.engine.mock.MockEngine
@@ -222,5 +225,48 @@ class AiConversationClientTest {
         assertEquals("Billed every 3 months", billingPeriodDescription(BillingPeriodUnit.MONTH, 3))
         assertEquals("Billed yearly", billingPeriodDescription(BillingPeriodUnit.YEAR, 1))
         assertEquals("Billed every 2 weeks", billingPeriodDescription(BillingPeriodUnit.WEEK, 2))
+    }
+
+    private val savedBody = """{"alreadySaved":false,"word":"tea","sentence":"I like tea.","explanation":"\"tea\" means a drink."}"""
+
+    @Test
+    fun `defineWord posts the word, sentence and course with the bearer token and decodes the saved word`() = runTest {
+        val seen = ArrayList<Seen>()
+        val c = AiConversationClient(http(seen) { savedBody.toByteArray() to HttpStatusCode.OK })
+        val result = c.defineWord("tea", "I like tea.", "en")
+        assertEquals("/api/define-word", seen.single().path)
+        assertEquals("""{"word":"tea","sentence":"I like tea.","course":"en"}""", seen.single().body.decodeToString())
+        assertEquals("Bearer tok", seen.single().headers["Authorization"])
+        assertEquals(SavedWordResult(false, "tea", "I like tea.", "\"tea\" means a drink."), result)
+    }
+
+    @Test
+    fun `defineWord decodes an already saved word`() = runTest {
+        val c = AiConversationClient(http(ArrayList()) { savedBody.replace("false", "true").toByteArray() to HttpStatusCode.OK })
+        assertTrue(c.defineWord("tea", "I like tea.", "en").alreadySaved)
+    }
+
+    @Test
+    fun `defineWord maps each failing status and the consent refusal to its own error`() = runTest {
+        val cases = listOf(
+            400 to SavedWordError.INVALID, 401 to SavedWordError.NOT_SIGNED_IN, 409 to SavedWordError.LIMIT_REACHED,
+            429 to SavedWordError.QUOTA_EXCEEDED, 502 to SavedWordError.UNAVAILABLE,
+        )
+        for ((status, expected) in cases) {
+            val c = AiConversationClient(http(ArrayList()) { """{"error":"x"}""".toByteArray() to HttpStatusCode.fromValue(status) })
+            val e = runCatching { c.defineWord("tea", "I like tea.", "en") }.exceptionOrNull() as SavedWordException
+            assertEquals(expected, e.error, "status $status")
+        }
+        val consent = AiConversationClient(http(ArrayList()) { """{"error":"ai-consent-required"}""".toByteArray() to HttpStatusCode.Forbidden })
+        assertEquals(SavedWordError.AI_CONSENT_REQUIRED, (runCatching { consent.defineWord("tea", "I like tea.", "en") }.exceptionOrNull() as SavedWordException).error)
+    }
+
+    @Test
+    fun `defineWord does not call a 200 of the wrong shape a save`() = runTest {
+        for (body in listOf("""{"word":"tea"}""", "not json", """{"alreadySaved":"yes","word":"a","sentence":"b","explanation":"c"}""")) {
+            val c = AiConversationClient(http(ArrayList()) { body.toByteArray() to HttpStatusCode.OK })
+            val e = runCatching { c.defineWord("tea", "I like tea.", "en") }.exceptionOrNull() as SavedWordException
+            assertEquals(SavedWordError.UNAVAILABLE, e.error, body)
+        }
     }
 }

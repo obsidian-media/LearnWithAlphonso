@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadFailure
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
@@ -73,6 +74,10 @@ import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRefusal
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
+import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 import kotlinx.coroutines.launch
 
 private fun length(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
@@ -316,16 +321,27 @@ fun PodcastMiniBar(container: AppContainer) {
 
     if (showTranscript) {
         ModalBottomSheet(onDismissRequest = { showTranscript = false }, containerColor = palette.surface) {
+          SaveWordHost(container) {
             Column(Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(episode.title, style = MaterialTheme.typography.titleMedium, color = palette.ink)
                 val paragraphs = PodcastTranscript.paragraphs(transcript ?: "")
                 when {
                     loadingTranscript -> CircularProgressIndicator(color = palette.moss)
                     paragraphs.isEmpty() -> Text("This episode doesn't have a transcript yet.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
-                    else -> paragraphs.forEach { Text(it, style = MaterialTheme.typography.bodyLarge, color = palette.ink) }
+                    else -> {
+                        SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
+                        // Episodes are English (the podcast models carry no language field), so a tapped word is an English word.
+                        // If episodes ever gain a language, derive the course from it and route it through SavedWordPolicy.
+                        val saveWord = LocalSaveWordHandler.current
+                        paragraphs.forEach { paragraph ->
+                            if (saveWord != null) TappableText(paragraph, "en", saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            else Text(paragraph, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                        }
+                    }
                 }
                 Spacer(Modifier.height(24.dp))
             }
+          }
         }
     }
 }

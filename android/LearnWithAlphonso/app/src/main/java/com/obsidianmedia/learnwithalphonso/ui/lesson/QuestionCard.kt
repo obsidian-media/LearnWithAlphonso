@@ -35,6 +35,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordPolicy
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -44,6 +45,8 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.components.ChoiceButton
 import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
 
 /**
  * Renders any of the six question types with a `picked` binding. Shared by
@@ -75,7 +78,7 @@ fun QuestionCard(
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.choices[question.answer] == choice, onClick = { onPick(choice) })
                 }
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
+                if (checked) Explanation(container, isCorrect, question.explanation, course)
             }
             is Question.FillInBlank -> {
                 Prompt(question.prompt)
@@ -85,12 +88,12 @@ fun QuestionCard(
                         question.bank.forEach { word -> AlphonsoSecondaryButton(word, onClick = { onPick(word) }, enabled = !checked, fullWidth = false) }
                     }
                 }
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
+                if (checked) Explanation(container, isCorrect, question.explanation, course)
             }
             is Question.Reorder -> {
                 Prompt(question.prompt)
                 ReorderArea(question.tokens, checked, onPick)
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
+                if (checked) Explanation(container, isCorrect, question.explanation, course)
             }
             is Question.Listening -> {
                 AlphonsoSectionHeader("Listening")
@@ -99,7 +102,7 @@ fun QuestionCard(
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.answer == choice, onClick = { onPick(choice) })
                 }
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
+                if (checked) Explanation(container, isCorrect, question.explanation, course)
             }
             is Question.Translate -> {
                 AlphonsoSectionHeader("Write it yourself")
@@ -124,10 +127,24 @@ fun QuestionCard(
                         Text(question.acceptableAnswers.firstOrNull() ?: "", style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                     }
                 }
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
+                if (checked) Explanation(container, isCorrect, question.explanation, course)
             }
             is Question.Speak -> SpeakQuestionCard(container, question, course, checked, isCorrect, picked, onPick)
         }
+    }
+}
+
+/**
+ * The explanation under a checked question. Its words are tappable in the English course only (SavedWordPolicy: the
+ * explanation is written in English, so in French or Spanish it is mostly not the course's language), and only on a screen
+ * that can open the save sheet. A hint says so for the first few times.
+ */
+@Composable
+internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course) {
+    val saveCourse = course.code.takeIf { SavedWordPolicy.allowsSaving(it) }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse)
+        if (saveCourse != null && LocalSaveWordHandler.current != null) SaveWordHintLine(container)
     }
 }
 

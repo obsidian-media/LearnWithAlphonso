@@ -58,6 +58,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
 
 @Composable
 fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit, onReviewInstead: () -> Unit = onExit) {
@@ -89,6 +90,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         }
     }
 
+    SaveWordHost(container) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -114,6 +116,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             }
             is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(phase.message, color = palette.ink, textAlign = TextAlign.Center) }
         }
+    }
     }
 }
 

@@ -1,6 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
@@ -8,6 +11,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
@@ -86,6 +90,25 @@ class AiConversationClient(private val http: ApiHttp) {
         }
         val obj = objectOf(http.post("api/analyze-weaknesses", body))
         return obj["weaknessesDetected"]?.jsonPrimitive?.intOrNull ?: throw AiConversationError.InvalidPayload()
+    }
+
+    /**
+     * POST /api/define-word: saves a tapped word with its sentence and returns its stored explanation. The server writes
+     * the review item; the client never sends choices or an answer. An HTTP failure throws a [SavedWordException] so the
+     * caller can say something specific; a transport failure (offline) propagates as the exception it is.
+     */
+    suspend fun defineWord(word: String, sentence: String, course: String): SavedWordResult {
+        val response = http.post("api/define-word", buildJsonObject { put("word", word); put("sentence", sentence); put("course", course) })
+        val text = response.bodyAsText()
+        if (response.status.value !in 200..299) throw SavedWordException(SavedWordError.from(response.status.value, ServerErrorBody.parse(text).code))
+        val obj = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: throw SavedWordException(SavedWordError.UNAVAILABLE)
+        // A 200 that is not the contract's shape is not a save: showing "Saved" for it would be a lie.
+        val alreadySaved = obj["alreadySaved"]?.let { runCatching { it.jsonPrimitive.booleanOrNull }.getOrNull() }
+        val savedWord = obj.str("word")
+        val savedSentence = obj.str("sentence")
+        val explanation = obj.str("explanation")
+        if (alreadySaved == null || savedWord == null || savedSentence == null || explanation == null) throw SavedWordException(SavedWordError.UNAVAILABLE)
+        return SavedWordResult(alreadySaved, savedWord, savedSentence, explanation)
     }
 
     /** Capped at 45 seconds, the iOS safety net against a spinner that never ends. */

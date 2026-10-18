@@ -40,6 +40,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
@@ -52,6 +53,10 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.league.ScreenHeader
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
+import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 
 /** Port of ConversationView.swift's list: campaigns first, then scenarios. */
 @Composable
@@ -79,18 +84,21 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String) -> Unit, on
 private class ReplyReporting(val sender: AiReportSender, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
 
 @Composable
-private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport) {
+private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport, course: String) {
     val palette = AlphonsoColor.palette
     val isUser = turn.role == "user"
+    val saveWord = LocalSaveWordHandler.current
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
             if (isUser) Spacer(Modifier.width(40.dp))
             ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier ->
-                Text(
-                    turn.content,
-                    modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp),
-                    style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink,
-                )
+                val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
+                // The partner speaks the course's language, so every word of a reply is a word of the course.
+                if (!isUser && saveWord != null) {
+                    TappableText(turn.content, course, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                } else {
+                    Text(turn.content, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink)
+                }
             }
             if (!isUser) Spacer(Modifier.width(40.dp))
         }
@@ -99,7 +107,7 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
 }
 
 @Composable
-private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
+private fun ConversationBody(container: AppContainer, vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, course: String, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
@@ -111,6 +119,8 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
         AiReportStatusHost(reporting.sender)
         ScreenHeader(title, onBack, actions)
         header()
+        // Words are plain-looking links, so say they are tappable.
+        SaveWordHintLine(container, SavedWordCopy.REPLY_HINT, limited = false)
         LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             itemsIndexed(state.turns) { index, turn ->
                 Bubble(
@@ -118,6 +128,7 @@ private fun ConversationBody(vm: BaseConversationViewModel, title: String, tint:
                     reportable = AiReplyReporting.isReportable(turn.role, index, state.openerIndices),
                     sender = reporting.sender,
                     makeReport = { reason -> reporting.makeReport(turn.content, AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },
+                    course = course,
                 )
             }
             item { footer() }
@@ -146,12 +157,15 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     }
     val palette = AlphonsoColor.palette
     AiConsentGate(container, onDecline = onBack) {
-        ConversationBody(
-            vm, scenario.title, palette.moss, Color.White, onBack,
-            reporting = ReplyReporting(container.aiReports) { message, _, reason ->
-                AiReplyReports.scenario(message, course.code, scenario.id, reason)
-            },
-        )
+        SaveWordHost(container) {
+            ConversationBody(
+                container, vm, scenario.title, palette.moss, Color.White, onBack,
+                reporting = ReplyReporting(container.aiReports) { message, _, reason ->
+                    AiReplyReports.scenario(message, course.code, scenario.id, reason)
+                },
+                course = course.code,
+            )
+        }
     }
 }
 
@@ -167,11 +181,13 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val progress by vm.campaignState.collectAsState()
     val state by vm.state.collectAsState()
     AiConsentGate(container, onDecline = onBack) {
+      SaveWordHost(container) {
         ConversationBody(
-            vm, campaign.title, palette.moss, Color.White, onBack,
+            container, vm, campaign.title, palette.moss, Color.White, onBack,
             reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
                 AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
             },
+            course = course.code,
             header = {
                 if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = MaterialTheme.typography.labelLarge, color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
             },
@@ -188,5 +204,6 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
             },
             actions = { if (!progress.finished) TextButton(onClick = vm::restartScene) { Text("Restart scene", color = palette.moss) } },
         )
+      }
     }
 }

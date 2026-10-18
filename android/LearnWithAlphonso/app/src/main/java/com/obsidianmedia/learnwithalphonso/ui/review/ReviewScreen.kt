@@ -34,6 +34,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
 
 @Composable
 fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
@@ -43,6 +44,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
     }
     val state by vm.state.collectAsState()
 
+    SaveWordHost(container) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -86,6 +88,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
                 }
             }
         }
+    }
     }
 }
 
