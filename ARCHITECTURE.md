@@ -1365,8 +1365,15 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   covers the requests the engine cannot interleave with: the re-mint after a
   403 (`start-lesson-session`, then `complete-lesson` again) and the HTTP
   seam's retry after a 401, which refreshes whichever session is current and
-  would otherwise resend the first account's body. A row with no owner after
-  startup is removed, never sent.
+  would otherwise resend the first account's body. `PassClients` builds that
+  client (so the wiring is testable: it must use `freshAccessTokenFor`, never the
+  plain `freshAccessToken`), and the pass closes it when it ends, however it
+  ends: only its HTTP client is closed, never the shared engine, or every pass
+  would leave a client attached to the engine for ever. A refresh that
+  finishes after its account left is discarded (`SessionManager`): it is not
+  stored over the session now signed in, and a rejected refresh token ends only
+  the session it belonged to. A row with no owner after startup is removed,
+  never sent.
   The read-modify-write of the sync-state row (progress, last-synced time, the
   orphan flag) runs in a transaction.
   Launch: `SessionStartup` restores the session and settles the store before
@@ -1379,8 +1386,9 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   signed-in account (a switch included), calls `SyncCoordinator.clearAccount`
   under the pass lock, and that removes only the ended account's rows, its dead
   letters and the single-account caches; another account's queued rows stay for
-  that account's own sync. A failing clear is logged and the next change is
-  still seen.
+  that account's own sync. The home-screen widget is told to forget its
+  snapshot too, so it never shows the previous account's streak. A failing
+  clear is logged and the next change is still seen.
   Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt count and
   next attempt on both queues, an `orphansResolved` flag, and a `dead_letters`
   table that records its owner; the newest 50 are kept). `SyncCoordinator`

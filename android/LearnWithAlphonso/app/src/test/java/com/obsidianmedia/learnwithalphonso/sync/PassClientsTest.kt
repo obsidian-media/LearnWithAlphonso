@@ -77,4 +77,27 @@ class PassClientsTest {
         assertNull(factory("u1"))
         assertNotNull(api.engine)
     }
+
+    @Test
+    fun `a 401 whose retry would refresh another account's session sends nothing the second time`() = runBlocking {
+        var signedInAs = "u1"
+        val auth = MockEngine { respond("""{"access_token":"at-$signedInAs","refresh_token":"rt","expires_in":3600,"user":{"id":"$signedInAs"}}""", HttpStatusCode.OK) }
+        val m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", auth) { now }, MemoryStore(SupabaseSession("at-u1", "rt", now + 3600, "u1"))) { now }
+        m.restore()
+        val seen = ArrayList<String?>()
+        val api = MockEngine { req ->
+            seen.add(req.headers["Authorization"])
+            if (seen.size == 1) {
+                // The first account's request is rejected, and meanwhile someone else signs in.
+                signedInAs = "u2"
+                m.signInWithPassword("b@example.com", "pw")
+                respond("{}", HttpStatusCode.Unauthorized)
+            } else {
+                respond("[]", HttpStatusCode.OK)
+            }
+        }
+        val client = PassClients.factory(m, "https://x.supabase.co", "pk", api)("u1")!!
+        runCatching { client.fetchProgress() }
+        assertEquals("the retry is not sent under the second account's token: $seen", listOf<String?>("Bearer at-u1"), seen)
+    }
 }
