@@ -1,17 +1,20 @@
 package com.obsidianmedia.learnwithalphonso.sync
 
 /**
- * Tells a sign-out (an account was signed in a moment ago, now none is) from a cold launch (nobody was signed in yet,
- * because the session has not been restored). Clearing the offline queue on the second would wipe a learner's queued
- * lessons every time the app opens.
+ * Tells an account ending (signed out, or switched away from) from a cold launch (nobody was signed in yet, because the
+ * session has not been restored). Clearing the offline queue on the second would wipe a learner's queued lessons every
+ * time the app opens.
  */
 class SignOutWatcher {
     private var last: String? = null
 
-    /** Feed it the signed-in user id each time it changes; true exactly when that change was a sign-out. */
-    fun signedOut(now: String?): Boolean {
-        val out = last != null && now == null
+    /**
+     * Feed it the signed-in user id each time it changes. Returns the id of the account that just ended: any change away
+     * from a signed-in account, to nobody or straight to another account. Null for a launch and for no real change.
+     */
+    fun endedAccount(now: String?): String? {
+        val ended = last?.takeIf { it != now }
         last = now
-        return out
+        return ended
     }
 }

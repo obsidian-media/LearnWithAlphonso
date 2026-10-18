@@ -23,10 +23,19 @@ interface SyncQueueStore {
     suspend fun removeSyncedReviewGrades(synced: List<PendingReviewGrade>)
 
     /**
-     * Rows queued by a build that did not record an owner: adopted by the account restored at the first launch after
-     * the upgrade, and dropped on every later call, so they can never move to a different account.
+     * Rows queued by a build that did not record an owner. Called once per launch, right after the session is
+     * restored, with the restored account (null when nobody was). The first call after the upgrade gives them to that
+     * account; with nobody restored, or on any later call, they are dropped, so they can never move to a different
+     * account that signs in later.
      */
-    suspend fun resolveOrphanedRows(userId: String)
+    suspend fun resolveOrphanedRows(restoredUserId: String?)
+
+    /**
+     * The account [userId] ended (signed out, or switched away from). Removes what is its own: its queued work and lost
+     * lessons, and rows with no owner; and clears the single-account caches (due reviews, last-known progress). Rows another
+     * account queued are left alone: that account's own sync decides them.
+     */
+    suspend fun clearAccount(userId: String)
 
     /**
      * Everything here belongs to the account that was signed in: queued work, dead letters, the due-review cache and
@@ -71,6 +80,8 @@ class RoomSyncQueueStore(
     private val onProgressUpdated: suspend (LessonCompletionProgress) -> Unit = {},
     /** Runs the block as one database transaction (AppContainer passes the database's). */
     private val inTransaction: suspend (suspend () -> Unit) -> Unit = { it() },
+    /** After an account's data was cleared: whatever else shows it (the home-screen widget) must forget it too. */
+    private val onCleared: suspend () -> Unit = {},
     /** Last on purpose: a trailing lambda at call sites is the clock (SyncQueueStoreTest passes one). */
     private val now: () -> Long = System::currentTimeMillis,
 ) : SyncQueueStore {
@@ -86,26 +97,41 @@ class RoomSyncQueueStore(
         synced.forEach { dao.deleteReviewGrade(it.itemKey, it.queuedAt) }
     }
 
-    override suspend fun resolveOrphanedRows(userId: String) = inTransaction {
+    override suspend fun resolveOrphanedRows(restoredUserId: String?) = inTransaction {
         val state = dao.syncState() ?: AppSyncStateRecord()
-        if (state.orphansResolved) {
+        if (!state.orphansResolved && restoredUserId != null) {
+            dao.adoptLessonCompletions(restoredUserId)
+            dao.adoptReviewGrades(restoredUserId)
+        } else {
             dao.deleteOwnerlessLessonCompletions()
             dao.deleteOwnerlessReviewGrades()
-        } else {
-            dao.adoptLessonCompletions(userId)
-            dao.adoptReviewGrades(userId)
-            dao.upsertSyncState(state.copy(orphansResolved = true))
         }
+        if (!state.orphansResolved) dao.upsertSyncState(state.copy(orphansResolved = true))
     }
 
-    override suspend fun clearAll() = inTransaction {
-        dao.clearLessonCompletions()
-        dao.clearReviewGrades()
-        dao.clearCachedDueReviews()
-        dao.clearDeadLetters()
-        dao.clearSyncState()
-        // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
-        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+    override suspend fun clearAccount(userId: String) {
+        inTransaction {
+            dao.clearLessonCompletionsOf(userId)
+            dao.clearReviewGradesOf(userId)
+            dao.clearDeadLettersOf(userId)
+            dao.clearCachedDueReviews()
+            dao.clearSyncState()
+            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+        }
+        runCatching { onCleared() }
+    }
+
+    override suspend fun clearAll() {
+        inTransaction {
+            dao.clearLessonCompletions()
+            dao.clearReviewGrades()
+            dao.clearCachedDueReviews()
+            dao.clearDeadLetters()
+            dao.clearSyncState()
+            // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
+            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+        }
+        runCatching { onCleared() }
     }
 
     override suspend fun applySyncResult(result: SyncResult, nowMillis: Long) = inTransaction {
@@ -143,14 +169,17 @@ class RoomSyncQueueStore(
     override suspend fun lastKnownProgress() = dao.syncState()?.progress()
     override val progress: Flow<LessonCompletionProgress?> get() = dao.syncStateFlow().map { it?.progress() }
     override suspend fun updateLastKnownProgress(progress: LessonCompletionProgress) {
-        val current = dao.syncState() ?: AppSyncStateRecord()
-        dao.upsertSyncState(
-            current.copy(lastSyncedAt = now(), progressJson = ContentJson.json.encodeToString(LessonCompletionProgress.serializer(), progress)),
-        )
+        // Read, copy, write in one transaction: a concurrent write to another column (orphansResolved) must not be undone.
+        inTransaction {
+            val current = dao.syncState() ?: AppSyncStateRecord()
+            dao.upsertSyncState(
+                current.copy(lastSyncedAt = now(), progressJson = ContentJson.json.encodeToString(LessonCompletionProgress.serializer(), progress)),
+            )
+        }
         runCatching { onProgressUpdated(progress) }
     }
     override suspend fun lastSyncedAt() = dao.syncState()?.lastSyncedAt
-    override suspend fun markSyncedNow() {
+    override suspend fun markSyncedNow() = inTransaction {
         val current = dao.syncState() ?: AppSyncStateRecord()
         dao.upsertSyncState(current.copy(lastSyncedAt = now()))
     }

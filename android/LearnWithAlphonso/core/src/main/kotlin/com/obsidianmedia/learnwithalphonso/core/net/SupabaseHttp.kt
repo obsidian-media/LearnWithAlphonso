@@ -45,6 +45,13 @@ class SupabaseHttp(
     val json: Json = ContentJson.json
     private val client = HttpClient(engine) { expectSuccess = false }
 
+    /**
+     * Releases this client. Only the HttpClient is closed, never the engine it was given: the engine is shared by the whole
+     * app, and a client left open stays a child of the engine's job for ever. For a client made for one piece of work
+     * (a sync pass) and dropped afterwards.
+     */
+    fun close() = client.close()
+
     suspend fun rest(
         method: HttpMethod,
         table: String,
