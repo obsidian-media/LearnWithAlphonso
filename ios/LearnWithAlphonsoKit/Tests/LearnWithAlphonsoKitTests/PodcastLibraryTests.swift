@@ -59,8 +59,8 @@ final class PodcastLibraryTests: XCTestCase {
 
     func testSearchResultsAreLimitedToVisibleFolders() {
         let url = URL(string: "https://example.test/a.mp3")!
-        let inFrench = PodcastEpisode(id: "1", folderID: "fr-a1", slug: "a", title: "A", description: nil, audioURL: url, durationSeconds: 60, positionSeconds: 0, playbackUpdatedAt: nil, aiNarrated: false)
-        let inEnglish = PodcastEpisode(id: "2", folderID: "en-a1", slug: "b", title: "B", description: nil, audioURL: url, durationSeconds: 60, positionSeconds: 0, playbackUpdatedAt: nil, aiNarrated: false)
+        let inFrench = PodcastEpisode(id: "1", folderID: "fr-a1", slug: "a", title: "A", description: nil, audioURL: url, durationSeconds: 60, positionSeconds: 0, playbackUpdatedAt: nil, aiNarrated: false, course: nil)
+        let inEnglish = PodcastEpisode(id: "2", folderID: "en-a1", slug: "b", title: "B", description: nil, audioURL: url, durationSeconds: 60, positionSeconds: 0, playbackUpdatedAt: nil, aiNarrated: false, course: nil)
         let visible = PodcastLibrary.visibleFolders(tree, publishedFolderIDs: ["en-a1", "fr-a1"], courseCode: "en")
         XCTAssertEqual(PodcastLibrary.episodes([inFrench, inEnglish], inFolders: visible).map(\.id), ["2"])
     }

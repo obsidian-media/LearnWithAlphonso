@@ -127,5 +127,6 @@ describe("a transcript word is saved under the episode's course", () => {
     fetchTranscript.mockResolvedValue("Bonjour tout le monde.");
     await openTranscript("fr");
     expect((await tapAndSave("Bonjour")).course).toBe("fr");
+    expect(listFolders).not.toHaveBeenCalled();
   });
 });

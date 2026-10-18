@@ -85,7 +85,7 @@ public struct PodcastEpisode: Sendable, Equatable, Identifiable {
         positionSeconds: Int,
         playbackUpdatedAt: String?,
         aiNarrated: Bool,
-        course: String? = nil
+        course: String?
     ) {
         self.id = id
         self.folderID = folderID

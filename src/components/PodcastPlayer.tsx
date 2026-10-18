@@ -49,8 +49,11 @@ export function PodcastPlayer() {
     void (async () => {
       try {
         const { fetchTranscript, listFolders } = await import("../lib/podcast.functions");
-        const folders = await listFolders().catch(() => null);
-        const text = await fetchTranscript({ data: { episodeId } });
+        // In parallel, and the folder read is skipped when the episode carries its own course.
+        const [folders, text] = await Promise.all([
+          ownCourse ? null : listFolders().catch(() => null),
+          fetchTranscript({ data: { episodeId } }),
+        ]);
         if (!cancelled) {
           setEpisodeCourse(
             transcriptSaveCourse(folders ?? [], folderId ?? "", activeCourse, ownCourse),

@@ -193,14 +193,21 @@ struct PodcastMiniBar: View {
     private func loadTranscript(episode: PodcastEpisode) async {
         guard showTranscript, let client = makePodcastClient(session: session) else { return }
         isLoadingTranscript = true
-        let folders = (try? await client.fetchFolders()) ?? []
+        // Both reads start together; the folder read is skipped when the episode carries its own course.
+        async let fetchedTranscript = try? await client.fetchTranscript(episodeID: episode.id)
+        var folders: [PodcastFolder] = []
+        if episode.course == nil {
+            folders = (try? await client.fetchFolders()) ?? []
+        }
+        let text = (await fetchedTranscript) ?? nil
+        guard !Task.isCancelled else { return }
         transcriptCourse = PodcastLibrary.transcriptSaveCourse(
             episodeCourse: episode.course,
             folderID: episode.folderID,
             folders: folders,
             activeCourseCode: ActiveCoursePreference.load(for: session.userID, from: .standard).wireCode
         )
-        transcript = (try? await client.fetchTranscript(episodeID: episode.id)) ?? nil
+        transcript = text
         isLoadingTranscript = false
     }
 
