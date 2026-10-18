@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
 
 test("landing page loads and links to sign-in", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/Learn with Alphonso/);
+  await expect(page).toHaveTitle(/Learn with Alphonso/i);
   // Not pinning the exact hero sentence -- see §0.1d/§0.1-f in
   // docs/BACKLOG.md: a guard asserting one exact copy string is a guard
   // against the string being *changed*, not against it being wrong, which
