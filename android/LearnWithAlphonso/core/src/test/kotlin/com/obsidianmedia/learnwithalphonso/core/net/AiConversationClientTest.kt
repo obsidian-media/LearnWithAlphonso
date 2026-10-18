@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import io.ktor.client.plugins.HttpTimeoutCapability
 import com.obsidianmedia.learnwithalphonso.core.logic.BillingPeriodUnit
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
@@ -268,5 +269,25 @@ class AiConversationClientTest {
             val e = runCatching { c.defineWord("tea", "I like tea.", "en") }.exceptionOrNull() as SavedWordException
             assertEquals(SavedWordError.UNAVAILABLE, e.error, body)
         }
+    }
+
+    @Test
+    fun `defineWord asks for a 60 second timeout, and other calls keep the client's default`() = runTest {
+        val timeouts = ArrayList<Pair<String, Long?>>()
+        val engine = MockEngine { req ->
+            timeouts.add(req.url.encodedPath to req.getCapabilityOrNull(HttpTimeoutCapability)?.requestTimeoutMillis)
+            respond(if (req.url.encodedPath.endsWith("define-word")) savedBody.toByteArray() else """{"content":"hi"}""".toByteArray(), HttpStatusCode.OK)
+        }
+        val c = AiConversationClient(ApiHttp("https://learn.alphonsoecosystem.app", { "tok" }, engine))
+        c.defineWord("tea", "I like tea.", "en")
+        c.chat(listOf(ChatMessage("user", "hi")))
+        assertEquals(listOf("/api/define-word" to 60_000L, "/api/chat" to null), timeouts)
+    }
+
+    @Test
+    fun `defineWord does not take the string true for a boolean`() = runTest {
+        val c = AiConversationClient(http(ArrayList()) { """{"alreadySaved":"true","word":"tea","sentence":"I like tea.","explanation":"x"}""".toByteArray() to HttpStatusCode.OK })
+        val e = runCatching { c.defineWord("tea", "I like tea.", "en") }.exceptionOrNull() as SavedWordException
+        assertEquals(SavedWordError.UNAVAILABLE, e.error)
     }
 }

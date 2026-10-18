@@ -222,8 +222,7 @@ fun ExplanationBlock(isCorrect: Boolean, explanation: String, modifier: Modifier
     val onSave = LocalSaveWordHandler.current
     if (isCorrect) {
         if (saveCourse != null && onSave != null) {
-            // Tappable words: no merged label (it would hide the links). The choice buttons already say which answer was correct.
-            TappableText(explanation, saveCourse, onSave, modifier = modifier, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft)
+            TappableText(explanation, saveCourse, onSave, modifier = modifier, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft, accessibilityPrefix = "Correct.")
         } else {
             Text(explanation, modifier = modifier.semantics { contentDescription = "Correct. $explanation" }, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft)
         }

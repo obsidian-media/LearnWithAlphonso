@@ -67,6 +67,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
 import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
+import com.obsidianmedia.learnwithalphonso.ui.ai.accessibilityActions
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascot
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -238,13 +239,13 @@ private fun HectorConversation(container: AppContainer) {
                         ReportableAiMessage(
                             enabled = !isUser, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
-                        ) { reportModifier ->
+                        ) { reportModifier, reportActions ->
                             val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
                             // Hector's replies are in the language being practised, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
-                                TappableText(turn.content, vm.course.code, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                                TappableText(turn.content, vm.course.code, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
                             } else {
-                                Text(turn.content, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
+                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
                             }
                         }
                     }

@@ -1,7 +1,5 @@
 package com.obsidianmedia.learnwithalphonso.ui.word
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
@@ -10,6 +8,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordRules
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,12 +33,14 @@ sealed interface SaveWordPhase {
  * now, not only at review. Port of SaveWordSheet.save() in SaveWordSheet.swift. Every failure is a message in the sheet;
  * nothing here blocks the screen underneath.
  */
-class SaveWordViewModel(
+class SaveWordFlow(
     val request: SaveWordRequest,
     private val define: suspend (word: String, sentence: String, course: String) -> SavedWordResult,
     private val consent: AiConsentStore,
     private val hasSession: () -> Boolean,
-) : ViewModel() {
+    /** The sheet's own scope: the flow lives and dies with the sheet, never in an Activity-wide store (see [SaveWordTaps]). */
+    private val scope: CoroutineScope,
+) {
     private val _phase = MutableStateFlow<SaveWordPhase>(SaveWordPhase.Idle)
     val phase: StateFlow<SaveWordPhase> = _phase.asStateFlow()
 
@@ -50,7 +51,7 @@ class SaveWordViewModel(
         // second tap during the consent read is blocked too.
         if (_phase.value == SaveWordPhase.Saving) return DONE
         _phase.value = SaveWordPhase.Saving
-        return viewModelScope.launch { run() }
+        return scope.launch { run() }
     }
 
     /** The learner chose "Not now" on the consent choice: back to the Save button, nothing was sent. */

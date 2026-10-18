@@ -10,6 +10,9 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -17,7 +20,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 
-class SaveWordViewModelTest {
+class SaveWordFlowTest {
     @get:Rule val main = MainDispatcherRule()
 
     private class Backend(var granted: Boolean, var fails: Boolean = false) : AiConsentBackend {
@@ -44,9 +47,9 @@ class SaveWordViewModelTest {
         hasSession: Boolean = true,
         calls: Calls = Calls(),
         define: suspend () -> SavedWordResult = { saved },
-    ): Triple<SaveWordViewModel, Backend, Calls> {
+    ): Triple<SaveWordFlow, Backend, Calls> {
         val store = AiConsentStore(backend, Cache())
-        val v = SaveWordViewModel(request, { w, s, c -> calls.seen.add(Triple(w, s, c)); define() }, store, { hasSession })
+        val v = SaveWordFlow(request, { w, s, c -> calls.seen.add(Triple(w, s, c)); define() }, store, { hasSession }, CoroutineScope(SupervisorJob() + Dispatchers.Main))
         return Triple(v, backend, calls)
     }
 
@@ -72,7 +75,7 @@ class SaveWordViewModelTest {
         val backend = Backend(granted = false)
         val store = AiConsentStore(backend, Cache())
         val calls = Calls()
-        val v = SaveWordViewModel(request, { w, s, c -> calls.seen.add(Triple(w, s, c)); saved }, store, { true })
+        val v = SaveWordFlow(request, { w, s, c -> calls.seen.add(Triple(w, s, c)); saved }, store, { true }, CoroutineScope(SupervisorJob() + Dispatchers.Main))
         v.save().join()
         assertEquals(SaveWordPhase.NeedsConsent, v.phase.value)
         assertTrue("nothing left the device", calls.seen.isEmpty())

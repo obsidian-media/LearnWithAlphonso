@@ -293,4 +293,18 @@ class PodcastPlayerMachineTest {
         assertEquals(PodcastDownloadFailure.Offline, PodcastDownloadValidation.classify(refused, isOnline = false))
         assertEquals(PodcastDownloadFailure.Network, PodcastDownloadValidation.classify(UnknownHostException("dns"), isOnline = true))
     }
+
+    @Test
+    fun `an episode is in the course of its root folder, English when the root has none, and unknown when it cannot be placed`() {
+        val folders = listOf(
+            folder("fr", null, "fr"), folder("fr-a", "fr"), folder("fr-a-1", "fr-a"),
+            folder("any", null), folder("any-a", "any"),
+        )
+        assertEquals("fr", PodcastLibrary.courseOf("fr-a-1", folders))
+        assertEquals("fr", PodcastLibrary.courseOf("fr", folders))
+        assertEquals("en", PodcastLibrary.courseOf("any-a", folders), "a root with no course is shown to every course, and its episodes are English")
+        assertNull(PodcastLibrary.courseOf("missing", folders), "a folder that is not loaded is not guessed")
+        assertNull(PodcastLibrary.courseOf("fr-a", folders.filterNot { it.id == "fr" }), "a parent that is not loaded is not guessed")
+        assertNull(PodcastLibrary.courseOf("a", listOf(folder("a", "b"), folder("b", "a"))), "a parent cycle")
+    }
 }

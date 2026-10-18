@@ -275,6 +275,8 @@ fun PodcastMiniBar(container: AppContainer) {
     var showTranscript by remember { mutableStateOf(false) }
     var transcript by remember(episode.id) { mutableStateOf<String?>(null) }
     var loadingTranscript by remember(episode.id) { mutableStateOf(false) }
+    // The language of the episode's text: its ROOT folder's course. Unknown (folders not readable) means no saving rather than a guess.
+    var transcriptCourse by remember(episode.id) { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxWidth().background(palette.parchment)) {
         HorizontalDivider(color = palette.hairline)
@@ -311,6 +313,7 @@ fun PodcastMiniBar(container: AppContainer) {
                 showTranscript = true
                 if (transcript == null && !loadingTranscript) scope.launch {
                     loadingTranscript = true
+                    transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
                     transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
                     loadingTranscript = false
                 }
@@ -329,12 +332,12 @@ fun PodcastMiniBar(container: AppContainer) {
                     loadingTranscript -> CircularProgressIndicator(color = palette.moss)
                     paragraphs.isEmpty() -> Text("This episode doesn't have a transcript yet.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
                     else -> {
-                        SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
-                        // Episodes are English (the podcast models carry no language field), so a tapped word is an English word.
-                        // If episodes ever gain a language, derive the course from it and route it through SavedWordPolicy.
                         val saveWord = LocalSaveWordHandler.current
+                        val course = transcriptCourse
+                        if (course != null && saveWord != null) SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
                         paragraphs.forEach { paragraph ->
-                            if (saveWord != null) TappableText(paragraph, "en", saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            // A transcript is in the language of its episode's root folder (PodcastLibrary.courseOf).
+                            if (course != null && saveWord != null) TappableText(paragraph, course, saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                             else Text(paragraph, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                         }
                     }

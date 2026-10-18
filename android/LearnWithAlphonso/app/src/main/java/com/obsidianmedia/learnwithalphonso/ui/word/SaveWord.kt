@@ -3,14 +3,17 @@ package com.obsidianmedia.learnwithalphonso.ui.word
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,8 +27,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,6 +39,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -41,7 +50,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
@@ -60,32 +68,37 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
  */
 val LocalSaveWordHandler = staticCompositionLocalOf<((SaveWordRequest) -> Unit)?> { null }
 
-private data class OpenRequest(val id: Int, val request: SaveWordRequest)
-
-private val OpenRequestSaver = Saver<OpenRequest?, List<Any>>(
+private val OpenRequestSaver = Saver<OpenSaveRequest?, List<String>>(
     save = { it?.let { r -> listOf(r.id, r.request.word, r.request.sentence, r.request.course) } ?: emptyList() },
-    restore = { if (it.isEmpty()) null else OpenRequest(it[0] as Int, SaveWordRequest(it[1] as String, it[2] as String, it[3] as String)) },
+    restore = { if (it.isEmpty()) null else OpenSaveRequest(it[0], SaveWordRequest(it[1], it[2], it[3])) },
 )
 
 /**
- * Provides [LocalSaveWordHandler] to [content] and shows the save sheet for the word the learner tapped. A fresh id per
- * tap means tapping the same word twice shows the sheet again.
+ * Provides [LocalSaveWordHandler] to [content] and shows the save sheet for the word the learner tapped. Every tap gets a
+ * fresh id ([SaveWordTaps]) and the sheet's state is keyed by it and lives in the composition (not in an Activity-wide
+ * store), so tapping the same word twice shows the sheet again, and a sheet opened later in the same screen never
+ * shows an earlier word.
  */
 @Composable
 fun SaveWordHost(container: AppContainer, content: @Composable () -> Unit) {
-    var open by rememberSaveable(stateSaver = OpenRequestSaver) { mutableStateOf<OpenRequest?>(null) }
-    var nextId by rememberSaveable { mutableStateOf(0) }
-    CompositionLocalProvider(LocalSaveWordHandler provides { request -> nextId += 1; open = OpenRequest(nextId, request) }) {
+    val taps = remember { SaveWordTaps() }
+    var open by rememberSaveable(stateSaver = OpenRequestSaver) { mutableStateOf<OpenSaveRequest?>(null) }
+    CompositionLocalProvider(LocalSaveWordHandler provides { request -> open = taps.open(request) }) {
         content()
     }
-    open?.let { SaveWordSheet(container, it.id, it.request, onDone = { open = null }) }
+    open?.let { current -> key(current.id) { SaveWordSheet(container, current.request, onDone = { open = null }) } }
 }
 
 /**
  * Text whose words can be tapped (TappableText.swift). Built as ONE `Text` from an AnnotatedString in which every word the
- * server will accept is a link, so normal wrapping, font scaling and selection keep working, and TalkBack lists the
- * words as links. The saved sentence is the one the word was TAPPED in, so a word that occurs twice does not save the
- * wrong context. Links are styled as plain text; a hint line on the screen tells the learner words are tappable.
+ * server will accept is a link, so normal wrapping, font scaling and selection keep working. The saved sentence is the
+ * one the word was TAPPED in, so a word that occurs twice does not save the wrong context. Links are styled as plain
+ * text; a hint line on the screen tells the learner words are tappable.
+ *
+ * For TalkBack the text is ONE element that reads as written (a long reply must not become word-by-word swipe stops), and
+ * the words are reached through a custom action, "Save a word", which lists them (the counterpart of iOS's rotor). Any
+ * [extraActions] (for example "Report this response") are kept beside it, and [accessibilityPrefix] ("Correct.") is
+ * announced first.
  */
 @Composable
 fun TappableText(
@@ -95,11 +108,14 @@ fun TappableText(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.bodyLarge,
     color: Color = AlphonsoColor.palette.ink,
+    extraActions: List<CustomAccessibilityAction> = emptyList(),
+    accessibilityPrefix: String? = null,
 ) {
     val save by rememberUpdatedState(onSave)
+    val segments = remember(text) { WordSegmenter.segments(text) }
     val annotated = remember(text, course, color) {
         buildAnnotatedString {
-            for (segment in WordSegmenter.segments(text)) {
+            for (segment in segments) {
                 if (segment.isWord && WordSegmenter.isSavable(segment.text)) {
                     val link = LinkAnnotation.Clickable(
                         tag = "word:${segment.start}",
@@ -112,7 +128,38 @@ fun TappableText(
             }
         }
     }
-    Text(annotated, modifier = modifier, style = style, color = color)
+    var showWords by rememberSaveable { mutableStateOf(false) }
+    val spoken = (accessibilityPrefix?.let { "$it " } ?: "") + segments.joinToString("") { it.text }
+    Text(
+        annotated,
+        modifier = modifier.clearAndSetSemantics {
+            contentDescription = spoken
+            customActions = extraActions + CustomAccessibilityAction(SavedWordCopy.PICK_ACTION) { showWords = true; true }
+        },
+        style = style, color = color,
+    )
+    if (showWords) {
+        // One entry per distinct word, in reading order, each saving the sentence of its first occurrence.
+        val words = remember(segments) {
+            segments.filter { it.isWord && WordSegmenter.isSavable(it.text) }.distinctBy { it.text.lowercase() }
+        }
+        AlertDialog(
+            onDismissRequest = { showWords = false },
+            title = { Text(SavedWordCopy.PICK_TITLE) },
+            text = {
+                LazyColumn(Modifier.heightIn(max = 360.dp)) {
+                    items(words, key = { it.start }) { segment ->
+                        TextButton(
+                            onClick = { showWords = false; save(WordSegmenter.requestFor(text, segment, course)) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(segment.text, color = AlphonsoColor.palette.ink) }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { showWords = false }) { Text("Cancel", color = AlphonsoColor.palette.inkSoft) } },
+        )
+    }
 }
 
 /** "Tap a word to save it." under a lesson explanation, shown only the first few times, then gone (SaveWordHintLine). */
@@ -135,30 +182,34 @@ private const val HINT_KEY = "savedWordHintShownCount"
 /** Shows a tapped word and its sentence, saves it on demand, then shows the meaning. Never blocks the screen underneath: "Done" always works. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SaveWordSheet(container: AppContainer, id: Int, request: SaveWordRequest, onDone: () -> Unit) {
+fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () -> Unit) {
     val palette = AlphonsoColor.palette
-    val vm: SaveWordViewModel = viewModel(key = "save-word-$id") {
-        SaveWordViewModel(
+    // The flow belongs to this sheet's composition: it ends with the sheet (and its request is cancelled), and the next
+    // sheet, even for the same word, starts clean.
+    val scope = rememberCoroutineScope()
+    val flow = remember {
+        SaveWordFlow(
             request,
             { word, sentence, course -> container.aiClient.defineWord(word, sentence, course) },
             container.aiConsent,
             { container.session.currentAccessToken() != null },
+            scope,
         )
     }
-    val phase by vm.phase.collectAsState()
+    val phase by flow.phase.collectAsState()
     ModalBottomSheet(onDismissRequest = onDone, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false), containerColor = palette.surface) {
         // Scrollable: the sentence can be 300 characters and fonts scale, so the content can exceed the sheet. Done stays pinned below.
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(vm.request.word, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
-                Text("“${vm.request.sentence}”", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
-                SaveWordContent(phase, onSave = { vm.save() })
+                Text(flow.request.word, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
+                Text("“${flow.request.sentence}”", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+                SaveWordContent(phase, onSave = { flow.save() })
             }
             TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text(SavedWordCopy.DONE, color = palette.inkSoft) }
         }
     }
     if (phase == SaveWordPhase.NeedsConsent) {
-        AiConsentDialog(container.aiConsent, onNotNow = vm::declineConsent, onAllowed = { vm.save() })
+        AiConsentDialog(container.aiConsent, onNotNow = flow::declineConsent, onAllowed = { flow.save() })
     }
 }
 
@@ -187,5 +238,4 @@ private fun SaveWordContent(phase: SaveWordPhase, onSave: () -> Unit) {
             if (phase.error.isRetryable) AlphonsoSecondaryButton(SavedWordCopy.TRY_AGAIN, onClick = onSave, fullWidth = false)
         }
     }
-    Spacer(Modifier.height(0.dp))
 }

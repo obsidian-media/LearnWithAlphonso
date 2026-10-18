@@ -98,12 +98,14 @@ class AiConversationClient(private val http: ApiHttp) {
      * caller can say something specific; a transport failure (offline) propagates as the exception it is.
      */
     suspend fun defineWord(word: String, sentence: String, course: String): SavedWordResult {
-        val response = http.post("api/define-word", buildJsonObject { put("word", word); put("sentence", sentence); put("course", course) })
+        // A model call: allow it as long as the iOS app does (60 s) rather than the shared client's short default.
+        val response = http.post("api/define-word", buildJsonObject { put("word", word); put("sentence", sentence); put("course", course) }, timeoutMillis = DEFINE_WORD_TIMEOUT_MS)
         val text = response.bodyAsText()
         if (response.status.value !in 200..299) throw SavedWordException(SavedWordError.from(response.status.value, ServerErrorBody.parse(text).code))
         val obj = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: throw SavedWordException(SavedWordError.UNAVAILABLE)
         // A 200 that is not the contract's shape is not a save: showing "Saved" for it would be a lie.
-        val alreadySaved = obj["alreadySaved"]?.let { runCatching { it.jsonPrimitive.booleanOrNull }.getOrNull() }
+        // A real JSON boolean only: the string "true" is not one.
+        val alreadySaved = obj["alreadySaved"]?.let { runCatching { it.jsonPrimitive }.getOrNull() }?.takeIf { !it.isString }?.booleanOrNull
         val savedWord = obj.str("word")
         val savedSentence = obj.str("sentence")
         val explanation = obj.str("explanation")
@@ -149,6 +151,7 @@ class AiConversationClient(private val http: ApiHttp) {
 
     companion object {
         const val GENERATE_TIMEOUT_MS = 45_000L
+        const val DEFINE_WORD_TIMEOUT_MS = 60_000L
 
         fun extensionFor(mimeType: String): String = when (mimeType) {
             "audio/m4a", "audio/mp4", "audio/x-m4a" -> "m4a"

@@ -45,6 +45,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
 import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
+import com.obsidianmedia.learnwithalphonso.ui.ai.accessibilityActions
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
@@ -91,13 +92,13 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
             if (isUser) Spacer(Modifier.width(40.dp))
-            ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier ->
+            ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier, reportActions ->
                 val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
                 // The partner speaks the course's language, so every word of a reply is a word of the course.
                 if (!isUser && saveWord != null) {
-                    TappableText(turn.content, course, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                    TappableText(turn.content, course, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
                 } else {
-                    Text(turn.content, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink)
+                    Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink)
                 }
             }
             if (!isUser) Spacer(Modifier.width(40.dp))

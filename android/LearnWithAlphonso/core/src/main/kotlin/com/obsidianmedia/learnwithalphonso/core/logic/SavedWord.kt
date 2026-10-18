@@ -70,6 +70,10 @@ object SavedWordCopy {
     const val HECTOR_HINT = "Tap any word in Hector's reply to save it."
     const val REPLY_HINT = "Tap any word in a reply to save it."
     const val TRANSCRIPT_HINT = "Tap any word to save it."
+
+    /** TalkBack reads a reply as one element; this action lists its words. */
+    const val PICK_ACTION = "Save a word"
+    const val PICK_TITLE = "Choose a word to save"
 }
 
 /**
