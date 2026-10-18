@@ -87,10 +87,10 @@ class FakePort : PlayerPort {
     override fun durationMillis() = duration
     override fun release() { calls.add("release") }
     override fun stop() {
-        // Stops and clears the item, as Media3's stop() + clearMediaItems(): nothing is left to play.
+        // Stops and clears the item, as Media3's stop() + clearMediaItems(): nothing is left to play. playWhenReady is NOT
+        // changed (Media3 leaves it as it was), so a later press of Play still wants sound, from whatever loads next.
         calls.add("stop")
         loaded = false
-        playWhenReady = false
         playing = false
     }
 
@@ -662,6 +662,53 @@ class PodcastPlayerTest {
         assertFalse(port.playing)
         assertNull(p.state.value.episode)
         assertFalse(p.state.value.isPlaying)
+    }
+
+    @Test
+    fun `an offline start of another episode clears the one that was loaded, so a notification Play sounds nothing and saves nothing for it`() = runBlocking {
+        var online = true
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port, isOnline = { online })
+        p.play(episode("a"))
+        assertTrue(p.state.value.isPlaying)
+        online = false
+        p.play(episode("b")) // streamed, not downloaded
+        assertEquals(PodcastPlaybackFailure.OFFLINE_NOT_DOWNLOADED, p.state.value.failure)
+        assertEquals("a was stopped and cleared, not just paused", "stop", port.calls.last())
+        val savesBefore = saves(s).size
+        port.position = 42_000
+        port.externalPlay() // the notification still shows a, and its Play button is pressed
+        assertFalse("nothing is loaded, so nothing plays", port.playing)
+        assertEquals("b is still the episode, still failed", "b", p.state.value.episode?.id)
+        assertEquals(PodcastPlayerPhase.Failed(PodcastPlaybackFailure.OFFLINE_NOT_DOWNLOADED), p.state.value.phase)
+        kotlinx.coroutines.delay(150)
+        assertEquals("and no save of a's position went into b's row", savesBefore, saves(s).size)
+    }
+
+    @Test
+    fun `a stall while playback is suppressed does not start the wait for sound`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port, timeoutMillis = 100)
+        p.play(episode())
+        port.suppress()
+        port.onStalled() // the machine moves to Buffering and asks for a stall timer
+        kotlinx.coroutines.delay(400)
+        assertNull("no timer runs while suppressed", p.state.value.failure)
+        assertEquals(PodcastPlayerPhase.Buffering, p.state.value.phase)
+    }
+
+    @Test
+    fun `closing forgets the suppression, so the next episode's wait for sound runs`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port, timeoutMillis = 100)
+        p.play(episode("a"))
+        port.suppress()
+        p.close()
+        port.confirmPlay = false
+        p.play(episode("b"))
+        awaitTrue("the load timer ran for b") { p.state.value.failure != null }
+        assertEquals(PodcastPlaybackFailure.NETWORK, p.state.value.failure)
     }
 }
 

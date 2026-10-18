@@ -49,6 +49,7 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Switch the course on the Learn tab to French, then open Listen: only French (and course-less) folders show; a course with no episodes says "No French episodes yet" with Refresh.
 - [ ] Download a file that the server answers with a JSON error (ask the owner for a missing path): the download fails with "This episode isn't available to download right now." and nothing is stored.
 - [ ] Close the player (the X) while an episode plays or is paused: the notification disappears, and a headset or lock-screen play button does not start the closed episode.
+- [ ] Play a downloaded episode, switch airplane mode on, then tap an episode that is not downloaded: the bar says "Download this episode to listen offline." and the first episode is gone from the notification; pressing Play in the notification (or on a headset) plays nothing and saves nothing.
 - [ ] While an episode is still loading (slow connection), take a phone call and hang up: no "Couldn't reach the server" appears for the time the call took; the episode starts or fails normally afterwards.
 - [ ] Make an episode fail (airplane mode, tap a streamed episode) and press Play in the notification once the network is back: the bar leaves the error and plays, and shows the error again only if it fails again.
 - [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.

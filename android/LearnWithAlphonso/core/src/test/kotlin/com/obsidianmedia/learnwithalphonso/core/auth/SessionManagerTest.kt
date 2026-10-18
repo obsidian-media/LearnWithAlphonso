@@ -200,4 +200,24 @@ class SessionManagerTest {
         assertEquals(AuthState.SignedOut, m.state.value)
         assertNull(store.session, "and its session is not written back over the sign-out")
     }
+
+    @Test
+    fun `a rejected refresh after another account signed in does not sign out the new account`() = runTest {
+        lateinit var m: SessionManager
+        val engine = MockEngine { req ->
+            when {
+                req.url.encodedQuery.contains("grant_type=password") ->
+                    respond("""{"access_token":"b-at","refresh_token":"b-rt","expires_in":3600,"user":{"id":"u2"}}""", HttpStatusCode.OK)
+                else -> {
+                    // While u1's refresh is on the network, u2 signs in; then the server rejects u1's refresh token.
+                    m.signInWithPassword("b@example.com", "pw")
+                    respond("""{"error":"invalid_grant"}""", HttpStatusCode.BadRequest)
+                }
+            }
+        }
+        m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }, MemoryStore(valid())) { now }
+        m.restore()
+        assertNull(m.freshAccessToken(force = true), "u1's refresh failed")
+        assertEquals("u2", (m.state.value as AuthState.SignedIn).session.userId, "u2 is still signed in")
+    }
 }

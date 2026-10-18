@@ -212,9 +212,13 @@ class PodcastPlayer(
     private fun startCurrent() {
         timeoutJob?.cancel()
         probing = false
+        // A new start is a fresh load: whether the player is still suppressed is reported again if it is.
+        suppressed = false
         dispatch(PodcastPlayerEvent.Start(isRemote = !sourceIsLocal, isOnline = isOnline()))
-        // An offline start never reaches the player: stop whatever was loaded before.
-        if (machine.phase is PodcastPlayerPhase.Failed) port.pause()
+        // An offline start never reaches the player, so whatever was loaded before is still in it. Stop AND clear it (as close()
+        // does): a paused episode A would stay in the notification, and its Play would sound A's audio under B's bar and save
+        // A's position into B's row.
+        if (machine.phase is PodcastPlayerPhase.Failed) port.stop()
     }
 
     fun toggle() {
@@ -256,6 +260,7 @@ class PodcastPlayer(
         tracker.reset()
         timeoutJob?.cancel()
         probing = false
+        suppressed = false
         machine.send(PodcastPlayerEvent.Closed)
         source = null
         _state.value = PodcastPlayerState()
@@ -275,6 +280,7 @@ class PodcastPlayer(
         flushPlayEvent(episode)
         timeoutJob?.cancel()
         probing = false
+        suppressed = false
         // Idle first: our own stop is echoed back by the player as a pause cause, which must not save a second time.
         machine.send(PodcastPlayerEvent.Closed)
         // Stop and clear the loaded item, as sign-out does: a paused item would still sit in the notification and a headset or
