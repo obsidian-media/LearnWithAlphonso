@@ -229,6 +229,15 @@ describe("Profile page", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/auth", replace: true });
   });
 
+  it("offers a visible Help and feedback link to the support page", async () => {
+    renderPage();
+    await screen.findByLabelText("Display name");
+    expect(screen.getByRole("link", { name: "Help and feedback" })).toHaveAttribute(
+      "href",
+      "/support",
+    );
+  });
+
   it("downloads a JSON export of the user's data", async () => {
     exportMyData.mockResolvedValue({
       exported_at: "2026-09-19T00:00:00.000Z",

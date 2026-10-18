@@ -12,11 +12,17 @@
  *   asc-release-ops.ts testflight 50 [--apply]        # external TestFlight readiness for that build; --apply
  *                                                     # writes the beta description, feedback email, links
  *                                                     # and "What to Test". Never adds a build to a group.
+ *   asc-release-ops.ts beta-status 51                  # read-only: the build's external state, its Beta App
+ *                                                     # Review submission, and which TestFlight groups hold it
+ *   asc-release-ops.ts submit-beta-review 51 [--apply] # external Beta App Review for that exact build; refuses
+ *                                                     # unless it is READY_FOR_BETA_SUBMISSION with What to Test
+ *                                                     # and review contact set. Read-only without --apply.
  *
  * Env: APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64; for beta-review-info also
  * DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE, REVIEW_DEMO_CODE_URL.
  * Prints no secret: the demo email, the contact details and the code URL are never logged.
- * Nothing here submits anything for review, and nothing adds a build to a TestFlight group.
+ * Nothing here submits an App Store version for review. `submit-beta-review --apply` is the one command that
+ * submits (TestFlight external Beta App Review, one named build); nothing here adds a build to a TestFlight group.
  */
 import { createSign } from "node:crypto";
 import {
@@ -39,6 +45,7 @@ import {
   pickEditableAppInfo,
   pickEditableVersion,
 } from "../src/lib/app-store/editable-version";
+import { betaSubmissionProblems } from "../src/lib/app-store/beta-submission";
 import { LISTING } from "../src/lib/app-store/listing-copy";
 import { parseOpsArgs } from "../src/lib/app-store/ops-args";
 import { buildBetaReviewNotes } from "../src/lib/app-store/review-notes";
@@ -327,6 +334,96 @@ async function submissionCheck(): Promise<void> {
   if (failed > 0) process.exitCode = 1;
 }
 
+/** Read-only: prints exactly what App Store Connect says about one build. Never writes. */
+async function betaStatus(): Promise<void> {
+  const build = findBuild(await listBuilds(), Number(arg));
+  console.log(
+    `build ${build.attributes.version}: processingState=${build.attributes.processingState}, expired=${build.attributes.expired}`,
+  );
+  const detail = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (!detail.ok) throw new Error(`read beta detail failed: ${detail.status}`);
+  const d = dataOf<Resource>(detail).attributes ?? {};
+  console.log(
+    `  buildBetaDetail: internalBuildState=${String(d.internalBuildState)} externalBuildState=${String(d.externalBuildState)} autoNotifyEnabled=${String(d.autoNotifyEnabled)}`,
+  );
+  const sub = await api(`/builds/${build.id}/betaAppReviewSubmission`);
+  const subData = sub.ok ? (sub.json as { data: Resource | null }).data : null;
+  console.log(
+    sub.ok
+      ? subData
+        ? `  betaAppReviewSubmission: betaReviewState=${String(subData.attributes?.betaReviewState)} submittedDate=${String(subData.attributes?.submittedDate)}`
+        : "  betaAppReviewSubmission: none"
+      : `  betaAppReviewSubmission: read failed (${sub.status})`,
+  );
+  const groups = await api(`/apps/${APP_ID}/betaGroups?limit=50`);
+  if (!groups.ok) throw new Error(`read beta groups failed: ${groups.status}`);
+  for (const g of dataOf<Resource[]>(groups)) {
+    const a = g.attributes ?? {};
+    const members = await api(`/betaGroups/${g.id}/builds?limit=200&fields[builds]=version`);
+    const versions = members.ok
+      ? dataOf<{ attributes?: { version?: string } }[]>(members).map((b) => b.attributes?.version)
+      : null;
+    console.log(
+      `  group "${String(a.name)}": ${a.isInternalGroup ? "internal" : "external"}, publicLink=${a.publicLinkEnabled ? "ON" : "off"}, hasAccessToAllBuilds=${String(a.hasAccessToAllBuilds)}, build ${build.attributes.version} in group: ${versions ? (versions.includes(build.attributes.version) ? "YES" : "no") : "unknown (read failed)"}${versions ? `, builds in group: [${versions.join(", ")}]` : ""}`,
+    );
+  }
+}
+
+/** External Beta App Review for one exact build. Read-only unless --apply; refuses anything but READY_FOR_BETA_SUBMISSION. */
+async function submitBetaReview(): Promise<void> {
+  const build = findBuild(await listBuilds(), Number(arg)); // the exact build, never "the latest"
+  const detail = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (!detail.ok) throw new Error(`read beta detail failed: ${detail.status}`);
+  const externalBuildState = dataOf<Resource>(detail).attributes?.externalBuildState as
+    string | undefined;
+  const locs = await api(`/builds/${build.id}/betaBuildLocalizations`);
+  if (!locs.ok) throw new Error(`read What to Test failed: ${locs.status}`);
+  const whatsNew = dataOf<Resource[]>(locs).find((l) => l.attributes?.locale === "en-US")
+    ?.attributes?.whatsNew;
+  const review = await api(`/apps/${APP_ID}/betaAppReviewDetail`);
+  if (!review.ok) throw new Error(`read beta review detail failed: ${review.status}`);
+  const r = dataOf<Resource>(review).attributes ?? {};
+
+  const problems = betaSubmissionProblems({
+    version: build.attributes.version,
+    processingState: build.attributes.processingState,
+    expired: build.attributes.expired,
+    externalBuildState,
+    hasWhatToTest: Boolean(whatsNew),
+    hasBetaReviewContact: Boolean(r.contactEmail && r.contactPhone),
+  });
+  console.log(
+    `build ${build.attributes.version}: ${build.attributes.processingState}, expired=${build.attributes.expired}, external=${String(externalBuildState)}`,
+  );
+  if (problems.length > 0) {
+    for (const p of problems) console.log(`  REFUSED: ${p}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (!APPLY) {
+    console.log("  ready to submit for external Beta App Review (re-run with apply to submit)");
+    return;
+  }
+  const res = await api(`/betaAppReviewSubmissions`, "POST", {
+    data: {
+      type: "betaAppReviewSubmissions",
+      relationships: { build: { data: { type: "builds", id: build.id } } },
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`submit failed: ${res.status} ${JSON.stringify(res.json)}`);
+  }
+  console.log(
+    `  submitted: betaReviewState=${String(dataOf<Resource>(res).attributes?.betaReviewState)}`,
+  );
+  const after = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (after.ok) {
+    console.log(
+      `  external is now: ${String(dataOf<Resource>(after).attributes?.externalBuildState)}`,
+    );
+  }
+}
+
 /** External TestFlight readiness for one build. Writes only the copy, and only with --apply. */
 async function testflight(): Promise<void> {
   const problems = testflightCopyProblems(TESTFLIGHT);
@@ -533,6 +630,10 @@ async function main() {
     await submissionCheck();
   } else if (cmd === "testflight") {
     await testflight();
+  } else if (cmd === "beta-status") {
+    await betaStatus();
+  } else if (cmd === "submit-beta-review") {
+    await submitBetaReview();
   } else {
     console.log("Usage: see the header of this file");
     process.exit(1);
