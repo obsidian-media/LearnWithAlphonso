@@ -235,12 +235,16 @@ economy, lesson-completion trust-boundary checks) **and**, since PR #46
 (2026-09-20), a real behavioral suite for components, hooks, routes, and
 Supabase integration — React Testing Library + `jsdom`
 (`vitest.setup.ts`). Playwright covers E2E + accessibility (axe-core)
-smoke tests in `e2e/*.spec.ts`, scoped to unauthenticated routes (no
-seeded test account exists for CI to sign in with). `ios/LearnWithAlphonsoKit`
+smoke tests in `e2e/*.spec.ts` against unauthenticated routes, plus one
+signed-in flow (`e2e/signed-in.spec.ts`: password sign-in, public-name step,
+first lesson, XP saved) that the `e2e-signed-in` CI job runs against a local
+Supabase stack (`supabase start`, CLI dev keys, a localhost-only guard,
+`E2E_REQUIRED=1` so it can never pass by skipping). `ios/LearnWithAlphonsoKit`
 has its own XCTest suite (SRS/progress-math/hearts/SyncEngine/weakness-
 detection-helper ports, network client tests via an injected requester
-closure — no real network in tests), 1,040 tests as of 2026-10-16 (CI on main
-after #304). Lint,
+closure — no real network in tests), 1,080 tests as of 2026-10-18 (CI on main
+after #326). Web Vitest: 3,612 tests in 301 files; Android JVM (`android-ci.yml`):
+758 (core 542, app 216, after #327). Lint,
 typecheck, Vitest, Playwright, and the Swift package's tests are all
 wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 `main` (both Swift jobs run on a macOS runner; Vitest runs as a step

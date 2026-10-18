@@ -40,7 +40,7 @@ Every tab is real, and all five plans are merged to `main` (the app arrived on
 owner's side of the release (`OWNER-SETUP.md`: Play account, subscription,
 RevenueCat Android key) and the device checklist below.
 
-## Not yet ported from iOS and web (as of 2026-10-16)
+## Not yet ported from iOS and web (as of 2026-10-18)
 
 Nothing known to be missing from iOS.
 
