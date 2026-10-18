@@ -5,6 +5,9 @@ import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.PROGRESS_JSON
 import com.obsidianmedia.learnwithalphonso.awaitTrue
+import com.obsidianmedia.learnwithalphonso.core.auth.AccountChangedException
+import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CompletableDeferred
@@ -187,24 +190,6 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `signing out clears the queue from the app scope, and the launch before a session is restored does not`() = runBlocking {
-        val ids = MutableStateFlow<String?>(null)
-        var cleared = 0
-        SignOutCleanup(scope(), ids) { cleared++ }
-        delay(100)
-        assertEquals("cold launch: nobody signed in yet", 0, cleared)
-        ids.value = "u1"
-        delay(100)
-        assertEquals(0, cleared)
-        ids.value = null
-        awaitTrue("cleared on sign-out") { cleared == 1 }
-        ids.value = "u2"
-        delay(100) // a StateFlow conflates: let the collector see u2 before the next change
-        ids.value = null
-        awaitTrue("and on the next sign-out") { cleared == 2 }
-    }
-
-    @Test
     fun `a pass that ends after the account changed writes nothing back`() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val s = server(failFirst = 0, hold = gate)
@@ -252,16 +237,6 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `only a real sign-out clears the queue, not the launch before the session is restored`() {
-        val watcher = SignOutWatcher()
-        assertFalse("cold launch: nobody signed in yet", watcher.signedOut(null))
-        assertFalse("the session was restored", watcher.signedOut("u1"))
-        assertTrue("u1 signed out", watcher.signedOut(null))
-        assertFalse("still signed out", watcher.signedOut(null))
-        assertFalse(watcher.signedOut("u2"))
-    }
-
-    @Test
     fun `a progress read that ends after the account changed is not stored under the new account`() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val s = FakeServer { req ->
@@ -278,5 +253,114 @@ class SyncCoordinatorTest {
         pass.await()
         assertNull("nothing from the old account's read is stored", store.syncedAt)
         assertNull(store.lastKnownProgress())
+    }
+
+    @Test
+    fun `signing out clears that account from the app scope, a switch clears the one left, and the launch does not`() = runBlocking {
+        val ids = MutableStateFlow<String?>(null)
+        val cleared = java.util.Collections.synchronizedList(ArrayList<String>())
+        SignOutCleanup(scope(), ids) { cleared.add(it) }
+        delay(100)
+        assertEquals("cold launch: nobody signed in yet", emptyList<String>(), cleared.toList())
+        ids.value = "u1"
+        delay(100)
+        assertEquals(emptyList<String>(), cleared.toList())
+        ids.value = "u2" // straight to another account: u1 ended
+        awaitTrue("u1 cleared on the switch") { cleared.toList() == listOf("u1") }
+        delay(100)
+        ids.value = null
+        awaitTrue("u2 cleared on sign-out") { cleared.toList() == listOf("u1", "u2") }
+    }
+
+    @Test
+    fun `one failing clear does not end the cleanup`() = runBlocking {
+        val ids = MutableStateFlow<String?>("u1")
+        val attempts = java.util.Collections.synchronizedList(ArrayList<String>())
+        SignOutCleanup(scope(), ids) { attempts.add(it); if (it == "u1") throw IllegalStateException("disk full") }
+        delay(100)
+        ids.value = null
+        awaitTrue("first clear attempted") { attempts.toList() == listOf("u1") }
+        delay(100)
+        ids.value = "u2"
+        delay(100)
+        ids.value = null
+        awaitTrue("the next sign-out is still seen") { attempts.toList() == listOf("u1", "u2") }
+    }
+
+    @Test
+    fun `the watcher reports the account that ended, never a launch or a repeat`() {
+        val watcher = SignOutWatcher()
+        assertNull("cold launch: nobody signed in yet", watcher.endedAccount(null))
+        assertNull("the session was restored", watcher.endedAccount("u1"))
+        assertNull("no change", watcher.endedAccount("u1"))
+        assertEquals("u1", watcher.endedAccount(null))
+        assertNull("still signed out", watcher.endedAccount(null))
+        assertNull(watcher.endedAccount("u2"))
+        assertEquals("a straight switch ends the old account", "u2", watcher.endedAccount("u3"))
+    }
+
+    @Test
+    fun `clearing an ended account removes its rows and the caches, not another account's queue`() = runBlocking {
+        val s = server(failFirst = 0)
+        val store = MemorySyncStore().apply {
+            completions.add(row(owner = "u1"))
+            completions.add(PendingLessonCompletion("theirs", 5, emptyList(), "en", now - 500, 50, ownerUserId = "u2"))
+        }
+        val coordinator = SyncCoordinator(store, { s.progressClient }, { "u2" }, { true }, null, { now })
+        coordinator.clearAccount("u1")
+        assertEquals(listOf("u1"), store.clearedAccounts)
+        assertEquals(listOf("theirs"), store.completions.map { it.lessonId })
+    }
+
+    @Test
+    fun `a row with no owner after startup is removed and never sent`() = runBlocking {
+        val s = server(failFirst = 0)
+        val store = MemorySyncStore().apply { completions.add(row(owner = null)) }
+        SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }).triggerSync()
+        assertTrue(store.completions.isEmpty())
+        assertEquals(0, completes(s))
+    }
+
+    @Test
+    fun `each pass gets a client for the account that started it`() = runBlocking {
+        val s = server(failFirst = 0)
+        val store = MemorySyncStore().apply { completions.add(row()) }
+        val asked = java.util.Collections.synchronizedList(ArrayList<String>())
+        SyncCoordinator(store, { userId -> asked.add(userId); s.progressClient }, { "u1" }, { true }, null, { now }).triggerSync()
+        assertEquals(listOf("u1"), asked.toList())
+    }
+
+    /** A client whose token reads and refreshes fail once [user] is not [passUser], as SessionManager.freshAccessTokenFor does. */
+    private fun guarded(s: FakeServer, passUser: String, user: () -> String): ProgressSyncClient {
+        fun token(): String = if (user() != passUser) throw AccountChangedException() else "tok-$passUser"
+        return ProgressSyncClient(SupabaseHttp("https://x.supabase.co", "pk", { token() }, s.engine, refresh = { token() }))
+    }
+
+    @Test
+    fun `a 403 that triggers a re-mint after the account changed sends nothing under the new account`() = runBlocking {
+        var user = "u1"
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("complete-lesson") -> { user = "u2"; json("""{"error":"Invalid or expired lesson session"}""", HttpStatusCode.Forbidden) }
+                else -> json("""{"token":"fresh"}""")
+            }
+        }
+        val store = MemorySyncStore().apply { completions.add(row().copy(sessionToken = "held")) }
+        SyncCoordinator(store, { passUser -> guarded(s, passUser, { user }) }, { user }, { true }, null, { now }).triggerSync()
+        assertEquals("only the request made while u1 was signed in went out", listOf("complete-lesson"), s.seen.map { it.path.substringAfterLast('/') })
+        assertEquals("and the row is untouched", 1, store.completions.size)
+    }
+
+    @Test
+    fun `a 401 refresh after the account changed does not resend the body under the new account`() = runBlocking {
+        var user = "u1"
+        val s = FakeServer { req ->
+            if (req.path.endsWith("complete-lesson")) { user = "u2"; json("""{"error":"jwt expired"}""", HttpStatusCode.Unauthorized) }
+            else json("""{"token":"tok"}""")
+        }
+        val store = MemorySyncStore().apply { completions.add(row().copy(sessionToken = "held")) }
+        SyncCoordinator(store, { passUser -> guarded(s, passUser, { user }) }, { user }, { true }, null, { now }).triggerSync()
+        assertEquals(1, s.seen.size)
+        assertEquals(1, store.completions.size)
     }
 }

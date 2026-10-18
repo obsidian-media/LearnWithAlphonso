@@ -1355,29 +1355,52 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   (`AppContainer` restores the session and calls `resolveOrphanedRows` with the
   restored user, or null, before any pass: the coordinator's `startup` gate holds
   every pass until then), and dropped otherwise, so they can never move to a
-  different account. The engine asks `isCurrentAccount` before every request
-  and stops the pass the moment the account changes, so one account's rows are
-  never sent under another account's token. The read-modify-write of the
-  sync-state row (progress, last-synced time, the orphan flag) runs in a
-  transaction. The sign-out clear runs in the app scope (`SignOutCleanup`), so
-  it happens with no screen composed and cannot be cancelled by one. Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt
-  count and next attempt on both queues, an `orphansResolved` flag, and a
-  `dead_letters` table that records its owner; the newest 50 are kept).
-  `SyncCoordinator` applies a whole pass in one transaction
-  (`applySyncResult`), writes nothing back if the signed-in account changed
-  while the pass ran, exposes `syncing`, and after each pass sleeps until the
-  next due item (`SyncWakeup`, with a 30 s floor that stops a loop; skipped
-  offline or after an account change). The pass the timer starts runs in its
-  own job, because it ends by re-arming the timer and would otherwise cancel
-  itself. Two triggers need no screen: the connection coming back (false to
-  true) starts a pass, and any change to the queue re-arms the wake-up, so
-  work queued after the last pass is not left for the next foreground. A real
-  sign-out (not the launch before the session is restored) clears the queue,
-  dead letters, due cache and last-known progress (`clearAll`), as on iOS.
-  Known limit: the server prunes `review_grade_attempts` receipts after 30
-  days, while a queued grade retries forever; a grade whose first response
-  was lost and which then waits more than 30 days is graded again. The same
-  holds on iOS and is accepted. The lesson finish says it is saved only for causes
+  different account. A pass never sends one account's rows under another
+  account's token, by two layers. The engine asks `isCurrentAccount` before
+  every request and stops the pass the moment the account changes. And each
+  pass gets a client of its own (`SyncCoordinator`'s `client(userId)`) whose
+  token reads and refreshes are `SessionManager.freshAccessTokenFor(userId)`:
+  the account is checked INSIDE the session's refresh lock, and a different (or
+  no) account throws `AccountChangedException`, so a request is not sent. That
+  covers the requests the engine cannot interleave with: the re-mint after a
+  403 (`start-lesson-session`, then `complete-lesson` again) and the HTTP
+  seam's retry after a 401, which refreshes whichever session is current and
+  would otherwise resend the first account's body. A row with no owner after
+  startup is removed, never sent.
+  The read-modify-write of the sync-state row (progress, last-synced time, the
+  orphan flag) runs in a transaction.
+  Launch: `SessionStartup` restores the session and settles the store before
+  any pass (the `startup` gate). With nobody restored (a rejected refresh token,
+  or the process died after a sign-out before it could clear) it clears the
+  store, so the next account never sees the previous account's cached progress,
+  due cards or queue.
+  Sign-out: `SignOutCleanup` runs in the app scope, so it happens with no screen
+  composed and cannot be cancelled by one. It reacts to any change away from a
+  signed-in account (a switch included), calls `SyncCoordinator.clearAccount`
+  under the pass lock, and that removes only the ended account's rows, its dead
+  letters and the single-account caches; another account's queued rows stay for
+  that account's own sync. A failing clear is logged and the next change is
+  still seen.
+  Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt count and
+  next attempt on both queues, an `orphansResolved` flag, and a `dead_letters`
+  table that records its owner; the newest 50 are kept). `SyncCoordinator`
+  applies a whole pass in one transaction (`applySyncResult`), writes nothing
+  back if the signed-in account changed while the pass ran, exposes `syncing`,
+  and after each pass sleeps until the next due item (`SyncWakeup`, with a 30 s
+  floor that stops a loop; skipped offline or after an account change). The
+  pass the timer starts runs in its own job, because it ends by re-arming the
+  timer and would otherwise cancel itself. Two triggers need no screen: the
+  connection coming back (false to true) starts a pass, and any change to the
+  queue re-arms the wake-up, so work queued after the last pass is not left for
+  the next foreground.
+  Known limits, accepted: the server prunes `review_grade_attempts` receipts
+  after 30 days, while a queued grade retries forever, so a grade whose first
+  response was lost and which then waits more than 30 days is graded again
+  (the same on iOS). Connectivity flapping starts an extra pass for each
+  false-to-true change (bounded: passes are serialised and each is cheap). A
+  persistent 401 with a session still present is retried every 30 s, as on iOS.
+  Dismissals of lost-lesson notices are only pruned against a non-empty list, so
+  a stale one can stay in preferences (harmless). The lesson finish says it is saved only for causes
   waiting can fix and otherwise shows `LessonPhase.SaveFailed` with the reason
   and a support line. A 401 that survives the HTTP seam's one refresh is
   connection trouble (queued) while the session is still there, and "signed

@@ -31,6 +31,13 @@ interface SyncQueueStore {
     suspend fun resolveOrphanedRows(restoredUserId: String?)
 
     /**
+     * The account [userId] ended (signed out, or switched away from). Removes what is its own: its queued work and lost
+     * lessons, and rows with no owner; and clears the single-account caches (due reviews, last-known progress). Rows another
+     * account queued are left alone: that account's own sync decides them.
+     */
+    suspend fun clearAccount(userId: String)
+
+    /**
      * Everything here belongs to the account that was signed in: queued work, dead letters, the due-review cache and
      * the last-known progress. The next account on this device starts with none of it.
      */
@@ -98,6 +105,15 @@ class RoomSyncQueueStore(
             dao.deleteOwnerlessReviewGrades()
         }
         if (!state.orphansResolved) dao.upsertSyncState(state.copy(orphansResolved = true))
+    }
+
+    override suspend fun clearAccount(userId: String) = inTransaction {
+        dao.clearLessonCompletionsOf(userId)
+        dao.clearReviewGradesOf(userId)
+        dao.clearDeadLettersOf(userId)
+        dao.clearCachedDueReviews()
+        dao.clearSyncState()
+        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
     }
 
     override suspend fun clearAll() = inTransaction {

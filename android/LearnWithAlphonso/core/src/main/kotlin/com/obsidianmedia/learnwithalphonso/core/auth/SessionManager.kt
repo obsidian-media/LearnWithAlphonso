@@ -30,6 +30,9 @@ sealed interface AuthState {
  * established, and the token-refresh policy every client shares.
  * Pure Kotlin so the state machine is unit-tested on the JVM.
  */
+/** A request was about to be made for one account while another (or none) is signed in: it is not sent. */
+class AccountChangedException : java.io.IOException("The signed-in account changed")
+
 class SessionManager(
     private val auth: SupabaseAuthClient,
     private val store: SessionStore,
@@ -71,10 +74,25 @@ class SessionManager(
      * 2026-09-29 audit); being offline or rate-limited used to sign the
      * learner out too, which this port had copied before that fix.
      */
-    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock {
+    suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock { freshLocked(force) }
+
+    /**
+     * Like [freshAccessToken], for work that belongs to ONE account (a sync pass). The account is checked inside the
+     * refresh lock, so the token handed back is always that account's, and a refresh (including the HTTP seam's retry
+     * after a 401) can never mint or return another account's token for a request that carries this account's data.
+     * Throws [AccountChangedException] when a different account (or none) is signed in, which the HTTP layer surfaces
+     * as a failed request: nothing is sent.
+     */
+    suspend fun freshAccessTokenFor(userId: String, force: Boolean = false): String? = refreshLock.withLock {
+        if (this.userId != userId) throw AccountChangedException()
+        freshLocked(force)
+    }
+
+    /** Must be called with [refreshLock] held. */
+    private suspend fun freshLocked(force: Boolean): String? {
         val current = (_state.value as? AuthState.SignedIn)?.session ?: return null
         if (!force && current.expiresAtEpochSeconds > nowSeconds() + 60) return current.accessToken
-        try {
+        return try {
             val refreshed = auth.refresh(current)
             establish(refreshed)
             refreshed.accessToken

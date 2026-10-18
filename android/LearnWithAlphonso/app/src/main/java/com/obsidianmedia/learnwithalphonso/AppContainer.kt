@@ -6,6 +6,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.sync.SessionStartup
 import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
@@ -143,7 +144,20 @@ class AppContainer(context: Context) {
 
     val syncCoordinator = SyncCoordinator(
         store = syncStore,
-        client = { if (session.currentAccessToken() != null) progressClient else null },
+        client = { userId ->
+            // A client of its own for this pass: every token read and refresh is checked against the pass's account inside
+            // the session's refresh lock, so a switch of account mid-pass sends nothing under the new account's token.
+            if (session.currentAccessToken() == null) null
+            else ProgressSyncClient(
+                SupabaseHttp(
+                    baseUrl = BuildConfig.SUPABASE_URL,
+                    anonKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+                    accessToken = { session.freshAccessTokenFor(userId) },
+                    engine = engine,
+                    refresh = { session.freshAccessTokenFor(userId, force = true) },
+                ),
+            )
+        },
         currentUserId = { session.userId },
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
@@ -152,19 +166,11 @@ class AppContainer(context: Context) {
 
     init {
         // Restore here, not in a screen: a sync, a sign-out or a rejected refresh can happen with no screen composed.
-        appScope.launch {
-            try {
-                session.restore()
-                // Rows queued before owners were recorded go to the account restored now, or are dropped if nobody was.
-                runCatching { syncStore.resolveOrphanedRows(session.userId) }
-            } finally {
-                startup.complete(Unit)
-            }
-        }
+        appScope.launch { SessionStartup(session::restore, { session.userId }, syncStore, startup).run() }
     }
 
     /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
-    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { syncStore.clearAll() }
+    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended -> syncCoordinator.clearAccount(ended) }
 
     // ---- Plan 4: podcasts, reminders, push ----
 

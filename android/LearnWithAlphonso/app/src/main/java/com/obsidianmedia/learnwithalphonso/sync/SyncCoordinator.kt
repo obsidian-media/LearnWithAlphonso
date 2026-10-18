@@ -34,7 +34,11 @@ import kotlinx.coroutines.sync.withLock
  */
 class SyncCoordinator(
     private val store: SyncQueueStore,
-    private val client: () -> ProgressSyncClient?,
+    /**
+     * A client for ONE pass of [userId]'s: its token reads and refreshes are for that account only and fail (nothing is
+     * sent) once another account is signed in. The app builds it over `SessionManager.freshAccessTokenFor`.
+     */
+    private val client: (userId: String) -> ProgressSyncClient?,
     private val currentUserId: () -> String? = { null },
     private val isConnected: () -> Boolean = { true },
     private val scope: CoroutineScope? = null,
@@ -75,13 +79,19 @@ class SyncCoordinator(
 
     suspend fun triggerSync() {
         startup?.await()
-        val userId = currentUserId()
+        val userId = currentUserId() ?: return
         lock.withLock {
-            val c = client() ?: return
+            val c = client(userId) ?: return
             _syncing.value = true
             try {
+                // After startup a row with no owner belongs to nobody (the startup step gave the old ones to the restored
+                // account or dropped them): it is removed, never sent.
+                val lessons = store.pendingLessonCompletions()
+                val grades = store.pendingReviewGrades()
+                store.removeSyncedLessonCompletions(lessons.filter { it.ownerUserId == null })
+                store.removeSyncedReviewGrades(grades.filter { it.ownerUserId == null })
                 val result = SyncEngine.sync(
-                    store.pendingLessonCompletions(), store.pendingReviewGrades(), c, userId, now(),
+                    lessons.filter { it.ownerUserId != null }, grades.filter { it.ownerUserId != null }, c, userId, now(),
                     isCurrentAccount = { currentUserId() == userId },
                 )
                 if (currentUserId() != userId) return
@@ -94,6 +104,14 @@ class SyncCoordinator(
             }
         }
         scheduleWakeup(userId)
+    }
+
+    /**
+     * The account [userId] ended. Under the pass lock, so a pass that is still writing cannot put a row back after this
+     * cleared it, and only that account's rows go (see [SyncQueueStore.clearAccount]).
+     */
+    suspend fun clearAccount(userId: String) {
+        lock.withLock { store.clearAccount(userId) }
     }
 
     /** The Learn tab's "Sync now": a pass that survives the screen. */

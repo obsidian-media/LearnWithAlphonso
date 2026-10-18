@@ -173,6 +173,19 @@ class MemorySyncStore : SyncQueueStore {
         publish()
     }
 
+    val clearedAccounts = ArrayList<String>()
+
+    override suspend fun clearAccount(userId: String) {
+        yield()
+        completions.removeAll { it.ownerUserId == userId || it.ownerUserId == null }
+        grades.removeAll { it.ownerUserId == userId || it.ownerUserId == null }
+        deadRows.removeAll { it.ownerUserId == userId || it.ownerUserId == null }
+        due.value = emptyList(); progressFlow.value = null; syncedAt = null
+        orphansResolved = true
+        clearedAccounts.add(userId)
+        publish(); deadFlow.value++
+    }
+
     override suspend fun clearAll() {
         yield()
         completions.clear(); grades.clear(); deadRows.clear(); due.value = emptyList(); progressFlow.value = null; syncedAt = null

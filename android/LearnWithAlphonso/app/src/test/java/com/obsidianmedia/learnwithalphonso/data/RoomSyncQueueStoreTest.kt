@@ -19,20 +19,37 @@ class RoomSyncQueueStoreTest {
         var transactions = 0
         val calls = ArrayList<String>()
         var state: AppSyncStateRecord? = null
+
+        /** Another writer (the orphan resolution) setting the flag at a bad moment. */
+        var concurrentWriterPending = false
+        fun concurrentWrite() {
+            state = (state ?: AppSyncStateRecord()).copy(orphansResolved = true)
+        }
     }
 
     private fun store(r: Recorder): RoomSyncQueueStore {
         val dao = Proxy.newProxyInstance(SyncDao::class.java.classLoader, arrayOf(SyncDao::class.java)) { _, method, args ->
             when (method.name) {
                 "syncState" -> { r.calls.add("read:${r.inTransaction}"); r.state }
-                "upsertSyncState" -> { r.calls.add("write:${r.inTransaction}"); r.state = args[0] as AppSyncStateRecord; Unit }
+                "upsertSyncState" -> {
+                    r.calls.add("write:${r.inTransaction}")
+                    // Between this store's read and its write, a second writer sets the flag. Without a transaction it
+                    // lands in the gap and the store's write (a copy of what it read) puts the flag back to false; inside
+                    // one, the database makes the second writer wait until the transaction ends.
+                    if (r.inTransaction) r.concurrentWriterPending = true else r.concurrentWrite()
+                    r.state = args[0] as AppSyncStateRecord
+                    Unit
+                }
                 else -> { r.calls.add(method.name); Unit }
             }
         } as SyncDao
         return RoomSyncQueueStore(dao, inTransaction = { block ->
             r.inTransaction = true
             r.transactions++
-            try { block() } finally { r.inTransaction = false }
+            try { block() } finally {
+                r.inTransaction = false
+                if (r.concurrentWriterPending) { r.concurrentWriterPending = false; r.concurrentWrite() }
+            }
         }) { 5_000L }
     }
 
@@ -40,15 +57,32 @@ class RoomSyncQueueStoreTest {
 
     @Test
     fun `reading and rewriting the sync-state row happens inside one transaction`() = runBlocking {
-        val r = Recorder().apply { state = AppSyncStateRecord(orphansResolved = true) }
+        val r = Recorder().apply { state = AppSyncStateRecord(orphansResolved = false) }
         val s = store(r)
         s.updateLastKnownProgress(progress)
         s.markSyncedNow()
-        s.resolveOrphanedRows("u1")
         val rw = r.calls.filter { it.startsWith("read:") || it.startsWith("write:") }
         assertTrue("every read and write of the row was inside a transaction: $rw", rw.isNotEmpty() && rw.all { it.endsWith(":true") })
-        assertEquals(3, r.transactions)
-        assertTrue("a concurrent progress write cannot reset the flag", r.state!!.orphansResolved)
+        assertEquals(2, r.transactions)
+    }
+
+    @Test
+    fun `a second writer's flag is not undone by a progress or last-synced write`() = runBlocking {
+        for (write in listOf<suspend (RoomSyncQueueStore) -> Unit>({ it.updateLastKnownProgress(progress) }, { it.markSyncedNow() })) {
+            val r = Recorder().apply { state = AppSyncStateRecord(orphansResolved = false) }
+            write(store(r))
+            assertTrue("the flag set by the other writer survives", r.state!!.orphansResolved)
+        }
+    }
+
+    @Test
+    fun `clearing an ended account removes its rows and dead letters and the caches, and records that nothing is left to adopt`() = runBlocking {
+        val r = Recorder().apply { state = AppSyncStateRecord(lastSyncedAt = 1, orphansResolved = false) }
+        store(r).clearAccount("u1")
+        assertTrue(r.calls.containsAll(listOf("clearLessonCompletionsOf", "clearReviewGradesOf", "clearDeadLettersOf", "clearCachedDueReviews", "clearSyncState")))
+        assertTrue("only that account's rows, not the whole queue", r.calls.none { it == "clearLessonCompletions" || it == "clearReviewGrades" || it == "clearDeadLetters" })
+        assertTrue(r.state!!.orphansResolved)
+        assertEquals(1, r.transactions)
     }
 
     @Test

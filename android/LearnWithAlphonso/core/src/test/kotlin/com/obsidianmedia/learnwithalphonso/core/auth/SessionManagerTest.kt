@@ -162,4 +162,26 @@ class SessionManagerTest {
         assertTrue(m.state.value is AuthState.SignedIn)
         assertNotNull(store.session)
     }
+
+    @Test
+    fun `a token for one account is only ever that account's, and asking for another account's fails without a refresh`() = runTest {
+        val calls = ArrayList<String>()
+        val m = SessionManager(auth(true, calls), MemoryStore(valid())) { now }
+        m.restore()
+        assertEquals("at", m.freshAccessTokenFor("u1"))
+        assertTrue(runCatching { m.freshAccessTokenFor("u2") }.exceptionOrNull() is AccountChangedException)
+        assertTrue(runCatching { m.freshAccessTokenFor("u2", force = true) }.exceptionOrNull() is AccountChangedException, "a forced refresh for the wrong account never reaches the server")
+        assertTrue(calls.isEmpty())
+    }
+
+    @Test
+    fun `a token for an account fails once nobody is signed in, and a forced refresh for the right account still refreshes`() = runTest {
+        val calls = ArrayList<String>()
+        val m = SessionManager(auth(true, calls), MemoryStore(valid())) { now }
+        m.restore()
+        assertEquals("new-at", m.freshAccessTokenFor("u1", force = true))
+        assertEquals(1, calls.size)
+        m.signOut()
+        assertTrue(runCatching { m.freshAccessTokenFor("u1") }.exceptionOrNull() is AccountChangedException)
+    }
 }
