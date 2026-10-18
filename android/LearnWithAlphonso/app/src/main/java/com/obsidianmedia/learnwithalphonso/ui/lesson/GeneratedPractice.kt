@@ -22,7 +22,6 @@ import com.obsidianmedia.learnwithalphonso.core.net.GeneratedPracticeQuestion
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.ChoiceButton
-import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,7 +90,7 @@ fun GeneratedPracticeSection(container: AppContainer, lessonId: String, course: 
                     Text(q.prompt, style = MaterialTheme.typography.titleMedium, color = palette.ink)
                     val correct = q.choices.getOrNull(q.answerIndex)
                     q.choices.forEach { c -> ChoiceButton(c, selected = state.picked == c, checked = state.checked, isCorrectChoice = c == correct, onClick = { vm.pick(c) }) }
-                    if (state.checked) ExplanationBlock(isCorrect = state.picked == correct, explanation = q.explanation)
+                    if (state.checked) Explanation(container, state.picked == correct, q.explanation, course)
                     AlphonsoPrimaryButton(
                         if (!state.checked) "Check" else if (state.idx < state.questions.size - 1) "Next" else "Finish practice",
                         onClick = { if (!state.checked) vm.check() else vm.next() },

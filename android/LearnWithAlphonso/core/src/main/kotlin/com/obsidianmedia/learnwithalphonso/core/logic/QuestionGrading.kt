@@ -33,12 +33,11 @@ fun isAnswerCorrect(question: Question, picked: String?, course: Course = Course
 private fun looseEquals(a: String, b: String): Boolean = a.trim().lowercase() == b.trim().lowercase()
 
 /**
- * Builds a multiple-choice question from a weakness-sourced review row's
- * embedded content. Null when the row is not a weakness item or lacks a
- * field: a malformed row is skipped, never a crash.
+ * Builds a multiple-choice question from a self-contained review row's embedded content (a Hector weakness item or a
+ * saved word). Null when the row is neither or lacks a field: a malformed row is skipped, never a crash.
  */
 fun questionFromWeaknessItem(item: ReviewItem): Question? {
-    if (item.source != "weakness") return null
+    if (!item.isSelfContained) return null
     val prompt = item.prompt ?: return null
     val choices = item.choices ?: return null
     val answerIndex = item.answerIndex ?: return null

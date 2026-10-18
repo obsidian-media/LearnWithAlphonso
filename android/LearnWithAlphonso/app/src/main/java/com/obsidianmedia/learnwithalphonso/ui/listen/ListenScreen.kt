@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadFailure
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
@@ -73,6 +74,10 @@ import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRefusal
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
+import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 import kotlinx.coroutines.launch
 
 private fun length(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
@@ -270,6 +275,8 @@ fun PodcastMiniBar(container: AppContainer) {
     var showTranscript by remember { mutableStateOf(false) }
     var transcript by remember(episode.id) { mutableStateOf<String?>(null) }
     var loadingTranscript by remember(episode.id) { mutableStateOf(false) }
+    // The language of the episode's text: its ROOT folder's course. Unknown (folders not readable) means no saving rather than a guess.
+    var transcriptCourse by remember(episode.id) { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxWidth().background(palette.parchment)) {
         HorizontalDivider(color = palette.hairline)
@@ -306,6 +313,7 @@ fun PodcastMiniBar(container: AppContainer) {
                 showTranscript = true
                 if (transcript == null && !loadingTranscript) scope.launch {
                     loadingTranscript = true
+                    transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
                     transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
                     loadingTranscript = false
                 }
@@ -316,16 +324,27 @@ fun PodcastMiniBar(container: AppContainer) {
 
     if (showTranscript) {
         ModalBottomSheet(onDismissRequest = { showTranscript = false }, containerColor = palette.surface) {
+          SaveWordHost(container) {
             Column(Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(episode.title, style = MaterialTheme.typography.titleMedium, color = palette.ink)
                 val paragraphs = PodcastTranscript.paragraphs(transcript ?: "")
                 when {
                     loadingTranscript -> CircularProgressIndicator(color = palette.moss)
                     paragraphs.isEmpty() -> Text("This episode doesn't have a transcript yet.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
-                    else -> paragraphs.forEach { Text(it, style = MaterialTheme.typography.bodyLarge, color = palette.ink) }
+                    else -> {
+                        val saveWord = LocalSaveWordHandler.current
+                        val course = transcriptCourse
+                        if (course != null && saveWord != null) SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
+                        paragraphs.forEach { paragraph ->
+                            // A transcript is in the language of its episode's root folder (PodcastLibrary.courseOf).
+                            if (course != null && saveWord != null) TappableText(paragraph, course, saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            else Text(paragraph, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                        }
+                    }
                 }
                 Spacer(Modifier.height(24.dp))
             }
+          }
         }
     }
 }
