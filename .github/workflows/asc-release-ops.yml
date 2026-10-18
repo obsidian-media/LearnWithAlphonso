@@ -23,6 +23,7 @@ on:
           - submission-check
           - testflight
           - submit-beta-review
+          - beta-status
       arg:
         description: "expire-builds: highest build to expire (run only after the build 49 to 50 upgrade test has passed). attach-build, submission-check and testflight: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
         required: false

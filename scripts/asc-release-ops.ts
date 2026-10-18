@@ -12,6 +12,8 @@
  *   asc-release-ops.ts testflight 50 [--apply]        # external TestFlight readiness for that build; --apply
  *                                                     # writes the beta description, feedback email, links
  *                                                     # and "What to Test". Never adds a build to a group.
+ *   asc-release-ops.ts beta-status 51                  # read-only: the build's external state, its Beta App
+ *                                                     # Review submission, and which TestFlight groups hold it
  *   asc-release-ops.ts submit-beta-review 51 [--apply] # external Beta App Review for that exact build; refuses
  *                                                     # unless it is READY_FOR_BETA_SUBMISSION with What to Test
  *                                                     # and review contact set. Read-only without --apply.
@@ -332,6 +334,41 @@ async function submissionCheck(): Promise<void> {
   if (failed > 0) process.exitCode = 1;
 }
 
+/** Read-only: prints exactly what App Store Connect says about one build. Never writes. */
+async function betaStatus(): Promise<void> {
+  const build = findBuild(await listBuilds(), Number(arg));
+  console.log(
+    `build ${build.attributes.version}: processingState=${build.attributes.processingState}, expired=${build.attributes.expired}`,
+  );
+  const detail = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (!detail.ok) throw new Error(`read beta detail failed: ${detail.status}`);
+  const d = dataOf<Resource>(detail).attributes ?? {};
+  console.log(
+    `  buildBetaDetail: internalBuildState=${String(d.internalBuildState)} externalBuildState=${String(d.externalBuildState)} autoNotifyEnabled=${String(d.autoNotifyEnabled)}`,
+  );
+  const sub = await api(`/builds/${build.id}/betaAppReviewSubmission`);
+  const subData = sub.ok ? (sub.json as { data: Resource | null }).data : null;
+  console.log(
+    sub.ok
+      ? subData
+        ? `  betaAppReviewSubmission: betaReviewState=${String(subData.attributes?.betaReviewState)} submittedDate=${String(subData.attributes?.submittedDate)}`
+        : "  betaAppReviewSubmission: none"
+      : `  betaAppReviewSubmission: read failed (${sub.status})`,
+  );
+  const groups = await api(`/apps/${APP_ID}/betaGroups?limit=50`);
+  if (!groups.ok) throw new Error(`read beta groups failed: ${groups.status}`);
+  for (const g of dataOf<Resource[]>(groups)) {
+    const a = g.attributes ?? {};
+    const members = await api(`/betaGroups/${g.id}/builds?limit=200&fields[builds]=version`);
+    const versions = members.ok
+      ? dataOf<{ attributes?: { version?: string } }[]>(members).map((b) => b.attributes?.version)
+      : null;
+    console.log(
+      `  group "${String(a.name)}": ${a.isInternalGroup ? "internal" : "external"}, publicLink=${a.publicLinkEnabled ? "ON" : "off"}, hasAccessToAllBuilds=${String(a.hasAccessToAllBuilds)}, build ${build.attributes.version} in group: ${versions ? (versions.includes(build.attributes.version) ? "YES" : "no") : "unknown (read failed)"}${versions ? `, builds in group: [${versions.join(", ")}]` : ""}`,
+    );
+  }
+}
+
 /** External Beta App Review for one exact build. Read-only unless --apply; refuses anything but READY_FOR_BETA_SUBMISSION. */
 async function submitBetaReview(): Promise<void> {
   const build = findBuild(await listBuilds(), Number(arg)); // the exact build, never "the latest"
@@ -593,6 +630,8 @@ async function main() {
     await submissionCheck();
   } else if (cmd === "testflight") {
     await testflight();
+  } else if (cmd === "beta-status") {
+    await betaStatus();
   } else if (cmd === "submit-beta-review") {
     await submitBetaReview();
   } else {

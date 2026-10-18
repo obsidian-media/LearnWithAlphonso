@@ -96,6 +96,15 @@ describe("asc-release-ops testflight", () => {
     expect(fn.slice(0, gate)).not.toMatch(/"(PATCH|POST|DELETE)"/);
   });
 
+  it("beta-status only reads: no write method between its start and the next function", () => {
+    const status = src.slice(
+      src.indexOf("async function betaStatus"),
+      src.indexOf("/** External Beta App Review for one exact build"),
+    );
+    expect(status.length).toBeGreaterThan(200);
+    expect(status).not.toMatch(/"(PATCH|POST|DELETE)"/);
+  });
+
   it("never adds a build to a group, anywhere in the script", () => {
     expect(src).not.toMatch(
       /buildBetaNotifications|relationships\/builds|relationships\/betaGroups|\/betaGroups[`"],\s*"POST"/,
