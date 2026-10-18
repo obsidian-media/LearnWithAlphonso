@@ -211,3 +211,23 @@ Use a QA account, never the App Review account. Drain its hearts by answering fi
 - [ ] Rotate the phone on the out-of-hearts screen and inside a lesson: nothing restarts and no second session is opened.
 - [ ] Scenario practice on an account at today's AI limit: the message says "You've reached today's AI practice limit. It resets at h:mm AM/PM.", never `quota-exceeded`.
 - [ ] Hector on a non-Pro account that reaches the tutor (for example after Pro expires): "Hector is part of Alphonso Pro."; with the server's `tutor` switch off: the generic "Something went wrong on our side. Try again."
+
+## Save any word (nothing here has been run on a device)
+
+Use a QA account with AI allowed. The server writes a real review item each time, so use words you do not mind seeing in Review.
+
+- [ ] Hector: under the title it says "Tap any word in Hector's reply to save it." Tap a word in a reply: a sheet opens with the word, its sentence in quotes and "Save word". Save: "Looking it up...", then "Saved for review", the meaning, and "AI-generated meaning. It can occasionally be wrong." Done closes it.
+- [ ] Tap the same word again in the same reply: "Already saved" with the same meaning, instantly (no extra AI use).
+- [ ] The same word in two different sentences of one reply: each tap shows the sentence it was tapped in.
+- [ ] Practice and a Campaign reply: words are tappable, the hint says "Tap any word in a reply to save it.", and saving works in French and Spanish with the right language in the card.
+- [ ] A lesson in the English course: answer a question; the explanation's words are tappable (right answer: the grey line, wrong answer: Alphonso's tip), and "Tap a word to save it." shows for the first three explanations only, then never again. In a French or Spanish lesson the explanation is plain text (no hint).
+- [ ] Review (English course): the explanation after answering is tappable the same way.
+- [ ] A podcast transcript (the notes button on the player): "Tap any word to save it."; tapping saves the word under English.
+- [ ] Review: a saved word appears as a multiple-choice card ("What does "tea" mean here?" with the sentence), grades like any card, and shows the meaning after answering. It appears in the course it was saved under.
+- [ ] TalkBack: the explanation or reply reads normally, and its words are reachable through the Links action of the TalkBack menu; Save word, Try again and Done are announced as buttons.
+- [ ] Airplane mode: tap a word and Save: "Saving a word needs a connection." with Try again; reconnect and Try again saves it.
+- [ ] Account with AI turned off (Settings): tap a word in a lesson, Save: the usual AI consent choice opens; Allow saves the word, Not now returns to the Save button with nothing sent. Withdraw AI on the web while the sheet is open and tap Save: the same choice appears.
+- [ ] Two quick taps on Save: one request only (check that the daily AI use goes up by one).
+- [ ] Reach the 500-word limit (or ask the owner to set a QA account there): "You've reached the limit of 500 saved words. Finish some reviews first." and no Try again button.
+- [ ] Rotate the phone with the sheet open and a long sentence: the sheet stays, the sentence scrolls, Done stays reachable.
+- [ ] A very long reply: tapping a word near the end saves a sentence of at most 300 characters that still contains the word.
