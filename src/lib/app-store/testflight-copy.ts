@@ -26,15 +26,16 @@ Sign in with Apple, Google or your email (you get a 6-digit code). AI features r
   privacyPolicyUrl: PRIVACY,
   // Remove the "Known in this build" paragraph once the Paid Apps Agreement is active and Pro can be
   // bought in TestFlight; this note is reused for every build until then.
-  whatToTest: `Thanks for testing! Please try:
-- Sign up, take the placement test and finish a few lessons in any course.
-- Review, speaking practice in Practice, and an audio episode in Listen (also with the screen locked).
-- Friends, leagues and teams, if you like.
-- Finish a lesson in airplane mode, then go back online: the Learn tab shows it waiting, then syncs it.
+  whatToTest: `Thanks for testing! About 5 minutes:
+1. Sign up and take the level test.
+2. Finish one lesson.
+3. Save a word (tap a word in a Practice reply or an English lesson explanation), then open Review tomorrow to see it come back.
 
-Known in this build: Alphonso Pro cannot be bought by testers yet, so Hector (the AI voice tutor, a Pro feature) is not available and the subscription screen may say it couldn't load the options. Lessons, review, speaking practice and listening are free to use.
+Also welcome: speaking practice in Practice, an audio episode in Listen (also with the screen locked), and finishing a lesson in airplane mode then going back online.
 
-Send feedback with a screenshot from TestFlight, or write to support@alphonsoecosystem.app.`,
+Known in this build: Alphonso Pro cannot be bought by testers yet, so Hector (the AI voice tutor, a Pro feature) is not available and the subscription screen may say it couldn't load the options. The level test is in English only for now, even for French and Spanish learners. Android is not out yet. Lessons, review, speaking practice and listening are free to use.
+
+Tell us what confused you or broke: send feedback with a screenshot from TestFlight, or write to support@alphonsoecosystem.app.`,
 };
 
 /** Every reason the copy would be rejected by App Store Connect or mislead a tester; empty when fine. */
