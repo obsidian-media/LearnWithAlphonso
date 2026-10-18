@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.podcast
 import android.content.ComponentName
 import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -23,6 +24,9 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
     override var onPlayingChanged: (Boolean) -> Unit = {}
+    override var onPaused: (PauseCause) -> Unit = {}
+    override var onError: (Int?, Int?) -> Unit = { _, _ -> }
+    override var onStalled: () -> Unit = {}
 
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
@@ -32,11 +36,38 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
     private val listener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) onEnded()
+            // Out of data while the learner wants sound is a stall, not a pause.
+            if (playbackState == Player.STATE_BUFFERING && controller?.playWhenReady == true) onStalled()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startTicker() else ticker?.cancel()
-            onPlayingChanged(isPlaying)
+            if (isPlaying) {
+                startTicker()
+                onPlayingChanged(true)
+            } else {
+                ticker?.cancel()
+                // "Not playing" has three different meanings, told apart elsewhere: buffering (a stall, below), a
+                // transient focus loss (suppressed, playWhenReady still true: the player resumes by itself, so nothing
+                // is reported) and a real pause (onPlayWhenReadyChanged).
+                val c = controller
+                if (c != null && c.playWhenReady && c.playbackState == Player.STATE_BUFFERING) onStalled()
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (playWhenReady) return
+            onPaused(
+                when (reason) {
+                    Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS -> PauseCause.FOCUS_LOST
+                    Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY -> PauseCause.BECAME_NOISY
+                    else -> PauseCause.USER_REQUEST
+                },
+            )
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            // The status of a rejected request does not cross the session boundary; the HEAD probe supplies it.
+            onError(error.errorCode, null)
         }
     }
 

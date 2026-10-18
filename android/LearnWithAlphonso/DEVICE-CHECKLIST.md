@@ -37,6 +37,17 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
 - [ ] Listen on two devices with the same account: play on A, then on B past A's position; going back to A and playing does not rewind B's position (A may resume from B's after it reloads the list).
 - [ ] An AI-narrated episode (podcast voice episodes) shows "5:05 · AI-narrated" (plus "Resume" when it has a position); an uploaded recording shows no label; the offline list shows "Downloaded · AI-narrated" for a downloaded AI-narrated one.
+- [ ] Tap an episode on a slow connection: the mini bar shows a spinner (not Pause) until sound starts, then Pause.
+- [ ] Airplane mode on, tap an episode that is not downloaded: the mini bar says "Download this episode to listen offline." with Retry; a downloaded one plays.
+- [ ] Ask the owner to unpublish an episode you are not playing, reopen Listen: the episode and (if it was the last one) its folder are gone, and a download of it is removed. The episode playing at the time keeps playing.
+- [ ] A broken or removed audio file (ask the owner to rename it in the bucket): playing it shows "This episode isn't available right now." with Retry, never a Pause that does nothing.
+- [ ] Kill the network mid-episode: the mini bar shows "Buffering…" in place of the time. If sound does not come back within about 20 seconds it shows "Couldn't reach the server. Check your connection and try again." with Retry; Retry resumes from where it stopped once the network is back. If the network returns before 20 seconds, playback continues by itself and nothing is shown.
+- [ ] Let an episode play to the end: it stops (it does not start again by itself), shows Play, and tapping Play starts it from the beginning within a second or two, with no error afterwards.
+- [ ] Pause and play from the notification, the lock screen and a headset or Bluetooth button: the mini bar follows each press, with no spinner and no error after 20 seconds.
+- [ ] Receive a phone call (or a navigation prompt) while an episode plays: playback pauses and comes back by itself when the call ends, and the bar says Pause the whole time.
+- [ ] Pull the headphones (or switch Bluetooth off): playback pauses and stays paused; it does not play out of the speaker. Start a different audio app while an episode plays: the episode stays paused.
+- [ ] Switch the course on the Learn tab to French, then open Listen: only French (and course-less) folders show; a course with no episodes says "No French episodes yet" with Refresh.
+- [ ] Download a file that the server answers with a JSON error (ask the owner for a missing path): the download fails with "This episode isn't available to download right now." and nothing is stored.
 - [ ] Sign out while an episode plays: playback stops, the notification disappears, and signing in as another account shows no resume position from the first.
 
 ## Notifications and push (Plan 4)

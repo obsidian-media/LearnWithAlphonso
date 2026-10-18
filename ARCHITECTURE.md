@@ -1402,6 +1402,42 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   is AI-narrated when `podcast_episodes.source = 'tts'` (selected by the
   episode and search queries), and the row subtitle is
   "5:05 · Resume · AI-narrated" with the middle dot.
+- **Podcast playback and downloads (iOS PodcastPlayerMachine, PodcastPlaybackFailure,
+  PodcastDownloadValidation, PodcastLibrary).** `core.podcast.PodcastPlayerMachine`
+  is a pure state machine (idle, loading, playing, buffering, paused, finished,
+  failed) that takes events and returns effects; `PodcastPlayer` feeds it the
+  Media3 port's signals (`onPlayingChanged`, `onError`, `onStalled`, `onEnded`)
+  and performs the effects. Only the player's own confirmation moves loading
+  to playing, so `PodcastPlayerState.isPlaying` and the mini bar's control
+  (spinner, pause, play, retry) never show a play that did not start. Load and
+  stall timeouts (20 s) carry a generation, so a timer from an earlier start
+  does nothing. After a remote item fails, `PodcastProbe` sends a HEAD request
+  and `PodcastPlaybackClassifier` maps its status (400, 403, 404, 410 are
+  "isn't available", 5xx is a server problem, no answer is the network) and the
+  player's error code to a `PodcastPlaybackFailure` with the iOS copy; a
+  downloaded file that fails is "couldn't be played"; with no connection a
+  remote episode fails before the player is touched. The Media3 controller
+  does not carry the rejected request's status across the session boundary,
+  hence the probe. `PodcastDownloadValidation` keeps a transfer only for HTTP
+  200 with an `audio/` content type and a body that matches the declared
+  length or clears 2,000 bytes a second of the episode's duration, and
+  classifies thrown errors by cause chain. `PodcastLibrary` filters folders by
+  the active course and by "has a published episode beneath it";
+  `PodcastClient.fetchPublishedIndex` pages the published ids, and after a
+  successful read that returned folders `ListenViewModel` removes downloads of
+  unpublished episodes (not the one playing). The index is read until an
+  empty page, so a server that caps pages below the requested size cannot
+  truncate the set downloads are pruned against; an unreadable index (500,
+  401) removes nothing. Media3 wiring: `onIsPlayingChanged(true)` is the only
+  "playing" signal; a transient audio-focus loss suppresses playback with
+  `playWhenReady` still true and is not reported (the player resumes by
+  itself); a real pause arrives through `onPlayWhenReadyChanged(false, reason)`
+  as a `PauseCause` (pause button, permanent focus loss, headphones pulled),
+  none of which resumes by itself; buffering while `playWhenReady` is a stall.
+  At the end of the media `playWhenReady` stays true, so the player is paused
+  before it is rewound. Parity with iOS: search results are limited to the
+  visible folders, and the offline listing is every download whatever its
+  course.
 - **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
   the ports of `podcast-tree.ts`, `podcast-search.ts`,
   `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and
