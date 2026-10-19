@@ -57,13 +57,15 @@ function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
 export async function probeUrl(url: string, fetchImpl: FetchLike = fetch): Promise<LinkResult> {
   try {
     const head = await fetchWithRetry(url, { method: "HEAD", redirect: "manual" }, fetchImpl);
-    if (!HEAD_UNSUPPORTED.has(head.status)) return judge(url, head, "HEAD");
+    if (!HEAD_UNSUPPORTED.has(head.status) && head.status !== 429) return judge(url, head, "HEAD");
     const get = await fetchWithRetry(
       url,
       { method: "GET", redirect: "manual", headers: { Range: "bytes=0-0" } },
       fetchImpl,
     );
     await get.body?.cancel();
+    // Persistent HEAD throttling is inconclusive about the public object;
+    // verify it via a one-byte GET after the bounded HEAD retries.
     return judge(url, get, "GET");
   } catch (e) {
     return {

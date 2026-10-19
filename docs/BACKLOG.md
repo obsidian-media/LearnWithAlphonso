@@ -28,7 +28,7 @@
 
 > **Local production runtime check 2026-10-19:** Both built learner/admin servers returned 200 with CSP nonce directives matching nonce attributes in rendered HTML. This uncovered a Request cross-realm issue; reconstruction now normalizes request body bytes. Focused tests, TypeScript, and both builds pass. Final Bun CI on `3373811` is green. Local HTTP did not emit HSTS, as intended; HTTPS-only HSTS remains covered by tests.
 
-> **Vocab link checker follow-up 2026-10-19:** PR workflow 39343410188 had 728/730 image probes succeed; two exhausted retries with HTTP 429. Retry logic now honors bounded numeric/date `Retry-After`, adds one attempt, logs the final retry hint, and runs serially. Focused tests pass 11/11; next live check is pending.
+> **Vocab link checker follow-up 2026-10-19:** PR workflows 39343410188 and 39344259073 returned images for 728/730, then 729/730, with residual HTTP 429s. Retry logic honors bounded numeric/date `Retry-After`, adds one attempt, logs the final retry hint, runs serially, and falls back to a ranged GET when HEAD remains rate-limited. Focused tests pass 12/12; next live check is pending.
 
 > **2026-10-19 verification boundary:** I reconciled all explicitly open/partial items in the current release and backlog summaries against current branch code/history where possible, and corrected the stale high-impact claims called out below. The remainder of this file contains dated incident reports and deferred product ideas; those historical narratives are retained, not represented as individually re-audited line-by-line. Any live state, human content approval, device behavior, or separate-repository status without fresh evidence is marked unverified/owner-gated rather than presumed done.
 

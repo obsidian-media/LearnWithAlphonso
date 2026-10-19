@@ -82,7 +82,7 @@
 
 - Verified all jobs in CI run 39183037153 passed on `main` (`6749f18`); the Supabase deployment step reports the remote database is up to date. This is baseline evidence, not a result for this branch.
 - The local Bun executable remains unavailable (`Access is denied`). No PR was opened, so branch CI has not been triggered.
-- Vocab link-check run 39343410188 returned images for 728/730 URLs but exhausted retries on two Supabase Storage 429s. The checker now honors numeric and HTTP-date `Retry-After` (bounded to 30 seconds), allows one additional attempt, reports the final retry header, and serializes the 730 probes. Focused tests pass 11/11; a fresh live workflow result is pending.
+- Vocab link-check runs 39343410188 and 39344259073 showed residual Supabase Storage 429s (728/730, then 729/730) despite serial probes and bounded retry. The checker honors numeric/date `Retry-After` (capped at 30 seconds), retries once more, reports the final retry hint, and falls back from persistently throttled HEAD to a one-byte ranged GET. Focused tests pass 12/12; a fresh live workflow result is pending.
 - App Store release-ops run 39186960541 failed its age-rating check: live contests=`INFREQUENT`, expected=`INFREQUENT_OR_MILD`, computed rating=`FOUR_PLUS` vs the owner's 13+ decision. This requires owner confirmation before any metadata write.
 
 ### Phase 2 — Account deletion recovery, iOS download deduplication, security policy, and database contention coverage (2026-10-19)

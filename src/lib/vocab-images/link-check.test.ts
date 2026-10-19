@@ -69,9 +69,26 @@ describe("probeUrl", () => {
     await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
       ok: false,
       status: 429,
+      method: "GET",
       detail: 'status 429, content-type "", retry-after "0"',
     });
-    expect(fetchImpl).toHaveBeenCalledTimes(5);
+    expect(fetchImpl).toHaveBeenCalledTimes(10);
+  });
+
+  it("verifies an object with ranged GET when HEAD remains rate-limited", async () => {
+    const fetchImpl = vi.fn<FetchLike>((_url, init) =>
+      Promise.resolve(init.method === "HEAD" ? res(429) : res(206)),
+    );
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
+      ok: true,
+      status: 206,
+      method: "GET",
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(fetchImpl.mock.calls[5]?.[1]).toMatchObject({
+      method: "GET",
+      headers: { Range: "bytes=0-0" },
+    });
   });
 
   it("honors an HTTP-date Retry-After while capping the delay", async () => {
