@@ -17,9 +17,10 @@ export async function requestWithCspNonce(request: Request, nonce: string): Prom
   headers.set(CSP_NONCE_HEADER, nonce);
   // Rebuild from bytes: Nitro can supply a Request whose body/signal are from
   // another runtime realm and cannot be passed to Node's undici constructor.
-  const body = request.method === "GET" || request.method === "HEAD"
-    ? undefined
-    : new Uint8Array(await request.arrayBuffer());
+  const body =
+    request.method === "GET" || request.method === "HEAD"
+      ? undefined
+      : new Uint8Array(await request.arrayBuffer());
   return new Request(request.url, {
     method: request.method,
     headers,
