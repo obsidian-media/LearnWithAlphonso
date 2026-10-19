@@ -71,10 +71,12 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
     "Our marketing website (discover.alphonsoecosystem.app)",
     "Neon:",
     "Vercel Web Analytics",
+    "Where you came from: if you chose Accept all in the cookie banner",
   ],
   "/cookies": [
     SUPPORT_EMAIL,
-    "On learn.alphonsoecosystem.app we do not set any optional cookies or storage",
+    "On learn.alphonsoecosystem.app the only optional storage is a campaign tag",
+    "If you choose Essential only they are discarded",
     "uses Vercel Web Analytics, which does not use cookies",
   ],
   "/support": [

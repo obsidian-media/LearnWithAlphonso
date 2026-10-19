@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTheme } from "../lib/theme";
+import { promoteAttribution } from "../lib/signup-attribution";
 
 const KEY = "lingua.cookie-consent.v1";
 
@@ -22,6 +23,12 @@ export function CookieConsent() {
 
   function choose(value: ConsentValue) {
     window.localStorage.setItem(KEY, value);
+    // "Accept all" keeps the campaign tags seen so far; "Essential only" discards them.
+    promoteAttribution({
+      consent: value,
+      local: window.localStorage,
+      session: window.sessionStorage,
+    });
     setOpen(false);
   }
 

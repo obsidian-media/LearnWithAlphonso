@@ -1527,6 +1527,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      signup_attribution: {
+        Row: {
+          created_at: string;
+          landed_at: string | null;
+          user_id: string;
+          utm_campaign: string | null;
+          utm_medium: string | null;
+          utm_source: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          landed_at?: string | null;
+          user_id: string;
+          utm_campaign?: string | null;
+          utm_medium?: string | null;
+          utm_source?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          landed_at?: string | null;
+          user_id?: string;
+          utm_campaign?: string | null;
+          utm_medium?: string | null;
+          utm_source?: string | null;
+        };
+        Relationships: [];
+      };
       team_kicks: {
         Row: {
           kicked_at: string;
@@ -2402,6 +2429,15 @@ export type Database = {
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
         Returns: undefined;
+      };
+      record_signup_attribution: {
+        Args: {
+          p_campaign?: string;
+          p_landed_at?: string;
+          p_medium?: string;
+          p_source?: string;
+        };
+        Returns: string;
       };
       remove_friend: {
         Args: { _friend_id: string };
