@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { findAuthConfigProblems, IOS_OAUTH_CALLBACK, type AuthConfig } from "./auth-config-guard";
+import {
+  describeEmailLimits,
+  findAuthConfigProblems,
+  IOS_OAUTH_CALLBACK,
+  type AuthConfig,
+} from "./auth-config-guard";
 
 /**
  * Each case is a shape that ACTUALLY SHIPPED, not an invented one. The
@@ -208,5 +213,44 @@ describe("the sign-in email body the update script applies", () => {
     expect(src).toContain("mailer_templates_magic_link_content: CODE_EMAIL");
     expect(src).toContain("mailer_templates_confirmation_content: CODE_EMAIL");
     expect(src).not.toMatch(/Prefer a link|<a href/);
+  });
+});
+
+describe("describeEmailLimits", () => {
+  it("prints the live numbers a launch plan depends on", () => {
+    const lines = describeEmailLimits({
+      rate_limit_email_sent: 30,
+      rate_limit_otp: 360,
+      rate_limit_verify: 360,
+      smtp_max_frequency: 60,
+      smtp_host: "smtp.resend.com",
+    });
+    expect(lines).toEqual([
+      "rate_limit_email_sent = 30 emails per hour (whole project)",
+      "rate_limit_otp        = 360 OTP requests per hour",
+      "rate_limit_verify     = 360 verifications per hour per IP",
+      "smtp_max_frequency    = 60 seconds between emails to the same address",
+      "smtp_host             = smtp.resend.com",
+    ]);
+  });
+
+  it("says plainly when the API did not report a value or no SMTP host is set", () => {
+    const lines = describeEmailLimits({}).join("\n");
+    expect(lines).toContain("rate_limit_email_sent = not reported by the API");
+    expect(lines).toContain(
+      "smtp_host             = not set (the built-in mailer would be in use)",
+    );
+  });
+
+  it("never prints SMTP credentials or the sender address", () => {
+    const lines = describeEmailLimits({
+      smtp_host: "smtp.resend.com",
+      ...({
+        smtp_user: "resend",
+        smtp_pass: "SECRET-VALUE",
+        smtp_admin_email: "a@b.test",
+      } as object),
+    } as AuthConfig).join("\n");
+    expect(lines).not.toMatch(/SECRET-VALUE|resend\b(?!\.)|a@b\.test/);
   });
 });
