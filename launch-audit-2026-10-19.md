@@ -251,6 +251,8 @@ After the baseline audit, this branch added bounded retry/backoff and reduced co
 
 PR #337 CI run 39337613041 passed all jobs after fixing Node `Request` subclass cloning during nonce injection. Both regular and signed-in E2E passed; the signed-in run exercised the local Postgres stale-snapshot race and anon-role execution denial. Swift tests, iOS app build, Deno tests, both web builds, typecheck/lint, and link-check also passed. Deployed learner/admin response headers, the App Store age-rating owner confirmation, and physical-device gates remain open; this is not a launch sign-off.
 
+Vercel preview follow-up (2026-10-19): read-only HEAD requests to both PR preview URLs returned Vercel's deployment-protection `/login` page, with the platform's generic CSP/HSTS headers. These responses are not the app and provide no evidence that the learner/admin server entry emitted its nonce CSP. Preview header verification remains blocked until an authorized preview route or deployment-protection bypass is available; no bypass was attempted.
+
 ## Final decision
 
 **Do not announce a broad public launch yet.** The app is suitable for continued controlled beta work and has a credible release foundation. Public launch should wait for the P0 platform/device gates, supported CI confirmation, production migration/header verification, and operational alerting. Then perform a dated release rehearsal against the exact production artifacts and record owner sign-off in the repository.

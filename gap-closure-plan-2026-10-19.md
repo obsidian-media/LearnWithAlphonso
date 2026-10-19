@@ -102,6 +102,8 @@
 
 Current verification at this checkpoint: full Vitest suite 3,677 passed / 8 skipped, TypeScript and both production builds passed, and full ESLint passed with six pre-existing warnings. Focused Request/CSP tests pass 6/6. Supported PR CI run 39337613041 passed all jobs, including regular and signed-in E2E, real-Postgres contention/permission assertions, Swift tests, and iOS app build. Deployed-header verification remains pending.
 
+Header probe result: HEAD requests to both Vercel preview URLs served Vercel deployment-protection `/login` pages and generic platform CSP/HSTS, not app responses. Verify actual learner/admin headers once an authorized preview path is available; do not treat the platform headers as app validation.
+
 ## Do not do yet
 
 - The core completion transaction and native retry behavior already exist. Verify production migration state before proposing changes to this path.
