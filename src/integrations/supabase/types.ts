@@ -2432,10 +2432,10 @@ export type Database = {
       };
       record_signup_attribution: {
         Args: {
-          p_campaign?: string;
-          p_landed_at?: string;
-          p_medium?: string;
-          p_source?: string;
+          p_campaign: string;
+          p_landed_at: string;
+          p_medium: string;
+          p_source: string;
         };
         Returns: string;
       };
