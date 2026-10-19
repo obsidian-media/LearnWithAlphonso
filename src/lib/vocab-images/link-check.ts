@@ -22,9 +22,10 @@ async function fetchWithRetry(
     if (!retryable || attempt >= MAX_RETRIES) return response;
 
     const retryAfterSeconds = Number(response.headers.get("retry-after"));
-    const delayMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
-      ? Math.min(retryAfterSeconds * 1000, 5000)
-      : 250 * 2 ** attempt;
+    const delayMs =
+      Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
+        ? Math.min(retryAfterSeconds * 1000, 5000)
+        : 250 * 2 ** attempt;
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 }

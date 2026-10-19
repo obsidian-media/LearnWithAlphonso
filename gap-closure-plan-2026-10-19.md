@@ -10,9 +10,9 @@
 **Status (2026-10-19):** Main's supported Bun CI passed all jobs in run 39183037153, including tests, E2E, Deno, iOS builds/tests, content/type checks, and deployment. Bun remains blocked locally; this branch has not run CI because it has no PR.
 **Exit criteria:** clean, reproducible CI run with published artifacts and no unexplained failure.
 
-1. Main baseline verified by GitHub Actions run 39183037153 (`6749f18`); record Bun version 1.3.10 and the Ubuntu 24.04 runner from its job log. The local Bun binary is blocked by Windows ACL (`Access is denied`). Run the same suite on this branch once a PR/owner-authorized CI path exists.
+1. Main baseline verified by GitHub Actions run 39183037153 (`6749f18`); record Bun version 1.3.10 and the Ubuntu 24.04 runner from its job log. The local Bun binary is blocked by Windows ACL (`Access is denied`). GitHub has no run for this branch because CI is configured for pull requests and pushes to main; branch CI still requires the approved PR path.
 2. Fix the local tooling traversal failures: install the declared missing test dependency and skip ignored hidden metadata in source scanners; both are now fixed on this branch.
-3. Run and record the web unit suite, lint, typecheck, and learner/admin builds; completed locally with 3,668 passing tests, 8 skipped tests, lint at zero errors, successful typecheck, and both builds successful.
+3. Run and record the web unit suite, lint, typecheck, and learner/admin builds; the earlier full suite passed 3,668 tests (8 skipped). Current focused suites, typecheck, targeted ESLint, and both production builds also pass after the changes below.
 4. Playwright, signed-in E2E, Deno, migration/content checks, and deploy passed on main in run 39183037153. Branch-specific result remains to verify.
 5. Keep CI artifacts with test summaries and failure logs so release decisions are evidence-based.
 
@@ -25,9 +25,9 @@
 1. Add tests proving the three Edge Functions never expose Zod `details` for malformed input.
 2. Add an account-deletion test where one owned-table delete returns an error; assert auth deletion is not attempted and the client receives a safe stable error.
 3. Normalize account-delete/account-export API error responses to public messages and correct statuses while logging underlying errors server-side; implemented and covered by route tests.
-4. Add the same baseline headers to any separately served admin boundary and verify learner/admin staging responses.
-5. Design a nonce/hash-based CSP for the inline theme bootstrap instead of enabling a broad `unsafe-inline` policy.
-6. Decide and document HSTS ownership: Vercel/platform configuration or application response, with HTTPS-only behavior.
+4. Add the same baseline headers to the separately served admin boundary; implemented through `admin/server.ts` and the admin server entry. Verify deployed learner/admin responses after deployment.
+5. Add nonce-based CSP for learner and admin SSR. Learner inline theme bootstrap receives the request nonce; TanStack-generated scripts/head assets use router `ssr.nonce`. `script-src` is nonce-only plus `strict-dynamic`; existing inline styles remain explicitly allowed under `style-src` pending a style-attribute cleanup. Focused policy/wrapper tests and both production builds pass.
+6. HSTS ownership is application response headers: one-year max-age on HTTPS requests only, with no `includeSubDomains` until sibling-host HTTPS is confirmed. Staging/production response verification remains open.
 
 ## Phase 2 — Verify atomic completion deployment
 
@@ -37,8 +37,8 @@
 
 1. Production deploy job 39183037153 reports “Remote database is up to date,” confirming migration `20261014100300_atomic_lesson_completion.sql` was present by that run. Add/retain an explicit database concurrency test and assert the service-role-only RPC grants.
 2. Preserve the existing concurrency design: the RPC locks the auth/progress rows and rejects stale row-version snapshots; the web retries fresh snapshots and iOS queues transient 5xx results with backoff.
-3. Keep the current web/iOS retry tests; add a live database concurrent-call integration test if the Supabase test harness supports deterministic transaction contention.
-4. Record production migration version and the result of the concurrency check in the release evidence.
+3. Added a real-Postgres contention check to `e2e/signed-in.spec.ts`, which runs against the temporary Supabase stack already started by `e2e-signed-in`: concurrent calls share a version snapshot, expecting one applied and one conflict, one resulting completion, plus anon execution denial. The PR CI run must verify the assertion.
+4. Production migration was present in deploy run 39183037153. Record branch CI’s migration and concurrency results in release evidence when available.
 
 ## Phase 3 — Production observability and support
 
@@ -85,11 +85,13 @@
 - Current Vocab image links workflow run 39259158886 failed because many Supabase Storage HEAD requests received HTTP 429. `link-check.ts` now retries bounded 429/5xx responses with backoff and the scheduled checker uses concurrency 2. Focused tests pass 10/10; a future scheduled/dispatch run must verify the live rate-limit behavior.
 - App Store release-ops run 39186960541 failed its age-rating check: live contests=`INFREQUENT`, expected=`INFREQUENT_OR_MILD`, computed rating=`FOUR_PLUS` vs the owner's 13+ decision. This requires owner confirmation before any metadata write.
 
-### Phase 2 — Account deletion recovery and iOS download deduplication (2026-10-19)
+### Phase 2 — Account deletion recovery, iOS download deduplication, security policy, and database contention coverage (2026-10-19)
 
-- Account deletion now returns a stable, user-safe retry message when owned-row cleanup partially fails; the authenticated account is deliberately retained until cleanup succeeds. Detailed table errors stay in server logs. Added retry-after-partial-cleanup coverage; the focused account suite passes.
+- Account deletion now returns a stable, user-safe retry message when owned-row cleanup, incoming-friendship cleanup, or auth deletion fails; the account remains active until it can be fully deleted. Diagnostic context stays server-side. Added partial-cleanup retry and service-error tests, all passing.
 - iOS podcast download requests for the same episode now coalesce through a keyed in-flight task registry. Added tests for one execution across concurrent callers, shared failure, and retry after failure. Swift tests still require the macOS CI runner.
-- This does not close the separate security-policy/CSP gap or provide a live database concurrency race test; those remain open. Branch-wide CI is also pending because this branch has no PR.
+- Learner/admin responses now use a per-response nonce CSP; scripts are nonce-only, while inline styles remain temporarily allowed. HSTS is emitted for HTTPS only. Focused policy/wrapper tests and both production builds passed locally; deployed-header checks await deployment.
+- Full web suite now passes: 308 files passed, 1 skipped; 3,677 tests passed, 8 skipped. TypeScript and both production builds pass. Full ESLint exits successfully with six pre-existing warnings and no errors.
+- Signed-in CI now tests real database concurrency and anon RPC denial. It has not run on this branch yet, so those assertions remain pending CI verification.
 
 - Sanitized malformed-body responses in `supabase/functions/grade-review/index.ts`, `supabase/functions/start-lesson-session/index.ts`, and `supabase/functions/complete-lesson/handler.ts`.
 - Added owned-table deletion error inspection in `src/lib/account.functions.ts`.
@@ -98,7 +100,7 @@
 - Added regression coverage for the sanitized completion response, partial account-deletion failure, and baseline SSR headers.
 - Added route tests for safe account export/deletion error contracts.
 
-Phase 1 code hardening is implemented and covered by focused tests. The full local web suite passed before the final account-route update; after that update, the focused account tests (47/47), lint, typecheck, and learner build passed. Deployed header verification remains open; the full supported Bun/CI run is tracked in Phase 0.
+Current verification at this checkpoint: full Vitest suite 3,677 passed / 8 skipped, TypeScript passed, both production builds passed, and full ESLint passed with six pre-existing warnings. Supported Bun CI, real-Postgres contention/permission assertions, Swift/macOS tests, and deployed-header verification remain pending.
 
 ## Do not do yet
 

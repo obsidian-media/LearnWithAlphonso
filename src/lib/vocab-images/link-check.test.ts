@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { checkAll, probeUrl, summarize } from "./link-check";
+import { checkAll, probeUrl, summarize, type FetchLike } from "./link-check";
 
 const res = (status: number, type = "image/jpeg") =>
   new Response(null, { status, headers: { "content-type": type } });

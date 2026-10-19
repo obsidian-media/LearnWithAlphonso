@@ -75,6 +75,9 @@ export const USER_DELETE_TABLES = [
   "language_progress",
 ] as const;
 
+const ACCOUNT_DELETION_RETRY_MESSAGE =
+  "We couldn't finish deleting your account. Your account is still active; please try again. Contact support if the problem continues.";
+
 // user_progress carries account-wide state (streak/hearts) plus five
 // columns frozen since the 2026-09-08 multi-course migration -- xp,
 // cefr_level, league_tier and both placement_* trios all moved to
@@ -361,7 +364,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       // Keep the account active so the caller can retry. Detailed table errors
       // belong in server logs; never serialize schema or backend details to clients.
       console.error("[account-deletion] Owned-row cleanup incomplete", failedDeletes);
-      throw new Error("We couldn't finish deleting your account. Your account is still active; please try again. Contact support if the problem continues.");
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -389,9 +392,21 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     }
 
     // Friend rows pointing at this user are not owned by them.
-    await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
+    const { error: friendshipCleanupError } = await supabaseAdmin
+      .from("friendships")
+      .delete()
+      .eq("friend_id", userId);
+    if (friendshipCleanupError) {
+      console.error("[account-deletion] Incoming friendship cleanup failed", {
+        code: friendshipCleanupError.code,
+      });
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
+    }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("[account-deletion] Auth user deletion failed", { code: error.code });
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
+    }
     await eraseSubscriberRecord(userId);
 
     return { deleted: true, appleRevocationStatus };
