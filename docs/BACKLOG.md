@@ -22,9 +22,11 @@
 
 > **CI follow-up 2026-10-19:** PR #337 run 39337613041 passed all checks, including signed-in local-Postgres concurrency/anon-role assertions, Swift tests, iOS app build, web/admin builds, lint/typecheck, Deno tests, and regular E2E. Commits `ca63d65` and `d07cb18` carry the implementation and Node request-cloning fix. Deployed response headers and owner/device release gates remain open.
 
+> **Final implementation CI 2026-10-19:** Head `3373811` passed PR run 39342519846: all CI jobs green, Bun suite 309 files / 3,685 passed / 1 skipped, both E2E journeys (including real-Postgres race and anonymous denial), Swift tests, and iOS app build. This includes the cross-runtime request normalization and lint formatting fix.
+
 > **Preview header evidence 2026-10-19:** Both Vercel preview HEAD probes returned the deployment-protection `/login` page and generic Vercel CSP/HSTS headers, not the app. Application CSP/HSTS verification remains pending authorized preview access; no protection bypass was attempted.
 
-> **Local production runtime check 2026-10-19:** Both built learner/admin servers returned 200 with CSP nonce directives matching nonce attributes in rendered HTML. This uncovered a Request cross-realm issue; reconstruction now normalizes request body bytes. Focused tests, TypeScript, and both builds pass. The CI run on `ef9e3de` passed E2E/database/iOS jobs but lint caught three formatting errors; fixed locally, awaiting rerun. Local HTTP did not emit HSTS, as intended; HTTPS-only HSTS remains covered by tests.
+> **Local production runtime check 2026-10-19:** Both built learner/admin servers returned 200 with CSP nonce directives matching nonce attributes in rendered HTML. This uncovered a Request cross-realm issue; reconstruction now normalizes request body bytes. Focused tests, TypeScript, and both builds pass. Final Bun CI on `3373811` is green. Local HTTP did not emit HSTS, as intended; HTTPS-only HSTS remains covered by tests.
 
 > **2026-10-19 verification boundary:** I reconciled all explicitly open/partial items in the current release and backlog summaries against current branch code/history where possible, and corrected the stale high-impact claims called out below. The remainder of this file contains dated incident reports and deferred product ideas; those historical narratives are retained, not represented as individually re-audited line-by-line. Any live state, human content approval, device behavior, or separate-repository status without fresh evidence is marked unverified/owner-gated rather than presumed done.
 
