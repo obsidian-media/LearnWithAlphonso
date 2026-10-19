@@ -351,18 +351,12 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     const deleteResults = await Promise.all(
       USER_DELETE_TABLES.map(async (table) => ({
         table,
-        result: await supabase
-          .from(table)
-          .delete()
-          .eq("user_id", userId),
+        result: await supabase.from(table).delete().eq("user_id", userId),
       })),
     );
     const failedDeletes = deleteResults
       .filter(({ result }) => result.error)
-      .map(
-        ({ table, result }) =>
-          `${table}: ${result.error?.message ?? "unknown error"}`,
-      );
+      .map(({ table, result }) => `${table}: ${result.error?.message ?? "unknown error"}`);
     if (failedDeletes.length > 0) {
       throw new Error(`Account deletion could not clear owned data: ${failedDeletes.join("; ")}`);
     }

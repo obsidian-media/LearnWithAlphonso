@@ -8,15 +8,15 @@
 
 The product has a stronger foundation than the current launch status suggests. Authentication, server-side lesson grading, Supabase/RLS boundaries, AI consent/quota controls, iOS signing automation, privacy manifests, and test coverage are all meaningful positives. Several issues found in older audit material are already fixed in the current tree, including important web accessibility and middleware behavior.
 
-It is not yet possible to call the app ready for real users because the release evidence is incomplete and the current local verification attempt is not reproducibly green. The most material product risks are:
+It is not yet possible to call the app ready for a broad public launch because production/platform evidence and physical-device sign-off are incomplete. Local web verification is now green through the available npm/Node fallback; the repository's supported Bun install and full CI workflow could not be reproduced because Bun cannot start in this environment. The most material launch risks are:
 
-1. The web test suite produced deterministic-looking failures in generated-content tests, multiple timeouts, and a V8 out-of-memory failure under the available runner. Bun itself could not start in this environment, so the repository's authoritative Bun-based commands were not independently verified.
+1. Local verification now passes: 3,668 Vitest tests, lint with zero errors, TypeScript, and learner/admin production builds. The initial failures were traced to a missing installed package and ignored local metadata directories; test/config fixes resolved them. The supported Bun install and full CI/E2E pipeline still need a clean run.
 2. iOS release readiness still depends on owner/device evidence: real-device microphone, push, VoiceOver, Dynamic Type, offline/retry, purchase/RevenueCat, account deletion, and production TestFlight checks. Static code and CI cannot substitute for this.
-3. Lesson completion still has a documented concurrent-write race. Two tabs/devices can read and then overwrite XP, streak, activity, hearts, or related state unless the database transaction serializes the operation. This should be fixed in the atomic RPC path before public launch.
+3. Lesson completion uses a service-role-only atomic RPC that locks the account and progress rows and rejects stale snapshots. The web caller recomputes conflicts; the iOS app queues transient server failures and retries with backoff. The remaining release check is confirming the migration is deployed in production.
 4. App Store Connect, paid-apps agreement, subscription/RevenueCat offering, support/privacy/reporting email, review demo account cleanup, screenshots, and the exact submitted build state remain human/platform gates in the repository's own release notes. They need live confirmation rather than assumption.
 5. Operational visibility is not at the standard expected for a public AI/mobile product: the code has error capture and an uptime workflow, but no clearly configured centralized exception, AI-provider, payment, push-delivery, or conversion alerting path was found.
 
-The first remediation work has started in the working tree: raw Zod validation internals are no longer exposed by `grade-review`, `start-lesson-session`, and `complete-lesson`; account deletion now fails loudly before auth deletion if an owned-table delete fails; and the learner SSR boundary adds baseline security headers.
+Remediation has started on branch `Codex-pre-Launch`: raw Zod validation internals are no longer exposed by `grade-review`, `start-lesson-session`, and `complete-lesson`; account deletion now fails before auth deletion if owned-row cleanup reports an error; learner SSR responses receive baseline security headers; and local source scanners/lint skip ignored tooling metadata.
 
 ## Evidence and method
 
@@ -35,41 +35,25 @@ This is a deep engineering launch audit, not a penetration test, App Store revie
 
 ## Readiness scorecard
 
-| Area | Assessment | Readiness | Main reason |
-|---|---|---:|---|
-| Authentication/session boundaries | Strong with conditions | 8.5/10 | Supabase JWT validation uses claims/user verification; protected web routes and native functions are present. |
-| Authorization/RLS/IDOR resistance | Strong with conditions | 8/10 | User-scoped queries and server-side lesson/review ownership checks were found; live policy tests still need to remain green. |
-| Lesson/data integrity | Not ready | 6.5/10 | Server regrading is good, but concurrent completion writes remain a known race. |
-| AI safety, consent, and quotas | Strong with conditions | 8/10 | Fixed system prompts, consent enforcement, quotas, request limits, timeout/error sanitization; provider reliability needs monitoring. |
-| Web security headers | Improved, needs deployment verification | 7/10 | Baseline headers were added in this audit; admin/platform boundary and deployed headers still need verification. |
-| Dependency/supply-chain verification | Unverified | 6/10 | Bun lock is authoritative, but Bun could not execute locally and `npm audit` cannot run without a package-lock. |
-| Web automated verification | Red until explained | 5/10 | Test timeouts, generated-content failures, and V8 OOM were observed; full Bun CI is not independently reproduced. |
-| iOS build/signing/release pipeline | Good automation, not launch proof | 8/10 | Manual signing, IPA validation, privacy/bundle checks, and TestFlight workflow exist. |
-| iOS real-device QA | Incomplete | 5/10 | Mic, push, VoiceOver, Dynamic Type, offline, purchases, deletion, and production configuration require physical-device evidence. |
-| Accessibility | Web foundation good; iOS unverified | 7/10 | Skip link, dialogs, tabs, labels, reduced motion, and state semantics are present; device VoiceOver/Dynamic Type remain open. |
-| Privacy/data deletion/export | Good design, needs regression proof | 7.5/10 | Export and deletion paths exist; this audit fixed silent owned-row deletion failure handling. |
-| Content quality | Product-complete, review incomplete | 7/10 | English structure is mature; French/Spanish native-speaker review remains an explicit release gap. |
-| Observability/support | Not launch-grade yet | 5.5/10 | Error capture and uptime checks exist, but centralized alerts and provider/payment/push dashboards were not established in-repo. |
+| Area                                 | Assessment                                  | Readiness | Main reason                                                                                                                               |
+| ------------------------------------ | ------------------------------------------- | --------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Authentication/session boundaries    | Strong with conditions                      |    8.5/10 | Supabase JWT validation uses claims/user verification; protected web routes and native functions are present.                             |
+| Authorization/RLS/IDOR resistance    | Strong with conditions                      |      8/10 | User-scoped queries and server-side lesson/review ownership checks were found; live policy tests still need to remain green.              |
+| Lesson/data integrity                | Strong with deployment confirmation pending |    8.5/10 | Server regrading and atomic completion RPC are present; web and iOS retry paths are covered, with production migration status to confirm. |
+| AI safety, consent, and quotas       | Strong with conditions                      |      8/10 | Fixed system prompts, consent enforcement, quotas, request limits, timeout/error sanitization; provider reliability needs monitoring.     |
+| Web security headers                 | Improved, needs deployment verification     |      7/10 | Baseline headers were added in this audit; admin/platform boundary and deployed headers still need verification.                          |
+| Dependency/supply-chain verification | Partially verified                          |    6.5/10 | `bun.lock` is authoritative; Bun could not execute locally and `npm audit` has no npm lockfile to consume.                                |
+| Web automated verification           | Green locally, CI confirmation pending      |    8.5/10 | 3,668 tests pass, lint/typecheck pass, and learner/admin builds succeed; Bun/Playwright/Supabase CI has not been reproduced here.         |
+| iOS build/signing/release pipeline   | Good automation, not launch proof           |      8/10 | Manual signing, IPA validation, privacy/bundle checks, and TestFlight workflow exist.                                                     |
+| iOS real-device QA                   | Incomplete                                  |      5/10 | Mic, push, VoiceOver, Dynamic Type, offline, purchases, deletion, and production configuration require physical-device evidence.          |
+| Accessibility                        | Web foundation good; iOS unverified         |      7/10 | Skip link, dialogs, tabs, labels, reduced motion, and state semantics are present; device VoiceOver/Dynamic Type remain open.             |
+| Privacy/data deletion/export         | Good design, needs regression proof         |    7.5/10 | Export and deletion paths exist; this audit fixed silent owned-row deletion failure handling.                                             |
+| Content quality                      | Product-complete, review incomplete         |      7/10 | English structure is mature; French/Spanish native-speaker review remains an explicit release gap.                                        |
+| Observability/support                | Not launch-grade yet                        |    5.5/10 | Error capture and uptime checks exist, but centralized alerts and provider/payment/push dashboards were not established in-repo.          |
 
 ## Findings by priority
 
 ### P0 — release blockers
-
-#### F-01 — Verification is not reproducibly green
-
-**Evidence:** `package.json`, `vitest.config.ts`, `playwright.config.ts`, `.github/workflows/ci.yml`.
-
-The repository is Bun-first (`bun install --frozen-lockfile`, Bun scripts), but Bun could not start in the audit environment because the installed executable returned “Access is denied.” Fallback `npm` attempts were started but did not complete cleanly. Observed evidence included:
-
-- generated lexicon/romance isolation test failures;
-- a V8 “process out of memory” failure;
-- timeouts in AI safety prompt-path tests, AI consent enforcement, and account deletion tests;
-- targeted runs did not complete promptly under the available machine load;
-- `npm audit --omit=dev --json` failed because there is no `package-lock.json`.
-
-This does not prove each observed test is a product defect; it proves the audit cannot certify a green release from this environment. The CI Bun run, dependency install, and the individual failing tests must be re-run in a clean, appropriately sized environment and either fixed or documented as an intentional test-harness issue.
-
-**Exit criteria:** clean CI run for lint, typecheck, unit tests, web build, admin build, E2E, Deno tests, migration checks, and the release-specific checks; no untriaged failure or OOM.
 
 #### F-02 — Platform/commercial release gates are not confirmed
 
@@ -91,19 +75,29 @@ The app has substantial native implementation and CI signing checks, but product
 
 ### P1 — must close before broad public launch
 
-#### F-04 — Lesson completion has a concurrent-write race
+#### F-01 — Reproduce the supported Bun and full CI pipeline
 
-**Evidence:** `src/lib/sync.functions.ts`, `supabase/functions/complete-lesson/handler.ts`, the completion RPC migration, and `docs/BACKLOG.md`.
+**Evidence:** `package.json`, `bun.lock`, `vitest.config.ts`, `playwright.config.ts`, `.github/workflows/ci.yml`.
 
-The completion path correctly authenticates, checks a lesson session, re-derives correctness server-side, and applies the result through a database RPC. However, the surrounding state model still has read-then-write behavior for activity/streak/XP/hearts-related state. Two devices or tabs completing at the same time can observe the same old state and overwrite each other's gains. The graph identifies `complete-lesson.handleRequest` as a high-complexity, high-change path (cyclomatic 23, cognitive 34, transitive loop depth 6).
+The complete web suite passed locally with `npm test -- --maxWorkers=1` (305 test files passed, 1 skipped; 3,668 tests passed, 8 skipped). `npm run lint` passed with zero errors and six existing warnings; `npx tsc --noEmit`, `npm run build`, and `npm run build:admin` all succeeded. The changed Edge completion handler passed 17/17 Deno tests. Local Node was v25.9.0, outside the engine ranges printed by Vitest/jsdom, and the repository's Bun executable fails to start with “Access is denied.”
 
-**Required fix:** make the whole completion state transition atomic in one SQL transaction, with row locking or an equivalent idempotent/advisory-lock design. Preserve request/session idempotency and add a concurrent two-client test that proves XP, streak, hearts, activity, and completion records are not lost or duplicated.
+The first test run exposed an incomplete local install (`french-verbs-lefff` was pinned in `package.json`/`bun.lock` but absent under `node_modules`) and source scanners traversing ignored `.gstack` metadata. The package was installed locally without changing manifests/lockfiles; scanners now skip hidden metadata, and ESLint explicitly ignores Git-ignored audit/build/tooling directories. These changes made the local suite green. npm reported zero vulnerabilities for its transient resolution, but that is not an authoritative audit of the Bun lockfile.
+
+**Exit criteria:** supported Bun frozen install and protected CI pass, including Playwright, signed-in E2E, Deno tests, migration/content checks, and release artifact checks. Confirm no regression under the repository's supported Node/Bun versions.
+
+#### F-04 — Confirm the atomic completion migration is deployed
+
+**Evidence:** `supabase/migrations/20261014100300_atomic_lesson_completion.sql`, `src/lib/sync.functions.ts`, `supabase/functions/complete-lesson/handler.ts`, and iOS completion client flows.
+
+The previous audit note in `docs/BACKLOG.md` is stale: the October 14 migration serializes completions by locking the user's auth row and affected progress rows, then compares expected row versions before writing. The web handler recomputes from fresh reads up to three times. On iOS, 5xx responses are classified as transient, queued by the lesson player, and retried by the sync engine with backoff; tests `testA5xxLessonCompletionIsRescheduledWithBackoff` and `testALessonCompletionFailingTransientlyTwentyTimesIsStillQueued` cover this behavior. **No code-level lost-update gap was found.** The remaining release check is to verify the migration is applied in the production Supabase project. The graph identifies `complete-lesson.handleRequest` as a high-complexity path (cyclomatic 23, cognitive 34, transitive loop depth 6), which warrants keeping concurrency tests in place.
+
+**Release check:** verify the migration version and RPC grants in the production Supabase database. A database-level concurrent-call integration test would improve assurance, but current static code and client retry tests do not indicate a P1 implementation defect.
 
 #### F-05 — Public Edge Functions exposed raw validation internals
 
 **Evidence:** previous response bodies in `supabase/functions/grade-review/index.ts:99`, `supabase/functions/start-lesson-session/index.ts:129`, and `supabase/functions/complete-lesson/handler.ts:186`.
 
-The handlers returned `${err}` in a public `details` property. That can disclose schema names, expected values, or implementation details. **Remediation started:** all three now return only `{ error: "Invalid request body" }` while retaining server-side debugging capability through normal logs.
+The handlers returned `${err}` in a public `details` property. That can disclose schema names, expected values, or implementation details. **Status: fixed in this branch.** All three now return only `{ error: "Invalid request body" }` while retaining server-side debugging capability through normal logs. The completion handler test pins the response shape; deploy and malformed-body-check the two remaining functions.
 
 **Exit criteria:** Deno tests assert the stable public shape, and deployed functions are verified not to return `details` for malformed input.
 
@@ -111,7 +105,7 @@ The handlers returned `${err}` in a public `details` property. That can disclose
 
 **Evidence:** `src/lib/account.functions.ts` in `deleteMyAccount`.
 
-The caller-owned tables were deleted in `Promise.all` without inspecting individual Supabase errors, after which auth deletion could proceed. A permission, schema, transient, or policy failure could therefore leave data behind while reporting a successful account deletion. **Remediation started:** the function now collects all deletion results and throws before auth deletion if any owned-table delete fails.
+The caller-owned tables were deleted in `Promise.all` without inspecting individual Supabase errors, after which auth deletion could proceed. A permission, schema, transient, or policy failure could therefore leave data behind while reporting a successful account deletion. **Status: fixed in this branch.** The function now collects all deletion results and throws before auth deletion if any owned-table delete fails; a regression test verifies auth deletion is not attempted after an owned-row failure.
 
 **Remaining work:** add a regression test for partial failure, decide whether deletion should retry or mark a durable erasure job, and verify the production database's cascade/retention behavior for every table in the export/delete inventories.
 
@@ -119,7 +113,7 @@ The caller-owned tables were deleted in `Promise.all` without inspecting individ
 
 **Evidence:** `src/server.ts` before this audit had no `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, or `Permissions-Policy` handling.
 
-**Remediation started:** `src/server.ts` now adds `nosniff`, `DENY`, `strict-origin-when-cross-origin`, and a restrictive permissions policy to normal and error responses. This intentionally does not add a speculative CSP because the root document currently uses an inline theme script and CSP needs a tested nonce/hash strategy.
+**Status: baseline headers implemented in this branch.** `src/server.ts` now adds `nosniff`, `DENY`, `strict-origin-when-cross-origin`, and a restrictive permissions policy to normal and error responses. The server unit tests pin these values. A CSP was not added because the root document currently uses an inline theme script and CSP needs a tested nonce/hash strategy.
 
 **Remaining work:** apply equivalent policy at the admin boundary/platform if it is separately served, verify headers on deployed HTTPS responses, decide HSTS ownership at the platform, and design a CSP with nonce/hash coverage.
 
@@ -157,26 +151,26 @@ The course engine has six-question-type parity, but native-speaker review remain
 
 Keep the strong Kit tests, but add smoke coverage around the app's navigation/state orchestration: lesson finish, review grading, conversation recording/playback, entitlement transitions, account deletion, and offline retry. Continue to treat device testing as required.
 
-#### F-13 — Client account API error responses should be normalized
+#### F-13 — Account API error responses exposed internal exceptions
 
 **Evidence:** `src/routes/api/account-delete.ts` and `src/routes/api/account-export.ts` catch paths.
 
-Some caught server errors are returned to clients as message text. This is lower risk than the raw validator issue, but stable public error codes would avoid leaking backend details and make the native/web clients more reliable. Normalize to a safe message/code and keep the underlying error server-side.
+Some caught server errors were returned to clients as message text, and the delete route mapped most failures to HTTP 400. **Status: fixed in this branch.** Account export/deletion now return stable `Unauthorized`, `Export failed`, `Deletion failed`, or `Invalid confirmation` messages, correct 401/400/500 status codes, and log internal errors server-side. Route tests assert that messages and table/policy details stay private.
 
 ## OWASP-aligned review
 
-| Category | Result | Audit conclusion |
-|---|---|---|
-| A01 Broken Access Control | Conditional pass | Auth and user scoping are consistently present in reviewed paths; lesson/review ownership and RLS are good. Keep live RLS tests and test cross-user IDs. |
-| A02 Cryptographic Failures | Pass with operational conditions | No committed service-role/API secrets or private keys were found; session/HMAC and TLS assumptions need production secret rotation/runbook evidence. |
-| A03 Injection | Pass with fixes applied | Parameterized Supabase calls, fixed vendor URLs, allowlisted prompts, and schema validation were found. Raw validation details were removed. Continue testing prompt/content boundaries. |
-| A04 Insecure Design | Gap | Concurrent completion writes are a real integrity/design issue; atomic RPC and concurrency tests are required. |
-| A05 Security Misconfiguration | Gap being remediated | Baseline headers were absent and are now added for learner SSR; verify admin/platform headers, CSP strategy, HSTS, CORS, and production env configuration. |
-| A06 Vulnerable/Outdated Components | Unverified | Bun could not run locally; no npm lock exists for npm audit. Use clean CI and a lockfile-aware scanner. |
-| A07 Identification/Auth Failures | Conditional pass | JWT claims/user validation, refresh behavior, protected routes, and rate controls are present. Verify abuse limits and session revocation in production. |
-| A08 Software/Data Integrity Failures | Conditional pass | CI has migration/version/signing/content checks and manual iOS signing. Make schema freshness and release artifact provenance protected-branch gates. |
-| A09 Logging/Monitoring Failures | Gap | Error capture and uptime exist, but centralized alerting and AI/payment/push observability are not clearly established. |
-| A10 SSRF | Pass in reviewed scope | No user-controlled arbitrary upstream URL fetch was found in the reviewed web/Supabase paths; vendor URLs are fixed/allowlisted. |
+| Category                             | Result                           | Audit conclusion                                                                                                                                                                         |
+| ------------------------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A01 Broken Access Control            | Conditional pass                 | Auth and user scoping are consistently present in reviewed paths; lesson/review ownership and RLS are good. Keep live RLS tests and test cross-user IDs.                                 |
+| A02 Cryptographic Failures           | Pass with operational conditions | No committed service-role/API secrets or private keys were found; session/HMAC and TLS assumptions need production secret rotation/runbook evidence.                                     |
+| A03 Injection                        | Pass with fixes applied          | Parameterized Supabase calls, fixed vendor URLs, allowlisted prompts, and schema validation were found. Raw validation details were removed. Continue testing prompt/content boundaries. |
+| A04 Insecure Design                  | Conditional pass                 | Atomic completion RPC serializes and rejects stale snapshots; web recomputes conflicts and iOS queues transient failures. Verify deployed migration state.                               |
+| A05 Security Misconfiguration        | Gap being remediated             | Baseline headers were absent and are now added for learner SSR; verify admin/platform headers, CSP strategy, HSTS, CORS, and production env configuration.                               |
+| A06 Vulnerable/Outdated Components   | Unverified                       | Bun could not run locally; no npm lock exists for npm audit. Use clean CI and a lockfile-aware scanner.                                                                                  |
+| A07 Identification/Auth Failures     | Conditional pass                 | JWT claims/user validation, refresh behavior, protected routes, and rate controls are present. Verify abuse limits and session revocation in production.                                 |
+| A08 Software/Data Integrity Failures | Conditional pass                 | CI has migration/version/signing/content checks and manual iOS signing. Make schema freshness and release artifact provenance protected-branch gates.                                    |
+| A09 Logging/Monitoring Failures      | Gap                              | Error capture and uptime exist, but centralized alerting and AI/payment/push observability are not clearly established.                                                                  |
+| A10 SSRF                             | Pass in reviewed scope           | No user-controlled arbitrary upstream URL fetch was found in the reviewed web/Supabase paths; vendor URLs are fixed/allowlisted.                                                         |
 
 ## Accessibility and inclusive-use review
 
@@ -217,9 +211,9 @@ Remaining evidence gaps:
 
 The detailed plan is in [gap-closure-plan-2026-10-19.md](gap-closure-plan-2026-10-19.md). The order matters:
 
-1. Make verification green and reproducible in CI, including triage of the generated-content failures and OOM/timeouts.
+1. Keep the local verification fixes and reproduce the passing suite in the supported Bun/CI environment, including Playwright and signed-in E2E.
 2. Finish the low-risk hardening already started and add regression tests for sanitized errors and account deletion failure handling.
-3. Replace completion read-then-write behavior with a single atomic, idempotent database transaction and concurrency tests.
+3. Verify the atomic completion migration is deployed in production and retain the existing web/iOS conflict retry tests.
 4. Establish production observability and execute the full physical-device/TestFlight matrix.
 5. Complete commercial/platform gates, content review, accessibility sign-off, and launch rehearsal.
 
@@ -229,24 +223,28 @@ Completed during this audit:
 
 - codebase-memory architecture and call-path review;
 - security, authorization, AI, privacy, CI, iOS signing, accessibility, and release review;
-- attempted local verification and captured reproducibility evidence;
+- completed local verification and captured reproducibility evidence;
 - removed raw Zod error details from three public Edge Functions;
 - made account deletion fail before auth deletion when owned-row cleanup reports errors;
 - added baseline security headers to learner SSR responses;
 - added regression coverage for malformed completion requests, owned-row deletion failure, and SSR security headers;
-- verified the scoped web changes with 49/49 Vitest tests and the completion handler with 17/17 Deno tests;
+- verified the account API changes with 47/47 Vitest tests and the completion handler with 17/17 Deno tests;
+- ran the full web suite: 305 test files passed, 1 skipped; 3,668 tests passed, 8 skipped;
+- ran lint (0 errors, 6 existing warnings), TypeScript (`tsc --noEmit`), learner build, and admin build successfully;
+- after account API normalization, reran the focused account tests (47/47), lint, TypeScript, and learner production build successfully;
+- fixed ESLint and source scanners to ignore Git-ignored `.audit`, build-output, and `.gstack` metadata;
 - authored this report and the prioritized gap-closure plan.
 
 Not completed because they require external state or platform access:
 
 - live Vercel/App Store Connect/RevenueCat/Supabase production verification;
 - macOS/Xcode archive and physical-device testing;
-- a clean Bun/CI run from this Windows environment;
-- production concurrency testing against the live database;
+- a clean supported Bun/CI run and Playwright/Supabase E2E run from this Windows environment;
+- production migration status and concurrency testing against the live database;
 - native-speaker content sign-off.
 
-The focused post-change tests passed, but the full-suite P0 verification gate remains open because the earlier repository-wide attempt hit generated-content failures, timeouts, and V8 OOM before completion.
+The local web verification gate is green. The remaining verification risk is that this machine cannot execute Bun (Access is denied) and local Node v25 is outside Vitest/jsdom's supported engine ranges; the same suite and CI integration checks should pass on the repository's supported Bun/Node environment before release.
 
 ## Final decision
 
-**Do not announce a broad public launch yet.** The app is suitable for continued controlled beta work and has a credible release foundation, but public launch should wait for the P0 gates and the P1 completion-integrity, deletion, headers, and observability work. After those are closed, perform one dated release rehearsal against the exact production artifacts and record the owner sign-off in the repository.
+**Do not announce a broad public launch yet.** The app is suitable for continued controlled beta work and has a credible release foundation. Public launch should wait for the P0 platform/device gates, supported CI confirmation, production migration/header verification, and operational alerting. Then perform a dated release rehearsal against the exact production artifacts and record owner sign-off in the repository.

@@ -41,23 +41,26 @@ describe("POST /api/account-delete", () => {
     expect(deleteMyAccount).not.toHaveBeenCalled();
   });
 
-  it("maps deleteMyAccount's own confirm-literal rejection to 400", async () => {
-    deleteMyAccount.mockRejectedValue(new Error('Invalid input: expected "DELETE"'));
+  it("rejects a wrong confirmation with a stable public message", async () => {
     const res = await handler({ request: req({ confirm: "delete" }) });
     expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Invalid confirmation" });
+    expect(deleteMyAccount).not.toHaveBeenCalled();
   });
 
   it("maps an auth failure to 401", async () => {
     deleteMyAccount.mockRejectedValue(new Error("Unauthorized: No authorization header provided"));
     const res = await handler({ request: req({ confirm: "DELETE" }) });
     expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 
-  it("maps a missing-env-var failure to 500", async () => {
+  it("hides an internal deletion failure and returns 500", async () => {
     deleteMyAccount.mockRejectedValue(
-      new Error("Missing Supabase environment variable(s): SUPABASE_URL."),
+      new Error("Account deletion could not clear owned data: review_items: permission denied"),
     );
     const res = await handler({ request: req({ confirm: "DELETE" }) });
     expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Deletion failed" });
   });
 });

@@ -21,8 +21,14 @@ export default tseslint.config(
       ".output",
       ".vinxi",
       "coverage",
+      ".audit/**",
+      "**/.audit/**",
+      "**/build/**",
       "supabase/functions/**",
       ".claude/worktrees/**",
+      // Local tooling metadata is git-ignored and can have restricted ACLs;
+      // it is not application source and must not be traversed by eslint .
+      "**/.gstack/**",
     ],
   },
   {

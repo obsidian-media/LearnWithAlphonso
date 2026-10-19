@@ -42,13 +42,13 @@ describe("POST /api/account-export", () => {
     exportMyData.mockRejectedValue(new Error("Unauthorized: Invalid token"));
     const res = await handler();
     expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ error: "Unauthorized: Invalid token" });
+    expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("maps any other failure to 500", async () => {
     exportMyData.mockRejectedValue(new Error("boom"));
     const res = await handler();
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: "boom" });
+    expect(await res.json()).toEqual({ error: "Export failed" });
   });
 });

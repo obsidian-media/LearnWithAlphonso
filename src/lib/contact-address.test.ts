@@ -14,7 +14,9 @@ const SKIP = new Set(["legal-required-phrases.ts"]);
 function files(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) return files(p);
+    // Ignore editor/tool metadata folders such as the root-ignored .gstack
+    // directory. They are not shipped source and can have restricted ACLs.
+    if (e.isDirectory()) return e.name.startsWith(".") ? [] : files(p);
     return /\.(swift|tsx?|kt|xml)$/.test(e.name) && !/\.test\./.test(e.name) && !SKIP.has(e.name)
       ? [p]
       : [];
