@@ -9,7 +9,8 @@ export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 const HEAD_UNSUPPORTED = new Set([400, 405, 501]);
 const RETRYABLE_STATUSES = new Set([429]);
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 4;
+const MAX_RETRY_AFTER_MS = 30_000;
 
 async function fetchWithRetry(
   url: string,
@@ -21,10 +22,18 @@ async function fetchWithRetry(
     const retryable = RETRYABLE_STATUSES.has(response.status) || response.status >= 500;
     if (!retryable || attempt >= MAX_RETRIES) return response;
 
-    const retryAfterSeconds = Number(response.headers.get("retry-after"));
+    const retryAfter = response.headers.get("retry-after");
+    const retryAfterSeconds = retryAfter ? Number(retryAfter) : Number.NaN;
+    const retryAfterDate =
+      retryAfter && !Number.isFinite(retryAfterSeconds) ? Date.parse(retryAfter) : Number.NaN;
+    const retryAfterMs = Number.isFinite(retryAfterSeconds)
+      ? retryAfterSeconds * 1000
+      : Number.isFinite(retryAfterDate)
+        ? retryAfterDate - Date.now()
+        : Number.NaN;
     const delayMs =
-      Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
-        ? Math.min(retryAfterSeconds * 1000, 5000)
+      Number.isFinite(retryAfterMs) && retryAfterMs >= 0
+        ? Math.min(retryAfterMs, MAX_RETRY_AFTER_MS)
         : 250 * 2 ** attempt;
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
@@ -39,7 +48,9 @@ function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
     ok,
     status: res.status,
     method,
-    detail: ok ? undefined : `status ${res.status}, content-type "${type}"`,
+    detail: ok
+      ? undefined
+      : `status ${res.status}, content-type "${type}"${res.headers.get("retry-after") ? `, retry-after "${res.headers.get("retry-after")}"` : ""}`,
   };
 }
 

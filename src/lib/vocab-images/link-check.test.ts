@@ -53,8 +53,8 @@ describe("probeUrl", () => {
   it("retries rate-limited and transient server responses before accepting a valid image", async () => {
     const fetchImpl = vi
       .fn<FetchLike>()
-      .mockResolvedValueOnce(new Response(null, { status: 429 }))
-      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(new Response(null, { status: 429, headers: { "retry-after": "0" } }))
+      .mockResolvedValueOnce(new Response(null, { status: 503, headers: { "retry-after": "0" } }))
       .mockResolvedValueOnce(res(200));
 
     await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({ ok: true, status: 200 });
@@ -62,14 +62,38 @@ describe("probeUrl", () => {
   });
 
   it("returns a persistent rate limit as a failure after the bounded retries", async () => {
-    const fetchImpl = vi.fn<FetchLike>().mockResolvedValue(new Response(null, { status: 429 }));
+    const fetchImpl = vi
+      .fn<FetchLike>()
+      .mockResolvedValue(new Response(null, { status: 429, headers: { "retry-after": "0" } }));
 
     await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
       ok: false,
       status: 429,
-      detail: 'status 429, content-type ""',
+      detail: 'status 429, content-type "", retry-after "0"',
     });
-    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(fetchImpl).toHaveBeenCalledTimes(5);
+  });
+
+  it("honors an HTTP-date Retry-After while capping the delay", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-19T00:00:00.000Z"));
+    try {
+      const fetchImpl = vi
+        .fn<FetchLike>()
+        .mockResolvedValueOnce(
+          new Response(null, {
+            status: 429,
+            headers: { "retry-after": "Mon, 19 Oct 2026 00:01:00 GMT" },
+          }),
+        )
+        .mockResolvedValueOnce(res(200));
+      const result = probeUrl(U, fetchImpl);
+      await vi.advanceTimersByTimeAsync(30_000);
+      await expect(result).resolves.toMatchObject({ ok: true, status: 200 });
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
