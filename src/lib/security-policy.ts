@@ -11,19 +11,19 @@ export function readCspNonce(request: Request): string | undefined {
   return request.headers.get(CSP_NONCE_HEADER) ?? undefined;
 }
 
-export function requestWithCspNonce(request: Request, nonce: string): Request {
+export async function requestWithCspNonce(request: Request, nonce: string): Promise<Request> {
   const headers = new Headers(request.headers);
   // Always replace a caller-provided value: the nonce is server-generated.
   headers.set(CSP_NONCE_HEADER, nonce);
-  // Construct from the URL and explicit init fields: Node's undici Request
-  // cannot reliably clone framework-provided Request subclasses directly.
+  // Rebuild from bytes: Nitro can supply a Request whose body/signal are from
+  // another runtime realm and cannot be passed to Node's undici constructor.
+  const body = request.method === "GET" || request.method === "HEAD"
+    ? undefined
+    : new Uint8Array(await request.arrayBuffer());
   return new Request(request.url, {
     method: request.method,
     headers,
-    body: request.body,
-    redirect: request.redirect,
-    signal: request.signal,
-    ...(request.body ? { duplex: "half" as const } : {}),
+    body,
   });
 }
 

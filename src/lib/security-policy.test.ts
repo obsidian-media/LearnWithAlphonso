@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe("security policy", () => {
-  it("creates a cryptographically random nonce and overwrites untrusted request input", () => {
+  it("creates a cryptographically random nonce and overwrites untrusted request input", async () => {
     const first = createCspNonce();
     const second = createCspNonce();
     expect(first).not.toBe(second);
@@ -23,7 +23,7 @@ describe("security policy", () => {
     const request = new Request("https://app.example/api", {
       headers: { "x-app-csp-nonce": "attacker-controlled" },
     });
-    expect(requestWithCspNonce(request, first).headers.get("x-app-csp-nonce")).toBe(first);
+    expect((await requestWithCspNonce(request, first)).headers.get("x-app-csp-nonce")).toBe(first);
   });
 
   it("preserves request method and body while adding the nonce", async () => {
@@ -32,7 +32,7 @@ describe("security policy", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ value: 1 }),
     });
-    const secured = requestWithCspNonce(request, "server-nonce");
+    const secured = await requestWithCspNonce(request, "server-nonce");
     expect(secured.method).toBe("POST");
     expect(await secured.json()).toEqual({ value: 1 });
     expect(secured.headers.get("x-app-csp-nonce")).toBe("server-nonce");

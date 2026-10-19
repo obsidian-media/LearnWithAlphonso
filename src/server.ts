@@ -96,7 +96,7 @@ export function escapeHtmlNulBytes(response: Response): Response {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const nonce = createCspNonce();
-    const secureRequest = requestWithCspNonce(request, nonce);
+    const secureRequest = await requestWithCspNonce(request, nonce);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(secureRequest, env, ctx);

@@ -253,6 +253,8 @@ PR #337 CI run 39337613041 passed all jobs after fixing Node `Request` subclass 
 
 Vercel preview follow-up (2026-10-19): read-only HEAD requests to both PR preview URLs returned Vercel's deployment-protection `/login` page, with the platform's generic CSP/HSTS headers. These responses are not the app and provide no evidence that the learner/admin server entry emitted its nonce CSP. Preview header verification remains blocked until an authorized preview route or deployment-protection bypass is available; no bypass was attempted.
 
+Local production runtime follow-up (2026-10-19): launching each freshly built Nitro server and requesting `/` returned HTTP 200 with a production CSP, nonce-only `script-src`, and an HTML nonce matching the CSP nonce for both learner and admin. The first runtime probe exposed a cross-realm Request body/signal incompatibility not covered by dev-server E2E; nonce injection now reads non-GET/HEAD request bytes and reconstructs a native Request. Focused policy/wrapper tests and TypeScript pass. HSTS is intentionally absent on the local HTTP probe and its HTTPS-only behavior remains unit-tested. This final fix is pushed for another supported CI run; the full web suite/CI run preceded it.
+
 ## Final decision
 
 **Do not announce a broad public launch yet.** The app is suitable for continued controlled beta work and has a credible release foundation. Public launch should wait for the P0 platform/device gates, supported CI confirmation, production migration/header verification, and operational alerting. Then perform a dated release rehearsal against the exact production artifacts and record owner sign-off in the repository.

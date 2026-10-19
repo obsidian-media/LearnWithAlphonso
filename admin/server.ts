@@ -13,7 +13,7 @@ let serverEntryPromise: Promise<ServerEntry> | undefined;
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const nonce = createCspNonce();
-    const secureRequest = requestWithCspNonce(request, nonce);
+    const secureRequest = await requestWithCspNonce(request, nonce);
     try {
       serverEntryPromise ??= import("@tanstack/react-start/server-entry").then(
         (module) => (module.default ?? module) as ServerEntry,

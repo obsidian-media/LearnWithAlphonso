@@ -104,6 +104,8 @@ Current verification at this checkpoint: full Vitest suite 3,677 passed / 8 skip
 
 Header probe result: HEAD requests to both Vercel preview URLs served Vercel deployment-protection `/login` pages and generic platform CSP/HSTS, not app responses. Verify actual learner/admin headers once an authorized preview path is available; do not treat the platform headers as app validation.
 
+Production runtime probe: after building and launching the learner and admin Nitro outputs locally, both `/` requests returned 200 with CSP `script-src` restricted to a request nonce and an HTML nonce equal to the CSP nonce. This surfaced and fixed a cross-realm Request reconstruction error. Focused tests (6) and TypeScript pass after the fix; both production builds pass. Full-suite and supported CI rerun are pending for this final fix. Local HTTP correctly had no HSTS; HTTPS behavior is covered by the policy test.
+
 ## Do not do yet
 
 - The core completion transaction and native retry behavior already exist. Verify production migration state before proposing changes to this path.
