@@ -15,7 +15,16 @@ export function requestWithCspNonce(request: Request, nonce: string): Request {
   const headers = new Headers(request.headers);
   // Always replace a caller-provided value: the nonce is server-generated.
   headers.set(CSP_NONCE_HEADER, nonce);
-  return new Request(request, { headers });
+  // Construct from the URL and explicit init fields: Node's undici Request
+  // cannot reliably clone framework-provided Request subclasses directly.
+  return new Request(request.url, {
+    method: request.method,
+    headers,
+    body: request.body,
+    redirect: request.redirect,
+    signal: request.signal,
+    ...(request.body ? { duplex: "half" as const } : {}),
+  });
 }
 
 export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): string {

@@ -26,6 +26,18 @@ describe("security policy", () => {
     expect(requestWithCspNonce(request, first).headers.get("x-app-csp-nonce")).toBe(first);
   });
 
+  it("preserves request method and body while adding the nonce", async () => {
+    const request = new Request("https://app.example/api", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ value: 1 }),
+    });
+    const secured = requestWithCspNonce(request, "server-nonce");
+    expect(secured.method).toBe("POST");
+    expect(await secured.json()).toEqual({ value: 1 });
+    expect(secured.headers.get("x-app-csp-nonce")).toBe("server-nonce");
+  });
+
   it("limits scripts to same-origin and the request nonce, while allowing only configured Supabase endpoints", () => {
     const policy = contentSecurityPolicy("nonce-value", "https://project.supabase.co");
     expect(policy).toContain("script-src 'self' 'nonce-nonce-value' 'strict-dynamic'");

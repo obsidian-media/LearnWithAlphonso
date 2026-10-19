@@ -91,7 +91,7 @@
 - iOS podcast download requests for the same episode now coalesce through a keyed in-flight task registry. Added tests for one execution across concurrent callers, shared failure, and retry after failure. Swift tests still require the macOS CI runner.
 - Learner/admin responses now use a per-response nonce CSP; scripts are nonce-only, while inline styles remain temporarily allowed. HSTS is emitted for HTTPS only. Focused policy/wrapper tests and both production builds passed locally; deployed-header checks await deployment.
 - Full web suite now passes: 308 files passed, 1 skipped; 3,677 tests passed, 8 skipped. TypeScript and both production builds pass. Full ESLint exits successfully with six pre-existing warnings and no errors.
-- Signed-in CI now tests real database concurrency and anon RPC denial. It has not run on this branch yet, so those assertions remain pending CI verification.
+- The first PR CI run passed lint/typecheck, both builds, Deno tests, iOS Swift tests, and the iOS app build. Both browser E2E jobs exposed a Node `Request` subclass-cloning incompatibility in nonce injection and timed out before running tests; the wrapper now reconstructs requests from explicit fields and has focused POST-body/CSP coverage. A follow-up PR CI run is required to verify both journeys and the new database assertions.
 
 - Sanitized malformed-body responses in `supabase/functions/grade-review/index.ts`, `supabase/functions/start-lesson-session/index.ts`, and `supabase/functions/complete-lesson/handler.ts`.
 - Added owned-table deletion error inspection in `src/lib/account.functions.ts`.
@@ -100,7 +100,7 @@
 - Added regression coverage for the sanitized completion response, partial account-deletion failure, and baseline SSR headers.
 - Added route tests for safe account export/deletion error contracts.
 
-Current verification at this checkpoint: full Vitest suite 3,677 passed / 8 skipped, TypeScript passed, both production builds passed, and full ESLint passed with six pre-existing warnings. Supported Bun CI, real-Postgres contention/permission assertions, Swift/macOS tests, and deployed-header verification remain pending.
+Current verification at this checkpoint: full Vitest suite 3,677 passed / 8 skipped, TypeScript passed before the final small Request reconstruction adjustment, both production builds passed, and full ESLint passed with six pre-existing warnings. Focused Request/CSP tests pass 6/6. PR CI confirmed iOS Swift/app build and other non-E2E jobs; rerun E2E, signed-in real-Postgres contention/permission assertions, and deployed-header verification remain pending.
 
 ## Do not do yet
 
