@@ -182,8 +182,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   let parsed: z.infer<typeof completeLessonSchema>;
   try {
     parsed = completeLessonSchema.parse(await req.json());
-  } catch (err) {
-    return jsonResponse({ error: "Invalid request body", details: `${err}` }, 400);
+  } catch {
+    return jsonResponse({ error: "Invalid request body" }, 400);
   }
   const { lessonId, total, answers, course, sessionToken } = parsed;
 

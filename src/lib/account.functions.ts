@@ -348,9 +348,24 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // auth.users is ON DELETE CASCADE, and "authenticated" only has
     // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
-    await Promise.all(
-      USER_DELETE_TABLES.map((table) => supabase.from(table).delete().eq("user_id", userId)),
+    const deleteResults = await Promise.all(
+      USER_DELETE_TABLES.map(async (table) => ({
+        table,
+        result: await supabase
+          .from(table)
+          .delete()
+          .eq("user_id", userId),
+      })),
     );
+    const failedDeletes = deleteResults
+      .filter(({ result }) => result.error)
+      .map(
+        ({ table, result }) =>
+          `${table}: ${result.error?.message ?? "unknown error"}`,
+      );
+    if (failedDeletes.length > 0) {
+      throw new Error(`Account deletion could not clear owned data: ${failedDeletes.join("; ")}`);
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

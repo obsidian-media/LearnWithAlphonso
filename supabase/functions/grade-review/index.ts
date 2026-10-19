@@ -95,8 +95,8 @@ export async function handleRequest(req: Request): Promise<Response> {
   let parsed: z.infer<typeof gradeReviewSchema>;
   try {
     parsed = gradeReviewSchema.parse(await req.json());
-  } catch (err) {
-    return jsonResponse({ error: "Invalid request body", details: `${err}` }, 400);
+  } catch {
+    return jsonResponse({ error: "Invalid request body" }, 400);
   }
   const { itemKey, answer, course, attemptId } = parsed;
   const [lessonId, questionId] = itemKey.split(":");
