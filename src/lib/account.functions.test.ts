@@ -352,6 +352,20 @@ describe("deleteMyAccount", () => {
       deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
     ).rejects.toThrow("auth service down");
   });
+
+  it("stops before auth deletion when an owned-row delete fails", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "review_items"
+        ? chainable({ error: { message: "review cleanup failed" } })
+        : chainable({ error: null }),
+    );
+
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/review_items.*review cleanup failed/);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
 });
 
 // --- GDPR export coverage guard -------------------------------------------

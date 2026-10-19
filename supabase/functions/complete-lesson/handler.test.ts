@@ -159,7 +159,9 @@ Deno.test("rejects a non-POST, an unauthenticated call and a malformed body befo
   const denied = setup({ auth: new Response("{}", { status: 401 }) });
   assertEquals((await denied.handler(post(body(["a", "d"])))).status, 401);
   assertEquals(denied.db.rpcCalls.length, 0);
-  assertEquals((await handler(post({ lessonId: "u1l1" }))).status, 400);
+  const malformed = await handler(post({ lessonId: "u1l1" }));
+  assertEquals(malformed.status, 400);
+  assertEquals(await malformed.json(), { error: "Invalid request body" });
   assertEquals(db.rpcCalls.length, 0);
 });
 

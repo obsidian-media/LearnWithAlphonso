@@ -82,6 +82,9 @@
 - Sanitized malformed-body responses in `supabase/functions/grade-review/index.ts`, `supabase/functions/start-lesson-session/index.ts`, and `supabase/functions/complete-lesson/handler.ts`.
 - Added owned-table deletion error inspection in `src/lib/account.functions.ts`.
 - Added baseline browser security headers in `src/server.ts`.
+- Added regression coverage for the sanitized completion response, partial account-deletion failure, and baseline SSR headers.
+
+Phase 1 is partially complete. The implementation and regression tests are committed. Focused verification passes: 49/49 Vitest tests for server/account behavior and 17/17 Deno completion-handler tests. The clean supported full-suite run remains a release gate because the earlier repository-wide attempt could not complete.
 
 ## Do not do yet
 

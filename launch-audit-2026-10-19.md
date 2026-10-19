@@ -233,6 +233,8 @@ Completed during this audit:
 - removed raw Zod error details from three public Edge Functions;
 - made account deletion fail before auth deletion when owned-row cleanup reports errors;
 - added baseline security headers to learner SSR responses;
+- added regression coverage for malformed completion requests, owned-row deletion failure, and SSR security headers;
+- verified the scoped web changes with 49/49 Vitest tests and the completion handler with 17/17 Deno tests;
 - authored this report and the prioritized gap-closure plan.
 
 Not completed because they require external state or platform access:
@@ -242,6 +244,8 @@ Not completed because they require external state or platform access:
 - a clean Bun/CI run from this Windows environment;
 - production concurrency testing against the live database;
 - native-speaker content sign-off.
+
+The focused post-change tests passed, but the full-suite P0 verification gate remains open because the earlier repository-wide attempt hit generated-content failures, timeouts, and V8 OOM before completion.
 
 ## Final decision
 
