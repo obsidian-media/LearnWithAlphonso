@@ -10,7 +10,11 @@
  * Usage: bunx tsx scripts/check-auth-config.ts
  * Requires SUPABASE_ACCESS_TOKEN (the secret deploy-supabase already holds).
  */
-import { findAuthConfigProblems, type AuthConfig } from "../src/lib/auth-config-guard";
+import {
+  describeEmailLimits,
+  findAuthConfigProblems,
+  type AuthConfig,
+} from "../src/lib/auth-config-guard";
 
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || "qhcjpfbxfcltjbiuknyt";
 
@@ -34,6 +38,10 @@ async function main() {
   }
   const cfg = (await res.json()) as AuthConfig;
   const problems = findAuthConfigProblems(cfg);
+
+  // Printed whether or not the invariants hold; read-only, no secrets (see describeEmailLimits).
+  console.log("Email limits (reported, not asserted):");
+  for (const line of describeEmailLimits(cfg)) console.log(`  ${line}`);
 
   if (problems.length) {
     console.error("Auth configuration has drifted:");

@@ -38,7 +38,31 @@ export type AuthConfig = {
   /** Comma-separated, as the Management API returns it. */
   uri_allow_list?: string;
   external_google_enabled?: boolean;
+  // Reported only (describeEmailLimits), never asserted: a lower limit is a decision, not a defect.
+  rate_limit_email_sent?: number;
+  rate_limit_otp?: number;
+  rate_limit_verify?: number;
+  smtp_host?: string;
+  smtp_max_frequency?: number;
 };
+
+/**
+ * The live email-sending limits as readable lines, for the deploy log. No secrets: the SMTP user, password and
+ * sender are not in this list. Reported, not asserted, so a deliberate change never blocks a deploy; it exists so
+ * the numbers launch-day planning depends on (sign-up emails per hour, OTPs per hour) can be read without opening
+ * the dashboard.
+ */
+export function describeEmailLimits(cfg: AuthConfig): string[] {
+  const n = (v: number | undefined, unit: string) =>
+    typeof v === "number" ? `${v} ${unit}` : "not reported by the API";
+  return [
+    `rate_limit_email_sent = ${n(cfg.rate_limit_email_sent, "emails per hour (whole project)")}`,
+    `rate_limit_otp        = ${n(cfg.rate_limit_otp, "OTP requests per hour")}`,
+    `rate_limit_verify     = ${n(cfg.rate_limit_verify, "verifications per hour per IP")}`,
+    `smtp_max_frequency    = ${n(cfg.smtp_max_frequency, "seconds between emails to the same address")}`,
+    `smtp_host             = ${cfg.smtp_host ? cfg.smtp_host : "not set (the built-in mailer would be in use)"}`,
+  ];
+}
 
 /** AppConfig.googleSignInRedirectURL in the iOS app; pinned by a test that reads AppConfig.swift. */
 export const IOS_OAUTH_CALLBACK = "com.obsidianmedia.learnwithalphonso://login-callback";
