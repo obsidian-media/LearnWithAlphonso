@@ -358,7 +358,10 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       .filter(({ result }) => result.error)
       .map(({ table, result }) => `${table}: ${result.error?.message ?? "unknown error"}`);
     if (failedDeletes.length > 0) {
-      throw new Error(`Account deletion could not clear owned data: ${failedDeletes.join("; ")}`);
+      // Keep the account active so the caller can retry. Detailed table errors
+      // belong in server logs; never serialize schema or backend details to clients.
+      console.error("[account-deletion] Owned-row cleanup incomplete", failedDeletes);
+      throw new Error("We couldn't finish deleting your account. Your account is still active; please try again. Contact support if the problem continues.");
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

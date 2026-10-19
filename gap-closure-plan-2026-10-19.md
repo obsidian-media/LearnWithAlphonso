@@ -85,6 +85,12 @@
 - Current Vocab image links workflow run 39259158886 failed because many Supabase Storage HEAD requests received HTTP 429. `link-check.ts` now retries bounded 429/5xx responses with backoff and the scheduled checker uses concurrency 2. Focused tests pass 10/10; a future scheduled/dispatch run must verify the live rate-limit behavior.
 - App Store release-ops run 39186960541 failed its age-rating check: live contests=`INFREQUENT`, expected=`INFREQUENT_OR_MILD`, computed rating=`FOUR_PLUS` vs the owner's 13+ decision. This requires owner confirmation before any metadata write.
 
+### Phase 2 — Account deletion recovery and iOS download deduplication (2026-10-19)
+
+- Account deletion now returns a stable, user-safe retry message when owned-row cleanup partially fails; the authenticated account is deliberately retained until cleanup succeeds. Detailed table errors stay in server logs. Added retry-after-partial-cleanup coverage; the focused account suite passes.
+- iOS podcast download requests for the same episode now coalesce through a keyed in-flight task registry. Added tests for one execution across concurrent callers, shared failure, and retry after failure. Swift tests still require the macOS CI runner.
+- This does not close the separate security-policy/CSP gap or provide a live database concurrency race test; those remain open. Branch-wide CI is also pending because this branch has no PR.
+
 - Sanitized malformed-body responses in `supabase/functions/grade-review/index.ts`, `supabase/functions/start-lesson-session/index.ts`, and `supabase/functions/complete-lesson/handler.ts`.
 - Added owned-table deletion error inspection in `src/lib/account.functions.ts`.
 - Normalized account export/deletion HTTP errors to stable public messages/statuses and kept exception details in server logs.

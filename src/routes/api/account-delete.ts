@@ -33,6 +33,9 @@ export const Route = createFileRoute("/api/account-delete")({
             return Response.json({ error: "Unauthorized" }, { status: 401 });
           }
           console.error("[account-delete] Account deletion failed", error);
+          if (message.startsWith("We couldn't finish deleting your account.")) {
+            return Response.json({ error: message }, { status: 503 });
+          }
           return Response.json({ error: "Deletion failed" }, { status: 500 });
         }
       },

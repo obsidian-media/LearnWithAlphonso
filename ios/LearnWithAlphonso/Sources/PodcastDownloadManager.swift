@@ -143,6 +143,15 @@ final class PodcastDownloadManager {
     /// `PodcastDownloadFailure`, whose title names the cause. Nothing is ever deleted
     /// without the learner asking.
     func download(episode: PodcastEpisode) async throws {
+        try await downloadFlights.run(key: episode.id) { [weak self] in
+            guard let self else { throw CancellationError() }
+            try await self.performDownload(episode: episode)
+        }
+    }
+
+    private let downloadFlights = InFlightTaskRegistry<String>()
+
+    private func performDownload(episode: PodcastEpisode) async throws {
         let existing = entries()
         // The size is not known until the response arrives, so the budget is checked
         // against the catalogue's duration-derived estimate first and re-checked against the
