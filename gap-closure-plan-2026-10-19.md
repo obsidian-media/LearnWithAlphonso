@@ -7,13 +7,13 @@
 
 **Priority:** P1
 **Owner:** engineering/release  
-**Status:** Local web verification is green; supported Bun/CI reproduction remains pending.
+**Status (2026-10-19):** Main's supported Bun CI passed all jobs in run 39183037153, including tests, E2E, Deno, iOS builds/tests, content/type checks, and deployment. Bun remains blocked locally; this branch has not run CI because it has no PR.
 **Exit criteria:** clean, reproducible CI run with published artifacts and no unexplained failure.
 
-1. Run the repository's supported Bun version in CI or a clean machine. Record Bun, Node, OS, Supabase, Xcode, and browser versions. The local Bun binary is blocked by Windows ACL (`Access is denied`).
+1. Main baseline verified by GitHub Actions run 39183037153 (`6749f18`); record Bun version 1.3.10 and the Ubuntu 24.04 runner from its job log. The local Bun binary is blocked by Windows ACL (`Access is denied`). Run the same suite on this branch once a PR/owner-authorized CI path exists.
 2. Fix the local tooling traversal failures: install the declared missing test dependency and skip ignored hidden metadata in source scanners; both are now fixed on this branch.
 3. Run and record the web unit suite, lint, typecheck, and learner/admin builds; completed locally with 3,668 passing tests, 8 skipped tests, lint at zero errors, successful typecheck, and both builds successful.
-4. Run Playwright, signed-in E2E, complete Deno test matrix, migration checks, and content checks in the supported CI environment; these remain to verify.
+4. Playwright, signed-in E2E, Deno, migration/content checks, and deploy passed on main in run 39183037153. Branch-specific result remains to verify.
 5. Keep CI artifacts with test summaries and failure logs so release decisions are evidence-based.
 
 ## Phase 1 — Finish low-risk security/privacy hardening
@@ -35,7 +35,7 @@
 **Owner:** backend/database  
 **Exit criteria:** two simultaneous completions cannot lose or duplicate state, and retries are idempotent.
 
-1. Confirm migration `20261014100300_atomic_lesson_completion.sql` and service-role-only RPC grants are present in production Supabase.
+1. Production deploy job 39183037153 reports “Remote database is up to date,” confirming migration `20261014100300_atomic_lesson_completion.sql` was present by that run. Add/retain an explicit database concurrency test and assert the service-role-only RPC grants.
 2. Preserve the existing concurrency design: the RPC locks the auth/progress rows and rejects stale row-version snapshots; the web retries fresh snapshots and iOS queues transient 5xx results with backoff.
 3. Keep the current web/iOS retry tests; add a live database concurrent-call integration test if the Supabase test harness supports deterministic transaction contention.
 4. Record production migration version and the result of the concurrency check in the release evidence.
@@ -77,6 +77,13 @@
 5. Publish a one-page go/no-go record with exact artifact versions, evidence links, known risks, owners, and rollback steps.
 
 ## Work started in this turn
+
+### Phase 1 — CI baseline and rate-limit resilience (2026-10-19)
+
+- Verified all jobs in CI run 39183037153 passed on `main` (`6749f18`); the Supabase deployment step reports the remote database is up to date. This is baseline evidence, not a result for this branch.
+- The local Bun executable remains unavailable (`Access is denied`). No PR was opened, so branch CI has not been triggered.
+- Current Vocab image links workflow run 39259158886 failed because many Supabase Storage HEAD requests received HTTP 429. `link-check.ts` now retries bounded 429/5xx responses with backoff and the scheduled checker uses concurrency 2. Focused tests pass 10/10; a future scheduled/dispatch run must verify the live rate-limit behavior.
+- App Store release-ops run 39186960541 failed its age-rating check: live contests=`INFREQUENT`, expected=`INFREQUENT_OR_MILD`, computed rating=`FOUR_PLUS` vs the owner's 13+ decision. This requires owner confirmation before any metadata write.
 
 - Sanitized malformed-body responses in `supabase/functions/grade-review/index.ts`, `supabase/functions/start-lesson-session/index.ts`, and `supabase/functions/complete-lesson/handler.ts`.
 - Added owned-table deletion error inspection in `src/lib/account.functions.ts`.

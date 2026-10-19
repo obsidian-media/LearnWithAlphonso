@@ -8,6 +8,26 @@ export type LinkResult = {
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 const HEAD_UNSUPPORTED = new Set([400, 405, 501]);
+const RETRYABLE_STATUSES = new Set([429]);
+const MAX_RETRIES = 3;
+
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  fetchImpl: FetchLike,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetchImpl(url, init);
+    const retryable = RETRYABLE_STATUSES.has(response.status) || response.status >= 500;
+    if (!retryable || attempt >= MAX_RETRIES) return response;
+
+    const retryAfterSeconds = Number(response.headers.get("retry-after"));
+    const delayMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
+      ? Math.min(retryAfterSeconds * 1000, 5000)
+      : 250 * 2 ** attempt;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+}
 
 function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
   const type = res.headers.get("content-type") ?? "";
@@ -24,13 +44,13 @@ function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
 
 export async function probeUrl(url: string, fetchImpl: FetchLike = fetch): Promise<LinkResult> {
   try {
-    const head = await fetchImpl(url, { method: "HEAD", redirect: "manual" });
+    const head = await fetchWithRetry(url, { method: "HEAD", redirect: "manual" }, fetchImpl);
     if (!HEAD_UNSUPPORTED.has(head.status)) return judge(url, head, "HEAD");
-    const get = await fetchImpl(url, {
-      method: "GET",
-      redirect: "manual",
-      headers: { Range: "bytes=0-0" },
-    });
+    const get = await fetchWithRetry(
+      url,
+      { method: "GET", redirect: "manual", headers: { Range: "bytes=0-0" } },
+      fetchImpl,
+    );
     await get.body?.cancel();
     return judge(url, get, "GET");
   } catch (e) {

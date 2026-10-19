@@ -49,6 +49,28 @@ describe("probeUrl", () => {
     });
     expect(r).toMatchObject({ ok: false, status: null, detail: "ECONNRESET" });
   });
+
+  it("retries rate-limited and transient server responses before accepting a valid image", async () => {
+    const fetchImpl = vi
+      .fn<FetchLike>()
+      .mockResolvedValueOnce(new Response(null, { status: 429 }))
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(res(200));
+
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({ ok: true, status: 200 });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns a persistent rate limit as a failure after the bounded retries", async () => {
+    const fetchImpl = vi.fn<FetchLike>().mockResolvedValue(new Response(null, { status: 429 }));
+
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
+      ok: false,
+      status: 429,
+      detail: 'status 429, content-type ""',
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+  });
 });
 
 describe("checkAll / summarize", () => {
