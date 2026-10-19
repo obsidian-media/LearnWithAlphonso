@@ -245,6 +245,12 @@ Not completed because they require external state or platform access:
 
 The local web verification gate is green. The remaining verification risk is that this machine cannot execute Bun (Access is denied) and local Node v25 is outside Vitest/jsdom's supported engine ranges; the same suite and CI integration checks should pass on the repository's supported Bun/Node environment before release.
 
+### Follow-up hardening checkpoint (2026-10-19)
+
+After the baseline audit, this branch added bounded retry/backoff and reduced concurrency for the Vocab image link checker following observed Supabase Storage 429s. It also made partial account deletion retryable without exposing backend/table errors to the user, and coalesced concurrent iOS downloads for one podcast episode. Focused web tests pass (50/50 across the account and link-check suites). The new Swift registry tests have not yet run on macOS. These changes are committed on `Codex-pre-Launch` as `c578319` and `ebb9297`.
+
+Still open: the broader CSP design and deployed-header verification; an actual concurrent RPC integration test and branch CI run; Swift/macOS CI; App Store age-rating owner confirmation. These gaps prevent treating this checkpoint as a final launch sign-off.
+
 ## Final decision
 
 **Do not announce a broad public launch yet.** The app is suitable for continued controlled beta work and has a credible release foundation. Public launch should wait for the P0 platform/device gates, supported CI confirmation, production migration/header verification, and operational alerting. Then perform a dated release rehearsal against the exact production artifacts and record owner sign-off in the repository.
