@@ -123,10 +123,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const nonce = useRouter().options?.ssr?.nonce;
   return (
     <html lang="en">
       <head>
         <script
+          nonce={nonce}
           // Runs before first paint to avoid a flash of the wrong theme.
           // Kept inline (not an external file) so it blocks nothing.
           dangerouslySetInnerHTML={{

@@ -1,11 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { exportMyData } from "@/lib/account.functions";
 
-function statusFor(message: string): number {
-  if (message.startsWith("Unauthorized")) return 401;
-  return 500;
-}
-
 // Plain HTTP wrapper around exportMyData (src/lib/account.functions.ts) --
 // same shape as api/chat.ts/api/analyze-weaknesses.ts, added so iOS (which
 // has no access to the web app's internal server-function RPC layer) can
@@ -33,7 +28,11 @@ export const Route = createFileRoute("/api/account-export")({
           });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Export failed";
-          return Response.json({ error: message }, { status: statusFor(message) });
+          if (message.startsWith("Unauthorized")) {
+            return Response.json({ error: "Unauthorized" }, { status: 401 });
+          }
+          console.error("[account-export] Account export failed", error);
+          return Response.json({ error: "Export failed" }, { status: 500 });
         }
       },
     },

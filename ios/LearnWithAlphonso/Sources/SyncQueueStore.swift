@@ -76,6 +76,8 @@ final class PendingReviewGradeRecord {
     var course: String
     var queuedAt: Date
     // Schema V2 additions (optional, like the lesson record's).
+    var expectedDueOn: String?
+    var expectedLastReviewedAt: String?
     var ownerUserID: String?
     var attemptCount: Int?
     var nextAttemptAt: Date?
@@ -85,6 +87,8 @@ final class PendingReviewGradeRecord {
         answer = pending.answer
         course = pending.course
         queuedAt = pending.queuedAt
+        expectedDueOn = pending.expectedDueOn
+        expectedLastReviewedAt = pending.expectedLastReviewedAt
         ownerUserID = pending.ownerUserID
         attemptCount = pending.attemptCount
         nextAttemptAt = pending.nextAttemptAt
@@ -93,6 +97,7 @@ final class PendingReviewGradeRecord {
     var asPending: PendingReviewGrade {
         PendingReviewGrade(
             itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
+            expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt,
             ownerUserID: ownerUserID, attemptCount: attemptCount ?? 0, nextAttemptAt: nextAttemptAt)
     }
 

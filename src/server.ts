@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { addSecurityHeaders, createCspNonce, requestWithCspNonce } from "./lib/security-policy";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -94,16 +95,26 @@ export function escapeHtmlNulBytes(response: Response): Response {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const nonce = createCspNonce();
+    const secureRequest = await requestWithCspNonce(request, nonce);
     try {
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return escapeHtmlNulBytes(await normalizeCatastrophicSsrResponse(response));
+      const response = await handler.fetch(secureRequest, env, ctx);
+      return addSecurityHeaders(
+        escapeHtmlNulBytes(await normalizeCatastrophicSsrResponse(response)),
+        secureRequest,
+        nonce,
+      );
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return addSecurityHeaders(
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+        secureRequest,
+        nonce,
+      );
     }
   },
 };

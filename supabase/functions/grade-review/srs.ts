@@ -17,6 +17,14 @@ export type ReviewGradeInput = {
   elapsedDays: number;
 };
 
+/** Compare the immutable schedule snapshot rendered to an offline reviewer with the live row. */
+export function reviewSnapshotMatches(
+  current: { dueOn: string; lastReviewedAt: string | null },
+  expected: { dueOn: string; lastReviewedAt: string | null },
+): boolean {
+  return current.dueOn === expected.dueOn && current.lastReviewedAt === expected.lastReviewedAt;
+}
+
 export type ReviewGradeResult = {
   retired: boolean;
   ease: number;

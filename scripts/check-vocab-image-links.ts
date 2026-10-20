@@ -14,7 +14,10 @@ if (urls.length === 0) {
   console.error("No vocab image URLs: a link check over nothing proves nothing.");
   process.exit(1);
 }
-const { ok, failed } = summarize(await checkAll(urls, { concurrency: 8 }));
+// Supabase Storage may rate-limit even read-only HEAD bursts from a weekly
+// sweep. The checker honors bounded Retry-After delays; serialize requests so
+// this verification does not create the burst that causes its own failures.
+const { ok, failed } = summarize(await checkAll(urls, { concurrency: 1 }));
 console.log(`${ok}/${urls.length} vocab image URLs returned an image.`);
 for (const f of failed.slice(0, 50))
   console.log(`FAIL ${f.status ?? "network"} ${f.method} ${f.url} (${f.detail})`);

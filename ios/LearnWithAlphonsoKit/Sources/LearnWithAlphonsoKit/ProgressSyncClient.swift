@@ -81,6 +81,7 @@ public struct ReviewItem: Sendable, Equatable {
     public let intervalDays: Int
     public let repetitions: Int
     public let dueOn: String
+    public let lastReviewedAt: String?
     public let source: String
     public let weaknessDisplay: String?
     public let prompt: String?
@@ -90,7 +91,7 @@ public struct ReviewItem: Sendable, Equatable {
 
     public init(
         itemKey: String, lessonId: String, level: String, ease: Double,
-        intervalDays: Int, repetitions: Int, dueOn: String,
+        intervalDays: Int, repetitions: Int, dueOn: String, lastReviewedAt: String? = nil,
         source: String = "lesson", weaknessDisplay: String? = nil,
         prompt: String? = nil, choices: [String]? = nil,
         answerIndex: Int? = nil, explanation: String? = nil
@@ -102,6 +103,7 @@ public struct ReviewItem: Sendable, Equatable {
         self.intervalDays = intervalDays
         self.repetitions = repetitions
         self.dueOn = dueOn
+        self.lastReviewedAt = lastReviewedAt
         self.source = source
         self.weaknessDisplay = weaknessDisplay
         self.prompt = prompt
@@ -135,11 +137,14 @@ public struct ReviewGradeOutcome: Sendable, Equatable {
     /// second derivation here would show the learner one answer while the
     /// scheduler recorded the other. Nil from a server predating this field.
     public let correct: Bool?
+    /// True when a different device already advanced this review item; this answer was not applied.
+    public let superseded: Bool
 
-    public init(retired: Bool, dueOn: String, correct: Bool? = nil) {
+    public init(retired: Bool, dueOn: String, correct: Bool? = nil, superseded: Bool = false) {
         self.retired = retired
         self.dueOn = dueOn
         self.correct = correct
+        self.superseded = superseded
     }
 
     /// Whether the item this outcome is for should still count as due on
@@ -450,20 +455,24 @@ public final class ProgressSyncClient: Sendable {
         total: Int,
         answers: [LessonAnswer],
         course: String,
-        sessionToken: String
+        sessionToken: String,
+        completedAt: Date? = nil
     ) async throws -> LessonCompletionResult {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/complete-lesson"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "lessonId": lessonID,
             "total": total,
             "answers": answers.map { ["questionId": $0.questionId, "answer": $0.answer] },
             "course": course,
             "sessionToken": sessionToken,
         ]
+        if let completedAt {
+            payload["completedAt"] = ISO8601DateFormatter().string(from: completedAt)
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await requester(request)
@@ -482,7 +491,7 @@ public final class ProgressSyncClient: Sendable {
     public func fetchDueReviews(course: String) async throws -> DueReviews {
         let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
         var dueRequest = restRequest(path: "review_items", query: [
-            URLQueryItem(name: "select", value: "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,source,weakness_display,prompt,choices,answer_index,explanation"),
+            URLQueryItem(name: "select", value: "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,last_reviewed_at,source,weakness_display,prompt,choices,answer_index,explanation"),
             URLQueryItem(name: "language", value: "eq.\(course)"),
             URLQueryItem(name: "due_on", value: "lte.\(today)"),
             URLQueryItem(name: "order", value: "due_on.asc"),
@@ -505,6 +514,7 @@ public final class ProgressSyncClient: Sendable {
             return ReviewItem(
                 itemKey: itemKey, lessonId: lessonId, level: level, ease: ease,
                 intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn,
+                lastReviewedAt: row["last_reviewed_at"] as? String,
                 source: row["source"] as? String ?? "lesson",
                 weaknessDisplay: row["weakness_display"] as? String,
                 prompt: row["prompt"] as? String,
@@ -557,7 +567,7 @@ public final class ProgressSyncClient: Sendable {
     /// server-side against the real question, same trust-boundary
     /// reasoning as completeLesson. See
     /// supabase/functions/grade-review/index.ts.
-    public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil) async throws -> ReviewGradeOutcome {
+    public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil, expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil) async throws -> ReviewGradeOutcome {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/grade-review"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -565,6 +575,10 @@ public final class ProgressSyncClient: Sendable {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         var payload: [String: Any] = ["itemKey": itemKey, "answer": answer, "course": course]
         if let attemptID { payload["attemptId"] = attemptID }
+        if let expectedDueOn {
+            payload["expectedDueOn"] = expectedDueOn
+            payload["expectedLastReviewedAt"] = expectedLastReviewedAt ?? NSNull()
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await requester(request)
@@ -578,7 +592,8 @@ public final class ProgressSyncClient: Sendable {
         // predates it -- an older server simply yields nil, and the caller
         // falls back to grading locally exactly as it did before.
         return ReviewGradeOutcome(
-            retired: retired, dueOn: dueOn, correct: object["correct"] as? Bool)
+            retired: retired, dueOn: dueOn, correct: object["correct"] as? Bool,
+            superseded: object["superseded"] as? Bool ?? false)
     }
 
     /// Calls the `claim_review_clear_bonus` SECURITY DEFINER RPC directly

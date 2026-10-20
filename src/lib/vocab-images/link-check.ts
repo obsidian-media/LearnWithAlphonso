@@ -8,6 +8,36 @@ export type LinkResult = {
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 const HEAD_UNSUPPORTED = new Set([400, 405, 501]);
+const RETRYABLE_STATUSES = new Set([429]);
+const MAX_RETRIES = 4;
+const MAX_RETRY_AFTER_MS = 30_000;
+
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  fetchImpl: FetchLike,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetchImpl(url, init);
+    const retryable = RETRYABLE_STATUSES.has(response.status) || response.status >= 500;
+    if (!retryable || attempt >= MAX_RETRIES) return response;
+
+    const retryAfter = response.headers.get("retry-after");
+    const retryAfterSeconds = retryAfter ? Number(retryAfter) : Number.NaN;
+    const retryAfterDate =
+      retryAfter && !Number.isFinite(retryAfterSeconds) ? Date.parse(retryAfter) : Number.NaN;
+    const retryAfterMs = Number.isFinite(retryAfterSeconds)
+      ? retryAfterSeconds * 1000
+      : Number.isFinite(retryAfterDate)
+        ? retryAfterDate - Date.now()
+        : Number.NaN;
+    const delayMs =
+      Number.isFinite(retryAfterMs) && retryAfterMs >= 0
+        ? Math.min(retryAfterMs, MAX_RETRY_AFTER_MS)
+        : 250 * 2 ** attempt;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+}
 
 function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
   const type = res.headers.get("content-type") ?? "";
@@ -18,20 +48,24 @@ function judge(url: string, res: Response, method: "HEAD" | "GET"): LinkResult {
     ok,
     status: res.status,
     method,
-    detail: ok ? undefined : `status ${res.status}, content-type "${type}"`,
+    detail: ok
+      ? undefined
+      : `status ${res.status}, content-type "${type}"${res.headers.get("retry-after") ? `, retry-after "${res.headers.get("retry-after")}"` : ""}`,
   };
 }
 
 export async function probeUrl(url: string, fetchImpl: FetchLike = fetch): Promise<LinkResult> {
   try {
-    const head = await fetchImpl(url, { method: "HEAD", redirect: "manual" });
-    if (!HEAD_UNSUPPORTED.has(head.status)) return judge(url, head, "HEAD");
-    const get = await fetchImpl(url, {
-      method: "GET",
-      redirect: "manual",
-      headers: { Range: "bytes=0-0" },
-    });
+    const head = await fetchWithRetry(url, { method: "HEAD", redirect: "manual" }, fetchImpl);
+    if (!HEAD_UNSUPPORTED.has(head.status) && head.status !== 429) return judge(url, head, "HEAD");
+    const get = await fetchWithRetry(
+      url,
+      { method: "GET", redirect: "manual", headers: { Range: "bytes=0-0" } },
+      fetchImpl,
+    );
     await get.body?.cancel();
+    // Persistent HEAD throttling is inconclusive about the public object;
+    // verify it via a one-byte GET after the bounded HEAD retries.
     return judge(url, get, "GET");
   } catch (e) {
     return {

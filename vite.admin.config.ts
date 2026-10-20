@@ -5,11 +5,8 @@
 // schema -- `router.routesDirectory` and `router.generatedRouteTree` are
 // both real, typed keys, not a guess.
 //
-// No `server: { entry: "server" }` here, unlike the learner config: that
-// redirects to src/server.ts, which is the learner app's SSR error
-// wrapper (it reports to the learner error pipeline). The admin app has
-// one user and its errors belong in the platform log, not in that
-// pipeline, so it uses the default entry.
+// Use admin/server.ts for the admin-specific response security wrapper;
+// `entry` resolves relative to srcDirectory (`admin`).
 import { defineConfig, mergeConfig, type UserConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
@@ -39,6 +36,7 @@ export default defineConfig(async ({ command }) => {
       // generatedRouteTree default to admin/routes and
       // admin/routeTree.gen.ts.
       srcDirectory: "admin",
+      server: { entry: "server" },
       importProtection: {
         behavior: "error",
         client: { files: ["**/server/**"], specifiers: ["server-only"] },

@@ -124,11 +124,8 @@ export async function handleRequest(req: Request): Promise<Response> {
   let parsed: z.infer<typeof startSessionSchema>;
   try {
     parsed = startSessionSchema.parse(await req.json());
-  } catch (err) {
-    return jsonResponse(
-      { error: "Invalid request body", details: `${err}` },
-      400,
-    );
+  } catch {
+    return jsonResponse({ error: "Invalid request body" }, 400);
   }
   const { lessonId, course } = parsed;
 

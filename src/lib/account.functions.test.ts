@@ -343,14 +343,64 @@ describe("deleteMyAccount", () => {
     expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
 
-  it("throws when the admin deleteUser call fails", async () => {
+  it("keeps auth-deletion failures retryable without returning backend details", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValue(chainable({}));
     deleteUser.mockResolvedValue({ error: new Error("auth service down") });
 
     await expect(
       deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
-    ).rejects.toThrow("auth service down");
+    ).rejects.toThrow(/account is still active; please try again/i);
+  });
+
+  it("does not delete the auth user when incoming friendship cleanup fails", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({}));
+    supabaseAdminFrom.mockReturnValue(
+      chainable({ error: { code: "XX000", message: "sensitive detail" } }),
+    );
+
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/account is still active; please try again/i);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it("stops before auth deletion when an owned-row delete fails", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "review_items"
+        ? chainable({ error: { message: "review cleanup failed" } })
+        : chainable({ error: null }),
+    );
+
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/account is still active; please try again/i);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it("allows the still-authenticated user to retry after partial row cleanup", async () => {
+    const supabase = createSupabaseMock();
+    let failOnce = true;
+    supabase.from.mockImplementation((table: string) => {
+      if (table === "review_items" && failOnce) {
+        failOnce = false;
+        return chainable({ error: { message: "temporary database failure" } });
+      }
+      return chainable({ error: null });
+    });
+    deleteUser.mockResolvedValue({ error: null });
+
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/account is still active; please try again/i);
+    expect(deleteUser).not.toHaveBeenCalled();
+
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).resolves.toMatchObject({ deleted: true });
+    expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
 });
 

@@ -57,13 +57,17 @@ data class PendingReviewGradeRecord(
     val ownerUserId: String? = null,
     @ColumnInfo(defaultValue = "0") val attemptCount: Int = 0,
     val nextAttemptAt: Long? = null,
+    val expectedDueOn: String? = null,
+    val expectedLastReviewedAt: String? = null,
 ) {
-    fun asPending() = PendingReviewGrade(itemKey, answer, course, queuedAt, ownerUserId, attemptCount, nextAttemptAt)
+    fun asPending() = PendingReviewGrade(itemKey, answer, course, queuedAt, ownerUserId, attemptCount, nextAttemptAt, expectedDueOn, expectedLastReviewedAt)
 
     companion object {
         fun from(p: PendingReviewGrade) = PendingReviewGradeRecord(
             itemKey = p.itemKey, answer = p.answer, course = p.course, queuedAt = p.queuedAt,
             ownerUserId = p.ownerUserId, attemptCount = p.attemptCount, nextAttemptAt = p.nextAttemptAt,
+            expectedDueOn = p.expectedDueOn,
+            expectedLastReviewedAt = p.expectedLastReviewedAt,
         )
     }
 }

@@ -40,6 +40,9 @@ data class PendingReviewGrade(
     val ownerUserId: String? = null,
     val attemptCount: Int = 0,
     val nextAttemptAt: Long? = null,
+    /** Due-date snapshot the learner answered, used to reject stale cross-device replay. */
+    val expectedDueOn: String? = null,
+    val expectedLastReviewedAt: String? = null,
 ) {
     /**
      * Stable across retries. It is also the attempt id the server stores with the graded result (`attemptId`), so a

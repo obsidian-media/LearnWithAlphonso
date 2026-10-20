@@ -32,8 +32,16 @@ export function verifyLessonSessionToken(
   token: string,
   expected: LessonSessionClaim,
 ): boolean {
+  return lessonSessionIssuedAt(token, expected) !== null;
+}
+
+/** Return the signed server issue time after validating the same claims and expiry as the token. */
+export function lessonSessionIssuedAt(
+  token: string,
+  expected: LessonSessionClaim,
+): number | null {
   const [payloadB64, sig] = token.split(".");
-  if (!payloadB64 || !sig) return false;
+  if (!payloadB64 || !sig) return null;
 
   const expectedSigBuf = Buffer.from(sign(payloadB64));
   const sigBuf = Buffer.from(sig);
@@ -41,22 +49,24 @@ export function verifyLessonSessionToken(
     sigBuf.length !== expectedSigBuf.length ||
     !timingSafeEqual(sigBuf, expectedSigBuf)
   ) {
-    return false;
+    return null;
   }
 
   let payload: LessonSessionClaim & { iat: number };
   try {
     payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
   } catch {
-    return false;
+    return null;
   }
 
-  if (payload.userId !== expected.userId) return false;
-  if (payload.lessonId !== expected.lessonId) return false;
-  if (payload.course !== expected.course) return false;
+  if (payload.userId !== expected.userId) return null;
+  if (payload.lessonId !== expected.lessonId) return null;
+  if (payload.course !== expected.course) return null;
+  const now = Date.now();
   if (
-    typeof payload.iat !== "number" || Date.now() - payload.iat > MAX_AGE_MS
-  ) return false;
+    typeof payload.iat !== "number" || !Number.isFinite(payload.iat) ||
+    payload.iat > now || now - payload.iat > MAX_AGE_MS
+  ) return null;
 
-  return true;
+  return payload.iat;
 }
