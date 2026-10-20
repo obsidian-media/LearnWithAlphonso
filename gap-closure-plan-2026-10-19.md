@@ -3,6 +3,10 @@
 **Based on:** launch audit dated 2026-10-19  
 **Outcome sought:** evidence-backed readiness for web public launch and iOS App Store/TestFlight launch.
 
+## Follow-on backlog work — status 2026-10-20
+
+This work is in progress on `Codex-pre-Launch` after the original five hardening items passed CI. Reconciliation confirmed Android save-any-word was already implemented in PR #325; its outstanding portion is real-device verification, not duplicate code. French/Spanish native-speaker review likewise remains a human content-approval gate. The still-open repository tasks are offline review conflict handling and streak continuity, the iOS podcast scrubber, and vocab-image quality-review automation. The iOS scrubber now has a seek command and accessible Slider in the mini-player; local Swift execution is unavailable in this Windows environment, so the iOS app-build CI must verify compilation. Remaining work and verification status will be appended here as each task closes.
+
 ## Phase 0 — Establish a reproducible verification baseline
 
 **Priority:** P1

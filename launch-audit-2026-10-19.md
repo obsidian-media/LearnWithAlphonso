@@ -4,6 +4,10 @@
 **Scope:** web application, Supabase Edge Functions/database boundary, native iOS app, CI/CD and release controls, accessibility, privacy, security, content, operations, and launch readiness  
 **Decision:** **NO-GO for a broad public launch today. Conditional GO for controlled beta/TestFlight only after the owner-gated checks are completed.**
 
+## Follow-on audit update — 2026-10-20
+
+The initial five code-owned pre-launch hardening items subsequently passed branch CI; the vocab image workflow verified 730/730 URLs. The opening snapshot in `docs/BACKLOG.md` had not been refreshed to reflect those results and was corrected. Follow-on work has begun for the remaining code-owned backlog: concurrency/offline streak correctness, the iOS podcast scrubber, and vocab-image quality-review automation. Android save-any-word was already implemented (#325); its physical-device verification remains pending. Native-speaker review of French/Spanish content is an explicit human approval gate. This update does not change the NO-GO for broad launch: physical-device, App Store/RevenueCat, owner-account, and deployed-header evidence still require completion.
+
 ## Executive conclusion
 
 The product has a stronger foundation than the current launch status suggests. Authentication, server-side lesson grading, Supabase/RLS boundaries, AI consent/quota controls, iOS signing automation, privacy manifests, and test coverage are all meaningful positives. Several issues found in older audit material are already fixed in the current tree, including important web accessibility and middleware behavior.
