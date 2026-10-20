@@ -7,6 +7,8 @@
 
 This work is in progress on `Codex-pre-Launch` after the original five hardening items passed CI. Reconciliation confirmed Android save-any-word was already implemented in PR #325; its outstanding portion is real-device verification, not duplicate code. French/Spanish native-speaker review likewise remains a human content-approval gate. The still-open repository tasks are offline review conflict handling and streak continuity, the iOS podcast scrubber, and vocab-image quality-review automation. The iOS scrubber now has a seek command and accessible Slider in the mini-player; local Swift execution is unavailable in this Windows environment, so the iOS app-build CI must verify compilation. Remaining work and verification status will be appended here as each task closes.
 
+**Scrubber checkpoint:** commit `3730d07` is pushed. PR #337 CI run 39352246488 passed lint/typecheck, web/admin builds, both E2E jobs, Deno, Swift tests, and the iOS app build; CodeQL (including Swift) and the vocab-image link check also passed. This validates compilation/tests, not physical-device seek ergonomics.
+
 ## Phase 0 — Establish a reproducible verification baseline
 
 **Priority:** P1
