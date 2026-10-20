@@ -7,6 +7,14 @@
 
 This work is in progress on `Codex-pre-Launch` after the original five hardening items passed CI. Reconciliation confirmed Android save-any-word was already implemented in PR #325; its outstanding portion is real-device verification, not duplicate code. French/Spanish native-speaker review likewise remains a human content-approval gate. The still-open repository tasks are offline review conflict handling and streak continuity, the iOS podcast scrubber, and vocab-image quality-review automation. The iOS scrubber now has a seek command and accessible Slider in the mini-player; local Swift execution is unavailable in this Windows environment, so the iOS app-build CI must verify compilation. Remaining work and verification status will be appended here as each task closes.
 
+### Phase 3 — Cross-device review concurrency and offline streak continuity (2026-10-20)
+
+**Implementation status:** Added expected `due_on`/`last_reviewed_at` snapshots to web-compatible review grade requests from iOS and Android. The edge function rejects superseded snapshots before computing a grade, while the database compare-and-swap still handles a race between the read and write. Pending review grades persist their snapshot across offline retries (SwiftData optional fields; Android Room migration 3→4). Lesson completion now accepts an optional completion timestamp only when it is bounded by the signed lesson-session issue time and server receive time; the original UTC activity day is preserved across midnight, without allowing a client to backdate before the session or overwrite a later recorded day. Expired-session reminting drops the client timestamp.
+
+**Verification:** `deno test --no-lock supabase/functions/grade-review/` — 18/18 passed. `deno test --no-lock --no-check supabase/functions/complete-lesson/` — 26/26 passed; the normal checked run stalled during Deno checking, so this result does not claim type-check coverage. Android `./gradlew :core:test` — passed. Android app tests require a configured SDK; iOS/macOS tests and migration/runtime behavior require branch CI and devices. The signed-session date helper has focused tests for midnight crossing and before-issue/after-receive rejection.
+
+**Remaining:** Finish UI/reporting behavior for a superseded grade, run full PR CI (including Android app and iOS), and device-check queued retries across sign-in/session refresh. Keep launch blocked on those checks until evidence exists.
+
 **Scrubber checkpoint:** commit `3730d07` is pushed. PR #337 CI run 39352246488 passed lint/typecheck, web/admin builds, both E2E jobs, Deno, Swift tests, and the iOS app build; CodeQL (including Swift) and the vocab-image link check also passed. This validates compilation/tests, not physical-device seek ergonomics.
 
 ## Phase 0 — Establish a reproducible verification baseline

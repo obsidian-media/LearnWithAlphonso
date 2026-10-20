@@ -174,7 +174,8 @@ final class ProgressSyncClientTests: XCTestCase {
             total: 8,
             answers: [LessonAnswer(questionId: "q1", answer: "Good morning.")],
             course: "en",
-            sessionToken: "a.b"
+            sessionToken: "a.b",
+            completedAt: Date(timeIntervalSince1970: 0)
         )
 
         XCTAssertEqual(result.xpGain, 100)
@@ -198,6 +199,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(answers, [["questionId": "q1", "answer": "Good morning."]])
         XCTAssertEqual(payload["course"] as? String, "en")
         XCTAssertEqual(payload["sessionToken"] as? String, "a.b")
+        XCTAssertEqual(payload["completedAt"] as? String, "1970-01-01T00:00:00Z")
     }
 
     func testCompleteLessonSurfacesTheEdgeFunctionsErrorShape() async {
@@ -231,6 +233,7 @@ final class ProgressSyncClientTests: XCTestCase {
             let rows: [[String: Any]] = [[
                 "item_key": "u1l1:q1", "lesson_id": "u1l1", "level": "A1",
                 "ease": 2.3, "interval_days": 1, "repetitions": 1, "due_on": "2026-09-19",
+                "last_reviewed_at": "2026-09-18T10:00:00+00:00",
             ]]
             return self.jsonResponse(for: request.url!, body: rows)
         }
@@ -238,7 +241,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let result = try await client.fetchDueReviews(course: "en")
 
         XCTAssertEqual(result.due, [
-            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19"),
+            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19", lastReviewedAt: "2026-09-18T10:00:00+00:00"),
         ])
         XCTAssertEqual(result.total, 7)
         XCTAssertEqual(requests.value.count, 2)
@@ -340,7 +343,9 @@ final class ProgressSyncClientTests: XCTestCase {
             return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-22"])
         }
 
-        let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en", attemptID: "stable-queue-id")
+        let result = try await client.gradeReview(
+            itemKey: "u1l1:q1", answer: "cat", course: "en", attemptID: "stable-queue-id",
+            expectedDueOn: "2026-09-22", expectedLastReviewedAt: nil)
 
         XCTAssertEqual(result, ReviewGradeOutcome(retired: false, dueOn: "2026-09-22"))
         let request = try XCTUnwrap(captured.value)
@@ -351,6 +356,8 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["answer"] as? String, "cat")
         XCTAssertEqual(payload["course"] as? String, "en")
         XCTAssertEqual(payload["attemptId"] as? String, "stable-queue-id")
+        XCTAssertEqual(payload["expectedDueOn"] as? String, "2026-09-22")
+        XCTAssertTrue(payload["expectedLastReviewedAt"] is NSNull)
     }
 
     func testGradeReviewSurfacesANotDueError() async {

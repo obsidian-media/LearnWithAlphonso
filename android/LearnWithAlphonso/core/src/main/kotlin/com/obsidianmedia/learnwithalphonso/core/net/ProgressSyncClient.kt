@@ -96,6 +96,7 @@ class ProgressSyncClient(
         answers: List<LessonAnswer>,
         course: String,
         sessionToken: String,
+        completedAt: Long?,
     ): LessonCompletionResult {
         val body = buildJsonObject {
             put("lessonId", lessonId)
@@ -105,6 +106,7 @@ class ProgressSyncClient(
             }
             put("course", course)
             put("sessionToken", sessionToken)
+            if (completedAt != null) put("completedAt", java.time.Instant.ofEpochMilli(completedAt).toString())
         }
         val text = http.requireSuccess(http.function("complete-lesson", body))
         return runCatching { http.json.decodeFromString(LessonCompletionResult.serializer(), text) }
@@ -118,7 +120,7 @@ class ProgressSyncClient(
             http.rest(
                 HttpMethod.Get, "review_items",
                 mapOf(
-                    "select" to "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,source,weakness_display,prompt,choices,answer_index,explanation",
+                    "select" to "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,last_reviewed_at,source,weakness_display,prompt,choices,answer_index,explanation",
                     "language" to "eq.$course",
                     "due_on" to "lte.$today",
                     "order" to "due_on.asc",
@@ -135,6 +137,7 @@ class ProgressSyncClient(
                 intervalDays = row.int("interval_days") ?: return@mapNotNull null,
                 repetitions = row.int("repetitions") ?: return@mapNotNull null,
                 dueOn = row.string("due_on") ?: return@mapNotNull null,
+                lastReviewedAt = row.string("last_reviewed_at"),
                 source = row.string("source") ?: "lesson",
                 weaknessDisplay = row.string("weakness_display"),
                 prompt = row.string("prompt"),
@@ -156,12 +159,19 @@ class ProgressSyncClient(
      * `attemptId` is the submission's stable identity: the server stores it with the graded result, so a grade whose
      * response was lost is replayed instead of being graded a second time.
      */
-    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String? = null): ReviewGradeOutcome {
-        val obj = objectOf(http.function("grade-review", buildJsonObject { put("itemKey", itemKey); put("answer", answer); put("course", course); if (attemptId != null) put("attemptId", attemptId) }))
+    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String? = null, expectedDueOn: String? = null, expectedLastReviewedAt: String? = null): ReviewGradeOutcome {
+        val obj = objectOf(http.function("grade-review", buildJsonObject {
+            put("itemKey", itemKey); put("answer", answer); put("course", course)
+            if (attemptId != null) put("attemptId", attemptId)
+            if (expectedDueOn != null) {
+                put("expectedDueOn", expectedDueOn)
+                put("expectedLastReviewedAt", expectedLastReviewedAt?.let { kotlinx.serialization.json.JsonPrimitive(it) } ?: JsonNull)
+            }
+        }))
         val retired = obj.bool("retired") ?: throw ProgressSyncError.InvalidPayload()
         val dueOn = obj.string("dueOn") ?: throw ProgressSyncError.InvalidPayload()
         // Nullable for a deployed function predating the field.
-        return ReviewGradeOutcome(retired, dueOn, obj.bool("correct"))
+        return ReviewGradeOutcome(retired, dueOn, obj.bool("correct"), obj.bool("superseded") ?: false)
     }
 
     suspend fun claimReviewClearBonus(course: String): ReviewClearBonus {

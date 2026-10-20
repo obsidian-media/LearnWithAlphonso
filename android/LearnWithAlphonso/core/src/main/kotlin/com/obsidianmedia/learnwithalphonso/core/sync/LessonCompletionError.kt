@@ -124,7 +124,7 @@ sealed class LessonCompletionError : Exception() {
 /** The two calls a completion needs. ProgressSyncClient is the production implementation; tests script it. */
 interface LessonCompletionApi {
     suspend fun startLessonSession(lessonId: String, course: String): String
-    suspend fun completeLesson(lessonId: String, total: Int, answers: List<LessonAnswer>, course: String, sessionToken: String): LessonCompletionResult
+    suspend fun completeLesson(lessonId: String, total: Int, answers: List<LessonAnswer>, course: String, sessionToken: String, completedAt: Long? = null): LessonCompletionResult
 }
 
 data class LessonCompletionRequest(
@@ -134,8 +134,13 @@ data class LessonCompletionRequest(
     val course: String,
     /** The token from start-lesson-session when the lesson OPENED. Null means "start one now". */
     val sessionToken: String?,
+    /** Original finish time, only eligible when the completion retained its original server-issued session. */
+    val completedAt: Long? = null,
 ) {
-    constructor(pending: PendingLessonCompletion) : this(pending.lessonId, pending.total, pending.answers, pending.course, pending.sessionToken)
+    constructor(pending: PendingLessonCompletion) : this(
+        pending.lessonId, pending.total, pending.answers, pending.course, pending.sessionToken,
+        if (pending.sessionToken == null) null else pending.queuedAt,
+    )
 }
 
 /**
@@ -154,7 +159,10 @@ class LessonCompletionService(private val api: LessonCompletionApi) {
         while (true) {
             try {
                 val sessionForCall = sessionToken ?: api.startLessonSession(request.lessonId, request.course).also { sessionToken = it }
-                return Result.success(api.completeLesson(request.lessonId, request.total, request.answers, request.course, sessionForCall))
+                return Result.success(api.completeLesson(
+                    request.lessonId, request.total, request.answers, request.course, sessionForCall,
+                    if (reminted) null else request.completedAt,
+                ))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ProgressSyncError.Server) {

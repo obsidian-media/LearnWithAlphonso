@@ -84,7 +84,7 @@ class ProgressSyncClientTest {
     fun `completeLesson sends one answer object per question and decodes a null heartsBonus`() = runTest {
         val fake = FakeSupabase { json("""{"xpGain":50,"newlyUnlocked":["first_lesson"],"heartsBonus":null,"progress":$progressJson}""") }
         val result = client(fake).completeLesson(
-            "u1l1", 2, listOf(LessonAnswer("q1", "Good morning."), LessonAnswer("q2", "meet")), "en", "tok",
+            "u1l1", 2, listOf(LessonAnswer("q1", "Good morning."), LessonAnswer("q2", "meet")), "en", "tok", 0L,
         )
         assertEquals(50, result.xpGain)
         assertEquals(listOf("first_lesson"), result.newlyUnlocked)
@@ -94,6 +94,7 @@ class ProgressSyncClientTest {
         assertEquals("/functions/v1/complete-lesson", fake.seen.single().path)
         assertEquals(2, body["total"]!!.jsonPrimitive.content.toInt())
         assertEquals("tok", body["sessionToken"]!!.jsonPrimitive.content)
+        assertEquals("1970-01-01T00:00:00Z", body["completedAt"]!!.jsonPrimitive.content)
         val answers = body["answers"]!!.jsonArray
         assertEquals(listOf("q1", "q2"), answers.map { it.jsonObject["questionId"]!!.jsonPrimitive.content })
         assertEquals("meet", answers[1].jsonObject["answer"]!!.jsonPrimitive.content)
@@ -120,7 +121,7 @@ class ProgressSyncClientTest {
         val fake = FakeSupabase { req ->
             if (req.method == "HEAD") respond("", HttpStatusCode.OK, headersOf("Content-Range", "0-19/42"))
             else json(
-                """[{"item_key":"en:u1l1:q1","lesson_id":"u1l1","level":"A1","ease":2.5,"interval_days":1,"repetitions":0,"due_on":"2025-09-16","source":"lesson","weakness_display":null,"prompt":null,"choices":null,"answer_index":null,"explanation":null}]""",
+                """[{"item_key":"en:u1l1:q1","lesson_id":"u1l1","level":"A1","ease":2.5,"interval_days":1,"repetitions":0,"due_on":"2025-09-16","last_reviewed_at":"2025-09-15T10:00:00+00:00","source":"lesson","weakness_display":null,"prompt":null,"choices":null,"answer_index":null,"explanation":null}]""",
             )
         }
         val result = client(fake).fetchDueReviews("en")
@@ -128,6 +129,7 @@ class ProgressSyncClientTest {
         assertEquals(1, result.due.size)
         assertEquals("en:u1l1:q1", result.due[0].itemKey)
         assertEquals("lesson", result.due[0].source)
+        assertEquals("2025-09-15T10:00:00+00:00", result.due[0].lastReviewedAt)
         val get = fake.seen[0]
         assertEquals("GET", get.method)
         assertEquals("/rest/v1/review_items", get.path)
@@ -170,6 +172,18 @@ class ProgressSyncClientTest {
     fun `gradeReview carries the server verdict when present`() = runTest {
         val fake = FakeSupabase { json("""{"retired":true,"dueOn":"2025-09-16","correct":true}""") }
         assertEquals(ReviewGradeOutcome(true, "2025-09-16", true), client(fake).gradeReview("k", "a", "en"))
+    }
+
+    @Test
+    fun `gradeReview sends the due date and last-reviewed snapshot for stale queue protection`() = runTest {
+        val fake = FakeSupabase { json("""{"retired":false,"dueOn":"2025-09-19"}""") }
+        client(fake).gradeReview(
+            "en:u1l1:q1", "cat", "en", "attempt-1", "2025-09-19", "2025-09-18T10:00:00+00:00",
+        )
+        assertEquals(
+            """{"itemKey":"en:u1l1:q1","answer":"cat","course":"en","attemptId":"attempt-1","expectedDueOn":"2025-09-19","expectedLastReviewedAt":"2025-09-18T10:00:00+00:00"}""",
+            fake.seen.single().body,
+        )
     }
 
     @Test

@@ -38,6 +38,7 @@ data class ReviewItem(
     @SerialName("interval_days") val intervalDays: Int,
     val repetitions: Int,
     @SerialName("due_on") val dueOn: String,
+    @SerialName("last_reviewed_at") val lastReviewedAt: String? = null,
     val source: String = "lesson",
     @SerialName("weakness_display") val weaknessDisplay: String? = null,
     val prompt: String? = null,
@@ -56,7 +57,7 @@ data class ReviewItem(
 data class DueReviews(val due: List<ReviewItem>, val total: Int)
 
 @Serializable
-data class ReviewGradeOutcome(val retired: Boolean, val dueOn: String, val correct: Boolean? = null) {
+data class ReviewGradeOutcome(val retired: Boolean, val dueOn: String, val correct: Boolean? = null, val superseded: Boolean = false) {
     /** Whether the item is still due today or earlier, which is what a wrong answer gets (ISO dates compare as strings). */
     fun isStillDue(today: String): Boolean = !retired && dueOn <= today
 }

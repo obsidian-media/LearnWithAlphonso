@@ -162,6 +162,7 @@ function setup(
     auth?: Response;
     pushFails?: boolean;
     consent?: boolean;
+    now?: Date;
   } = {},
 ) {
   const db = new FakeDb();
@@ -192,13 +193,14 @@ function setup(
       tokenClaims.push(claim as unknown as Row);
       return opts.tokenOk ?? true;
     },
+    sessionIssuedAt: () => (opts.now ?? NOW).getTime() - 60 * 60 * 1000,
     sendPush: (_admin, userId) => {
       pushes.push(userId);
       // The real sendPushToUser fails asynchronously, so the fake rejects rather than throws.
       if (opts.pushFails) return Promise.reject(new Error("push down"));
       return Promise.resolve({ sent: 1, skipped: null });
     },
-    now: () => NOW,
+    now: () => opts.now ?? NOW,
   };
   return {
     db,
@@ -224,6 +226,39 @@ const body = (answers: string[], total = 2) => ({
   course: "fr",
   sessionToken: "tok",
 });
+
+Deno.test(
+  "an offline completion crossing UTC midnight credits its bounded original day",
+  async () => {
+    const now = new Date("2026-10-18T00:20:00Z");
+    const { db, handler } = setup({ now });
+    db.tables.user_progress = [{
+      user_id: USER, streak: 4, longest_streak: 4, last_active_date: "2026-10-16",
+      hearts: 5, hearts_refill_at: null, streak_freezes: 0, updated_at: "2026-10-16T12:00:00Z",
+    }];
+    const res = await handler(post({
+      ...body(["a", "d"]),
+      completedAt: "2026-10-17T23:55:00.000Z",
+    }));
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+    assertEquals((db.rpcCalls[0].args._next as Row).streak, 5);
+  },
+);
+
+Deno.test(
+  "a queued completion cannot claim activity before its server-issued session",
+  async () => {
+    const now = new Date("2026-10-18T00:20:00Z");
+    const { db, handler } = setup({ now });
+    const res = await handler(post({
+      ...body(["a", "d"]),
+      completedAt: "2026-10-17T23:19:59.999Z",
+    }));
+    assertEquals(res.status, 400);
+    assertEquals(db.rpcCalls.length, 0);
+  },
+);
 
 Deno.test(
   "rejects a non-POST, an unauthenticated call and a malformed body before touching data",

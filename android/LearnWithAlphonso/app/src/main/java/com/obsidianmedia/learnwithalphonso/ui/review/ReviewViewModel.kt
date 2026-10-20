@@ -80,7 +80,10 @@ class ReviewViewModel(
     /** Matched on the card alone: the first submission for a card is the one that stands, even if a later tap sends different text. */
     private fun attempt(item: ReviewItem, answer: String): PendingReviewGrade {
         gradeAttempt?.takeIf { it.itemKey == item.itemKey }?.let { return it }
-        return PendingReviewGrade(item.itemKey, answer, course.code, now(), ownerUserId()).also { gradeAttempt = it }
+        return PendingReviewGrade(
+            item.itemKey, answer, course.code, now(), ownerUserId(), expectedDueOn = item.dueOn,
+            expectedLastReviewedAt = item.lastReviewedAt,
+        ).also { gradeAttempt = it }
     }
 
     /**
@@ -130,7 +133,7 @@ class ReviewViewModel(
                     return@launch
                 }
                 if (isConnected()) {
-                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity) }.getOrNull()
+                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity, item.dueOn, item.lastReviewedAt) }.getOrNull()
                     if (outcome != null) {
                         // Before advance(): the current item moves on with idx.
                         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
@@ -170,7 +173,7 @@ class ReviewViewModel(
         val submission = (picked ?: "").trim()
         val local = TranslationVerdict(TranslationAnswer.matches(submission, q.acceptableAnswers), null)
         if (!isConnected()) return local to false
-        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity) }.getOrNull() ?: return local to false
+        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity, item.dueOn, item.lastReviewedAt) }.getOrNull() ?: return local to false
         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
         val correct = outcome.correct ?: return local to false
         return TranslationVerdict(correct, null) to true

@@ -24,7 +24,8 @@ import {
   LEAGUES,
   type LeagueTier,
 } from "./progress-math.ts";
-import { verifyLessonSessionToken } from "./lesson-session.ts";
+import { lessonSessionIssuedAt, verifyLessonSessionToken } from "./lesson-session.ts";
+import { verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
 import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
   gainHearts,
@@ -69,6 +70,7 @@ const completeLessonSchema = z.object({
     .max(50),
   course: courseSchema,
   sessionToken: z.string().min(1).max(2000),
+  completedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 /**
@@ -81,6 +83,7 @@ export type CompleteLessonDeps = {
   translateQuotaCheck: (userClient: SupabaseClient) => () => Promise<boolean>;
   hasAiConsent: (admin: SupabaseClient, userId: string) => Promise<boolean>;
   verifySessionToken: typeof verifyLessonSessionToken;
+  sessionIssuedAt: typeof lessonSessionIssuedAt;
   sendPush: typeof sendPushToUser;
   now: () => Date;
 };
@@ -95,6 +98,7 @@ export function liveDeps(): CompleteLessonDeps {
     translateQuotaCheck: makeTranslateQuotaCheck,
     hasAiConsent,
     verifySessionToken: verifyLessonSessionToken,
+    sessionIssuedAt: lessonSessionIssuedAt,
     sendPush: sendPushToUser,
     now: () => new Date(),
   };
@@ -185,7 +189,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   } catch {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
-  const { lessonId, total, answers, course, sessionToken } = parsed;
+  const { lessonId, total, answers, course, sessionToken, completedAt } = parsed;
 
   const admin = deps.admin();
 
@@ -206,6 +210,15 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
 
   if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course })) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
+  }
+  const sessionIssuedAt = completedAt
+    ? deps.sessionIssuedAt(sessionToken, { userId, lessonId, course })
+    : null;
+  const trustedCompletionDay = completedAt && sessionIssuedAt !== null
+    ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
+    : null;
+  if (completedAt && !trustedCompletionDay) {
+    return jsonResponse({ error: "Invalid offline completion time" }, 400);
   }
 
   // The actual re-grade: never trust which questions the client says it
@@ -241,10 +254,10 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const correct = answers.length - missedQuestionIds.length;
 
   const now = deps.now();
-  const today = now.toISOString().slice(0, 10);
+  const serverToday = now.toISOString().slice(0, 10);
 
   // Batch every read that doesn't depend on another read's result.
-  const [pResult, lpResult, compResult, dayResult] = await Promise.all([
+  const [pResult, lpResult, compResult] = await Promise.all([
     admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
     admin
       .from("language_progress")
@@ -259,18 +272,24 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       .eq("lesson_id", lessonId)
       .eq("language", course)
       .maybeSingle(),
-    admin
-      .from("activity_days")
-      .select("xp_earned")
-      .eq("user_id", userId)
-      .eq("day", today)
-      .maybeSingle(),
   ]);
-  const readError = [pResult, lpResult, compResult, dayResult].find((r) => r.error);
+  const readError = [pResult, lpResult, compResult].find((r) => r.error);
   if (readError) return jsonResponse({ error: "Could not load lesson progress" }, 503);
   const pRow = pResult.data;
   const lpRow = lpResult.data;
   const existingComp = compResult.data;
+  // A dated replay may never move the account's activity marker backwards.
+  const claimedDay = trustedCompletionDay ?? serverToday;
+  const today = pRow?.last_active_date && pRow.last_active_date > claimedDay
+    ? pRow.last_active_date
+    : claimedDay;
+  const dayResult = await admin
+    .from("activity_days")
+    .select("xp_earned")
+    .eq("user_id", userId)
+    .eq("day", today)
+    .maybeSingle();
+  if (dayResult.error) return jsonResponse({ error: "Could not load lesson progress" }, 503);
   const existingDay = dayResult.data;
 
   // Replay-farming fix, mirrors src/lib/sync.functions.ts's

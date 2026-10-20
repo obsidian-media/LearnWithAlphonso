@@ -299,7 +299,9 @@ struct ReviewQueueView: View {
             do {
                 let outcome = try await client.gradeReview(
                     itemKey: currentItem.itemKey, answer: picked, course: course.wireCode,
-                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity)
+                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity,
+                    expectedDueOn: currentItem.dueOn,
+                    expectedLastReviewedAt: currentItem.lastReviewedAt)
                 // Before advance(): currentItem moves on with idx.
                 dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
@@ -386,7 +388,10 @@ struct ReviewQueueView: View {
         if let gradeAttempt, gradeAttempt.itemKey == item.itemKey {
             return gradeAttempt
         }
-        let started = PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(), ownerUserID: session.userID)
+        let started = PendingReviewGrade(
+            itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
+            expectedDueOn: item.dueOn, expectedLastReviewedAt: item.lastReviewedAt,
+            ownerUserID: session.userID)
         gradeAttempt = started
         return started
     }

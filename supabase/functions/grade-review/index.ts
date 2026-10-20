@@ -15,7 +15,7 @@
 // never-actually-reviewed item).
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { computeReviewOutcome } from "./srs.ts";
+import { computeReviewOutcome, reviewSnapshotMatches } from "./srs.ts";
 import { gradeSelfContained, isSelfContainedSource } from "./self-contained.ts";
 // Moved to _shared/ so complete-lesson can reuse the identical grading
 // logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
@@ -34,6 +34,11 @@ const gradeReviewSchema = z.object({
   answer: z.string().max(200),
   course: courseSchema,
   attemptId: z.string().min(1).max(200).optional(),
+  // Snapshot the due date shown when the learner answered. This is essential
+  // for offline replay: never apply a stale answer to another device's newer
+  // SM-2 schedule. Optional for old clients during rollout.
+  expectedDueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  expectedLastReviewedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 function todayStr(): string {
@@ -98,7 +103,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   } catch {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
-  const { itemKey, answer, course, attemptId } = parsed;
+  const { itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt } = parsed;
   const [lessonId, questionId] = itemKey.split(":");
 
   const admin = createClient(
@@ -156,6 +161,19 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   if (!row) {
     return jsonResponse({ retired: false, dueOn: today }, 200);
+  }
+  if (
+    expectedDueOn &&
+    (expectedLastReviewedAt !== undefined
+      ? !reviewSnapshotMatches(
+          { dueOn: row.due_on, lastReviewedAt: row.last_reviewed_at },
+          { dueOn: expectedDueOn, lastReviewedAt: expectedLastReviewedAt ?? null },
+        )
+      : row.due_on !== expectedDueOn)
+  ) {
+    // Another device already advanced this item. Treat this queued submission
+    // as superseded (not as a transient retry against newer SM-2 state).
+    return jsonResponse({ retired: false, dueOn: row.due_on, superseded: true }, 200);
   }
   if (row.due_on > today) {
     return jsonResponse({ error: "This item isn't due yet" }, 400);
