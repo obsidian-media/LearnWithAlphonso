@@ -15,6 +15,14 @@ This work is in progress on `Codex-pre-Launch` after the original five hardening
 
 **Remaining:** Finish UI/reporting behavior for a superseded grade, run full PR CI (including Android app and iOS), and device-check queued retries across sign-in/session refresh. Keep launch blocked on those checks until evidence exists.
 
+### Phase 4 — Vocab-image quality triage (2026-10-20)
+
+Added a deterministic 0–100 metadata triage score and `bun scripts/vocab-image-review.ts quality`. It ranks candidates using minimum pixel dimension, extreme aspect ratio, absent provider description, duplicate content hash, and missing visual-review record. These signals prioritize a human's review queue; they cannot verify semantic relevance, cultural appropriateness, or safety. Focused tests pass 2/2. The broader vocab-image suite returned 132 passing tests and one timeout in the existing bucket-migration filesystem scan (5-second limit); rerun and targeted lint remain outstanding. Output command and CI should be checked on PR #337. No candidate was auto-approved or altered.
+
+### Phase 5 — Close-out verification and owner gates
+
+After implementation, rerun the complete relevant CI matrix on the branch and record exact commit/run IDs here and in `docs/BACKLOG.md`. Resolve any failures, then check the PR state. The remaining non-code gates are Android save-any-word and offline sync on supported devices, iOS podcast seek/offline/review behavior on devices, native-speaker French and Spanish review, App Store/RevenueCat and production account state, deployed headers, and owner sign-off. The launch decision stays NO-GO until the evidence is supplied.
+
 **Scrubber checkpoint:** commit `3730d07` is pushed. PR #337 CI run 39352246488 passed lint/typecheck, web/admin builds, both E2E jobs, Deno, Swift tests, and the iOS app build; CodeQL (including Swift) and the vocab-image link check also passed. This validates compilation/tests, not physical-device seek ergonomics.
 
 ## Phase 0 — Establish a reproducible verification baseline

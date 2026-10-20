@@ -14,6 +14,7 @@ import { VOCAB_IMAGES } from "../src/data/vocab-images";
 import { LICENSE_FOR_SOURCE } from "../src/lib/vocab-images/types";
 import { buildContactSheetHtml } from "../src/lib/vocab-images/contact-sheet";
 import { statusCounts } from "../src/lib/vocab-images/manifest";
+import { scoreVocabImageCandidates } from "../src/lib/vocab-images/quality";
 import {
   SECOND_PASS_RATE,
   SECOND_PASS_SEED,
@@ -186,9 +187,22 @@ switch (cmd) {
     );
     break;
   }
+  case "quality": {
+    const scores = scoreVocabImageCandidates(Object.values(readManifest().entries));
+    console.log("Automated metadata triage only; inspect images visually before approval.");
+    for (const item of scores) {
+      console.log(
+        `${String(item.score).padStart(3)}  ${item.key.padEnd(28)} ${item.flags.join(", ") || "no metadata flags"}`,
+      );
+    }
+    console.log(
+      `${scores.length} candidate(s); ${scores.filter((item) => item.flags.length).length} flagged for review.`,
+    );
+    break;
+  }
   default:
     console.error(
-      "usage: bun scripts/vocab-image-review.ts batches|second-pass|apply|owner-sheet|apply-owner|status",
+      "usage: bun scripts/vocab-image-review.ts batches|second-pass|apply|owner-sheet|apply-owner|status|quality",
     );
     process.exit(1);
 }
