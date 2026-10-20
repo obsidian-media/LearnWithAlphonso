@@ -17,7 +17,7 @@ This work is in progress on `Codex-pre-Launch` after the original five hardening
 
 ### Phase 4 — Vocab-image quality triage (2026-10-20)
 
-Added a deterministic 0–100 metadata triage score and `bun scripts/vocab-image-review.ts quality`. It ranks candidates using minimum pixel dimension, extreme aspect ratio, absent provider description, duplicate content hash, and missing visual-review record. These signals prioritize a human's review queue; they cannot verify semantic relevance, cultural appropriateness, or safety. Focused tests pass 2/2. The broader vocab-image suite returned 132 passing tests and one timeout in the existing bucket-migration filesystem scan (5-second limit); rerun and targeted lint remain outstanding. Output command and CI should be checked on PR #337. No candidate was auto-approved or altered.
+Added a deterministic 0–100 metadata triage score and `bun scripts/vocab-image-review.ts quality` in pushed commit `6edb9e8`. It ranks candidates using minimum pixel dimension, extreme aspect ratio, absent provider description, duplicate content hash, and missing visual-review record. These signals prioritize a human's review queue; they cannot verify semantic relevance, cultural appropriateness, or safety. Focused tests pass 2/2 and the full vocab-image suite passes 133/133 after rerun. CI lint passed; the first typecheck caught a test-fixture source literal outside the Pexels/Pixabay union, corrected in a follow-up commit. Follow-up branch CI is required for compile evidence. No candidate was auto-approved or altered.
 
 ### Phase 5 — Close-out verification and owner gates
 

@@ -12,6 +12,8 @@ The initial five code-owned pre-launch hardening items subsequently passed branc
 
 **Vocab-image triage update (2026-10-20):** A deterministic metadata-only score is implemented locally to order human inspection by image dimensions, aspect ratio, provider-description presence, duplicate hash, and whether a visual review record exists. It does not score actual term/image semantic match or content safety, and it never auto-approves. Focused tests pass 2/2; the larger suite had 132 passes and one timeout in an existing filesystem-scan test, so aggregate validation is not yet clean. This does not change the NO-GO recommendation.
 
+**Latest branch check (2026-10-20):** Review/offline work (`9cd0434`) and image triage (`6edb9e8`) are pushed. Local Deno focused suites, Android core tests, and the complete vocab-image suite pass. PR #337's first lint job passed; its TypeScript job caught an invalid source literal in the new fixture (`unsplash`), which is corrected in a follow-up and must pass CI before acceptance. Sibling checks were still running when queried. Local targeted ESLint/full-project `tsc --noEmit` did not complete. Launch remains NO-GO pending green follow-up CI plus physical-device, linguistic, deployment, and owner/platform evidence.
+
 ## Executive conclusion
 
 The product has a stronger foundation than the current launch status suggests. Authentication, server-side lesson grading, Supabase/RLS boundaries, AI consent/quota controls, iOS signing automation, privacy manifests, and test coverage are all meaningful positives. Several issues found in older audit material are already fixed in the current tree, including important web accessibility and middleware behavior.

@@ -14,7 +14,7 @@ function entry(key: string, overrides: Partial<ManifestEntry> = {}): ManifestEnt
     attempts: 1,
     rejectedSourceIds: [],
     candidate: {
-      source: "unsplash",
+      source: "pexels",
       sourceId: key,
       sourcePageUrl: `https://example.test/${key}`,
       credit: "Photographer",
