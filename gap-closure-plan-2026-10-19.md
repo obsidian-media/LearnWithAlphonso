@@ -15,7 +15,7 @@ This work is in progress on `Codex-pre-Launch` after the original five hardening
 
 **Remaining:** Finish UI/reporting behavior for a superseded grade, run full PR CI (including Android app and iOS), and device-check queued retries across sign-in/session refresh. Keep launch blocked on those checks until evidence exists.
 
-**CI correction checkpoint (2026-10-20):** PR run 39363166722 verified the TypeScript fix, but Swift tests failed because the new snapshot fields were placed on `PendingLessonCompletion` rather than `PendingReviewGrade`. They are moved to the intended type in the current worktree. Local SwiftPM is not usable in this Windows environment (compiler target-info JSON parse failure); only the rerun of macOS CI can validate the correction.
+**CI correction checkpoint (2026-10-20):** PR run 39363166722 verified the TypeScript fix, but Swift tests failed because the new snapshot fields were placed on `PendingLessonCompletion` rather than `PendingReviewGrade`. Commit `80eb3af` moves them to the intended type. Local SwiftPM is not usable in this Windows environment (compiler target-info JSON parse failure); only the new macOS CI run can validate the correction and is currently queued/in progress.
 
 ### Phase 4 — Vocab-image quality triage (2026-10-20)
 
