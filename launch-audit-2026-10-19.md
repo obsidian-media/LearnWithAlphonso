@@ -16,6 +16,8 @@ The initial five code-owned pre-launch hardening items subsequently passed branc
 
 **Additional CI evidence (2026-10-20):** PR run 39363409158 passed lint/typecheck, web/admin builds, Deno, and regular E2E, but found one brittle source-guard test that assumed single-line initializer formatting. The test now tolerates multiline arguments while still asserting the account owner is carried. iOS and Android jobs were still in flight; the full rerun is required before treating the branch changes as verified. Launch remains NO-GO.
 
+**Final code verification (2026-10-20):** The correction commit `456aef0` now passes CI run 39363796531 (lint/typecheck, 3,688 tests / 1 skipped, web/admin builds, regular and signed-in E2E, Deno, Swift tests, iOS simulator build), Android CI run 39363796544 (JVM and app unit tests, lint, API 34 emulator instrumentation), CodeQL 39363792083, and vocab URL check 39363796571. The earlier Swift compile and source-guard failures are resolved. This is strong code/CI evidence, not broad launch clearance. Android/iOS physical-device validation, French/Spanish native-speaker approval, deployed app-header and production-account checks, App Store/RevenueCat state, and owner sign-off remain open. Recommendation stays NO-GO for broad public launch.
+
 ## Executive conclusion
 
 The product has a stronger foundation than the current launch status suggests. Authentication, server-side lesson grading, Supabase/RLS boundaries, AI consent/quota controls, iOS signing automation, privacy manifests, and test coverage are all meaningful positives. Several issues found in older audit material are already fixed in the current tree, including important web accessibility and middleware behavior.
