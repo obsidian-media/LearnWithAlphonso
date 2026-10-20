@@ -19,9 +19,6 @@ public struct PendingLessonCompletion: Sendable, Equatable {
     public let answers: [LessonAnswer]
     public let course: String
     public let queuedAt: Date
-    /// Due-date and last-grade snapshot seen when the learner answered.
-    public let expectedDueOn: String?
-    public let expectedLastReviewedAt: String?
     public let optimisticXpEstimate: Int
     /// The account that played this lesson. Nil only for rows written before the owner was recorded; the
     /// first account to sync adopts those.
@@ -66,6 +63,9 @@ public struct PendingReviewGrade: Sendable, Equatable {
     public let answer: String
     public let course: String
     public let queuedAt: Date
+    /// Review schedule snapshot seen when the learner answered.
+    public let expectedDueOn: String?
+    public let expectedLastReviewedAt: String?
     public let ownerUserID: String?
     public let attemptCount: Int
     public let nextAttemptAt: Date?
