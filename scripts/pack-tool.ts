@@ -170,7 +170,7 @@ async function cmdDraft(flags: Flags) {
   if (!apiKey) {
     fail(
       "OPENROUTER_API_KEY is not set. AI-assisted drafting needs an OpenRouter key (see .env.example, " +
-        'build.nvidia.com) -- without one, hand-write a draft instead with "bun run scripts/pack-tool.ts new".',
+        'openrouter.ai/keys) -- without one, hand-write a draft instead with "bun run scripts/pack-tool.ts new".',
     );
   }
 
@@ -278,7 +278,7 @@ async function cmdGenerate(flags: Flags) {
   if (!apiKey) {
     fail(
       "OPENROUTER_API_KEY is not set. Vocab proposal needs an OpenRouter key (see .env.example, " +
-        "build.nvidia.com).",
+        "openrouter.ai/keys).",
     );
   }
 

@@ -59,10 +59,14 @@ describe("buildReviewNotes", () => {
   it("says the podcast audio is AI-narrated and never implies a human voice", () => {
     const notes = buildReviewNotes(worst);
     expect(notes).toContain("podcast audio is AI-narrated (Deepgram) from scripts we wrote");
+    expect(notes).not.toMatch(/audio is our own/i);
+  });
+
+  it("names the AI text provider the app actually uses", () => {
+    const notes = buildReviewNotes(worst);
     expect(notes).toContain("OpenRouter");
     expect(notes).toContain("Anthropic");
     expect(notes).not.toContain("NVIDIA");
-    expect(notes).not.toMatch(/audio is our own/i);
   });
 
   it("is plain ASCII with no literal double hyphen, whatever the secret values contain", () => {

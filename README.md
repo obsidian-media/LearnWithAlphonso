@@ -202,6 +202,7 @@ SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SERVICE_ROLE_KEY      # server-only, never VITE_-prefixed
 OPENROUTER_API_KEY             # chat (openrouter.ai)
 LLM_CHAT_MODELS                # optional ordered, comma-separated model list; default anthropic/claude-haiku-5.5
+LLM_PROVIDERS                  # optional host allowlist (OpenRouter provider.only); default anthropic
 DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 LESSON_SESSION_SECRET          # signs lesson-session tokens (also an Edge Function secret)
 ```

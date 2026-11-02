@@ -175,24 +175,26 @@ describe("Support route — must agree with Privacy on Hector deletion (2026-09-
   });
 });
 
-describe("AI model providers", () => {
-  // OpenRouter falls back through LLM_CHAT_MODELS in order, so learner text can reach any provider in the default
-  // list. Each one must be named in the privacy policy. An id with an unknown prefix fails until it is mapped here.
-  const COMPANY: Record<string, string> = {
-    anthropic: "Anthropic",
-    mistralai: "Mistral",
-    nvidia: "NVIDIA",
-    openai: "OpenAI",
-    google: "Google",
+describe("AI text hosts", () => {
+  // OpenRouter only routes learner text to the hosts in LLM_PROVIDERS (provider.only), whichever model in the
+  // fallback list answers. Each default host must be named as a processor in the privacy policy, by the exact
+  // phrase of its processor entry (a bare company name could match something else, such as "Google Sign-In").
+  // A host without an entry here fails until its disclosure is written.
+  const PROCESSOR_ENTRY: Record<string, string> = {
+    anthropic: "Anthropic (Claude), reached through OpenRouter:",
   };
-  it("every default AI model's provider is named in the privacy policy", async () => {
-    const { LLM_CHAT_MODELS_DEFAULT } = await import("@/lib/llm-chat-model.server");
+  it("every default AI text host is named as a processor in the privacy policy", async () => {
+    const { LLM_PROVIDERS_DEFAULT } = await import("@/lib/llm-chat-model.server");
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    for (const id of LLM_CHAT_MODELS_DEFAULT) {
-      const company = COMPANY[id.split("/")[0]];
-      expect(company, `no company mapped for ${id}`).toBeDefined();
-      expect(screen.getAllByText(new RegExp(company)).length, company).toBeGreaterThan(0);
+    expect(LLM_PROVIDERS_DEFAULT.length).toBeGreaterThan(0);
+    for (const host of LLM_PROVIDERS_DEFAULT) {
+      const phrase = PROCESSOR_ENTRY[host];
+      expect(phrase, `no privacy processor entry mapped for host ${host}`).toBeDefined();
+      expect(
+        screen.getByText((t) => t.includes(phrase!)),
+        host,
+      ).toBeInTheDocument();
     }
   });
 });

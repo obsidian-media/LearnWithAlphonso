@@ -25,6 +25,27 @@ export function resolveLlmChatModels(): string[] {
   return parseLlmChatModels(process.env.LLM_CHAT_MODELS);
 }
 
+/**
+ * The hosts OpenRouter may send learner text to (its `provider.only`), whichever model in the list answers.
+ * Without it, an Anthropic model can also be served by Google Vertex, Amazon Bedrock or Azure, none of which the
+ * privacy policy names, and a failing BYOK key would fall back to them on OpenRouter credit. Override with
+ * LLM_PROVIDERS (comma-separated OpenRouter provider slugs). Every host listed must have its own processor entry
+ * in the privacy policy (legal-pages.test.tsx checks the default).
+ */
+export const LLM_PROVIDERS_DEFAULT: readonly string[] = ["anthropic"];
+
+export function parseLlmProviders(raw: string | undefined): string[] {
+  const hosts = (raw ?? "")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+  return hosts.length > 0 ? hosts : [...LLM_PROVIDERS_DEFAULT];
+}
+
+export function resolveLlmProviders(): string[] {
+  return parseLlmProviders(process.env.LLM_PROVIDERS);
+}
+
 /** The OpenRouter key every AI text caller uses; undefined means AI is not configured in this environment. */
 export function resolveLlmApiKey(): string | undefined {
   return process.env.OPENROUTER_API_KEY || undefined;

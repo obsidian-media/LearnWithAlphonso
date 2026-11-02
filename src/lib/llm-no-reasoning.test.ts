@@ -8,7 +8,12 @@ import {
   LLM_PROVIDER_PREFS,
   llmChatCompletion,
 } from "./llm-chat.server";
-import { LLM_CHAT_MODELS_DEFAULT, parseLlmChatModels } from "./llm-chat-model.server";
+import {
+  LLM_CHAT_MODELS_DEFAULT,
+  LLM_PROVIDERS_DEFAULT,
+  parseLlmChatModels,
+  parseLlmProviders,
+} from "./llm-chat-model.server";
 
 // With reasoning on, Practice replies took 17-88 s in production and capped calls (Save word, generated practice)
 // timed out or came back cut off. Both chokepoints must send the same off switch and the same routing rules.
@@ -39,6 +44,8 @@ describe("AI text requests", () => {
     expect(parseLlmChatModels(" a/x , ,b/y ")).toEqual(["a/x", "b/y"]);
     expect(parseLlmChatModels("")).toEqual([...LLM_CHAT_MODELS_DEFAULT]);
     expect(parseLlmChatModels(undefined)).toEqual([...LLM_CHAT_MODELS_DEFAULT]);
+    expect(parseLlmProviders(" Anthropic , mistral ")).toEqual(["anthropic", "mistral"]);
+    expect(parseLlmProviders("")).toEqual([...LLM_PROVIDERS_DEFAULT]);
   });
 
   it("are configured the same way in the edge functions' twin", () => {
@@ -58,8 +65,11 @@ describe("AI text requests", () => {
     expect(edge).toContain(
       `export const LLM_CHAT_MODELS_DEFAULT: readonly string[] = ${JSON.stringify(LLM_CHAT_MODELS_DEFAULT)};`,
     );
+    expect(edge).toContain(
+      `export const LLM_PROVIDERS_DEFAULT: readonly string[] = ${JSON.stringify(LLM_PROVIDERS_DEFAULT)};`,
+    );
     expect(edge).toMatch(
-      /reasoning: LLM_NO_REASONING,\s*provider: LLM_PROVIDER_PREFS,\s*messages: applySafety/,
+      /reasoning: LLM_NO_REASONING,\s*provider: \{ \.\.\.LLM_PROVIDER_PREFS, only: args\.providers \?\? resolveLlmProviders\(\) \},\s*messages: applySafety/,
     );
     expect(edge).toContain(
       `export const LLM_DEFAULT_TIMEOUT_MS = ${LLM_DEFAULT_TIMEOUT_MS / 1000}_000;`,

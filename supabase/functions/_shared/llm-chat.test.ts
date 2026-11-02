@@ -28,12 +28,13 @@ Deno.test("the edge chokepoint sends the model list, reasoning off and no data c
     apiKey: "k",
     body: { model: "b/y", messages: [{ role: "user", content: "x" }], max_tokens: 50, reasoning: { effort: "high" }, provider: { data_collection: "allow" } },
     models: ["a/x", "b/y"],
+    providers: ["anthropic"],
     fetchImpl,
   });
   assertEquals(sent[0].models, ["b/y", "a/x"]);
   assertEquals("model" in sent[0], false);
   assertEquals(sent[0].reasoning, { effort: "none" });
-  assertEquals(sent[0].provider, { data_collection: "deny" });
+  assertEquals(sent[0].provider, { data_collection: "deny", only: ["anthropic"] });
   assertEquals(sent[0].max_tokens, 50);
 });
 

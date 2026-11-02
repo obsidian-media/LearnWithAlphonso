@@ -31,6 +31,7 @@ describe("llmChatCompletion (OpenRouter)", () => {
       apiKey: "k",
       body: { model: "a/x", messages: [{ role: "user", content: "hola" }], max_tokens: 600 },
       models: ["a/x", "b/y"],
+      providers: ["anthropic"],
       fetchImpl,
     });
     expect(sent[0].url).toBe(LLM_CHAT_URL);
@@ -38,7 +39,7 @@ describe("llmChatCompletion (OpenRouter)", () => {
     expect(sent[0].body.models).toEqual(["a/x", "b/y"]);
     expect("model" in sent[0].body).toBe(false);
     expect(sent[0].body.reasoning).toEqual({ effort: "none" });
-    expect(sent[0].body.provider).toEqual({ data_collection: "deny" });
+    expect(sent[0].body.provider).toEqual({ data_collection: "deny", only: ["anthropic"] });
     expect(sent[0].body.max_tokens).toBe(600);
     expect((sent[0].body.messages as { content: string }[])[0].content).toBe(SAFETY_PREAMBLE);
   });
@@ -62,13 +63,14 @@ describe("llmChatCompletion (OpenRouter)", () => {
         model: "a/x",
         messages: [{ role: "user", content: "x" }],
         reasoning: { effort: "high" },
-        provider: { data_collection: "allow" },
+        provider: { data_collection: "allow", only: ["amazon-bedrock"] },
       },
       models: ["a/x"],
+      providers: ["anthropic"],
       fetchImpl,
     });
     expect(sent[0].body.reasoning).toEqual(LLM_NO_REASONING);
-    expect(sent[0].body.provider).toEqual(LLM_PROVIDER_PREFS);
+    expect(sent[0].body.provider).toEqual({ ...LLM_PROVIDER_PREFS, only: ["anthropic"] });
   });
 });
 

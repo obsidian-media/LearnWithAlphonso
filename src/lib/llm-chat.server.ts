@@ -1,5 +1,5 @@
 import { applySafety, type LlmMessage } from "./ai-safety";
-import { resolveLlmChatModels } from "./llm-chat-model.server";
+import { resolveLlmChatModels, resolveLlmProviders } from "./llm-chat-model.server";
 
 /**
  * The only place the web server talks to the AI text provider, OpenRouter (ai-call-sites.test.ts enforces it).
@@ -19,7 +19,10 @@ export type LlmChatBody = { model: string; messages: LlmMessage[] } & Record<str
  */
 export const LLM_NO_REASONING = { effort: "none" } as const;
 
-/** Never route learner text to a host that keeps it for training. Set here so no caller can loosen it. */
+/**
+ * Never route learner text to a host that keeps it for training. Set here so no caller can loosen it; `only` (the
+ * host allowlist, LLM_PROVIDERS) is added per request.
+ */
 export const LLM_PROVIDER_PREFS = { data_collection: "deny" } as const;
 
 /** The deadline for a model call whose caller sets none. A normal reply takes about a second. */
@@ -64,6 +67,8 @@ export async function llmChatCompletion(args: {
   body: LlmChatBody;
   /** The ordered fallback list; defaults to LLM_CHAT_MODELS. The body's own model always goes first. */
   models?: string[];
+  /** The hosts OpenRouter may use; defaults to LLM_PROVIDERS. */
+  providers?: string[];
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
 }): Promise<Response> {
@@ -77,7 +82,7 @@ export async function llmChatCompletion(args: {
       ...rest,
       models,
       reasoning: LLM_NO_REASONING,
-      provider: LLM_PROVIDER_PREFS,
+      provider: { ...LLM_PROVIDER_PREFS, only: args.providers ?? resolveLlmProviders() },
       messages: applySafety(body.messages),
     }),
     // No call may wait on the provider without a limit: a caller that sets no deadline gets this one.

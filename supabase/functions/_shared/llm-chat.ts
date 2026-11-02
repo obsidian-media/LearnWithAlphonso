@@ -30,6 +30,25 @@ export function resolveLlmChatModels(): string[] {
   return parseLlmChatModels(raw);
 }
 
+// Hand-kept mirror of src/lib/llm-chat-model.server.ts's LLM_PROVIDERS_DEFAULT: the only hosts OpenRouter may send
+// learner text to. Override with the LLM_PROVIDERS secret; every host must be named in the privacy policy.
+export const LLM_PROVIDERS_DEFAULT: readonly string[] = ["anthropic"];
+
+export function parseLlmProviders(raw: string | undefined): string[] {
+  const hosts = (raw ?? "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+  return hosts.length > 0 ? hosts : [...LLM_PROVIDERS_DEFAULT];
+}
+
+export function resolveLlmProviders(): string[] {
+  let raw: string | undefined;
+  try {
+    raw = Deno.env.get("LLM_PROVIDERS");
+  } catch {
+    // No env permission (unit tests): the default allowlist.
+  }
+  return parseLlmProviders(raw);
+}
+
 export function resolveLlmChatModel(): string {
   return resolveLlmChatModels()[0];
 }
@@ -80,6 +99,7 @@ export async function llmChatCompletion(args: {
   apiKey: string;
   body: LlmChatBody;
   models?: string[];
+  providers?: string[];
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
 }): Promise<Response> {
@@ -93,7 +113,7 @@ export async function llmChatCompletion(args: {
       ...rest,
       models,
       reasoning: LLM_NO_REASONING,
-      provider: LLM_PROVIDER_PREFS,
+      provider: { ...LLM_PROVIDER_PREFS, only: args.providers ?? resolveLlmProviders() },
       messages: applySafety(body.messages),
     }),
     // No call may wait on the provider without a limit: a caller that sets no deadline gets this one.

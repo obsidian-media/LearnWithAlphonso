@@ -1,7 +1,9 @@
 // scripts/benchmark-llm.ts
 /**
- * Measures the AI text provider with the request shape the app sends: per host and per variant, the status,
- * latency, reasoning tokens spent and which host actually answered. Run it before changing the model, host or
+ * Measures candidate models and hosts on OpenRouter with an app-shaped request (a long tutor system prompt, a short
+ * conversation, max_tokens 600): per host and per variant, the status, latency, reasoning tokens spent and which host
+ * actually answered. Its rows are fixed candidates (Nemotron hosts, BYOK Anthropic/Mistral), not the app's live
+ * configuration; scripts/smoke-llm-features.ts runs the configured model list through the real chokepoint. Run it before changing the model, host or
  * the "reasoning off" switch (a model that reasons made replies take 17-88 s and starved capped calls, #269).
  *
  *   OPENROUTER_API_KEY=... bun scripts/benchmark-llm.ts          # Nemotron on OpenRouter's hosts (uses credit)
@@ -46,12 +48,29 @@ const TUTOR = [
 const MESSAGES: LlmMessage[] = applySafety([
   { role: "system", content: TUTOR },
   { role: "assistant", content: "Bonjour ! Qu'est-ce que vous voulez boire ce matin ?" },
-  { role: "user", content: "Je veux un cafe et un croissant, s'il vous plait. Vous avez du jus d'orange ?" },
+  {
+    role: "user",
+    content: "Je veux un cafe et un croissant, s'il vous plait. Vous avez du jus d'orange ?",
+  },
 ]);
 
-type Result = { ok: boolean; status: number; ms: number; reasoning: number; provider: string; chars: number; text: string; error: string };
+type Result = {
+  ok: boolean;
+  status: number;
+  ms: number;
+  reasoning: number;
+  provider: string;
+  chars: number;
+  text: string;
+  error: string;
+};
 
-async function once(key: string, model: string, provider: Record<string, unknown>, extra: Record<string, unknown>): Promise<Result> {
+async function once(
+  key: string,
+  model: string,
+  provider: Record<string, unknown>,
+  extra: Record<string, unknown>,
+): Promise<Result> {
   const t0 = performance.now();
   try {
     const res = await fetch(URL, {
@@ -80,7 +99,16 @@ async function once(key: string, model: string, provider: Record<string, unknown
       chars: text.length,
     };
   } catch {
-    return { ok: false, status: 0, ms: performance.now() - t0, reasoning: 0, provider: "-", chars: 0, text: "", error: "network" };
+    return {
+      ok: false,
+      status: 0,
+      ms: performance.now() - t0,
+      reasoning: 0,
+      provider: "-",
+      chars: 0,
+      text: "",
+      error: "network",
+    };
   }
 }
 
@@ -89,7 +117,14 @@ const pct = (xs: number[], p: number) => {
   return s.length ? s[Math.min(s.length - 1, Math.floor((p / 100) * s.length))] : NaN;
 };
 
-async function row(key: string, label: string, model: string, provider: Record<string, unknown>, v: Variant, gapMs = 0) {
+async function row(
+  key: string,
+  label: string,
+  model: string,
+  provider: Record<string, unknown>,
+  v: Variant,
+  gapMs = 0,
+) {
   const rs: Result[] = [];
   for (let i = 0; i < RUNS; i++) {
     if (i && gapMs) await new Promise((r) => setTimeout(r, gapMs));
@@ -105,8 +140,12 @@ async function row(key: string, label: string, model: string, provider: Record<s
       `status ${[...new Set(rs.map((r) => r.status))].join(",")}`.padEnd(14),
       `p50 ${Math.round(pct(ms, 50))} ms`.padEnd(12),
       `p90 ${Math.round(pct(ms, 90))} ms`.padEnd(12),
-      `reasoning ${good.length ? (good.reduce((a, r) => a + r.reasoning, 0) / good.length).toFixed(0) : "-"}`.padEnd(14),
-      `chars ${good.length ? Math.round(good.reduce((a, r) => a + r.chars, 0) / good.length) : "-"}`.padEnd(10),
+      `reasoning ${good.length ? (good.reduce((a, r) => a + r.reasoning, 0) / good.length).toFixed(0) : "-"}`.padEnd(
+        14,
+      ),
+      `chars ${good.length ? Math.round(good.reduce((a, r) => a + r.chars, 0) / good.length) : "-"}`.padEnd(
+        10,
+      ),
       `served by ${[...new Set(rs.map((r) => r.provider))].join(",")}`,
     ].join(" "),
   );
@@ -126,17 +165,36 @@ if (process.env.BENCH_SET === "byok") {
     ["anthropic/claude-haiku-5.5", "anthropic", 0],
     ["mistralai/mistral-small-2603", "mistral", 1500], // a free-tier Mistral account allows about 1 request/s
   ] as const) {
-    for (const v of [PLAIN, VARIANTS[0]]) await row(key, `${model} @${host}`, model, { only: [host], ...byok }, v, gap);
+    for (const v of [PLAIN, VARIANTS[0]])
+      await row(key, `${model} @${host}`, model, { only: [host], ...byok }, v, gap);
   }
   process.exit(0);
 }
 for (const host of HOSTS) {
   for (const v of VARIANTS) {
-    await row(key, `${MODEL} @${host}`, MODEL, { only: [host], allow_fallbacks: false, data_collection: "deny", zdr: true }, v);
+    await row(
+      key,
+      `${MODEL} @${host}`,
+      MODEL,
+      { only: [host], allow_fallbacks: false, data_collection: "deny", zdr: true },
+      v,
+    );
   }
 }
 // The app's routing (fallback across the allowlist), then the free variant for comparison (no ZDR filter: free
 // endpoints generally do not offer it, which is part of the comparison).
-await row(key, `${MODEL} @allowlist`, MODEL, { only: HOSTS, allow_fallbacks: true, data_collection: "deny", zdr: true }, VARIANTS[0]);
+await row(
+  key,
+  `${MODEL} @allowlist`,
+  MODEL,
+  { only: HOSTS, allow_fallbacks: true, data_collection: "deny", zdr: true },
+  VARIANTS[0],
+);
 await row(key, `${MODEL}:free`, `${MODEL}:free`, {}, VARIANTS[0]);
-await row(key, `${MODEL}:free +ZDR`, `${MODEL}:free`, { data_collection: "deny", zdr: true }, VARIANTS[0]);
+await row(
+  key,
+  `${MODEL}:free +ZDR`,
+  `${MODEL}:free`,
+  { data_collection: "deny", zdr: true },
+  VARIANTS[0],
+);
