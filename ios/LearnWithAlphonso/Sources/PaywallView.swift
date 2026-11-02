@@ -212,9 +212,10 @@ struct PaywallView: View {
         Button(PaywallCopy.manage) {
             // A subscription bought on the website does not appear in Apple's sheet, so it opens its own
             // management page. This only routes an existing subscriber; the paywall never shows web prices or checkout.
-            if let url = entitlementStore.webManagementURL {
+            switch ManageSubscriptionRoute(webManagementURL: entitlementStore.webManagementURL) {
+            case .web(let url):
                 openURL(url)
-            } else {
+            case .appleSheet:
                 isPresentingManageSubscriptions = true
             }
         }

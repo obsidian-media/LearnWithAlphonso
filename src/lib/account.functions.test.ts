@@ -880,6 +880,38 @@ describe("eraseSubscriberRecord", () => {
     expect(error.mock.calls.flat().join(" ")).not.toContain(DELETED);
   });
 
+  it("with v2 configured, does not erase and queues the id when RevenueCat refuses the cancel", async () => {
+    vi.stubEnv("REVENUECAT_V2_SECRET_KEY", "sk_v2");
+    vi.stubEnv("REVENUECAT_PROJECT_ID", "proj1");
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+    const order: string[] = [];
+    globalThis.fetch = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      order.push(`${method} ${String(url)}`);
+      if (String(url).includes("/v1/subscribers/") && method === "GET") {
+        return Response.json({
+          subscriber: {
+            entitlements: {},
+            subscriptions: { w: { store: "rc_billing", expires_date: future } },
+          },
+        });
+      }
+      if (String(url).endsWith("/subscriptions")) {
+        return Response.json({
+          items: [{ id: "sub_1", store: "rc_billing", auto_renewal_status: "will_renew" }],
+        });
+      }
+      if (String(url).endsWith("/actions/cancel")) return new Response("{}", { status: 500 });
+      return new Response("{}", { status: 200 });
+    }) as never;
+    const queued = queue();
+    await accountModule.eraseSubscriberRecord(DELETED);
+    expect(order.some((o) => o.startsWith("POST") && o.endsWith("/actions/cancel"))).toBe(true);
+    expect(order.some((o) => o.startsWith("DELETE"))).toBe(false);
+    expect(queued).toEqual([{ app_user_id: DELETED }]);
+    expect(error.mock.calls.flat().join(" ")).not.toContain(DELETED);
+  });
+
   it("queues the id when RevenueCat is not configured, instead of dropping it", async () => {
     vi.stubEnv("REVENUECAT_SECRET_API_KEY", "");
     const queued = queue();

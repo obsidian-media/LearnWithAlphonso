@@ -44,6 +44,25 @@ describe("after checkout", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/hector" });
   });
 
+  it("keeps polling through RevenueCat errors (503, network) and opens Hector once Pro is active", async () => {
+    let call = 0;
+    globalThis.fetch = vi.fn(async () => {
+      call += 1;
+      if (call === 1) return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
+      if (call === 2) throw new TypeError("network down");
+      return Response.json({ pro: call >= 4 });
+    }) as unknown as typeof fetch;
+    const Page = Route.options.component!;
+    render(<Page />);
+    await advance(4_100);
+    expect(screen.getByText("Payment received, activating…")).toBeInTheDocument();
+    expect(screen.queryByText(/failed|error/i)).toBeNull();
+    expect(navigate).not.toHaveBeenCalled();
+    await advance(4_100);
+    expect(call).toBeGreaterThanOrEqual(4);
+    expect(navigate).toHaveBeenCalledWith({ to: "/hector" });
+  });
+
   it("remembers for this session that the learner has just paid", async () => {
     const Page = Route.options.component!;
     render(<Page />);

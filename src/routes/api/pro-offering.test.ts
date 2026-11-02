@@ -83,8 +83,7 @@ describe("GET /api/pro-offering", () => {
     expect(body.purchaseUrl).toMatch(/^https:\/\/pay\.rev\.cat\/plain_tok\/user-1\?/);
   });
 
-  it("without a no-trial link, relies on RevenueCat's own trial rule and still shows no trial", async () => {
-    vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL", "");
+  it("never hands the trial link to a learner who already had a trial (no second trial, whatever RevenueCat's own rule says)", async () => {
     getSubscriberSummary.mockResolvedValue({
       status: "inactive",
       store: null,
@@ -92,8 +91,7 @@ describe("GET /api/pro-offering", () => {
       managementUrl: null,
     });
     const body = await (await handler({ request: req() })).json();
-    expect(body.trialDays).toBeNull();
-    expect(body.purchaseUrl).toMatch(/^https:\/\/pay\.rev\.cat\/trial_tok\/user-1\?/);
+    expect(body.purchaseUrl).not.toContain("trial_tok");
   });
 
   it("409 already-pro with no purchase link for a learner who already has Pro (no double purchase)", async () => {
@@ -115,8 +113,33 @@ describe("GET /api/pro-offering", () => {
       () => getSubscriberSummary.mockResolvedValue({ status: "unavailable" }),
     ],
     ["the purchase link is not set", () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "")],
+    [
+      "the no-trial link is not set",
+      () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL", ""),
+    ],
     ["the product id is not set", () => vi.stubEnv("REVENUECAT_WEB_PRODUCT_ID", "")],
     ["RevenueCat is not configured", () => revenueCatConfigFromEnv.mockReturnValue(null)],
+    ["the trial link is malformed", () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "not a url")],
+    [
+      "the trial link has no scheme",
+      () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "pay.rev.cat/trial_tok"),
+    ],
+    [
+      "the trial link is not https",
+      () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "http://pay.rev.cat/trial_tok"),
+    ],
+    [
+      "the no-trial link is malformed (for a learner who already had a trial)",
+      () => {
+        vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL", "::bad::");
+        getSubscriberSummary.mockResolvedValue({
+          status: "inactive",
+          store: null,
+          trialEligible: false,
+          managementUrl: null,
+        });
+      },
+    ],
   ])("503 offering-unavailable and no price when %s", async (_l, arrange) => {
     arrange();
     const res = await handler({ request: req() });

@@ -62,6 +62,22 @@ describe("getSubscriberSummary", () => {
     },
   );
 
+  it.each(["http://billing.example/portal/abc", "javascript:alert(1)", "not a url", "//evil.example/x"])(
+    "active web Pro with a non-https management link (%s): no link, never a clickable non-https href",
+    async (url) => {
+      const fake = respond(
+        200,
+        subscriber({
+          pro: { expires_date: FUTURE, product_identifier: "pro_web_monthly" },
+          subscriptions: { pro_web_monthly: { store: "rc_billing" } },
+          management_url: url,
+        }),
+      );
+      const summary = await getSubscriberSummary(CONFIG, "u1", fake);
+      expect(summary).toMatchObject({ status: "active", store: "web", managementUrl: null });
+    },
+  );
+
   it("no subscriber yet (404): inactive and trial-eligible", async () => {
     expect(await getSubscriberSummary(CONFIG, "u1", respond(404))).toEqual({
       status: "inactive",

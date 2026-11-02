@@ -74,6 +74,16 @@ export type SubscriberSummary =
 // RevenueCat's v1 `store` for Web Billing is not documented; rc_billing (Web Billing) and stripe (Stripe Billing)
 // are the two web stores. Confirm against a sandbox purchase (web Hector plan, Task 0).
 const WEB_STORES = new Set(["rc_billing", "stripe"]);
+
+/** The page renders this as a link, so only an absolute https URL passes. */
+function httpsUrlOrNull(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    return new URL(value).protocol === "https:" ? value : null;
+  } catch {
+    return null;
+  }
+}
 // Stores that are certainly not website billing. Account deletion treats any other live store as possibly web, so
 // an unrecognised value can never be mistaken for "nothing to cancel".
 const NOT_WEB_STORES = new Set([
@@ -148,10 +158,7 @@ export async function getSubscriberSummary(
 
     const productId = entitlement.product_identifier;
     const store = productId ? storeOf(subscriptions[productId]?.store) : null;
-    const managementUrl =
-      store === "web" && typeof subscriber.management_url === "string"
-        ? subscriber.management_url
-        : null;
+    const managementUrl = store === "web" ? httpsUrlOrNull(subscriber.management_url) : null;
     return { status: "active", store, trialEligible, managementUrl };
   } catch {
     return { status: "unavailable" };

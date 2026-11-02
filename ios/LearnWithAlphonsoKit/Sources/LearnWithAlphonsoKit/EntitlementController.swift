@@ -7,7 +7,24 @@ public struct EntitlementSnapshot: Sendable, Equatable {
     public let webManagementURL: URL?
     public init(isProActive: Bool, webManagementURL: URL? = nil) {
         self.isProActive = isProActive
-        self.webManagementURL = isProActive ? webManagementURL : nil
+        self.webManagementURL = isProActive && webManagementURL?.scheme?.lowercased() == "https" ? webManagementURL : nil
+    }
+
+    /// From RevenueCat's customer info: the management link is kept only for a web-billed Pro (Web Billing or
+    /// Stripe), and only when it is https. An App Store subscriber is always sent to Apple's sheet.
+    public init(isProActive: Bool, isWebBilled: Bool, managementURL: URL?) {
+        self.init(isProActive: isProActive, webManagementURL: isWebBilled ? managementURL : nil)
+    }
+}
+
+/// Where Manage Subscription goes: a website subscription opens its own management page (it is not in Apple's
+/// sheet); everything else opens Apple's sheet. This only routes an existing subscriber, never to a checkout.
+public enum ManageSubscriptionRoute: Sendable, Equatable {
+    case web(URL)
+    case appleSheet
+
+    public init(webManagementURL: URL?) {
+        self = webManagementURL.map(ManageSubscriptionRoute.web) ?? .appleSheet
     }
 }
 

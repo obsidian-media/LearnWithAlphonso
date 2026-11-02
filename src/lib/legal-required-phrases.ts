@@ -32,6 +32,8 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
     "Deleting your Alphonso account cancels a subscription bought on our website: you are not charged again, and the current period is not refunded.",
     "Payment is charged to your Apple Account at confirmation of purchase.",
     "at least 24 hours before the end of the current period",
+    "renews automatically for another period of the same length",
+    "For a subscription bought on our website, we email you before a new price applies to you, and you can cancel before it does.",
     "reportaproblem.apple.com",
     "Standard Licensed Application End User License Agreement",
     "Apple and Apple's subsidiaries are third-party beneficiaries of these terms",
@@ -103,6 +105,7 @@ export const LEGAL_FORBIDDEN_PHRASES: Readonly<Record<LegalPath, readonly string
     "keep the generated name",
     "parent or guardian’s consent",
     "Payment: Payment",
+    "renews automatically for another month",
   ],
   "/privacy": [
     "privacy@alphonsoecosystem.app",

@@ -103,7 +103,8 @@ final class RevenueCatPurchases: PurchasesProviding {
         let isWeb = pro?.store == .rcBilling || pro?.store == .stripe
         return EntitlementSnapshot(
             isProActive: pro?.isActive == true,
-            webManagementURL: isWeb ? info.managementURL : nil
+            isWebBilled: isWeb,
+            managementURL: info.managementURL
         )
     }
 

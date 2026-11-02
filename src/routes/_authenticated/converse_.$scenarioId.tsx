@@ -361,8 +361,9 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
               <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
             </div>
           )}
-          {/* After a few turns, offer to keep going with Hector (hidden for Pro). */}
-          {messages.filter((m) => m.role === "user").length >= 3 && !sending && (
+          {/* After a few turns, offer to keep going with Hector (hidden for Pro). Once shown it stays mounted, so a
+              later turn neither re-checks Pro nor closes a paywall the learner opened. */}
+          {messages.filter((m) => m.role === "user").length >= 3 && (
             <HectorInvite source="practice_end_prompt" />
           )}
           {(error ?? captureError) && (

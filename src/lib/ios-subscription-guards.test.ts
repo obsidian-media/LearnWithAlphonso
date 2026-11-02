@@ -60,15 +60,19 @@ describe("iPhone: a website subscriber manages Pro on the web, and the app never
   const paywall = read("ios/LearnWithAlphonso/Sources/PaywallView.swift");
   const purchases = read("ios/LearnWithAlphonso/Sources/RevenueCatPurchases.swift");
 
-  it("Manage Subscription opens the web management link when there is one, else Apple's sheet", () => {
-    expect(paywall).toMatch(
-      /if let url = entitlementStore\.webManagementURL \{\s*openURL\(url\)\s*\} else \{\s*isPresentingManageSubscriptions = true\s*\}/,
+  // The decisions themselves (web link or Apple's sheet; web-billed only; https only) are Kit behaviour, tested in
+  // ManageSubscriptionRouteTests. These guards only pin that the app target, which has no unit tests, calls them.
+  it("Manage Subscription follows the Kit's route", () => {
+    expect(paywall).toContain(
+      "switch ManageSubscriptionRoute(webManagementURL: entitlementStore.webManagementURL)",
     );
+    expect(paywall).toMatch(/case \.web\(let url\):\s*openURL\(url\)/);
+    expect(paywall).toMatch(/case \.appleSheet:\s*isPresentingManageSubscriptions = true/);
   });
 
-  it("the link is taken only for a web-billed Pro entitlement", () => {
+  it("the snapshot is built from the web-billed stores, with the Kit deciding what to keep", () => {
     expect(purchases).toContain("let isWeb = pro?.store == .rcBilling || pro?.store == .stripe");
-    expect(purchases).toContain("webManagementURL: isWeb ? info.managementURL : nil");
+    expect(purchases).toMatch(/isWebBilled: isWeb,\s*managementURL: info\.managementURL/);
   });
 
   it("no iPhone source names a web checkout or the website's Hector page", () => {
