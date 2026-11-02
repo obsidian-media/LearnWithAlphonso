@@ -55,3 +55,32 @@ describe("PaywallView copy", () => {
     expect(source).not.toMatch(/^import RevenueCat$/m);
   });
 });
+
+describe("iPhone: a website subscriber manages Pro on the web, and the app never steers to web checkout", () => {
+  const paywall = read("ios/LearnWithAlphonso/Sources/PaywallView.swift");
+  const purchases = read("ios/LearnWithAlphonso/Sources/RevenueCatPurchases.swift");
+
+  it("Manage Subscription opens the web management link when there is one, else Apple's sheet", () => {
+    expect(paywall).toMatch(
+      /if let url = entitlementStore\.webManagementURL \{\s*openURL\(url\)\s*\} else \{\s*isPresentingManageSubscriptions = true\s*\}/,
+    );
+  });
+
+  it("the link is taken only for a web-billed Pro entitlement", () => {
+    expect(purchases).toContain("let isWeb = pro?.store == .rcBilling || pro?.store == .stripe");
+    expect(purchases).toContain("webManagementURL: isWeb ? info.managementURL : nil");
+  });
+
+  it("no iPhone source names a web checkout or the website's Hector page", () => {
+    const sources = fs
+      .readdirSync(path.join(root, "ios/LearnWithAlphonso/Sources"))
+      .filter((f) => f.endsWith(".swift"))
+      .map((f) => [f, read(`ios/LearnWithAlphonso/Sources/${f}`)] as const);
+    const offenders = sources
+      .filter(([, text]) =>
+        /pay\.rev\.cat|\/pro-return|learn\.alphonsoecosystem\.app\/hector|pro-offering/.test(text),
+      )
+      .map(([f]) => f);
+    expect(offenders).toEqual([]);
+  });
+});

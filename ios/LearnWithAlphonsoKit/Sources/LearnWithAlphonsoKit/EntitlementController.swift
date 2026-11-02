@@ -2,7 +2,13 @@ import Foundation
 
 public struct EntitlementSnapshot: Sendable, Equatable {
     public let isProActive: Bool
-    public init(isProActive: Bool) { self.isProActive = isProActive }
+    /// Set only when the active Pro was bought on the website (RevenueCat Web Billing): where to manage it. Apple's
+    /// subscription sheet cannot show a web subscription. Nil for App Store Pro and for no Pro.
+    public let webManagementURL: URL?
+    public init(isProActive: Bool, webManagementURL: URL? = nil) {
+        self.isProActive = isProActive
+        self.webManagementURL = isProActive ? webManagementURL : nil
+    }
 }
 
 public enum PurchaseOutcome: Sendable, Equatable {
@@ -34,6 +40,8 @@ public struct EntitlementState: Sendable, Equatable {
     }
 
     public var isPro = false
+    /// The web billing portal for a website subscription; nil otherwise (see `EntitlementSnapshot`).
+    public var webManagementURL: URL?
     /// Starts `.loading`: the paywall shows its skeleton, never a failure, before the first load.
     public var load: PaywallLoadState = .loading
     public var notice: Notice?
@@ -106,12 +114,14 @@ public final class EntitlementController: EntitlementResetting {
         guard let provider, let expected = expectedUserID,
               provider.currentAppUserID() == expected else { return }
         state.isPro = snapshot.isProActive
+        state.webManagementURL = snapshot.webManagementURL
         if snapshot.isProActive { state.notice = nil }
     }
 
     public func refresh() async {
         guard let provider else {
             state.isPro = false
+            state.webManagementURL = nil
             return
         }
         let started = generation
@@ -119,9 +129,11 @@ public final class EntitlementController: EntitlementResetting {
             let snapshot = try await provider.customerInfo()
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
+            state.webManagementURL = snapshot.webManagementURL
         } catch {
             guard started == generation else { return }
             state.isPro = false
+            state.webManagementURL = nil
         }
     }
 
@@ -140,12 +152,14 @@ public final class EntitlementController: EntitlementResetting {
                 return
             }
             state.isPro = snapshot.isProActive
+            state.webManagementURL = snapshot.webManagementURL
         } catch {
             guard started == generation else { return }
             if provider.currentAppUserID() == userID {
                 await refresh()
             } else {
                 state.isPro = false
+                state.webManagementURL = nil
             }
         }
     }
@@ -206,6 +220,7 @@ public final class EntitlementController: EntitlementResetting {
             switch outcome {
             case .completed(let snapshot):
                 state.isPro = snapshot.isProActive
+                state.webManagementURL = snapshot.webManagementURL
                 if !snapshot.isProActive { state.notice = .error(PaywallCopy.purchasedNotActive) }
             case .cancelled:
                 break
@@ -228,6 +243,7 @@ public final class EntitlementController: EntitlementResetting {
             let snapshot = try await provider.restorePurchases()
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
+            state.webManagementURL = snapshot.webManagementURL
             if !snapshot.isProActive { state.notice = .info(PaywallCopy.restoreEmpty) }
         } catch {
             guard started == generation else { return }
@@ -249,6 +265,7 @@ public final class EntitlementController: EntitlementResetting {
             let snapshot = try await provider.logOut()
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
+            state.webManagementURL = snapshot.webManagementURL
         } catch {
             // Anonymous already (logOutAnonymousUserError) or offline: Pro stays off.
         }

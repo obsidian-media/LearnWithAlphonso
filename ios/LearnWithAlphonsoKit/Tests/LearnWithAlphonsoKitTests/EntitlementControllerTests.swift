@@ -33,6 +33,39 @@ final class EntitlementControllerTests: XCTestCase {
         return controller
     }
 
+    // MARK: - Web subscriptions
+
+    func testSnapshotDefaultsToNoWebManagementLink() {
+        XCTAssertNil(EntitlementSnapshot(isProActive: true).webManagementURL)
+        let url = URL(string: "https://billing.example/portal")!
+        XCTAssertNotEqual(
+            EntitlementSnapshot(isProActive: true, webManagementURL: url),
+            EntitlementSnapshot(isProActive: true)
+        )
+    }
+
+    @MainActor
+    func testAWebSubscriberCarriesTheirManagementLinkAndLosesItOnSignOut() async {
+        let url = URL(string: "https://billing.example/portal")!
+        let mock = MockPurchases()
+        mock.logInResult = .success(EntitlementSnapshot(isProActive: true, webManagementURL: url))
+        let controller = EntitlementController(provider: mock)
+        await controller.login(userID: "user-a")
+        XCTAssertTrue(controller.state.isPro)
+        XCTAssertEqual(controller.state.webManagementURL, url)
+        await controller.reset()
+        XCTAssertNil(controller.state.webManagementURL)
+    }
+
+    @MainActor
+    func testAnAppStoreSubscriberHasNoWebManagementLink() async {
+        let mock = MockPurchases()
+        mock.logInResult = .success(pro)
+        let controller = EntitlementController(provider: mock)
+        await controller.login(userID: "user-a")
+        XCTAssertNil(controller.state.webManagementURL)
+    }
+
     // MARK: - Plans and source
 
     @MainActor
