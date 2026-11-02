@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 import { normalizePracticeQuestion, type PracticeQuestion } from "./practice-choices";
 
 /** Two short attempts instead of one long call: the learner gets an answer in about 20 s at worst. */
@@ -8,7 +8,7 @@ export const PRACTICE_MAX_ATTEMPTS = 2;
 
 /**
  * V3 pkg 4b: "generative sentence content" -- on-demand extra practice
- * per lesson. Same NVIDIA NIM integration as weakness-detection.server.ts,
+ * per lesson. Same OpenRouter integration as weakness-detection.server.ts,
  * same defensive-parse reasoning (no structured-output mode is used
  * anywhere in this codebase, so never assume clean JSON from the model).
  * Generated questions are ephemeral: never persisted, never counted
@@ -57,7 +57,7 @@ export function practicePrompt(
 }
 
 /**
- * Calls NVIDIA NIM with `practicePrompt` and parses the result. Never throws: any upstream or parse failure
+ * Calls OpenRouter with `practicePrompt` and parses the result. Never throws: any upstream or parse failure
  * just yields an empty array, matching analyze-weaknesses' fail-quiet design (this is a nice-to-have layered on
  * top of the real lesson, not a trust boundary itself). The route turns an empty result into a deterministic
  * fallback set. `durationMs` is logged on every outcome so a recurrence gives an exact number.
@@ -68,18 +68,18 @@ export function practicePrompt(
 export async function generatePracticeQuestions(params: {
   topic: string;
   sampleQuestions: { prompt: string; answer: string }[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
 }): Promise<GeneratedPracticeQuestion[]> {
   if (params.sampleQuestions.length === 0) return [];
   for (let attempt = 1; attempt <= PRACTICE_MAX_ATTEMPTS; attempt++) {
     const startedAt = Date.now();
     try {
-      const resp = await nvidiaChatCompletion({
-        apiKey: params.nvidiaApiKey,
+      const resp = await llmChatCompletion({
+        apiKey: params.llmApiKey,
         signal: AbortSignal.timeout(PRACTICE_ATTEMPT_TIMEOUT_MS),
         body: {
-          model: params.nvidiaModel,
+          model: params.llmModel,
           messages: [
             { role: "user", content: practicePrompt(params.topic, params.sampleQuestions) },
           ],
@@ -88,7 +88,7 @@ export async function generatePracticeQuestions(params: {
       });
       if (!resp.ok) {
         console.error(
-          `[generate-practice] attempt ${attempt}: NVIDIA ${resp.status} after ${Date.now() - startedAt}ms`,
+          `[generate-practice] attempt ${attempt}: AI provider ${resp.status} after ${Date.now() - startedAt}ms`,
         );
         continue;
       }

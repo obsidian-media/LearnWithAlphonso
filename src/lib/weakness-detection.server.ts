@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { Course } from "../data/courses";
 import { filterModelOutputs, type BlockedTermCheck } from "./ai-safety";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 
 /**
  * V3 package 3b: extracted from src/routes/api/analyze-weaknesses.ts so
@@ -85,7 +85,7 @@ export function analysisPrompt(sourceDescription: string): string {
 }
 
 /**
- * Calls NVIDIA NIM with `analysisPrompt`, dedups against the caller's
+ * Calls OpenRouter with `analysisPrompt`, dedups against the caller's
  * existing active weakness items by category (via `dedupCheck`, RLS-scoped
  * so it only sees this user's own rows), and inserts survivors into
  * review_items + a matching `weakness_events` "detected" row (both via
@@ -100,8 +100,8 @@ export async function detectAndRecordWeaknesses(params: {
   userId: string;
   sourceDescription: string;
   transcriptMessages: { role: string; content: string }[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
   /** The learner's course, for the language of the fallback and the output mask. */
   course: Course;
   /** Blocked-term verdicts for model-written questions (ai_output_blocked). */
@@ -114,10 +114,10 @@ export async function detectAndRecordWeaknesses(params: {
 
   let content: string;
   try {
-    const resp = await nvidiaChatCompletion({
-      apiKey: params.nvidiaApiKey,
+    const resp = await llmChatCompletion({
+      apiKey: params.llmApiKey,
       body: {
-        model: params.nvidiaModel,
+        model: params.llmModel,
         messages: [
           ...params.transcriptMessages.map((m) => ({
             role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
@@ -128,14 +128,14 @@ export async function detectAndRecordWeaknesses(params: {
       },
     });
     if (!resp.ok) {
-      console.error(`[weakness-detection] NVIDIA API returned ${resp.status}`);
+      console.error(`[weakness-detection] AI provider returned ${resp.status}`);
       return 0;
     }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     content = data.choices?.[0]?.message?.content ?? "";
   } catch (err) {
     console.error(
-      `[weakness-detection] NVIDIA API call threw: ${err instanceof Error ? err.name : "error"}`,
+      `[weakness-detection] AI provider call threw: ${err instanceof Error ? err.name : "error"}`,
     );
     return 0;
   }

@@ -19,7 +19,7 @@
 	</array>
 	<!-- Export compliance, answered directly so App Store Connect doesn't
 	     ask on every submission. All network calls (Supabase, RevenueCat,
-	     NVIDIA, Deepgram, APNs registration) go over plain HTTPS/TLS via
+	     OpenRouter, Deepgram, APNs registration) go over plain HTTPS/TLS via
 	     URLSession -- Apple's own OS-provided encryption, always exempt.
 	     The one piece of hand-implemented crypto in this app,
 	     LearnWithAlphonsoKit/SHA256Pure.swift (a standard FIPS 180-4

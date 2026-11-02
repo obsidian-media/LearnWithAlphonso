@@ -53,7 +53,7 @@ final class TutorErrorTests: XCTestCase {
         )
     }
 
-    /// NVIDIA's own rate limit is a 429 too, but it is not the learner's daily quota.
+    /// The AI provider's own rate limit is a 429 too, but it is not the learner's daily quota.
     func testUpstreamRateLimitIsNotTheDailyQuota() {
         XCTAssertEqual(
             TutorError.from(status: 429, body: body(["error": "Rate limited, please try again shortly"])),

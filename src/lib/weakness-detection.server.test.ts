@@ -51,8 +51,8 @@ describe("detectAndRecordWeaknesses", () => {
       userId: "user-1",
       sourceDescription: "test transcript",
       transcriptMessages: [{ role: "user", content: "I go to the park yesterday." }],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
       course: "en" as const,
       outputCheck: vi.fn(async (t: string[]) => t.map(() => false)),
       dedupCheck: vi.fn().mockResolvedValue(false),
@@ -62,7 +62,7 @@ describe("detectAndRecordWeaknesses", () => {
     };
   }
 
-  it("returns 0 without calling NVIDIA for an empty transcript", async () => {
+  it("returns 0 without calling the AI provider for an empty transcript", async () => {
     const params = callbacks({ transcriptMessages: [] });
     const count = await detectAndRecordWeaknesses(params);
     expect(count).toBe(0);
@@ -122,7 +122,7 @@ describe("detectAndRecordWeaknesses", () => {
     expect(params.adminInsertReviewItem).not.toHaveBeenCalled();
   });
 
-  it("returns 0 when the upstream NVIDIA call fails", async () => {
+  it("returns 0 when the upstream AI call fails", async () => {
     global.fetch = vi.fn().mockResolvedValue(new Response("error", { status: 500 }));
     const count = await detectAndRecordWeaknesses(callbacks());
     expect(count).toBe(0);

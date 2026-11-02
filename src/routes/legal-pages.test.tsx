@@ -46,8 +46,10 @@ describe("Terms route", () => {
   it("names the AI processors", () => {
     const Terms = TermsRoute.options.component!;
     render(<Terms />);
-    expect(screen.getByText(/NVIDIA/)).toBeInTheDocument();
+    expect(screen.getByText(/Anthropic/)).toBeInTheDocument();
+    expect(screen.getByText(/OpenRouter/)).toBeInTheDocument();
     expect(screen.getByText(/Deepgram/)).toBeInTheDocument();
+    expect(screen.queryByText(/NVIDIA/)).toBeNull();
   });
 });
 
@@ -62,10 +64,14 @@ describe("Privacy route", () => {
   it("names the AI processors, not just that AI is used", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    // NVIDIA (LLM) and Deepgram (speech) are the processors, named in the
-    // processors list. Cloud Voice is gone as of the 2026-09-27 Hector
-    // decouple -- Hector now runs on our own backend, no separate system.
-    expect(screen.getAllByText(/NVIDIA/).length).toBeGreaterThan(0);
+    // OpenRouter (routing) with Anthropic (LLM), and Deepgram (speech), are the
+    // processors, named in the processors list. NVIDIA was the LLM until
+    // 2026-11-02 (its trial API forbids production use). Cloud Voice is gone
+    // as of the 2026-09-27 Hector decouple.
+    expect(screen.getAllByText(/OpenRouter/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Anthropic/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/deletes it within 30 days/).length).toBeGreaterThan(0);
+    expect(screen.queryAllByText(/NVIDIA/)).toHaveLength(0);
     expect(screen.getAllByText(/Deepgram/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Cloud Voice/)).toBeNull();
   });
@@ -166,5 +172,29 @@ describe("Support route — must agree with Privacy on Hector deletion (2026-09-
     expect(
       screen.getByText(/removes your learning history, including Hector/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe("AI text hosts", () => {
+  // OpenRouter only routes learner text to the hosts in LLM_PROVIDERS (provider.only), whichever model in the
+  // fallback list answers. Each default host must be named as a processor in the privacy policy, by the exact
+  // phrase of its processor entry (a bare company name could match something else, such as "Google Sign-In").
+  // A host without an entry here fails until its disclosure is written.
+  const PROCESSOR_ENTRY: Record<string, string> = {
+    anthropic: "Anthropic (Claude), reached through OpenRouter:",
+  };
+  it("every default AI text host is named as a processor in the privacy policy", async () => {
+    const { LLM_PROVIDERS_DEFAULT } = await import("@/lib/llm-chat-model.server");
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    expect(LLM_PROVIDERS_DEFAULT.length).toBeGreaterThan(0);
+    for (const host of LLM_PROVIDERS_DEFAULT) {
+      const phrase = PROCESSOR_ENTRY[host];
+      expect(phrase, `no privacy processor entry mapped for host ${host}`).toBeDefined();
+      expect(
+        screen.getByText((t) => t.includes(phrase!)),
+        host,
+      ).toBeInTheDocument();
+    }
   });
 });

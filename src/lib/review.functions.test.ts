@@ -320,7 +320,7 @@ describe("gradeReview", () => {
       ([, r]) => r.question.type === "translate",
     )!;
     const originalFetch = global.fetch;
-    process.env.NVIDIA_API_KEY = "test-key";
+    process.env.OPENROUTER_API_KEY = "test-key";
     global.fetch = vi.fn() as typeof fetch;
     try {
       const supabase = createSupabaseMock();
@@ -334,7 +334,7 @@ describe("gradeReview", () => {
       expect(consumeQuota).not.toHaveBeenCalled();
     } finally {
       global.fetch = originalFetch;
-      delete process.env.NVIDIA_API_KEY;
+      delete process.env.OPENROUTER_API_KEY;
       hasAiConsent.mockResolvedValue(true);
     }
   });

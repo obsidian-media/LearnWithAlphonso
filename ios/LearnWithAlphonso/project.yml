@@ -236,13 +236,13 @@ targets:
         # switch-lock information. (5) /api/chat accepted an arbitrary
         # client-controlled systemPrompt with no server check, letting a
         # caller bypassing the app UI turn a quota-gated route into a
-        # general-purpose LLM proxy funded by this app's own NVIDIA key
+        # general-purpose LLM proxy funded by this app's own AI provider key
         # -- now whitelisted against the real scenario/campaign
         # personas. (6) Web lesson-completion translate grading had no
         # AI-quota gate at all, unlike every other AI-cost path in the
         # app. (7) The AI-processing disclosure sheet only ever covered
         # the four voice screens, never the written-translation grading
-        # paths that also send learner text to NVIDIA. (8) An XP-mint
+        # paths that also send learner text to the AI provider. (8) An XP-mint
         # exploit and a UGC-filter false-positive-on-real-names
         # regression (both already fixed same-day as build 45, folded
         # in here since they hadn't shipped in an app build yet). (9)
@@ -283,7 +283,7 @@ targets:
         # Report/Block on team member rows and "Report Team Name" on the
         # public top-teams list -- the one social surface without them
         # (Guideline 1.2). (3) The AI consent sheet names Deepgram and
-        # NVIDIA and offers "Not now" instead of a forced "Got it"
+        # the AI provider and offers "Not now" instead of a forced "Got it"
         # (Guideline 5.1.2(i)). (4) The paywall states the free trial and
         # the price after it, for StoreKit-eligible users only. (5) iPhone
         # is portrait-only.

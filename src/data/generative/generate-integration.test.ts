@@ -48,8 +48,8 @@ describe("full generate pipeline", () => {
       posTypes: ["noun", "verb"],
       level: "A1",
       existingVocab: [],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
     });
     expect(proposal.accepted.length).toBeGreaterThan(0);
 
@@ -107,8 +107,8 @@ describe("full generate pipeline", () => {
       posTypes: ["noun", "verb"],
       level: "A1",
       existingVocab: [],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
     });
     expect(proposal.accepted).toEqual([]);
 

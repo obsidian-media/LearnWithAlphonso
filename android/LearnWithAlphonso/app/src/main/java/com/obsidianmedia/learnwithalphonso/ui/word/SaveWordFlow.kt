@@ -60,7 +60,7 @@ class SaveWordFlow(
     }
 
     private suspend fun run() {
-        // The word and sentence go to NVIDIA, so the account's AI consent applies. Anything but a known "yes" is read
+        // The word and sentence go to the AI provider, so the account's AI consent applies. Anything but a known "yes" is read
         // again first (a remembered "no" may be out of date), and a setting still unknown or unreadable is never treated
         // as "off". Declining just closes the choice.
         if (!consent.isGranted) consent.refresh()

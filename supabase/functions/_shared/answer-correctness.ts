@@ -11,17 +11,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr.ts";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
-
-/**
- * Hand-kept mirror of src/lib/nvidia-chat-model.server.ts's
- * NVIDIA_CHAT_MODEL_DEFAULT. That constant exists BECAUSE four independent
- * hardcodes of a model name broke at once when NVIDIA retired
- * meta/llama-3.1-70b-instruct (410 Gone), and an edge function cannot import
- * from src/ -- so this is the fifth place to update on the next catalog shift,
- * and it is listed in that file's doc comment for exactly that reason.
- * NVIDIA_CHAT_MODEL overrides it here with no redeploy, same as on the web.
- */
-const NVIDIA_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
+import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat.ts";
 
 export type QuestionRow = {
   type: "mc" | "fill" | "reorder" | "listening" | "speak" | "translate";
@@ -83,7 +73,7 @@ export async function deriveAnswerCorrectness(
   // was wrong for exactly the case that matters: a WRONG translate answer
   // sets due_on to TODAY (see grade-review/srs.ts's computeReviewOutcome),
   // so the same item stays due immediately and can be resubmitted any
-  // number of times in a row, each one a real NVIDIA call. `ai.checkQuota` (an
+  // number of times in a row, each one a real AI call. `ai.checkQuota` (an
   // injected async predicate, since this module has no Supabase client of
   // its own) closes that gap -- both callers build it from consume_ai_quota
   // /consume_ai_rate_limit RPCs against the same DB-backed counters
@@ -98,7 +88,7 @@ export async function deriveAnswerCorrectness(
     // No consent, no vendor call. Omitting `ai` means no AI at all (the safe default for a new caller).
     // Consent is asked before quota, so a refusal spends nothing.
     if (!ai || !(await ai.allowed())) return false;
-    const apiKey = Deno.env.get("NVIDIA_API_KEY");
+    const apiKey = resolveLlmApiKey();
     if (!apiKey) return false;
     if (ai.checkQuota && !(await ai.checkQuota())) return false;
     const verdict = await gradeTranslationWithAi({
@@ -106,7 +96,8 @@ export async function deriveAnswerCorrectness(
       acceptableAnswers: acceptable,
       submission: answer,
       apiKey,
-      model: Deno.env.get("NVIDIA_CHAT_MODEL") ?? NVIDIA_CHAT_MODEL_DEFAULT,
+      // The model list (and its fallbacks) lives in llm-chat.ts, the edge chokepoint, not here.
+      model: resolveLlmChatModel(),
       });
     // `null` is "no usable AI opinion", not "wrong" -- keep the local verdict.
     return verdict?.correct ?? false;

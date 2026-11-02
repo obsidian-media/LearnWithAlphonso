@@ -56,7 +56,7 @@ beforeEach(() => {
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
   blockedRpc.mockClear();
-  process.env.NVIDIA_API_KEY = "test-key";
+  process.env.OPENROUTER_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
     new Response(
       JSON.stringify({
@@ -69,12 +69,12 @@ beforeEach(() => {
 
 afterEach(() => {
   global.fetch = originalFetch;
-  delete process.env.NVIDIA_API_KEY;
+  delete process.env.OPENROUTER_API_KEY;
 });
 
 describe("POST /api/grade-translation, auth", () => {
   // 2026-09-29 audit finding: every path below did NOT reach consumeQuota
-  // (the curated-list match, and NVIDIA_API_KEY unset) used to return a
+  // (the curated-list match, and OPENROUTER_API_KEY unset) used to return a
   // real verdict with no auth check anywhere -- an unauthenticated
   // "is this exactly one of the curated acceptable answers" oracle.
   // verifyAuth must now gate ALL of them, not just the AI-call path.
@@ -95,7 +95,7 @@ describe("POST /api/grade-translation, auth", () => {
       status: 401,
       message: "Sign in to use AI features.",
     });
-    delete process.env.NVIDIA_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const res = await post({ submission: "morning to you all" });
     expect(res.status).toBe(401);
   });
@@ -129,7 +129,7 @@ describe("POST /api/grade-translation", () => {
     // A learner must not be marked wrong because a vendor key is missing, and
     // erroring would strand them on a question they cannot get past -- lesson
     // completion needs an answer for every question.
-    delete process.env.NVIDIA_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const res = await post({ submission: "morning to you all" });
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ correct: false, source: "local" });

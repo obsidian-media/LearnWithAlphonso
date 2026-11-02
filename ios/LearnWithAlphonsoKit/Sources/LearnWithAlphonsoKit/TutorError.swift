@@ -45,7 +45,7 @@ public enum TutorError: Error, Equatable, Sendable {
         default: break
         }
         if status == 401 { return .signedOut }
-        // A 429 without the quota code is an upstream rate limit (NVIDIA or
+        // A 429 without the quota code is an upstream rate limit (the AI provider or
         // Deepgram), not the learner's daily cap.
         return .server(message: detail)
     }

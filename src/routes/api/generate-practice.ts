@@ -4,7 +4,7 @@ import type { Question } from "@/data/curriculum";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
 import { buildFallbackPractice } from "@/lib/practice-fallback";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 /**
  * V3 pkg 4b: "generative sentence content." On-demand extra practice for
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/generate-practice")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.NVIDIA_API_KEY;
+        const key = resolveLlmApiKey();
         if (!key)
           return Response.json({ error: "Practice generation is not configured" }, { status: 500 });
 
@@ -82,8 +82,8 @@ export const Route = createFileRoute("/api/generate-practice")({
         const questions = await generatePracticeQuestions({
           topic: `${found.lesson.title} -- ${found.lesson.subtitle}`,
           sampleQuestions,
-          nvidiaApiKey: key,
-          nvidiaModel: resolveNvidiaChatModel(),
+          llmApiKey: key,
+          llmModel: resolveLlmChatModel(),
         });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

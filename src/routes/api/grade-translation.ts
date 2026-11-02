@@ -3,7 +3,7 @@ import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { getCourse, isCourse, type Course } from "@/data/courses";
 import { matchesAcceptableAnswer } from "@/lib/translation-answer";
 import { gradeTranslationWithAi } from "@/lib/translation-grader.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 /**
  * Grades one written translation.
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/grade-translation")({
     handlers: {
       POST: async ({ request }) => {
         // Found in a whole-codebase audit (2026-09-29): every early-return
-        // path below it (a curated-list match, or NVIDIA_API_KEY unset)
+        // path below it (a curated-list match, or OPENROUTER_API_KEY unset)
         // used to return a real verdict with no auth check at all --
         // consumeQuota, the only auth gate anywhere in this file, was
         // called only much later, right before the AI grader itself. Low
@@ -117,7 +117,7 @@ export const Route = createFileRoute("/api/grade-translation")({
 
         const localVerdict: TranslationVerdict = { correct: false, reason: null, source: "local" };
 
-        const key = process.env.NVIDIA_API_KEY;
+        const key = resolveLlmApiKey();
         if (!key) return Response.json(localVerdict);
 
         // Quota is spent only now -- after the local list has already failed to
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/api/grade-translation")({
           acceptableAnswers: question.acceptableAnswers,
           submission,
           apiKey: key,
-          model: resolveNvidiaChatModel(),
+          model: resolveLlmChatModel(),
         });
         if (!verdict) return Response.json(localVerdict);
 

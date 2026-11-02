@@ -3,15 +3,17 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * Every NVIDIA request goes through one of two chokepoints, which always add SAFETY_PREAMBLE. A new call site that
+ * Every AI text request goes through one of two chokepoints, which always add SAFETY_PREAMBLE. A new call site that
  * fetches the URL itself fails here, so it cannot skip the safety rules. scripts/ is out of scope: those are offline
  * authoring tools with a human reviewing the output.
  */
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const SCAN = ["src", "supabase/functions", "admin"];
-const CHOKEPOINTS = ["src/lib/nvidia-chat.server.ts", "supabase/functions/_shared/nvidia-chat.ts"];
-// The URL, any api.nvidia.com host, or the chokepoint's exported constant: a caller cannot reach NVIDIA around it.
-const NVIDIA = /integrate\.api\.nvidia\.com|\bapi\.nvidia\.com|NVIDIA_CHAT_URL/;
+const CHOKEPOINTS = ["src/lib/llm-chat.server.ts", "supabase/functions/_shared/llm-chat.ts"];
+// The provider's host (OpenRouter), the retired NVIDIA hosts, or the chokepoint's exported constant: a caller
+// cannot reach an AI text provider around the chokepoints.
+const AI_TEXT_PROVIDER =
+  /openrouter\.ai|integrate\.api\.nvidia\.com|\bapi\.nvidia\.com|LLM_CHAT_URL/;
 
 function walk(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -23,12 +25,12 @@ function walk(dir: string): string[] {
 }
 const rel = (f: string) => path.relative(ROOT, f).split(path.sep).join("/");
 
-describe("NVIDIA call sites", () => {
+describe("AI text provider call sites", () => {
   const files = SCAN.flatMap((d) => walk(path.join(ROOT, d)));
 
-  it("only the two chokepoints call NVIDIA directly", () => {
+  it("only the two chokepoints call the AI text provider directly", () => {
     const callers = files
-      .filter((f) => NVIDIA.test(fs.readFileSync(f, "utf8")))
+      .filter((f) => AI_TEXT_PROVIDER.test(fs.readFileSync(f, "utf8")))
       .map(rel)
       .sort();
     expect(callers).toEqual([...CHOKEPOINTS].sort());
@@ -43,11 +45,23 @@ describe("NVIDIA call sites", () => {
     }
   });
 
-  it("catches NVIDIA by host or constant, not only by the full URL", () => {
-    expect(NVIDIA.test("fetch(NVIDIA_CHAT_URL)")).toBe(true);
-    expect(NVIDIA.test('fetch("https://integrate.api.nvidia.com/v1/x")')).toBe(true);
-    expect(NVIDIA.test('const host = "api.nvidia.com"')).toBe(true);
-    expect(NVIDIA.test("nothing here")).toBe(false);
+  it("no source still reads the retired NVIDIA env names", () => {
+    // The key and model list come from OPENROUTER_API_KEY / LLM_CHAT_MODELS (llm-chat-model.server.ts). A file
+    // reading the old names would silently see "not configured" in production once those are removed.
+    const readers = [...files, ...walk(path.join(ROOT, "scripts"))]
+      .filter((f) => /NVIDIA_API_KEY|NVIDIA_CHAT_MODEL/.test(fs.readFileSync(f, "utf8")))
+      .map(rel);
+    expect(readers).toEqual([]);
+  }, 30_000);
+
+  it("catches the provider by host or constant, not only by the full URL", () => {
+    expect(AI_TEXT_PROVIDER.test("fetch(LLM_CHAT_URL)")).toBe(true);
+    expect(AI_TEXT_PROVIDER.test('fetch("https://integrate.api.nvidia.com/v1/x")')).toBe(true);
+    expect(AI_TEXT_PROVIDER.test('const host = "api.nvidia.com"')).toBe(true);
+    expect(AI_TEXT_PROVIDER.test('fetch("https://openrouter.ai/api/v1/chat/completions")')).toBe(
+      true,
+    );
+    expect(AI_TEXT_PROVIDER.test("nothing here")).toBe(false);
   });
 });
 

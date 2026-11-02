@@ -38,18 +38,18 @@ beforeEach(() => {
     userId: "user-1",
     supabase: { rpc: blockedRpc, from: vi.fn() },
   });
-  process.env.NVIDIA_API_KEY = "test-key";
+  process.env.OPENROUTER_API_KEY = "test-key";
   global.fetch = vi.fn();
 });
 
 afterEach(() => {
   global.fetch = originalFetch;
-  delete process.env.NVIDIA_CHAT_MODEL;
+  delete process.env.LLM_CHAT_MODELS;
 });
 
 describe("POST /api/chat", () => {
-  it("returns 500 when NVIDIA_API_KEY is not configured", async () => {
-    delete process.env.NVIDIA_API_KEY;
+  it("returns 500 when OPENROUTER_API_KEY is not configured", async () => {
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });
@@ -161,7 +161,7 @@ describe("POST /api/chat", () => {
 
   // 2026-09-30 audit (Codex #4): systemPrompt used to be fully
   // client-controlled with no server-side check at all -- a general-
-  // purpose LLM proxy funded by this app's own NVIDIA key. Only a real
+  // purpose LLM proxy funded by this app's own AI provider key. Only a real
   // scenario/campaign persona is accepted now.
   it("rejects a systemPrompt that isn't one of the real personas", async () => {
     const res = await handler({
@@ -175,8 +175,8 @@ describe("POST /api/chat", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("uses NVIDIA_CHAT_MODEL override when set", async () => {
-    process.env.NVIDIA_CHAT_MODEL = "custom/model";
+  it("uses the LLM_CHAT_MODELS override when set", async () => {
+    process.env.LLM_CHAT_MODELS = "custom/model,fallback/model";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
     );
@@ -184,7 +184,7 @@ describe("POST /api/chat", () => {
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(JSON.parse(init.body as string).model).toBe("custom/model");
+    expect(JSON.parse(init.body as string).models).toEqual(["custom/model", "fallback/model"]);
   });
 
   it("maps a 429 upstream failure to a rate-limited message", async () => {

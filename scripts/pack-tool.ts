@@ -22,7 +22,7 @@
  *
  * Every command that can touch a real lesson-bank-*.ts file (`apply`) is
  * part of a human-gated pipeline: `new` (hand-write) or `draft` (AI first
- * draft, NVIDIA_API_KEY required) -> `validate`/`preview` -> `apply
+ * draft, OPENROUTER_API_KEY required) -> `validate`/`preview` -> `apply
  * --confirm`. `apply` without `--confirm` is a dry run. Nothing in this
  * tool ever writes to a lesson-bank-*.ts file without that explicit flag.
  */
@@ -30,7 +30,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Pack } from "../src/data/bank-engine";
 import type { Level } from "../src/data/levels";
-import { resolveNvidiaChatModel } from "../src/lib/nvidia-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "../src/lib/llm-chat-model.server";
 import {
   checkIdCollision,
   extractPackIds,
@@ -166,11 +166,11 @@ async function cmdDraft(flags: Flags) {
   const out = typeof flags.out === "string" ? flags.out : `drafts/${id}.json`;
   if (!Number.isFinite(lineCount) || lineCount < 3) fail("--lines must be a number >= 3");
 
-  const apiKey = process.env.NVIDIA_API_KEY;
+  const apiKey = resolveLlmApiKey();
   if (!apiKey) {
     fail(
-      "NVIDIA_API_KEY is not set. AI-assisted drafting needs a NVIDIA NIM key (see .env.example, " +
-        'build.nvidia.com) -- without one, hand-write a draft instead with "bun run scripts/pack-tool.ts new".',
+      "OPENROUTER_API_KEY is not set. AI-assisted drafting needs an OpenRouter key (see .env.example, " +
+        'openrouter.ai/keys) -- without one, hand-write a draft instead with "bun run scripts/pack-tool.ts new".',
     );
   }
 
@@ -182,8 +182,8 @@ async function cmdDraft(flags: Flags) {
       targetLanguage: TARGET_LANGUAGE[course],
       kind,
       lineCount,
-      nvidiaApiKey: apiKey,
-      nvidiaModel: resolveNvidiaChatModel(),
+      llmApiKey: apiKey,
+      llmModel: resolveLlmChatModel(),
     });
   } catch (e) {
     fail(`draft generation failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -274,11 +274,11 @@ async function cmdGenerate(flags: Flags) {
     fail(`--level ${level} doesn't match template "${templateId}"'s level (${template!.level})`);
   }
 
-  const apiKey = process.env.NVIDIA_API_KEY;
+  const apiKey = resolveLlmApiKey();
   if (!apiKey) {
     fail(
-      "NVIDIA_API_KEY is not set. Vocab proposal needs a NVIDIA NIM key (see .env.example, " +
-        "build.nvidia.com).",
+      "OPENROUTER_API_KEY is not set. Vocab proposal needs an OpenRouter key (see .env.example, " +
+        "openrouter.ai/keys).",
     );
   }
 
@@ -292,8 +292,8 @@ async function cmdGenerate(flags: Flags) {
     posTypes,
     level,
     existingVocab: GENERATIVE_VOCAB,
-    nvidiaApiKey: apiKey,
-    nvidiaModel: resolveNvidiaChatModel(),
+    llmApiKey: apiKey,
+    llmModel: resolveLlmChatModel(),
   });
 
   console.log(`  accepted: ${proposal.accepted.length}, rejected: ${proposal.rejected.length}`);

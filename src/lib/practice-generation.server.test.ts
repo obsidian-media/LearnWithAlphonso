@@ -72,8 +72,8 @@ describe("generatePracticeQuestions", () => {
     return {
       topic: "Present tense verbs",
       sampleQuestions: [{ prompt: "He ___ coffee.", answer: "drinks" }],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
       ...overrides,
     };
   }
@@ -83,7 +83,7 @@ describe("generatePracticeQuestions", () => {
     expect(result).toEqual([QUESTION]);
   });
 
-  it("returns an empty array without calling NVIDIA when there are no sample questions", async () => {
+  it("returns an empty array without calling the AI provider when there are no sample questions", async () => {
     const result = await generatePracticeQuestions(params({ sampleQuestions: [] }));
     expect(result).toEqual([]);
     expect(global.fetch).not.toHaveBeenCalled();

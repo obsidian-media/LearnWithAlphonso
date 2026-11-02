@@ -126,7 +126,7 @@ struct SaveWordSheet: View {
         guard phase != .saving else { return }
         // `.saving` BEFORE any await, so a second tap during the consent read is blocked too.
         phase = .saving
-        // The word and sentence go to NVIDIA, so the account's AI consent applies. Anything but a known "yes" is read
+        // The word and sentence go to the AI provider, so the account's AI consent applies. Anything but a known "yes" is read
         // again first (a remembered "no" may be out of date), and a setting still unknown or unreadable is never
         // treated as "off". Declining just closes the sheet.
         if !aiConsent.isGranted { await aiConsent.refresh() }

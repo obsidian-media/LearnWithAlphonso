@@ -22,7 +22,7 @@ export const Route = createFileRoute("/terms")({
 const CONTACT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
 const STANDARD_EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
-const UPDATED = "18 October 2026"; // same on all four legal pages
+const UPDATED = "2 November 2026"; // same on all four legal pages
 
 function Terms() {
   return (
@@ -126,10 +126,10 @@ function Terms() {
           scenarios and campaigns, grading of written translation answers, transcription of your
           speech, spoken replies, word meanings when you save a word, and practice items made from
           mistakes in your conversations. They send what you say or write to our AI providers,
-          NVIDIA (text) and Deepgram (speech), as our Privacy Policy explains. They only work after
-          you allow them on your account, and you can turn them off at any time in the iOS app under
-          Profile → Settings → AI features, or on the website on your Profile page. Lessons, review
-          and the placement test work without them.
+          Anthropic through OpenRouter (text) and Deepgram (speech), as our Privacy Policy explains.
+          They only work after you allow them on your account, and you can turn them off at any time
+          in the iOS app under Profile → Settings → AI features, or on the website on your Profile
+          page. Lessons, review and the placement test work without them.
         </p>
         <Bullets
           items={[

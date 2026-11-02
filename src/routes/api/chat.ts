@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
+import { llmChatCompletion } from "@/lib/llm-chat.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -19,7 +19,7 @@ type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
  * enforced that server-side, so a caller bypassing the app UI (any valid
  * session, direct HTTP) could set systemPrompt to anything at all, turning
  * this quota-gated (60/day) but otherwise unrestricted route into a
- * general-purpose LLM proxy funded by this app's own NVIDIA key, wholly
+ * general-purpose LLM proxy funded by this app's own AI provider key, wholly
  * unrelated to language learning. Whitelisting against the exact set of
  * real personas closes that off with zero behavior change for either real
  * client -- both already send one of these values verbatim (iOS bundles
@@ -77,7 +77,7 @@ function withDifficultyHint(
 }
 
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
-  const key = process.env.NVIDIA_API_KEY;
+  const key = resolveLlmApiKey();
   if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
   const access = await timer.time("auth", async () => {
     const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
@@ -124,15 +124,15 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     ...messages,
   ];
 
-  // NVIDIA NIM's hosted inference API is
+  // The AI provider's hosted API is
   // OpenAI-compatible, so only the URL/key/model name change from the
-  // Lovable Gateway. See nvidia-chat-model.server.ts for why the
+  // Lovable Gateway. See llm-chat-model.server.ts for why the
   // model id lives there instead of being hardcoded here.
-  const model = resolveNvidiaChatModel();
+  const model = resolveLlmChatModel();
   const llm = await timer.time("llm", async () => {
     let resp: Response;
     try {
-      resp = await nvidiaChatCompletion({
+      resp = await llmChatCompletion({
         apiKey: key,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
         body: { model, messages: finalMessages, max_tokens: CHAT_MAX_TOKENS },
@@ -146,7 +146,10 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     }
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
-      return { ok: false as const, failure: upstreamErrorResponse("NVIDIA", resp.status, text) };
+      return {
+        ok: false as const,
+        failure: upstreamErrorResponse("OpenRouter", resp.status, text),
+      };
     }
     const data = (await resp.json()) as {
       choices?: { message?: { content?: string } }[];

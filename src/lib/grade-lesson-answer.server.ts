@@ -8,7 +8,7 @@
  * for review items.
  *
  * Mirrors src/routes/api/grade-translation.ts's local-first, AI-fallback
- * translate grading (never trusts NVIDIA over the curated list, never
+ * translate grading (never trusts the AI over the curated list, never
  * rejects an answer because the vendor is unavailable), but as a plain
  * function rather than an HTTP handler.
  *
@@ -20,7 +20,7 @@
  * for XP, but computeLessonReplayXp caps the REWARD, not the number of
  * times this function can be called; nothing stopped a user from
  * repeatedly starting a lesson with a translate question and submitting
- * novel wrong answers purely to force unmetered NVIDIA calls, regardless
+ * novel wrong answers purely to force unmetered AI calls, regardless
  * of XP. `checkQuota` mirrors the Deno _shared/answer-correctness.ts
  * `checkQuota?` parameter exactly (same optional-closure shape), called
  * only right before the actual vendor call, so a free curated-list match
@@ -31,7 +31,7 @@ import type { Course } from "../data/courses";
 import { deriveAnswerCorrectness } from "./srs";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import { gradeTranslationWithAi } from "./translation-grader.server";
-import { resolveNvidiaChatModel } from "./nvidia-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat-model.server";
 
 export type AiGrading = {
   /** True only when the learner allowed AI processing (profiles.ai_consent_at). Asked lazily. */
@@ -53,7 +53,7 @@ export async function gradeLessonAnswer(
   // No consent, no vendor call; the curated verdict stands. Omitting `ai` means no AI at all, so a new caller that
   // forgets consent fails safe. Consent is asked before quota so a refusal spends nothing.
   if (!ai || !(await ai.allowed())) return false;
-  const apiKey = process.env.NVIDIA_API_KEY;
+  const apiKey = resolveLlmApiKey();
   if (!apiKey) return false;
   if (ai.checkQuota && !(await ai.checkQuota())) return false;
   const verdict = await gradeTranslationWithAi({
@@ -61,7 +61,7 @@ export async function gradeLessonAnswer(
     acceptableAnswers: question.acceptableAnswers,
     submission: answer,
     apiKey,
-    model: resolveNvidiaChatModel(),
+    model: resolveLlmChatModel(),
   });
   // `null` is "no usable AI opinion" (vendor down, no key, unparseable
   // reply), never "wrong" -- keep the local verdict, which already failed.

@@ -115,7 +115,7 @@ beforeEach(() => {
   vendorCalls.length = 0;
   delete process.env.ENFORCE_AI_CONSENT;
   Object.assign(process.env, {
-    NVIDIA_API_KEY: "nv",
+    OPENROUTER_API_KEY: "nv",
     DEEPGRAM_API_KEY: "dg",
     SUPABASE_URL: "https://example.supabase.co",
     SUPABASE_PUBLISHABLE_KEY: "pk",

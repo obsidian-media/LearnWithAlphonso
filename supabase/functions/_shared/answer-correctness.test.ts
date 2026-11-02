@@ -30,11 +30,11 @@ function stubFailure() {
 
 function restore() {
   globalThis.fetch = originalFetch;
-  Deno.env.delete("NVIDIA_API_KEY");
+  Deno.env.delete("OPENROUTER_API_KEY");
 }
 
 Deno.test("a curated phrasing is graded correct without any model call", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   globalThis.fetch = (() => {
     throw new Error("the model must not be called for a curated phrasing");
   }) as typeof fetch;
@@ -49,7 +49,7 @@ Deno.test("an AI-accepted paraphrase is graded correct, not lapsed", async () =>
   // The player accepted a wording the curated list did not anticipate. If this
   // function string-matched only, the learner would be shown "Still got it" and
   // have the item lapsed anyway.
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict('{"correct": true, "reason": "Same meaning."}');
   try {
     assertEquals(
@@ -62,7 +62,7 @@ Deno.test("an AI-accepted paraphrase is graded correct, not lapsed", async () =>
 });
 
 Deno.test("an unavailable AI grader leaves the local verdict standing", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubFailure();
   try {
     assertEquals(
@@ -89,7 +89,7 @@ Deno.test("with no key configured, translate grading degrades to local-only", as
 });
 
 Deno.test("unparseable model output is no opinion, not a wrong answer", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict("hard to say really");
   try {
     assertEquals(
@@ -105,7 +105,7 @@ Deno.test("checkQuota returning false blocks the AI call entirely", async () => 
   // 2026-09-29 audit finding: this branch used to have no quota
   // enforcement at all. checkQuota is the fix -- confirm it actually
   // gates the vendor call rather than just being ignored.
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   globalThis.fetch = (() => {
     throw new Error("the model must not be called when quota is exhausted");
   }) as typeof fetch;
@@ -123,7 +123,7 @@ Deno.test("checkQuota returning false blocks the AI call entirely", async () => 
 });
 
 Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict('{"correct": true, "reason": "Same meaning."}');
   try {
     assertEquals(
@@ -139,7 +139,7 @@ Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase"
 });
 
 Deno.test("omitting checkQuota (with consent) leaves the AI grader unlimited", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict('{"correct": true, "reason": "Same meaning."}');
   try {
     assertEquals(
@@ -152,7 +152,7 @@ Deno.test("omitting checkQuota (with consent) leaves the AI grader unlimited", a
 });
 
 Deno.test("without consent the translate branch makes zero model calls, even with a key and quota", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   let calls = 0;
   globalThis.fetch = (() => {
     calls += 1;
@@ -178,7 +178,7 @@ Deno.test("without consent the translate branch makes zero model calls, even wit
 });
 
 Deno.test("omitting the AI options means no AI at all (safe default)", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   globalThis.fetch = (() => {
     throw new Error("the model must not be called without explicit AI options");
   }) as typeof fetch;
@@ -204,7 +204,7 @@ Deno.test("consent is not even asked for a curated phrasing", async () => {
 });
 
 Deno.test("the AI grading prompt carries the safety preamble", async () => {
-  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  Deno.env.set("OPENROUTER_API_KEY", "test-key");
   let first: { role: string; content: string } | undefined;
   globalThis.fetch = ((_u: string, init?: RequestInit) => {
     first = JSON.parse(String(init?.body)).messages[0];

@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { llmChatCompletion } from "@/lib/llm-chat.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
@@ -32,9 +32,9 @@ async function boundedAudio(response: Response, maxBytes: number): Promise<Buffe
 }
 
 async function handleTurn(request: Request, timer: StageTimer): Promise<Response> {
-  const nvidiaKey = process.env.NVIDIA_API_KEY;
+  const llmKey = resolveLlmApiKey();
   const deepgramKey = process.env.DEEPGRAM_API_KEY;
-  if (!nvidiaKey || !deepgramKey) {
+  if (!llmKey || !deepgramKey) {
     return Response.json({ error: "Hector is not configured" }, { status: 500 });
   }
 
@@ -110,15 +110,15 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const sessionId = body.session_id || crypto.randomUUID();
   const agent = body.agent_id || "tutor";
 
-  // --- LLM turn (NVIDIA NIM, OpenAI-compatible, same as /api/chat) ---
+  // --- LLM turn (OpenRouter, OpenAI-compatible, same as /api/chat) ---
   const llmStart = performance.now();
   const llm = await timer.time("llm", async () => {
     try {
-      const llmResp = await nvidiaChatCompletion({
-        apiKey: nvidiaKey,
+      const llmResp = await llmChatCompletion({
+        apiKey: llmKey,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
         body: {
-          model: resolveNvidiaChatModel(),
+          model: resolveLlmChatModel(),
           messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
           max_tokens: 512,
         },
@@ -127,7 +127,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         return {
           ok: false as const,
           failure: await upstreamErrorResponse(
-            "NVIDIA",
+            "OpenRouter",
             llmResp.status,
             await llmResp.text().catch(() => ""),
           ),

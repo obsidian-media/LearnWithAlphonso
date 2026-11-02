@@ -62,6 +62,13 @@ describe("buildReviewNotes", () => {
     expect(notes).not.toMatch(/audio is our own/i);
   });
 
+  it("names the AI text provider the app actually uses", () => {
+    const notes = buildReviewNotes(worst);
+    expect(notes).toContain("OpenRouter");
+    expect(notes).toContain("Anthropic");
+    expect(notes).not.toContain("NVIDIA");
+  });
+
   it("is plain ASCII with no literal double hyphen, whatever the secret values contain", () => {
     const unlucky = {
       ...worst,

@@ -2,8 +2,8 @@ import type { Course } from "@/data/courses";
 
 /**
  * The safety rules every model prompt carries, applied on the SERVER only (clients never see or send them).
- * nvidia-chat.server.ts's nvidiaChatCompletion is the one place they are added; ai-call-sites.test.ts fails if
- * anything else calls NVIDIA. The Deno copy in supabase/functions/_shared/ai-safety.ts must stay byte-identical
+ * llm-chat.server.ts's llmChatCompletion is the one place they are added; ai-call-sites.test.ts fails if
+ * anything else calls the AI provider. The Deno copy in supabase/functions/_shared/ai-safety.ts must stay byte-identical
  * (edge-ai-safety-parity.test.ts).
  */
 export const SAFETY_PREAMBLE = [

@@ -1,7 +1,7 @@
 import XCTest
 @testable import LearnWithAlphonsoKit
 
-/// Whether a written translation may be sent to the server (and on to NVIDIA)
+/// Whether a written translation may be sent to the server (and on to the AI provider)
 /// for a second opinion. The lesson used to be wrapped in the AI-consent gate
 /// wholesale, so declining "Not now" popped the learner out of every lesson,
 /// including ones with no AI question (BACKLOG 0.0-z #2). Consent is now

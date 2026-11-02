@@ -1,6 +1,6 @@
 import Foundation
 
-/// Whether a written translation may be sent to the server (and on to NVIDIA)
+/// Whether a written translation may be sent to the server (and on to the AI provider)
 /// for a second opinion on what the curated phrasings rejected.
 ///
 /// This is where AI-processing consent is enforced for lesson translations.
