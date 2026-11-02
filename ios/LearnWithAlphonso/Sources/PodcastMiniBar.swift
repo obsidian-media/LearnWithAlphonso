@@ -76,6 +76,19 @@ struct PodcastMiniBar: View {
                     .padding(.top, AlphonsoSpacing.sm)
                     .accessibilityElement(children: .combine)
                 }
+                if episode.durationSeconds > 0 {
+                    Slider(
+                        value: Binding(
+                            get: { min(max(player.elapsedSeconds, 0), Double(episode.durationSeconds)) },
+                            set: { player.seek(to: $0) }
+                        ),
+                        in: 0...Double(episode.durationSeconds)
+                    )
+                    .tint(AlphonsoColor.moss)
+                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .accessibilityLabel("Playback position")
+                    .accessibilityValue("\(format(player.elapsedSeconds)) of \(format(Double(episode.durationSeconds)))")
+                }
                 HStack(spacing: AlphonsoSpacing.sm + 2) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(episode.title)

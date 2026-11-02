@@ -23,7 +23,7 @@ const MIC_PURPOSE =
 function swiftFilesIn(dir: string): string[] {
   return fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((e) => {
     const rel = path.posix.join(dir, e.name);
-    if (e.isDirectory()) return swiftFilesIn(rel);
+    if (e.isDirectory()) return e.name.startsWith(".") ? [] : swiftFilesIn(rel);
     return e.name.endsWith(".swift") ? [rel] : [];
   });
 }

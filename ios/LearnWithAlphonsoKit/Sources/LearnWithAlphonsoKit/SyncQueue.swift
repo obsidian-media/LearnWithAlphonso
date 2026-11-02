@@ -63,18 +63,24 @@ public struct PendingReviewGrade: Sendable, Equatable {
     public let answer: String
     public let course: String
     public let queuedAt: Date
+    /// Review schedule snapshot seen when the learner answered.
+    public let expectedDueOn: String?
+    public let expectedLastReviewedAt: String?
     public let ownerUserID: String?
     public let attemptCount: Int
     public let nextAttemptAt: Date?
 
     public init(
         itemKey: String, answer: String, course: String, queuedAt: Date,
+        expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil,
         ownerUserID: String? = nil, attemptCount: Int = 0, nextAttemptAt: Date? = nil
     ) {
         self.itemKey = itemKey
         self.answer = answer
         self.course = course
         self.queuedAt = queuedAt
+        self.expectedDueOn = expectedDueOn
+        self.expectedLastReviewedAt = expectedLastReviewedAt
         self.ownerUserID = ownerUserID
         self.attemptCount = attemptCount
         self.nextAttemptAt = nextAttemptAt
@@ -84,7 +90,8 @@ public struct PendingReviewGrade: Sendable, Equatable {
 
     public func rescheduled(attemptCount: Int, nextAttemptAt: Date) -> PendingReviewGrade {
         PendingReviewGrade(
-            itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt, ownerUserID: ownerUserID,
+            itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
+            expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt, ownerUserID: ownerUserID,
             attemptCount: attemptCount, nextAttemptAt: nextAttemptAt)
     }
 }

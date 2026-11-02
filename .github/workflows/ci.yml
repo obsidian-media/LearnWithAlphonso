@@ -218,7 +218,7 @@ jobs:
           supabase status -o env > /tmp/local.env
           set -a; . /tmp/local.env; set +a
           # An empty value would make the spec skip and the job go green having tested nothing.
-          test -n "$API_URL" && test -n "$PUBLISHABLE_KEY" && test -n "$SERVICE_ROLE_KEY"
+          test -n "$API_URL" && test -n "$PUBLISHABLE_KEY" && test -n "$SERVICE_ROLE_KEY" && test -n "$ANON_KEY"
           for v in "$ANON_KEY" "$PUBLISHABLE_KEY" "$SERVICE_ROLE_KEY" "$SECRET_KEY" "$JWT_SECRET"; do
             [ -n "$v" ] && echo "::add-mask::$v"
           done
@@ -229,6 +229,7 @@ jobs:
             echo "VITE_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
             echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "E2E_SUPABASE_URL=$API_URL"
+            echo "E2E_SUPABASE_ANON_KEY=$ANON_KEY"
             echo "E2E_SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "E2E_REQUIRED=1"
             echo "LESSON_SESSION_SECRET=$(openssl rand -hex 32)"

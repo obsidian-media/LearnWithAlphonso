@@ -299,7 +299,9 @@ struct ReviewQueueView: View {
             do {
                 let outcome = try await client.gradeReview(
                     itemKey: currentItem.itemKey, answer: picked, course: course.wireCode,
-                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity)
+                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity,
+                    expectedDueOn: currentItem.hasReviewSnapshot ? currentItem.dueOn : nil,
+                    expectedLastReviewedAt: currentItem.lastReviewedAt)
                 // Before advance(): currentItem moves on with idx.
                 dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
@@ -386,7 +388,13 @@ struct ReviewQueueView: View {
         if let gradeAttempt, gradeAttempt.itemKey == item.itemKey {
             return gradeAttempt
         }
-        let started = PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(), ownerUserID: session.userID)
+        // No snapshot when it is unknown (see ReviewItem.hasReviewSnapshot): the grade then applies as it did
+        // before freshness checks existed, instead of being dropped as superseded.
+        let started = PendingReviewGrade(
+            itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
+            expectedDueOn: item.hasReviewSnapshot ? item.dueOn : nil,
+            expectedLastReviewedAt: item.hasReviewSnapshot ? item.lastReviewedAt : nil,
+            ownerUserID: session.userID)
         gradeAttempt = started
         return started
     }

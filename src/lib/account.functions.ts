@@ -75,6 +75,9 @@ export const USER_DELETE_TABLES = [
   "language_progress",
 ] as const;
 
+const ACCOUNT_DELETION_RETRY_MESSAGE =
+  "We couldn't finish deleting your account. Your account is still active; please try again. Contact support if the problem continues.";
+
 // user_progress carries account-wide state (streak/hearts) plus five
 // columns frozen since the 2026-09-08 multi-course migration -- xp,
 // cefr_level, league_tier and both placement_* trios all moved to
@@ -348,9 +351,21 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // auth.users is ON DELETE CASCADE, and "authenticated" only has
     // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
-    await Promise.all(
-      USER_DELETE_TABLES.map((table) => supabase.from(table).delete().eq("user_id", userId)),
+    const deleteResults = await Promise.all(
+      USER_DELETE_TABLES.map(async (table) => ({
+        table,
+        result: await supabase.from(table).delete().eq("user_id", userId),
+      })),
     );
+    const failedDeletes = deleteResults
+      .filter(({ result }) => result.error)
+      .map(({ table, result }) => `${table}: ${result.error?.message ?? "unknown error"}`);
+    if (failedDeletes.length > 0) {
+      // Keep the account active so the caller can retry. Detailed table errors
+      // belong in server logs; never serialize schema or backend details to clients.
+      console.error("[account-deletion] Owned-row cleanup incomplete", failedDeletes);
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -377,9 +392,21 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     }
 
     // Friend rows pointing at this user are not owned by them.
-    await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
+    const { error: friendshipCleanupError } = await supabaseAdmin
+      .from("friendships")
+      .delete()
+      .eq("friend_id", userId);
+    if (friendshipCleanupError) {
+      console.error("[account-deletion] Incoming friendship cleanup failed", {
+        code: friendshipCleanupError.code,
+      });
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
+    }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("[account-deletion] Auth user deletion failed", { code: error.code });
+      throw new Error(ACCOUNT_DELETION_RETRY_MESSAGE);
+    }
     await eraseSubscriberRecord(userId);
 
     return { deleted: true, appleRevocationStatus };

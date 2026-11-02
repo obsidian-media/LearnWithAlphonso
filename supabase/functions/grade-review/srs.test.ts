@@ -6,7 +6,19 @@
 // TypeScript source of truth, this test (not just the TS/Swift ones) should
 // be the one that catches it. Run with `deno test supabase/functions/grade-review/`.
 import { assert, assertEquals } from "jsr:@std/assert@1";
-import { computeReviewGrade, computeReviewOutcome } from "./srs.ts";
+import { computeReviewGrade, computeReviewOutcome, reviewSnapshotMatches } from "./srs.ts";
+
+Deno.test("reviewSnapshotMatches rejects a concurrent grade even when wrong answers keep the same due date", () => {
+  const dueOn = "2026-10-20";
+  assertEquals(reviewSnapshotMatches(
+    { dueOn, lastReviewedAt: "2026-10-20T08:00:00+00:00" },
+    { dueOn, lastReviewedAt: null },
+  ), false);
+  assertEquals(reviewSnapshotMatches(
+    { dueOn, lastReviewedAt: null },
+    { dueOn, lastReviewedAt: null },
+  ), true);
+});
 
 Deno.test("computeReviewGrade halves (rather than zeros) repetitions on a wrong answer, and records a lapse", () => {
   const result = computeReviewGrade({ correct: false, ease: 2.3, intervalDays: 6, repetitions: 2, lapses: 1, elapsedDays: 6 });

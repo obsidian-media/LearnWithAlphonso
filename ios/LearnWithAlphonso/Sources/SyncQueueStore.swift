@@ -76,6 +76,8 @@ final class PendingReviewGradeRecord {
     var course: String
     var queuedAt: Date
     // Schema V2 additions (optional, like the lesson record's).
+    var expectedDueOn: String?
+    var expectedLastReviewedAt: String?
     var ownerUserID: String?
     var attemptCount: Int?
     var nextAttemptAt: Date?
@@ -85,6 +87,8 @@ final class PendingReviewGradeRecord {
         answer = pending.answer
         course = pending.course
         queuedAt = pending.queuedAt
+        expectedDueOn = pending.expectedDueOn
+        expectedLastReviewedAt = pending.expectedLastReviewedAt
         ownerUserID = pending.ownerUserID
         attemptCount = pending.attemptCount
         nextAttemptAt = pending.nextAttemptAt
@@ -93,6 +97,7 @@ final class PendingReviewGradeRecord {
     var asPending: PendingReviewGrade {
         PendingReviewGrade(
             itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
+            expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt,
             ownerUserID: ownerUserID, attemptCount: attemptCount ?? 0, nextAttemptAt: nextAttemptAt)
     }
 
@@ -127,6 +132,10 @@ final class CachedCourseDueReviewRecord {
     var choices: [String]?
     var answerIndex: Int?
     var explanation: String?
+    // Schema V3 additions. A row migrated from V2 has hasReviewSnapshot == nil: its last review time is unknown,
+    // which is not the same as "never reviewed", so it is graded without a freshness snapshot.
+    var lastReviewedAt: String?
+    var hasReviewSnapshot: Bool?
 
     static func key(course: String, itemKey: String) -> String { "\(course)|\(itemKey)" }
 
@@ -140,6 +149,8 @@ final class CachedCourseDueReviewRecord {
         intervalDays = item.intervalDays
         repetitions = item.repetitions
         dueOn = item.dueOn
+        lastReviewedAt = item.lastReviewedAt
+        hasReviewSnapshot = item.hasReviewSnapshot
         source = item.source
         weaknessDisplay = item.weaknessDisplay
         prompt = item.prompt
@@ -152,6 +163,7 @@ final class CachedCourseDueReviewRecord {
         ReviewItem(
             itemKey: itemKey, lessonId: lessonId, level: level, ease: ease,
             intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn,
+            lastReviewedAt: lastReviewedAt, hasReviewSnapshot: hasReviewSnapshot ?? false,
             source: source, weaknessDisplay: weaknessDisplay, prompt: prompt,
             choices: choices, answerIndex: answerIndex, explanation: explanation
         )

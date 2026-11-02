@@ -8,6 +8,7 @@ final class ScriptedCompletionAPI: LessonCompletionAPI, @unchecked Sendable {
     var completes: [Result<LessonCompletionResult, Error>]
     private(set) var startCalls = 0
     private(set) var completeTokens: [String] = []
+    private(set) var completeDates: [Date?] = []
     let accessToken: String
     init(accessToken: String, starts: [Result<String, Error>] = [], completes: [Result<LessonCompletionResult, Error>] = []) {
         self.accessToken = accessToken; self.starts = starts; self.completes = completes
@@ -19,8 +20,9 @@ final class ScriptedCompletionAPI: LessonCompletionAPI, @unchecked Sendable {
         guard !starts.isEmpty else { throw ScriptExhausted() }
         return try starts.removeFirst().get()
     }
-    func completeLesson(lessonID: String, total: Int, answers: [LessonAnswer], course: String, sessionToken: String) async throws -> LessonCompletionResult {
+    func completeLesson(lessonID: String, total: Int, answers: [LessonAnswer], course: String, sessionToken: String, completedAt: Date?) async throws -> LessonCompletionResult {
         completeTokens.append(sessionToken)
+        completeDates.append(completedAt)
         guard !completes.isEmpty else { throw ScriptExhausted() }
         return try completes.removeFirst().get()
     }
@@ -60,6 +62,20 @@ final class LessonCompletionServiceTests: XCTestCase {
         _ = await s.complete(held)
         XCTAssertEqual(api.startCalls, 0)
         XCTAssertEqual(api.completeTokens, ["held"])
+    }
+
+    func testQueuedOfflineDateUsesTheHeldSessionButIsDroppedAfterTokenRemint() async {
+        let offlineDate = Date(timeIntervalSince1970: 1_792_268_100)
+        let api = ScriptedCompletionAPI(accessToken: "a", starts: [.success("fresh")],
+            completes: [.failure(ProgressSyncError.server(status: 403, message: "expired")), .success(Self.ok)])
+        let (s, _) = service(["a": api], tokens: [.token("a")])
+        let queued = LessonCompletionRequest(
+            lessonID: "u1l1", total: 1, answers: request.answers, course: "en",
+            sessionToken: "old", completedAt: offlineDate)
+        _ = await s.complete(queued)
+        XCTAssertEqual(api.completeDates.count, 2)
+        XCTAssertEqual(api.completeDates[0], offlineDate)
+        XCTAssertNil(api.completeDates[1])
     }
 
     func testA401RefreshesOnceAndRetriesWithTheNewAccessToken() async {

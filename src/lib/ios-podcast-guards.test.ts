@@ -12,8 +12,9 @@ function swiftFiles(dir: string): string[] {
   const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...swiftFiles(full));
-    else if (entry.name.endsWith(".swift")) out.push(full);
+    if (entry.isDirectory()) {
+      if (!entry.name.startsWith(".")) out.push(...swiftFiles(full));
+    } else if (entry.name.endsWith(".swift")) out.push(full);
   }
   return out;
 }

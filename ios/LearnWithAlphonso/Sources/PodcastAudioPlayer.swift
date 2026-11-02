@@ -130,6 +130,25 @@ final class PodcastAudioPlayer {
         handle(.togglePressed)
     }
 
+    /// Seeks within the current media. Invalid or unavailable durations are ignored so
+    /// a stale list duration cannot send AVPlayer to an unseekable position.
+    func seek(to seconds: Double) {
+        guard seconds.isFinite, seconds >= 0,
+              let player, let item = currentItem,
+              item.status == .readyToPlay else { return }
+        let duration = item.duration.seconds
+        guard duration.isFinite, duration > 0 else { return }
+        let target = min(seconds, duration)
+        player.seek(to: CMTime(seconds: target, preferredTimescale: 600)) { [weak self] finished in
+            guard finished else { return }
+            Task { @MainActor in
+                guard let self, self.currentItem === item else { return }
+                self.elapsedSeconds = target
+                self.save(position: target, completed: false)
+            }
+        }
+    }
+
     func close() {
         if let player { save(position: player.currentTime().seconds, completed: false) }
         flushPlayEvent()

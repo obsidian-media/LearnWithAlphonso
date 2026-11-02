@@ -136,7 +136,7 @@ class AppContainer(context: Context) {
     }
 
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
-        .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3)
+        .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3, AlphonsoDatabase.MIGRATION_3_4)
         .build()
     val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
 

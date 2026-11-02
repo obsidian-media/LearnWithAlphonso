@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { checkAll, probeUrl, summarize } from "./link-check";
+import { checkAll, probeUrl, summarize, type FetchLike } from "./link-check";
 
 const res = (status: number, type = "image/jpeg") =>
   new Response(null, { status, headers: { "content-type": type } });
@@ -48,6 +48,69 @@ describe("probeUrl", () => {
       throw new Error("ECONNRESET");
     });
     expect(r).toMatchObject({ ok: false, status: null, detail: "ECONNRESET" });
+  });
+
+  it("retries rate-limited and transient server responses before accepting a valid image", async () => {
+    const fetchImpl = vi
+      .fn<FetchLike>()
+      .mockResolvedValueOnce(new Response(null, { status: 429, headers: { "retry-after": "0" } }))
+      .mockResolvedValueOnce(new Response(null, { status: 503, headers: { "retry-after": "0" } }))
+      .mockResolvedValueOnce(res(200));
+
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({ ok: true, status: 200 });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns a persistent rate limit as a failure after the bounded retries", async () => {
+    const fetchImpl = vi
+      .fn<FetchLike>()
+      .mockResolvedValue(new Response(null, { status: 429, headers: { "retry-after": "0" } }));
+
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
+      ok: false,
+      status: 429,
+      method: "GET",
+      detail: 'status 429, content-type "", retry-after "0"',
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(10);
+  });
+
+  it("verifies an object with ranged GET when HEAD remains rate-limited", async () => {
+    const fetchImpl = vi.fn<FetchLike>((_url, init) =>
+      Promise.resolve(init.method === "HEAD" ? res(429) : res(206)),
+    );
+    await expect(probeUrl(U, fetchImpl)).resolves.toMatchObject({
+      ok: true,
+      status: 206,
+      method: "GET",
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(fetchImpl.mock.calls[5]?.[1]).toMatchObject({
+      method: "GET",
+      headers: { Range: "bytes=0-0" },
+    });
+  });
+
+  it("honors an HTTP-date Retry-After while capping the delay", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-19T00:00:00.000Z"));
+    try {
+      const fetchImpl = vi
+        .fn<FetchLike>()
+        .mockResolvedValueOnce(
+          new Response(null, {
+            status: 429,
+            headers: { "retry-after": "Mon, 19 Oct 2026 00:01:00 GMT" },
+          }),
+        )
+        .mockResolvedValueOnce(res(200));
+      const result = probeUrl(U, fetchImpl);
+      await vi.advanceTimersByTimeAsync(30_000);
+      await expect(result).resolves.toMatchObject({ ok: true, status: 200 });
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

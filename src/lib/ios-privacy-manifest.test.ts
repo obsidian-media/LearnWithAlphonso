@@ -15,7 +15,7 @@ const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8").replace(
 function swiftFiles(dir: string): string[] {
   return fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((e) => {
     const rel = path.posix.join(dir, e.name);
-    if (e.isDirectory()) return swiftFiles(rel);
+    if (e.isDirectory()) return e.name.startsWith(".") ? [] : swiftFiles(rel);
     return e.name.endsWith(".swift") ? [rel] : [];
   });
 }

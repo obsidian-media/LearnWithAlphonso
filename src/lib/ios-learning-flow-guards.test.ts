@@ -49,7 +49,7 @@ describe("Review never blank", () => {
     expect(src).toMatch(/replaceLastKnownDueReviews\([^)]*course: course\.wireCode\)/);
   });
   it("queued grades carry the owning account", () => {
-    expect(src).toMatch(/PendingReviewGrade\(.*ownerUserID: session\.userID/);
+    expect(src).toMatch(/PendingReviewGrade\([\s\S]{0,300}ownerUserID: session\.userID/);
   });
   it("opens on the learner's active course and keeps the picker usable", () => {
     expect(src).toContain("ActiveCoursePreference.load(for: session.userID)");
@@ -195,6 +195,78 @@ describe("Sync store", () => {
       "lastPlayed: Date?",
       "downloadedAt: Date",
     ]);
+  });
+  it("V2 is a frozen copy of builds 50/51's persisted models (a9da1dc)", () => {
+    const v2 = between(schema, "enum SyncSchemaV2", /\nenum SyncSchemaV3/);
+    const props = (cls: string) =>
+      [
+        ...between(v2, `final class ${cls}`, /\n {4}}\n/).matchAll(
+          /^\s+(@Attribute\(\.unique\) )?var (\w+): ([^\n=]+)/gm,
+        ),
+      ].map((m) => `${m[1] ? "unique " : ""}${m[2]}: ${m[3].trim()}`);
+    expect(props("PendingLessonCompletionRecord")).toEqual([
+      "lessonID: String",
+      "total: Int",
+      "answerQuestionIDs: [String]",
+      "answerTexts: [String]",
+      "course: String",
+      "queuedAt: Date",
+      "optimisticXpEstimate: Int",
+      "ownerUserID: String?",
+      "sessionToken: String?",
+      "attemptCount: Int?",
+      "nextAttemptAt: Date?",
+    ]);
+    // The review-freshness snapshot is a V3 addition: it must not appear in the V2 copy.
+    expect(props("PendingReviewGradeRecord")).toEqual([
+      "itemKey: String",
+      "answer: String",
+      "course: String",
+      "queuedAt: Date",
+      "ownerUserID: String?",
+      "attemptCount: Int?",
+      "nextAttemptAt: Date?",
+    ]);
+    expect(props("CachedCourseDueReviewRecord")).toEqual([
+      "unique cacheKey: String",
+      "course: String",
+      "itemKey: String",
+      "lessonId: String",
+      "level: String",
+      "ease: Double",
+      "intervalDays: Int",
+      "repetitions: Int",
+      "dueOn: String",
+      "source: String",
+      "weaknessDisplay: String?",
+      "prompt: String?",
+      "choices: [String]?",
+      "answerIndex: Int?",
+      "explanation: String?",
+    ]);
+    expect(props("SyncDeadLetterRecord")).toEqual([
+      "kind: String",
+      "identity: String",
+      "reason: String",
+      "ownerUserID: String?",
+      "failedAt: Date",
+    ]);
+    expect(props("AppSyncStateRecord")).toHaveLength(9);
+    expect(props("PodcastDownloadRecord")).toHaveLength(6);
+  });
+  it("the store opens the newest schema and every version has a migration stage", () => {
+    const versions = [...schema.matchAll(/^enum SyncSchemaV(\d+): VersionedSchema/gm)].map((m) =>
+      Number(m[1]),
+    );
+    const latest = Math.max(...versions);
+    expect(latest).toBeGreaterThanOrEqual(3);
+    const factory = between(schema, "enum SyncStoreFactory", /\n}\n/);
+    expect(factory).toContain(`Schema(versionedSchema: SyncSchemaV${latest}.self)`);
+    for (let v = 2; v <= latest; v++) {
+      expect(schema).toContain(
+        `.lightweight(fromVersion: SyncSchemaV${v - 1}.self, toVersion: SyncSchemaV${v}.self)`,
+      );
+    }
   });
   it("the container opens through a three-step, logged fallback chain", () => {
     expect(read(`${APP}/LearnWithAlphonsoApp.swift`)).toContain("SyncStoreFactory.makeContainer()");

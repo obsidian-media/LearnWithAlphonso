@@ -174,7 +174,8 @@ final class ProgressSyncClientTests: XCTestCase {
             total: 8,
             answers: [LessonAnswer(questionId: "q1", answer: "Good morning.")],
             course: "en",
-            sessionToken: "a.b"
+            sessionToken: "a.b",
+            completedAt: Date(timeIntervalSince1970: 0)
         )
 
         XCTAssertEqual(result.xpGain, 100)
@@ -198,6 +199,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(answers, [["questionId": "q1", "answer": "Good morning."]])
         XCTAssertEqual(payload["course"] as? String, "en")
         XCTAssertEqual(payload["sessionToken"] as? String, "a.b")
+        XCTAssertEqual(payload["completedAt"] as? String, "1970-01-01T00:00:00Z")
     }
 
     func testCompleteLessonSurfacesTheEdgeFunctionsErrorShape() async {
@@ -231,6 +233,7 @@ final class ProgressSyncClientTests: XCTestCase {
             let rows: [[String: Any]] = [[
                 "item_key": "u1l1:q1", "lesson_id": "u1l1", "level": "A1",
                 "ease": 2.3, "interval_days": 1, "repetitions": 1, "due_on": "2026-09-19",
+                "last_reviewed_at": "2026-09-18T10:00:00+00:00",
             ]]
             return self.jsonResponse(for: request.url!, body: rows)
         }
@@ -238,7 +241,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let result = try await client.fetchDueReviews(course: "en")
 
         XCTAssertEqual(result.due, [
-            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19"),
+            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19", lastReviewedAt: "2026-09-18T10:00:00+00:00", hasReviewSnapshot: true),
         ])
         XCTAssertEqual(result.total, 7)
         XCTAssertEqual(requests.value.count, 2)
@@ -246,6 +249,32 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertTrue(requests.value[0].url!.absoluteString.contains("/rest/v1/review_items"))
         XCTAssertTrue(requests.value[0].url!.query!.contains("due_on=lte."))
         XCTAssertEqual(requests.value[1].httpMethod, "HEAD")
+    }
+
+    /// A never-reviewed row (last_reviewed_at present and null) has a known snapshot; a row without the column
+    /// does not. Treating the two alike is what got offline re-reviews dropped as superseded.
+    func testFetchDueReviewsMarksTheSnapshotKnownOnlyWhenTheColumnIsPresent() async throws {
+        let client = makeClient { request in
+            if request.httpMethod == "HEAD" {
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: 200, httpVersion: nil,
+                    headerFields: ["Content-Range": "0-1/2"]
+                )!
+                return (Data(), response)
+            }
+            let rows: [[String: Any]] = [
+                ["item_key": "u1l1:q1", "lesson_id": "u1l1", "level": "A1", "ease": 2.5,
+                 "interval_days": 1, "repetitions": 0, "due_on": "2026-09-19", "last_reviewed_at": NSNull()],
+                ["item_key": "u1l1:q2", "lesson_id": "u1l1", "level": "A1", "ease": 2.5,
+                 "interval_days": 1, "repetitions": 0, "due_on": "2026-09-19"],
+            ]
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+
+        let result = try await client.fetchDueReviews(course: "en")
+
+        XCTAssertEqual(result.due.map(\.hasReviewSnapshot), [true, false])
+        XCTAssertEqual(result.due.map(\.lastReviewedAt), [nil, nil])
     }
 
     func testFetchDueReviewsDecodesWeaknessSourcedRows() async throws {
@@ -340,7 +369,9 @@ final class ProgressSyncClientTests: XCTestCase {
             return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-22"])
         }
 
-        let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en", attemptID: "stable-queue-id")
+        let result = try await client.gradeReview(
+            itemKey: "u1l1:q1", answer: "cat", course: "en", attemptID: "stable-queue-id",
+            expectedDueOn: "2026-09-22", expectedLastReviewedAt: nil)
 
         XCTAssertEqual(result, ReviewGradeOutcome(retired: false, dueOn: "2026-09-22"))
         let request = try XCTUnwrap(captured.value)
@@ -351,6 +382,8 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["answer"] as? String, "cat")
         XCTAssertEqual(payload["course"] as? String, "en")
         XCTAssertEqual(payload["attemptId"] as? String, "stable-queue-id")
+        XCTAssertEqual(payload["expectedDueOn"] as? String, "2026-09-22")
+        XCTAssertTrue(payload["expectedLastReviewedAt"] is NSNull)
     }
 
     func testGradeReviewSurfacesANotDueError() async {

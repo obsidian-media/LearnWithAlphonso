@@ -122,7 +122,7 @@ interface SyncDao {
 
 @Database(
     entities = [PendingLessonCompletionRecord::class, PendingReviewGradeRecord::class, CachedDueReviewRecord::class, AppSyncStateRecord::class, PodcastDownloadRecord::class, DeadLetterRecord::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AlphonsoDatabase : RoomDatabase() {
@@ -149,6 +149,14 @@ abstract class AlphonsoDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `dead_letters` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `kind` TEXT NOT NULL, " +
                         "`identity` TEXT NOT NULL, `reason` TEXT NOT NULL, `deadAt` INTEGER NOT NULL, `ownerUserId` TEXT)",
                 )
+            }
+        }
+
+        /** Persist the due-date snapshot for safe cross-device offline review replay. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `pending_review_grades` ADD COLUMN `expectedDueOn` TEXT")
+                db.execSQL("ALTER TABLE `pending_review_grades` ADD COLUMN `expectedLastReviewedAt` TEXT")
             }
         }
 
