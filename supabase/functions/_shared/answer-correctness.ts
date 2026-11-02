@@ -11,17 +11,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr.ts";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
-
-/**
- * Hand-kept mirror of src/lib/llm-chat-model.server.ts's
- * LLM_CHAT_MODEL_DEFAULT. That constant exists BECAUSE four independent
- * hardcodes of a model name broke at once when NVIDIA retired
- * meta/llama-3.1-70b-instruct (410 Gone), and an edge function cannot import
- * from src/ -- so this is the fifth place to update on the next catalog shift,
- * and it is listed in that file's doc comment for exactly that reason.
- * NVIDIA_CHAT_MODEL overrides it here with no redeploy, same as on the web.
- */
-const LLM_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
+import { resolveLlmChatModel } from "./llm-chat.ts";
 
 export type QuestionRow = {
   type: "mc" | "fill" | "reorder" | "listening" | "speak" | "translate";
@@ -106,7 +96,8 @@ export async function deriveAnswerCorrectness(
       acceptableAnswers: acceptable,
       submission: answer,
       apiKey,
-      model: Deno.env.get("NVIDIA_CHAT_MODEL") ?? LLM_CHAT_MODEL_DEFAULT,
+      // The model list (and its fallbacks) lives in llm-chat.ts, the edge chokepoint, not here.
+      model: resolveLlmChatModel(),
       });
     // `null` is "no usable AI opinion", not "wrong" -- keep the local verdict.
     return verdict?.correct ?? false;

@@ -1,22 +1,31 @@
 /**
- * The one place this app's default NVIDIA NIM chat model lives. Every AI
- * feature (conversation chat, weakness detection, generated practice)
- * used to hardcode this default independently in four different files --
- * when NVIDIA retired `meta/llama-3.1-70b-instruct` on 2026-08-26 (a 410
- * Gone from every call site simultaneously, confirmed via Vercel's
- * runtime error log), it silently broke all three features at once,
- * surfacing to users as a generic "failed to fetch"-style error with no
- * indication the model itself was the problem. Centralizing here means
- * the next catalog shift is a one-line fix instead of a four-file hunt
- * (plus supabase/functions/grade-review/answer-correctness.ts, which cannot
- * import from src/ and therefore mirrors this value by hand),
- * and NVIDIA_CHAT_MODEL still overrides this with no redeploy needed --
- * verify this default is still live at https://build.nvidia.com before
- * relying on it. When changing the model, re-check that the no-thinking switch in llm-chat.server.ts still
- * turns its reasoning off (a reasoning model that ignores it is slow and starves capped calls).
+ * The one place this app's AI text models are chosen. OpenRouter tries them in order and falls back to the next on
+ * any error (rate limit, outage), so a fallback is a configuration change, not a code change.
+ *
+ * Why it is central: when NVIDIA retired `meta/llama-3.1-70b-instruct` on 2026-08-26, four hardcoded copies broke
+ * every AI feature at once. The edge functions cannot import from src/, so supabase/functions/_shared/llm-chat.ts
+ * mirrors LLM_CHAT_MODELS_DEFAULT by hand (src/lib/llm-no-reasoning.test.ts keeps the two equal).
+ *
+ * Override in env with LLM_CHAT_MODELS (ordered, comma-separated OpenRouter ids). Every provider you list must be
+ * named in the privacy policy. After any change, re-run scripts/benchmark-llm.ts and scripts/smoke-llm-features.ts:
+ * a model that keeps reasoning is slow and starves capped calls.
  */
-export const LLM_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
+export const LLM_CHAT_MODELS_DEFAULT: readonly string[] = ["anthropic/claude-haiku-5.5"];
 
+/** An ordered model list from a comma-separated value; empty or missing means the default. */
+export function parseLlmChatModels(raw: string | undefined): string[] {
+  const models = (raw ?? "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return models.length > 0 ? models : [...LLM_CHAT_MODELS_DEFAULT];
+}
+
+export function resolveLlmChatModels(): string[] {
+  return parseLlmChatModels(process.env.LLM_CHAT_MODELS);
+}
+
+/** The first choice, for callers that name a model in their request body and for logs. */
 export function resolveLlmChatModel(): string {
-  return process.env.NVIDIA_CHAT_MODEL || LLM_CHAT_MODEL_DEFAULT;
+  return resolveLlmChatModels()[0];
 }

@@ -373,7 +373,7 @@ describe("POST /api/hector-respond course plumbing", () => {
   function mockUpstream(reply = "Bonjour !") {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
       const url = String(input);
-      if (url.includes("integrate.api.nvidia.com")) {
+      if (url.includes("openrouter.ai")) {
         return new Response(JSON.stringify({ choices: [{ message: { content: reply } }] }), {
           status: 200,
         });
@@ -390,7 +390,7 @@ describe("POST /api/hector-respond course plumbing", () => {
       request: req({ text: "Salut", course: "fr", cefr_level: "B1", history: [] }),
     });
     expect(res.status).toBe(200);
-    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("nvidia"))!;
+    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("openrouter.ai"))!;
     const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
     expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("fr", "B1"));
     const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
@@ -411,7 +411,7 @@ describe("POST /api/hector-respond course plumbing", () => {
   it("keeps a build that sends language 'en' and no course or level on English", async () => {
     const fetchMock = mockUpstream("Hi!");
     const res = await handler({ request: req({ text: "hello", language: "en" }) });
-    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("nvidia"))!;
+    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("openrouter.ai"))!;
     const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
     expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("en", ""));
     expect((await res.json()).tts_model).toBe("aura-2-thalia-en");

@@ -85,15 +85,15 @@ describe("defineWord", () => {
     expect(out?.wrong).toHaveLength(3);
   });
 
-  it("calls NVIDIA with the key, model, a 600-token cap and a timeout signal", async () => {
+  it("calls the AI provider with the key, model first in the list, a 600-token cap and a timeout signal", async () => {
     const fetchImpl = fetchReturning(new Response(JSON.stringify(okBody), { status: 200 }));
     await defineWord({ input, apiKey: "secret", model: "some/model", fetchImpl });
     const [url, init] = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    expect(String(url)).toBe("https://integrate.api.nvidia.com/v1/chat/completions");
+    expect(String(url)).toBe("https://openrouter.ai/api/v1/chat/completions");
     const i = init as RequestInit;
     expect((i.headers as Record<string, string>).Authorization).toBe("Bearer secret");
     const body = JSON.parse(String(i.body));
-    expect(body.model).toBe("some/model");
+    expect(body.models[0]).toBe("some/model");
     expect(body.max_tokens).toBe(600);
     expect(i.signal).toBeInstanceOf(AbortSignal);
   });

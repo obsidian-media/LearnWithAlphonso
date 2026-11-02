@@ -10,8 +10,9 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const SCAN = ["src", "supabase/functions", "admin"];
 const CHOKEPOINTS = ["src/lib/llm-chat.server.ts", "supabase/functions/_shared/llm-chat.ts"];
-// The URL, any api.nvidia.com host, or the chokepoint's exported constant: a caller cannot reach NVIDIA around it.
-const NVIDIA = /integrate\.api\.nvidia\.com|\bapi\.nvidia\.com|LLM_CHAT_URL/;
+// The provider's host (OpenRouter), the retired NVIDIA hosts, or the chokepoint's exported constant: a caller
+// cannot reach an AI text provider around the chokepoints.
+const NVIDIA = /openrouter\.ai|integrate\.api\.nvidia\.com|\bapi\.nvidia\.com|LLM_CHAT_URL/;
 
 function walk(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -47,6 +48,7 @@ describe("NVIDIA call sites", () => {
     expect(NVIDIA.test("fetch(LLM_CHAT_URL)")).toBe(true);
     expect(NVIDIA.test('fetch("https://integrate.api.nvidia.com/v1/x")')).toBe(true);
     expect(NVIDIA.test('const host = "api.nvidia.com"')).toBe(true);
+    expect(NVIDIA.test('fetch("https://openrouter.ai/api/v1/chat/completions")')).toBe(true);
     expect(NVIDIA.test("nothing here")).toBe(false);
   });
 });

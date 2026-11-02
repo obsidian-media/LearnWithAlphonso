@@ -44,7 +44,7 @@ beforeEach(() => {
 
 afterEach(() => {
   global.fetch = originalFetch;
-  delete process.env.NVIDIA_CHAT_MODEL;
+  delete process.env.LLM_CHAT_MODELS;
 });
 
 describe("POST /api/chat", () => {
@@ -175,8 +175,8 @@ describe("POST /api/chat", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("uses NVIDIA_CHAT_MODEL override when set", async () => {
-    process.env.NVIDIA_CHAT_MODEL = "custom/model";
+  it("uses the LLM_CHAT_MODELS override when set", async () => {
+    process.env.LLM_CHAT_MODELS = "custom/model,fallback/model";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
     );
@@ -184,7 +184,7 @@ describe("POST /api/chat", () => {
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(JSON.parse(init.body as string).model).toBe("custom/model");
+    expect(JSON.parse(init.body as string).models).toEqual(["custom/model", "fallback/model"]);
   });
 
   it("maps a 429 upstream failure to a rate-limited message", async () => {

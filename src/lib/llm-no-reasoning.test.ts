@@ -2,50 +2,22 @@ import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import {
+  LLM_CHAT_URL,
   LLM_DEFAULT_TIMEOUT_MS,
-  NVIDIA_NO_THINKING,
+  LLM_NO_REASONING,
+  LLM_PROVIDER_PREFS,
   llmChatCompletion,
 } from "./llm-chat.server";
-import { SAFETY_PREAMBLE } from "./ai-safety";
+import { LLM_CHAT_MODELS_DEFAULT, parseLlmChatModels } from "./llm-chat-model.server";
 
-// The default model reasons before answering unless the request turns it off. With it on, Practice replies took
-// 17-88 s in production and capped calls (Save word, generated practice) timed out or came back cut off.
-async function sentBody(body: Parameters<typeof llmChatCompletion>[0]["body"]) {
-  let sent: Record<string, unknown> = {};
-  const fetchImpl = ((_u: string, init?: RequestInit) => {
-    sent = JSON.parse(String(init?.body));
-    return Promise.resolve(new Response("{}"));
-  }) as typeof fetch;
-  await llmChatCompletion({ apiKey: "k", body, fetchImpl });
-  return sent;
-}
+// With reasoning on, Practice replies took 17-88 s in production and capped calls (Save word, generated practice)
+// timed out or came back cut off. Both chokepoints must send the same off switch and the same routing rules.
+const edge = fs.readFileSync(
+  path.resolve(__dirname, "../../supabase/functions/_shared/llm-chat.ts"),
+  "utf8",
+);
 
-describe("NVIDIA requests", () => {
-  it("turn the model's reasoning off on every call", async () => {
-    const sent = await sentBody({ model: "m", messages: [{ role: "user", content: "x" }] });
-    expect(sent.chat_template_kwargs).toEqual({ thinking: false, enable_thinking: false });
-  });
-
-  it("keep reasoning off when a caller sets another template argument", async () => {
-    const sent = await sentBody({
-      model: "m",
-      messages: [{ role: "user", content: "x" }],
-      chat_template_kwargs: { foo: 1 },
-    });
-    expect(sent.chat_template_kwargs).toEqual({ thinking: false, enable_thinking: false, foo: 1 });
-  });
-
-  it("keep the caller's own fields and the safety preamble", async () => {
-    const sent = await sentBody({
-      model: "m",
-      messages: [{ role: "user", content: "x" }],
-      max_tokens: 600,
-    });
-    expect(sent.max_tokens).toBe(600);
-    expect(sent.model).toBe("m");
-    expect((sent.messages as { content: string }[])[0].content).toBe(SAFETY_PREAMBLE);
-  });
-
+describe("AI text requests", () => {
   it("always carry a deadline: the caller's, or a default when the caller sets none", async () => {
     const signals: (AbortSignal | null | undefined)[] = [];
     const fetchImpl = ((_u: string, init?: RequestInit) => {
@@ -54,29 +26,45 @@ describe("NVIDIA requests", () => {
     }) as typeof fetch;
     const body = { model: "m", messages: [{ role: "user" as const, content: "x" }] };
     const timeout = vi.spyOn(AbortSignal, "timeout");
-    await llmChatCompletion({ apiKey: "k", body, fetchImpl });
+    await llmChatCompletion({ apiKey: "k", body, models: ["m"], fetchImpl });
     expect(timeout).toHaveBeenCalledWith(LLM_DEFAULT_TIMEOUT_MS);
     expect(signals[0]).toBeInstanceOf(AbortSignal);
     const own = new AbortController().signal;
-    await llmChatCompletion({ apiKey: "k", body, fetchImpl, signal: own });
+    await llmChatCompletion({ apiKey: "k", body, models: ["m"], fetchImpl, signal: own });
     expect(signals[1]).toBe(own);
     timeout.mockRestore();
   });
 
+  it("parse the model list from env text, falling back to the default", () => {
+    expect(parseLlmChatModels(" a/x , ,b/y ")).toEqual(["a/x", "b/y"]);
+    expect(parseLlmChatModels("")).toEqual([...LLM_CHAT_MODELS_DEFAULT]);
+    expect(parseLlmChatModels(undefined)).toEqual([...LLM_CHAT_MODELS_DEFAULT]);
+  });
+
   it("are configured the same way in the edge functions' twin", () => {
-    const edge = fs.readFileSync(
-      path.resolve(__dirname, "../../supabase/functions/_shared/llm-chat.ts"),
-      "utf8",
-    );
-    expect(NVIDIA_NO_THINKING).toEqual({ thinking: false, enable_thinking: false });
+    expect(edge).toContain(`export const LLM_CHAT_URL = "${LLM_CHAT_URL}";`);
     expect(edge).toContain(
-      "export const NVIDIA_NO_THINKING = { thinking: false, enable_thinking: false } as const;",
+      `export const LLM_NO_REASONING = ${JSON.stringify(LLM_NO_REASONING)
+        .replace(/"(\w+)":/g, "$1: ")
+        .replace(/^\{/, "{ ")
+        .replace(/\}$/, " }")} as const;`,
     );
-    expect(edge).toContain("chat_template_kwargs: { ...NVIDIA_NO_THINKING, ...callerKwargs }");
-    expect(edge).toMatch(/JSON\.stringify\(\{ \.\.\.withNoThinking\(body\), messages:/);
+    expect(edge).toContain(
+      `export const LLM_PROVIDER_PREFS = ${JSON.stringify(LLM_PROVIDER_PREFS)
+        .replace(/"(\w+)":/g, "$1: ")
+        .replace(/^\{/, "{ ")
+        .replace(/\}$/, " }")} as const;`,
+    );
+    expect(edge).toContain(
+      `export const LLM_CHAT_MODELS_DEFAULT: readonly string[] = ${JSON.stringify(LLM_CHAT_MODELS_DEFAULT)};`,
+    );
+    expect(edge).toMatch(
+      /reasoning: LLM_NO_REASONING,\s*provider: LLM_PROVIDER_PREFS,\s*messages: applySafety/,
+    );
     expect(edge).toContain(
       `export const LLM_DEFAULT_TIMEOUT_MS = ${LLM_DEFAULT_TIMEOUT_MS / 1000}_000;`,
     );
     expect(edge).toContain("signal: signal ?? AbortSignal.timeout(LLM_DEFAULT_TIMEOUT_MS),");
+    expect(edge).toContain("return normalizeLlmResponse(res);");
   });
 });
