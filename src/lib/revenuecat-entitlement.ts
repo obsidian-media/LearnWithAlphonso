@@ -52,12 +52,41 @@ export function revenueCatConfigFromEnv(
 
 export type ProEntitlementStatus = "active" | "inactive" | "unavailable";
 
-/** Keep an upstream outage distinct from a confirmed lack of entitlement. */
-export async function getProEntitlementStatus(
+/** Where the active Pro came from. "web" is RevenueCat Web Billing (Stripe), bought on the website. */
+export type ProStore = "app_store" | "web" | "play_store" | null;
+
+export type SubscriberSummary =
+  | { status: "unavailable" }
+  | {
+      status: "active" | "inactive";
+      store: ProStore;
+      /** False once the learner has had any subscription, in any store: one free trial per person. */
+      trialEligible: boolean;
+      /** The web billing customer portal; only for a web subscription (App Store ones are managed in iOS Settings). */
+      managementUrl: string | null;
+    };
+
+// RevenueCat's v1 `store` for Web Billing is not documented; rc_billing (Web Billing) and stripe (Stripe Billing)
+// are the two web stores. Confirm against a sandbox purchase (web Hector plan, Task 0).
+const WEB_STORES = new Set(["rc_billing", "stripe"]);
+
+function storeOf(raw: unknown): ProStore {
+  if (raw === "app_store" || raw === "mac_app_store") return "app_store";
+  if (raw === "play_store") return "play_store";
+  if (typeof raw === "string" && WEB_STORES.has(raw)) return "web";
+  return null;
+}
+
+/**
+ * One read of the RevenueCat subscriber: Pro status, which store it came from, trial eligibility and the web
+ * management link. Keeps an upstream outage ("unavailable") distinct from a confirmed lack of entitlement.
+ */
+export async function getSubscriberSummary(
   config: RevenueCatConfig,
   appUserId: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<ProEntitlementStatus> {
+): Promise<SubscriberSummary> {
+  const none = { store: null, managementUrl: null } as const;
   try {
     const res = await fetchImpl(
       `${REVENUECAT_API_HOST}/v1/subscribers/${encodeURIComponent(appUserId)}`,
@@ -66,27 +95,61 @@ export async function getProEntitlementStatus(
         signal: AbortSignal.timeout(5000),
       },
     );
-    if (res.status === 404) return "inactive";
-    if (!res.ok) return "unavailable";
+    if (res.status === 404) return { status: "inactive", trialEligible: true, ...none };
+    if (!res.ok) return { status: "unavailable" };
 
     const body = (await res.json()) as {
-      subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> };
+      subscriber?: {
+        entitlements?: Record<
+          string,
+          { expires_date?: string | null; product_identifier?: string }
+        >;
+        subscriptions?: Record<string, { store?: string }>;
+        management_url?: string | null;
+      };
     };
-    if (!body?.subscriber?.entitlements || typeof body.subscriber.entitlements !== "object") {
-      return "unavailable";
+    const subscriber = body?.subscriber;
+    if (!subscriber?.entitlements || typeof subscriber.entitlements !== "object") {
+      return { status: "unavailable" };
     }
-    const entitlement = body.subscriber?.entitlements?.[PRO_ENTITLEMENT_ID];
-    if (!entitlement) return "inactive";
-    // A null expires_date is RevenueCat's shape for a non-expiring
-    // (lifetime, or promotional) entitlement.
-    if (entitlement.expires_date === null) return "active";
-    if (typeof entitlement.expires_date !== "string") return "unavailable";
-    const expiry = new Date(entitlement.expires_date).getTime();
-    if (Number.isNaN(expiry)) return "unavailable";
-    return expiry > Date.now() ? "active" : "inactive";
+    const subscriptions =
+      subscriber.subscriptions && typeof subscriber.subscriptions === "object"
+        ? subscriber.subscriptions
+        : {};
+    const trialEligible = Object.keys(subscriptions).length === 0;
+
+    const entitlement = subscriber.entitlements[PRO_ENTITLEMENT_ID];
+    if (!entitlement) return { status: "inactive", trialEligible, ...none };
+    // A null expires_date is RevenueCat's shape for a non-expiring (lifetime, or promotional) entitlement.
+    let active: boolean;
+    if (entitlement.expires_date === null) active = true;
+    else {
+      if (typeof entitlement.expires_date !== "string") return { status: "unavailable" };
+      const expiry = new Date(entitlement.expires_date).getTime();
+      if (Number.isNaN(expiry)) return { status: "unavailable" };
+      active = expiry > Date.now();
+    }
+    if (!active) return { status: "inactive", trialEligible, ...none };
+
+    const productId = entitlement.product_identifier;
+    const store = productId ? storeOf(subscriptions[productId]?.store) : null;
+    const managementUrl =
+      store === "web" && typeof subscriber.management_url === "string"
+        ? subscriber.management_url
+        : null;
+    return { status: "active", store, trialEligible, managementUrl };
   } catch {
-    return "unavailable";
+    return { status: "unavailable" };
   }
+}
+
+/** Keep an upstream outage distinct from a confirmed lack of entitlement. */
+export async function getProEntitlementStatus(
+  config: RevenueCatConfig,
+  appUserId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ProEntitlementStatus> {
+  return (await getSubscriberSummary(config, appUserId, fetchImpl)).status;
 }
 
 /** Boolean compatibility helper for authorization-only callers. */

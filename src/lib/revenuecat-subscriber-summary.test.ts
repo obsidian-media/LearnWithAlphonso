@@ -1,0 +1,121 @@
+import { describe, expect, it } from "vitest";
+import { getProEntitlementStatus, getSubscriberSummary } from "./revenuecat-entitlement";
+
+const CONFIG = { secretApiKey: "sk_test" };
+const FUTURE = new Date(Date.now() + 86_400_000).toISOString();
+const PAST = new Date(Date.now() - 86_400_000).toISOString();
+
+function respond(status: number, body?: unknown) {
+  return (async () =>
+    new Response(body === undefined ? "" : JSON.stringify(body), { status })) as typeof fetch;
+}
+
+function subscriber(opts: {
+  pro?: { expires_date: string | null; product_identifier: string };
+  subscriptions?: Record<string, { store: string }>;
+  management_url?: string | null;
+}) {
+  return {
+    subscriber: {
+      entitlements: opts.pro ? { pro: opts.pro } : {},
+      subscriptions: opts.subscriptions ?? {},
+      management_url: opts.management_url ?? null,
+    },
+  };
+}
+
+describe("getSubscriberSummary", () => {
+  it("active App Store Pro: store app_store, no web management link, no second trial", async () => {
+    const fake = respond(
+      200,
+      subscriber({
+        pro: { expires_date: FUTURE, product_identifier: "pro_monthly" },
+        subscriptions: { pro_monthly: { store: "app_store" } },
+        management_url: "https://apps.apple.com/account/subscriptions",
+      }),
+    );
+    expect(await getSubscriberSummary(CONFIG, "u1", fake)).toEqual({
+      status: "active",
+      store: "app_store",
+      trialEligible: false,
+      managementUrl: null,
+    });
+  });
+
+  it.each(["rc_billing", "stripe"])(
+    "active web Pro (%s): store web with the portal link",
+    async (store) => {
+      const fake = respond(
+        200,
+        subscriber({
+          pro: { expires_date: FUTURE, product_identifier: "pro_web_monthly" },
+          subscriptions: { pro_web_monthly: { store } },
+          management_url: "https://billing.example/portal/abc",
+        }),
+      );
+      expect(await getSubscriberSummary(CONFIG, "u1", fake)).toEqual({
+        status: "active",
+        store: "web",
+        trialEligible: false,
+        managementUrl: "https://billing.example/portal/abc",
+      });
+    },
+  );
+
+  it("no subscriber yet (404): inactive and trial-eligible", async () => {
+    expect(await getSubscriberSummary(CONFIG, "u1", respond(404))).toEqual({
+      status: "inactive",
+      store: null,
+      trialEligible: true,
+      managementUrl: null,
+    });
+  });
+
+  it("expired App Store subscription: inactive, and the trial is used up", async () => {
+    const fake = respond(
+      200,
+      subscriber({
+        pro: { expires_date: PAST, product_identifier: "pro_monthly" },
+        subscriptions: { pro_monthly: { store: "app_store" } },
+      }),
+    );
+    expect(await getSubscriberSummary(CONFIG, "u1", fake)).toEqual({
+      status: "inactive",
+      store: null,
+      trialEligible: false,
+      managementUrl: null,
+    });
+  });
+
+  it("a subscriber record with no subscriptions at all stays trial-eligible", async () => {
+    const fake = respond(200, subscriber({}));
+    expect((await getSubscriberSummary(CONFIG, "u1", fake)).status).toBe("inactive");
+    expect(await getSubscriberSummary(CONFIG, "u1", fake)).toMatchObject({ trialEligible: true });
+  });
+
+  it.each([
+    ["a 5xx", respond(503, { error: "x" })],
+    ["a malformed body", respond(200, { nope: true })],
+    [
+      "a thrown fetch",
+      (async () => {
+        throw new Error("down");
+      }) as unknown as typeof fetch,
+    ],
+  ])("%s is unavailable, never inactive", async (_label, fake) => {
+    expect(await getSubscriberSummary(CONFIG, "u1", fake)).toEqual({ status: "unavailable" });
+  });
+
+  it("getProEntitlementStatus reports the same status as the summary", async () => {
+    const fake = respond(
+      200,
+      subscriber({
+        pro: { expires_date: FUTURE, product_identifier: "p" },
+        subscriptions: { p: { store: "app_store" } },
+      }),
+    );
+    expect(await getProEntitlementStatus(CONFIG, "u1", fake)).toBe("active");
+    expect(await getProEntitlementStatus(CONFIG, "u1", respond(404))).toBe("inactive");
+    expect(await getProEntitlementStatus(CONFIG, "u1", respond(500))).toBe("unavailable");
+  });
+});
