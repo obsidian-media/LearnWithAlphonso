@@ -130,6 +130,8 @@ class ProgressSyncClientTest {
         assertEquals("en:u1l1:q1", result.due[0].itemKey)
         assertEquals("lesson", result.due[0].source)
         assertEquals("2025-09-15T10:00:00+00:00", result.due[0].lastReviewedAt)
+        assertTrue(result.due[0].hasReviewSnapshot)
+        assertEquals("2025-09-16", result.due[0].snapshotDueOn())
         val get = fake.seen[0]
         assertEquals("GET", get.method)
         assertEquals("/rest/v1/review_items", get.path)
@@ -172,6 +174,24 @@ class ProgressSyncClientTest {
     fun `gradeReview carries the server verdict when present`() = runTest {
         val fake = FakeSupabase { json("""{"retired":true,"dueOn":"2025-09-16","correct":true}""") }
         assertEquals(ReviewGradeOutcome(true, "2025-09-16", true), client(fake).gradeReview("k", "a", "en"))
+    }
+
+    @Test
+    fun `a review cached before the snapshot existed grades without one, a fresh one round-trips with it`() {
+        val cj = com.obsidianmedia.learnwithalphonso.core.content.ContentJson.json
+        // The JSON an older build wrote into cached_due_reviews: no last_reviewed_at, no flag.
+        val legacy = cj.decodeFromString(
+            ReviewItem.serializer(),
+            """{"item_key":"en:u1l1:q1","lesson_id":"u1l1","level":"A1","ease":2.5,"interval_days":1,"repetitions":2,"due_on":"2025-09-16"}""",
+        )
+        assertEquals(false, legacy.hasReviewSnapshot)
+        assertNull(legacy.snapshotDueOn())
+        assertNull(legacy.snapshotLastReviewedAt())
+
+        val fresh = ReviewItem("en:u1l1:q1", "u1l1", "A1", 2.5, 1, 0, "2025-09-16", lastReviewedAt = null, hasReviewSnapshot = true)
+        val back = cj.decodeFromString(ReviewItem.serializer(), cj.encodeToString(ReviewItem.serializer(), fresh))
+        assertEquals(fresh, back)
+        assertEquals("2025-09-16", back.snapshotDueOn())
     }
 
     @Test

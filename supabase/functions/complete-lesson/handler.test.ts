@@ -247,16 +247,32 @@ Deno.test(
 );
 
 Deno.test(
-  "a queued completion cannot claim activity before its server-issued session",
+  "a queued completion cannot claim activity before its server-issued session (clamped, not lost)",
   async () => {
+    // Session issued 2026-10-17T23:20 (setup: now - 1 h). A claim days earlier lands on the session's day.
     const now = new Date("2026-10-18T00:20:00Z");
     const { db, handler } = setup({ now });
     const res = await handler(post({
       ...body(["a", "d"]),
-      completedAt: "2026-10-17T23:19:59.999Z",
+      completedAt: "2026-10-10T12:00:00.000Z",
     }));
-    assertEquals(res.status, 400);
-    assertEquals(db.rpcCalls.length, 0);
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+  },
+);
+
+Deno.test(
+  "a device clock ahead of the server still saves the lesson, on the server's day",
+  async () => {
+    // Both native clients dead-letter a 400, so a fast clock must never produce one.
+    const now = new Date("2026-10-18T00:20:00Z");
+    const { db, handler } = setup({ now });
+    const res = await handler(post({
+      ...body(["a", "d"]),
+      completedAt: "2026-10-18T00:20:07.000Z",
+    }));
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
   },
 );
 

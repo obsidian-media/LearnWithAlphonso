@@ -10,7 +10,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Replays the exported version 2 schema through [AlphonsoDatabase.MIGRATION_2_3] and checks what an upgrade keeps. */
+/** Replays the exported schemas through each migration ([AlphonsoDatabase.MIGRATION_2_3], [AlphonsoDatabase.MIGRATION_3_4]) and checks what an upgrade keeps. */
 @RunWith(AndroidJUnit4::class)
 class AlphonsoDatabaseMigrationTest {
     @get:Rule
@@ -56,6 +56,34 @@ class AlphonsoDatabaseMigrationTest {
         }
         db.execSQL("INSERT INTO dead_letters (kind, identity, reason, deadAt, ownerUserId) VALUES ('lesson', 'x', 'rejected', 1, 'u1')")
         db.query("SELECT COUNT(*) FROM dead_letters").use {
+            it.moveToFirst()
+            assertEquals(1, it.getInt(0))
+        }
+    }
+
+    @Test
+    fun migrating_3_to_4_keeps_queued_grades_and_adds_an_empty_review_snapshot() {
+        helper.createDatabase(NAME, 3).apply {
+            execSQL(
+                "INSERT INTO pending_review_grades (itemKey, answer, course, queuedAt, ownerUserId, attemptCount) " +
+                    "VALUES ('en:l1:q1', 'cat', 'en', 2000, 'u1', 1)",
+            )
+            execSQL("INSERT INTO cached_due_reviews (itemKey, json) VALUES ('en:l1:q1', '{}')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(NAME, 4, true, AlphonsoDatabase.MIGRATION_3_4)
+
+        db.query("SELECT itemKey, ownerUserId, attemptCount, expectedDueOn, expectedLastReviewedAt FROM pending_review_grades").use {
+            it.moveToFirst()
+            assertEquals("en:l1:q1", it.getString(0))
+            assertEquals("u1", it.getString(1))
+            assertEquals(1, it.getInt(2))
+            // No snapshot: the grade replays exactly as it did before freshness checks existed.
+            assertEquals(true, it.isNull(3))
+            assertEquals(true, it.isNull(4))
+        }
+        db.query("SELECT COUNT(*) FROM cached_due_reviews").use {
             it.moveToFirst()
             assertEquals(1, it.getInt(0))
         }

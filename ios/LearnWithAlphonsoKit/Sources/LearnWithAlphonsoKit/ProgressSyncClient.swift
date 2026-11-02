@@ -82,6 +82,10 @@ public struct ReviewItem: Sendable, Equatable {
     public let repetitions: Int
     public let dueOn: String
     public let lastReviewedAt: String?
+    /// True only when `dueOn`/`lastReviewedAt` came straight from the server row. An item rebuilt from a cache
+    /// written before lastReviewedAt was stored has an unknown snapshot: grading it must send none (the server then
+    /// skips the freshness check), because a nil here would read as "never reviewed" and be marked superseded.
+    public let hasReviewSnapshot: Bool
     public let source: String
     public let weaknessDisplay: String?
     public let prompt: String?
@@ -92,6 +96,7 @@ public struct ReviewItem: Sendable, Equatable {
     public init(
         itemKey: String, lessonId: String, level: String, ease: Double,
         intervalDays: Int, repetitions: Int, dueOn: String, lastReviewedAt: String? = nil,
+        hasReviewSnapshot: Bool = false,
         source: String = "lesson", weaknessDisplay: String? = nil,
         prompt: String? = nil, choices: [String]? = nil,
         answerIndex: Int? = nil, explanation: String? = nil
@@ -104,6 +109,7 @@ public struct ReviewItem: Sendable, Equatable {
         self.repetitions = repetitions
         self.dueOn = dueOn
         self.lastReviewedAt = lastReviewedAt
+        self.hasReviewSnapshot = hasReviewSnapshot
         self.source = source
         self.weaknessDisplay = weaknessDisplay
         self.prompt = prompt
@@ -515,6 +521,7 @@ public final class ProgressSyncClient: Sendable {
                 itemKey: itemKey, lessonId: lessonId, level: level, ease: ease,
                 intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn,
                 lastReviewedAt: row["last_reviewed_at"] as? String,
+                hasReviewSnapshot: row.keys.contains("last_reviewed_at"),
                 source: row["source"] as? String ?? "lesson",
                 weaknessDisplay: row["weakness_display"] as? String,
                 prompt: row["prompt"] as? String,

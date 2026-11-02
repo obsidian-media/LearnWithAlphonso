@@ -138,6 +138,7 @@ class ProgressSyncClient(
                 repetitions = row.int("repetitions") ?: return@mapNotNull null,
                 dueOn = row.string("due_on") ?: return@mapNotNull null,
                 lastReviewedAt = row.string("last_reviewed_at"),
+                hasReviewSnapshot = row.containsKey("last_reviewed_at"),
                 source = row.string("source") ?: "lesson",
                 weaknessDisplay = row.string("weakness_display"),
                 prompt = row.string("prompt"),

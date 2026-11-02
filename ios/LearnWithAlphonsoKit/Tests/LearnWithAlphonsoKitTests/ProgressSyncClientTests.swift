@@ -241,7 +241,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let result = try await client.fetchDueReviews(course: "en")
 
         XCTAssertEqual(result.due, [
-            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19", lastReviewedAt: "2026-09-18T10:00:00+00:00"),
+            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19", lastReviewedAt: "2026-09-18T10:00:00+00:00", hasReviewSnapshot: true),
         ])
         XCTAssertEqual(result.total, 7)
         XCTAssertEqual(requests.value.count, 2)
@@ -249,6 +249,32 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertTrue(requests.value[0].url!.absoluteString.contains("/rest/v1/review_items"))
         XCTAssertTrue(requests.value[0].url!.query!.contains("due_on=lte."))
         XCTAssertEqual(requests.value[1].httpMethod, "HEAD")
+    }
+
+    /// A never-reviewed row (last_reviewed_at present and null) has a known snapshot; a row without the column
+    /// does not. Treating the two alike is what got offline re-reviews dropped as superseded.
+    func testFetchDueReviewsMarksTheSnapshotKnownOnlyWhenTheColumnIsPresent() async throws {
+        let client = makeClient { request in
+            if request.httpMethod == "HEAD" {
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: 200, httpVersion: nil,
+                    headerFields: ["Content-Range": "0-1/2"]
+                )!
+                return (Data(), response)
+            }
+            let rows: [[String: Any]] = [
+                ["item_key": "u1l1:q1", "lesson_id": "u1l1", "level": "A1", "ease": 2.5,
+                 "interval_days": 1, "repetitions": 0, "due_on": "2026-09-19", "last_reviewed_at": NSNull()],
+                ["item_key": "u1l1:q2", "lesson_id": "u1l1", "level": "A1", "ease": 2.5,
+                 "interval_days": 1, "repetitions": 0, "due_on": "2026-09-19"],
+            ]
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+
+        let result = try await client.fetchDueReviews(course: "en")
+
+        XCTAssertEqual(result.due.map(\.hasReviewSnapshot), [true, false])
+        XCTAssertEqual(result.due.map(\.lastReviewedAt), [nil, nil])
     }
 
     func testFetchDueReviewsDecodesWeaknessSourcedRows() async throws {

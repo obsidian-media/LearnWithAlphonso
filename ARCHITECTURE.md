@@ -1789,8 +1789,10 @@ Grades still stop at a transient failure to keep SM-2 order, an out-of-hearts
 completion waits for a refill without spending an attempt, rows queued by a
 different account are dropped, and rows written before this version are
 adopted by the first account that syncs. The local store is versioned
-(`SyncSchemaV1` is frozen from build 49, `SyncSchemaV2` adds owner, session
-token, retry fields, a per-course due cache and the dead-letter table) and
+(`SyncSchemaV1` is frozen from build 49, `SyncSchemaV2` from builds 50/51 adds
+owner, session token, retry fields, a per-course due cache and the dead-letter
+table, `SyncSchemaV3` adds the review-freshness snapshot to queued grades and
+`lastReviewedAt` + `hasReviewSnapshot` to the due cache) and
 opens through a logged three-step chain. Review resolves the whole due queue
 against bundled content before showing anything (`ReviewQueueResolution`), the
 due cache is per course, and the out-of-hearts sheet offers a live countdown,

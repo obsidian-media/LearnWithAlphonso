@@ -39,6 +39,12 @@ data class ReviewItem(
     val repetitions: Int,
     @SerialName("due_on") val dueOn: String,
     @SerialName("last_reviewed_at") val lastReviewedAt: String? = null,
+    /**
+     * True only when dueOn/lastReviewedAt came straight from the server row. A cached item written before
+     * lastReviewedAt existed decodes with lastReviewedAt == null, which would read as "never reviewed" and get the
+     * grade dropped as superseded; with this false the grade is sent without a freshness snapshot instead.
+     */
+    @SerialName("has_review_snapshot") val hasReviewSnapshot: Boolean = false,
     val source: String = "lesson",
     @SerialName("weakness_display") val weaknessDisplay: String? = null,
     val prompt: String? = null,
@@ -51,6 +57,10 @@ data class ReviewItem(
      * The review screen builds the card from the row itself.
      */
     val isSelfContained: Boolean get() = source == "weakness" || source == "saved_word"
+
+    /** The freshness snapshot to grade against, or null (send none) when it is unknown. */
+    fun snapshotDueOn(): String? = if (hasReviewSnapshot) dueOn else null
+    fun snapshotLastReviewedAt(): String? = if (hasReviewSnapshot) lastReviewedAt else null
 }
 
 @Serializable

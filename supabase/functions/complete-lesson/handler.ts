@@ -217,9 +217,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const trustedCompletionDay = completedAt && sessionIssuedAt !== null
     ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
     : null;
-  if (completedAt && !trustedCompletionDay) {
-    return jsonResponse({ error: "Invalid offline completion time" }, 400);
-  }
+  // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
+  // a 400 here would dead-letter a real lesson on both native clients.
 
   // The actual re-grade: never trust which questions the client says it
   // missed, derive it from the real answer key. Sequential, not
