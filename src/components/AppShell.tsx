@@ -165,6 +165,16 @@ export function BottomTabs() {
             <path d="M8 9h8M8 12h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
         </TabItem>
+        <TabItem to="/hector" label="Hector" active={pathname.startsWith("/hector")}>
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+            <path
+              d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3zM18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9L18 15z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </TabItem>
         <TabItem to="/league" label="League" active={pathname.startsWith("/league")}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path

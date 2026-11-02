@@ -13,6 +13,7 @@ import { useProgress } from "../../lib/progress";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
+import { HectorInvite } from "../../components/HectorInvite";
 import { fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
@@ -359,6 +360,10 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
               </div>
               <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
             </div>
+          )}
+          {/* After a few turns, offer to keep going with Hector (hidden for Pro). */}
+          {messages.filter((m) => m.role === "user").length >= 3 && !sending && (
+            <HectorInvite source="practice_end_prompt" />
           )}
           {(error ?? captureError) && (
             <div

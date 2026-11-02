@@ -20,10 +20,12 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
+import { Route as AuthenticatedHectorRouteImport } from './routes/_authenticated/hector'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
+import { Route as AuthenticatedProReturnRouteImport } from './routes/_authenticated/pro-return'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedSeasonRouteImport } from './routes/_authenticated/season'
@@ -107,6 +109,11 @@ const AuthenticatedDuelsRoute = AuthenticatedDuelsRouteImport.update({
   path: '/duels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHectorRoute = AuthenticatedHectorRouteImport.update({
+  id: '/hector',
+  path: '/hector',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
   id: '/league',
   path: '/league',
@@ -125,6 +132,11 @@ const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
 const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
   id: '/placement',
   path: '/placement',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProReturnRoute = AuthenticatedProReturnRouteImport.update({
+  id: '/pro-return',
+  path: '/pro-return',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -284,10 +296,12 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
+  '/hector': typeof AuthenticatedHectorRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
+  '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
@@ -328,10 +342,12 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
+  '/hector': typeof AuthenticatedHectorRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
+  '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
@@ -374,10 +390,12 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
+  '/_authenticated/hector': typeof AuthenticatedHectorRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
+  '/_authenticated/pro-return': typeof AuthenticatedProReturnRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/season': typeof AuthenticatedSeasonRoute
@@ -420,10 +438,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/converse'
     | '/duels'
+    | '/hector'
     | '/league'
     | '/learn'
     | '/listen'
     | '/placement'
+    | '/pro-return'
     | '/profile'
     | '/review'
     | '/season'
@@ -464,10 +484,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/converse'
     | '/duels'
+    | '/hector'
     | '/league'
     | '/learn'
     | '/listen'
     | '/placement'
+    | '/pro-return'
     | '/profile'
     | '/review'
     | '/season'
@@ -509,10 +531,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/converse'
     | '/_authenticated/duels'
+    | '/_authenticated/hector'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
     | '/_authenticated/placement'
+    | '/_authenticated/pro-return'
     | '/_authenticated/profile'
     | '/_authenticated/review'
     | '/_authenticated/season'
@@ -651,6 +675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hector': {
+      id: '/_authenticated/hector'
+      path: '/hector'
+      fullPath: '/hector'
+      preLoaderRoute: typeof AuthenticatedHectorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/league': {
       id: '/_authenticated/league'
       path: '/league'
@@ -677,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/placement'
       fullPath: '/placement'
       preLoaderRoute: typeof AuthenticatedPlacementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro-return': {
+      id: '/_authenticated/pro-return'
+      path: '/pro-return'
+      fullPath: '/pro-return'
+      preLoaderRoute: typeof AuthenticatedProReturnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -892,10 +930,12 @@ const AuthenticatedListenRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
+  AuthenticatedHectorRoute: typeof AuthenticatedHectorRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
+  AuthenticatedProReturnRoute: typeof AuthenticatedProReturnRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedSeasonRoute: typeof AuthenticatedSeasonRoute
@@ -911,10 +951,12 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConverseRoute: AuthenticatedConverseRoute,
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
+  AuthenticatedHectorRoute: AuthenticatedHectorRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
+  AuthenticatedProReturnRoute: AuthenticatedProReturnRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedSeasonRoute: AuthenticatedSeasonRoute,
