@@ -1,4 +1,4 @@
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 /**
  * The AI half of translate grading: asked only about submissions the curated
  * `acceptableAnswers` list has already rejected.
@@ -83,7 +83,7 @@ export async function gradeTranslationWithAi(args: {
   model: string;
 }): Promise<AiTranslationVerdict | null> {
   try {
-    const resp = await nvidiaChatCompletion({
+    const resp = await llmChatCompletion({
       apiKey: args.apiKey,
       // A slow or half-open vendor connection would otherwise hold the
       // learner on a disabled "Checking..." button for the platform default.

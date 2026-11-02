@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { llmChatCompletion } from "@/lib/llm-chat.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
@@ -114,11 +114,11 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const llmStart = performance.now();
   const llm = await timer.time("llm", async () => {
     try {
-      const llmResp = await nvidiaChatCompletion({
+      const llmResp = await llmChatCompletion({
         apiKey: nvidiaKey,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
         body: {
-          model: resolveNvidiaChatModel(),
+          model: resolveLlmChatModel(),
           messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
           max_tokens: 512,
         },

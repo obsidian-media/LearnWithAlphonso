@@ -1,4 +1,4 @@
-import { nvidiaChatCompletion } from "./nvidia-chat.ts";
+import { llmChatCompletion } from "./llm-chat.ts";
 // Deno copy of src/lib/translation-grader.server.ts. Same bundling reason as
 // the other ports here, and the same contract: `null` means "no usable AI
 // opinion", never "wrong". The caller keeps its local verdict.
@@ -66,7 +66,7 @@ export async function gradeTranslationWithAi(args: {
   model: string;
 }): Promise<AiTranslationVerdict | null> {
   try {
-    const resp = await nvidiaChatCompletion({
+    const resp = await llmChatCompletion({
       apiKey: args.apiKey,
       // A slow or half-open vendor connection would otherwise hold the
       // learner on a disabled "Checking..." button for the platform default.

@@ -246,16 +246,16 @@ export const gradeReview = createServerFn({ method: "POST" })
           const { consumeQuota } = await import("./ai-quota.server");
           const quota = await consumeQuota(getRequest(), "translate");
           if (quota.ok) {
-            const [{ gradeTranslationWithAi }, { resolveNvidiaChatModel }] = await Promise.all([
+            const [{ gradeTranslationWithAi }, { resolveLlmChatModel }] = await Promise.all([
               import("./translation-grader.server"),
-              import("./nvidia-chat-model.server"),
+              import("./llm-chat-model.server"),
             ]);
             const verdict = await gradeTranslationWithAi({
               prompt: ref.question.prompt,
               acceptableAnswers: ref.question.acceptableAnswers,
               submission: data.answer,
               apiKey,
-              model: resolveNvidiaChatModel(),
+              model: resolveLlmChatModel(),
             });
             if (verdict?.correct) correct = true;
           }

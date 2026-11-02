@@ -5,9 +5,9 @@ import { applySafety, type LlmMessage } from "./ai-safety";
  * SAFETY_PREAMBLE through applySafety, so a caller cannot forget it. Returns the raw Response so each caller keeps
  * its own error handling (upstreamErrorResponse, null-on-failure, throw-for-authoring).
  */
-export const NVIDIA_CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+export const LLM_CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
-export type NvidiaChatBody = { model: string; messages: LlmMessage[] } & Record<string, unknown>;
+export type LlmChatBody = { model: string; messages: LlmMessage[] } & Record<string, unknown>;
 
 /**
  * The default chat model reasons before it answers unless told not to. Left on, a Practice reply took 17-88 s and
@@ -20,29 +20,29 @@ export type NvidiaChatBody = { model: string; messages: LlmMessage[] } & Record<
 export const NVIDIA_NO_THINKING = { thinking: false, enable_thinking: false } as const;
 
 /** The request body with reasoning turned off, keeping any template arguments the caller set. */
-export function withNoThinking(body: NvidiaChatBody): NvidiaChatBody {
+export function withNoThinking(body: LlmChatBody): LlmChatBody {
   const callerKwargs = (body.chat_template_kwargs ?? {}) as Record<string, unknown>;
   return { ...body, chat_template_kwargs: { ...NVIDIA_NO_THINKING, ...callerKwargs } };
 }
 
 /** The deadline for a model call whose caller sets none. A normal reply takes about a second. */
-export const NVIDIA_DEFAULT_TIMEOUT_MS = 30_000;
+export const LLM_DEFAULT_TIMEOUT_MS = 30_000;
 
 /** For owner-run authoring calls, which ask for a whole pack or word list in one reply. */
-export const NVIDIA_AUTHORING_TIMEOUT_MS = 120_000;
+export const LLM_AUTHORING_TIMEOUT_MS = 120_000;
 
-export function nvidiaChatCompletion(args: {
+export function llmChatCompletion(args: {
   apiKey: string;
-  body: NvidiaChatBody;
+  body: LlmChatBody;
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
 }): Promise<Response> {
   const { apiKey, body, signal, fetchImpl = fetch } = args;
-  return fetchImpl(NVIDIA_CHAT_URL, {
+  return fetchImpl(LLM_CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({ ...withNoThinking(body), messages: applySafety(body.messages) }),
     // No call may wait on the provider without a limit: a caller that sets no deadline gets this one.
-    signal: signal ?? AbortSignal.timeout(NVIDIA_DEFAULT_TIMEOUT_MS),
+    signal: signal ?? AbortSignal.timeout(LLM_DEFAULT_TIMEOUT_MS),
   });
 }

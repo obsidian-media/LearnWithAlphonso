@@ -30,7 +30,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Pack } from "../src/data/bank-engine";
 import type { Level } from "../src/data/levels";
-import { resolveNvidiaChatModel } from "../src/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "../src/lib/llm-chat-model.server";
 import {
   checkIdCollision,
   extractPackIds,
@@ -183,7 +183,7 @@ async function cmdDraft(flags: Flags) {
       kind,
       lineCount,
       nvidiaApiKey: apiKey,
-      nvidiaModel: resolveNvidiaChatModel(),
+      nvidiaModel: resolveLlmChatModel(),
     });
   } catch (e) {
     fail(`draft generation failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -293,7 +293,7 @@ async function cmdGenerate(flags: Flags) {
     level,
     existingVocab: GENERATIVE_VOCAB,
     nvidiaApiKey: apiKey,
-    nvidiaModel: resolveNvidiaChatModel(),
+    nvidiaModel: resolveLlmChatModel(),
   });
 
   console.log(`  accepted: ${proposal.accepted.length}, rejected: ${proposal.rejected.length}`);

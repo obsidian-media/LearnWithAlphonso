@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import type { Json } from "@/integrations/supabase/types";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
@@ -652,7 +652,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             sourceDescription: "set of English lesson questions the learner got wrong",
             transcriptMessages,
             nvidiaApiKey: process.env.NVIDIA_API_KEY,
-            nvidiaModel: resolveNvidiaChatModel(),
+            nvidiaModel: resolveLlmChatModel(),
             course,
             outputCheck: makeBlockedTermCheck(supabaseAdmin),
             dedupCheck: async (label) => {

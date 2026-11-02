@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 import { normalizePracticeQuestion, type PracticeQuestion } from "./practice-choices";
 
 /** Two short attempts instead of one long call: the learner gets an answer in about 20 s at worst. */
@@ -75,7 +75,7 @@ export async function generatePracticeQuestions(params: {
   for (let attempt = 1; attempt <= PRACTICE_MAX_ATTEMPTS; attempt++) {
     const startedAt = Date.now();
     try {
-      const resp = await nvidiaChatCompletion({
+      const resp = await llmChatCompletion({
         apiKey: params.nvidiaApiKey,
         signal: AbortSignal.timeout(PRACTICE_ATTEMPT_TIMEOUT_MS),
         body: {

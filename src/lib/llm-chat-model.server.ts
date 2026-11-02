@@ -12,11 +12,11 @@
  * import from src/ and therefore mirrors this value by hand),
  * and NVIDIA_CHAT_MODEL still overrides this with no redeploy needed --
  * verify this default is still live at https://build.nvidia.com before
- * relying on it. When changing the model, re-check that the no-thinking switch in nvidia-chat.server.ts still
+ * relying on it. When changing the model, re-check that the no-thinking switch in llm-chat.server.ts still
  * turns its reasoning off (a reasoning model that ignores it is slow and starves capped calls).
  */
-export const NVIDIA_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
+export const LLM_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
 
-export function resolveNvidiaChatModel(): string {
-  return process.env.NVIDIA_CHAT_MODEL || NVIDIA_CHAT_MODEL_DEFAULT;
+export function resolveLlmChatModel(): string {
+  return process.env.NVIDIA_CHAT_MODEL || LLM_CHAT_MODEL_DEFAULT;
 }

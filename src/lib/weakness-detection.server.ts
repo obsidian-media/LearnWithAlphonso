@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { Course } from "../data/courses";
 import { filterModelOutputs, type BlockedTermCheck } from "./ai-safety";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 
 /**
  * V3 package 3b: extracted from src/routes/api/analyze-weaknesses.ts so
@@ -114,7 +114,7 @@ export async function detectAndRecordWeaknesses(params: {
 
   let content: string;
   try {
-    const resp = await nvidiaChatCompletion({
+    const resp = await llmChatCompletion({
       apiKey: params.nvidiaApiKey,
       body: {
         model: params.nvidiaModel,

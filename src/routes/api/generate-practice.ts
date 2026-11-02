@@ -4,7 +4,7 @@ import type { Question } from "@/data/curriculum";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
 import { buildFallbackPractice } from "@/lib/practice-fallback";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 /**
  * V3 pkg 4b: "generative sentence content." On-demand extra practice for
@@ -83,7 +83,7 @@ export const Route = createFileRoute("/api/generate-practice")({
           topic: `${found.lesson.title} -- ${found.lesson.subtitle}`,
           sampleQuestions,
           nvidiaApiKey: key,
-          nvidiaModel: resolveNvidiaChatModel(),
+          nvidiaModel: resolveLlmChatModel(),
         });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

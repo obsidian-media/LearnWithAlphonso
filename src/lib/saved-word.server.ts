@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { llmChatCompletion } from "./llm-chat.server";
 import {
   parseDefinition,
   type SavedWordCourse,
@@ -86,7 +86,7 @@ export async function defineWord(args: {
     if (attempt > 1 && signal?.aborted) return null;
     const startedAt = Date.now();
     try {
-      const resp = await nvidiaChatCompletion({
+      const resp = await llmChatCompletion({
         apiKey,
         fetchImpl,
         signal: attemptSignal(signal),

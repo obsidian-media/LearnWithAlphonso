@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { makeBlockedTermCheck } from "@/lib/ai-safety";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           sourceDescription,
           transcriptMessages: messages,
           nvidiaApiKey: key,
-          nvidiaModel: resolveNvidiaChatModel(),
+          nvidiaModel: resolveLlmChatModel(),
           course,
           outputCheck: makeBlockedTermCheck(supabaseAdmin),
           dedupCheck: async (label) => {

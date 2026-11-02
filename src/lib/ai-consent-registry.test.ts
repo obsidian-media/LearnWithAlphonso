@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const read = (f: string) => fs.readFileSync(path.join(ROOT, f), "utf8");
 const AI_MARKERS =
-  /nvidiaChatCompletion\(|api\.deepgram\.com|gradeTranslationWithAi\(|detectAndRecordWeaknesses\(|defineWord\(|generatePracticeQuestions\(|gradeLessonAnswer\(/;
+  /llmChatCompletion\(|api\.deepgram\.com|gradeTranslationWithAi\(|detectAndRecordWeaknesses\(|defineWord\(|generatePracticeQuestions\(|gradeLessonAnswer\(/;
 
 const GATED_ROUTES: Record<string, RegExp> = {
   "src/routes/api/chat.ts": /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"chat"\s*\}\)/,

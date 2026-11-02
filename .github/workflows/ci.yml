@@ -294,7 +294,7 @@ jobs:
         run: deno test --allow-env supabase/functions/_shared/ai-consent.test.ts
 
       - name: Test the shared NVIDIA chokepoint adds the safety preamble
-        run: deno test supabase/functions/_shared/nvidia-chat.test.ts
+        run: deno test supabase/functions/_shared/llm-chat.test.ts
 
       - name: Test the shared hearts module
         run: deno test supabase/functions/_shared/hearts.test.ts

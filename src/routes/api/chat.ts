@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
+import { llmChatCompletion } from "@/lib/llm-chat.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -126,13 +126,13 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
 
   // NVIDIA NIM's hosted inference API is
   // OpenAI-compatible, so only the URL/key/model name change from the
-  // Lovable Gateway. See nvidia-chat-model.server.ts for why the
+  // Lovable Gateway. See llm-chat-model.server.ts for why the
   // model id lives there instead of being hardcoded here.
-  const model = resolveNvidiaChatModel();
+  const model = resolveLlmChatModel();
   const llm = await timer.time("llm", async () => {
     let resp: Response;
     try {
-      resp = await nvidiaChatCompletion({
+      resp = await llmChatCompletion({
         apiKey: key,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
         body: { model, messages: finalMessages, max_tokens: CHAT_MAX_TOKENS },

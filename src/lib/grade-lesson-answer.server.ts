@@ -31,7 +31,7 @@ import type { Course } from "../data/courses";
 import { deriveAnswerCorrectness } from "./srs";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import { gradeTranslationWithAi } from "./translation-grader.server";
-import { resolveNvidiaChatModel } from "./nvidia-chat-model.server";
+import { resolveLlmChatModel } from "./llm-chat-model.server";
 
 export type AiGrading = {
   /** True only when the learner allowed AI processing (profiles.ai_consent_at). Asked lazily. */
@@ -61,7 +61,7 @@ export async function gradeLessonAnswer(
     acceptableAnswers: question.acceptableAnswers,
     submission: answer,
     apiKey,
-    model: resolveNvidiaChatModel(),
+    model: resolveLlmChatModel(),
   });
   // `null` is "no usable AI opinion" (vendor down, no key, unparseable
   // reply), never "wrong" -- keep the local verdict, which already failed.

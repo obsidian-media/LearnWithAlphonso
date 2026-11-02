@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NVIDIA_AUTHORING_TIMEOUT_MS, nvidiaChatCompletion } from "./nvidia-chat.server";
+import { LLM_AUTHORING_TIMEOUT_MS, llmChatCompletion } from "./llm-chat.server";
 
 /**
  * V4 #5 "content authoring tooling": AI-assisted first-draft generation for
@@ -76,9 +76,9 @@ export async function draftPack(params: {
   nvidiaApiKey: string;
   nvidiaModel: string;
 }): Promise<DraftPackResult> {
-  const resp = await nvidiaChatCompletion({
+  const resp = await llmChatCompletion({
     apiKey: params.nvidiaApiKey,
-    signal: AbortSignal.timeout(NVIDIA_AUTHORING_TIMEOUT_MS),
+    signal: AbortSignal.timeout(LLM_AUTHORING_TIMEOUT_MS),
     body: {
       model: params.nvidiaModel,
       messages: [{ role: "user", content: draftPackPrompt(params) }],

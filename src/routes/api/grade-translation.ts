@@ -3,7 +3,7 @@ import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { getCourse, isCourse, type Course } from "@/data/courses";
 import { matchesAcceptableAnswer } from "@/lib/translation-answer";
 import { gradeTranslationWithAi } from "@/lib/translation-grader.server";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 /**
  * Grades one written translation.
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/api/grade-translation")({
           acceptableAnswers: question.acceptableAnswers,
           submission,
           apiKey: key,
-          model: resolveNvidiaChatModel(),
+          model: resolveLlmChatModel(),
         });
         if (!verdict) return Response.json(localVerdict);
 

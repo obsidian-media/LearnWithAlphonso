@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { SAVED_WORD_LIMIT, buildSavedWordCard, validateSavedWordInput } from "@/lib/saved-word";
 import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
@@ -112,7 +112,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     defineWord({
       input,
       apiKey: nvidiaKey,
-      model: resolveNvidiaChatModel(),
+      model: resolveLlmChatModel(),
       signal: request.signal,
     }),
   );
