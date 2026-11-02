@@ -30,6 +30,8 @@ export const UNDELIVERED_AFTER_MS = 10 * 60 * 1000;
 export const OVERDUE_AFTER_MS = 20 * 60 * 60 * 1000;
 /** A failed RevenueCat erase is retried for this long, then handed to the owner by email. */
 export const ERASURE_RETRY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+/** A deleted account whose web subscription still has not been cancelled after this many runs is sent to the owner. */
+export const CANCEL_ALERT_AFTER_ATTEMPTS = 3;
 const BATCH = 20;
 
 export type MaintenanceDeps = {
@@ -114,8 +116,10 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
   const { db } = deps;
   const { data: rows, error } = await db
     .from("revenuecat_erasure_pending")
-    .select("app_user_id, created_at, attempts")
-    .order("created_at", { ascending: true })
+    .select("app_user_id, created_at, attempts, last_attempt_at")
+    // Least recently tried first, never-tried first of all: rows stuck on a failed web cancel never expire, so
+    // ordering by age alone would let 20 of them fill every batch and starve newer erasures.
+    .order("last_attempt_at", { ascending: true, nullsFirst: true })
     .limit(BATCH);
   if (error) throw new Error(`could not read pending erasures: ${error.message}`);
   const result: ErasureResult = { erased: 0, stillPending: 0, expired: 0 };
@@ -125,6 +129,7 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
   const nowMs = deps.now().getTime();
   const handedOver: string[] = [];
   let notCancelled = 0;
+  const cancelAlerts: string[] = [];
   for (const row of rows) {
     const cancelled = config
       ? await deps.cancelWebSubscription(config, row.app_user_id).catch(() => "failed" as const)
@@ -132,6 +137,7 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
     if (config && cancelled === "failed") {
       // Never erased and never expired while billing may still run: the row stays until the cancel succeeds.
       notCancelled += 1;
+      if (row.attempts + 1 === CANCEL_ALERT_AFTER_ATTEMPTS) cancelAlerts.push(row.app_user_id);
       await db
         .from("revenuecat_erasure_pending")
         .update({ attempts: row.attempts + 1, last_attempt_at: deps.now().toISOString() })
@@ -167,6 +173,19 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
     console.error(
       `[account-deletion] ${notCancelled} deleted account(s): a web subscription was NOT cancelled; still retrying`,
     );
+  }
+  if (cancelAlerts.length > 0) {
+    // Once per account (the run that reaches CANCEL_ALERT_AFTER_ATTEMPTS). The ids go by email, never to the logs.
+    await alertOwner(deps, {
+      subject: "[Alphonso] Deleted accounts with a website subscription still active",
+      text: [
+        `${cancelAlerts.length} deleted account(s) still have a website (RevenueCat Web Billing) subscription that could not be cancelled automatically.`,
+        "The account was deleted and we promised the learner they will not be charged again.",
+        "Cancel each one by hand in RevenueCat (Customers → the id below → the subscription → Cancel), and refund any charge taken after the deletion.",
+        "",
+        ...cancelAlerts,
+      ].join("\n"),
+    });
   }
   if (!config) {
     console.error(

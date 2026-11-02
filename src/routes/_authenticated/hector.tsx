@@ -13,7 +13,7 @@ import { PAYWALL_COPY, WEB_PAYWALL_COPY, type PaywallSource } from "../../lib/pa
 import { useProgress } from "../../lib/progress";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
-import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
+import { justPaidRecently, useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
 
 export const Route = createFileRoute("/_authenticated/hector")({
@@ -62,6 +62,24 @@ function HectorGate({ course }: { course: Course }) {
         <div className="space-y-3 px-6 pt-10">
           <p role="alert" className="text-sm text-ink-soft">
             {WEB_PAYWALL_COPY.checkFailed}
+          </p>
+          <button
+            type="button"
+            onClick={() => void pro.retry()}
+            className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+          >
+            {PAYWALL_COPY.tryAgain}
+          </button>
+        </div>
+      </LessonFrame>
+    );
+  }
+  if (pro.state === "free" && !refusedSource && justPaidRecently()) {
+    return (
+      <LessonFrame>
+        <div className="space-y-3 px-6 pt-10">
+          <p role="status" className="font-display text-xl font-semibold text-ink">
+            {WEB_PAYWALL_COPY.activating}
           </p>
           <button
             type="button"

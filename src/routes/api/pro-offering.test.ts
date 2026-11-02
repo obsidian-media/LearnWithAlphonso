@@ -96,6 +96,18 @@ describe("GET /api/pro-offering", () => {
     expect(body.purchaseUrl).toMatch(/^https:\/\/pay\.rev\.cat\/trial_tok\/user-1\?/);
   });
 
+  it("409 already-pro with no purchase link for a learner who already has Pro (no double purchase)", async () => {
+    getSubscriberSummary.mockResolvedValue({
+      status: "active",
+      store: "app_store",
+      trialEligible: false,
+      managementUrl: null,
+    });
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "already-pro" });
+  });
+
   it.each([
     ["the offering cannot be read", () => getWebOffering.mockResolvedValue(null)],
     [

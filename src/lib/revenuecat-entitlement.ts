@@ -74,6 +74,16 @@ export type SubscriberSummary =
 // RevenueCat's v1 `store` for Web Billing is not documented; rc_billing (Web Billing) and stripe (Stripe Billing)
 // are the two web stores. Confirm against a sandbox purchase (web Hector plan, Task 0).
 const WEB_STORES = new Set(["rc_billing", "stripe"]);
+// Stores that are certainly not website billing. Account deletion treats any other live store as possibly web, so
+// an unrecognised value can never be mistaken for "nothing to cancel".
+const NOT_WEB_STORES = new Set([
+  "app_store",
+  "mac_app_store",
+  "play_store",
+  "amazon",
+  "promotional",
+]);
+const possiblyWeb = (store: unknown) => typeof store === "string" && !NOT_WEB_STORES.has(store);
 
 function storeOf(raw: unknown): ProStore {
   if (raw === "app_store" || raw === "mac_app_store") return "app_store";
@@ -204,8 +214,7 @@ export async function cancelWebSubscription(
     const now = Date.now();
     const live = Object.values(body?.subscriber?.subscriptions ?? {}).some(
       (s) =>
-        typeof s?.store === "string" &&
-        WEB_STORES.has(s.store) &&
+        possiblyWeb(s?.store) &&
         !s.unsubscribe_detected_at &&
         (s.expires_date === null || new Date(s.expires_date ?? 0).getTime() > now),
     );
@@ -225,16 +234,21 @@ export async function cancelWebSubscription(
           items?: { id?: string; store?: string; auto_renewal_status?: string }[];
         }
       )?.items ?? [];
+    let cancelled = 0;
     for (const item of items) {
-      if (!item?.id || !item.store || !WEB_STORES.has(item.store)) continue;
-      if (item.auto_renewal_status !== "will_renew") continue;
+      if (!item?.id || !possiblyWeb(item.store)) continue;
+      // Anything but "will not renew" can still charge (for example will_change_product).
+      if (item.auto_renewal_status === "will_not_renew") continue;
       const cancel = await fetchImpl(
         `${REVENUECAT_API_HOST}/v2/projects/${project}/subscriptions/${encodeURIComponent(item.id)}/actions/cancel`,
         { method: "POST", headers: v2, signal: AbortSignal.timeout(5000) },
       );
       if (!cancel.ok) return "failed";
+      cancelled += 1;
     }
-    return "cancelled";
+    // v1 says a web subscription is live, so cancelling nothing (an unexpected v2 shape, a second page) is a failure:
+    // reporting success here would erase the record while the card is still being charged.
+    return cancelled > 0 ? "cancelled" : "failed";
   } catch {
     return "failed";
   }

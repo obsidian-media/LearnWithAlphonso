@@ -3,6 +3,27 @@ import { authHeaders } from "./auth-headers";
 
 export type ProStore = "app_store" | "web" | "play_store" | null;
 
+/** Set by /pro-return. For an hour after paying, a not-yet-active learner sees "activating", never the paywall. */
+export const JUST_PAID_KEY = "alphonso.pro.justPaidAt";
+const JUST_PAID_MS = 60 * 60 * 1000;
+
+export function markJustPaid(): void {
+  try {
+    sessionStorage.setItem(JUST_PAID_KEY, String(Date.now()));
+  } catch {
+    /* private mode: the paywall may show again, which is the old behaviour */
+  }
+}
+
+export function justPaidRecently(now = Date.now()): boolean {
+  try {
+    const at = Number(sessionStorage.getItem(JUST_PAID_KEY));
+    return at > 0 && now - at < JUST_PAID_MS;
+  } catch {
+    return false;
+  }
+}
+
 export type ProStatus = {
   /** "error" means RevenueCat could not be read: show "couldn't check", never a paywall. */
   state: "loading" | "pro" | "free" | "error";

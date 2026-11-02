@@ -25,7 +25,7 @@ function fakeDb(tables: Record<string, Row[]>, failing: Record<string, string> =
     let op: "select" | "delete" | "update" = "select";
     let patch: Row = {};
     let limit = Infinity;
-    let order: { column: string; ascending: boolean } | null = null;
+    let order: { column: string; ascending: boolean; nullsFirst?: boolean } | null = null;
     const run = () => {
       if (failing[table]) return { data: null, error: { message: failing[table] } };
       const matched = rows().filter((r) => filters.every((f) => f(r)));
@@ -38,11 +38,15 @@ function fakeDb(tables: Record<string, Row[]>, failing: Record<string, string> =
         return { data: null, error: null };
       }
       const sorted = order
-        ? [...matched].sort(
-            (a, b) =>
-              String(a[order!.column]).localeCompare(String(b[order!.column])) *
-              (order!.ascending ? 1 : -1),
-          )
+        ? [...matched].sort((a, b) => {
+            const av = a[order!.column];
+            const bv = b[order!.column];
+            if (av == null || bv == null) {
+              if (av == bv) return 0;
+              return (av == null) === Boolean(order!.nullsFirst) ? -1 : 1;
+            }
+            return String(av).localeCompare(String(bv)) * (order!.ascending ? 1 : -1);
+          })
         : matched;
       return { data: sorted.slice(0, limit).map((r) => ({ ...r })), error: null };
     };
@@ -53,7 +57,10 @@ function fakeDb(tables: Record<string, Row[]>, failing: Record<string, string> =
       eq: (c: string, v: unknown) => (filters.push((r) => r[c] === v), q),
       lt: (c: string, v: string) => (filters.push((r) => String(r[c]) < v), q),
       in: (c: string, vs: unknown[]) => (filters.push((r) => vs.includes(r[c])), q),
-      order: (column: string, o: { ascending: boolean }) => ((order = { column, ...o }), q),
+      order: (column: string, o: { ascending: boolean; nullsFirst?: boolean }) => (
+        (order = { column, ...o }),
+        q
+      ),
       limit: (n: number) => ((limit = n), q),
       upsert: (incoming: Row[], o: { onConflict: string }) => {
         if (failing[table]) return Promise.resolve({ error: { message: failing[table] } });
@@ -242,6 +249,36 @@ describe("retryRevenueCatErasures", () => {
     const logged = vi.mocked(console.error).mock.calls.flat().join(" ");
     expect(logged.match(/web subscription was NOT cancelled/g)).toHaveLength(2);
     expect(logged).not.toContain(id);
+  });
+
+  it("rows stuck on a failed cancel never starve newer erasures (least recently tried first) (I3)", async () => {
+    const stuck = Array.from({ length: 20 }, (_, i) => ({
+      ...pending(`stuck-${i}`, 10 * 86_400_000 + i, 9),
+      last_attempt_at: new Date(NOW.getTime() - 60_000).toISOString(),
+    }));
+    const tables = { revenuecat_erasure_pending: [...stuck, pending("fresh", 60_000)] };
+    const cancelWebSubscription = vi.fn(async (_c: unknown, id: string) =>
+      id.startsWith("stuck") ? ("failed" as const) : ("none" as const),
+    );
+    const eraseSubscriber = vi.fn(async () => "erased" as const);
+    const { deps } = makeDeps(tables, { cancelWebSubscription, eraseSubscriber });
+    const result = await retryRevenueCatErasures(deps);
+    expect(result.erased).toBe(1);
+    expect(eraseSubscriber).toHaveBeenCalledWith({ secretApiKey: "sk_test" }, "fresh");
+  });
+
+  it("tells the owner once, by email with the id, when a web cancel keeps failing (I4)", async () => {
+    const id = "55555555-aaaa-4bbb-8ccc-666666666666";
+    const tables = { revenuecat_erasure_pending: [pending(id, 2 * 86_400_000, 2)] };
+    const { deps, sent } = makeDeps(tables, { cancelWebSubscription: async () => "failed" });
+    await retryRevenueCatErasures(deps);
+    expect(sent).toHaveLength(1);
+    expect(sent[0].to).toBe("owner@example.com");
+    expect(sent[0].text).toContain(id);
+    await retryRevenueCatErasures(deps);
+    await retryRevenueCatErasures(deps);
+    expect(sent).toHaveLength(1);
+    expect(vi.mocked(console.error).mock.calls.flat().join(" ")).not.toContain(id);
   });
 
   it("holds rows while RevenueCat is not configured on the server", async () => {

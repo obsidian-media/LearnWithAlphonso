@@ -35,6 +35,8 @@ async function handle(request: Request): Promise<Response> {
     getSubscriberSummary(config, data.user.id),
   ]);
   if (!offer || summary.status === "unavailable") return unavailable();
+  // Already Pro (on any store): no checkout, so nobody can pay twice.
+  if (summary.status === "active") return Response.json({ error: "already-pro" }, { status: 409 });
 
   const trialDays = summary.trialEligible ? offer.trialDays : null;
   return Response.json(

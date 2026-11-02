@@ -96,6 +96,23 @@ describe("web Hector", () => {
     expect(screen.queryByRole("log")).toBeNull();
   });
 
+  it("right after paying, a not-yet-active learner sees 'activating', never the paywall again", async () => {
+    sessionStorage.setItem("alphonso.pro.justPaidAt", String(Date.now()));
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    expect(await screen.findByText("Payment received, activating…")).toBeInTheDocument();
+    expect(sent.some((s) => s.url.startsWith("/api/pro-offering"))).toBe(false);
+    sessionStorage.removeItem("alphonso.pro.justPaidAt");
+  });
+
+  it("a payment flag older than an hour no longer holds back the paywall", async () => {
+    sessionStorage.setItem("alphonso.pro.justPaidAt", String(Date.now() - 2 * 3_600_000));
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    sessionStorage.removeItem("alphonso.pro.justPaidAt");
+  });
+
   it("when Pro cannot be checked it says so and offers a retry, never the paywall", async () => {
     routes["/api/pro-status"] = status({ error: "entitlement-unavailable" }, 503);
     await renderPage();

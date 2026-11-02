@@ -133,6 +133,46 @@ describe("cancelWebSubscription", () => {
     expect(await cancelWebSubscription(FULL, "u1", fetchImpl)).toBe("failed");
   });
 
+  it("a live web subscription that v2 does not list as cancellable is a failure, never 'cancelled' (I1)", async () => {
+    const { calls, fetchImpl } = fakeRevenueCat({
+      subscriptions: { pro_web: { store: "rc_billing", expires_date: FUTURE } },
+      v2Items: [{ id: "sub_ios", store: "app_store", auto_renewal_status: "will_renew" }],
+    });
+    expect(await cancelWebSubscription(FULL, "u1", fetchImpl)).toBe("failed");
+    expect(calls.some((c) => c.method === "POST")).toBe(false);
+  });
+
+  it("a subscription that will change product is still renewing and gets cancelled (I1)", async () => {
+    const { calls, fetchImpl } = fakeRevenueCat({
+      subscriptions: { pro_web: { store: "rc_billing", expires_date: FUTURE } },
+      v2Items: [{ id: "sub_1", store: "rc_billing", auto_renewal_status: "will_change_product" }],
+    });
+    expect(await cancelWebSubscription(FULL, "u1", fetchImpl)).toBe("cancelled");
+    expect(calls.filter((c) => c.method === "POST")).toHaveLength(1);
+  });
+
+  it("a live subscription in a store we do not recognise is treated as possibly web, never 'none' (I2)", async () => {
+    const { fetchImpl } = fakeRevenueCat({
+      subscriptions: { pro_web: { store: "web_billing_v3", expires_date: FUTURE } },
+    });
+    expect(await cancelWebSubscription(V1_ONLY, "u1", fetchImpl)).toBe("failed");
+    const v2 = fakeRevenueCat({
+      subscriptions: { pro_web: { store: "web_billing_v3", expires_date: FUTURE } },
+      v2Items: [{ id: "sub_1", store: "web_billing_v3", auto_renewal_status: "will_renew" }],
+    });
+    expect(await cancelWebSubscription(FULL, "u1", v2.fetchImpl)).toBe("cancelled");
+  });
+
+  it("promotional and Play Store subscriptions are not web billing", async () => {
+    const { fetchImpl } = fakeRevenueCat({
+      subscriptions: {
+        promo: { store: "promotional", expires_date: FUTURE },
+        android: { store: "play_store", expires_date: FUTURE },
+      },
+    });
+    expect(await cancelWebSubscription(V1_ONLY, "u1", fetchImpl)).toBe("none");
+  });
+
   it("never throws", async () => {
     const fetchImpl = (async () => {
       throw new Error("down");

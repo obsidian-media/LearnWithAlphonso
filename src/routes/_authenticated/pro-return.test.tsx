@@ -44,6 +44,12 @@ describe("after checkout", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/hector" });
   });
 
+  it("remembers for this session that the learner has just paid", async () => {
+    const Page = Route.options.component!;
+    render(<Page />);
+    expect(Number(sessionStorage.getItem("alphonso.pro.justPaidAt"))).toBeGreaterThan(0);
+  });
+
   it("still inactive after 30 s: keeps 'payment received' with a retry, never an error or the paywall", async () => {
     const Page = Route.options.component!;
     render(<Page />);
