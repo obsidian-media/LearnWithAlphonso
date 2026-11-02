@@ -67,8 +67,8 @@ describe("proposeVocabCandidates", () => {
     const result = await proposeVocabCandidates({
       topic: "daily routines",
       posTypes: ["noun", "verb", "adjective"],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
     });
     expect(result).toEqual(CANDIDATES);
   });
@@ -78,8 +78,8 @@ describe("proposeVocabCandidates", () => {
     const result = await proposeVocabCandidates({
       topic: "x",
       posTypes: ["noun"],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expect(result).toEqual([]);
   });
@@ -89,8 +89,8 @@ describe("proposeVocabCandidates", () => {
     const result = await proposeVocabCandidates({
       topic: "x",
       posTypes: ["noun"],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expect(result).toEqual([]);
   });
@@ -116,8 +116,8 @@ describe("proposeVocabForTopic", () => {
       posTypes: ["noun", "verb", "adjective"],
       level: "A1",
       existingVocab: [],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expect(result.accepted).toHaveLength(3);
     expect(result.rejected).toEqual([]);
@@ -139,8 +139,8 @@ describe("proposeVocabForTopic", () => {
       posTypes: ["verb"],
       level: "A1",
       existingVocab: [],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expect(result.accepted).toEqual([]);
     expect(result.rejected).toEqual([{ word: "be", pos: "verb" }]);
@@ -160,8 +160,8 @@ describe("proposeVocabForTopic", () => {
       posTypes: ["verb"],
       level: "A1",
       existingVocab: [],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expect(result.accepted).toEqual([]);
     expect(result.rejected).toEqual([{ word: "coffee", pos: "verb" }]);

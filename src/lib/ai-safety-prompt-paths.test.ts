@@ -62,8 +62,8 @@ describe("every model prompt path carries the safety preamble", () => {
     await generatePracticeQuestions({
       topic: "greetings",
       sampleQuestions: [{ prompt: "Hi", answer: "Hello" }],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expectSafe("generate-practice");
   });
@@ -74,8 +74,8 @@ describe("every model prompt path carries the safety preamble", () => {
       userId: "u1",
       sourceDescription: "English-learner conversation",
       transcriptMessages: [{ role: "user", content: "I goed home" }],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
       course: "en",
       outputCheck: async (t) => t.map(() => false),
       dedupCheck: async () => false,
@@ -90,8 +90,8 @@ describe("every model prompt path carries the safety preamble", () => {
     await proposeVocabCandidates({
       topic: "food",
       posTypes: ["noun"],
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     });
     expectSafe("generative-vocab");
     sent = [];
@@ -101,8 +101,8 @@ describe("every model prompt path carries the safety preamble", () => {
       targetLanguage: "fr",
       kind: "pair",
       lineCount: 2,
-      nvidiaApiKey: "k",
-      nvidiaModel: "m",
+      llmApiKey: "k",
+      llmModel: "m",
     }).catch(() => undefined);
     expectSafe("pack-draft");
     // Importing the vocab module loads the NLP library, which is slow on a cold run.

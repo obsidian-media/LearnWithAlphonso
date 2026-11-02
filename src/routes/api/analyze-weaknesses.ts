@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { makeBlockedTermCheck } from "@/lib/ai-safety";
-import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -15,9 +15,11 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         // (`_ = try? await client.analyzeWeaknesses(...)`), so even a
         // non-2xx response here was effectively invisible to anyone.
         // Checkable from Vercel's dashboard now, no device needed.
-        const key = process.env.NVIDIA_API_KEY;
+        const key = resolveLlmApiKey();
         if (!key) {
-          console.error("[analyze-weaknesses] NVIDIA_API_KEY not configured in this environment");
+          console.error(
+            "[analyze-weaknesses] OPENROUTER_API_KEY not configured in this environment",
+          );
           return Response.json({ error: "Analysis is not configured" }, { status: 500 });
         }
 
@@ -56,8 +58,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           userId,
           sourceDescription,
           transcriptMessages: messages,
-          nvidiaApiKey: key,
-          nvidiaModel: resolveLlmChatModel(),
+          llmApiKey: key,
+          llmModel: resolveLlmChatModel(),
           course,
           outputCheck: makeBlockedTermCheck(supabaseAdmin),
           dedupCheck: async (label) => {

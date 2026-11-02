@@ -73,14 +73,14 @@ export async function draftPack(params: {
   targetLanguage: string;
   kind: "pair" | "cloze";
   lineCount: number;
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
 }): Promise<DraftPackResult> {
   const resp = await llmChatCompletion({
-    apiKey: params.nvidiaApiKey,
+    apiKey: params.llmApiKey,
     signal: AbortSignal.timeout(LLM_AUTHORING_TIMEOUT_MS),
     body: {
-      model: params.nvidiaModel,
+      model: params.llmModel,
       messages: [{ role: "user", content: draftPackPrompt(params) }],
     },
   });

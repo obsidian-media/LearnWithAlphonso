@@ -100,8 +100,8 @@ export async function detectAndRecordWeaknesses(params: {
   userId: string;
   sourceDescription: string;
   transcriptMessages: { role: string; content: string }[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
   /** The learner's course, for the language of the fallback and the output mask. */
   course: Course;
   /** Blocked-term verdicts for model-written questions (ai_output_blocked). */
@@ -115,9 +115,9 @@ export async function detectAndRecordWeaknesses(params: {
   let content: string;
   try {
     const resp = await llmChatCompletion({
-      apiKey: params.nvidiaApiKey,
+      apiKey: params.llmApiKey,
       body: {
-        model: params.nvidiaModel,
+        model: params.llmModel,
         messages: [
           ...params.transcriptMessages.map((m) => ({
             role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),

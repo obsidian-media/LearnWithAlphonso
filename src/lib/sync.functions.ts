@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import type { Json } from "@/integrations/supabase/types";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
@@ -609,12 +609,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // actually have a mistake to learn from, not silently-dropped work.
     // Wrapped in try/catch -- a classification failure must never fail
     // the lesson completion itself.
-    if (
-      missedQuestionIds.length > 0 &&
-      xpGain > 0 &&
-      process.env.NVIDIA_API_KEY &&
-      (await aiAllowed())
-    ) {
+    const llmApiKey = resolveLlmApiKey();
+    if (missedQuestionIds.length > 0 && xpGain > 0 && llmApiKey && (await aiAllowed())) {
       try {
         const missedQuestions = found.lesson.questions.filter((q) =>
           missedQuestionIds.includes(q.id),
@@ -651,8 +647,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             userId,
             sourceDescription: "set of English lesson questions the learner got wrong",
             transcriptMessages,
-            nvidiaApiKey: process.env.NVIDIA_API_KEY,
-            nvidiaModel: resolveLlmChatModel(),
+            llmApiKey,
+            llmModel: resolveLlmChatModel(),
             course,
             outputCheck: makeBlockedTermCheck(supabaseAdmin),
             dedupCheck: async (label) => {

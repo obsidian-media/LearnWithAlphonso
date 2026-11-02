@@ -25,6 +25,11 @@ export function resolveLlmChatModels(): string[] {
   return parseLlmChatModels(process.env.LLM_CHAT_MODELS);
 }
 
+/** The OpenRouter key every AI text caller uses; undefined means AI is not configured in this environment. */
+export function resolveLlmApiKey(): string | undefined {
+  return process.env.OPENROUTER_API_KEY || undefined;
+}
+
 /** The first choice, for callers that name a model in their request body and for logs. */
 export function resolveLlmChatModel(): string {
   return resolveLlmChatModels()[0];

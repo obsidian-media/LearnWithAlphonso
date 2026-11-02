@@ -44,7 +44,7 @@ beforeEach(() => {
     userId: "user-1",
     supabase: { rpc: blockedRpc, from: vi.fn() },
   });
-  process.env.NVIDIA_API_KEY = "test-key";
+  process.env.OPENROUTER_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
     new Response(JSON.stringify({ choices: [{ message: { content: QUESTION_JSON } }] }), {
       status: 200,
@@ -54,12 +54,12 @@ beforeEach(() => {
 
 afterEach(() => {
   global.fetch = originalFetch;
-  delete process.env.NVIDIA_CHAT_MODEL;
+  delete process.env.LLM_CHAT_MODELS;
 });
 
 describe("POST /api/generate-practice", () => {
-  it("returns 500 when NVIDIA_API_KEY is not configured", async () => {
-    delete process.env.NVIDIA_API_KEY;
+  it("returns 500 when OPENROUTER_API_KEY is not configured", async () => {
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
     expect(res.status).toBe(500);
   });

@@ -44,6 +44,15 @@ describe("NVIDIA call sites", () => {
     }
   });
 
+  it("no source still reads the retired NVIDIA env names", () => {
+    // The key and model list come from OPENROUTER_API_KEY / LLM_CHAT_MODELS (llm-chat-model.server.ts). A file
+    // reading the old names would silently see "not configured" in production once those are removed.
+    const readers = [...files, ...walk(path.join(ROOT, "scripts"))]
+      .filter((f) => /NVIDIA_API_KEY|NVIDIA_CHAT_MODEL/.test(fs.readFileSync(f, "utf8")))
+      .map(rel);
+    expect(readers).toEqual([]);
+  }, 30_000);
+
   it("catches NVIDIA by host or constant, not only by the full URL", () => {
     expect(NVIDIA.test("fetch(LLM_CHAT_URL)")).toBe(true);
     expect(NVIDIA.test('fetch("https://integrate.api.nvidia.com/v1/x")')).toBe(true);

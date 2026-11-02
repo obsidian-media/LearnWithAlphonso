@@ -771,8 +771,8 @@ describe("completeLessonRemote", () => {
 
   it("unifies weakness signals: a real miss on a real completion triggers weakness detection", async () => {
     const originalFetch = global.fetch;
-    const originalKey = process.env.NVIDIA_API_KEY;
-    process.env.NVIDIA_API_KEY = "test-key";
+    const originalKey = process.env.OPENROUTER_API_KEY;
+    process.env.OPENROUTER_API_KEY = "test-key";
     global.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -839,16 +839,16 @@ describe("completeLessonRemote", () => {
       expect(adminTables).toContain("weakness_events");
     } finally {
       global.fetch = originalFetch;
-      if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
-      else process.env.NVIDIA_API_KEY = originalKey;
+      if (originalKey === undefined) delete process.env.OPENROUTER_API_KEY;
+      else process.env.OPENROUTER_API_KEY = originalKey;
     }
   });
 
   it("a lesson with a miss sends nothing to the AI and still completes", async () => {
     hasAiConsent.mockResolvedValue(false);
     const originalFetch = global.fetch;
-    const originalKey = process.env.NVIDIA_API_KEY;
-    process.env.NVIDIA_API_KEY = "test-key";
+    const originalKey = process.env.OPENROUTER_API_KEY;
+    process.env.OPENROUTER_API_KEY = "test-key";
     global.fetch = vi.fn() as typeof fetch;
     try {
       const supabase = createSupabaseMock();
@@ -886,8 +886,8 @@ describe("completeLessonRemote", () => {
       expect(supabaseAdminFrom.mock.calls.map((c) => c[0])).not.toContain("weakness_events");
     } finally {
       global.fetch = originalFetch;
-      if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
-      else process.env.NVIDIA_API_KEY = originalKey;
+      if (originalKey === undefined) delete process.env.OPENROUTER_API_KEY;
+      else process.env.OPENROUTER_API_KEY = originalKey;
       hasAiConsent.mockResolvedValue(true);
     }
   });

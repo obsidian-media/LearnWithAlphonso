@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
 import { getCourse } from "../data/courses";
+import { resolveLlmApiKey } from "@/lib/llm-chat-model.server";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
@@ -240,7 +241,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       // be re-graded, but not how many DIFFERENT due items a user churns
       // through, so it was a real unbounded-NVIDIA-spend gap.
       if (!correct && ref.question.type === "translate" && data.answer.trim()) {
-        const apiKey = process.env.NVIDIA_API_KEY;
+        const apiKey = resolveLlmApiKey();
         const { hasAiConsent } = await import("./ai-consent.server");
         if (apiKey && (await hasAiConsent(supabase, userId))) {
           const { consumeQuota } = await import("./ai-quota.server");

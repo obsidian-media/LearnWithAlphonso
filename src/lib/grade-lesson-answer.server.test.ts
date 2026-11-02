@@ -31,16 +31,16 @@ const translate: Question = {
 const CONSENTED = { allowed: async () => true };
 
 describe("gradeLessonAnswer", () => {
-  const originalKey = process.env.NVIDIA_API_KEY;
+  const originalKey = process.env.OPENROUTER_API_KEY;
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    delete process.env.NVIDIA_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
   });
 
   afterEach(() => {
-    if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
-    else process.env.NVIDIA_API_KEY = originalKey;
+    if (originalKey === undefined) delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = originalKey;
     global.fetch = originalFetch;
   });
 
@@ -67,7 +67,7 @@ describe("gradeLessonAnswer", () => {
   });
 
   it("escalates a translate miss to the AI grader when a key is configured, and trusts its verdict", async () => {
-    process.env.NVIDIA_API_KEY = "test-key";
+    process.env.OPENROUTER_API_KEY = "test-key";
     global.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -82,7 +82,7 @@ describe("gradeLessonAnswer", () => {
   });
 
   it("never rejects a submission because the AI grader failed -- a vendor outage is not evidence of a wrong answer", async () => {
-    process.env.NVIDIA_API_KEY = "test-key";
+    process.env.OPENROUTER_API_KEY = "test-key";
     global.fetch = vi.fn().mockRejectedValue(new Error("network down")) as typeof fetch;
 
     await expect(gradeLessonAnswer(translate, "Buen día", "en", CONSENTED)).resolves.toBe(false);
@@ -92,7 +92,7 @@ describe("gradeLessonAnswer", () => {
   // no quota gate at all, unlike every other AI-cost path in the app.
   describe("checkQuota", () => {
     beforeEach(() => {
-      process.env.NVIDIA_API_KEY = "test-key";
+      process.env.OPENROUTER_API_KEY = "test-key";
     });
 
     it("blocks the AI call entirely when checkQuota returns false", async () => {
@@ -146,7 +146,7 @@ describe("gradeLessonAnswer", () => {
 
   describe("consent", () => {
     beforeEach(() => {
-      process.env.NVIDIA_API_KEY = "test-key";
+      process.env.OPENROUTER_API_KEY = "test-key";
     });
 
     it("without consent makes no model call and never touches quota", async () => {

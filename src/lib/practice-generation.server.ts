@@ -68,18 +68,18 @@ export function practicePrompt(
 export async function generatePracticeQuestions(params: {
   topic: string;
   sampleQuestions: { prompt: string; answer: string }[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
 }): Promise<GeneratedPracticeQuestion[]> {
   if (params.sampleQuestions.length === 0) return [];
   for (let attempt = 1; attempt <= PRACTICE_MAX_ATTEMPTS; attempt++) {
     const startedAt = Date.now();
     try {
       const resp = await llmChatCompletion({
-        apiKey: params.nvidiaApiKey,
+        apiKey: params.llmApiKey,
         signal: AbortSignal.timeout(PRACTICE_ATTEMPT_TIMEOUT_MS),
         body: {
-          model: params.nvidiaModel,
+          model: params.llmModel,
           messages: [
             { role: "user", content: practicePrompt(params.topic, params.sampleQuestions) },
           ],

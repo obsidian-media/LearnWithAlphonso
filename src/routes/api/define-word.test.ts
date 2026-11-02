@@ -69,7 +69,7 @@ beforeEach(() => {
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
   blockedRpc.mockClear();
-  process.env.NVIDIA_API_KEY = "nv_test";
+  process.env.OPENROUTER_API_KEY = "nv_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
   consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 40 });
   queue(NO_ROW, COUNT(0), INSERT_OK);
@@ -81,7 +81,7 @@ afterEach(() => {
 
 describe("POST /api/define-word", () => {
   it("returns 500 when NVIDIA is not configured, before touching anything", async () => {
-    delete process.env.NVIDIA_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({ request: req() });
     expect(res.status).toBe(500);
     expect(getUser).not.toHaveBeenCalled();

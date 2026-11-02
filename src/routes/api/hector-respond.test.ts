@@ -60,7 +60,7 @@ beforeEach(() => {
   isSwitchOn.mockReset();
   isSwitchOn.mockResolvedValue(true);
   blockedRpc.mockClear();
-  process.env.NVIDIA_API_KEY = "nv_test";
+  process.env.OPENROUTER_API_KEY = "nv_test";
   process.env.DEEPGRAM_API_KEY = "dg_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
   revenueCatConfigFromEnv.mockReturnValue({ secretApiKey: "sk_test" });
@@ -74,7 +74,7 @@ afterEach(() => {
 
 describe("POST /api/hector-respond", () => {
   it("returns 500 when the AI providers are not configured", async () => {
-    delete process.env.NVIDIA_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({ request: req() });
     expect(res.status).toBe(500);
     expect(getUser).not.toHaveBeenCalled();

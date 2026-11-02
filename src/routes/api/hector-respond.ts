@@ -3,7 +3,7 @@ import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
-import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
@@ -32,9 +32,9 @@ async function boundedAudio(response: Response, maxBytes: number): Promise<Buffe
 }
 
 async function handleTurn(request: Request, timer: StageTimer): Promise<Response> {
-  const nvidiaKey = process.env.NVIDIA_API_KEY;
+  const llmKey = resolveLlmApiKey();
   const deepgramKey = process.env.DEEPGRAM_API_KEY;
-  if (!nvidiaKey || !deepgramKey) {
+  if (!llmKey || !deepgramKey) {
     return Response.json({ error: "Hector is not configured" }, { status: 500 });
   }
 
@@ -115,7 +115,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const llm = await timer.time("llm", async () => {
     try {
       const llmResp = await llmChatCompletion({
-        apiKey: nvidiaKey,
+        apiKey: llmKey,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
         body: {
           model: resolveLlmChatModel(),

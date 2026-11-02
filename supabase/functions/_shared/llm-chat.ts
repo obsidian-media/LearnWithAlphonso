@@ -34,6 +34,15 @@ export function resolveLlmChatModel(): string {
   return resolveLlmChatModels()[0];
 }
 
+/** The OpenRouter key (a function secret); undefined means AI is not configured. */
+export function resolveLlmApiKey(): string | undefined {
+  try {
+    return Deno.env.get("OPENROUTER_API_KEY") || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The deadline for a model call whose caller sets none. A normal reply takes about a second. */
 export const LLM_DEFAULT_TIMEOUT_MS = 30_000;
 

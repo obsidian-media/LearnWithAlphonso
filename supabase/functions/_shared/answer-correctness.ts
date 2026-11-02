@@ -11,7 +11,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr.ts";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
-import { resolveLlmChatModel } from "./llm-chat.ts";
+import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat.ts";
 
 export type QuestionRow = {
   type: "mc" | "fill" | "reorder" | "listening" | "speak" | "translate";
@@ -88,7 +88,7 @@ export async function deriveAnswerCorrectness(
     // No consent, no vendor call. Omitting `ai` means no AI at all (the safe default for a new caller).
     // Consent is asked before quota, so a refusal spends nothing.
     if (!ai || !(await ai.allowed())) return false;
-    const apiKey = Deno.env.get("NVIDIA_API_KEY");
+    const apiKey = resolveLlmApiKey();
     if (!apiKey) return false;
     if (ai.checkQuota && !(await ai.checkQuota())) return false;
     const verdict = await gradeTranslationWithAi({

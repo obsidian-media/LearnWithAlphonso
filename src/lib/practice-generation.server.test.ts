@@ -72,8 +72,8 @@ describe("generatePracticeQuestions", () => {
     return {
       topic: "Present tense verbs",
       sampleQuestions: [{ prompt: "He ___ coffee.", answer: "drinks" }],
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
       ...overrides,
     };
   }

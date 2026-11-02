@@ -68,7 +68,7 @@ beforeEach(() => {
   reviewItemsInsert.mockResolvedValue({ error: null });
   weaknessEventsInsert.mockReset();
   weaknessEventsInsert.mockResolvedValue({ error: null });
-  process.env.NVIDIA_API_KEY = "test-key";
+  process.env.OPENROUTER_API_KEY = "test-key";
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
   global.fetch = vi.fn().mockResolvedValue(
@@ -80,12 +80,12 @@ beforeEach(() => {
 
 afterEach(() => {
   global.fetch = originalFetch;
-  delete process.env.NVIDIA_CHAT_MODEL;
+  delete process.env.LLM_CHAT_MODELS;
 });
 
 describe("POST /api/analyze-weaknesses", () => {
-  it("returns 500 when NVIDIA_API_KEY is not configured", async () => {
-    delete process.env.NVIDIA_API_KEY;
+  it("returns 500 when OPENROUTER_API_KEY is not configured", async () => {
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
     expect(res.status).toBe(500);
   });

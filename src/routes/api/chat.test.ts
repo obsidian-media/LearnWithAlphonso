@@ -38,7 +38,7 @@ beforeEach(() => {
     userId: "user-1",
     supabase: { rpc: blockedRpc, from: vi.fn() },
   });
-  process.env.NVIDIA_API_KEY = "test-key";
+  process.env.OPENROUTER_API_KEY = "test-key";
   global.fetch = vi.fn();
 });
 
@@ -48,8 +48,8 @@ afterEach(() => {
 });
 
 describe("POST /api/chat", () => {
-  it("returns 500 when NVIDIA_API_KEY is not configured", async () => {
-    delete process.env.NVIDIA_API_KEY;
+  it("returns 500 when OPENROUTER_API_KEY is not configured", async () => {
+    delete process.env.OPENROUTER_API_KEY;
     const res = await handler({
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });

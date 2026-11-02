@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { SAVED_WORD_LIMIT, buildSavedWordCard, validateSavedWordInput } from "@/lib/saved-word";
 import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
@@ -21,8 +21,8 @@ import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
  * bounded by the `define` quota.
  */
 async function handleDefine(request: Request, timer: StageTimer): Promise<Response> {
-  const nvidiaKey = process.env.NVIDIA_API_KEY;
-  if (!nvidiaKey) return Response.json({ error: "Word saving is not configured" }, { status: 500 });
+  const llmKey = resolveLlmApiKey();
+  if (!llmKey) return Response.json({ error: "Word saving is not configured" }, { status: 500 });
 
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!accessToken) return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -111,7 +111,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   const definition = await timer.time("llm", () =>
     defineWord({
       input,
-      apiKey: nvidiaKey,
+      apiKey: llmKey,
       model: resolveLlmChatModel(),
       signal: request.signal,
     }),

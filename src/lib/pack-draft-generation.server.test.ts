@@ -75,8 +75,8 @@ describe("draftPack", () => {
       targetLanguage: "Spanish",
       kind: "pair" as const,
       lineCount: 3,
-      nvidiaApiKey: "test-key",
-      nvidiaModel: "test-model",
+      llmApiKey: "test-key",
+      llmModel: "test-model",
       ...overrides,
     };
   }

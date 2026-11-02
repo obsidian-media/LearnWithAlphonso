@@ -31,7 +31,7 @@ import type { Course } from "../data/courses";
 import { deriveAnswerCorrectness } from "./srs";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import { gradeTranslationWithAi } from "./translation-grader.server";
-import { resolveLlmChatModel } from "./llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat-model.server";
 
 export type AiGrading = {
   /** True only when the learner allowed AI processing (profiles.ai_consent_at). Asked lazily. */
@@ -53,7 +53,7 @@ export async function gradeLessonAnswer(
   // No consent, no vendor call; the curated verdict stands. Omitting `ai` means no AI at all, so a new caller that
   // forgets consent fails safe. Consent is asked before quota so a refusal spends nothing.
   if (!ai || !(await ai.allowed())) return false;
-  const apiKey = process.env.NVIDIA_API_KEY;
+  const apiKey = resolveLlmApiKey();
   if (!apiKey) return false;
   if (ai.checkQuota && !(await ai.checkQuota())) return false;
   const verdict = await gradeTranslationWithAi({

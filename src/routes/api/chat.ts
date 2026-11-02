@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
-import { resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
 import { COURSES, isCourse, type Course } from "@/data/courses";
@@ -77,7 +77,7 @@ function withDifficultyHint(
 }
 
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
-  const key = process.env.NVIDIA_API_KEY;
+  const key = resolveLlmApiKey();
   if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
   const access = await timer.time("auth", async () => {
     const { authorizeAiRequest } = await import("@/lib/ai-consent.server");

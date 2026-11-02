@@ -52,7 +52,7 @@ function bearer(request: Request): string | null {
  * request. See grade-translation.ts, found missing entirely in a
  * 2026-09-29 codebase audit: it returned real verdicts to callers with no
  * Authorization header at all whenever a submission matched the curated
- * list or NVIDIA_API_KEY was unset, since those paths never reached
+ * list or OPENROUTER_API_KEY was unset, since those paths never reached
  * consumeQuota.
  */
 export async function verifyAuth(request: Request): Promise<AuthResult> {

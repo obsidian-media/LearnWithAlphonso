@@ -55,15 +55,15 @@ export function vocabProposalPrompt(
 export async function proposeVocabCandidates(params: {
   topic: string;
   posTypes: ("noun" | "verb" | "adjective")[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
 }): Promise<VocabCandidate[]> {
   try {
     const resp = await llmChatCompletion({
-      apiKey: params.nvidiaApiKey,
+      apiKey: params.llmApiKey,
       signal: AbortSignal.timeout(LLM_AUTHORING_TIMEOUT_MS),
       body: {
-        model: params.nvidiaModel,
+        model: params.llmModel,
         messages: [{ role: "user", content: vocabProposalPrompt(params.topic, params.posTypes) }],
       },
     });
@@ -113,14 +113,14 @@ export async function proposeVocabForTopic(params: {
   posTypes: ("noun" | "verb" | "adjective")[];
   level: Level;
   existingVocab: VocabEntry[];
-  nvidiaApiKey: string;
-  nvidiaModel: string;
+  llmApiKey: string;
+  llmModel: string;
 }): Promise<VocabProposalResult> {
   const candidates = await proposeVocabCandidates({
     topic: params.topic,
     posTypes: params.posTypes,
-    nvidiaApiKey: params.nvidiaApiKey,
-    nvidiaModel: params.nvidiaModel,
+    llmApiKey: params.llmApiKey,
+    llmModel: params.llmModel,
   });
 
   const accepted: VocabEntry[] = [];
