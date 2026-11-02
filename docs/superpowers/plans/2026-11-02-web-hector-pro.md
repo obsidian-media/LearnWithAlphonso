@@ -320,3 +320,25 @@ It returns `"none"` when there is no active web subscription; App Store subscrip
 ## Task 0 results
 
 _(filled in by Task 0)_
+
+### From RevenueCat docs (2026-11-02, before the sandbox check)
+
+1. **Purchase link:** `https://pay.rev.cat/<token>/<url-encoded app_user_id>`.
+   - Query params: `email`, `currency`, `package_id`, `skip_purchase_success`, `metadata[key]=value`.
+   - The success page is a custom redirect, and RevenueCat appends `app_user_id` to it.
+   - **`paywall_source` goes as `metadata[paywall_source]=<source>`**, not via the v1 attributes call.
+2. **Price:** only through v2 `GET /projects/{project_id}/products?expand=items.indicative_price`, which returns `{currency, amount_micros}` and ISO durations (`P1M`, trial `P7D`).
+   - Needs a **v2 secret key** (`project_configuration:products:read`) and the project id, so the env vars are `REVENUECAT_V2_SECRET_KEY` and `REVENUECAT_PROJECT_ID`.
+   - There is no formatted string, so format with `Intl.NumberFormat(currency)`.
+   - The v1 offerings endpoint returns no prices.
+3. **Trial eligibility** is a per-product RevenueCat setting.
+   - The owner sets it to **"Didn't have any subscription yet"** (project-wide, which should include App Store history).
+   - Our `trialEligible` then only decides the label. If the sandbox confirms RevenueCat refuses the second trial, we keep one link and drop `REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL`.
+4. **Cancel:** v2 `POST /projects/{pid}/subscriptions/{sid}/actions/cancel` (`customer_information:subscriptions:read_write`).
+   - It cancels at **period end**: no further charge, no refund.
+   - v1 `DELETE subscriber` is not documented to cancel anything.
+   - Finding the subscription id for a customer is not documented; confirm in the sandbox.
+5. **Store values:**
+   - The v1 `store` value for Web Billing is not documented (likely `rc_billing`). Confirm in the sandbox.
+   - `management_url` returns the configured customer portal for Stripe Billing.
+   - iOS has `Store.rcBilling` (purchases-ios #3773).

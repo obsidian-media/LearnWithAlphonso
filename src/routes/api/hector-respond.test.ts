@@ -107,6 +107,23 @@ describe("POST /api/hector-respond", () => {
     expect(res.status).toBe(403);
   });
 
+  it("spends the Pro Hector allowance, not the free Practice chat quota", async () => {
+    globalThis.fetch = vi.fn(async () => {
+      throw new DOMException("timed out", "TimeoutError");
+    }) as unknown as typeof fetch;
+    await handler({ request: req() });
+    expect(consumeQuota).toHaveBeenCalledTimes(1);
+    expect(consumeQuota.mock.calls[0][1]).toBe("hector");
+  });
+
+  it("a learner without Pro gets 403 and spends no quota of any kind", async () => {
+    getProEntitlementStatus.mockResolvedValue("inactive");
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "not-entitled" });
+    expect(consumeQuota).not.toHaveBeenCalled();
+  });
+
   it("returns retryable 503 rather than a paywall when RevenueCat is unavailable", async () => {
     getProEntitlementStatus.mockResolvedValue("unavailable");
     const res = await handler({ request: req() });
