@@ -2,9 +2,10 @@
 
 > **Current branch verification — 2026-10-20 (authoritative over older snapshots below):** `Codex-pre-Launch` is at `50daff9` and PR [#337](https://github.com/obsidian-media/LearnWithAlphonso/pull/337) remains open. At this head, CI run [39364973259](https://github.com/obsidian-media/LearnWithAlphonso/actions/runs/39364973259) passed web/admin, Deno, E2E, Swift test, and iOS app-build jobs; vocab-image link check [39364973139](https://github.com/obsidian-media/LearnWithAlphonso/actions/runs/39364973139) passed. Android run [39364973250](https://github.com/obsidian-media/LearnWithAlphonso/actions/runs/39364973250) passed its JVM/lint and Debug APK jobs; its initial API 34 emulator attempt failed on ADB connectivity, but the failed-job rerun [118442600009](https://github.com/obsidian-media/LearnWithAlphonso/actions/runs/39364973250/job/118442600009) passed. All CodeQL analyses, including Swift, passed in [39364968983](https://github.com/obsidian-media/LearnWithAlphonso/actions/runs/39364968983). Android save-any-word is implemented (#325), with physical-device QA outstanding; French/Spanish native-speaker review remains an owner/content gate. No Supabase migration file is added by this follow-on work; Android Room 3→4 and SwiftData V1→V2 are client-local migrations. Broad launch remains NO-GO pending external/device/owner gates.
 
-> **Master tracking doc.** Historically this was added to `.gitignore` and
-> kept local-only; the project owner has now explicitly requested that this
-> maintained backlog be committed. Purpose: one place that lists **every** deferred/postponed/
+> **Master tracking doc.** Local-only: it is in `.gitignore` and must stay
+> out of git (the repository is public and this file names private accounts
+> and open security follow-ups). A 2026-10-19 branch committed it by mistake;
+> the owner had not asked for that, and it was untracked again 2026-11-02. Purpose: one place that lists **every** deferred/postponed/
 > not-yet-tackled item across this project, so nothing raised in
 > conversation ever silently disappears. Consolidates `DEFERRED-WORDS.md`,
 > `docs/v2-kickoffs/`, `docs/v3-kickoffs/`, `ARCHITECTURE.md`'s "Known
