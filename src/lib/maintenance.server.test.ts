@@ -85,6 +85,7 @@ function makeDeps(tables: Record<string, Row[]>, over: Partial<MaintenanceDeps> 
     revoke: async () => true,
     revenueCatConfig: () => ({ secretApiKey: "sk_test" }),
     eraseSubscriber: async () => "erased",
+    cancelWebSubscription: async () => "none",
     alertTo: "owner@example.com",
     ...over,
   };
@@ -213,6 +214,34 @@ describe("retryRevenueCatErasures", () => {
     expect(logged).not.toContain("11111111-aaaa-4bbb-8ccc-222222222222");
     expect(await retryRevenueCatErasures(deps)).toMatchObject({ expired: 0 });
     expect(sent).toHaveLength(1);
+  });
+
+  it("cancels web billing before erasing, and erases once there is nothing left to cancel", async () => {
+    const tables = { revenuecat_erasure_pending: [pending("user-a", 60_000)] };
+    const order: string[] = [];
+    const cancelWebSubscription = vi.fn(async () => (order.push("cancel"), "cancelled" as const));
+    const eraseSubscriber = vi.fn(async () => (order.push("erase"), "erased" as const));
+    const { deps } = makeDeps(tables, { cancelWebSubscription, eraseSubscriber });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 1, stillPending: 0, expired: 0 });
+    expect(order).toEqual(["cancel", "erase"]);
+  });
+
+  it("a web subscription that still cannot be cancelled is never erased, never expired, and is logged every run", async () => {
+    const id = "33333333-aaaa-4bbb-8ccc-444444444444";
+    const tables = { revenuecat_erasure_pending: [pending(id, ERASURE_RETRY_WINDOW_MS + 1)] };
+    const eraseSubscriber = vi.fn(async () => "erased" as const);
+    const { deps, sent } = makeDeps(tables, {
+      cancelWebSubscription: async () => "failed",
+      eraseSubscriber,
+    });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 0, stillPending: 1, expired: 0 });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 0, stillPending: 1, expired: 0 });
+    expect(eraseSubscriber).not.toHaveBeenCalled();
+    expect(tables.revenuecat_erasure_pending).toHaveLength(1);
+    expect(sent).toEqual([]);
+    const logged = vi.mocked(console.error).mock.calls.flat().join(" ");
+    expect(logged.match(/web subscription was NOT cancelled/g)).toHaveLength(2);
+    expect(logged).not.toContain(id);
   });
 
   it("holds rows while RevenueCat is not configured on the server", async () => {

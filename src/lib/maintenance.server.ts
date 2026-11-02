@@ -40,6 +40,11 @@ export type MaintenanceDeps = {
   revoke: (config: AppleConfig, refreshToken: string) => Promise<boolean>;
   revenueCatConfig: () => RevenueCatConfig | null;
   eraseSubscriber: (config: RevenueCatConfig, appUserId: string) => Promise<"erased" | "failed">;
+  /** Runs before every erase: a deleted account's website subscription must never keep charging. */
+  cancelWebSubscription: (
+    config: RevenueCatConfig,
+    appUserId: string,
+  ) => Promise<"cancelled" | "none" | "failed">;
   /** Where owner alerts go; empty means alerts are logged only. */
   alertTo: string;
 };
@@ -119,7 +124,21 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
   const config = deps.revenueCatConfig();
   const nowMs = deps.now().getTime();
   const handedOver: string[] = [];
+  let notCancelled = 0;
   for (const row of rows) {
+    const cancelled = config
+      ? await deps.cancelWebSubscription(config, row.app_user_id).catch(() => "failed" as const)
+      : "failed";
+    if (config && cancelled === "failed") {
+      // Never erased and never expired while billing may still run: the row stays until the cancel succeeds.
+      notCancelled += 1;
+      await db
+        .from("revenuecat_erasure_pending")
+        .update({ attempts: row.attempts + 1, last_attempt_at: deps.now().toISOString() })
+        .eq("app_user_id", row.app_user_id);
+      result.stillPending += 1;
+      continue;
+    }
     const outcome = config
       ? await deps.eraseSubscriber(config, row.app_user_id).catch(() => "failed" as const)
       : "failed";
@@ -144,6 +163,11 @@ export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<Er
     }
   }
 
+  if (notCancelled > 0) {
+    console.error(
+      `[account-deletion] ${notCancelled} deleted account(s): a web subscription was NOT cancelled; still retrying`,
+    );
+  }
   if (!config) {
     console.error(
       "[maintenance] RevenueCat erasures are pending but RevenueCat is not configured on the server",
@@ -317,7 +341,7 @@ const json = (body: unknown, status: number) =>
 async function defaultDeps(): Promise<MaintenanceDeps> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { appleConfigFromEnv, revokeAppleGrant } = await import("./apple-revocation");
-  const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber } =
+  const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber, cancelWebSubscription } =
     await import("./revenuecat-entitlement");
   return {
     db: supabaseAdmin,
@@ -327,6 +351,7 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     revoke: (config, token) => revokeAppleGrant(config, token),
     revenueCatConfig: () => revenueCatConfigFromEnv(),
     eraseSubscriber: (config, id) => deleteRevenueCatSubscriber(config, id),
+    cancelWebSubscription: (config, id) => cancelWebSubscription(config, id),
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
   };
 }
