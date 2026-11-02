@@ -113,10 +113,7 @@ describe("GET /api/pro-offering", () => {
       () => getSubscriberSummary.mockResolvedValue({ status: "unavailable" }),
     ],
     ["the purchase link is not set", () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "")],
-    [
-      "the no-trial link is not set",
-      () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL", ""),
-    ],
+    ["the no-trial link is not set", () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL", "")],
     ["the product id is not set", () => vi.stubEnv("REVENUECAT_WEB_PRODUCT_ID", "")],
     ["RevenueCat is not configured", () => revenueCatConfigFromEnv.mockReturnValue(null)],
     ["the trial link is malformed", () => vi.stubEnv("REVENUECAT_WEB_PURCHASE_LINK", "not a url")],

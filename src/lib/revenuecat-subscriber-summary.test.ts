@@ -62,7 +62,12 @@ describe("getSubscriberSummary", () => {
     },
   );
 
-  it.each(["http://billing.example/portal/abc", "javascript:alert(1)", "not a url", "//evil.example/x"])(
+  it.each([
+    "http://billing.example/portal/abc",
+    "javascript:alert(1)",
+    "not a url",
+    "//evil.example/x",
+  ])(
     "active web Pro with a non-https management link (%s): no link, never a clickable non-https href",
     async (url) => {
       const fake = respond(
