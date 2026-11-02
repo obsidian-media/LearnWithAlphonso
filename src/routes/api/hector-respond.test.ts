@@ -198,7 +198,7 @@ describe("POST /api/hector-respond", () => {
   });
 
   it("returns a TutorReply with the exact keys the iOS client decodes", async () => {
-    // NVIDIA reply, then Deepgram audio, in call order.
+    // AI reply, then Deepgram audio, in call order.
     globalThis.fetch = vi
       .fn()
       .mockResolvedValueOnce(

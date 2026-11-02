@@ -66,7 +66,7 @@ function attemptSignal(caller?: AbortSignal): AbortSignal {
 }
 
 /**
- * The NVIDIA lookup, with up to two attempts. Returns null for EVERY failure (non-200, timeout, network,
+ * The AI lookup, with up to two attempts. Returns null for EVERY failure (non-200, timeout, network,
  * unusable output): the caller turns that into a 502 and writes no row.
  * Same transport conventions as practice-generation.server.ts: a hard per-attempt timeout, an explicit token cap
  * sized to the tiny JSON output (its history shows a too-small cap truncating real completions), and the
@@ -94,7 +94,7 @@ export async function defineWord(args: {
       });
       if (!resp.ok) {
         console.error(
-          `[define-word] attempt ${attempt}: NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
+          `[define-word] attempt ${attempt}: the AI provider returned ${resp.status} after ${Date.now() - startedAt}ms`,
         );
         if (resp.status >= 500) {
           await resp.body?.cancel().catch(() => {});

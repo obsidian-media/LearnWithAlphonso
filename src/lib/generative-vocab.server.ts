@@ -10,7 +10,7 @@ import { LLM_AUTHORING_TIMEOUT_MS, llmChatCompletion } from "./llm-chat.server";
  * for a topic; verifyCandidatePos (added in Task 8) cross-checks each
  * one's claimed part-of-speech against `compromise`'s own tagging
  * before it's ever trusted into the curated vocab dataset. Same
- * NVIDIA NIM integration, same defensive-parse posture (never assume
+ * OpenRouter integration, same defensive-parse posture (never assume
  * clean JSON from the model) as practice-generation.server.ts and
  * weakness-detection.server.ts.
  */
@@ -49,7 +49,7 @@ export function vocabProposalPrompt(
   );
 }
 
-/** Calls NVIDIA NIM with vocabProposalPrompt and parses the result.
+/** Calls OpenRouter with vocabProposalPrompt and parses the result.
  *  Never throws -- any upstream/parse failure yields an empty array,
  *  matching this codebase's existing AI-feature fail-quiet design. */
 export async function proposeVocabCandidates(params: {

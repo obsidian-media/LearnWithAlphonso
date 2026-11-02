@@ -8,7 +8,7 @@
  * for review items.
  *
  * Mirrors src/routes/api/grade-translation.ts's local-first, AI-fallback
- * translate grading (never trusts NVIDIA over the curated list, never
+ * translate grading (never trusts the AI over the curated list, never
  * rejects an answer because the vendor is unavailable), but as a plain
  * function rather than an HTTP handler.
  *
@@ -20,7 +20,7 @@
  * for XP, but computeLessonReplayXp caps the REWARD, not the number of
  * times this function can be called; nothing stopped a user from
  * repeatedly starting a lesson with a translate question and submitting
- * novel wrong answers purely to force unmetered NVIDIA calls, regardless
+ * novel wrong answers purely to force unmetered AI calls, regardless
  * of XP. `checkQuota` mirrors the Deno _shared/answer-correctness.ts
  * `checkQuota?` parameter exactly (same optional-closure shape), called
  * only right before the actual vendor call, so a free curated-list match

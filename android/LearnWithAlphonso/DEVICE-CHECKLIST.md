@@ -177,7 +177,7 @@ Use a fresh QA account (email sign-up) and a Google account whose name is set.
 
 Use a QA account that has never allowed AI (on the web, Settings > AI features is off) and, for the "already allowed" rows, a second one that has.
 
-- [ ] Fresh QA account, open Hector: a spinner, then the sheet "How Alphonso uses AI" naming Deepgram and NVIDIA, with "Read our Privacy Policy", "Allow" and "Not now". The sheet cannot be dismissed by tapping outside or Back.
+- [ ] Fresh QA account, open Hector: a spinner, then the sheet "How Alphonso uses AI" naming Deepgram and an AI provider through OpenRouter (currently Anthropic), with "Read our Privacy Policy", "Allow" and "Not now". The sheet cannot be dismissed by tapping outside or Back.
 - [ ] "Not now" on Hector leaves the page "AI practice is off" with "Review and allow"; tapping that reopens the sheet. The microphone is never asked for until you allow.
 - [ ] "Not now" on a Practice scenario or Campaign goes back to the Practice list.
 - [ ] "Allow" opens the conversation; the Settings > AI features switch is now on, and on the web the same account shows the setting on.

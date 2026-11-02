@@ -5,7 +5,7 @@
  * Why this exists: TestFlight/demo feedback (BACKLOG 0.0-z #3) reported
  * Practice and Hector replies taking 16-36 s, one never arriving. A single
  * Hector turn runs auth -> entitlement -> quota (itself several Supabase
- * round trips) -> NVIDIA -> Deepgram strictly in sequence, and the only
+ * round trips) -> OpenRouter -> Deepgram strictly in sequence, and the only
  * numbers anywhere were `llm_ms`/`tts_ms` inside the response body, which
  * nothing logs. Each stage is now timed, returned as a `Server-Timing`
  * header and written as one `[ai-timing]` log line per request, so the next

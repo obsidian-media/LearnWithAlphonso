@@ -2,7 +2,7 @@
 /// (src/lib/ai-consent-copy-parity.test.ts).
 public enum AIConsentCopy {
     public static let sheetTitle = "How Alphonso uses AI"
-    public static let sheetBody = "To transcribe your speech, reply to you and check your answers, Alphonso sends your voice recordings to Deepgram (speech recognition and spoken replies) and your conversation text and written answers to NVIDIA (AI replies and grading). Nothing is sent until you allow it, and you can turn this off at any time in Settings."
+    public static let sheetBody = "To transcribe your speech, reply to you and check your answers, Alphonso sends your voice recordings to Deepgram (speech recognition and spoken replies) and your conversation text and written answers to an AI provider through OpenRouter, currently Anthropic (AI replies and grading). Nothing is sent until you allow it, and you can turn this off at any time in Settings."
     public static let allow = "Allow"
     public static let notNow = "Not now"
     public static let privacyLink = "Read our Privacy Policy"
@@ -17,7 +17,7 @@ public enum AIConsentCopy {
     public static let offlineBody = "This needs a connection. Reconnect and try again."
     public static let retry = "Try again"
     public static let settingsTitle = "AI features"
-    public static let settingsFooter = "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to NVIDIA so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working."
+    public static let settingsFooter = "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to an AI provider through OpenRouter (currently Anthropic) so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working."
     public static let speakFallbackNoConsent = "Speaking answers use AI, which is turned off. Type the phrase instead."
     public static let useVoiceInstead = "Use your voice instead"
     public static let turnOnAiGrading = "Turn on AI grading"

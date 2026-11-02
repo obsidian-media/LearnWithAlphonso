@@ -35,7 +35,7 @@ describe("buildHectorMessages", () => {
   });
 
   it("drops malformed history rather than forwarding a bad role upstream", () => {
-    // A single unknown role fails the whole NVIDIA call, so filter, don't trust.
+    // A single unknown role fails the whole AI call, so filter, don't trust.
     const msgs = buildHectorMessages(
       [
         { role: "tool", content: "x" },

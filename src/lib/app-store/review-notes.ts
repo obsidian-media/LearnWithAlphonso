@@ -43,7 +43,8 @@ export const REQUIRED_NOTE_MARKERS = [
   "Vercel",
   "Resend",
   "Deepgram",
-  "NVIDIA",
+  "OpenRouter",
+  "Anthropic",
   "RevenueCat",
   "Sign in with Apple",
   "Google Sign-In", // 2.1 services
@@ -70,20 +71,20 @@ LEARNING
 - New since build 49: AI consent, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
 
 AI CONSENT
-Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and NVIDIA (text). The choice is saved on the account and enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Press and hold any AI reply, then "Report this response", to report it.
+Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and Anthropic via OpenRouter (text). The choice is saved on the account and enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Report an AI reply: press and hold, then "Report this response".
 
 SOCIAL SAFETY
 - New accounts choose a public display name once (filtered; Skip gives a name like Learner-4F2A). Emails are never shown.
 - Profile > Friends (top-right Duels can pair you with a random learner at your level; only the course and XP scores show, no names) and League (Teams inside). Every other learner shown has a "..." menu with Block and Report; team names have Report Team Name. Reports email us and we act within 24 hours.
-- Study buddy (Profile > Friends): this account is already paired with a demo learner, shown as "Matched learner", so you can try the preset messages, Block and Report. "End study buddy" ends it and shows the opt-in: stranger matching is per course and needs "I'm 13 or older". Similar level only; never a blocked or past partner. Matched learners see only a name and weekly progress and can send only preset messages (no free text, 20 an hour). Block ends the pair. A server switch pauses matching and messages between matched strangers.
+- Study buddy (Profile > Friends): this account is already paired with a demo learner, shown as "Matched learner", so you can try the preset messages, Block and Report. "End study buddy" ends it and shows the opt-in: stranger matching is per course and needs "I'm 13 or older". Similar level; never a blocked or past partner. Matched learners see only a name and weekly progress and can send only preset messages (no free text, 20 an hour). Block ends the pair. A server switch pauses matching and messages between matched strangers.
 - Delete account: Profile > Settings > Account > Delete My Account (type DELETE). Export My Data is next to it.
 
 SUBSCRIPTION
 "${i.productTitle}", a monthly auto-renewable subscription with a free trial for eligible users, unlocks Hector and is submitted with this version. To see the paywall: Profile > Settings > Sign out, create a new account with "Continue with Apple", open Hector. It shows the price, trial terms, Restore, Terms of Use and Privacy Policy.
 
 OTHER 2.1 ANSWERS
-- Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in code email), Deepgram (speech, model-improvement opt-out), NVIDIA (AI text), RevenueCat (subscription status), Sign in with Apple, Google Sign-In, Apple Push Notifications.
-- Regional differences: none. The price comes from StoreKit in each storefront.
+- Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in email), Deepgram (speech, no training), Anthropic via OpenRouter (AI text), RevenueCat (subscription status), Sign in with Apple, Google Sign-In, Apple Push Notifications.
+- Regional differences: none; StoreKit sets the price per storefront.
 - Regulated or protected content: none. Images are licensed stock photos we host; podcast audio is AI-narrated (Deepgram) from scripts we wrote.
 - No ads, analytics, tracking or crash SDKs. Background audio is used only by Listen.`;
 }

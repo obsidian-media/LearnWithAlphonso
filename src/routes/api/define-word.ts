@@ -8,7 +8,7 @@ import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
 
 /**
  * Save-any-word (docs/superpowers/specs/2026-10-05-save-any-word-design.md).
- * One NVIDIA call turns a tapped word plus its sentence into a stored
+ * One AI call turns a tapped word plus its sentence into a stored
  * multiple-choice review card. The server builds the card and inserts it with
  * supabaseAdmin (review_items has no direct client writes); the client never
  * supplies choices or the answer.

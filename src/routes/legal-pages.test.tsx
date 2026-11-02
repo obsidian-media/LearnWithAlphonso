@@ -46,8 +46,10 @@ describe("Terms route", () => {
   it("names the AI processors", () => {
     const Terms = TermsRoute.options.component!;
     render(<Terms />);
-    expect(screen.getByText(/NVIDIA/)).toBeInTheDocument();
+    expect(screen.getByText(/Anthropic/)).toBeInTheDocument();
+    expect(screen.getByText(/OpenRouter/)).toBeInTheDocument();
     expect(screen.getByText(/Deepgram/)).toBeInTheDocument();
+    expect(screen.queryByText(/NVIDIA/)).toBeNull();
   });
 });
 
@@ -62,10 +64,14 @@ describe("Privacy route", () => {
   it("names the AI processors, not just that AI is used", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    // NVIDIA (LLM) and Deepgram (speech) are the processors, named in the
-    // processors list. Cloud Voice is gone as of the 2026-09-27 Hector
-    // decouple -- Hector now runs on our own backend, no separate system.
-    expect(screen.getAllByText(/NVIDIA/).length).toBeGreaterThan(0);
+    // OpenRouter (routing) with Anthropic (LLM), and Deepgram (speech), are the
+    // processors, named in the processors list. NVIDIA was the LLM until
+    // 2026-11-02 (its trial API forbids production use). Cloud Voice is gone
+    // as of the 2026-09-27 Hector decouple.
+    expect(screen.getAllByText(/OpenRouter/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Anthropic/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/deletes it within 30 days/).length).toBeGreaterThan(0);
+    expect(screen.queryAllByText(/NVIDIA/)).toHaveLength(0);
     expect(screen.getAllByText(/Deepgram/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Cloud Voice/)).toBeNull();
   });
@@ -166,5 +172,27 @@ describe("Support route — must agree with Privacy on Hector deletion (2026-09-
     expect(
       screen.getByText(/removes your learning history, including Hector/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe("AI model providers", () => {
+  // OpenRouter falls back through LLM_CHAT_MODELS in order, so learner text can reach any provider in the default
+  // list. Each one must be named in the privacy policy. An id with an unknown prefix fails until it is mapped here.
+  const COMPANY: Record<string, string> = {
+    anthropic: "Anthropic",
+    mistralai: "Mistral",
+    nvidia: "NVIDIA",
+    openai: "OpenAI",
+    google: "Google",
+  };
+  it("every default AI model's provider is named in the privacy policy", async () => {
+    const { LLM_CHAT_MODELS_DEFAULT } = await import("@/lib/llm-chat-model.server");
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    for (const id of LLM_CHAT_MODELS_DEFAULT) {
+      const company = COMPANY[id.split("/")[0]];
+      expect(company, `no company mapped for ${id}`).toBeDefined();
+      expect(screen.getAllByText(new RegExp(company)).length, company).toBeGreaterThan(0);
+    }
   });
 });

@@ -63,7 +63,7 @@ describe("vocabProposalPrompt", () => {
 });
 
 describe("proposeVocabCandidates", () => {
-  it("calls NVIDIA NIM and returns parsed candidates", async () => {
+  it("calls OpenRouter and returns parsed candidates", async () => {
     const result = await proposeVocabCandidates({
       topic: "daily routines",
       posTypes: ["noun", "verb", "adjective"],

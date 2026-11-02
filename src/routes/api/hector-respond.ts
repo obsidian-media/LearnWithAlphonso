@@ -110,7 +110,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const sessionId = body.session_id || crypto.randomUUID();
   const agent = body.agent_id || "tutor";
 
-  // --- LLM turn (NVIDIA NIM, OpenAI-compatible, same as /api/chat) ---
+  // --- LLM turn (OpenRouter, OpenAI-compatible, same as /api/chat) ---
   const llmStart = performance.now();
   const llm = await timer.time("llm", async () => {
     try {
@@ -127,7 +127,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         return {
           ok: false as const,
           failure: await upstreamErrorResponse(
-            "NVIDIA",
+            "OpenRouter",
             llmResp.status,
             await llmResp.text().catch(() => ""),
           ),

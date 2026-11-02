@@ -23,7 +23,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // a learner writing unusual-but-valid English should not quietly eat the
   // conversation practice they also paid for.
   translate: 60,
-  // Saving a word makes one small NVIDIA call (see /api/define-word). Its own
+  // Saving a word makes one small AI call (see /api/define-word). Its own
   // budget so saving words never eats the conversation turns a learner pays
   // for, and so a runaway tap loop has a known cost ceiling.
   define: 40,

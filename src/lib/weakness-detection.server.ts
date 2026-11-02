@@ -85,7 +85,7 @@ export function analysisPrompt(sourceDescription: string): string {
 }
 
 /**
- * Calls NVIDIA NIM with `analysisPrompt`, dedups against the caller's
+ * Calls OpenRouter with `analysisPrompt`, dedups against the caller's
  * existing active weakness items by category (via `dedupCheck`, RLS-scoped
  * so it only sees this user's own rows), and inserts survivors into
  * review_items + a matching `weakness_events` "detected" row (both via
@@ -128,14 +128,14 @@ export async function detectAndRecordWeaknesses(params: {
       },
     });
     if (!resp.ok) {
-      console.error(`[weakness-detection] NVIDIA API returned ${resp.status}`);
+      console.error(`[weakness-detection] AI provider returned ${resp.status}`);
       return 0;
     }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     content = data.choices?.[0]?.message?.content ?? "";
   } catch (err) {
     console.error(
-      `[weakness-detection] NVIDIA API call threw: ${err instanceof Error ? err.name : "error"}`,
+      `[weakness-detection] AI provider call threw: ${err instanceof Error ? err.name : "error"}`,
     );
     return 0;
   }

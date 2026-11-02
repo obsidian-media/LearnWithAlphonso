@@ -59,6 +59,9 @@ describe("buildReviewNotes", () => {
   it("says the podcast audio is AI-narrated and never implies a human voice", () => {
     const notes = buildReviewNotes(worst);
     expect(notes).toContain("podcast audio is AI-narrated (Deepgram) from scripts we wrote");
+    expect(notes).toContain("OpenRouter");
+    expect(notes).toContain("Anthropic");
+    expect(notes).not.toContain("NVIDIA");
     expect(notes).not.toMatch(/audio is our own/i);
   });
 

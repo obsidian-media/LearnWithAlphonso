@@ -223,7 +223,7 @@ a link out to a web profile is what gets rejected.
 
 **AI consent (rewritten 2026-10-08; the earlier per-device `AIDisclosureGate` flag is gone).** Consent is an account fact (`profiles.ai_consent_at`) enforced by the server on every AI endpoint; see "AI consent, safety and the chat model" below. On iOS the Kit's `AIConsentStore` reads and writes it through `get_ai_consent` / `set_ai_consent` (a choice made on the web counts on iOS and the reverse; a failed read is a retry state, never "AI is off"; a 403 `ai-consent-required` from any AI call closes the gate). Screens that are wholly AI (Hector, Practice, Campaigns) sit behind a gate that is never unmounted once shown, so a transcript survives a withdrawal. Lessons and review are never walled: each item decides (`AIConsentPolicy`). A translate answer is graded on the device without consent and offers "Turn on AI grading", `SpeakQuestionCard` types by default and names the cause when it falls back, and placement is graded on the device only. Settings has the "AI features" switch (off withdraws at once).
 
-**Save-any-word (Hector, Practice and Campaign replies, English-course lesson explanations and podcast transcripts, 2026-10-05).** In `HectorView`, `ConversationView` and `CampaignView`, each assistant reply is a `TappableText` (one shared view; it takes the course and hands back a ready `SaveWordRequest`): one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The saved sentence is the one the word was TAPPED in (`WordSegmenter.sentence(containing:in:atOffset:)`; the link carries the word's Character offset), it must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one, and its 300 limit is measured in UTF-16 units like the server's JS `.length`. Words the server would reject (over 40 units after NFC) are not linked, and "letter" is Unicode category L, exactly the server's `\p{L}`. `AIConversationClient.defineWord` calls the route, which makes one NVIDIA call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Lesson and review explanations reach it through the environment: a screen provides `saveWordHandler` once and the shared `ExplanationView` / `AlphonsoTipCard` read it, but only for a course whose text is wholly in its own language (`SavedWordPolicy`, English today), because French and Spanish explanations are English text with quoted foreign words. Podcast transcripts (`PodcastTranscriptSheet`) use `TappableText` with course `en`. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
+**Save-any-word (Hector, Practice and Campaign replies, English-course lesson explanations and podcast transcripts, 2026-10-05).** In `HectorView`, `ConversationView` and `CampaignView`, each assistant reply is a `TappableText` (one shared view; it takes the course and hands back a ready `SaveWordRequest`): one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The saved sentence is the one the word was TAPPED in (`WordSegmenter.sentence(containing:in:atOffset:)`; the link carries the word's Character offset), it must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one, and its 300 limit is measured in UTF-16 units like the server's JS `.length`. Words the server would reject (over 40 units after NFC) are not linked, and "letter" is Unicode category L, exactly the server's `\p{L}`. `AIConversationClient.defineWord` calls the route, which makes one AI call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Lesson and review explanations reach it through the environment: a screen provides `saveWordHandler` once and the shared `ExplanationView` / `AlphonsoTipCard` read it, but only for a course whose text is wholly in its own language (`SavedWordPolicy`, English today), because French and Spanish explanations are English text with quoted foreign words. Podcast transcripts (`PodcastTranscriptSheet`) use `TappableText` with course `en`. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
 
 **Save-any-word on the web (phase 4, 2026-10-05).** `SaveWordProvider` (`src/components/SaveWord.tsx`) holds one confirmation dialog and exposes an `open(request, returnFocusTo)` function through context; `TappableText` renders each savable word as a `<button>` that calls it, and renders plain text when there is no provider above it or `allowsSaving(course)` is false (English only, like iOS). Pages opt in with a wrapper component registered as the route `component` (`ConverseChatPageWithSave`, `CampaignChatPageWithSave`, `LessonPageWithSave`, `ReviewPageWithSave`); `PodcastTranscriptPanel` wraps its own body. The dialog shows the word and the sentence and states that they are sent to an AI service BEFORE anything is sent, then calls `POST /api/define-word` through `saveWord` (`src/lib/saved-word-client.ts`), which maps the route's statuses to the same user messages as iOS and treats a 200 of the wrong shape as a failure. The tapped sentence is chosen by position (`saveRequestFor`), windowed to 300 UTF-16 units in code points around the tapped occurrence. Transcript words are `tabIndex=-1` (hundreds of tab stops would bury the page) with a keyboard path instead: one tabbable "Browse words with the keyboard" button focuses the first `[data-save-word]` and a native keydown listener on the scroll container walks them with the arrow keys; chat and explanation words are tabbable. No new route, table or quota: the web reuses the route and the stored row shape unchanged.
 
@@ -690,7 +690,7 @@ hand-authored one once it lands in `lesson-bank.ts`.
   represented — a naive sort-by-hash was found to cluster picks into
   one or two pronoun classes.
 - `src/lib/generative-vocab.server.ts` — LLM vocab-candidate proposal
-  (same NVIDIA NIM integration as every other AI feature) +
+  (same OpenRouter integration as every other AI feature) +
   `verifyCandidatePos` (the real POS cross-check gate) +
   `proposeVocabForTopic` orchestration.
 - `src/lib/generative-vocab-authoring.ts` — pure `mergeVocabEntries`
@@ -821,7 +821,7 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
 **Not an Edge Function, deliberately**: `/api/analyze-weaknesses`
 (weakness detection, see "AI integrations" below) is a plain TanStack
 Start API route (`createFileRoute`, same shape as `api/chat.ts`), not a
-fourth Edge Function — it needs both NVIDIA NIM access and
+fourth Edge Function — it needs both AI provider access and
 `ai-quota.server.ts`'s quota enforcement, both of which only exist in
 the TanStack Start runtime, and nothing on the web side calls it (only
 iOS does), so there's no portability reason to duplicate it in Deno. It
@@ -1562,21 +1562,32 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 ## AI integrations
 
-- **Chat:** NVIDIA NIM (`integrate.api.nvidia.com`, OpenAI-compatible).
-  Default model `nvidia/nemotron-3.5-lightning-30b-a3b`
-  (`src/lib/nvidia-chat-model.server.ts` on the web, the same constant in
-  `_shared/answer-correctness.ts` for the edge); `NVIDIA_CHAT_MODEL`
-  overrides it with no redeploy. It is a reasoning model, so since #269
-  (2026-10-09) **both chokepoints send `chat_template_kwargs: { thinking:
-  false, enable_thinking: false }` on every call**, as a default under the
-  caller's own fields. Measured on the app's own prompts: Save word 17.4 s to
-  1.2 s, Practice reply 18.1 s (78.7 s uncapped) to 0.8 s. Before the change
-  Save word hit its 20 s limit on every call and generated practice timed out
-  twice at 8 s. Save word's lookup (`saved-word.server.ts`) then got two
-  attempts of 9 s each (#272), retried only after a timeout, a network error
-  or a 5xx. Prompt-level switches (`/no_think`, `reasoning_effort`) do not
-  work on this model. Guards: `src/lib/nvidia-no-thinking.test.ts` and a Deno
-  test. Routes: `src/routes/api/chat.ts`, `hector-respond.ts`.
+- **Chat:** OpenRouter (`openrouter.ai`, OpenAI-compatible) since 2026-11-02.
+  NVIDIA's hosted API was a trial whose terms forbid production use.
+  - **Models:** an ordered list, `LLM_CHAT_MODELS` (comma-separated, no
+    redeploy), sent as OpenRouter's `models` array, which falls back to the
+    next model on any error. The default is `anthropic/claude-haiku-5.5` on
+    the owner's own Anthropic key (BYOK, workspace set to "Never use shared
+    capacity"). It is defined in `src/lib/llm-chat-model.server.ts` and
+    mirrored in `supabase/functions/_shared/llm-chat.ts`.
+  - **Request:** both chokepoints always send `reasoning: { effort: "none" }`
+    and `provider: { data_collection: "deny" }`, set after the caller's own
+    fields.
+  - **Speed history:** under NVIDIA, before #269 turned reasoning off, Save
+    word took 17.4 s and a Practice reply 18.1 s (78.7 s uncapped). After it:
+    1.2 s and 0.8 s. Haiku via OpenRouter measured 0.6 s (benchmark,
+    2026-11-02).
+  - **Save word retries:** its lookup (`saved-word.server.ts`) gets two
+    attempts of 9 s each (#272), retried only after a timeout, a network
+    error or a 5xx.
+  - **Failure mapping:** `normalizeLlmResponse` turns 401/402/403 into a
+    logged 503 and an error inside a 200 into a 502.
+  - **Guards:** `src/lib/llm-no-reasoning.test.ts`,
+    `src/lib/llm-chat.server.test.ts` and a Deno test. A legal-pages test
+    requires every default provider to be named in the privacy policy.
+  - **Tools:** `scripts/benchmark-llm.ts` measures latency and reasoning
+    tokens.
+  - **Routes:** `src/routes/api/chat.ts`, `hector-respond.ts`.
 - **TTS/STT:** Deepgram directly (Aura-2 / Nova-3) —
   `src/routes/api/tts.ts`, `src/routes/api/stt.ts`. `/api/tts` picks a native
   Aura-2 voice per course (en `thalia`, fr `agathe`, es `selena`). Every
@@ -1598,7 +1609,7 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Latency is logged per stage as `[ai-timing]` with a `Server-Timing` header.
 - **Weakness detection:** `src/routes/api/analyze-weaknesses.ts`
   (native-only caller) sends a Hector/free
-  conversation transcript to NVIDIA NIM with a prompt constrained to a
+  conversation transcript to the AI model (OpenRouter) with a prompt constrained to a
   fixed 15-category taxonomy (`past-tense`, `articles`, `prepositions`,
   `subject-verb-agreement`, `plurals`, `question-formation`,
   `modal-verbs`, `word-order`, `pronouns`, `comparatives`,
@@ -1633,10 +1644,10 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `{ ai: { allowed, checkQuota? } }`; omitting it means no AI, so a new caller
   that forgets consent fails safe (web server functions and both edge
   functions). Placement is graded on the device and never calls an AI grader.
-- **One chokepoint per runtime** (web `nvidiaChatCompletion`, edge twin)
+- **One chokepoint per runtime** (web `llmChatCompletion`, edge twin)
   appends the safety preamble (stay on language learning, suitable for
-  teenagers) and the thinking switch; a registry test fails if anything else
-  contains the NVIDIA URL.
+  teenagers), reasoning off and the no-training provider rule. A registry
+  test fails if anything else contains the provider URL.
 - **Output filter.** Model text shown to learners (chat, Hector, define-word,
   practice, translation reasons, weakness questions) goes through
   `filterModelOutput`, an async RPC-backed check (`ai_output_blocked`, built

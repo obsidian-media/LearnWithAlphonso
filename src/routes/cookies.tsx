@@ -24,7 +24,7 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalPage title="Cookie Policy" updated="18 October 2026">
+    <LegalPage title="Cookie Policy" updated="2 November 2026">
       <Section heading="What this covers">
         <p>
           The Learn with Alphonso website stores a few small items in your browser, in cookies or in

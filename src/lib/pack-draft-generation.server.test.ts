@@ -88,7 +88,7 @@ describe("draftPack", () => {
 
   it("throws when the upstream call fails", async () => {
     global.fetch = vi.fn().mockResolvedValue(new Response("error", { status: 500 }));
-    await expect(draftPack(params())).rejects.toThrow(/NVIDIA NIM request failed/);
+    await expect(draftPack(params())).rejects.toThrow(/AI provider request failed/);
   });
 
   it("throws when fetch itself throws", async () => {

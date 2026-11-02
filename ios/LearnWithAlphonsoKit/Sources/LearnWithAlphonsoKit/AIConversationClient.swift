@@ -4,7 +4,7 @@ import FoundationNetworking
 #endif
 
 /// Calls THIS repo's own already-deployed AI endpoints
-/// (src/routes/api/chat.ts, api/tts.ts, api/stt.ts -- NVIDIA NIM chat +
+/// (src/routes/api/chat.ts, api/tts.ts, api/stt.ts -- OpenRouter chat +
 /// Deepgram TTS/STT, direct) rather than a separate backend. Same auth as
 /// every other authenticated call this app makes: the user's own Supabase
 /// access token as a Bearer header -- these routes verify it via

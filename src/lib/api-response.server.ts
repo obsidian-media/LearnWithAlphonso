@@ -1,5 +1,5 @@
 // Shared error-response shaping for the /api/* AI routes. Upstream
-// provider errors (NVIDIA, Deepgram) are logged server-side in full but
+// provider errors (OpenRouter, Deepgram) are logged server-side in full but
 // never forwarded verbatim to the client -- their raw text can include
 // internal details (request ids, model-routing errors, account state)
 // that shouldn't leak past our own API surface.

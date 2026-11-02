@@ -19,7 +19,7 @@ type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
  * enforced that server-side, so a caller bypassing the app UI (any valid
  * session, direct HTTP) could set systemPrompt to anything at all, turning
  * this quota-gated (60/day) but otherwise unrestricted route into a
- * general-purpose LLM proxy funded by this app's own NVIDIA key, wholly
+ * general-purpose LLM proxy funded by this app's own AI provider key, wholly
  * unrelated to language learning. Whitelisting against the exact set of
  * real personas closes that off with zero behavior change for either real
  * client -- both already send one of these values verbatim (iOS bundles
@@ -124,7 +124,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     ...messages,
   ];
 
-  // NVIDIA NIM's hosted inference API is
+  // The AI provider's hosted API is
   // OpenAI-compatible, so only the URL/key/model name change from the
   // Lovable Gateway. See llm-chat-model.server.ts for why the
   // model id lives there instead of being hardcoded here.
@@ -146,7 +146,10 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     }
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
-      return { ok: false as const, failure: upstreamErrorResponse("NVIDIA", resp.status, text) };
+      return {
+        ok: false as const,
+        failure: upstreamErrorResponse("OpenRouter", resp.status, text),
+      };
     }
     const data = (await resp.json()) as {
       choices?: { message?: { content?: string } }[];

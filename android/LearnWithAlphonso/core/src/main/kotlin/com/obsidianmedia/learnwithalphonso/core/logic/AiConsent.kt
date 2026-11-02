@@ -6,7 +6,7 @@ package com.obsidianmedia.learnwithalphonso.core.logic
  */
 object AiConsentCopy {
     const val sheetTitle = "How Alphonso uses AI"
-    const val sheetBody = "To transcribe your speech, reply to you and check your answers, Alphonso sends your voice recordings to Deepgram (speech recognition and spoken replies) and your conversation text and written answers to NVIDIA (AI replies and grading). Nothing is sent until you allow it, and you can turn this off at any time in Settings."
+    const val sheetBody = "To transcribe your speech, reply to you and check your answers, Alphonso sends your voice recordings to Deepgram (speech recognition and spoken replies) and your conversation text and written answers to an AI provider through OpenRouter, currently Anthropic (AI replies and grading). Nothing is sent until you allow it, and you can turn this off at any time in Settings."
     const val allow = "Allow"
     const val notNow = "Not now"
     const val privacyLink = "Read our Privacy Policy"
@@ -18,7 +18,7 @@ object AiConsentCopy {
     const val checkFailedBody = "Check your connection and try again."
     const val retry = "Try again"
     const val settingsTitle = "AI features"
-    const val settingsFooter = "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to NVIDIA so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working."
+    const val settingsFooter = "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to an AI provider through OpenRouter (currently Anthropic) so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working."
     const val speakFallbackNoConsent = "Speaking answers use AI, which is turned off. Type the phrase instead."
     const val useVoiceInstead = "Use your voice instead"
     const val turnOnAiGrading = "Turn on AI grading"

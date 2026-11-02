@@ -90,7 +90,7 @@ describe("POST /api/analyze-weaknesses", () => {
     expect(res.status).toBe(500);
   });
 
-  it("returns weaknessesDetected: 0 for an empty message history without calling NVIDIA", async () => {
+  it("returns weaknessesDetected: 0 for an empty message history without calling the AI provider", async () => {
     const res = await handler({ request: req({ messages: [] }) });
     expect(await res.json()).toEqual({ weaknessesDetected: 0 });
     expect(global.fetch).not.toHaveBeenCalled();

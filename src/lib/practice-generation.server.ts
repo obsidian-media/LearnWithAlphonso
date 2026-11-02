@@ -8,7 +8,7 @@ export const PRACTICE_MAX_ATTEMPTS = 2;
 
 /**
  * V3 pkg 4b: "generative sentence content" -- on-demand extra practice
- * per lesson. Same NVIDIA NIM integration as weakness-detection.server.ts,
+ * per lesson. Same OpenRouter integration as weakness-detection.server.ts,
  * same defensive-parse reasoning (no structured-output mode is used
  * anywhere in this codebase, so never assume clean JSON from the model).
  * Generated questions are ephemeral: never persisted, never counted
@@ -57,7 +57,7 @@ export function practicePrompt(
 }
 
 /**
- * Calls NVIDIA NIM with `practicePrompt` and parses the result. Never throws: any upstream or parse failure
+ * Calls OpenRouter with `practicePrompt` and parses the result. Never throws: any upstream or parse failure
  * just yields an empty array, matching analyze-weaknesses' fail-quiet design (this is a nice-to-have layered on
  * top of the real lesson, not a trust boundary itself). The route turns an empty result into a deterministic
  * fallback set. `durationMs` is logged on every outcome so a recurrence gives an exact number.
@@ -88,7 +88,7 @@ export async function generatePracticeQuestions(params: {
       });
       if (!resp.ok) {
         console.error(
-          `[generate-practice] attempt ${attempt}: NVIDIA ${resp.status} after ${Date.now() - startedAt}ms`,
+          `[generate-practice] attempt ${attempt}: AI provider ${resp.status} after ${Date.now() - startedAt}ms`,
         );
         continue;
       }

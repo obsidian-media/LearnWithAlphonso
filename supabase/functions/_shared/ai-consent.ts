@@ -1,5 +1,5 @@
 // Edge mirror of src/lib/ai-consent.server.ts's hasAiConsent. complete-lesson and grade-review call it before the AI
-// grader; without consent the curated verdict stands and nothing is sent to NVIDIA.
+// grader; without consent the curated verdict stands and nothing is sent to the AI provider.
 // There is no environment-controlled bypass: only stored account consent permits AI.
 
 // deno-lint-ignore no-explicit-any

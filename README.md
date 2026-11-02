@@ -3,7 +3,7 @@
 A full-stack mobile-first English, French, and Spanish learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus native iOS and Android apps sharing the same backend/account.
 
 > Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
-> code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
+> code is concerned: AI calls go straight to OpenRouter/Deepgram (not a Lovable
 > gateway), and deploy targets Vercel.
 >
 > Repo lives at `github.com/obsidian-media/LearnWithAlphonso` (transferred
@@ -23,7 +23,7 @@ A full-stack mobile-first English, French, and Spanish learning app with gamific
 | **Styling**         | Tailwind CSS v4 + hand-written components + Framer Motion            |
 | **State**           | Zustand (client) + TanStack Query (server)                           |
 | **Backend**         | Supabase (PostgreSQL + Auth + RLS + RPCs)                            |
-| **AI**              | NVIDIA NIM chat (default model `nvidia/nemotron-3.5-lightning-30b-a3b`, reasoning turned off on every call) + Deepgram Aura-2/Nova-3 (TTS/STT), all called directly |
+| **AI**              | OpenRouter chat with an ordered model fallback list (default `anthropic/claude-haiku-5.5` on the owner's own Anthropic key, reasoning turned off on every call) + Deepgram Aura-2/Nova-3 (TTS/STT), all called directly |
 | **Routing**         | TanStack Router (file-based)                                         |
 | **Testing**         | Vitest (unit) + Playwright + axe-core (E2E/accessibility)            |
 | **Package manager** | bun (`bun.lock` is authoritative; no `package-lock.json`)            |
@@ -200,8 +200,8 @@ See `.env.example` for the full, commented list. Summary:
 SUPABASE_URL / VITE_SUPABASE_URL
 SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SERVICE_ROLE_KEY      # server-only, never VITE_-prefixed
-NVIDIA_API_KEY                 # chat (integrate.api.nvidia.com)
-NVIDIA_CHAT_MODEL              # optional override; default nvidia/nemotron-3.5-lightning-30b-a3b
+OPENROUTER_API_KEY             # chat (openrouter.ai)
+LLM_CHAT_MODELS                # optional ordered, comma-separated model list; default anthropic/claude-haiku-5.5
 DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 LESSON_SESSION_SECRET          # signs lesson-session tokens (also an Edge Function secret)
 ```
@@ -318,12 +318,12 @@ compile verification that exists):
   learner talk without holding the button, also with the screen locked,
   and pauses itself on silence, noise or an interruption
 - **Weakness detection**: after either conversation mode ends (4+ turns),
-  NVIDIA NIM identifies up to 3 grammar/vocabulary weaknesses and adds
+  the AI model identifies up to 3 grammar/vocabulary weaknesses and adds
   them as gradable multiple-choice items to the same SM-2 review queue —
   the same `review_items` table, discriminated by a new `source` column
   (`"lesson"` vs `"weakness"` vs `"saved_word"`) rather than a separate table
 - **Save any word**: tap a word in an assistant reply (Hector, Practice or Campaign), save it with
-  its sentence (`POST /api/define-word`, one NVIDIA call, own `define`
+  its sentence (`POST /api/define-word`, one AI call, own `define`
   quota), and it joins the same review queue as a self-contained
   `saved_word` multiple-choice card, first due the next day. Hector,
   Practice and Campaign replies, English-course lesson and review

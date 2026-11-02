@@ -239,7 +239,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       // and this same grader's own /api/grade-translation route) enforces
       // it. A review item's own `due_on` gate limits how often ONE item can
       // be re-graded, but not how many DIFFERENT due items a user churns
-      // through, so it was a real unbounded-NVIDIA-spend gap.
+      // through, so it was a real unbounded-AI-spend gap.
       if (!correct && ref.question.type === "translate" && data.answer.trim()) {
         const apiKey = resolveLlmApiKey();
         const { hasAiConsent } = await import("./ai-consent.server");

@@ -4,7 +4,7 @@
  *
  * Kept separate from the route so the message-building, voice mapping and
  * reply-shaping are unit-tested directly, rather than only ever exercised
- * through a live NVIDIA/Deepgram call.
+ * through a live OpenRouter/Deepgram call.
  */
 
 import { COURSES, isCourse, type Course } from "@/data/courses";
@@ -88,7 +88,7 @@ export function buildHectorSystemPrompt(course: Course, cefr: string): string {
 }
 
 /**
- * The message list sent to the (OpenAI-compatible) NVIDIA endpoint:
+ * The message list sent to the (OpenAI-compatible) OpenRouter endpoint:
  * the system persona the caller built with `buildHectorSystemPrompt` (the only system message; a client cannot
  * add another one -- see the audit note above), then up to the last
  * `MAX_HISTORY_MESSAGES` prior user/assistant turns the client passed

@@ -4,7 +4,7 @@ import { LLM_AUTHORING_TIMEOUT_MS, llmChatCompletion } from "./llm-chat.server";
 /**
  * V4 #5 "content authoring tooling": AI-assisted first-draft generation for
  * a full lesson-bank Pack (title/subtitle/note/data lines), not just
- * ephemeral practice questions. Same NVIDIA NIM integration and defensive-
+ * ephemeral practice questions. Same OpenRouter integration and defensive-
  * parse posture as `practice-generation.server.ts` / `weakness-detection.
  * server.ts` (no structured-output mode is used anywhere in this codebase,
  * so never assume clean JSON from the model).
@@ -13,7 +13,7 @@ import { LLM_AUTHORING_TIMEOUT_MS, llmChatCompletion } from "./llm-chat.server";
  * content directly: `scripts/pack-tool.ts draft` writes the result to a
  * file for a human to read, edit, and re-validate -- it never touches a
  * real lesson-bank-*.ts file itself. `.server.ts` suffix kept for the same
- * reason every other NVIDIA-key-touching module in this codebase uses it:
+ * reason every other AI-key-touching module in this codebase uses it:
  * a hard guard against ever being pulled into a client bundle, even though
  * today's only caller is the CLI script, not a route.
  */
@@ -61,7 +61,7 @@ export function draftPackPrompt(params: {
 }
 
 /**
- * Calls NVIDIA NIM to draft a pack's title/subtitle/note/data lines for a
+ * Calls OpenRouter to draft a pack's title/subtitle/note/data lines for a
  * given topic. Throws on any failure (missing key, upstream error, bad
  * shape) rather than failing quiet -- unlike the ephemeral in-app practice-
  * question generator this backs an offline authoring tool with a human at
@@ -85,7 +85,7 @@ export async function draftPack(params: {
     },
   });
   if (!resp.ok) {
-    throw new Error(`NVIDIA NIM request failed: ${resp.status} ${resp.statusText}`);
+    throw new Error(`AI provider request failed: ${resp.status} ${resp.statusText}`);
   }
   const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
   const content = data.choices?.[0]?.message?.content ?? "";

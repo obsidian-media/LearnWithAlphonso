@@ -73,7 +73,7 @@ export async function deriveAnswerCorrectness(
   // was wrong for exactly the case that matters: a WRONG translate answer
   // sets due_on to TODAY (see grade-review/srs.ts's computeReviewOutcome),
   // so the same item stays due immediately and can be resubmitted any
-  // number of times in a row, each one a real NVIDIA call. `ai.checkQuota` (an
+  // number of times in a row, each one a real AI call. `ai.checkQuota` (an
   // injected async predicate, since this module has no Supabase client of
   // its own) closes that gap -- both callers build it from consume_ai_quota
   // /consume_ai_rate_limit RPCs against the same DB-backed counters

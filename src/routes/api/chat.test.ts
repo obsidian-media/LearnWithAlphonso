@@ -161,7 +161,7 @@ describe("POST /api/chat", () => {
 
   // 2026-09-30 audit (Codex #4): systemPrompt used to be fully
   // client-controlled with no server-side check at all -- a general-
-  // purpose LLM proxy funded by this app's own NVIDIA key. Only a real
+  // purpose LLM proxy funded by this app's own AI provider key. Only a real
   // scenario/campaign persona is accepted now.
   it("rejects a systemPrompt that isn't one of the real personas", async () => {
     const res = await handler({

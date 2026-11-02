@@ -80,7 +80,7 @@ afterEach(() => {
 });
 
 describe("POST /api/define-word", () => {
-  it("returns 500 when NVIDIA is not configured, before touching anything", async () => {
+  it("returns 500 when the AI provider is not configured, before touching anything", async () => {
     delete process.env.OPENROUTER_API_KEY;
     const res = await handler({ request: req() });
     expect(res.status).toBe(500);
@@ -248,7 +248,7 @@ describe("POST /api/define-word", () => {
   });
 
   it.each([
-    ["a non-200 from NVIDIA", new Response("down", { status: 500 })],
+    ["a non-200 from the AI provider", new Response("down", { status: 500 })],
     [
       "unparseable model output",
       new Response(JSON.stringify({ choices: [{ message: { content: "sorry" } }] }), {
