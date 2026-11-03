@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The five approved scenes (Visual refresh part 2). Each is the image set `Scene-<name>`, a 1080x1920 portrait.
 enum SceneName: String, CaseIterable {
-    case learn, hector, listen, profile, complete
+    case learn, hector, listen, profile, complete, practice
 
     var assetName: String { "Scene-\(rawValue)" }
 }

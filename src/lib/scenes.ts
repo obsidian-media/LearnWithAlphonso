@@ -1,7 +1,7 @@
 import data from "../data/scenes.json";
 
 /** A rendered background for a main screen (src/data/scenes.json; the Kit's ScreenScene mirrors it). */
-export type Scene = "complete" | "hector" | "learn" | "listen" | "profile";
+export type Scene = "complete" | "hector" | "learn" | "listen" | "practice" | "profile";
 /** A full-body character cut-out that stands in a scene. */
 export type Figure = "alphonso-proud" | "alphonso-waving" | "hector-waving";
 

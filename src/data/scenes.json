@@ -1,4 +1,4 @@
 {
-  "scenes": ["complete", "hector", "learn", "listen", "profile"],
+  "scenes": ["complete", "hector", "learn", "listen", "practice", "profile"],
   "figures": ["alphonso-proud", "alphonso-waving", "hector-waving"]
 }

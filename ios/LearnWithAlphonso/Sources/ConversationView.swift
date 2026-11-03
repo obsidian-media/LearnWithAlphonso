@@ -24,6 +24,11 @@ struct ConversationView: View {
         let campaigns = contentStore.campaigns(for: course)
         NavigationStack {
             ScrollView {
+                // The cafe shows through at the top, then everything sits on one glass sheet over it.
+                Color.clear
+                    .frame(height: 150)
+                    .sceneScrollProbe()
+                    .accessibilityHidden(true)
                 LazyVStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
                     // Pro's one feature is Hector, so this is the honest place to offer it: where a
                     // learner is already practising speaking. Hidden for Pro.
@@ -66,10 +71,12 @@ struct ConversationView: View {
                         }
                     }
                 }
-                .padding(.horizontal, AlphonsoSpacing.md)
+                .padding(AlphonsoSpacing.md)
+                .alphonsoGlass()
+                .padding(.horizontal, AlphonsoSpacing.sm)
                 .padding(.bottom, AlphonsoSpacing.lg)
             }
-            .background(AlphonsoColor.surface)
+            .screenScene(.practice)
             .navigationTitle("Practice speaking")
         }
         // A course switch rebuilds the

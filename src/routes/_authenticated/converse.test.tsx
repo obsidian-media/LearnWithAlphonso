@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 
 const mockPathname = "/converse";
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -117,5 +117,19 @@ describe("Converse route", () => {
     for (const el of hero.querySelectorAll("p, h2, span")) {
       expect(el.className).not.toMatch(/opacity-/);
     }
+  });
+});
+
+describe("Practice in the cafe", () => {
+  it("the cafe is behind Practice, the title on a card and the scenes on a sheet", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    expect(container.querySelector('[data-scene="practice"] img')?.getAttribute("src")).toBe(
+      "/scenes/practice.jpg",
+    );
+    const title = screen.getByRole("heading", { level: 1, name: "Practice out loud" });
+    expect(title.closest("[data-surface]")).not.toBeNull();
+    const sheet = container.querySelector("[data-sheet]") as HTMLElement;
+    expect(within(sheet).getByRole("heading", { name: "Scenarios" })).toBeInTheDocument();
   });
 });

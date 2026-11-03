@@ -41,3 +41,23 @@ describe("iOS scenes follow-ups", () => {
     expect(node).toMatch(/\.onChange\(of: reduceMotion\)/);
   });
 });
+
+describe("iOS Practice in the cafe", () => {
+  const scene = read("DesignSystem/ScreenScene.swift");
+  const practice = read("ConversationView.swift");
+  const body = between(practice, "struct ConversationView", "/// The heading above a group");
+
+  it("the cafe scene is a named scene", () => {
+    expect(between(scene, "enum SceneName", "}")).toMatch(/\bpractice\b/);
+  });
+
+  it("Practice paints the cafe instead of a flat surface, with its scroll feeding the parallax", () => {
+    expect(body).toContain(".screenScene(.practice)");
+    expect(body).not.toContain(".background(AlphonsoColor.surface)");
+    expect(body).toContain(".sceneScrollProbe()");
+  });
+
+  it("the tiles and section labels sit on glass, not straight on the photo", () => {
+    expect(body).toContain(".alphonsoGlass(");
+  });
+});
