@@ -150,3 +150,12 @@ describe("Listen in the studio", () => {
     expect(text.closest("[data-surface]")).not.toBeNull();
   });
 });
+
+describe("Listen folder not found", () => {
+  it("the message and the way back sit on a card above the scene", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "nope"]} />);
+    const text = screen.getByText(/couldn.t find that folder/i);
+    expect(text.closest("[data-surface]")).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Back to all folders" }).closest("[data-surface]")).not.toBeNull();
+  });
+});

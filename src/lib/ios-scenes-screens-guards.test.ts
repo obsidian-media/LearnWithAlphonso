@@ -117,6 +117,12 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     expect(convo).not.toContain(".background(AlphonsoColor.surface)");
   });
 
+  it("the error and save-word hint sit on glass, not straight on the library photo", () => {
+    const convo = between(hector, "private struct HectorConversationView", "// MARK: - Hero");
+    expect(from(convo, "voice.failure?.userMessage()").slice(0, 400)).toContain(".alphonsoGlass(");
+    expect(from(convo, 'Text("Tap any word').slice(0, 400)).toContain(".alphonsoGlass(");
+  });
+
   it("the hero keeps its poses, breathing and cross-fade, drops the flat tile, and puts its title on glass", () => {
     const hero = between(hector, "private var hero: some View", "private func heroPill");
     expect(hero).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");

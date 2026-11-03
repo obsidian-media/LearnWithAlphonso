@@ -124,15 +124,17 @@ export function ListenFolderView({
   const current = segments.length === 0 ? null : resolveFolderPath(folders, segments);
   if (segments.length > 0 && !current) {
     return (
-      <div className="relative z-10 px-5 py-8">
+      <div className="px-5 py-8">
         <SceneBackdrop scene="listen" />
-        <h1 className="relative font-display text-3xl font-bold text-ink">Listen</h1>
-        <p className="mt-3 text-sm text-ink-soft/80">
-          We couldn&apos;t find that folder. It may have been renamed or removed.
-        </p>
-        <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-moss">
-          Back to all folders
-        </Link>
+        <div data-surface className="relative z-10 rounded-3xl bg-surface/90 p-5 backdrop-blur-md">
+          <h1 className="font-display text-3xl font-bold text-ink">Listen</h1>
+          <p className="mt-3 text-sm text-ink-soft/80">
+            We couldn&apos;t find that folder. It may have been renamed or removed.
+          </p>
+          <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-moss">
+            Back to all folders
+          </Link>
+        </div>
       </div>
     );
   }

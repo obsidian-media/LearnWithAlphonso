@@ -101,6 +101,9 @@ private struct HectorConversationView: View {
                 Text(message)
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.destructive)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .alphonsoGlass(radius: AlphonsoRadius.lg)
                     .padding(.horizontal)
             }
 
@@ -108,6 +111,9 @@ private struct HectorConversationView: View {
                 Text("Tap any word in Hector's reply to save it.")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .alphonsoGlass(radius: AlphonsoRadius.lg)
             }
 
             micButton.padding()

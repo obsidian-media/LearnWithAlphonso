@@ -31,7 +31,8 @@ const NODE_ICON: Record<UnitPathNode["state"], string> = {
  */
 export function LearnMap({ nodes, greeting }: { nodes: UnitPathNode[]; greeting: string }) {
   const shown = nodes.slice(0, SPOTS.length);
-  const height = SPOTS[shown.length - 1][1] + 120;
+  // A level with every lesson done has no nodes left to draw: Alphonso and the greeting still stand there.
+  const height = shown.length > 0 ? SPOTS[shown.length - 1][1] + 120 : 0;
   return (
     <div data-learn-map className="relative" style={{ height: Math.max(height, 330) }}>
       <div aria-hidden="true">

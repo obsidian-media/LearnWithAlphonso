@@ -309,14 +309,15 @@
     oklch(0.16 0.01 260 / 0.45);
 }
 
-/* The next lesson on the Learn map bobs gently to invite a tap. */
+/* The next lesson on the Learn map bobs gently to invite a tap. Only Y: the node is centred with Tailwind's
+   `translate` property, and an x offset here would stack on top of it. */
 @keyframes map-node-bounce {
   0%,
   100% {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   50% {
-    transform: translate(-50%, -6px);
+    transform: translateY(-6px);
   }
 }
 .map-node-bounce {
