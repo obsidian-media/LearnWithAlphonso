@@ -187,7 +187,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       ref={sectionRef}
       tabIndex={-1}
       aria-label="Learning goal"
-      className="rounded-2xl border border-hairline bg-surface p-4"
+      className="card-lift rounded-3xl bg-tile-sun-bg p-4"
     >
       {view === "loading" && <p className="text-sm text-ink-soft">Loading your goal…</p>}
 

@@ -119,6 +119,16 @@ struct LessonBrowserView: View {
         return flattened[(idx + 1)...].first(where: { !completedLessonIDs.contains($0.id) })?.id
     }
 
+    /// The first lesson in this band not yet completed, and its unit (web: learn.tsx's firstUndone).
+    private var nextLesson: (unit: LearnWithAlphonsoKit.Unit, lesson: Lesson)? {
+        for unit in unitsForSelectedLevel {
+            if let lesson = unit.lessons.first(where: { !completedLessonIDs.contains($0.id) }) {
+                return (unit, lesson)
+            }
+        }
+        return nil
+    }
+
     var body: some View {
         NavigationStack {
             ScrollViewReader { scrollProxy in
@@ -127,6 +137,20 @@ struct LessonBrowserView: View {
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+
+                // One loud card for the next lesson in this band, with the unit's lessons as a short path.
+                if let next = nextLesson {
+                    NavigationLink(value: next.lesson.id) {
+                        LearnContinueCard(
+                            unitTitle: next.unit.title,
+                            lessonTitle: next.lesson.title,
+                            path: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
 
                 // Finished lessons the server permanently rejected. Hidden when none.
                 DeadLetterNoticeSection(syncQueueStore: syncQueueStore)
@@ -457,7 +481,7 @@ private struct WeeklyChallengesSection: View {
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .listRowBackground(AlphonsoTileTone.sky.background)
         }
     }
 }
@@ -489,5 +513,59 @@ private struct PlacementBannerSection: View {
             }
             .listRowBackground(AlphonsoColor.ember.opacity(0.1))
         }
+    }
+}
+
+/// The Learn screen's "Continue" card: the next lesson, big and in ember, with the unit's lessons as a
+/// short path of coloured nodes (done, next, locked).
+private struct LearnContinueCard: View {
+    let unitTitle: String
+    let lessonTitle: String
+    let path: [UnitPathNode]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Up next · \(unitTitle)".uppercased())
+                .font(AlphonsoFont.sans(11, weight: .semiBold))
+                .tracking(0.6)
+                .opacity(0.9)
+            Text(lessonTitle)
+                .font(AlphonsoFont.display(24, weight: .bold))
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                ForEach(Array(path.enumerated()), id: \.element.id) { index, node in
+                    pathNode(node, index: index)
+                }
+            }
+            .accessibilityHidden(true)
+            Text("Continue")
+                .font(AlphonsoFont.display(15, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ember)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(AlphonsoColor.surface, in: Capsule())
+        }
+        .foregroundStyle(AlphonsoColor.onAccent)
+        .padding(AlphonsoSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AlphonsoColor.ember, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Continue: \(lessonTitle)")
+    }
+
+    private func pathNode(_ node: UnitPathNode, index: Int) -> some View {
+        let tone = AlphonsoTileTone(rawValue: TileTone.forIndex(index)) ?? .coral
+        let emoji: String
+        switch node.state {
+        case .done: emoji = "\u{1F4DA}"
+        case .next: emoji = "\u{1F3AF}"
+        case .locked: emoji = "\u{1F512}"
+        }
+        return Icon3DView(emoji: emoji, size: node.state == .next ? 26 : 20)
+            .frame(width: 38, height: 38)
+            .background(node.state == .locked ? AlphonsoColor.surface.opacity(0.35) : tone.background, in: Circle())
+            .overlay(Circle().strokeBorder(.white.opacity(node.state == .next ? 0.9 : 0), lineWidth: 2))
+            .saturation(node.state == .locked ? 0 : 1)
     }
 }

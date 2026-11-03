@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../lib/progress";
-import { FlameIcon, BoltIcon, HeartIcon } from "./icons";
+import { Icon3D } from "./Icon3D";
 import { PodcastPlayer } from "./PodcastPlayer";
 import { LeagueTierBadge } from "./LeagueTierBadge";
 
@@ -64,19 +64,19 @@ export function TopBar() {
         </Link>
         <div className="flex items-center gap-4">
           <StatPill
-            icon={<FlameIcon className="size-4" />}
+            icon={<Icon3D emoji="🔥" size={20} />}
             value={hydrated ? streak : 0}
             color="text-ember"
             label="Streak"
           />
           <StatPill
-            icon={<BoltIcon className="size-4" />}
+            icon={<Icon3D emoji="⚡" size={20} />}
             value={hydrated ? xp : 0}
             color="text-moss"
             label="XP"
           />
           <StatPill
-            icon={<HeartIcon className="size-4" />}
+            icon={<Icon3D emoji="❤️" size={20} />}
             value={hydrated ? hearts : 5}
             color="text-rose-500"
             label="Hearts"

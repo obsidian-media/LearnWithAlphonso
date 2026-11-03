@@ -10,7 +10,7 @@ export function WeeklyChallengesCard() {
   if (isLoading || !challenges || challenges.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-hairline bg-parchment p-4">
+    <div className="card-lift rounded-3xl bg-tile-sky-bg p-4">
       <p className="font-display text-sm font-semibold text-ink">This week's challenges</p>
       <div className="mt-3 space-y-2.5">
         {challenges.map((c) => (

@@ -143,6 +143,42 @@ describe("Learn page", () => {
     expect(screen.queryByText("Not sure where to start?")).not.toBeInTheDocument();
   });
 
+  it("shows one Continue card for the first undone lesson", async () => {
+    renderPage();
+    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    expect(link).toHaveAttribute("href", `/lesson/${firstLesson.id}`);
+  });
+
+  it("moves the Continue card on once a lesson is done", async () => {
+    useProgress.setState({ completedLessons: [firstLesson.id] });
+    renderPage();
+    expect(
+      await screen.findByRole("link", { name: `Continue: ${secondLesson.title}` }),
+    ).toBeInTheDocument();
+  });
+
+  it("Continue opens the hearts modal instead when out of hearts", async () => {
+    useProgress.setState({ hearts: 0 });
+    renderPage();
+    const button = await screen.findByRole("button", {
+      name: `Continue: ${firstLesson.title} (out of hearts)`,
+    });
+    expect(button).toBeInTheDocument();
+  });
+
+  it("greets the learner with Alphonso", async () => {
+    renderPage();
+    expect(await screen.findByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
+
+  it("lesson nodes use 3D icons: a target for the next lesson, a lock for later ones", async () => {
+    renderPage();
+    const start = await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
+    expect(start.querySelector("img")?.getAttribute("src")).toBe("/icons3d/bullseye.png");
+    const locked = screen.getByRole("note", { name: `${secondLesson.title} (locked)` });
+    expect(locked.querySelector("img")?.getAttribute("src")).toBe("/icons3d/locked.png");
+  });
+
   it("marks the first undone lesson active and later ones locked", async () => {
     renderPage();
     expect(

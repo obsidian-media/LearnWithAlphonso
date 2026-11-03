@@ -5,7 +5,9 @@ import { MobileFrame } from "../../components/AppShell";
 import { GoalCard } from "../../components/GoalCard";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
-import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
+import { StarIcon } from "../../components/icons";
+import { Icon3D } from "../../components/Icon3D";
+import { MascotBanner } from "../../components/MascotBanner";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -21,6 +23,8 @@ import {
 } from "../../lib/sync.functions";
 import { fetchDueReviews } from "../../lib/review.functions";
 import { XP_HEART_COST } from "../../lib/hearts";
+import { tileTone, type TileTone } from "../../lib/tile-tones";
+import { unitPathNodes } from "../../lib/unit-path";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -35,6 +39,80 @@ export const Route = createFileRoute("/_authenticated/learn")({
     ],
   }),
 });
+
+const NODE_TONE: Record<TileTone, string> = {
+  coral: "bg-tile-coral-bg",
+  sky: "bg-tile-sky-bg",
+  sun: "bg-tile-sun-bg",
+  lilac: "bg-tile-lilac-bg",
+  mint: "bg-tile-mint-bg",
+};
+
+/** The one loud card for the next lesson, with the unit's lessons as a short path. */
+function ContinueCard({
+  unitTitle,
+  lessonId,
+  lessonTitle,
+  path,
+  blocked,
+  onBlockedClick,
+}: {
+  unitTitle: string;
+  lessonId: string;
+  lessonTitle: string;
+  path: { id: string; state: "done" | "next" | "locked" }[];
+  blocked: boolean;
+  onBlockedClick: () => void;
+}) {
+  const body = (
+    <div className="card-lift flex flex-col gap-2.5 rounded-3xl bg-ember p-4 text-left text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)] transition-transform active:translate-y-1">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-90">
+        Up next · {unitTitle}
+      </p>
+      <p className="font-display text-2xl font-bold leading-tight">{lessonTitle}</p>
+      <div className="flex gap-2" aria-hidden="true">
+        {path.map((n, i) => (
+          <span
+            key={n.id}
+            className={`grid size-9 place-items-center rounded-full ${
+              n.state === "locked" ? "bg-white/25 grayscale" : NODE_TONE[tileTone(i)]
+            } ${n.state === "next" ? "ring-2 ring-white" : ""}`}
+          >
+            <Icon3D
+              emoji={n.state === "done" ? "📚" : n.state === "next" ? "🎯" : "🔒"}
+              size={20}
+            />
+          </span>
+        ))}
+      </div>
+      <span className="self-start rounded-full bg-surface px-4 py-1.5 font-display text-sm font-bold text-ember">
+        Continue
+      </span>
+    </div>
+  );
+  if (blocked) {
+    return (
+      <button
+        type="button"
+        onClick={onBlockedClick}
+        aria-label={`Continue: ${lessonTitle} (out of hearts)`}
+        className="block w-full"
+      >
+        {body}
+      </button>
+    );
+  }
+  return (
+    <Link
+      to="/lesson/$id"
+      params={{ id: lessonId }}
+      aria-label={`Continue: ${lessonTitle}`}
+      className="block"
+    >
+      {body}
+    </Link>
+  );
+}
 
 function LessonNode({
   state,
@@ -55,19 +133,19 @@ function LessonNode({
   const translateX = offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
   const inner =
     state === "done" ? (
-      <CheckIcon className="size-7" />
+      <Icon3D emoji="📚" size={36} />
     ) : state === "locked" ? (
-      <LockIcon className="size-6" />
+      <Icon3D emoji="🔒" size={30} className="opacity-60 grayscale" />
     ) : (
-      <StarIcon className="size-7" />
+      <Icon3D emoji="🎯" size={40} />
     );
   const baseClasses =
     "relative grid size-[72px] place-items-center rounded-full transition-transform";
   const stateClasses =
     state === "done"
-      ? "bg-moss text-surface hard-shadow"
+      ? `${NODE_TONE[tileTone(index)]} shadow-[0_4px_0_0_var(--color-hairline)]`
       : state === "active"
-        ? "bg-ember text-ink-on-ember hard-shadow-ember"
+        ? "bg-ember text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)]"
         : "bg-parchment text-ink-soft/40 ring-1 ring-hairline";
   const button = (
     <motion.div
@@ -128,6 +206,7 @@ function LearnPage() {
   const hearts = useProgress((s) => s.hearts);
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const xp = useProgress((s) => s.xp);
+  const streak = useProgress((s) => s.streak);
   const restoreHeartsLocal = useProgress((s) => s.restoreHeartsLocal);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
   const saveLevel = useServerFn(setCefrLevel);
@@ -205,6 +284,9 @@ function LearnPage() {
   const pct = levelLessons.length ? Math.round((levelDone / levelLessons.length) * 100) : 0;
   const meta = LEVELS.find((l) => l.id === level)!;
   const firstUndone = levelLessons.find((l) => !completedSet.has(l.id));
+  const nextUnit = firstUndone
+    ? units.find((u) => u.lessons.some((l) => l.id === firstUndone.id))
+    : undefined;
   const levelCompletion = useMemo(() => {
     const map = new Map<Level, boolean>();
     for (const l of LEVELS) {
@@ -240,6 +322,33 @@ function LearnPage() {
             </button>
           ))}
         </div>
+
+        <div className="mb-4">
+          <MascotBanner
+            moment="learnGreeting"
+            message={
+              hydrated && streak > 0
+                ? `Nice ${streak}-day streak! Ready for today's lesson?`
+                : "Ready for today's lesson?"
+            }
+          />
+        </div>
+
+        {hydrated && firstUndone && nextUnit && (
+          <div className="mb-6">
+            <ContinueCard
+              unitTitle={nextUnit.title}
+              lessonId={firstUndone.id}
+              lessonTitle={firstUndone.title}
+              path={unitPathNodes(
+                nextUnit.lessons.map((l) => l.id),
+                completedSet,
+              )}
+              blocked={outOfHearts}
+              onBlockedClick={() => setShowHeartsModal(true)}
+            />
+          </div>
+        )}
 
         <div className="mb-6">
           <TeamMissionCard />
