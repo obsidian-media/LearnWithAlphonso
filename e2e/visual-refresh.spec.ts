@@ -54,8 +54,8 @@ test.afterAll(async () => {
   if (userId) await admin(`/auth/v1/admin/users/${userId}`, { method: "DELETE" });
 });
 
-test("screenshots of the redesigned screens in every theme", async ({ page }) => {
-  test.setTimeout(300_000);
+/** Signs the throwaway learner in, naming them the first time the name prompt shows. */
+async function signIn(page: import("@playwright/test").Page) {
   await page.addInitScript(() =>
     window.localStorage.setItem("lingua.cookie-consent.v1", "essential"),
   );
@@ -66,10 +66,17 @@ test("screenshots of the redesigned screens in every theme", async ({ page }) =>
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL(/\/learn/, { timeout: 30_000 });
   const copy = nameFixtures.copy;
-  await expect(page.getByRole("heading", { name: copy.title })).toBeVisible({ timeout: 30_000 });
-  await page.getByLabel(copy.fieldLabel).fill("Robin Visual");
-  await page.getByRole("button", { name: copy.save }).click();
-  await expect(page.getByRole("heading", { name: copy.title })).toBeHidden();
+  const prompt = page.getByRole("heading", { name: copy.title });
+  if (await prompt.isVisible({ timeout: 15_000 }).catch(() => false)) {
+    await page.getByLabel(copy.fieldLabel).fill("Robin Visual");
+    await page.getByRole("button", { name: copy.save }).click();
+    await expect(prompt).toBeHidden();
+  }
+}
+
+test("screenshots of the redesigned screens in every theme", async ({ page }) => {
+  test.setTimeout(300_000);
+  await signIn(page);
 
   for (const theme of THEMES) {
     // A new learner has no saved theme, so the stored one decides (resolveInitialTheme).
@@ -101,9 +108,15 @@ test("screenshots of the redesigned screens in every theme", async ({ page }) =>
       }
     }
   }
+});
 
-  // Two screens a fresh learner only reaches by doing something: lesson complete (finish a lesson) and Hector
-  // (allow AI first). Phone size, default theme. Best effort: a miss here logs and skips, it never fails the sweep.
+// Two screens a fresh learner only reaches by doing something: lesson complete (finish a lesson) and Hector
+// (allow AI first). Phone size, default theme. Its own test and time budget, so it can never starve the sweep
+// above; each shot is best effort and logs rather than fails.
+test("screenshots of lesson complete and Hector", async ({ page }) => {
+  test.setTimeout(180_000);
+  page.setDefaultTimeout(15_000);
+  await signIn(page);
   await page.evaluate(() => window.localStorage.setItem("theme", "canopy"));
   await page.setViewportSize({ width: 390, height: 844 });
   const shot = (name: string) =>
