@@ -1,13 +1,21 @@
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
+import { Icon3D } from "../../components/Icon3D";
+import { Button } from "../../components/ui/Button";
+import { MascotImage } from "../../components/MascotImage";
+import { PractiseWithHector } from "../../components/PractiseWithHector";
+import { CountUp } from "../../components/Celebration";
+import { LoopingClip } from "../../components/LoopingClip";
+import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
+import { lessonRewardChips } from "../../lib/lesson-rewards";
+import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
-import { MascotBanner } from "../../components/MascotBanner";
 import { VocabImage } from "../../components/VocabImage";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
@@ -135,6 +143,7 @@ function LessonPage() {
     xp: number;
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
+    saved: boolean;
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
@@ -358,9 +367,14 @@ function LessonPage() {
           ...res.newlyUnlocked.filter((a) => !state.unlockedAchievements.includes(a)),
         ],
       });
-      setDone({ xp: res.xpGain, unlocked: res.newlyUnlocked, heartsBonus: res.heartsBonus });
+      setDone({
+        xp: res.xpGain,
+        unlocked: res.newlyUnlocked,
+        heartsBonus: res.heartsBonus,
+        saved: true,
+      });
     } catch {
-      setDone({ xp: 0, unlocked: [], heartsBonus: null });
+      setDone({ xp: 0, unlocked: [], heartsBonus: null, saved: false });
     }
   }
 
@@ -422,6 +436,7 @@ function LessonPage() {
           xp={done.xp}
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
+          saved={done.saved}
           lessonTitle={lesson.title}
           correct={correct}
           total={total}
@@ -487,7 +502,7 @@ function LessonPage() {
           {q.type === "listening" && !canSpeak() && (
             <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
               <p className="text-xs text-ink-soft">
-                Audio is unavailable on this device — here is what you would hear:
+                Audio is unavailable on this device. Here is what you would hear:
               </p>
               <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
             </div>
@@ -746,51 +761,58 @@ function OverviewScreen({
   questions: number;
   onStart: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  const steps = [
-    { label: "Vocabulary", detail: `${words} word${words === 1 ? "" : "s"} with examples` },
-    { label: "Practice", detail: `${questions} questions` },
-    { label: "Review", detail: "Anything you miss comes back later" },
+  const steps: { label: string; detail: string; emoji: string; tone: TileTone }[] = [
+    {
+      label: "Vocabulary",
+      detail: `${words} word${words === 1 ? "" : "s"} with examples`,
+      emoji: "📚",
+      tone: "coral",
+    },
+    { label: "Practice", detail: `${questions} questions`, emoji: "🎯", tone: "sky" },
+    { label: "Review", detail: "Anything you miss comes back later", emoji: "⭐", tone: "mint" },
   ];
   return (
-    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
+    <div className="flex flex-1 flex-col px-6 pb-6 pt-6">
+      <div className="mb-4 flex justify-center">
+        <MascotImage moment="emptyState" size={120} tone="mint" alt="" className="card-lift" />
+      </div>
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
         {subtitle}
       </p>
-      <h2 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
+      <h2 className="text-balance font-display text-[30px] font-bold leading-tight text-ink">
         {title}
       </h2>
-      <div className={isStudioInk ? "mt-6 divide-y divide-hairline" : "mt-6 space-y-2.5"}>
-        {steps.map((s, i) => (
+      <div className="mt-5 space-y-3">
+        {steps.map((s) => (
           <div
             key={s.label}
-            className={
-              isStudioInk
-                ? "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-3.5"
-                : "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
-            }
+            data-step=""
+            data-tone={s.tone}
+            className={`card-lift grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl px-4 py-3.5 ${TILE_TONE_CLASSES[s.tone]}`}
           >
-            <span className="tnum grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-xs font-semibold text-ink">
-              {i + 1}
-            </span>
+            <Icon3D emoji={s.emoji} size={36} />
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-ink">{s.label}</span>
-              <span className="block truncate text-xs text-ink-soft/80">{s.detail}</span>
+              <span className="block font-display text-base font-bold">{s.label}</span>
+              <span className="block truncate text-xs opacity-80">{s.detail}</span>
             </span>
           </div>
         ))}
       </div>
       <div className="mt-auto pt-6">
-        <button
-          onClick={onStart}
-          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
-        >
+        <Button fullWidth onClick={onStart}>
           Begin lesson
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
+
+const CHIP_TITLE = { xp: "XP", streak: "Streak", accuracy: "Accuracy" } as const;
+const CHIP_TONE = {
+  xp: TILE_TONE_CLASSES.sun,
+  streak: TILE_TONE_CLASSES.coral,
+  accuracy: TILE_TONE_CLASSES.mint,
+} as const;
 
 export function FinishScreen({
   xp,
@@ -802,10 +824,13 @@ export function FinishScreen({
   missedQs,
   lessonId,
   course,
+  saved = true,
 }: {
   xp: number;
   unlocked: string[];
   heartsBonus: "streak" | "perfect" | null;
+  /** False when the completion did not reach the server: then no streak is shown, since none was confirmed. */
+  saved?: boolean;
   lessonTitle: string;
   correct: number;
   total: number;
@@ -814,22 +839,52 @@ export function FinishScreen({
   course: string;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  const streak = useProgress((s) => s.streak);
+  const reduceMotion = usePrefersReducedMotion();
+  const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="mb-6 w-full"
+      {/* The whole celebration is one clip: the stage, confetti cannons, streamers, sweeping spotlights and
+          Alphonso cheering. Under Reduce Motion its first frame stands still. The window is framed on Alphonso
+          (he fills 23-91% of the clip's height). */}
+      <div
+        data-stage="complete"
+        role="img"
+        aria-label="Alphonso celebrating on the stage"
+        className="relative -mx-6 -mt-6 mb-5 aspect-[10/13] w-[min(calc(100%+3rem),calc(52svh*10/13))] self-center overflow-hidden rounded-b-[2.5rem] bg-ink shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
       >
-        <MascotBanner mascot="alphonso" message="Nice work — lesson complete!" />
-      </motion.div>
+        <LoopingClip
+          clip="complete"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
+        />
+      </div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete
       </p>
-      <h2 className="mt-1 font-display text-[24px] font-semibold text-ink">{lessonTitle}</h2>
-      <p className="mt-3 tnum text-lg font-semibold text-moss">+{xp} XP</p>
-      <p className="tnum mt-1 text-xs text-ink-soft">
+      <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
+      <p className="mt-1 text-sm font-semibold text-moss">Nice work, lesson complete!</p>
+      <div className="mt-4 flex justify-center gap-2.5">
+        {chips.map((c, i) => (
+          <motion.div
+            key={c.kind}
+            aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
+            role="group"
+            initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.6 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 320, damping: 16, delay: 0.45 + i * 0.15 }}
+            className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
+          >
+            <span aria-hidden="true" className="text-xs font-semibold">
+              {CHIP_TITLE[c.kind]}
+            </span>
+            <Icon3D emoji={c.emoji} size={28} />
+            <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
+              <CountUp value={c.value} animate={!reduceMotion} />
+            </span>
+          </motion.div>
+        ))}
+      </div>
+      <p className="tnum mt-2 text-xs text-ink-soft">
         {correct}/{total} correct
       </p>
       {heartsBonus && (
@@ -919,10 +974,13 @@ export function FinishScreen({
 
       <Link
         to="/learn"
-        className="mt-8 w-full rounded-full bg-ink px-4 py-3.5 text-center text-sm font-semibold text-surface"
+        className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-ember px-6 py-3 font-display text-base font-bold tracking-wide text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
       >
         Back to path
       </Link>
+      <div className="mt-3 w-full">
+        <PractiseWithHector />
+      </div>
     </div>
   );
 }

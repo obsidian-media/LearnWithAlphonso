@@ -28,11 +28,14 @@ struct LessonPlayerView: View {
     let contentStore: ContentStore
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    /// What "Practise with Hector" on the finish screen needs. Nil hides the button.
+    let hectorAccess: HectorAccess?
     @EnvironmentObject private var aiConsent: AIConsentStore
 
     init(
         lesson: Lesson, course: Course, session: Session, notificationScheduler: NotificationScheduler,
-        contentStore: ContentStore, networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore
+        contentStore: ContentStore, networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore,
+        hectorAccess: HectorAccess? = nil
     ) {
         _lesson = State(initialValue: lesson)
         self.course = course
@@ -41,6 +44,7 @@ struct LessonPlayerView: View {
         self.contentStore = contentStore
         self.networkMonitor = networkMonitor
         self.syncQueueStore = syncQueueStore
+        self.hectorAccess = hectorAccess
     }
 
     private enum Phase { case overview, vocab, quiz }
@@ -76,6 +80,8 @@ struct LessonPlayerView: View {
     @State private var outOfHearts: OutOfHeartsModel?
     @State private var heartsGateState: HeartsGateState = .open
     @State private var showingReviewInstead = false
+    @State private var showingHector = false
+    @State private var showingHectorPaywall = false
     @Environment(\.dismiss) private var dismiss
 
     private enum HeartsGateState { case open, blocked, reviewInstead }
@@ -170,18 +176,25 @@ struct LessonPlayerView: View {
         attemptSeed = UUID().uuidString
     }
 
+    private func practiseWithHector() {
+        guard let hectorAccess else { return }
+        if hectorAccess.entitlementStore.isPro { showingHector = true } else { showingHectorPaywall = true }
+    }
+
     var body: some View {
         Group {
             if let result {
                 FinishView(
                     result: result, correct: correctCount, total: total, contentStore: contentStore,
                     isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session,
-                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil
+                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil,
+                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector
                 )
             } else if let queuedOffline {
                 OfflineFinishView(
                     pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
-                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() })
+                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
+                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector)
             } else if let completionFailure {
                 LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
             } else if total == 0 {
@@ -202,6 +215,20 @@ struct LessonPlayerView: View {
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: lesson.id) { await openLessonSession() }
+        // "Practise with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
+        .sheet(isPresented: $showingHector) {
+            if let hectorAccess {
+                HectorView(
+                    session: session, entitlementStore: hectorAccess.entitlementStore,
+                    activeCourse: hectorAccess.activeCourse, conversationStore: hectorAccess.conversationStore,
+                    onClose: { showingHector = false })
+            }
+        }
+        .sheet(isPresented: $showingHectorPaywall) {
+            if let hectorAccess {
+                PaywallView(entitlementStore: hectorAccess.entitlementStore, source: .lessonComplete, onClose: { showingHectorPaywall = false })
+            }
+        }
         .sheet(item: $outOfHearts, onDismiss: {
             // Closed without a heart: leave the lesson (it can't be saved). "Review instead" opens Review first.
             switch heartsGateState {
@@ -830,26 +857,30 @@ private struct OverviewScreen: View {
         // navigation push boundary.
         ScrollView {
             VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                MascotTile(moment: .emptyState, size: 120, tone: .mint)
+                    .alphonsoLift()
+                    .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
                 Text(lesson.subtitle.uppercased())
                     .font(AlphonsoFont.sans(12, weight: .semiBold))
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
                 Text(lesson.title)
-                    .font(AlphonsoFont.display(28, weight: .bold))
+                    .font(AlphonsoFont.display(32, weight: .bold))
                     .foregroundStyle(AlphonsoColor.ink)
 
                 VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
-                    overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                    overviewStep(emoji: "\u{1F4DA}", tone: .coral, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
                     if !previewImages.isEmpty {
                         HStack(spacing: 8) {
                             ForEach(previewImages, id: \.url) { image in
                                 VocabImageView(image: image, thumbnailSize: 44)
                             }
                         }
-                        .padding(.leading, 40)
+                        .padding(.leading, AlphonsoSpacing.md)
                     }
-                    overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
-                    overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
+                    overviewStep(emoji: "\u{1F3AF}", tone: .sky, label: "Practice", detail: "\(questionCount) questions")
+                    overviewStep(emoji: "\u{2B50}", tone: .mint, label: "Review", detail: "Anything you miss comes back later")
                 }
 
                 Button("Begin lesson", action: onStart)
@@ -861,28 +892,25 @@ private struct OverviewScreen: View {
         .background(AlphonsoColor.surface)
     }
 
-    private func overviewStep(number: Int, label: String, detail: String) -> some View {
+    /// One step as a coloured card with a 3D icon. The icon is decorative; the label carries the meaning.
+    private func overviewStep(emoji: String, tone: AlphonsoTileTone, label: String, detail: String) -> some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            // minWidth/minHeight + a Circle background, not a fixed
-            // .frame(width:height:) + .clipShape(Circle()) -- the number
-            // itself never grows past one digit, but its FONT does with
-            // Dynamic Type, and clipShape crops an oversized glyph instead
-            // of letting the badge grow to fit it. This lets the circle
-            // grow with the text at large accessibility sizes instead.
-            Text("\(number)")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.surface)
-                .frame(minWidth: 28, minHeight: 28)
-                .background(Circle().fill(AlphonsoColor.moss))
+            Icon3DView(emoji: emoji, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(AlphonsoFont.sans(15, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .font(AlphonsoFont.display(17, weight: .bold))
                 Text(detail)
                     .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .opacity(0.8)
             }
+            Spacer(minLength: 0)
         }
+        .foregroundStyle(tone.ink)
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.vertical, 12)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -1036,8 +1064,17 @@ private struct FinishView: View {
     /// button) at the end of a CEFR band -- see LessonPlayerView's
     /// nextLessonID doc comment for why that's deliberate.
     let onContinueToNextLesson: (() -> Void)?
+    /// Opens Hector (or the paywall) from the happiest moment. Nil hides the button.
+    let onPractiseWithHector: (() -> Void)?
 
     @State private var showPromotionOverlay = false
+    /// Flips once on appear; the success haptic is keyed to it.
+    @State private var celebrated = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The stage is never taller than 52% of the screen: on a short phone it narrows (same framing) instead of
+    /// pushing the rewards and Continue below the fold.
+    private static var stageMaxHeight: CGFloat { UIScreen.main.bounds.height * 0.52 }
 
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
@@ -1046,52 +1083,89 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
+                // The title sits on glass, above the stage window.
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
+                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .padding(.vertical, AlphonsoSpacing.sm)
+                    .alphonsoGlass(radius: AlphonsoRadius.xl)
 
-                // The exact "no imagery, just text/icon" pattern the
-                // spec's Background section calls out on PaywallView
-                // shows up here too -- same fix.
-                AlphonsoMascotBanner(mascot: .alphonso, message: LessonFinishCopy.headline(correct: correct, total: total))
-                Text("+\(result.xpGain) XP")
-                    .font(AlphonsoFont.display(32, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.moss)
-                Text("\(correct)/\(total) correct")
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                if let bonus = result.heartsBonus {
-                    Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
-                        .font(AlphonsoFont.sans(13, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ember)
-                }
-                if !unlockedAchievements.isEmpty {
-                    VStack(spacing: AlphonsoSpacing.sm + 4) {
-                        Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
-                            .font(AlphonsoFont.sans(13, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
-                            ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
-                                AchievementBadgeView(achievement: achievement, unlocked: true)
-                                    .springEntrance(delay: Double(index) * 0.15)
-                            }
+                // The whole celebration is one looping clip: the stage, confetti cannons, streamers, sweeping spotlights
+                // and Alphonso cheering. It sits in a 10:13 window framed on him (he fills 23-91% of the clip's height;
+                // the window shows the clip from its top 20% to 94%), the same framing as the web. Under Reduce Motion
+                // the clip's first frame stands still.
+                // On a short screen (iPhone SE) the window narrows to at most 52% of the screen's height, so the
+                // rewards and Continue stay in view without changing the framing.
+                ClipBackdrop(clip: .complete, verticalAnchor: 0.76)
+                    .aspectRatio(10.0 / 13.0, contentMode: .fit)
+                    .frame(maxWidth: Self.stageMaxHeight * 10 / 13)
+                    .background(AlphonsoColor.ink)
+                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .alphonsoLift()
+                    .springEntrance()
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Alphonso celebrating on the stage")
+                    .accessibilityAddTraits(.isImage)
+
+                VStack(spacing: AlphonsoSpacing.md) {
+                    Text(LessonFinishCopy.headline(correct: correct, total: total))
+                        .font(AlphonsoFont.display(24, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.moss)
+                        .multilineTextAlignment(.center)
+                    HStack(spacing: 10) {
+                        ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
+                            LessonRewardChipView(chip: chip, index: index)
+                                .springEntrance(delay: reduceMotion ? 0 : 0.15 + Double(index) * 0.12)
                         }
                     }
-                    .padding(.top, 8)
-                }
+                    Text("\(correct)/\(total) correct")
+                        .font(AlphonsoFont.sans(13))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    if let bonus = result.heartsBonus {
+                        Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
+                            .font(AlphonsoFont.sans(13, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.ember)
+                    }
+                    if !unlockedAchievements.isEmpty {
+                        VStack(spacing: AlphonsoSpacing.sm + 4) {
+                            Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
+                                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
+                                ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
+                                    AchievementBadgeView(achievement: achievement, unlocked: true)
+                                        .springEntrance(delay: Double(index) * 0.15)
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
 
-                if let onContinueToNextLesson {
-                    Button("Continue to next lesson", action: onContinueToNextLesson)
-                        .buttonStyle(.alphonsoPrimary)
-                        .padding(.top, 4)
-                }
+                    if let onContinueToNextLesson {
+                        Button("Continue to next lesson", action: onContinueToNextLesson)
+                            .buttonStyle(.alphonsoEmber)
+                            .padding(.top, 4)
+                    }
+                    if let onPractiseWithHector {
+                        Button("Practise with Hector", action: onPractiseWithHector)
+                            .buttonStyle(.alphonsoSecondary)
+                    }
 
-                GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
+                    GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
+                }
+                .padding(AlphonsoSpacing.md)
+                .frame(maxWidth: .infinity)
+                .alphonsoGlass()
             }
             .padding()
         }
         .background(AlphonsoColor.surface)
-        .onAppear { showPromotionOverlay = isLeaguePromotion }
+        .sensoryFeedback(.success, trigger: celebrated)
+        .onAppear {
+            showPromotionOverlay = isLeaguePromotion
+            celebrated = true
+        }
         .fullScreenCover(isPresented: $showPromotionOverlay) {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
                 showPromotionOverlay = false
@@ -1283,6 +1357,7 @@ private struct OfflineFinishView: View {
     let total: Int
     let reason: LessonCompletionError
     let onContinue: () -> Void
+    let onPractiseWithHector: (() -> Void)?
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.md) {
@@ -1310,6 +1385,10 @@ private struct OfflineFinishView: View {
             Button("Continue", action: onContinue)
                 .buttonStyle(.alphonsoPrimary)
                 .padding(.top, AlphonsoSpacing.sm)
+            if let onPractiseWithHector {
+                Button("Practise with Hector", action: onPractiseWithHector)
+                    .buttonStyle(.alphonsoSecondary)
+            }
         }
         .padding()
         .background(AlphonsoColor.surface)
@@ -1368,5 +1447,78 @@ enum LeagueTierPalette {
 
     static func label(for tier: String) -> String {
         LeagueTierCopy.label(for: tier)
+    }
+}
+
+/// What the finish screen's "Practise with Hector" button needs to open Hector or the paywall.
+struct HectorAccess {
+    let entitlementStore: EntitlementStore
+    let activeCourse: ActiveCourseModel
+    let conversationStore: ConversationStore
+}
+
+/// One reward on the lesson-complete screen: a 3D icon, the value and its name, in a chunky bordered card.
+private struct LessonRewardChipView: View {
+    let chip: LessonRewardChip
+    /// Its place in the row; later chips start counting a little later, as they pop in.
+    var index: Int = 0
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Flips once the chip appears; the number counts up from 0 to its value while it does.
+    @State private var reached = false
+
+    /// XP and streak count up; accuracy is shown as it is.
+    private var split: (prefix: String, number: Int, suffix: String)? {
+        chip.kind != .accuracy ? RewardCountUp.split(chip.value) : nil
+    }
+
+    private var title: String {
+        switch chip.kind {
+        case .xp: return "XP"
+        case .streak: return "Streak"
+        case .accuracy: return "Accuracy"
+        }
+    }
+
+    private var tone: AlphonsoTileTone {
+        switch chip.kind {
+        case .xp: return .sun
+        case .streak: return .coral
+        case .accuracy: return .mint
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .foregroundStyle(tone.ink)
+            Icon3DView(emoji: chip.emoji, size: 28)
+            Group {
+                if let split {
+                    CountingText(
+                        number: Double(reduceMotion || reached ? split.number : 0),
+                        prefix: split.prefix,
+                        suffix: split.suffix
+                    )
+                } else {
+                    Text(chip.value)
+                }
+            }
+            .font(AlphonsoFont.display(18, weight: .bold))
+            .foregroundStyle(AlphonsoColor.ink)
+        }
+        .frame(minWidth: 84)
+        .padding(.vertical, 10)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
+        .alphonsoLift()
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeOut(duration: RewardCountUp.duration).delay(0.15 + Double(index) * 0.12)) {
+                reached = true
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(chip.value)")
     }
 }

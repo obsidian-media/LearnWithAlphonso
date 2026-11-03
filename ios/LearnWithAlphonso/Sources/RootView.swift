@@ -95,7 +95,7 @@ struct RootView: View {
                     // the tab bar's own region and the bar overlaps it (device
                     // check #12). See View.podcastMiniBar.
                     TabView {
-                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, onboardingSettled: onboardingChecked && onboarding == nil, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse)
+                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, onboardingSettled: onboardingChecked && onboarding == nil, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse, hectorAccess: HectorAccess(entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore))
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))

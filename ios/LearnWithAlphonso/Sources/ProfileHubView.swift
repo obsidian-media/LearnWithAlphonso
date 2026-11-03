@@ -32,24 +32,33 @@ struct ProfileHubView: View {
     var body: some View {
         NavigationStack {
             List {
+                ProfileHero()
+                    .sceneScrollProbe()
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
                 Section {
                     row(
                         .league,
                         title: "League",
                         subtitle: "Leaderboards, teams, and the season ladder",
-                        emoji: "🏆"
+                        emoji: "🏆",
+                        tone: .sun
                     )
                     row(
                         .friends,
                         title: "Friends",
                         subtitle: "Your friends, their activity, and duels",
-                        emoji: "👥"
+                        emoji: "👥",
+                        tone: .sky
                     )
                     row(
                         .achievements,
                         title: "Achievements",
                         subtitle: "Badges earned and weak spots to work on",
-                        emoji: "⭐️"
+                        emoji: "⭐️",
+                        tone: .lilac
                     )
                 }
                 .listRowBackground(Color.clear)
@@ -59,13 +68,14 @@ struct ProfileHubView: View {
                         .settings,
                         title: "Settings",
                         subtitle: "Theme and account",
-                        emoji: "⚙️"
+                        emoji: "⚙️",
+                        tone: .mint
                     )
                 }
                 .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
-            .background(AlphonsoColor.surface)
+            .screenScene(.profile)
             .navigationTitle("Profile")
         }
         .tint(AlphonsoColor.moss)
@@ -91,13 +101,37 @@ struct ProfileHubView: View {
         _ target: Destination,
         title: String,
         subtitle: String,
-        emoji: String
+        emoji: String,
+        tone: AlphonsoTileTone
     ) -> some View {
         Button {
             destination = target
         } label: {
-            AlphonsoRowCard(title: title, subtitle: subtitle, leadingEmoji: emoji)
+            AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle, glass: true)
         }
         .buttonStyle(.plain)
+        // The tiles carry their own shape; List separators between them read as stray lines.
+        .listRowSeparator(.hidden)
+    }
+}
+
+/// The hall of achievements across the top of Profile. It shows no numbers: this hub loads no progress of its own,
+/// and showing numbers here would mean tracking something new.
+private struct ProfileHero: View {
+    var body: some View {
+        VStack(spacing: 2) {
+            Text("Your hall of achievements")
+                .font(AlphonsoFont.display(22, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+            Text("League, friends and badges")
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding(AlphonsoSpacing.md)
+        .alphonsoGlass()
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .frame(maxWidth: .infinity, minHeight: 190, alignment: .bottom)
     }
 }

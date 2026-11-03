@@ -108,4 +108,71 @@ describe("PodcastSearchResults", () => {
     expect(screen.getByText(/searching/i)).toBeInTheDocument();
     expect(screen.queryByText(/no episodes match/i)).not.toBeInTheDocument();
   });
+
+  it("folder and episode rows carry 3D icons on colour tiles", () => {
+    const { container } = render(
+      <ListenFolderView folders={folders} episodes={[episode]} segments={["en", "a1"]} />,
+    );
+    const icons = [...container.querySelectorAll("img")].map((i) => i.getAttribute("src"));
+    expect(icons).toContain("/icons3d/headphone.png");
+    expect(container.querySelector("[data-tone]")).not.toBeNull();
+  });
+
+  it("the empty state shows Alphonso", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "a1"]} />);
+    expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
+});
+
+describe("Listen in the studio", () => {
+  it("the folder tree sits in front of the radio studio, under a large title", () => {
+    const { container } = render(
+      <ListenFolderView folders={folders} episodes={[]} segments={[]} />,
+    );
+    expect(container.querySelector('[data-scene="listen"] img')?.getAttribute("src")).toBe(
+      "/scenes/listen.jpg",
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Listen" }).className).toContain(
+      "text-3xl",
+    );
+  });
+
+  it("search results keep the studio behind them", () => {
+    const { container } = render(
+      <PodcastSearchResults query="coffee" results={[]} isLoading={false} />,
+    );
+    expect(container.querySelector('[data-scene="listen"]')).not.toBeNull();
+  });
+
+  it("the empty state sits on a card, not straight on the scene", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "a1"]} />);
+    const text = screen.getByText(/Nothing here yet/);
+    expect(text.closest("[data-surface]")).not.toBeNull();
+  });
+});
+
+describe("Listen folder not found", () => {
+  it("the message and the way back sit on a card above the scene", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "nope"]} />);
+    const text = screen.getByText(/couldn.t find that folder/i);
+    expect(text.closest("[data-surface]")).not.toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Back to all folders" }).closest("[data-surface]"),
+    ).not.toBeNull();
+  });
+});
+
+describe("Listen while loading", () => {
+  it("the studio is already there while the folders load, so it does not pop in", async () => {
+    const { ListenBrowser } = await import("./listen");
+    const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <ListenBrowser segments={[]} />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(container.querySelector('[data-scene="listen"]')).not.toBeNull();
+  });
 });

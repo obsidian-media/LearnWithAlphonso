@@ -29,8 +29,8 @@ struct StatusHeaderView: View {
                     // used as long as it actually fits.
                     HStack(spacing: AlphonsoSpacing.sm) {
                         streakPill(progress: progress)
-                        statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                        statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                        statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         Spacer()
                         leagueBadge(progress: progress)
                     }
@@ -40,8 +40,8 @@ struct StatusHeaderView: View {
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                         HStack(spacing: AlphonsoSpacing.sm) {
                             streakPill(progress: progress)
-                            statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                            statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                            statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                            statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         }
                         leagueBadge(progress: progress)
                     }
@@ -53,19 +53,14 @@ struct StatusHeaderView: View {
                     // centered/stretched, matching how the rows above read.
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
                         streakPill(progress: progress)
-                        statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                        statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                        statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         leagueBadge(progress: progress)
                     }
                 }
 
-                // Direct user feedback (see this file's own header doc
-                // comment) was that the Learn tab "feels like an empty
-                // piece of background with some written knowledge on
-                // it" -- this banner is the fix for the top of that
-                // screen specifically (LessonBrowserView's row-card
-                // work below addresses the rest of it).
-                AlphonsoMascotBanner(mascot: .alphonso, message: greeting(streak: progress.streak))
+                // The greeting that used to be a small banner here is now Alphonso's speech bubble on
+                // the Learn path map (LearnPathMap), built from `greeting(streak:)` below.
             }
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.vertical, AlphonsoSpacing.sm)
@@ -73,7 +68,8 @@ struct StatusHeaderView: View {
         }
     }
 
-    private func greeting(streak: Int) -> String {
+    /// What Alphonso says on the Learn screen. The path map shows it in his speech bubble.
+    static func greeting(streak: Int) -> String {
         streak > 0 ? "Nice \(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"
     }
 
@@ -81,35 +77,35 @@ struct StatusHeaderView: View {
     // with no unit -- combine + an explicit label ("Hearts: 5") is the only
     // way VoiceOver can tell this pill apart from any other bare-number
     // pill next to it.
-    private func statPill(icon: String, label: String, value: String, tint: Color) -> some View {
+    private func statPill(emoji: String, label: String, value: String) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: icon).foregroundStyle(tint).accessibilityHidden(true)
+            Icon3DView(emoji: emoji, size: 22)
             Text(value)
-                .font(AlphonsoFont.sans(15, weight: .bold))
+                .font(AlphonsoFont.display(16, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ink)
         }
-        .padding(.horizontal, AlphonsoSpacing.sm + 2)
-        .padding(.vertical, 6)
-        .background(AlphonsoColor.parchment, in: Capsule())
-        .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .padding(.leading, 5)
+        .padding(.trailing, AlphonsoSpacing.sm + 4)
+        .padding(.vertical, 4)
+        .background(.regularMaterial, in: Capsule())
+        .alphonsoLift()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label): \(value)")
     }
 
     private func streakPill(progress: LessonCompletionProgress) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(AlphonsoColor.ember)
+            Icon3DView(emoji: "\u{1F525}", size: 22)
                 .pulsingGlow()
-                .accessibilityHidden(true)
             Text("\(progress.streak)")
-                .font(AlphonsoFont.sans(15, weight: .bold))
+                .font(AlphonsoFont.display(16, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ink)
         }
-        .padding(.horizontal, AlphonsoSpacing.sm + 2)
-        .padding(.vertical, 6)
-        .background(AlphonsoColor.parchment, in: Capsule())
-        .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .padding(.leading, 5)
+        .padding(.trailing, AlphonsoSpacing.sm + 4)
+        .padding(.vertical, 4)
+        .background(.regularMaterial, in: Capsule())
+        .alphonsoLift()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Streak: \(progress.streak) day\(progress.streak == 1 ? "" : "s")")
     }

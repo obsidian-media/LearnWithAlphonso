@@ -238,6 +238,11 @@ jobs:
       - name: Run the signed-in journey
         run: bunx playwright test e2e/signed-in.spec.ts --reporter=github,html
 
+      # Screenshots for a person to review, not a gate: a flaky capture must never block a merge.
+      - name: Capture the visual refresh screenshots
+        continue-on-error: true
+        run: bunx playwright test e2e/visual-refresh.spec.ts --reporter=github --output=test-results/visual-refresh-run
+
       - name: Upload Playwright report and traces
         if: always()
         uses: actions/upload-artifact@v4

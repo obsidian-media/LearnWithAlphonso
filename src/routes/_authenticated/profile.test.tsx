@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -367,5 +367,48 @@ describe("Profile page", () => {
 
     expect(screen.getByRole("button", { name: "Delete my account" })).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("DELETE")).not.toBeInTheDocument();
+  });
+
+  it("shows XP, streak and freezes as big numbers with 3D icons", async () => {
+    useProgress.setState({ xp: 500, streak: 4, streakFreezes: 2 });
+    const { container } = renderPage();
+    await screen.findByRole("heading", { name: "Ada" });
+    const stats = [...container.querySelectorAll<HTMLElement>("[data-big-stat]")];
+    expect(stats.map((s) => s.querySelector("img")?.getAttribute("src"))).toEqual([
+      "/icons3d/high_voltage.png",
+      "/icons3d/fire.png",
+      "/icons3d/snowflake.png",
+    ]);
+    expect(stats.map((s) => s.dataset.tone)).toEqual(["sun", "coral", "sky"]);
+  });
+
+  it("the Friends link is a tile with a 3D icon", async () => {
+    renderPage();
+    const link = await screen.findByRole("link", { name: /Friends/ });
+    expect(link.querySelector("img")?.getAttribute("src")).toBe("/icons3d/busts_in_silhouette.png");
+  });
+});
+
+describe("Profile in the hall of achievements", () => {
+  it("the hall scene is behind the hero, and the rest sits on a solid sheet", async () => {
+    const { container } = renderPage();
+    await screen.findByRole("heading", { level: 1 });
+    expect(container.querySelector('[data-scene="profile"] img')?.getAttribute("src")).toBe(
+      "/scenes/profile.jpg",
+    );
+    const sheet = container.querySelector("[data-sheet]")!;
+    expect(
+      within(sheet as HTMLElement).getByRole("heading", { name: "Achievements" }),
+    ).toBeTruthy();
+    // The big numbers stay in the hero, above the sheet.
+    expect(container.querySelector("[data-big-stat]")?.closest("[data-sheet]")).toBeNull();
+  });
+
+  it("unlocked achievements come first, so the wall does not open on grey", async () => {
+    useProgress.setState({ unlockedAchievements: [ACHIEVEMENTS[5].id] });
+    const { container } = renderPage();
+    await screen.findByRole("heading", { level: 1 });
+    const first = container.querySelector("[data-achievement]");
+    expect(first?.getAttribute("data-achievement")).toBe(ACHIEVEMENTS[5].id);
   });
 });

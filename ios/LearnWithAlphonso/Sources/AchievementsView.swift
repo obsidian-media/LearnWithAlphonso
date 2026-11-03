@@ -143,14 +143,21 @@ struct AchievementBadgeView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: symbolName)
-                .font(.title3)
-                .foregroundStyle(.white)
-                .frame(width: 48, height: 48)
-                .background(unlocked ? tierColor : Color(white: 0.78))
-                .clipShape(Circle())
-                // Decorative: an SF Symbol with no label reads as its default name ("Favorite" for the star).
-                .accessibilityHidden(true)
+            Group {
+                if let emoji = Icon3DCatalog.emoji(forAchievementGlyph: achievement.icon) {
+                    Icon3DView(emoji: emoji, size: 32)
+                        .saturation(unlocked ? 1 : 0)
+                } else {
+                    Image(systemName: symbolName)
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                }
+            }
+            .frame(width: 52, height: 52)
+            .background(unlocked ? tierColor : Color(white: 0.78))
+            .clipShape(Circle())
+            // Decorative: the title below says what the badge is.
+            .accessibilityHidden(true)
             Text(achievement.title)
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
@@ -164,7 +171,8 @@ struct AchievementBadgeView: View {
         }
         .padding(AlphonsoSpacing.sm + 4)
         .frame(maxWidth: .infinity)
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
+        .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 4, style: .continuous))
+        .alphonsoLift(unlocked)
         .opacity(unlocked ? 1 : 0.55)
         .accessibilityElement(children: .combine)
         .accessibilityValue(unlocked ? "Unlocked" : "Locked")

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 
 const mockPathname = "/converse";
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -82,5 +82,54 @@ describe("Converse route", () => {
       expect(screen.getByRole("heading", { name: c.title })).toBeInTheDocument();
     }
     expect(screen.queryByRole("heading", { name: "Order coffee" })).toBeNull();
+  });
+  it("scenarios render as colour tiles, toned in list order", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const tiles = [...container.querySelectorAll<HTMLElement>("[data-scenario-tile] [data-tone]")];
+    expect(tiles.length).toBe(scenariosFor("en").length);
+    expect(tiles[0].dataset.tone).toBe("coral");
+    expect(tiles[1].dataset.tone).toBe("sky");
+    expect(tiles[5].dataset.tone).toBe("coral");
+  });
+
+  it("scenario tiles show 3D icons, not emoji text", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const first = container.querySelector("[data-scenario-tile]")!;
+    expect(first.querySelector("img")?.getAttribute("src")).toMatch(/^\/icons3d\/.+\.png$/);
+  });
+
+  it("each campaign renders as a hero card with its scene count and 3D icon", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const heroes = container.querySelectorAll("[data-campaign-hero]");
+    expect(heroes.length).toBe(campaignsFor("en").length);
+    const c = campaignsFor("en")[0];
+    expect(heroes[0]).toHaveTextContent(`${c.scenes.length} scenes`);
+    expect(heroes[0].querySelector("img")?.getAttribute("src")).toMatch(/^\/icons3d\//);
+  });
+
+  it("campaign hero text is never faded (white on moss is only 4.52:1 in studio-ink)", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const hero = container.querySelector("[data-campaign-hero]")!;
+    for (const el of hero.querySelectorAll("p, h2, span")) {
+      expect(el.className).not.toMatch(/opacity-/);
+    }
+  });
+});
+
+describe("Practice in the cafe", () => {
+  it("the cafe is behind Practice, the title on a card and the scenes on a sheet", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    expect(container.querySelector('[data-scene="practice"] img')?.getAttribute("src")).toBe(
+      "/scenes/practice.jpg",
+    );
+    const title = screen.getByRole("heading", { level: 1, name: "Practice out loud" });
+    expect(title.closest("[data-surface]")).not.toBeNull();
+    const sheet = container.querySelector("[data-sheet]") as HTMLElement;
+    expect(within(sheet).getByRole("heading", { name: "Scenarios" })).toBeInTheDocument();
   });
 });

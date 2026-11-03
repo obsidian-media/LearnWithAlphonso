@@ -23,11 +23,26 @@ struct PaywallView: View {
     @State private var isPresentingManageSubscriptions = false
     @Environment(\.openURL) private var openURL
 
+    /// On the Hector tab the paywall paints the library clip behind itself, with Hector waving in it (his head is at 47%
+    /// of the clip, his feet at 80%). Sheets from lesson complete or a refusal keep the flat surface. Look only: no
+    /// copy or logic depends on this.
+    private var onScene: Bool { source == .hectorTab }
+
     var body: some View {
         let presentation = entitlementStore.presentation
         let state = entitlementStore.state
         ScrollView {
             VStack(spacing: AlphonsoSpacing.lg) {
+                if onScene {
+                    // Room for Hector: the offer starts around his waist, below the head and the wave.
+                    Color.clear
+                        .containerRelativeFrame(.vertical) { height, _ in height * 0.6 }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Hector, waving in his library")
+                        .accessibilityAddTraits(.isImage)
+                }
+
+                VStack(spacing: AlphonsoSpacing.lg) {
                 Text(presentation.titleText)
                     .font(AlphonsoFont.display(28, weight: .bold))
                     .foregroundStyle(AlphonsoColor.ink)
@@ -62,12 +77,17 @@ struct PaywallView: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 legalLinks
+                }
+                .padding(onScene ? AlphonsoSpacing.md : 0)
+                .alphonsoGlass(if: onScene)
             }
             .padding(AlphonsoSpacing.md)
             .frame(maxWidth: 480)
             .frame(maxWidth: .infinity)
         }
-        .background(AlphonsoColor.surface)
+        .background(onScene ? Color.clear : AlphonsoColor.surface)
+        // The clip is anchored 30% down, like the web's backdrop, so a wide screen keeps Hector's head and wave in view.
+        .screenScene(.hector, clip: .hector, clipAnchor: 0.3, if: onScene)
         .task {
             entitlementStore.presented(from: source)
             await entitlementStore.loadOffering()

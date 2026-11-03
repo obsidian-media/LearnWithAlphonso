@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -55,6 +55,7 @@ vi.mock("framer-motion", () => ({
     },
   ),
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  useReducedMotion: () => false,
 }));
 
 const setCefrLevel = vi.fn();
@@ -141,6 +142,54 @@ describe("Learn page", () => {
     renderPage();
     await screen.findByText(a1Units[0].title);
     expect(screen.queryByText("Not sure where to start?")).not.toBeInTheDocument();
+  });
+
+  it("shows one Continue card for the first undone lesson", async () => {
+    renderPage();
+    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    expect(link).toHaveAttribute("href", `/lesson/${firstLesson.id}`);
+  });
+
+  it("the Continue card's small text sits on surface chips, never faded or ember-on-surface", async () => {
+    // Small text straight on the ember card is below 4.5:1 in meadow, canopy and studio-ink.
+    renderPage();
+    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    for (const label of [/^Up next/, /^Continue$/]) {
+      const el = within(link).getByText(label);
+      expect(el.className).toContain("bg-surface");
+      expect(el.className).toContain("text-ink");
+      expect(el.className).not.toMatch(/opacity-|text-ember/);
+    }
+  });
+
+  it("moves the Continue card on once a lesson is done", async () => {
+    useProgress.setState({ completedLessons: [firstLesson.id] });
+    renderPage();
+    expect(
+      await screen.findByRole("link", { name: `Continue: ${secondLesson.title}` }),
+    ).toBeInTheDocument();
+  });
+
+  it("Continue opens the hearts modal instead when out of hearts", async () => {
+    useProgress.setState({ hearts: 0 });
+    renderPage();
+    const button = await screen.findByRole("button", {
+      name: `Continue: ${firstLesson.title} (out of hearts)`,
+    });
+    expect(button).toBeInTheDocument();
+  });
+
+  it("greets the learner with Alphonso", async () => {
+    renderPage();
+    expect(await screen.findByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
+
+  it("lesson nodes use 3D icons: a target for the next lesson, a lock for later ones", async () => {
+    renderPage();
+    const start = await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
+    expect(start.querySelector("img")?.getAttribute("src")).toBe("/icons3d/bullseye.png");
+    const locked = screen.getByRole("note", { name: `${secondLesson.title} (locked)` });
+    expect(locked.querySelector("img")?.getAttribute("src")).toBe("/icons3d/locked.png");
   });
 
   it("marks the first undone lesson active and later ones locked", async () => {
@@ -258,5 +307,43 @@ describe("Learn page", () => {
     );
     await user.click(await screen.findByRole("button", { name: /Use \d+ XP for a heart/ }));
     expect(await screen.findByText("Not enough XP for a heart.")).toBeInTheDocument();
+  });
+});
+
+describe("Learn in the garden", () => {
+  it("shows the garden scene behind the page", async () => {
+    const { container } = renderPage();
+    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    const scene = container.querySelector('[data-scene="learn"]');
+    expect(scene?.querySelector("video")?.getAttribute("src")).toBe("/clips/learn.mp4");
+  });
+
+  it("Alphonso waves in the garden clip, his greeting in a bubble pinned above him and read out once", async () => {
+    useProgress.setState({ streak: 12 });
+    const { container } = renderPage();
+    await screen.findByRole("img", { name: /alphonso/i });
+    const greeting = "Nice 12-day streak! Ready for today's lesson?";
+    // The bubble is drawn on the clip (decorative), the words are in the page for screen readers.
+    expect(container.querySelector('[data-scene="learn"] [data-pin]')?.textContent).toBe(greeting);
+    const map = container.querySelector("[data-learn-map]") as HTMLElement;
+    expect(within(map).getByText(`Alphonso: ${greeting}`)).toBeInTheDocument();
+    // No separate cut-out on top of the clip.
+    expect(container.querySelector("[data-figure]")).toBeNull();
+  });
+
+  it("the map shows the current unit's lessons as big nodes, the next one marked current", async () => {
+    const { container } = renderPage();
+    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    const map = container.querySelector("[data-learn-map]")!;
+    const nodes = map.querySelectorAll("[data-node]");
+    expect(nodes.length).toBeGreaterThan(1);
+    expect(nodes[0].getAttribute("data-node")).toBe("next");
+    expect(nodes[1].getAttribute("data-node")).toBe("locked");
+  });
+
+  it("everything below the map sits on a solid sheet, never straight on the scene", async () => {
+    renderPage();
+    const team = await screen.findByTestId("team-mission-card");
+    expect(team.closest("[data-sheet]")).not.toBeNull();
   });
 });

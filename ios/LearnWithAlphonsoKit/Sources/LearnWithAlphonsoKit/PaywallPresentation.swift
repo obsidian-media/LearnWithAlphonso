@@ -51,6 +51,8 @@ public enum PaywallSource: String, Sendable, Equatable, CaseIterable {
     case hectorRefused = "hector_not_entitled"
     /// The "Practise speaking with Hector" card on the Practice tab.
     case practiceCard = "practice_hector_card"
+    /// The "Practise with Hector" button on the lesson-complete screen.
+    case lessonComplete = "lesson_complete"
 
     /// The RevenueCat custom attribute key the source is written under.
     public static let attributeKey = "paywall_source"

@@ -226,3 +226,67 @@ describe("web Hector", () => {
     );
   });
 });
+
+describe("web Hector in the new look", () => {
+  it("hector page shows the mascot art and status pill", async () => {
+    const { mascotArt } = await import("../../lib/mascot-poses");
+    const players: FakeAudio[] = [];
+    vi.stubGlobal(
+      "Audio",
+      class extends FakeAudio {
+        constructor(src: string) {
+          super(src);
+          players.push(this);
+        }
+      },
+    );
+    let answer: (r: Response) => void = () => {};
+    routes["/api/hector-respond"] = (() =>
+      new Promise<Response>((r) => (answer = r))) as unknown as Handler;
+    await renderPage();
+
+    const art = () => screen.getByRole("img", { name: "Hector" });
+    expect((await screen.findByRole("img", { name: "Hector" })).getAttribute("src")).toBe(
+      mascotArt("hectorIdle").src,
+    );
+    expect(screen.queryByText("Thinking", { exact: true })).toBeNull();
+
+    await userEvent.type(screen.getByLabelText("Message Hector"), "Bonjour");
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Thinking", { exact: true })).toBeInTheDocument();
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorThinking").src));
+
+    answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
+    expect(await screen.findByText("Speaking", { exact: true })).toBeInTheDocument();
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorSpeaking").src));
+
+    players[players.length - 1].onended?.();
+    await waitFor(() => expect(screen.queryByText("Speaking", { exact: true })).toBeNull());
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorIdle").src));
+  });
+});
+
+describe("web Hector in his library", () => {
+  it("a free learner meets Hector standing in his library above the offer", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    const { container } = await renderPage();
+    // Hector waves in the library clip; the space above the offer is where he stands, named for screen readers.
+    await screen.findByRole("img", { name: /Hector/ });
+    expect(container.querySelector('[data-scene="hector"] video')?.getAttribute("src")).toBe(
+      "/clips/hector.mp4",
+    );
+    expect(container.querySelector("[data-figure]")).toBeNull();
+    // The offer starts at Hector's waist: in the clip he stands from 47% (head) to 80% (feet) of a frame about
+    // 160 px taller than the screen, so his waist is near 74% of the screen. Small viewport units: the offer does
+    // not jump when Safari's toolbar collapses mid-scroll.
+    expect(screen.getByRole("img", { name: /Hector/ }).className).toContain(
+      "h-[calc(74svh-4.5rem)]",
+    );
+  });
+
+  it("a Pro learner talks to Hector in front of the library", async () => {
+    const { container } = await renderPage();
+    await screen.findByLabelText("Message Hector");
+    expect(container.querySelector('[data-scene="hector"]')).not.toBeNull();
+  });
+});

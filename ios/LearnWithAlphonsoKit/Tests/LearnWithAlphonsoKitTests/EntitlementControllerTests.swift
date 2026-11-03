@@ -114,7 +114,7 @@ final class EntitlementControllerTests: XCTestCase {
 
     func testSourceAttributeValuesNeverChange() {
         XCTAssertEqual(PaywallSource.attributeKey, "paywall_source")
-        XCTAssertEqual(PaywallSource.allCases.map(\.rawValue), ["hector_tab", "hector_not_entitled", "practice_hector_card"])
+        XCTAssertEqual(PaywallSource.allCases.map(\.rawValue), ["hector_tab", "hector_not_entitled", "practice_hector_card", "lesson_complete"])
     }
 
     // MARK: - Offering states

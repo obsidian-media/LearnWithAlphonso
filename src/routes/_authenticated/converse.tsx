@@ -1,12 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
+import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { useMemo } from "react";
 import { campaignsFor } from "../../data/campaigns";
 import { scenariosFor } from "../../data/scenarios";
 import { useProgress } from "../../lib/progress";
+import { tileTone } from "../../lib/tile-tones";
+import { Icon3D } from "../../components/Icon3D";
+import { TileCard } from "../../components/ui/TileCard";
 import { HectorInvite } from "../../components/HectorInvite";
-import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/converse")({
   component: ConversePage,
@@ -29,39 +32,45 @@ export const Route = createFileRoute("/_authenticated/converse")({
 });
 
 function ConversePage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   // Titles, blurbs and the linked conversation follow the active course.
   const course = useProgress((s) => s.course);
   const scenarios = useMemo(() => scenariosFor(course), [course]);
   const campaigns = useMemo(() => campaignsFor(course), [course]);
   return (
     <MobileFrame>
-      <div className="px-6 pb-10 pt-6">
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-          Conversation partner
-        </p>
-        <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
-          Practice out loud
-        </h1>
-        <p className="mt-1.5 max-w-[320px] text-sm text-ink-soft/80">
-          Pick a scene and roleplay with an AI tutor. Type or hold to speak — get a natural reply
-          back.
-        </p>
-
-        {/* Pro's one feature is Hector: offered where a learner is already practising speaking. Hidden for Pro. */}
-        <div className="mt-6">
-          <HectorInvite source="practice_hector_card" />
+      <SceneBackdrop scene="practice" focus="50% 80%" />
+      <div className="relative z-10 px-6 pb-10 pt-6">
+        <div
+          data-surface
+          className="rounded-3xl bg-surface/85 p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md"
+        >
+          <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
+            Practice out loud
+          </h1>
+          <p className="mt-1.5 max-w-[320px] text-sm text-ink-soft">
+            Pick a scene and roleplay with an AI tutor. Type or hold to speak and get a natural
+            reply back.
+          </p>
         </div>
 
-        {/* V4 candidate #4: connected multi-scene campaigns, additive
+        {/* The cafe shows through here, then the scenes slide over it on a sheet. */}
+        <div aria-hidden="true" className="h-40" />
+
+        <div
+          data-sheet
+          className="-mx-6 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-6 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
+        >
+          {/* Pro's one feature is Hector: offered where a learner is already practising speaking. Hidden for Pro. */}
+          <div>
+            <HectorInvite source="practice_hector_card" />
+          </div>
+
+          {/* V4 candidate #4: connected multi-scene campaigns, additive
             alongside the one-shot scenarios below -- see
             docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md */}
-        {campaigns.length > 0 && (
-          <div className="mt-7">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
-              Campaigns
-            </p>
-            <div className={isStudioInk ? "divide-y divide-hairline" : "grid grid-cols-1 gap-3"}>
+          {campaigns.length > 0 && (
+            <div className="mt-7 grid grid-cols-1 gap-3">
+              <h2 className="font-display text-xl font-bold text-ink">Campaigns</h2>
               {campaigns.map((c, i) => (
                 <motion.div
                   key={c.id}
@@ -72,119 +81,54 @@ function ConversePage() {
                   <Link
                     to="/campaign/$campaignId"
                     params={{ campaignId: c.id }}
-                    className={
-                      isStudioInk
-                        ? "flex items-center gap-4 py-4 transition-opacity hover:opacity-80"
-                        : "hard-shadow flex items-center gap-4 rounded-2xl border border-hairline bg-surface p-4 transition-transform active:scale-[0.99]"
-                    }
+                    data-campaign-hero=""
+                    className="card-lift flex items-center gap-4 rounded-3xl bg-gradient-to-br from-moss to-moss-deep p-4 text-primary-foreground transition-transform active:scale-[0.99]"
                   >
-                    <div
-                      className={
-                        isStudioInk
-                          ? "grid size-12 shrink-0 place-items-center text-2xl"
-                          : "grid size-12 shrink-0 place-items-center rounded-xl bg-parchment text-2xl"
-                      }
-                    >
-                      {c.emoji}
-                    </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="truncate font-display text-base font-semibold text-ink">
-                          {c.title}
-                        </h2>
-                        <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-soft/70">
-                          {c.level}
-                        </span>
-                        <span className="rounded-full border border-ember/30 bg-ember/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-ember">
-                          {c.scenes.length} scenes
-                        </span>
-                      </div>
-                      <p className="mt-0.5 truncate text-xs text-ink-soft/80">{c.blurb}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
+                        Campaign · {c.level}
+                      </p>
+                      <h2 className="mt-0.5 font-display text-xl font-bold leading-tight">
+                        {c.title}
+                      </h2>
+                      <p className="mt-0.5 text-xs">{c.blurb}</p>
+                      <span className="mt-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">
+                        {c.scenes.length} scenes
+                      </span>
                     </div>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="size-5 shrink-0 text-ink-soft/50"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M9 6l6 6-6 6"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <Icon3D emoji={c.emoji} size={64} className="shrink-0" />
                   </Link>
                 </motion.div>
               ))}
             </div>
-            <p className="mb-2 mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
-              Scenarios
-            </p>
-          </div>
-        )}
+          )}
 
-        <div
-          className={
-            isStudioInk
-              ? `${campaigns.length > 0 ? "" : "mt-7 "}divide-y divide-hairline`
-              : `${campaigns.length > 0 ? "" : "mt-7 "}grid grid-cols-1 gap-3`
-          }
-        >
-          {scenarios.map((s, i) => (
-            <motion.div
-              key={s.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Link
-                to="/converse/$scenarioId"
-                params={{ scenarioId: s.id }}
-                className={
-                  isStudioInk
-                    ? "flex items-center gap-4 py-4 transition-opacity hover:opacity-80"
-                    : "hard-shadow flex items-center gap-4 rounded-2xl border border-hairline bg-surface p-4 transition-transform active:scale-[0.99]"
-                }
+          <h2 className="mb-3 mt-8 font-display text-xl font-bold text-ink">Scenarios</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {scenarios.map((s, i) => (
+              <motion.div
+                key={s.id}
+                data-scenario-tile=""
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div
-                  className={
-                    isStudioInk
-                      ? "grid size-12 shrink-0 place-items-center text-2xl"
-                      : "grid size-12 shrink-0 place-items-center rounded-xl bg-parchment text-2xl"
-                  }
+                <Link
+                  to="/converse/$scenarioId"
+                  params={{ scenarioId: s.id }}
+                  className="block h-full rounded-3xl transition-transform active:scale-[0.98]"
                 >
-                  {s.emoji}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="truncate font-display text-base font-semibold text-ink">
-                      {s.title}
-                    </h2>
-                    <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-soft/70">
-                      {s.level}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-xs text-ink-soft/80">{s.blurb}</p>
-                </div>
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-5 shrink-0 text-ink-soft/50"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M9 6l6 6-6 6"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <TileCard
+                    tone={tileTone(i)}
+                    icon={s.emoji}
+                    title={s.title}
+                    subtitle={s.blurb}
+                    badge={s.level}
                   />
-                </svg>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </MobileFrame>

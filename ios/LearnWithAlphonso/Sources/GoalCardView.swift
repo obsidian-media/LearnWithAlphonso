@@ -38,7 +38,7 @@ struct GoalCardView: View {
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .listRowBackground(AlphonsoTileTone.sun.background)
         }
         // Reloads when the course changes; the previous course's slow answer is ignored in `load()`.
         .task(id: courseCode) { await load() }

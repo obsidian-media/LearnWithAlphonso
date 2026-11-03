@@ -58,7 +58,7 @@ struct ListenView: View {
                     )
                 }
             }
-            .background(AlphonsoColor.surface)
+            .screenScene(.listen)
             .navigationTitle("Listen")
             .searchable(text: $searchQuery, prompt: "Search episodes")
         }
@@ -99,6 +99,8 @@ struct ListenView: View {
     private var content: some View {
         if isLoading {
             ProgressView("Loading episodes…")
+                .padding(AlphonsoSpacing.lg)
+                .alphonsoGlass()
                 .tint(AlphonsoColor.moss)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if !networkMonitor.isConnected && folders.isEmpty {
@@ -118,6 +120,9 @@ struct ListenView: View {
                     Button("Try again") { Task { await load() } }
                         .tint(AlphonsoColor.moss)
                 }
+                .padding(AlphonsoSpacing.md)
+                .alphonsoGlass()
+                .padding(AlphonsoSpacing.md)
             } else {
                 OfflineEpisodeList(episodes: offline, player: player, downloads: downloads)
             }
@@ -130,16 +135,27 @@ struct ListenView: View {
                 Button("Try again") { Task { await load() } }
                     .tint(AlphonsoColor.moss)
             }
+            .padding(AlphonsoSpacing.md)
+            .alphonsoGlass()
+            .padding(AlphonsoSpacing.md)
         } else if visibleFolders.isEmpty {
             // A course with nothing published is a stated state, not a blank list.
             ContentUnavailableView {
-                Label(PodcastLibraryCopy.emptyTitle(courseCode: courseCode), systemImage: "headphones")
+                VStack(spacing: AlphonsoSpacing.sm) {
+                    MascotTile(moment: .emptyState, size: 120, tone: .mint)
+                        .alphonsoLift()
+                        .accessibilityHidden(true)
+                    Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
+                }
             } description: {
                 Text(PodcastLibraryCopy.emptyMessage)
             } actions: {
                 Button("Refresh") { Task { await load() } }
                     .tint(AlphonsoColor.moss)
             }
+            .padding(AlphonsoSpacing.md)
+            .alphonsoGlass()
+            .padding(AlphonsoSpacing.md)
         } else {
             PodcastFolderListing(
                 folder: nil,
@@ -148,7 +164,9 @@ struct ListenView: View {
                 player: player,
                 downloads: downloads,
                 networkMonitor: networkMonitor,
-                onEpisodesLoaded: rememberEpisodes
+                onEpisodesLoaded: rememberEpisodes,
+                // The root screen already paints the studio behind every state, the listing included.
+                showsScene: false
             )
         }
     }
@@ -196,6 +214,61 @@ struct ListenView: View {
     }
 }
 
+/// The large header at the top of a Listen list: the studio scene shows above a glass title card.
+private struct ListenSceneHeader: View {
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(AlphonsoFont.display(30, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+                .accessibilityAddTraits(.isHeader)
+            Text(subtitle)
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding(AlphonsoSpacing.md)
+        .alphonsoGlass()
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .frame(maxWidth: .infinity, minHeight: 190, alignment: .bottomLeading)
+    }
+}
+
+/// A large glass card for a folder or an episode: a 3D icon, the title and a line under it. Presentational, like
+/// AlphonsoRowCard: wrap it in a Button or NavigationLink. `accent` marks an episode that is part-way through.
+private struct ListenGlassRow: View {
+    let title: String
+    let subtitle: String
+    let emoji: String
+    var accent: Color?
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.md) {
+            Icon3DView(emoji: emoji, size: 52)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(AlphonsoFont.display(18, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .multilineTextAlignment(.leading)
+                Text(subtitle)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .multilineTextAlignment(.leading)
+            }
+            Spacer(minLength: 0)
+            if let accent {
+                Circle().fill(accent).frame(width: 10, height: 10).accessibilityHidden(true)
+            }
+        }
+        .padding(AlphonsoSpacing.md)
+        .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
+        .alphonsoGlass()
+        .accessibilityElement(children: .combine)
+    }
+}
+
 /// One level of the tree: child folders, then this folder's episodes.
 ///
 /// Owns no `NavigationStack` -- see ListenView's doc comment.
@@ -209,6 +282,8 @@ private struct PodcastFolderListing: View {
     let downloads: PodcastDownloadManager
     let networkMonitor: NetworkMonitor
     let onEpisodesLoaded: ([PodcastEpisode]) -> Void
+    /// Pushed folders paint their own studio; the root's listing sits on the one ListenView paints.
+    var showsScene: Bool = true
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var isLoadingEpisodes = false
@@ -220,6 +295,13 @@ private struct PodcastFolderListing: View {
 
     var body: some View {
         List {
+            // A large header over the studio scene; it also reports the scroll position for the parallax.
+            ListenSceneHeader(title: folder?.title ?? "Listen", subtitle: folder == nil ? "Podcasts to practise your ear" : "Episodes and folders")
+                .sceneScrollProbe()
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
             if !children.isEmpty {
                 Section {
                     ForEach(children) { child in
@@ -234,12 +316,13 @@ private struct PodcastFolderListing: View {
                                 onEpisodesLoaded: onEpisodesLoaded
                             )
                         } label: {
-                            AlphonsoRowCard(
+                            ListenGlassRow(
                                 title: child.title,
                                 subtitle: child.description ?? "Browse episodes",
-                                leadingEmoji: "📁"
+                                emoji: "📁"
                             )
                         }
+                        .listRowSeparator(.hidden)
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -258,9 +341,10 @@ private struct PodcastFolderListing: View {
                                 )
                                 downloads.markPlayed(episodeID: episode.id)
                             } label: {
-                                AlphonsoRowCard(
+                                ListenGlassRow(
                                     title: episode.title,
                                     subtitle: subtitle(for: player.resumed(episode)),
+                                    emoji: "🎧",
                                     accent: player.resumed(episode).positionSeconds > 0
                                         ? AlphonsoColor.ember
                                         : AlphonsoColor.moss
@@ -274,6 +358,7 @@ private struct PodcastFolderListing: View {
                                 player: player
                             )
                         }
+                        .listRowSeparator(.hidden)
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -300,7 +385,7 @@ private struct PodcastFolderListing: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .screenScene(.listen, if: showsScene)
         .navigationTitle(folder?.title ?? "Listen")
         .task(id: folder?.id) { await loadEpisodes() }
     }

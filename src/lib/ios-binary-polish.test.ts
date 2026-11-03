@@ -474,12 +474,30 @@ describe("app icon", () => {
       .readdirSync(path.join(root, "ios/LearnWithAlphonso/Sources/Assets.xcassets"))
       .filter((d) => /\.(imageset|appiconset)$/.test(d))
       .sort();
-    expect(sets).toEqual([
-      "Alphonso.imageset",
-      "AppIcon.appiconset",
-      "GoogleG.imageset",
-      "Hector.imageset",
-    ]);
+    // The four originals plus one image set per approved mascot pose (scripts/import-mascot-poses.ts), nothing else.
+    const poses = (JSON.parse(read("src/data/mascot-poses-available.json")) as string[]).map(
+      (n) => `${n.replace(/^./, (c) => c.toUpperCase())}.imageset`,
+    );
+    // Plus one image set per approved scene and figure (scripts/import-scenes.ts).
+    const scenery = JSON.parse(read("src/data/scenes.json")) as {
+      scenes: string[];
+      figures: string[];
+      clips?: string[];
+    };
+    const sceneSets = [
+      ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
+      ...(scenery.clips ?? []).map((n) => `Clip-${n}-poster.imageset`),
+    ];
+    expect(sets).toEqual(
+      [
+        "Alphonso.imageset",
+        "AppIcon.appiconset",
+        "GoogleG.imageset",
+        "Hector.imageset",
+        ...poses,
+        ...sceneSets,
+      ].sort(),
+    );
     for (const f of ["GoogleG.png", "GoogleG@2x.png", "GoogleG@3x.png"]) {
       expect(
         fs.existsSync(

@@ -113,6 +113,7 @@ beforeEach(() => {
   pickReinforcementQuestion.mockReset();
   pickReinforcementQuestion.mockReturnValue(null);
   useProgress.getState().reset();
+  useProgress.setState({ streak: 7 });
 });
 
 describe("out of hearts", () => {
@@ -171,6 +172,20 @@ describe("out of hearts", () => {
 });
 
 describe("Lesson page", () => {
+  it("overview shows the three steps as coloured cards and a chunky Begin lesson button", async () => {
+    const { container } = renderPage();
+    const begin = await screen.findByRole("button", { name: "Begin lesson" });
+    // The shared chunky Button: a bottom edge that presses down.
+    expect(begin.className).toContain("active:translate-y-1");
+    const steps = [...container.querySelectorAll<HTMLElement>("[data-step][data-tone]")];
+    expect(steps.map((s) => s.dataset.tone)).toEqual(["coral", "sky", "mint"]);
+    expect(steps.map((s) => s.querySelector("img")?.getAttribute("src"))).toEqual([
+      "/icons3d/books.png",
+      "/icons3d/bullseye.png",
+      "/icons3d/star.png",
+    ]);
+  });
+
   it("shows a not-found message for an unknown lesson id", async () => {
     currentLessonId = "does-not-exist";
     renderPage();
@@ -500,7 +515,7 @@ describe("Lesson page", () => {
       },
     });
 
-    expect(await screen.findByText("+60 XP")).toBeInTheDocument();
+    expect(await screen.findByLabelText("XP: +60")).toBeInTheDocument();
     expect(screen.getByText("7/8 correct")).toBeInTheDocument();
     expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
     expect(screen.getByText("First strides")).toBeInTheDocument();
@@ -526,8 +541,10 @@ describe("Lesson page", () => {
       await user.click(screen.getByRole("button", { name: label }));
     }
 
-    expect(await screen.findByText("+0 XP")).toBeInTheDocument();
+    expect(await screen.findByLabelText("XP: +0")).toBeInTheDocument();
     expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+    // Nothing was saved, so a streak from the stored progress would be a claim the server never made.
+    expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
   });
 
   it("navigates to /learn when the close button is clicked", async () => {
@@ -765,19 +782,20 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
       const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
       await user.click(screen.getByRole("button", { name: label }));
     }
-    await screen.findByText("+80 XP");
+    await screen.findByLabelText("XP: +80");
   }
 
   it("generates and lets the user practice extra questions", async () => {
-    global.fetch = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          questions: [
-            { prompt: "Extra Q1", choices: ["a", "b"], answerIndex: 0, explanation: "why" },
-          ],
-        }),
-        { status: 200 },
-      ),
+    global.fetch = vi.fn().mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            questions: [
+              { prompt: "Extra Q1", choices: ["a", "b"], answerIndex: 0, explanation: "why" },
+            ],
+          }),
+          { status: 200 },
+        ),
     );
     const user = userEvent.setup();
     await finishLesson(user);
@@ -799,7 +817,9 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
   it("shows a message when no practice could be generated", async () => {
     global.fetch = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ questions: [] }), { status: 200 }));
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ questions: [] }), { status: 200 }),
+      );
     const user = userEvent.setup();
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
@@ -809,7 +829,7 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
   });
 
   it("shows an error message when the request fails", async () => {
-    global.fetch = vi.fn().mockResolvedValue(new Response("err", { status: 500 }));
+    global.fetch = vi.fn().mockImplementation(async () => new Response("err", { status: 500 }));
     const user = userEvent.setup();
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));

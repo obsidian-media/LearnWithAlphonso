@@ -39,4 +39,15 @@ describe("AchievementBadge", () => {
       "border-hairline",
     );
   });
+
+  it("shows the 3D icon for its glyph, and greys it when locked", () => {
+    const flame = ACHIEVEMENTS.find((a) => a.icon === "flame")!;
+    const { container, unmount } = render(<AchievementBadge achievement={flame} unlocked />);
+    const img = container.querySelector("img");
+    expect(img).toHaveAttribute("src", "/icons3d/fire.png");
+    expect(img?.className ?? "").not.toContain("grayscale");
+    unmount();
+    const locked = render(<AchievementBadge achievement={flame} unlocked={false} />);
+    expect(locked.container.querySelector("img")?.className).toContain("grayscale");
+  });
 });

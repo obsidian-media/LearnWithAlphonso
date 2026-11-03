@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
+import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { AI_NARRATED_LABEL } from "../../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../../lib/podcast-player";
 import {
@@ -12,6 +13,9 @@ import {
 } from "../../lib/podcast.functions";
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
+import { Icon3D } from "../../components/Icon3D";
+import { MascotImage } from "../../components/MascotImage";
+import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
 export const Route = createFileRoute("/_authenticated/listen")({
   component: ListenPage,
@@ -53,38 +57,48 @@ export function PodcastSearchResults({
   const play = usePodcastPlayer((state) => state.play);
   const tooShort = normalizeQuery(query) === null;
 
-  if (tooShort) {
-    return <p className="px-5 py-6 text-sm text-ink-soft/70">Keep typing to search episodes.</p>;
-  }
-  if (isLoading) {
-    return <p className="px-5 py-6 text-sm text-ink-soft/70">Searching…</p>;
-  }
-  if (results.length === 0) {
-    return <p className="px-5 py-6 text-sm text-ink-soft/70">No episodes match “{query}”.</p>;
-  }
+  const note = (text: string) => (
+    <>
+      <SceneBackdrop scene="listen" />
+      <p
+        data-surface
+        className="relative z-10 mx-5 my-6 rounded-2xl bg-surface/90 px-4 py-3 text-sm text-ink-soft backdrop-blur-md"
+      >
+        {text}
+      </p>
+    </>
+  );
+  if (tooShort) return note("Keep typing to search episodes.");
+  if (isLoading) return note("Searching…");
+  if (results.length === 0) return note(`No episodes match “${query}”.`);
 
   return (
-    <ul className="space-y-2 px-5 py-4">
-      {results.map((episode) => (
-        <li key={episode.id}>
-          <button
-            type="button"
-            onClick={() => play(episode)}
-            className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-ink">{episode.title}</span>
-              {episode.aiNarrated ? (
-                <span className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</span>
-              ) : null}
-            </span>
-            <span className="tnum ml-3 text-xs text-ink-soft/70">
-              {formatDuration(episode.durationSeconds)}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
+    <>
+      <SceneBackdrop scene="listen" />
+      <ul className="relative z-10 space-y-2 px-5 py-4">
+        {results.map((episode) => (
+          <li key={episode.id}>
+            <button
+              type="button"
+              onClick={() => play(episode)}
+              className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-ink">
+                  {episode.title}
+                </span>
+                {episode.aiNarrated ? (
+                  <span className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+                ) : null}
+              </span>
+              <span className="tnum ml-3 text-xs text-ink-soft/70">
+                {formatDuration(episode.durationSeconds)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -111,13 +125,16 @@ export function ListenFolderView({
   if (segments.length > 0 && !current) {
     return (
       <div className="px-5 py-8">
-        <h1 className="font-display text-xl font-semibold text-ink">Listen</h1>
-        <p className="mt-3 text-sm text-ink-soft/80">
-          We couldn&apos;t find that folder. It may have been renamed or removed.
-        </p>
-        <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-moss">
-          Back to all folders
-        </Link>
+        <SceneBackdrop scene="listen" />
+        <div data-surface className="relative z-10 rounded-3xl bg-surface/90 p-5 backdrop-blur-md">
+          <h1 className="font-display text-3xl font-bold text-ink">Listen</h1>
+          <p className="mt-3 text-sm text-ink-soft/80">
+            We couldn&apos;t find that folder. It may have been renamed or removed.
+          </p>
+          <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-moss">
+            Back to all folders
+          </Link>
+        </div>
       </div>
     );
   }
@@ -131,64 +148,94 @@ export function ListenFolderView({
 
   return (
     <div className="px-5 py-6">
-      <h1 className="font-display text-xl font-semibold text-ink">{current?.title ?? "Listen"}</h1>
-      {current?.description ? (
-        <p className="mt-1 text-sm text-ink-soft/80">{current.description}</p>
-      ) : null}
+      <SceneBackdrop scene="listen" />
+      <div className="relative z-10">
+        <h1 className="font-display text-3xl font-bold text-ink">{current?.title ?? "Listen"}</h1>
+        {current?.description ? (
+          <p className="mt-1 text-sm text-ink-soft">{current.description}</p>
+        ) : null}
 
-      {isEmpty ? (
-        <p className="mt-6 text-sm text-ink-soft/70">
-          Nothing here yet. New episodes appear as they are published.
-        </p>
-      ) : null}
+        {isEmpty ? (
+          <div
+            data-surface
+            className="mt-6 flex flex-col items-center gap-3 rounded-3xl bg-surface/90 p-5 text-center backdrop-blur-md"
+          >
+            <MascotImage
+              moment="emptyState"
+              size={120}
+              tone="mint"
+              alt="Alphonso"
+              className="card-lift"
+            />
+            <p className="text-sm text-ink-soft/70">
+              Nothing here yet. New episodes appear as they are published.
+            </p>
+          </div>
+        ) : null}
 
-      {children.length > 0 ? (
-        <ul className="mt-5 space-y-2">
-          {children.map((folder) => (
-            <li key={folder.id}>
-              <Link
-                to="/listen/$"
-                params={{ _splat: [...segments, folder.slug].join("/") }}
-                className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3"
-              >
-                <span className="text-sm font-semibold text-ink">{folder.title}</span>
-                <span aria-hidden="true" className="text-ink-soft/50">
-                  →
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {episodes.length > 0 ? (
-        <ul className="mt-5 space-y-2">
-          {episodes.map((episode) => (
-            <li key={episode.id}>
-              <button
-                type="button"
-                onClick={() => play(episode)}
-                className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-ink">
-                    {episode.title}
+        {children.length > 0 ? (
+          <ul className="mt-5 space-y-2">
+            {children.map((folder) => (
+              <li key={folder.id}>
+                <Link
+                  to="/listen/$"
+                  params={{ _splat: [...segments, folder.slug].join("/") }}
+                  className="card-lift flex items-center justify-between gap-3 rounded-3xl bg-surface/95 px-4 py-4 backdrop-blur-md"
+                >
+                  <span className="flex items-center gap-4">
+                    <span
+                      className={`grid size-14 place-items-center rounded-2xl ${TILE_TONE_CLASSES[tileTone(children.indexOf(folder))]}`}
+                    >
+                      <Icon3D emoji="📁" size={36} />
+                    </span>
+                    <span className="font-display text-lg font-bold text-ink">{folder.title}</span>
                   </span>
-                  <span className="flex gap-2 text-xs">
-                    {episode.positionSeconds > 0 ? <span className="text-moss">Resume</span> : null}
-                    {episode.aiNarrated ? (
-                      <span className="text-ink-soft/70">{AI_NARRATED_LABEL}</span>
-                    ) : null}
+                  <span aria-hidden="true" className="text-ink-soft/50">
+                    →
                   </span>
-                </span>
-                <span className="tnum ml-3 text-xs text-ink-soft/70">
-                  {formatDuration(episode.durationSeconds)}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {episodes.length > 0 ? (
+          <ul className="mt-5 space-y-2">
+            {episodes.map((episode, i) => (
+              <li key={episode.id}>
+                <button
+                  type="button"
+                  onClick={() => play(episode)}
+                  className="card-lift flex w-full items-center justify-between gap-3 rounded-3xl bg-surface px-3 py-3 text-left"
+                >
+                  <span
+                    data-tone={tileTone(i)}
+                    className={`grid size-12 shrink-0 place-items-center rounded-2xl ${TILE_TONE_CLASSES[tileTone(i)]}`}
+                  >
+                    <Icon3D emoji="🎧" size={30} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-base font-bold text-ink">
+                      {episode.title}
+                    </span>
+                    <span className="flex gap-2 text-xs">
+                      {episode.positionSeconds > 0 ? (
+                        <span className="text-moss">Resume</span>
+                      ) : null}
+                      {episode.aiNarrated ? (
+                        <span className="text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+                      ) : null}
+                    </span>
+                  </span>
+                  <span className="tnum ml-3 text-xs text-ink-soft/70">
+                    {formatDuration(episode.durationSeconds)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -225,21 +272,27 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
   if (isLoading || !folders) {
     return (
       <div className="px-5 py-8">
-        <p className="text-sm text-ink-soft/70">Loading…</p>
+        <SceneBackdrop scene="listen" />
+        <p
+          data-surface
+          className="relative z-10 rounded-2xl bg-surface/90 px-4 py-3 text-sm text-ink-soft backdrop-blur-md"
+        >
+          Loading…
+        </p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="px-5 pt-4">
+      <div className="relative z-10 px-5 pt-4">
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search episodes"
           aria-label="Search episodes"
-          className="w-full rounded-2xl border border-hairline bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-soft/50"
+          className="w-full rounded-2xl border border-hairline bg-surface/90 px-4 py-2.5 text-sm text-ink backdrop-blur-md placeholder:text-ink-soft/60"
         />
       </div>
       {/* Search replaces the tree rather than filtering it: results are flat

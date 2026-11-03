@@ -21,6 +21,7 @@
 @import "@fontsource-variable/newsreader/opsz-italic.css";
 @import "@fontsource-variable/source-sans-3/wght.css";
 @import "@fontsource-variable/baloo-2/wght.css";
+@import "./styles/tile-tones.generated.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -76,6 +77,12 @@
   }
 }
 
+@utility card-lift {
+  box-shadow:
+    0 1px 2px 0 oklch(0.24 0.045 165 / 0.08),
+    0 6px 16px -6px oklch(0.24 0.045 165 / 0.18);
+}
+
 @utility tnum {
   font-variant-numeric: tabular-nums;
 }
@@ -95,6 +102,18 @@
  */
 
 @theme inline {
+  --color-tile-coral-bg: var(--tile-coral-bg);
+  --color-tile-coral-ink: var(--tile-coral-ink);
+  --color-tile-sky-bg: var(--tile-sky-bg);
+  --color-tile-sky-ink: var(--tile-sky-ink);
+  --color-tile-sun-bg: var(--tile-sun-bg);
+  --color-tile-sun-ink: var(--tile-sun-ink);
+  --color-tile-lilac-bg: var(--tile-lilac-bg);
+  --color-tile-lilac-ink: var(--tile-lilac-ink);
+  --color-tile-mint-bg: var(--tile-mint-bg);
+  --color-tile-mint-ink: var(--tile-mint-ink);
+  --color-edge-moss: var(--edge-moss);
+  --color-edge-ember: var(--edge-ember);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -227,10 +246,10 @@
   --color-parchment: oklch(0.945 0.028 165);
   --color-ink: oklch(0.24 0.045 165);
   --color-ink-soft: oklch(0.46 0.045 165);
-  --color-moss: oklch(0.46 0.10 160);
+  --color-moss: oklch(0.46 0.1 160);
   --color-moss-deep: oklch(0.33 0.06 160);
   --color-ember: oklch(0.64 0.18 32);
-  --color-ember-soft: oklch(0.90 0.05 32);
+  --color-ember-soft: oklch(0.9 0.05 32);
   --color-hairline: oklch(0.24 0.045 165 / 0.1);
   --color-ink-on-ember: var(--color-ink);
 
@@ -251,4 +270,67 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+/* Mascots breathe: a slow rise and settle so they look alive at rest (MascotImage). */
+@keyframes mascot-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.015);
+  }
+}
+.mascot-breathe {
+  transform-origin: 50% 100%;
+  animation: mascot-breathe 4.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-breathe {
+    animation: none;
+  }
+}
+
+/* Scenes (SceneBackdrop): a scrim keeps the top of the screen calm for the title and chips, and the bottom
+   blends into the page. Dark themes darken the whole scene so light text and cards stay comfortable. */
+.scene-scrim {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--color-surface) 72%, transparent) 0%,
+    color-mix(in oklab, var(--color-surface) 18%, transparent) 26%,
+    transparent 55%,
+    color-mix(in oklab, var(--color-surface) 30%, transparent) 100%
+  );
+}
+[data-theme="studio-ink"] .scene-scrim {
+  background:
+    linear-gradient(to bottom, oklch(0.16 0.01 260 / 0.85) 0%, oklch(0.16 0.01 260 / 0.35) 40%),
+    oklch(0.16 0.01 260 / 0.45);
+}
+
+/* The next lesson on the Learn map bobs gently to invite a tap. Only Y: the node is centred with Tailwind's
+   `translate` property, and an x offset here would stack on top of it. */
+@keyframes map-node-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.map-node-bounce {
+  animation: map-node-bounce 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-node-bounce {
+    animation: none;
+  }
+}
+
+/* Scene clips (LoopingClip): never show Safari's start-playback button over a decorative video. */
+.scene-clip::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
 }
