@@ -64,6 +64,11 @@ struct LessonBrowserView: View {
     /// ... right now endless scrolling."
     @State private var mostRecentlyCompletedLessonID: String?
     @State private var hasScrolledToContinue = false
+    /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
+    /// A wrapper type, not a bare String: a String destination is already registered for the NavigationLinks.
+    @State private var openedLesson: OpenedLesson?
+
+    private struct OpenedLesson: Hashable { let id: String }
 
     /// Ordered CEFR bands -- mirrors web's `src/data/levels.ts` LEVELS
     /// exactly (same ids, same order, same names) so iOS and web group
@@ -136,12 +141,25 @@ struct LessonBrowserView: View {
             ScrollViewReader { scrollProxy in
             List {
                 StatusHeaderView(progress: syncQueueStore.lastKnownProgress())
+                    .sceneScrollProbe()
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
                 // One loud card for the next lesson in this band, with the unit's lessons as a short path.
                 if let next = nextLesson {
+                    // The unit as a winding path over the garden, Alphonso beside the current node.
+                    LearnPathMap(
+                        nodes: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs).map { node in
+                            PathMapNode(id: node.id, title: next.unit.lessons.first { $0.id == node.id }?.title ?? "", state: node.state)
+                        },
+                        greeting: StatusHeaderView.greeting(streak: syncQueueStore.lastKnownProgress()?.streak ?? 0),
+                        onOpen: { openedLesson = OpenedLesson(id: $0) }
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
                     // The link sits invisibly behind the card: a visible NavigationLink in a List adds a
                     // disclosure chevron beside the card and narrows it.
                     LearnContinueCard(
@@ -261,12 +279,16 @@ struct LessonBrowserView: View {
                             .font(AlphonsoFont.sans(12, weight: .semiBold))
                             .tracking(0.4)
                             .foregroundStyle(AlphonsoColor.ember)
+                            // Over the scene a bare header would sit straight on the picture: put it on glass.
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .alphonsoGlass(radius: AlphonsoRadius.xl)
                     }
                     .listRowBackground(Color.clear)
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(AlphonsoColor.surface)
+            .screenScene(.learn)
             // Re-fetches on every course switch too, since CEFR level is
             // tracked per-language server-side (language_progress), not
             // once per account -- the level that was right for English
@@ -301,12 +323,10 @@ struct LessonBrowserView: View {
                 }
             }
             .navigationDestination(for: String.self) { lessonId in
-                if let found = contentStore.findLesson(id: lessonId, course: course) {
-                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, hectorAccess: hectorAccess)
-                        .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
-                } else {
-                    Text("Lesson not found")
-                }
+                lessonDestination(lessonId)
+            }
+            .navigationDestination(item: $openedLesson) { opened in
+                lessonDestination(opened.id)
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView(session: session)
@@ -332,6 +352,17 @@ struct LessonBrowserView: View {
             }
         }
         .tint(AlphonsoColor.moss)
+    }
+
+    /// The lesson screen, shared by the list rows, the Up next card and the path map's current node.
+    @ViewBuilder
+    private func lessonDestination(_ lessonId: String) -> some View {
+        if let found = contentStore.findLesson(id: lessonId, course: course) {
+            LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, hectorAccess: hectorAccess)
+                .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
+        } else {
+            Text("Lesson not found")
+        }
     }
 
     /// Mirrors web's `learn.tsx` on load: reads the server's saved CEFR

@@ -1068,6 +1068,9 @@ private struct FinishView: View {
     let onPractiseWithHector: (() -> Void)?
 
     @State private var showPromotionOverlay = false
+    /// Flips once on appear; the success haptic is keyed to it.
+    @State private var celebrated = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
@@ -1076,66 +1079,78 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
+                // The title sits on glass: straight on the stage it would fight the spotlights.
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
+                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .padding(.vertical, AlphonsoSpacing.sm)
+                    .alphonsoGlass(radius: AlphonsoRadius.xl)
 
-                // The exact "no imagery, just text/icon" pattern the
-                // spec's Background section calls out on PaywallView
-                // shows up here too -- same fix.
-                MascotTile(moment: .lessonComplete, size: 180, tone: .sun, radius: 40)
-                    .alphonsoLift()
+                // Alphonso stands proud on the stage (was a 180 pt sticker tile), with the same spring entrance.
+                SceneFigure(assetName: "Figure-alphonso-proud", height: 300)
                     .springEntrance()
                     .accessibilityHidden(true)
-                Text(LessonFinishCopy.headline(correct: correct, total: total))
-                    .font(AlphonsoFont.display(24, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.moss)
-                    .multilineTextAlignment(.center)
-                HStack(spacing: 10) {
-                    ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
-                        LessonRewardChipView(chip: chip)
-                            .springEntrance(delay: 0.15 + Double(index) * 0.12)
-                    }
-                }
-                Text("\(correct)/\(total) correct")
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                if let bonus = result.heartsBonus {
-                    Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
-                        .font(AlphonsoFont.sans(13, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ember)
-                }
-                if !unlockedAchievements.isEmpty {
-                    VStack(spacing: AlphonsoSpacing.sm + 4) {
-                        Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
-                            .font(AlphonsoFont.sans(13, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
-                            ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
-                                AchievementBadgeView(achievement: achievement, unlocked: true)
-                                    .springEntrance(delay: Double(index) * 0.15)
-                            }
+
+                VStack(spacing: AlphonsoSpacing.md) {
+                    Text(LessonFinishCopy.headline(correct: correct, total: total))
+                        .font(AlphonsoFont.display(24, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.moss)
+                        .multilineTextAlignment(.center)
+                    HStack(spacing: 10) {
+                        ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
+                            LessonRewardChipView(chip: chip, index: index)
+                                .springEntrance(delay: reduceMotion ? 0 : 0.15 + Double(index) * 0.12)
                         }
                     }
-                    .padding(.top, 8)
-                }
+                    Text("\(correct)/\(total) correct")
+                        .font(AlphonsoFont.sans(13))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    if let bonus = result.heartsBonus {
+                        Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
+                            .font(AlphonsoFont.sans(13, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.ember)
+                    }
+                    if !unlockedAchievements.isEmpty {
+                        VStack(spacing: AlphonsoSpacing.sm + 4) {
+                            Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
+                                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
+                                ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
+                                    AchievementBadgeView(achievement: achievement, unlocked: true)
+                                        .springEntrance(delay: Double(index) * 0.15)
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
 
-                if let onContinueToNextLesson {
-                    Button("Continue to next lesson", action: onContinueToNextLesson)
-                        .buttonStyle(.alphonsoEmber)
-                        .padding(.top, 4)
-                }
-                if let onPractiseWithHector {
-                    Button("Practise with Hector", action: onPractiseWithHector)
-                        .buttonStyle(.alphonsoSecondary)
-                }
+                    if let onContinueToNextLesson {
+                        Button("Continue to next lesson", action: onContinueToNextLesson)
+                            .buttonStyle(.alphonsoEmber)
+                            .padding(.top, 4)
+                    }
+                    if let onPractiseWithHector {
+                        Button("Practise with Hector", action: onPractiseWithHector)
+                            .buttonStyle(.alphonsoSecondary)
+                    }
 
-                GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
+                    GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
+                }
+                .padding(AlphonsoSpacing.md)
+                .frame(maxWidth: .infinity)
+                .alphonsoGlass()
             }
             .padding()
         }
-        .background(AlphonsoColor.surface)
-        .onAppear { showPromotionOverlay = isLeaguePromotion }
+        .screenScene(.complete)
+        .overlay { ConfettiBurst() }
+        .sensoryFeedback(.success, trigger: celebrated)
+        .onAppear {
+            showPromotionOverlay = isLeaguePromotion
+            celebrated = true
+        }
         .fullScreenCover(isPresented: $showPromotionOverlay) {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
                 showPromotionOverlay = false
@@ -1430,6 +1445,17 @@ struct HectorAccess {
 /// One reward on the lesson-complete screen: a 3D icon, the value and its name, in a chunky bordered card.
 private struct LessonRewardChipView: View {
     let chip: LessonRewardChip
+    /// Its place in the row; later chips start counting a little later, as they pop in.
+    var index: Int = 0
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Flips once the chip appears; the number counts up from 0 to its value while it does.
+    @State private var reached = false
+
+    /// XP and streak count up; accuracy is shown as it is.
+    private var split: (prefix: String, number: Int, suffix: String)? {
+        chip.kind != .accuracy ? RewardCountUp.split(chip.value) : nil
+    }
 
     private var title: String {
         switch chip.kind {
@@ -1453,14 +1479,30 @@ private struct LessonRewardChipView: View {
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .foregroundStyle(tone.ink)
             Icon3DView(emoji: chip.emoji, size: 28)
-            Text(chip.value)
-                .font(AlphonsoFont.display(18, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
+            Group {
+                if let split {
+                    CountingText(
+                        number: Double(reduceMotion || reached ? split.number : 0),
+                        prefix: split.prefix,
+                        suffix: split.suffix
+                    )
+                } else {
+                    Text(chip.value)
+                }
+            }
+            .font(AlphonsoFont.display(18, weight: .bold))
+            .foregroundStyle(AlphonsoColor.ink)
         }
         .frame(minWidth: 84)
         .padding(.vertical, 10)
         .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
         .alphonsoLift()
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeOut(duration: RewardCountUp.duration).delay(0.15 + Double(index) * 0.12)) {
+                reached = true
+            }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(chip.value)")
     }

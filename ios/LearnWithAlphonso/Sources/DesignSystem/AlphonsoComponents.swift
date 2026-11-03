@@ -154,6 +154,12 @@ struct AlphonsoTile: View {
     let emoji: String
     let title: String
     var subtitle: String?
+    /// A frosted-glass tile (tinted by its tone) for screens that sit on a scene, instead of the solid colour tile.
+    var glass: Bool = false
+
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -171,10 +177,11 @@ struct AlphonsoTile: View {
             }
             Spacer(minLength: 0)
         }
-        .foregroundStyle(tone.ink)
+        .foregroundStyle(glass ? AlphonsoColor.ink : tone.ink)
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
-        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
+        .background(glass ? tone.background.opacity(0.3) : tone.background, in: shape)
+        .background(glass ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear), in: shape)
         .alphonsoLift()
         .accessibilityElement(children: .combine)
     }

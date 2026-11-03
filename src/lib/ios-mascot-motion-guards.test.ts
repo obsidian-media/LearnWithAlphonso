@@ -34,7 +34,7 @@ describe("iPhone mascot motion", () => {
   it("every small mascot goes through MascotTile", () => {
     const lesson = read("LessonPlayerView.swift");
     expect(lesson).toContain("MascotTile(moment: .emptyState");
-    expect(lesson).toContain("MascotTile(moment: .lessonComplete");
+    // The finish screen now stands a full-body Alphonso on the stage (ios-scenes-screens-guards.test.ts).
     expect(read("ListenView.swift")).toContain("MascotTile(moment: .emptyState");
     expect(read("DesignSystem/AlphonsoComponents.swift")).toContain("MascotTile(moment: moment ??");
     for (const f of [
