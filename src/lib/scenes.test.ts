@@ -32,14 +32,14 @@ describe("scenes and figures", () => {
         s,
       ).toBe(true);
     }
+    // Figures are source art for clips (the characters are baked into the clips), kept with the web files.
+    // Neither app shows them any more, so the iPhone does not carry them.
     for (const f of FIGURES) {
       expect(existsSync(`public${figureSrc(f)}`), f).toBe(true);
       expect(
-        existsSync(
-          `ios/LearnWithAlphonso/Sources/Assets.xcassets/Figure-${f}.imageset/Contents.json`,
-        ),
+        existsSync(`ios/LearnWithAlphonso/Sources/Assets.xcassets/Figure-${f}.imageset`),
         f,
-      ).toBe(true);
+      ).toBe(false);
     }
   });
 

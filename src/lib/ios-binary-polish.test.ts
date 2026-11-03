@@ -486,7 +486,6 @@ describe("app icon", () => {
     };
     const sceneSets = [
       ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
-      ...scenery.figures.map((n) => `Figure-${n}.imageset`),
       ...(scenery.clips ?? []).map((n) => `Clip-${n}-poster.imageset`),
     ];
     expect(sets).toEqual(

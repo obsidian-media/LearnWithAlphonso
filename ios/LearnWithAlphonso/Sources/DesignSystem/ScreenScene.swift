@@ -159,25 +159,3 @@ extension View {
         }
     }
 }
-
-/// A full-body figure standing on a soft ground shadow, breathing at rest (still under Reduce Motion).
-struct SceneFigure: View {
-    let assetName: String
-    var height: CGFloat
-
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            Ellipse()
-                .fill(.black.opacity(0.28))
-                .frame(width: height * 0.5, height: height * 0.07)
-                .blur(radius: 6)
-                .offset(y: 2)
-            Image(assetName)
-                .resizable()
-                .scaledToFit()
-                .frame(height: height)
-                .mascotBreathe()
-        }
-        .accessibilityHidden(true)
-    }
-}

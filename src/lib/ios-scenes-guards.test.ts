@@ -142,8 +142,6 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     expect(Number(h![1])).toBeGreaterThanOrEqual(170);
     expect(Number(h![1])).toBeLessThanOrEqual(200);
     expect(map).toContain("Self.figureHeight");
-    // SceneFigure itself stays in the design system for other screens, with its ground shadow.
-    expect(read("DesignSystem/ScreenScene.swift")).toContain("Ellipse()");
   });
 
   it("the stat chips, Up next card and everything below stay, on solid or material surfaces", () => {

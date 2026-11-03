@@ -175,4 +175,10 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
     // The free branch no longer gets the still library from the host: the paywall paints its own clip.
     expect(view).not.toMatch(/\}\s*\n\s*\.screenScene\(\.hector\)\s*\n\s*\.navigationTitle/);
   });
+
+  it("the standing cut-out view is gone, since every character now lives in a clip", () => {
+    expect(
+      readFileSync("ios/LearnWithAlphonso/Sources/DesignSystem/ScreenScene.swift", "utf8"),
+    ).not.toContain("struct SceneFigure");
+  });
 });

@@ -5,7 +5,8 @@
  *
  * Names must be listed in src/data/scenes.json. Writes:
  *   - scenes: public/scenes/<name>.jpg and the iOS image set Scene-<name> (1080 px wide JPEG)
- *   - figures: public/figures/<name>.png and the iOS image set Figure-<name> (trimmed transparent PNG, 1200 px tall)
+ *   - figures: public/figures/<name>.png (trimmed transparent PNG, 1200 px tall). Source art for clips
+ *     (scripts/import-clips.ts): the characters are baked into the clips, so the iPhone does not carry figures.
  * Figures must already have a transparent background (Higgsfield's background remover).
  */
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -82,7 +83,6 @@ async function main(folder: string) {
         .png({ compressionLevel: 9, palette: true, quality: 90, effort: 10 })
         .toBuffer();
       writeFileSync(`public/figures/${a.name}.png`, png);
-      writeImageSet(ios, `${ios}.png`, png);
     }
     console.log(`imported ${a.kind} ${a.name}`);
   }
