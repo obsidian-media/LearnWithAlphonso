@@ -164,7 +164,7 @@ async function playLessonToTheEnd(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "Begin lesson" }).click();
   await page.getByRole("button", { name: "Start practice" }).click();
   for (let step = 0; step < 40; step++) {
-    if (await page.getByRole("link", { name: "Back to path" }).isVisible()) return;
+    if ((await page.locator('[data-stage="complete"]').count()) > 0) return;
     const gotIt = page.getByRole("button", { name: "Got it" });
     if (await gotIt.isVisible()) {
       await gotIt.click();
@@ -172,7 +172,8 @@ async function playLessonToTheEnd(page: import("@playwright/test").Page) {
     }
     const next = page.getByRole("button", { name: /^(Continue|Finish)$/ });
     if (await next.isVisible()) {
-      await next.click();
+      // The last Finish swaps the screen out while it is clicked; the next loop sees the finish stage.
+      await next.click({ timeout: 5_000 }).catch(() => {});
       continue;
     }
     let answered = false;
