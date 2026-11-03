@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/Button";
 import { MascotImage } from "../../components/MascotImage";
 import { PractiseWithHector } from "../../components/PractiseWithHector";
 import { CountUp } from "../../components/Celebration";
-import { clipPoster, clipSrc } from "../../lib/scenes";
+import { LoopingClip } from "../../components/LoopingClip";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
@@ -851,28 +851,12 @@ export function FinishScreen({
         data-stage="complete"
         role="img"
         aria-label="Alphonso celebrating on the stage"
-        className="relative -mx-6 -mt-6 mb-5 aspect-[10/13] w-[calc(100%+3rem)] overflow-hidden rounded-b-[2.5rem] bg-ink shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
+        className="relative -mx-6 -mt-6 mb-5 aspect-[10/13] w-[min(calc(100%+3rem),calc(52svh*10/13))] self-center overflow-hidden rounded-b-[2.5rem] bg-ink shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
       >
-        {reduceMotion ? (
-          <img
-            src={clipPoster("complete")}
-            alt=""
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
-          />
-        ) : (
-          <video
-            src={clipSrc("complete")}
-            poster={clipPoster("complete")}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
-          />
-        )}
+        <LoopingClip
+          clip="complete"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
+        />
       </div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete

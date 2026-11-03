@@ -104,7 +104,7 @@ function HectorGate({ course }: { course: Course }) {
           <div
             role="img"
             aria-label="Hector, waving in his library"
-            className="h-[calc(62dvh-4.5rem)]"
+            className="h-[calc(62svh-4.5rem)]"
           />
           <WebPaywall source={refusedSource ?? "hector_tab"} />
         </div>

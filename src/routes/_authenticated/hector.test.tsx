@@ -276,6 +276,8 @@ describe("web Hector in his library", () => {
       "/clips/hector.mp4",
     );
     expect(container.querySelector("[data-figure]")).toBeNull();
+    // Small viewport units: the offer does not jump when Safari's toolbar collapses mid-scroll.
+    expect(screen.getByRole("img", { name: /Hector/ }).className).toContain("svh");
   });
 
   it("a Pro learner talks to Hector in front of the library", async () => {

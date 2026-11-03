@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { classifyAsset, iosSceneAssetName } from "../../scripts/import-scenes";
+import { planClips } from "../../scripts/import-clips";
 import { CLIPS, FIGURES, SCENES, clipPoster, clipSrc, figureSrc, sceneSrc } from "./scenes";
 
 describe("scenes and figures", () => {
@@ -64,5 +65,21 @@ describe("scenes and figures", () => {
     for (const c of CLIPS) {
       expect(statSync(`public${clipSrc(c)}`).size, c).toBeLessThan(1_500_000);
     }
+  });
+
+  it("clips carry no sound track, so they can never compete with the learner's own audio", () => {
+    for (const c of CLIPS) {
+      const bytes = readFileSync(`public${clipSrc(c)}`);
+      for (let at = bytes.indexOf("hdlr"); at !== -1; at = bytes.indexOf("hdlr", at + 4)) {
+        expect(bytes.subarray(at + 8, at + 12).toString("latin1"), c).not.toBe("soun");
+      }
+    }
+  });
+
+  it("the clip import checks every name before it writes anything", () => {
+    expect(planClips(["clip-learn.mp4", "notes.txt"])).toEqual([
+      { file: "clip-learn.mp4", name: "learn" },
+    ]);
+    expect(() => planClips(["clip-learn.mp4", "clip-dancing.mp4"])).toThrow(/not an approved clip/);
   });
 });

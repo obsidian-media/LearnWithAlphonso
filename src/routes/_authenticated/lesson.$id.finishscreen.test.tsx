@@ -246,4 +246,12 @@ describe("FinishScreen celebration", () => {
     const xp = screen.getByRole("group", { name: "XP: +10" });
     expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
+
+  it("on a short screen the stage narrows instead of pushing the rewards below the fold", () => {
+    setReducedMotion(false);
+    renderFinish();
+    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
+    // Width follows the smaller of the column and 52% of the screen height (at the stage's 10:13 shape).
+    expect(stage.className).toContain("w-[min(calc(100%+3rem),calc(52svh*10/13))]");
+  });
 });

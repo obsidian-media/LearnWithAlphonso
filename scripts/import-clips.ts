@@ -26,6 +26,39 @@ export function clipName(file: string): string | null {
   return m[1];
 }
 
+/** Every clip in a folder, checked up front: one bad name stops the import before anything is written. */
+export function planClips(files: string[]): { file: string; name: string }[] {
+  return files.flatMap((file) => {
+    const name = clipName(file);
+    return name ? [{ file, name }] : [];
+  });
+}
+
+/** Pins and framing assume a 9:16 clip; scaling anything else to 720x1280 would stretch it. */
+function assertPortrait(path: string) {
+  const [w, h] = execFileSync(
+    "ffprobe",
+    [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "stream=width,height",
+      "-of",
+      "csv=p=0",
+      path,
+    ],
+    { encoding: "utf8" },
+  )
+    .trim()
+    .split(",")
+    .map(Number);
+  if (!w || !h || Math.abs(w / h - 9 / 16) > 0.01) {
+    throw new Error(`${path} is ${w}x${h}, not 9:16`);
+  }
+}
+
 function ffmpeg(args: string[]) {
   execFileSync("ffmpeg", ["-v", "error", "-y", ...args], { stdio: "inherit" });
 }
@@ -36,9 +69,9 @@ function writeContents(dir: string, body: object) {
 
 function main(folder: string) {
   mkdirSync("public/clips", { recursive: true });
-  for (const file of readdirSync(folder)) {
-    const name = clipName(file);
-    if (!name) continue;
+  const plan = planClips(readdirSync(folder));
+  for (const { file } of plan) assertPortrait(join(folder, file));
+  for (const { file, name } of plan) {
     const mp4 = `public/clips/${name}.mp4`;
     const jpg = `public/clips/${name}.jpg`;
     ffmpeg([

@@ -50,12 +50,29 @@ describe("SceneClip: the looping clip view", () => {
     expect(player).toContain("AVPlayerLayer");
   });
 
-  it("is muted and never keeps the display awake or takes the audio session over", () => {
+  it("is muted, never keeps the display awake, and mixes with audio already playing instead of stopping it", () => {
     expect(player).toContain("isMuted = true");
     expect(player).toContain("preventsDisplaySleepDuringVideoPlayback = false");
-    // The learner's music or podcast must not be interrupted: no session category change, no audio session call.
-    expect(clipFile).not.toContain("AVAudioSession");
-    expect(clipFile).not.toContain("setCategory");
+    // Before playing, the clip switches the default solo session to ambient + mix-with-others, and only when another
+    // app is playing; it never claims .playback and never touches a session the podcast or voice tutor set up.
+    const mixing = between(clipFile, "static func mixWithOtherAudio()", "\n    }\n");
+    expect(mixing).toContain("session.category == .soloAmbient");
+    expect(mixing).toContain("session.isOtherAudioPlaying");
+    expect(mixing).toMatch(
+      /setCategory\(\.ambient, mode: \.default, options: \[\.mixWithOthers\]\)/,
+    );
+    expect(clipFile).not.toMatch(/setCategory\(\.playback/);
+    expect(clipFile).not.toContain("setActive(");
+    const update = between(clipFile, "func updateUIView", "static func dismantleUIView");
+    expect(update.indexOf("mixWithOtherAudio()")).toBeGreaterThan(-1);
+    expect(update.indexOf("mixWithOtherAudio()")).toBeLessThan(update.indexOf("player.play()"));
+  });
+
+  it("keys the cached copy on the clip's own bytes and clears older copies", () => {
+    const cache = between(clipFile, "private static func fileURL", "\n    }\n}");
+    expect(cache).toContain("asset.data.count");
+    expect(cache).not.toContain("CFBundleVersion");
+    expect(cache).toContain("removeItem(");
   });
 
   it("pauses when the view disappears or the app leaves the foreground", () => {
@@ -180,5 +197,28 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
     expect(
       readFileSync("ios/LearnWithAlphonso/Sources/DesignSystem/ScreenScene.swift", "utf8"),
     ).not.toContain("struct SceneFigure");
+  });
+
+  it("draws the pin above the scrim, moving with the clip, and fades it out within the first 60 pt of scroll", () => {
+    const sceneFile = read("DesignSystem/ScreenScene.swift");
+    const body = between(sceneFile, "var body: some View", "private func travel");
+    const scrimAt = body.indexOf("LinearGradient(");
+    const pinAt = body.indexOf(
+      "ClipBackdrop(clip: clip, verticalAnchor: clipAnchor, pin: pin, showsClip: false)",
+    );
+    expect(scrimAt).toBeGreaterThan(-1);
+    expect(pinAt).toBeGreaterThan(scrimAt);
+    expect(body).toContain(".opacity(pinOpacity)");
+    expect(sceneFile).toMatch(/pinOpacity: Double \{[^}]*held[^}]*60/s);
+    // The scroll distance is tracked under Reduce Motion too (the fade is not motion; only parallax is gated).
+    expect(between(body, ".onChange(of: rawOffset)", "}")).not.toContain("reduceMotion");
+  });
+
+  it("on a short screen the lesson-complete stage narrows instead of pushing the rewards below the fold", () => {
+    const file = read("LessonPlayerView.swift");
+    expect(from(file, "ClipBackdrop(clip: .complete").slice(0, 300)).toContain(
+      ".frame(maxWidth: Self.stageMaxHeight * 10 / 13)",
+    );
+    expect(file).toMatch(/static var stageMaxHeight: CGFloat \{[^}]*\* 0\.52 \}/);
   });
 });

@@ -86,9 +86,55 @@ describe("SceneBackdrop", () => {
       <SceneBackdrop scene="learn" clip="learn" pin={{ x: 64, y: 52, node: <p>Hi there</p> }} />,
     );
     const frame = container.querySelector<HTMLElement>("[data-clip-frame]")!;
-    const pinned = frame.querySelector<HTMLElement>("[data-pin]")!;
+    const pinned = container.querySelector<HTMLElement>("[data-pin]")!;
+    // The pin's own frame is laid out exactly like the clip's (same size rule, same placement).
+    const pinFrame = pinned.parentElement!;
+    expect(pinFrame.className).toBe(frame.className);
+    expect(pinFrame.getAttribute("style")).toBe(frame.getAttribute("style"));
     expect(pinned.textContent).toBe("Hi there");
     expect(pinned.style.left).toBe("64%");
     expect(pinned.style.top).toBe("52%");
+  });
+
+  it("the pin is drawn above the readability scrim, so the bubble keeps its own contrast", () => {
+    mockReducedMotion(false);
+    const { container } = render(
+      <SceneBackdrop scene="learn" clip="learn" pin={{ x: 64, y: 52, node: <p>Hi</p> }} />,
+    );
+    const scrim = container.querySelector(".scene-scrim")!;
+    const pinned = container.querySelector("[data-pin]")!;
+    expect(scrim.compareDocumentPosition(pinned) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("the pin fades out as soon as the page scrolls, so cards never slide across its words", () => {
+    for (const reduce of [false, true]) {
+      mockReducedMotion(reduce);
+      const { container, unmount } = render(
+        <SceneBackdrop scene="learn" clip="learn" pin={{ x: 64, y: 52, node: <p>Hi</p> }} />,
+      );
+      const layer = container.querySelector<HTMLElement>("[data-pin-layer]")!;
+      act(() => {
+        Object.defineProperty(window, "scrollY", { value: 30, configurable: true });
+        window.dispatchEvent(new Event("scroll"));
+      });
+      expect(layer.style.opacity).toBe("0.5");
+      act(() => {
+        Object.defineProperty(window, "scrollY", { value: 200, configurable: true });
+        window.dispatchEvent(new Event("scroll"));
+      });
+      expect(layer.style.opacity).toBe("0");
+      unmount();
+    }
+  });
+
+  it("if the browser refuses to autoplay (Low Power Mode), the clip's first frame stands still instead", async () => {
+    mockReducedMotion(false);
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() =>
+      Promise.reject(new DOMException("blocked", "NotAllowedError")),
+    );
+    const { container } = render(<SceneBackdrop scene="learn" clip="learn" />);
+    await act(async () => {});
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/clips/learn.jpg");
   });
 });

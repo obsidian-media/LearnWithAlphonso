@@ -72,25 +72,38 @@ struct ScreenScene: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                // The pin (a speech bubble) sits above the scrim so it keeps its own contrast, laid out in the same
+                // frame and moved the same way as the clip, and it fades out in the first 60 pt of scroll.
+                if let clip, pin != nil {
+                    ClipBackdrop(clip: clip, verticalAnchor: clipAnchor, pin: pin, showsClip: false)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .scaleEffect(reduceMotion ? 1 : Self.overscan)
+                        .offset(y: reduceMotion ? 0 : travel(height: proxy.size.height))
+                        .clipped()
+                        .opacity(pinOpacity)
+                }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
         .allowsHitTesting(false)
+        // Tracked under Reduce Motion too: the pin's fade is not motion. Only the parallax travel is gated.
         .onChange(of: rawOffset) { _, new in
-            guard !reduceMotion, let new else { return }
+            guard let new else { return }
             if baseline == nil { baseline = new }
             held = new - (baseline ?? new)
         }
     }
 
-    /// The clip (with its pin) when this screen has one, otherwise the scene still. Parallax moves either as one piece,
-    /// so a pin never drifts off the character.
+    /// Fully shown at rest, gone after 60 pt of scroll in either direction.
+    private var pinOpacity: Double { max(0, 1 - Double(abs(held)) / 60) }
+
+    /// The clip when this screen has one, otherwise the scene still. Its pin is drawn in a layer above the scrim.
     @ViewBuilder
     private var backdrop: some View {
         if let clip {
-            ClipBackdrop(clip: clip, verticalAnchor: clipAnchor, pin: pin)
+            ClipBackdrop(clip: clip, verticalAnchor: clipAnchor)
         } else {
             Image(scene.assetName)
                 .resizable()

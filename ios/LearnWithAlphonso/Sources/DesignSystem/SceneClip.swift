@@ -50,7 +50,7 @@ struct SceneClip: View {
 }
 
 /// The AVFoundation half of `SceneClip`: an `AVQueuePlayer` + `AVPlayerLooper` drawing into an `AVPlayerLayer`.
-/// Muted, and it never asks the system to keep the display awake, so a learner's music or podcast carries on.
+/// Muted, never keeps the display awake, and mixes with audio already playing (`mixWithOtherAudio`).
 struct SceneClipPlayer: UIViewRepresentable {
     let clip: ClipName
     let isPlaying: Bool
@@ -94,6 +94,7 @@ struct SceneClipPlayer: UIViewRepresentable {
         context.coordinator.onReady = onReady
         guard let player = context.coordinator.player else { return }
         if isPlaying {
+            Self.mixWithOtherAudio()
             player.play()
         } else {
             player.pause()
@@ -107,14 +108,29 @@ struct SceneClipPlayer: UIViewRepresentable {
         uiView.playerLayer.player = nil
     }
 
-    /// AVPlayer needs a file URL, so the data asset is written to the caches directory once per build and reused.
-    /// The build number is in the name so a clip replaced in an update never plays a stale copy.
+    /// A muted player may still start an audio session, and the default solo session would stop the learner's music.
+    /// So, only while another app is playing and the session is still the untouched default, switch it to ambient
+    /// mixing. The podcast player and the voice tutor set their own categories before they play, so this never
+    /// overrides them, and it never activates the session itself.
+    static func mixWithOtherAudio() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.category == .soloAmbient, session.isOtherAudioPlaying else { return }
+        try? session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+    }
+
+    /// AVPlayer needs a file URL, so the data asset is written to the caches directory and reused. The name carries
+    /// the clip's byte count, so a re-imported clip never plays a stale copy, and older copies are removed.
     private static func fileURL(for clip: ClipName) -> URL? {
-        guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return nil }
-        let build = (Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String) ?? "0"
-        let url = caches.appendingPathComponent("\(clip.dataAssetName)-\(build).mp4")
-        if FileManager.default.fileExists(atPath: url.path) { return url }
-        guard let asset = NSDataAsset(name: clip.dataAssetName) else { return nil }
+        let files = FileManager.default
+        guard let caches = files.urls(for: .cachesDirectory, in: .userDomainMask).first,
+              let asset = NSDataAsset(name: clip.dataAssetName) else { return nil }
+        let name = "\(clip.dataAssetName)-\(asset.data.count).mp4"
+        let url = caches.appendingPathComponent(name)
+        if files.fileExists(atPath: url.path) { return url }
+        let stale = (try? files.contentsOfDirectory(atPath: caches.path)) ?? []
+        for old in stale where old.hasPrefix("\(clip.dataAssetName)-") && old.hasSuffix(".mp4") && old != name {
+            try? files.removeItem(at: caches.appendingPathComponent(old))
+        }
         do {
             try asset.data.write(to: url, options: .atomic)
             return url
@@ -158,6 +174,8 @@ struct ClipBackdrop: View {
     let clip: ClipName
     var verticalAnchor: CGFloat = 1
     var pin: ClipPin? = nil
+    /// False draws only the pin, in the same frame: `ScreenScene` puts that layer above its scrim.
+    var showsClip: Bool = true
 
     var body: some View {
         GeometryReader { proxy in
@@ -166,8 +184,12 @@ struct ClipBackdrop: View {
             let frameW = max(w, h * 9 / 16)
             let frameH = max(h, w * 16 / 9)
             ZStack(alignment: .topLeading) {
-                SceneClip(clip: clip)
-                    .frame(width: frameW, height: frameH)
+                if showsClip {
+                    SceneClip(clip: clip)
+                        .frame(width: frameW, height: frameH)
+                } else {
+                    Color.clear.frame(width: frameW, height: frameH)
+                }
                 if let pin {
                     pin.content
                         .alignmentGuide(.leading) { $0.width / 2 - frameW * pin.x / 100 }

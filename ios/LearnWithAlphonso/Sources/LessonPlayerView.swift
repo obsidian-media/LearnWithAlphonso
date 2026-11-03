@@ -1072,6 +1072,10 @@ private struct FinishView: View {
     @State private var celebrated = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// The stage is never taller than 52% of the screen: on a short phone it narrows (same framing) instead of
+    /// pushing the rewards and Continue below the fold.
+    private static var stageMaxHeight: CGFloat { UIScreen.main.bounds.height * 0.52 }
+
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
     }
@@ -1079,7 +1083,7 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
-                // The title sits on glass: straight on the stage it would fight the spotlights.
+                // The title sits on glass, above the stage window.
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
@@ -1091,9 +1095,11 @@ private struct FinishView: View {
                 // and Alphonso cheering. It sits in a 10:13 window framed on him (he fills 23-91% of the clip's height;
                 // the window shows the clip from its top 20% to 94%), the same framing as the web. Under Reduce Motion
                 // the clip's first frame stands still.
+                // On a short screen (iPhone SE) the window narrows to at most 52% of the screen's height, so the
+                // rewards and Continue stay in view without changing the framing.
                 ClipBackdrop(clip: .complete, verticalAnchor: 0.76)
                     .aspectRatio(10.0 / 13.0, contentMode: .fit)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: Self.stageMaxHeight * 10 / 13)
                     .background(AlphonsoColor.ink)
                     .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                     .alphonsoLift()

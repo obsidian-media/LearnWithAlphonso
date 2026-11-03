@@ -130,7 +130,7 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
     page.screenshot({ path: `test-results/visual-refresh/canopy-390-${name}-screen.png` });
   try {
     await playLessonToTheEnd(page);
-    // Mid-celebration: Alphonso has sprung up, confetti is still falling, the numbers have counted up.
+    // Mid-celebration: the clip is playing and the numbers have counted up.
     await page.waitForTimeout(1300);
     await shot("lesson-complete");
   } catch (e) {
