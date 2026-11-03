@@ -56,3 +56,25 @@ describe("mascot poses", () => {
     );
   });
 });
+
+describe("import-mascot-poses", () => {
+  it("accepts only <mascot>-<pose> names from mascot-moments.json", async () => {
+    const { validPoseNames } = await import("../../scripts/import-mascot-poses");
+    expect(
+      validPoseNames(["hector-waving.png", "alphonso-proud.png", "notes.txt"], moments.poses),
+    ).toEqual(["alphonso-proud", "hector-waving"]);
+    expect(() => validPoseNames(["alphonso-dancing.png"], moments.poses)).toThrow(
+      /alphonso-dancing/,
+    );
+    expect(() => validPoseNames(["bob-happy.png"], moments.poses)).toThrow(/bob-happy/);
+    expect(() => validPoseNames(["alphonso-proud-2.png"], moments.poses)).toThrow(
+      /alphonso-proud-2/,
+    );
+  });
+
+  it("names the iOS asset the way MascotPoseCatalog looks it up", async () => {
+    const { iosAssetName } = await import("../../scripts/import-mascot-poses");
+    expect(iosAssetName("alphonso-proud")).toBe("Alphonso-proud");
+    expect(iosAssetName("hector-listening")).toBe("Hector-listening");
+  });
+});
