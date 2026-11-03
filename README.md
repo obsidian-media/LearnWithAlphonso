@@ -203,6 +203,12 @@ SUPABASE_SERVICE_ROLE_KEY      # server-only, never VITE_-prefixed
 OPENROUTER_API_KEY             # chat (openrouter.ai)
 LLM_CHAT_MODELS                # optional ordered, comma-separated model list; default anthropic/claude-haiku-5.5
 LLM_PROVIDERS                  # optional host allowlist (OpenRouter provider.only); default anthropic
+REVENUECAT_SECRET_API_KEY      # v1 secret: Pro status for Hector, /api/pro-status, account erasure
+REVENUECAT_V2_SECRET_KEY       # v2 secret: web price (/api/pro-offering) and cancelling web billing on account deletion
+REVENUECAT_PROJECT_ID          # RevenueCat project id for the v2 API
+REVENUECAT_WEB_PRODUCT_ID      # RevenueCat id of the Web Billing Pro product (price + trial)
+REVENUECAT_WEB_PURCHASE_LINK   # Web Purchase Link with the trial (https://pay.rev.cat/<token>)
+REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL # required: link with no trial, for learners who already had Pro
 DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 LESSON_SESSION_SECRET          # signs lesson-session tokens (also an Edge Function secret)
 ```

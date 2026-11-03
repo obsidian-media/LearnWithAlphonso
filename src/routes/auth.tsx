@@ -44,10 +44,11 @@ function AuthPage() {
     },
     [next, navigate],
   );
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -64,7 +65,17 @@ function AuthPage() {
     setNotice(null);
     setBusy(true);
     try {
-      if (mode === "forgot") {
+      if (mode === "verify") {
+        // The confirmation email carries a 6-digit code, not a link (scripts/auth-email-template.ts).
+        const token = code.replace(/\D/g, "");
+        if (token.length !== 6) {
+          setError("Enter the 6-digit code from the email.");
+          return;
+        }
+        const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+        if (error) throw error;
+        afterAuth("/placement");
+      } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + "/reset-password",
         });
@@ -92,9 +103,8 @@ function AuthPage() {
         if (data.session) {
           afterAuth("/placement");
         } else {
-          setNotice(
-            "Almost there — check your email and click the confirmation link to activate your account.",
-          );
+          setCode("");
+          setMode("verify");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -103,6 +113,25 @@ function AuthPage() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendCode() {
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: window.location.origin + (next ?? "/placement") },
+      });
+      if (error) throw error;
+      setNotice("We sent a new code. It can take a minute to arrive.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't send a new code");
     } finally {
       setBusy(false);
     }
@@ -150,43 +179,51 @@ function AuthPage() {
             <span className="font-display text-lg font-semibold">A</span>
           </div>
           <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-            {mode === "signup"
-              ? "Create your account"
-              : mode === "forgot"
-                ? "Reset your password"
-                : "Welcome back"}
+            {mode === "verify"
+              ? "Check your email"
+              : mode === "signup"
+                ? "Create your account"
+                : mode === "forgot"
+                  ? "Reset your password"
+                  : "Welcome back"}
           </h1>
           <p className="mt-1.5 text-sm text-ink-soft/80">
-            {mode === "signup"
-              ? "Save your streak and pick up on any device."
-              : mode === "forgot"
-                ? "Enter your email and we'll send you a link to set a new password."
-                : "Sign in to continue where you left off."}
+            {mode === "verify"
+              ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+              : mode === "signup"
+                ? "Save your streak and pick up on any device."
+                : mode === "forgot"
+                  ? "Enter your email and we'll send you a link to set a new password."
+                  : "Sign in to continue where you left off."}
           </p>
         </motion.div>
 
         <div className="mt-8 space-y-3">
-          <button
-            type="button"
-            onClick={google}
-            disabled={busy}
-            className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-              <path
-                d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z"
-                fill="#4285F4"
-              />
-            </svg>
-            Continue with Google
-          </button>
+          {mode !== "verify" && (
+            <>
+              <button
+                type="button"
+                onClick={google}
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
+              >
+                <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+                  <path
+                    d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z"
+                    fill="#4285F4"
+                  />
+                </svg>
+                Continue with Google
+              </button>
 
-          <div className="relative py-2 text-center">
-            <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-            <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">
-              or
-            </span>
-          </div>
+              <div className="relative py-2 text-center">
+                <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
+                <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">
+                  or
+                </span>
+              </div>
+            </>
+          )}
 
           <form onSubmit={submit} className="space-y-3">
             {mode === "signup" && (
@@ -204,21 +241,41 @@ function AuthPage() {
                 />
               </div>
             )}
-            <div>
-              <label htmlFor="auth-email" className="sr-only">
-                Email
-              </label>
-              <TextField
-                id="auth-email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-              />
-            </div>
-            {mode !== "forgot" && (
+            {mode === "verify" && (
+              <div>
+                <label htmlFor="auth-code" className="sr-only">
+                  6-digit code
+                </label>
+                <TextField
+                  id="auth-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                  maxLength={12}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="6-digit code"
+                />
+              </div>
+            )}
+            {mode !== "verify" && (
+              <div>
+                <label htmlFor="auth-email" className="sr-only">
+                  Email
+                </label>
+                <TextField
+                  id="auth-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                />
+              </div>
+            )}
+            {mode !== "forgot" && mode !== "verify" && (
               <div>
                 <label htmlFor="auth-password" className="sr-only">
                   Password
@@ -264,13 +321,26 @@ function AuthPage() {
             >
               {busy
                 ? "Please wait…"
-                : mode === "signup"
-                  ? "Create account"
-                  : mode === "forgot"
-                    ? "Send reset link"
-                    : "Sign in"}
+                : mode === "verify"
+                  ? "Confirm"
+                  : mode === "signup"
+                    ? "Create account"
+                    : mode === "forgot"
+                      ? "Send reset link"
+                      : "Sign in"}
             </button>
           </form>
+
+          {mode === "verify" && (
+            <button
+              type="button"
+              onClick={resendCode}
+              disabled={busy}
+              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink disabled:opacity-50"
+            >
+              Send a new code
+            </button>
+          )}
 
           {mode === "signin" && (
             <button
@@ -289,17 +359,19 @@ function AuthPage() {
           <button
             type="button"
             onClick={() => {
-              setMode(mode === "signup" ? "signin" : mode === "forgot" ? "signin" : "signup");
+              setMode(mode === "verify" ? "signup" : mode === "signin" ? "signup" : "signin");
               setError(null);
               setNotice(null);
             }}
             className="w-full py-2 text-center text-xs text-ink-soft/70 hover:text-ink"
           >
-            {mode === "signup"
-              ? "Have an account? Sign in"
-              : mode === "forgot"
-                ? "Back to sign in"
-                : "New here? Create an account"}
+            {mode === "verify"
+              ? "Use a different email"
+              : mode === "signup"
+                ? "Have an account? Sign in"
+                : mode === "forgot"
+                  ? "Back to sign in"
+                  : "New here? Create an account"}
           </button>
 
           <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">

@@ -1,3 +1,4 @@
+import { DELETE_WEB_SUBSCRIPTION_NOTE } from "@/lib/account-deletion-copy";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -425,6 +426,7 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
               This permanently deletes your account, progress, streaks, achievements and review
               history. It cannot be undone. Type DELETE to confirm.
             </p>
+            <p className="text-xs leading-relaxed text-rose-700">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
             <input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
@@ -456,6 +458,7 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
               This permanently deletes your account, progress, streaks, achievements and review
               history. It cannot be undone. Type DELETE to confirm.
             </p>
+            <p className="text-xs leading-relaxed text-rose-700">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
             <input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}

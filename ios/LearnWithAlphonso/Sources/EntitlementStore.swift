@@ -11,6 +11,8 @@ final class EntitlementStore: EntitlementResetting {
     private(set) var state = EntitlementState()
 
     var isPro: Bool { state.isPro }
+    /// Where a website subscriber manages Pro; nil for App Store subscribers (they use Apple's sheet).
+    var webManagementURL: URL? { state.webManagementURL }
     var presentation: PaywallPresentation { state.presentation }
 
     @ObservationIgnored private let controller: EntitlementController

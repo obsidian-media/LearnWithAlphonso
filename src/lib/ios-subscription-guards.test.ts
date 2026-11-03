@@ -55,3 +55,36 @@ describe("PaywallView copy", () => {
     expect(source).not.toMatch(/^import RevenueCat$/m);
   });
 });
+
+describe("iPhone: a website subscriber manages Pro on the web, and the app never steers to web checkout", () => {
+  const paywall = read("ios/LearnWithAlphonso/Sources/PaywallView.swift");
+  const purchases = read("ios/LearnWithAlphonso/Sources/RevenueCatPurchases.swift");
+
+  // The decisions themselves (web link or Apple's sheet; web-billed only; https only) are Kit behaviour, tested in
+  // ManageSubscriptionRouteTests. These guards only pin that the app target, which has no unit tests, calls them.
+  it("Manage Subscription follows the Kit's route", () => {
+    expect(paywall).toContain(
+      "switch ManageSubscriptionRoute(webManagementURL: entitlementStore.webManagementURL)",
+    );
+    expect(paywall).toMatch(/case \.web\(let url\):\s*openURL\(url\)/);
+    expect(paywall).toMatch(/case \.appleSheet:\s*isPresentingManageSubscriptions = true/);
+  });
+
+  it("the snapshot is built from the web-billed stores, with the Kit deciding what to keep", () => {
+    expect(purchases).toContain("let isWeb = pro?.store == .rcBilling || pro?.store == .stripe");
+    expect(purchases).toMatch(/isWebBilled: isWeb,\s*managementURL: info\.managementURL/);
+  });
+
+  it("no iPhone source names a web checkout or the website's Hector page", () => {
+    const sources = fs
+      .readdirSync(path.join(root, "ios/LearnWithAlphonso/Sources"))
+      .filter((f) => f.endsWith(".swift"))
+      .map((f) => [f, read(`ios/LearnWithAlphonso/Sources/${f}`)] as const);
+    const offenders = sources
+      .filter(([, text]) =>
+        /pay\.rev\.cat|\/pro-return|learn\.alphonsoecosystem\.app\/hector|pro-offering/.test(text),
+      )
+      .map(([f]) => f);
+    expect(offenders).toEqual([]);
+  });
+});

@@ -21,6 +21,7 @@ struct PaywallView: View {
     // just instructions to go find Settings yourself. manageSubscriptionsSheet is the
     // StoreKit 2 modifier for exactly this: no navigation, no Settings.
     @State private var isPresentingManageSubscriptions = false
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         let presentation = entitlementStore.presentation
@@ -208,7 +209,16 @@ struct PaywallView: View {
     }
 
     private var manageButton: some View {
-        Button(PaywallCopy.manage) { isPresentingManageSubscriptions = true }
+        Button(PaywallCopy.manage) {
+            // A subscription bought on the website does not appear in Apple's sheet, so it opens its own
+            // management page. This only routes an existing subscriber; the paywall never shows web prices or checkout.
+            switch ManageSubscriptionRoute(webManagementURL: entitlementStore.webManagementURL) {
+            case .web(let url):
+                openURL(url)
+            case .appleSheet:
+                isPresentingManageSubscriptions = true
+            }
+        }
     }
 
     private var legalLinks: some View {

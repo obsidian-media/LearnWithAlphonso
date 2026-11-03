@@ -26,6 +26,11 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   };
 });
 
+vi.mock("@/components/HectorInvite", () => ({
+  HectorInvite: ({ source }: { source: string }) => (
+    <div data-testid="hector-invite" data-source={source} />
+  ),
+}));
 const { Route } = await import("./converse");
 const { scenariosFor } = await import("../../data/scenarios");
 const { campaignsFor } = await import("../../data/campaigns");
@@ -34,6 +39,15 @@ const { useProgress } = await import("../../lib/progress");
 describe("Converse route", () => {
   beforeEach(() => useProgress.setState({ course: "en" }));
   afterEach(() => useProgress.setState({ course: "en" }));
+
+  it("offers Hector to learners from the top of Practice (practice_hector_card)", () => {
+    const ConversePage = Route.options.component!;
+    render(<ConversePage />);
+    expect(screen.getByTestId("hector-invite")).toHaveAttribute(
+      "data-source",
+      "practice_hector_card",
+    );
+  });
 
   it("lists every scenario with a link to its conversation", () => {
     const ConversePage = Route.options.component!;

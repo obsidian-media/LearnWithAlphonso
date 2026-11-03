@@ -20,10 +20,12 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
+import { Route as AuthenticatedHectorRouteImport } from './routes/_authenticated/hector'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
+import { Route as AuthenticatedProReturnRouteImport } from './routes/_authenticated/pro-return'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedSeasonRouteImport } from './routes/_authenticated/season'
@@ -38,6 +40,8 @@ import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-p
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
+import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
+import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
@@ -105,6 +109,11 @@ const AuthenticatedDuelsRoute = AuthenticatedDuelsRouteImport.update({
   path: '/duels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHectorRoute = AuthenticatedHectorRouteImport.update({
+  id: '/hector',
+  path: '/hector',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
   id: '/league',
   path: '/league',
@@ -123,6 +132,11 @@ const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
 const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
   id: '/placement',
   path: '/placement',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProReturnRoute = AuthenticatedProReturnRouteImport.update({
+  id: '/pro-return',
+  path: '/pro-return',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -193,6 +207,16 @@ const ApiHectorRespondRoute = ApiHectorRespondRouteImport.update({
 const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   id: '/api/learning-goal',
   path: '/api/learning-goal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
+  id: '/api/pro-offering',
+  path: '/api/pro-offering',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProStatusRoute = ApiProStatusRouteImport.update({
+  id: '/api/pro-status',
+  path: '/api/pro-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
@@ -272,10 +296,12 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
+  '/hector': typeof AuthenticatedHectorRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
+  '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
@@ -290,6 +316,8 @@ export interface FileRoutesByFullPath {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -314,10 +342,12 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
+  '/hector': typeof AuthenticatedHectorRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
+  '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
@@ -332,6 +362,8 @@ export interface FileRoutesByTo {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -358,10 +390,12 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
+  '/_authenticated/hector': typeof AuthenticatedHectorRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
+  '/_authenticated/pro-return': typeof AuthenticatedProReturnRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/season': typeof AuthenticatedSeasonRoute
@@ -376,6 +410,8 @@ export interface FileRoutesById {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -402,10 +438,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/converse'
     | '/duels'
+    | '/hector'
     | '/league'
     | '/learn'
     | '/listen'
     | '/placement'
+    | '/pro-return'
     | '/profile'
     | '/review'
     | '/season'
@@ -420,6 +458,8 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/pro-offering'
+    | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
@@ -444,10 +484,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/converse'
     | '/duels'
+    | '/hector'
     | '/league'
     | '/learn'
     | '/listen'
     | '/placement'
+    | '/pro-return'
     | '/profile'
     | '/review'
     | '/season'
@@ -462,6 +504,8 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/pro-offering'
+    | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
@@ -487,10 +531,12 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/converse'
     | '/_authenticated/duels'
+    | '/_authenticated/hector'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
     | '/_authenticated/placement'
+    | '/_authenticated/pro-return'
     | '/_authenticated/profile'
     | '/_authenticated/review'
     | '/_authenticated/season'
@@ -505,6 +551,8 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/pro-offering'
+    | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
@@ -539,6 +587,8 @@ export interface RootRouteChildren {
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
+  ApiProOfferingRoute: typeof ApiProOfferingRoute
+  ApiProStatusRoute: typeof ApiProStatusRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -625,6 +675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hector': {
+      id: '/_authenticated/hector'
+      path: '/hector'
+      fullPath: '/hector'
+      preLoaderRoute: typeof AuthenticatedHectorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/league': {
       id: '/_authenticated/league'
       path: '/league'
@@ -651,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/placement'
       fullPath: '/placement'
       preLoaderRoute: typeof AuthenticatedPlacementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro-return': {
+      id: '/_authenticated/pro-return'
+      path: '/pro-return'
+      fullPath: '/pro-return'
+      preLoaderRoute: typeof AuthenticatedProReturnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -749,6 +813,20 @@ declare module '@tanstack/react-router' {
       path: '/api/learning-goal'
       fullPath: '/api/learning-goal'
       preLoaderRoute: typeof ApiLearningGoalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pro-offering': {
+      id: '/api/pro-offering'
+      path: '/api/pro-offering'
+      fullPath: '/api/pro-offering'
+      preLoaderRoute: typeof ApiProOfferingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pro-status': {
+      id: '/api/pro-status'
+      path: '/api/pro-status'
+      fullPath: '/api/pro-status'
+      preLoaderRoute: typeof ApiProStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/review-demo-code': {
@@ -852,10 +930,12 @@ const AuthenticatedListenRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
+  AuthenticatedHectorRoute: typeof AuthenticatedHectorRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
+  AuthenticatedProReturnRoute: typeof AuthenticatedProReturnRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedSeasonRoute: typeof AuthenticatedSeasonRoute
@@ -871,10 +951,12 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConverseRoute: AuthenticatedConverseRoute,
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
+  AuthenticatedHectorRoute: AuthenticatedHectorRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
+  AuthenticatedProReturnRoute: AuthenticatedProReturnRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedSeasonRoute: AuthenticatedSeasonRoute,
@@ -910,6 +992,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
+  ApiProOfferingRoute: ApiProOfferingRoute,
+  ApiProStatusRoute: ApiProStatusRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
