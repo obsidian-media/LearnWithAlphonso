@@ -31,7 +31,7 @@ struct HectorView: View {
                     .id(activeCourse.course)
                 }
             }
-            .background(AlphonsoColor.surface)
+            .screenScene(.hector)
             .navigationTitle("Hector")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -112,7 +112,6 @@ private struct HectorConversationView: View {
 
             micButton.padding()
         }
-        .background(AlphonsoColor.surface)
         .aiDisclosureGate()
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
@@ -157,15 +156,11 @@ private struct HectorConversationView: View {
                 .transition(.opacity)
                 .frame(maxWidth: .infinity)
                 .frame(height: conversation.turns.isEmpty ? 300 : 180, alignment: .top)
-                .background(AlphonsoTileTone.sky.background)
                 .clipped()
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: art)
-                .overlay(alignment: .bottom) {
-                    LinearGradient(colors: [AlphonsoColor.surface.opacity(0), AlphonsoColor.surface], startPoint: .top, endPoint: .bottom)
-                        .frame(height: 110)
-                }
                 .accessibilityHidden(true)
 
+            // Over the library the title sits on glass, never straight on the picture.
             VStack(alignment: .leading, spacing: 2) {
                 Text("Hector")
                     .font(AlphonsoFont.display(30, weight: .bold))
@@ -174,6 +169,9 @@ private struct HectorConversationView: View {
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.inkSoft)
             }
+            .padding(.horizontal, AlphonsoSpacing.md)
+            .padding(.vertical, AlphonsoSpacing.sm)
+            .alphonsoGlass(radius: AlphonsoRadius.xl)
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.bottom, AlphonsoSpacing.sm)
         }

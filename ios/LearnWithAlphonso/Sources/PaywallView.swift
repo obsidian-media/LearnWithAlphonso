@@ -23,11 +23,20 @@ struct PaywallView: View {
     @State private var isPresentingManageSubscriptions = false
     @Environment(\.openURL) private var openURL
 
+    /// On the Hector tab the library scene is behind the paywall (HectorView paints it), with Hector standing in it.
+    /// Sheets from lesson complete or a refusal keep the flat surface. Look only: no copy or logic depends on this.
+    private var onScene: Bool { source == .hectorTab }
+
     var body: some View {
         let presentation = entitlementStore.presentation
         let state = entitlementStore.state
         ScrollView {
             VStack(spacing: AlphonsoSpacing.lg) {
+                if onScene {
+                    SceneFigure(assetName: "Figure-hector-waving", height: 220)
+                }
+
+                VStack(spacing: AlphonsoSpacing.lg) {
                 Text(presentation.titleText)
                     .font(AlphonsoFont.display(28, weight: .bold))
                     .foregroundStyle(AlphonsoColor.ink)
@@ -62,12 +71,15 @@ struct PaywallView: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 legalLinks
+                }
+                .padding(onScene ? AlphonsoSpacing.md : 0)
+                .alphonsoGlass(if: onScene)
             }
             .padding(AlphonsoSpacing.md)
             .frame(maxWidth: 480)
             .frame(maxWidth: .infinity)
         }
-        .background(AlphonsoColor.surface)
+        .background(onScene ? Color.clear : AlphonsoColor.surface)
         .task {
             entitlementStore.presented(from: source)
             await entitlementStore.loadOffering()

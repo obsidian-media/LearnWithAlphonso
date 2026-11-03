@@ -112,6 +112,18 @@ extension View {
     }
 }
 
+extension View {
+    /// Glass only when `condition` holds (a screen that sits on a scene in one place and a flat surface in another).
+    @ViewBuilder
+    func alphonsoGlass(if condition: Bool, radius: CGFloat = AlphonsoRadius.xl + 6) -> some View {
+        if condition {
+            alphonsoGlass(radius: radius)
+        } else {
+            self
+        }
+    }
+}
+
 /// A full-body figure standing on a soft ground shadow, breathing at rest (still under Reduce Motion).
 struct SceneFigure: View {
     let assetName: String

@@ -87,3 +87,71 @@ describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", (
     expect(onAppear).not.toContain("reduceMotion");
   });
 });
+
+describe("Hector: the library scene behind the tab, the hero and the paywall", () => {
+  const hector = read("HectorView.swift");
+  const paywall = read("PaywallView.swift");
+
+  it("the library scene is behind Hector's tab (paywall and conversation alike)", () => {
+    const view = between(hector, "struct HectorView: View", "private struct HectorConversationView");
+    expect(view).toContain(".screenScene(.hector)");
+    expect(view).not.toContain(".background(AlphonsoColor.surface)");
+    // The conversation no longer paints a flat surface over the scene.
+    const convo = between(hector, "private struct HectorConversationView", "// MARK: - Hero");
+    expect(convo).not.toContain(".background(AlphonsoColor.surface)");
+  });
+
+  it("the hero keeps its poses, breathing and cross-fade, drops the flat tile, and puts its title on glass", () => {
+    const hero = between(hector, "private var hero: some View", "private func heroPill");
+    expect(hero).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");
+    expect(hero).toContain(".mascotBreathe()");
+    expect(hero).not.toContain("AlphonsoTileTone.sky.background");
+    expect(hero).not.toContain("AlphonsoColor.surface.opacity(0)");
+    const title = from(hero, 'Text("Hector")');
+    expect(title.slice(0, 700)).toContain(".alphonsoGlass(");
+    expect(hero).toContain('Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")');
+  });
+
+  it("on the Hector tab the paywall shows Hector waving, about 220 pt, over the library", () => {
+    expect(paywall).toContain('SceneFigure(assetName: "Figure-hector-waving", height: 220)');
+    expect(paywall).toContain("source == .hectorTab");
+    // The figure comes before the title and offer, above them.
+    expect(paywall.indexOf("Figure-hector-waving")).toBeLessThan(paywall.indexOf("presentation.titleText"));
+    // Everything the learner reads sits on glass when the library is behind it.
+    expect(paywall).toContain(".alphonsoGlass(if: onScene)");
+    // Other presentations (sheets from lesson complete or a refusal) keep the flat surface.
+    expect(paywall).toContain(".background(onScene ? Color.clear : AlphonsoColor.surface)");
+  });
+
+  it("paywall copy, legal text, buttons and purchase logic are untouched", () => {
+    for (const keep of [
+      "presentation.titleText",
+      "PaywallCopy.mascotMessage",
+      "AlphonsoMascotBanner(mascot: .hector",
+      "PaywallCopy.featureBlurb",
+      "presentation.renewalDisclosure",
+      "presentation.priceLine",
+      "presentation.trialLine",
+      "font(presentation.priceStyle)",
+      "font(presentation.trialStyle)",
+      "font(presentation.disclosureStyle)",
+      "PaywallCopy.restore",
+      "PaywallCopy.manage",
+      "PaywallCopy.termsOfUse",
+      "PaywallCopy.privacyPolicy",
+      "PaywallCopy.appleEULA",
+      "PaywallLinks.appleStandardEULA",
+      "await entitlementStore.purchase()",
+      "await entitlementStore.restorePurchases()",
+      "entitlementStore.select(productID: option.id)",
+      "entitlementStore.presented(from: source)",
+      "await entitlementStore.loadOffering()",
+      ".buttonStyle(.alphonsoEmber)",
+      "legalLinks",
+    ]) {
+      expect(paywall, keep).toContain(keep);
+    }
+    // The disclosure and price/trial text are not moved off the Kit's styles.
+    expect(paywall).toContain("private func font(_ style: PaywallTextStyle) -> Font");
+  });
+});
