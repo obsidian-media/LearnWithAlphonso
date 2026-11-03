@@ -315,15 +315,20 @@ describe("Learn in the garden", () => {
     const { container } = renderPage();
     await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
     const scene = container.querySelector('[data-scene="learn"]');
-    expect(scene?.querySelector("img")?.getAttribute("src")).toBe("/scenes/learn.jpg");
+    expect(scene?.querySelector("video")?.getAttribute("src")).toBe("/clips/learn.mp4");
   });
 
-  it("Alphonso stands full size in the garden and says the greeting in a bubble", async () => {
+  it("Alphonso waves in the garden clip, his greeting in a bubble pinned above him and read out once", async () => {
     useProgress.setState({ streak: 12 });
-    renderPage();
-    const alphonso = await screen.findByRole("img", { name: /alphonso/i });
-    expect(alphonso.getAttribute("src")).toBe("/figures/alphonso-waving.png");
-    expect(screen.getByText("Nice 12-day streak! Ready for today's lesson?")).toBeInTheDocument();
+    const { container } = renderPage();
+    await screen.findByRole("img", { name: /alphonso/i });
+    const greeting = "Nice 12-day streak! Ready for today's lesson?";
+    // The bubble is drawn on the clip (decorative), the words are in the page for screen readers.
+    expect(container.querySelector('[data-scene="learn"] [data-pin]')?.textContent).toBe(greeting);
+    const map = container.querySelector("[data-learn-map]") as HTMLElement;
+    expect(within(map).getByText(`Alphonso: ${greeting}`)).toBeInTheDocument();
+    // No separate cut-out on top of the clip.
+    expect(container.querySelector("[data-figure]")).toBeNull();
   });
 
   it("the map shows the current unit's lessons as big nodes, the next one marked current", async () => {

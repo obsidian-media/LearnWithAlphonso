@@ -270,11 +270,12 @@ describe("web Hector in his library", () => {
   it("a free learner meets Hector standing in his library above the offer", async () => {
     routes["/api/pro-status"] = status(FREE);
     const { container } = await renderPage();
-    const hector = await screen.findByRole("img", { name: "Hector" });
-    expect(hector.getAttribute("src")).toBe("/figures/hector-waving.png");
-    expect(container.querySelector('[data-scene="hector"] img')?.getAttribute("src")).toBe(
-      "/scenes/hector.jpg",
+    // Hector waves in the library clip; the space above the offer is where he stands, named for screen readers.
+    await screen.findByRole("img", { name: /Hector/ });
+    expect(container.querySelector('[data-scene="hector"] video')?.getAttribute("src")).toBe(
+      "/clips/hector.mp4",
     );
+    expect(container.querySelector("[data-figure]")).toBeNull();
   });
 
   it("a Pro learner talks to Hector in front of the library", async () => {

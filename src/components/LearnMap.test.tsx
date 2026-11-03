@@ -7,8 +7,8 @@ import { LearnMap } from "./LearnMap";
 describe("LearnMap", () => {
   it("a level with every lesson done still renders Alphonso and the greeting, with no nodes", () => {
     const { container } = render(<LearnMap nodes={[]} greeting="Ready for today's lesson?" />);
-    expect(screen.getByText("Ready for today's lesson?")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Alphonso" })).toBeInTheDocument();
+    expect(screen.getByText("Alphonso: Ready for today's lesson?")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Alphonso/ })).toBeInTheDocument();
     expect(container.querySelectorAll("[data-node]")).toHaveLength(0);
   });
 

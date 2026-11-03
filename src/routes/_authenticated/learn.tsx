@@ -7,7 +7,7 @@ import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
 import { StarIcon } from "../../components/icons";
 import { Icon3D } from "../../components/Icon3D";
-import { LearnMap } from "../../components/LearnMap";
+import { LearnMap, SpeechBubble } from "../../components/LearnMap";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
@@ -281,9 +281,19 @@ function LearnPage() {
     return map;
   }, [curriculum, completedSet]);
 
+  const greeting =
+    hydrated && streak > 0
+      ? `Nice ${streak}-day streak! Ready for today's lesson?`
+      : "Ready for today's lesson?";
+
   return (
     <MobileFrame>
-      <SceneBackdrop scene="learn" />
+      <SceneBackdrop
+        scene="learn"
+        clip="learn"
+        // Alphonso stands at 67% across and his head is at 54% down in the clip (scripts/import-clips.ts input).
+        pin={{ x: 64, y: 53, node: <SpeechBubble text={greeting} /> }}
+      />
       <div className="relative z-10 px-6 pb-10 pt-6">
         <h1 className="sr-only">Learn</h1>
         <div className="mb-5 flex gap-2">
@@ -325,11 +335,7 @@ function LearnPage() {
                 )
               : []
           }
-          greeting={
-            hydrated && streak > 0
-              ? `Nice ${streak}-day streak! Ready for today's lesson?`
-              : "Ready for today's lesson?"
-          }
+          greeting={greeting}
         />
 
         <div

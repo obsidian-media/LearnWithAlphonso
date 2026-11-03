@@ -4,7 +4,6 @@ import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { LessonFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
-import { StandingFigure } from "../../components/StandingFigure";
 import { MascotImage } from "../../components/MascotImage";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
@@ -99,14 +98,15 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "free" || refusedSource) {
     return (
       <LessonFrame>
-        <SceneBackdrop scene="hector" focus="50% 30%" />
+        {/* Hector waves in the library clip (his head at 47% down, feet at 80%); the offer starts at his waist. */}
+        <SceneBackdrop scene="hector" focus="50% 30%" clip="hector" />
         <div className="relative z-10 px-5 pt-4">
-          <div className="flex justify-center">
-            <StandingFigure figure="hector-waving" alt="Hector" height={250} enter />
-          </div>
-          <div className="-mt-2">
-            <WebPaywall source={refusedSource ?? "hector_tab"} />
-          </div>
+          <div
+            role="img"
+            aria-label="Hector, waving in his library"
+            className="h-[calc(62dvh-4.5rem)]"
+          />
+          <WebPaywall source={refusedSource ?? "hector_tab"} />
         </div>
       </LessonFrame>
     );

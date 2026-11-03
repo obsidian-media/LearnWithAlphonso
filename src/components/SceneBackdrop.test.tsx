@@ -38,27 +38,57 @@ describe("SceneBackdrop", () => {
   it("drifts at a fraction of the scroll, and only a bounded distance", () => {
     mockReducedMotion(false);
     const { container } = render(<SceneBackdrop scene="learn" />);
-    const img = container.querySelector("img")!;
+    const layer = container.querySelector<HTMLElement>("[data-parallax]")!;
     act(() => {
       Object.defineProperty(window, "scrollY", { value: 200, configurable: true });
       window.dispatchEvent(new Event("scroll"));
     });
-    expect(img.style.transform).toBe("translate3d(0, -50px, 0)");
+    expect(layer.style.transform).toBe("translate3d(0, -50px, 0)");
     act(() => {
       Object.defineProperty(window, "scrollY", { value: 100000, configurable: true });
       window.dispatchEvent(new Event("scroll"));
     });
-    expect(img.style.transform).toBe("translate3d(0, -160px, 0)");
+    expect(layer.style.transform).toBe("translate3d(0, -160px, 0)");
   });
 
   it("stays still under Reduce Motion", () => {
     mockReducedMotion(true);
     const { container } = render(<SceneBackdrop scene="learn" />);
-    const img = container.querySelector("img")!;
+    const layer = container.querySelector<HTMLElement>("[data-parallax]")!;
     act(() => {
       Object.defineProperty(window, "scrollY", { value: 200, configurable: true });
       window.dispatchEvent(new Event("scroll"));
     });
-    expect(img.style.transform).toBe("");
+    expect(layer.style.transform).toBe("");
+  });
+
+  it("with a clip, the scene plays it looping and silent, its first frame as the poster", () => {
+    mockReducedMotion(false);
+    const { container } = render(<SceneBackdrop scene="learn" clip="learn" />);
+    const video = container.querySelector('[data-scene="learn"] video')!;
+    expect(video.getAttribute("src")).toBe("/clips/learn.mp4");
+    expect(video.getAttribute("poster")).toBe("/clips/learn.jpg");
+    expect((video as HTMLVideoElement).loop).toBe(true);
+    expect((video as HTMLVideoElement).muted).toBe(true);
+    expect(container.querySelector('[data-scene="learn"] img[src="/scenes/learn.jpg"]')).toBeNull();
+  });
+
+  it("with a clip under Reduce Motion, the clip's first frame stands still instead", () => {
+    mockReducedMotion(true);
+    const { container } = render(<SceneBackdrop scene="learn" clip="learn" />);
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/clips/learn.jpg");
+  });
+
+  it("pins an overlay to a spot in the clip's own frame, so it stays on the character", () => {
+    mockReducedMotion(false);
+    const { container } = render(
+      <SceneBackdrop scene="learn" clip="learn" pin={{ x: 64, y: 52, node: <p>Hi there</p> }} />,
+    );
+    const frame = container.querySelector<HTMLElement>("[data-clip-frame]")!;
+    const pinned = frame.querySelector<HTMLElement>("[data-pin]")!;
+    expect(pinned.textContent).toBe("Hi there");
+    expect(pinned.style.left).toBe("64%");
+    expect(pinned.style.top).toBe("52%");
   });
 });
