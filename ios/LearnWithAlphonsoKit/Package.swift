@@ -41,6 +41,8 @@ let package = Package(
                 .copy("Resources/placement-en.json"),
                 .copy("Resources/placement-fr.json"),
                 .copy("Resources/placement-es.json"),
+                .copy("Resources/icon3d.json"),
+                .copy("Resources/icon3d-achievements.json"),
             ]
         ),
         .testTarget(
