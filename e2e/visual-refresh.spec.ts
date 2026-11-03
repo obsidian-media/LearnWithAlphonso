@@ -67,7 +67,13 @@ async function signIn(page: import("@playwright/test").Page) {
   await page.waitForURL(/\/learn/, { timeout: 30_000 });
   const copy = nameFixtures.copy;
   const prompt = page.getByRole("heading", { name: copy.title });
-  if (await prompt.isVisible({ timeout: 15_000 }).catch(() => false)) {
+  // isVisible() never waits, so wait for the prompt explicitly.
+  if (
+    await prompt.waitFor({ state: "visible", timeout: 15_000 }).then(
+      () => true,
+      () => false,
+    )
+  ) {
     await page.getByLabel(copy.fieldLabel).fill("Robin Visual");
     await page.getByRole("button", { name: copy.save }).click();
     await expect(prompt).toBeHidden();
@@ -132,7 +138,12 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
   try {
     await page.goto("/hector");
     const allow = page.getByRole("button", { name: "Review and allow" });
-    if (await allow.isVisible({ timeout: 15_000 }).catch(() => false)) {
+    if (
+      await allow.waitFor({ state: "visible", timeout: 15_000 }).then(
+        () => true,
+        () => false,
+      )
+    ) {
       await allow.click();
       await page.getByRole("button", { name: "Allow", exact: true }).click();
     }
