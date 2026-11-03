@@ -24,7 +24,7 @@ import {
 import { fetchDueReviews } from "../../lib/review.functions";
 import { XP_HEART_COST } from "../../lib/hearts";
 import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
-import { unitPathNodes } from "../../lib/unit-path";
+import { pathNodeDelay, unitPathNodes } from "../../lib/unit-path";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -110,6 +110,7 @@ function ContinueCard({
 function LessonNode({
   state,
   index,
+  placeInUnit,
   lessonId,
   title,
   blocked,
@@ -117,6 +118,8 @@ function LessonNode({
 }: {
   state: "done" | "active" | "locked";
   index: number;
+  /** The lesson's place in its own unit, which sets the entrance stagger. */
+  placeInUnit: number;
   lessonId: string;
   title: string;
   blocked: boolean;
@@ -144,7 +147,7 @@ function LessonNode({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ delay: pathNodeDelay(placeInUnit), duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       style={{ transform: `translateX(${translateX})` }}
       className="relative flex flex-col items-center"
     >
@@ -506,6 +509,7 @@ function LearnPage() {
                       key={lesson.id}
                       state={state}
                       index={ui * 100 + li}
+                      placeInUnit={li}
                       lessonId={lesson.id}
                       title={lesson.title}
                       blocked={outOfHearts}

@@ -46,3 +46,20 @@ describe("unit path", () => {
     expect(unitPathNodes([], new Set())).toEqual([]);
   });
 });
+
+describe("pathNodeDelay", () => {
+  it("staggers a unit's nodes by their place in that unit, never by the unit, and caps the wait", async () => {
+    const { pathNodeDelay } = await import("./unit-path");
+    expect(pathNodeDelay(0)).toBe(0);
+    expect(pathNodeDelay(1)).toBeCloseTo(0.05);
+    // Every node is on screen within half a second, however long the unit.
+    expect(pathNodeDelay(40)).toBeLessThanOrEqual(0.5);
+  });
+
+  it("the Learn page passes the lesson's place in its unit, not the global index", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("src/routes/_authenticated/learn.tsx", "utf8");
+    expect(src).not.toMatch(/delay:\s*index\s*\*/);
+    expect(src).toMatch(/delay:\s*pathNodeDelay\(/);
+  });
+});

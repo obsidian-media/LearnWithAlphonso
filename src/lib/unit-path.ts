@@ -1,3 +1,11 @@
+/**
+ * Entrance stagger for a lesson node, from its place in its own unit. Capped so every node is visible within half a
+ * second: a stagger from a page-wide index kept later units blank for many seconds.
+ */
+export function pathNodeDelay(placeInUnit: number): number {
+  return Math.min(placeInUnit, 10) * 0.05;
+}
+
 export type UnitPathState = "done" | "next" | "locked";
 export type UnitPathNode = { id: string; state: UnitPathState };
 
