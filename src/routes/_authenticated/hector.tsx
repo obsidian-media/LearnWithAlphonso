@@ -13,7 +13,7 @@ import { PAYWALL_COPY, WEB_PAYWALL_COPY, type PaywallSource } from "../../lib/pa
 import { useProgress } from "../../lib/progress";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
-import { justPaidRecently, useProStatus, type ProStatus } from "../../lib/use-pro-status";
+import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
 
 export const Route = createFileRoute("/_authenticated/hector")({
@@ -74,7 +74,7 @@ function HectorGate({ course }: { course: Course }) {
       </LessonFrame>
     );
   }
-  if (pro.state === "free" && !refusedSource && justPaidRecently()) {
+  if (pro.state === "free" && !refusedSource && pro.justPaid) {
     return (
       <LessonFrame>
         <div className="space-y-3 px-6 pt-10">

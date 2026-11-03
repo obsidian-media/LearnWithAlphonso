@@ -16,7 +16,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   };
 });
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { getSession: async () => ({ data: { session: null } }) } },
+  supabase: { auth: { getSession: async () => ({ data: { session: { user: { id: "u1" } } } }) } },
 }));
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
@@ -97,7 +97,10 @@ describe("web Hector", () => {
   });
 
   it("right after paying, a not-yet-active learner sees 'activating', never the paywall again", async () => {
-    sessionStorage.setItem("alphonso.pro.justPaidAt", String(Date.now()));
+    sessionStorage.setItem(
+      "alphonso.pro.justPaidAt",
+      JSON.stringify({ at: Date.now(), user: "u1" }),
+    );
     routes["/api/pro-status"] = status(FREE);
     await renderPage();
     expect(await screen.findByText("Payment received, activating…")).toBeInTheDocument();
@@ -105,8 +108,23 @@ describe("web Hector", () => {
     sessionStorage.removeItem("alphonso.pro.justPaidAt");
   });
 
+  it("another account's recent payment in this tab does not hide the paywall", async () => {
+    sessionStorage.setItem(
+      "alphonso.pro.justPaidAt",
+      JSON.stringify({ at: Date.now(), user: "u0" }),
+    );
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(screen.queryByText("Payment received, activating…")).toBeNull();
+    sessionStorage.removeItem("alphonso.pro.justPaidAt");
+  });
+
   it("a payment flag older than an hour no longer holds back the paywall", async () => {
-    sessionStorage.setItem("alphonso.pro.justPaidAt", String(Date.now() - 2 * 3_600_000));
+    sessionStorage.setItem(
+      "alphonso.pro.justPaidAt",
+      JSON.stringify({ at: Date.now() - 2 * 3_600_000, user: "u1" }),
+    );
     routes["/api/pro-status"] = status(FREE);
     await renderPage();
     expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();

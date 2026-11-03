@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { PAYWALL_COPY, WEB_PAYWALL_COPY } from "../../lib/paywall-copy";
-import { authHeaders } from "../../lib/auth-headers";
+import { authHeaders, currentUserId } from "../../lib/auth-headers";
 import { markJustPaid } from "../../lib/use-pro-status";
 
 export const Route = createFileRoute("/_authenticated/pro-return")({
@@ -49,7 +49,7 @@ function ProReturnPage() {
   }, [navigate]);
 
   useEffect(() => {
-    markJustPaid();
+    void currentUserId().then(markJustPaid);
     void poll();
     return () => {
       runRef.current += 1;
