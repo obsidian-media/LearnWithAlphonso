@@ -32,7 +32,7 @@ Success means a stranger who sees the new App Store screenshots, or opens the ap
 
 ## Non-goals
 
-- No behaviour changes, except that the default theme becomes Canopy (see below). Lessons, billing, Hector's logic, sync, leagues and everything else work exactly as today. This is a look-and-layout change only.
+- No behaviour changes. Lessons, billing, Hector's logic, sync, leagues and everything else work exactly as today. This is a look-and-layout change only.
 - No new data. Use only data the app already has: XP, streak, answers in the lesson, podcast episodes, scenarios, campaigns.
 - No Android work this round. Android follows later from the same assets.
 - No new App Store screenshots in this project. They are the next project and are made from this build.
@@ -54,10 +54,7 @@ These would make the work a failure even if every screen looks better:
 - **Scope:** Step 1 and Step 2 of the visual plan, plus the lesson-complete moment, as listed under Screens below.
 - **Shipping:** build 53, together with web Pro (PR #339). The first App Store submission waits for it, and new screenshots are captured from it.
 - **Build 53 waits for the poses.** If the poses aren't approved in time, the build and the new App Store screenshots wait. The screens are laid out for the waist-up poses, and today's two images are used only while the work is in progress.
-- **Canopy becomes the default theme.**
-  - `profiles.theme` is nullable, and null means "no choice yet". The app-side fallback for null changes from Meadow to Canopy on both platforms, wherever the code falls back to `.meadow` or `"meadow"`.
-  - So learners who never picked a theme also move to Canopy. Anyone who picked one keeps it.
-  - This is the one intended behaviour change, and it needs tests.
+- **Canopy is the default theme.** It already is: `resolveInitialTheme` on the web and `AlphonsoThemeManager` on iPhone both fall back to Canopy, and the pre-paint script does the same. No change is needed. The redesign is tuned first for Canopy, and the other themes get matching values.
 
 ## Constraints
 
