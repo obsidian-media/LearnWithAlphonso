@@ -142,14 +142,15 @@ struct LessonBrowserView: View {
 
                 // One loud card for the next lesson in this band, with the unit's lessons as a short path.
                 if let next = nextLesson {
-                    NavigationLink(value: next.lesson.id) {
-                        LearnContinueCard(
-                            unitTitle: next.unit.title,
-                            lessonTitle: next.lesson.title,
-                            path: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs)
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    // The link sits invisibly behind the card: a visible NavigationLink in a List adds a
+                    // disclosure chevron beside the card and narrows it.
+                    LearnContinueCard(
+                        unitTitle: next.unit.title,
+                        lessonTitle: next.lesson.title,
+                        path: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs)
+                    )
+                    .background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))
+                    .accessibilityAddTraits(.isButton)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }

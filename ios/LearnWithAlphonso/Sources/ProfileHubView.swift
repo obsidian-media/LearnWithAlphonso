@@ -104,5 +104,7 @@ struct ProfileHubView: View {
             AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle)
         }
         .buttonStyle(.plain)
+        // The tiles carry their own shape; List separators between them read as stray lines.
+        .listRowSeparator(.hidden)
     }
 }
