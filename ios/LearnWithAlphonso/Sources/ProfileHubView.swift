@@ -37,19 +37,22 @@ struct ProfileHubView: View {
                         .league,
                         title: "League",
                         subtitle: "Leaderboards, teams, and the season ladder",
-                        emoji: "🏆"
+                        emoji: "🏆",
+                        tone: .sun
                     )
                     row(
                         .friends,
                         title: "Friends",
                         subtitle: "Your friends, their activity, and duels",
-                        emoji: "👥"
+                        emoji: "👥",
+                        tone: .sky
                     )
                     row(
                         .achievements,
                         title: "Achievements",
                         subtitle: "Badges earned and weak spots to work on",
-                        emoji: "⭐️"
+                        emoji: "⭐️",
+                        tone: .lilac
                     )
                 }
                 .listRowBackground(Color.clear)
@@ -59,7 +62,8 @@ struct ProfileHubView: View {
                         .settings,
                         title: "Settings",
                         subtitle: "Theme and account",
-                        emoji: "⚙️"
+                        emoji: "⚙️",
+                        tone: .mint
                     )
                 }
                 .listRowBackground(Color.clear)
@@ -91,12 +95,13 @@ struct ProfileHubView: View {
         _ target: Destination,
         title: String,
         subtitle: String,
-        emoji: String
+        emoji: String,
+        tone: AlphonsoTileTone
     ) -> some View {
         Button {
             destination = target
         } label: {
-            AlphonsoRowCard(title: title, subtitle: subtitle, leadingEmoji: emoji)
+            AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle)
         }
         .buttonStyle(.plain)
     }

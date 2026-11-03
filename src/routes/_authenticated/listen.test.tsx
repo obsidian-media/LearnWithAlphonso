@@ -108,4 +108,18 @@ describe("PodcastSearchResults", () => {
     expect(screen.getByText(/searching/i)).toBeInTheDocument();
     expect(screen.queryByText(/no episodes match/i)).not.toBeInTheDocument();
   });
+
+  it("folder and episode rows carry 3D icons on colour tiles", () => {
+    const { container } = render(
+      <ListenFolderView folders={folders} episodes={[episode]} segments={["en", "a1"]} />,
+    );
+    const icons = [...container.querySelectorAll("img")].map((i) => i.getAttribute("src"));
+    expect(icons).toContain("/icons3d/headphone.png");
+    expect(container.querySelector("[data-tone]")).not.toBeNull();
+  });
+
+  it("the empty state shows Alphonso", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "a1"]} />);
+    expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
 });

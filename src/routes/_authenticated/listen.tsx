@@ -12,6 +12,17 @@ import {
 } from "../../lib/podcast.functions";
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
+import { Icon3D } from "../../components/Icon3D";
+import { mascotArt } from "../../lib/mascot-poses";
+import { tileTone, type TileTone } from "../../lib/tile-tones";
+
+const TONE_BG: Record<TileTone, string> = {
+  coral: "bg-tile-coral-bg text-tile-coral-ink",
+  sky: "bg-tile-sky-bg text-tile-sky-ink",
+  sun: "bg-tile-sun-bg text-tile-sun-ink",
+  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
+  mint: "bg-tile-mint-bg text-tile-mint-ink",
+};
 
 export const Route = createFileRoute("/_authenticated/listen")({
   component: ListenPage,
@@ -137,9 +148,19 @@ export function ListenFolderView({
       ) : null}
 
       {isEmpty ? (
-        <p className="mt-6 text-sm text-ink-soft/70">
-          Nothing here yet. New episodes appear as they are published.
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-3 text-center">
+          <img
+            src={mascotArt("emptyState").src}
+            alt="Alphonso"
+            width={120}
+            height={120}
+            decoding="async"
+            className="card-lift size-30 rounded-[28px] object-cover"
+          />
+          <p className="text-sm text-ink-soft/70">
+            Nothing here yet. New episodes appear as they are published.
+          </p>
+        </div>
       ) : null}
 
       {children.length > 0 ? (
@@ -149,9 +170,12 @@ export function ListenFolderView({
               <Link
                 to="/listen/$"
                 params={{ _splat: [...segments, folder.slug].join("/") }}
-                className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3"
+                className="card-lift flex items-center justify-between gap-3 rounded-3xl bg-surface px-4 py-3"
               >
-                <span className="text-sm font-semibold text-ink">{folder.title}</span>
+                <span className="flex items-center gap-3">
+                  <Icon3D emoji="📁" size={32} />
+                  <span className="font-display text-base font-bold text-ink">{folder.title}</span>
+                </span>
                 <span aria-hidden="true" className="text-ink-soft/50">
                   →
                 </span>
@@ -163,15 +187,21 @@ export function ListenFolderView({
 
       {episodes.length > 0 ? (
         <ul className="mt-5 space-y-2">
-          {episodes.map((episode) => (
+          {episodes.map((episode, i) => (
             <li key={episode.id}>
               <button
                 type="button"
                 onClick={() => play(episode)}
-                className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
+                className="card-lift flex w-full items-center justify-between gap-3 rounded-3xl bg-surface px-3 py-3 text-left"
               >
+                <span
+                  data-tone={tileTone(i)}
+                  className={`grid size-12 shrink-0 place-items-center rounded-2xl ${TONE_BG[tileTone(i)]}`}
+                >
+                  <Icon3D emoji="🎧" size={30} />
+                </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-ink">
+                  <span className="block truncate font-display text-base font-bold text-ink">
                     {episode.title}
                   </span>
                   <span className="flex gap-2 text-xs">

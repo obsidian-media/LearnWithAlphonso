@@ -356,4 +356,23 @@ describe("Profile page", () => {
     expect(screen.getByRole("button", { name: "Delete my account" })).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("DELETE")).not.toBeInTheDocument();
   });
+
+  it("shows XP, streak and freezes as big numbers with 3D icons", async () => {
+    useProgress.setState({ xp: 500, streak: 4, streakFreezes: 2 });
+    const { container } = renderPage();
+    await screen.findByRole("heading", { name: "Ada" });
+    const stats = [...container.querySelectorAll<HTMLElement>("[data-big-stat]")];
+    expect(stats.map((s) => s.querySelector("img")?.getAttribute("src"))).toEqual([
+      "/icons3d/high_voltage.png",
+      "/icons3d/fire.png",
+      "/icons3d/snowflake.png",
+    ]);
+    expect(stats.map((s) => s.dataset.tone)).toEqual(["sun", "coral", "sky"]);
+  });
+
+  it("the Friends link is a tile with a 3D icon", async () => {
+    renderPage();
+    const link = await screen.findByRole("link", { name: /Friends/ });
+    expect(link.querySelector("img")?.getAttribute("src")).toBe("/icons3d/busts_in_silhouette.png");
+  });
 });

@@ -18,6 +18,8 @@ import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { Icon3D } from "../../components/Icon3D";
+import type { TileTone } from "../../lib/tile-tones";
 
 /** The name went through confirm_display_name first; only the country write after it failed. */
 const DETAILS_SAVE_FAILED = "Your name was saved, but your country wasn't. Try again.";
@@ -142,9 +144,9 @@ function ProfilePage() {
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-2">
-          <Stat label="XP" value={p.xp} isStudioInk={isStudioInk} />
-          <Stat label="Streak" value={p.streak} isStudioInk={isStudioInk} />
-          <Stat label="Freezes" value={p.streakFreezes} isStudioInk={isStudioInk} />
+          <Stat label="XP" value={p.xp} emoji="⚡" tone="sun" />
+          <Stat label="Streak" value={p.streak} emoji="🔥" tone="coral" />
+          <Stat label="Freezes" value={p.streakFreezes} emoji="❄️" tone="sky" />
         </div>
 
         <ActivityHeatmap dates={p.activityDates} isStudioInk={isStudioInk} />
@@ -198,10 +200,13 @@ function ProfilePage() {
               : "mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
           }
         >
-          <span>
-            <span className="block font-display text-base font-semibold text-ink">Friends</span>
-            <span className="block text-xs text-ink-soft/80">
-              See how your friends are doing, or invite one
+          <span className="flex items-center gap-3">
+            <Icon3D emoji="👥" size={36} />
+            <span>
+              <span className="block font-display text-base font-semibold text-ink">Friends</span>
+              <span className="block text-xs text-ink-soft/80">
+                See how your friends are doing, or invite one
+              </span>
             </span>
           </span>
           <span className="text-ink-soft">→</span>
@@ -487,27 +492,35 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
   );
 }
 
+const TONE_BG: Record<TileTone, string> = {
+  coral: "bg-tile-coral-bg text-tile-coral-ink",
+  sky: "bg-tile-sky-bg text-tile-sky-ink",
+  sun: "bg-tile-sun-bg text-tile-sun-ink",
+  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
+  mint: "bg-tile-mint-bg text-tile-mint-ink",
+};
+
+/** A big-number stat with a 3D icon on a colour tile. */
 function Stat({
   label,
   value,
-  isStudioInk,
+  emoji,
+  tone,
 }: {
   label: string;
   value: number;
-  isStudioInk: boolean;
+  emoji: string;
+  tone: TileTone;
 }) {
-  if (isStudioInk) {
-    return (
-      <div className="border-b border-hairline pb-2 text-center">
-        <p className="tnum font-display text-[20px] font-semibold text-ink">{value}</p>
-        <p className="text-[10px] uppercase tracking-wider text-ink-soft">{label}</p>
-      </div>
-    );
-  }
   return (
-    <div className="rounded-2xl border border-hairline bg-surface px-3 py-3 text-center">
-      <p className="tnum font-display text-[20px] font-semibold text-ink">{value}</p>
-      <p className="text-[10px] uppercase tracking-wider text-ink-soft">{label}</p>
+    <div
+      data-big-stat=""
+      data-tone={tone}
+      className={`card-lift flex flex-col items-center rounded-3xl px-3 py-3 text-center ${TONE_BG[tone]}`}
+    >
+      <Icon3D emoji={emoji} size={32} />
+      <p className="tnum mt-1 font-display text-[26px] font-bold leading-none text-ink">{value}</p>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
     </div>
   );
 }

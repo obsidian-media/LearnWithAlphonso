@@ -133,7 +133,16 @@ struct ListenView: View {
         } else if visibleFolders.isEmpty {
             // A course with nothing published is a stated state, not a blank list.
             ContentUnavailableView {
-                Label(PodcastLibraryCopy.emptyTitle(courseCode: courseCode), systemImage: "headphones")
+                VStack(spacing: AlphonsoSpacing.sm) {
+                    Image(MascotPoseCatalog.art(for: .emptyState).assetName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 120, height: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                        .alphonsoLift()
+                        .accessibilityHidden(true)
+                    Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
+                }
             } description: {
                 Text(PodcastLibraryCopy.emptyMessage)
             } actions: {
