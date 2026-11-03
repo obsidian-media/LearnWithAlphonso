@@ -478,6 +478,15 @@ describe("app icon", () => {
     const poses = (JSON.parse(read("src/data/mascot-poses-available.json")) as string[]).map(
       (n) => `${n.replace(/^./, (c) => c.toUpperCase())}.imageset`,
     );
+    // Plus one image set per approved scene and figure (scripts/import-scenes.ts).
+    const scenery = JSON.parse(read("src/data/scenes.json")) as {
+      scenes: string[];
+      figures: string[];
+    };
+    const sceneSets = [
+      ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
+      ...scenery.figures.map((n) => `Figure-${n}.imageset`),
+    ];
     expect(sets).toEqual(
       [
         "Alphonso.imageset",
@@ -485,6 +494,7 @@ describe("app icon", () => {
         "GoogleG.imageset",
         "Hector.imageset",
         ...poses,
+        ...sceneSets,
       ].sort(),
     );
     for (const f of ["GoogleG.png", "GoogleG@2x.png", "GoogleG@3x.png"]) {
