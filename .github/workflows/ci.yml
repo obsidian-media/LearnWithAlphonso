@@ -236,7 +236,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Run the signed-in journey
-        run: bunx playwright test e2e/signed-in.spec.ts --reporter=github,html
+        run: bunx playwright test e2e/signed-in.spec.ts e2e/visual-refresh.spec.ts --reporter=github,html
 
       - name: Upload Playwright report and traces
         if: always()
