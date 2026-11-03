@@ -101,4 +101,71 @@ test("screenshots of the redesigned screens in every theme", async ({ page }) =>
       }
     }
   }
+
+  // Two screens a fresh learner only reaches by doing something: lesson complete (finish a lesson) and Hector
+  // (allow AI first). Phone size, default theme. Best effort: a miss here logs and skips, it never fails the sweep.
+  await page.evaluate(() => window.localStorage.setItem("theme", "canopy"));
+  await page.setViewportSize({ width: 390, height: 844 });
+  const shot = (name: string) =>
+    page.screenshot({ path: `test-results/visual-refresh/canopy-390-${name}-screen.png` });
+  try {
+    await playLessonToTheEnd(page);
+    // Mid-celebration: Alphonso has sprung up, confetti is still falling, the numbers have counted up.
+    await page.waitForTimeout(1300);
+    await shot("lesson-complete");
+  } catch (e) {
+    console.warn(`lesson-complete shot skipped: ${(e as Error).message}`);
+  }
+  try {
+    await page.goto("/hector");
+    const allow = page.getByRole("button", { name: "Review and allow" });
+    if (await allow.isVisible({ timeout: 15_000 }).catch(() => false)) {
+      await allow.click();
+      await page.getByRole("button", { name: "Allow", exact: true }).click();
+    }
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1200);
+    await shot("hector");
+  } catch (e) {
+    console.warn(`hector shot skipped: ${(e as Error).message}`);
+  }
 });
+
+/** Plays the first lesson with the right answers, read from the curriculum, until the finish screen shows. */
+async function playLessonToTheEnd(page: import("@playwright/test").Page) {
+  await page.goto(`/lesson/${LESSON.id}`);
+  await page.getByRole("button", { name: "Begin lesson" }).click();
+  await page.getByRole("button", { name: "Start practice" }).click();
+  for (let step = 0; step < 40; step++) {
+    if (await page.getByRole("link", { name: "Back to path" }).isVisible()) return;
+    const gotIt = page.getByRole("button", { name: "Got it" });
+    if (await gotIt.isVisible()) {
+      await gotIt.click();
+      continue;
+    }
+    const next = page.getByRole("button", { name: /^(Continue|Finish)$/ });
+    if (await next.isVisible()) {
+      await next.click();
+      continue;
+    }
+    let answered = false;
+    for (const x of LESSON.questions) {
+      if (!(await page.getByText(x.prompt, { exact: true }).first().isVisible())) continue;
+      if (x.type === "mc") {
+        await page.getByRole("button", { name: x.choices[x.answer], exact: true }).click();
+      } else if (x.type === "fill") {
+        await page.getByPlaceholder("Type your answer").fill(x.answer);
+      } else {
+        throw new Error(`no answer path for a ${x.type} question`);
+      }
+      answered = true;
+      break;
+    }
+    if (!answered) {
+      await page.waitForTimeout(400);
+      continue;
+    }
+    await page.getByRole("button", { name: "Check" }).click();
+  }
+  throw new Error("the finish screen never showed");
+}
