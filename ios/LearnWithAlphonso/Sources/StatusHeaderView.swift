@@ -59,13 +59,8 @@ struct StatusHeaderView: View {
                     }
                 }
 
-                // Direct user feedback (see this file's own header doc
-                // comment) was that the Learn tab "feels like an empty
-                // piece of background with some written knowledge on
-                // it" -- this banner is the fix for the top of that
-                // screen specifically (LessonBrowserView's row-card
-                // work below addresses the rest of it).
-                AlphonsoMascotBanner(mascot: .alphonso, message: greeting(streak: progress.streak), moment: .learnGreeting)
+                // The greeting that used to be a small banner here is now Alphonso's speech bubble on
+                // the Learn path map (LearnPathMap), built from `greeting(streak:)` below.
             }
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.vertical, AlphonsoSpacing.sm)
@@ -73,7 +68,8 @@ struct StatusHeaderView: View {
         }
     }
 
-    private func greeting(streak: Int) -> String {
+    /// What Alphonso says on the Learn screen. The path map shows it in his speech bubble.
+    static func greeting(streak: Int) -> String {
         streak > 0 ? "Nice \(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"
     }
 
@@ -91,7 +87,7 @@ struct StatusHeaderView: View {
         .padding(.leading, 5)
         .padding(.trailing, AlphonsoSpacing.sm + 4)
         .padding(.vertical, 4)
-        .background(AlphonsoColor.surface, in: Capsule())
+        .background(.regularMaterial, in: Capsule())
         .alphonsoLift()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label): \(value)")
@@ -108,7 +104,7 @@ struct StatusHeaderView: View {
         .padding(.leading, 5)
         .padding(.trailing, AlphonsoSpacing.sm + 4)
         .padding(.vertical, 4)
-        .background(AlphonsoColor.surface, in: Capsule())
+        .background(.regularMaterial, in: Capsule())
         .alphonsoLift()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Streak: \(progress.streak) day\(progress.streak == 1 ? "" : "s")")

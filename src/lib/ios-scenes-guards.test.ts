@@ -65,3 +65,99 @@ describe("ScreenScene: the reusable scene background", () => {
     expect(s).toMatch(/\.regularMaterial/);
   });
 });
+
+describe("Learn tab: garden scene, path map, standing Alphonso", () => {
+  const browser = read("LessonBrowserView.swift");
+  const map = read("LearnPathMap.swift");
+  const header = read("StatusHeaderView.swift");
+
+  it("the garden scene sits behind the Learn list, with a scroll probe for parallax", () => {
+    expect(browser).toContain(".screenScene(.learn)");
+    // The flat surface no longer paints over the scene: the list's own background is the scene.
+    const list = from(browser, "List {");
+    expect(list.slice(0, list.indexOf(".task(id:"))).not.toContain(".background(AlphonsoColor.surface)");
+    expect(browser).toContain(".sceneScrollProbe()");
+  });
+
+  it("the greeting moved from the small banner into Alphonso's speech bubble, text unchanged", () => {
+    expect(header).not.toContain("AlphonsoMascotBanner");
+    expect(header).toContain("static func greeting(streak: Int) -> String");
+    expect(header).toContain(
+      `streak > 0 ? "Nice \\(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"`,
+    );
+    expect(browser).toContain("StatusHeaderView.greeting(streak:");
+    expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
+    // The bubble text sits on a material surface, not straight on the scene.
+    const bubble = from(map, "struct PathSpeechBubble");
+    expect(bubble).toContain("Text(message)");
+    expect(bubble).toContain(".regularMaterial");
+  });
+
+  it("nodes are big round 3D icons: 72 pt, the current one 92 pt, with a darker bottom edge", () => {
+    expect(map).toMatch(/static let nodeSize: CGFloat = 72/);
+    expect(map).toMatch(/static let currentNodeSize: CGFloat = 92/);
+    expect(map).toContain('"\\u{1F4DA}"'); // books: done
+    expect(map).toContain('"\\u{1F3AF}"'); // bullseye: current
+    expect(map).toContain('"\\u{1F512}"'); // lock: locked
+    const node = from(map, "struct PathNodeView");
+    expect(node).toContain("Icon3DView(");
+    // The chunky edge: a darker disc behind the face, pushed down.
+    expect(node).toMatch(/Color\.black\.opacity\(0\.\d+\)/);
+    expect(node).toMatch(/\.offset\(y: edge\)/);
+  });
+
+  it("the current node glows, bounces gently, and is still under Reduce Motion", () => {
+    const node = from(map, "struct PathNodeView");
+    expect(node).toContain("@Environment(\\.accessibilityReduceMotion)");
+    expect(node).toMatch(/guard !reduceMotion else \{ return \}/);
+    const guardAt = node.indexOf("guard !reduceMotion else { return }");
+    const loopAt = node.indexOf("repeatForever(autoreverses: true)");
+    expect(guardAt).toBeGreaterThan(-1);
+    expect(loopAt).toBeGreaterThan(guardAt);
+    expect(node).toMatch(/\.shadow\(color: [^\n]*radius: 2\d/); // the soft glow
+  });
+
+  it("only the current node is tappable, and it opens the lesson exactly like Up next's Continue", () => {
+    expect(map).toContain("onOpen(node.id)");
+    expect(map).toContain('.accessibilityLabel("Continue: ');
+    expect(map).toContain("minWidth: AlphonsoSpacing.minTouchTarget");
+    // The same destination builder serves the list rows, the Up next link and the node.
+    expect(browser).toContain("private func lessonDestination(");
+    expect(browser).toContain(".navigationDestination(item: $openedLesson)");
+    const dest = from(browser, "private func lessonDestination(");
+    expect(dest).toContain("LessonPlayerView(lesson: found.lesson");
+    expect(dest).toContain("hectorAccess: hectorAccess");
+    // Done and locked nodes are not buttons.
+    const view = from(map, "struct PathNodeView");
+    expect(view).not.toContain("Button");
+  });
+
+  it("Alphonso stands beside the current node: waving figure, 170 to 200 pt, ground shadow", () => {
+    expect(map).toContain("Figure-alphonso-waving");
+    const h = /static let figureHeight: CGFloat = (\d+)/.exec(map);
+    expect(h).not.toBeNull();
+    expect(Number(h![1])).toBeGreaterThanOrEqual(170);
+    expect(Number(h![1])).toBeLessThanOrEqual(200);
+    expect(map).toContain("SceneFigure(");
+    expect(read("DesignSystem/ScreenScene.swift")).toContain("Ellipse()");
+  });
+
+  it("the stat chips, Up next card and everything below stay, on solid or material surfaces", () => {
+    for (const keep of [
+      "StatusHeaderView(progress:",
+      "LearnContinueCard(",
+      "GoalCardView(",
+      "TeamMissionSection(",
+      "WeeklyChallengesSection(",
+      "PlacementBannerSection(",
+      "title: \"Review\"",
+      "DeadLetterNoticeSection(",
+    ]) {
+      expect(browser, keep).toContain(keep);
+    }
+    // Section headers were bare ember text on the list background; over a scene they sit on glass.
+    expect(from(browser, "unit.eyebrow").slice(0, 500)).toContain(".alphonsoGlass(");
+    // The chips are material, not flat surface.
+    expect(header).toContain(".regularMaterial");
+  });
+});
