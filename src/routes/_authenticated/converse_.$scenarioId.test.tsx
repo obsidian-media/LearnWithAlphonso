@@ -26,6 +26,18 @@ vi.mock("@/integrations/supabase/client", () => ({
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 
+const invite = vi.hoisted(() => ({ mounts: 0 }));
+vi.mock("@/components/HectorInvite", async () => {
+  const { useEffect } = await import("react");
+  return {
+    HectorInvite: ({ source }: { source: string }) => {
+      useEffect(() => {
+        invite.mounts += 1;
+      }, []);
+      return <div data-testid="hector-invite" data-source={source} />;
+    },
+  };
+});
 const { Route } = await import("./converse_.$scenarioId");
 const { getScenario, localizeScenario, scenarioPrompt } = await import("../../data/scenarios");
 const { useProgress } = await import("../../lib/progress");
@@ -132,6 +144,56 @@ beforeEach(() => {
 });
 
 describe("Converse chat page", () => {
+  it("offers 'Continue with Hector' only after the learner has sent 3 messages", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Nice." });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    for (const [i, text] of ["one", "two", "three"].entries()) {
+      expect(screen.queryByTestId("hector-invite")).toBeNull();
+      await user.type(screen.getByPlaceholderText("Type or tap the mic"), text);
+      await user.click(screen.getByRole("button", { name: "Send" }));
+      await waitFor(() => {
+        const chats = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+          String(u).includes("/api/chat"),
+        );
+        expect(chats).toHaveLength(i + 1);
+        expect(screen.getByPlaceholderText("Type or tap the mic")).toBeEnabled();
+      });
+    }
+    expect(screen.getByTestId("hector-invite")).toHaveAttribute(
+      "data-source",
+      "practice_end_prompt",
+    );
+  });
+
+  it("keeps the 'Continue with Hector' prompt mounted across later turns (no Pro re-check, an open paywall stays open)", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Nice." });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    invite.mounts = 0;
+    const user = userEvent.setup();
+    await renderPage();
+    for (const [i, text] of ["one", "two", "three", "four", "five"].entries()) {
+      await user.type(screen.getByPlaceholderText("Type or tap the mic"), text);
+      await user.click(screen.getByRole("button", { name: "Send" }));
+      await waitFor(() => {
+        const chats = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+          String(u).includes("/api/chat"),
+        );
+        expect(chats).toHaveLength(i + 1);
+        expect(screen.getByPlaceholderText("Type or tap the mic")).toBeEnabled();
+      });
+    }
+    expect(screen.getByTestId("hector-invite")).toBeInTheDocument();
+    expect(invite.mounts).toBe(1);
+  });
+
   it("renders the scenario header and opener message", async () => {
     await renderPage();
     expect(screen.getByRole("heading", { name: scenario.title })).toBeInTheDocument();

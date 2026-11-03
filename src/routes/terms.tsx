@@ -151,14 +151,15 @@ function Terms() {
         </p>
         <Bullets
           items={[
-            "Price: the price and billing period are shown in the app, in your local currency, before you confirm the purchase.",
-            "Free trial: if a free trial is offered and you are eligible, the app shows it before you confirm. When the trial ends, your paid subscription starts automatically unless you cancel at least 24 hours before the trial ends. Apple or Google decides who is eligible for a trial.",
-            "Billing: Payment is charged to your Apple Account at confirmation of purchase. If you subscribe through Google Play on Android, payment is charged to your Google Play account. We never receive your card details.",
-            "Renewal: your subscription renews automatically for another month unless you cancel it at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the current period ends.",
-            "Cancelling: manage or cancel your subscription in your Apple Account settings (on iPhone: Settings → your name → Subscriptions), or on Android in Google Play → Payments & subscriptions. Cancelling stops the next renewal, and you keep Pro until the end of the period you have paid for. Deleting your Alphonso account does not cancel your subscription.",
-            "Refunds: App Store purchases are handled by Apple under Apple’s refund policies. You can ask Apple for a refund at reportaproblem.apple.com. Google Play purchases are handled under Google Play’s refund policies. We cannot refund store purchases ourselves.",
+            "Price: the price and billing period are shown before you confirm the purchase, in the app or on our website.",
+            "Free trial: if a free trial is offered and you are eligible, the app shows it before you confirm. When the trial ends, your paid subscription starts automatically unless you cancel at least 24 hours before the trial ends. Apple or Google decides who is eligible for a trial in the apps. There is one free trial per person: if you have already had Alphonso Pro, on any device, no new trial is offered.",
+            "Billing: Payment is charged to your Apple Account at confirmation of purchase. If you subscribe through Google Play on Android, payment is charged to your Google Play account. If you subscribe on our website, payment is handled by Stripe. We never receive your card details.",
+            "Renewal: your subscription renews automatically for another period of the same length (a month on the monthly plan) unless you cancel it at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the current period ends.",
+            "Cancelling: manage or cancel your subscription in your Apple Account settings (on iPhone: Settings → your name → Subscriptions), or on Android in Google Play → Payments & subscriptions. A subscription bought on our website is managed or cancelled from Manage Subscription on the Hector page. Cancelling stops the next renewal, and you keep Pro until the end of the period you have paid for. Deleting your Alphonso account does not cancel an App Store or Google Play subscription; cancel it in your Apple or Google account first.",
+            "Deleting your Alphonso account cancels a subscription bought on our website: you are not charged again, and the current period is not refunded.",
+            "Refunds: App Store purchases are handled by Apple under Apple’s refund policies. You can ask Apple for a refund at reportaproblem.apple.com. Google Play purchases are handled under Google Play’s refund policies. We cannot refund store purchases ourselves. For a subscription bought on our website, contact us; where the law gives you a right to a refund, we honour it.",
             "Restoring: if you reinstall the app or move to a new device, tap Restore Purchases on the subscription screen.",
-            "Price changes: if the price of Pro changes, Apple or Google tells you before it applies to you, and asks for your agreement where their rules or the law require it.",
+            "Price changes: if the price of Pro changes, Apple or Google tells you before it applies to a subscription bought in the app, and asks for your agreement where their rules or the law require it. For a subscription bought on our website, we email you before a new price applies to you, and you can cancel before it does.",
           ]}
         />
       </Section>

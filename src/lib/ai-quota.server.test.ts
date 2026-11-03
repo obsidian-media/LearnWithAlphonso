@@ -133,6 +133,21 @@ describe("every QuotaKind is known to the database functions", () => {
     expect(latestBodyOf("consume_ai_quota")).toContain(`WHEN '${kind}' THEN`);
   });
 
+  it.each(Object.entries(DAILY_LIMITS))(
+    "consume_ai_quota's %s limit matches DAILY_LIMITS (%i)",
+    (kind, limit) => {
+      // The displayed limit is what the learner reads in the 429 message; a drift tells them the wrong number.
+      expect(latestBodyOf("consume_ai_quota")).toMatch(
+        new RegExp(`WHEN '${kind}' THEN ${limit}(?![0-9])`),
+      );
+    },
+  );
+
+  it("Pro learners' Hector turns have their own daily allowance, separate from free Practice", () => {
+    expect(DAILY_LIMITS.hector).toBe(150);
+    expect(latestBodyOf("consume_ai_rate_limit")).toMatch(/WHEN 'hector' THEN 10(?!\d)/);
+  });
+
   it.each(Object.keys(DAILY_LIMITS))("consume_ai_rate_limit handles %s", (kind) => {
     expect(latestBodyOf("consume_ai_rate_limit")).toContain(`WHEN '${kind}' THEN`);
   });

@@ -98,7 +98,14 @@ final class RevenueCatPurchases: PurchasesProviding {
     // MARK: - Mapping
 
     private nonisolated static func snapshot(_ info: CustomerInfo) -> EntitlementSnapshot {
-        EntitlementSnapshot(isProActive: info.entitlements[AppConfig.proEntitlementID]?.isActive == true)
+        let pro = info.entitlements[AppConfig.proEntitlementID]
+        // A website subscription (RevenueCat Web Billing, on Stripe) is managed on the web, not in Apple's sheet.
+        let isWeb = pro?.store == .rcBilling || pro?.store == .stripe
+        return EntitlementSnapshot(
+            isProActive: pro?.isActive == true,
+            isWebBilled: isWeb,
+            managementURL: info.managementURL
+        )
     }
 
     private nonisolated static func eligibleFreeTrial(for product: StoreProduct) async -> BillingPeriod? {

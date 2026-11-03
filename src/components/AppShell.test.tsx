@@ -60,6 +60,16 @@ describe("BottomTabs", () => {
     expect(screen.getByLabelText("Learn").firstElementChild).not.toHaveClass("text-moss");
   });
 
+  it("has a Hector tab after Chat that links to /hector", () => {
+    mockPathname = "/hector";
+    render(<BottomTabs />);
+    const hector = screen.getByLabelText("Hector");
+    expect(hector).toHaveAttribute("href", "/hector");
+    expect(hector.firstElementChild).toHaveClass("text-moss");
+    const labels = screen.getAllByRole("link").map((l) => l.getAttribute("aria-label"));
+    expect(labels.indexOf("Hector")).toBe(labels.indexOf("Chat") + 1);
+  });
+
   it("treats nested paths as active via startsWith", () => {
     mockPathname = "/converse/coffee";
     render(<BottomTabs />);

@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { campaignsFor } from "../../data/campaigns";
 import { scenariosFor } from "../../data/scenarios";
 import { useProgress } from "../../lib/progress";
+import { HectorInvite } from "../../components/HectorInvite";
 import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/converse")({
@@ -46,6 +47,11 @@ function ConversePage() {
           Pick a scene and roleplay with an AI tutor. Type or hold to speak — get a natural reply
           back.
         </p>
+
+        {/* Pro's one feature is Hector: offered where a learner is already practising speaking. Hidden for Pro. */}
+        <div className="mt-6">
+          <HectorInvite source="practice_hector_card" />
+        </div>
 
         {/* V4 candidate #4: connected multi-scene campaigns, additive
             alongside the one-shot scenarios below -- see

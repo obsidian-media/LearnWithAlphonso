@@ -279,6 +279,18 @@ describe("Profile page", () => {
     expect(deleteButton).toBeEnabled();
   });
 
+  it("warns that deleting cancels a website subscription with no refund", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByLabelText("Display name");
+    await user.click(screen.getByRole("button", { name: "Delete my account" }));
+    expect(
+      screen.getByText(
+        "If you subscribed on this website, deleting your account cancels it: you will not be charged again, and the current period is not refunded. App Store subscriptions are managed in your iPhone's Settings.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("deletes the account, signs out, and navigates away on success", async () => {
     deleteMyAccount.mockResolvedValue({ deleted: true });
     const user = userEvent.setup();
