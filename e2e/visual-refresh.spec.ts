@@ -88,6 +88,13 @@ test("screenshots of the redesigned screens in every theme", async ({ page }) =>
           path: `test-results/visual-refresh/${theme}-${width}-${screen.name}.png`,
           fullPage: true,
         });
+        // What a phone actually shows first. A full-page shot stretches the window to the page height, which
+        // blows fixed scene backgrounds up and drops sticky bars mid-page, so the phone frame is kept as well.
+        if (width === 390) {
+          await page.screenshot({
+            path: `test-results/visual-refresh/${theme}-${width}-${screen.name}-screen.png`,
+          });
+        }
       }
     }
   }
