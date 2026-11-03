@@ -1,3 +1,5 @@
+import { mascotArt, type MascotMoment } from "../lib/mascot-poses";
+
 const MASCOT_SRC = {
   alphonso: "/mascots/alphonso.png",
   hector: "/mascots/hector.png",
@@ -15,17 +17,20 @@ const MASCOT_NAME = {
  * Canopy-conditional -- every theme's own moss/moss-deep renders here,
  * same as every other moss-colored surface in this app.
  */
-export function MascotBanner({
-  mascot,
-  message,
-}: {
-  mascot: "alphonso" | "hector";
-  message: string;
-}) {
+export function MascotBanner(
+  props: { message: string } & (
+    | { mascot: "alphonso" | "hector"; moment?: undefined }
+    | { moment: MascotMoment; mascot?: undefined }
+  ),
+) {
+  const { message } = props;
+  // A moment picks the pose (falling back to the base image until the pose is bundled).
+  const art = props.moment ? mascotArt(props.moment) : null;
+  const mascot = art ? art.mascot : props.mascot!;
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-moss to-moss-deep p-4">
       <img
-        src={MASCOT_SRC[mascot]}
+        src={art ? art.src : MASCOT_SRC[mascot]}
         alt={MASCOT_NAME[mascot]}
         width={52}
         height={52}

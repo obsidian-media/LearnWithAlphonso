@@ -43,6 +43,8 @@ let package = Package(
                 .copy("Resources/placement-es.json"),
                 .copy("Resources/icon3d.json"),
                 .copy("Resources/icon3d-achievements.json"),
+                .copy("Resources/mascot-moments.json"),
+                .copy("Resources/mascot-poses-available.json"),
             ]
         ),
         .testTarget(

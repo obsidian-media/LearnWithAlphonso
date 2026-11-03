@@ -420,10 +420,12 @@ enum AlphonsoMascot {
 struct AlphonsoMascotBanner: View {
     let mascot: AlphonsoMascot
     let message: String
+    /// The moment picks the pose (falling back to the base image until that pose is bundled).
+    var moment: MascotMoment? = nil
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Image(mascot.assetName)
+            Image(moment.map { MascotPoseCatalog.art(for: $0).assetName } ?? mascot.assetName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 52, height: 52)

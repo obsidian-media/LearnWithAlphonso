@@ -1,0 +1,27 @@
+{
+  "poses": [
+    "happy",
+    "proud",
+    "thinking",
+    "surprised",
+    "encouraging",
+    "waving",
+    "listening",
+    "talking"
+  ],
+  "moments": {
+    "learnGreeting": { "mascot": "alphonso", "pose": "waving" },
+    "lessonComplete": { "mascot": "alphonso", "pose": "proud" },
+    "lessonCompleteOffline": { "mascot": "alphonso", "pose": "happy" },
+    "leaguePromotion": { "mascot": "alphonso", "pose": "proud" },
+    "emptyState": { "mascot": "alphonso", "pose": "thinking" },
+    "streakEncourage": { "mascot": "alphonso", "pose": "encouraging" },
+    "campaignComplete": { "mascot": "alphonso", "pose": "proud" },
+    "authWelcome": { "mascot": "alphonso", "pose": "waving" },
+    "hectorIdle": { "mascot": "hector", "pose": "happy" },
+    "hectorListening": { "mascot": "hector", "pose": "listening" },
+    "hectorSpeaking": { "mascot": "hector", "pose": "talking" },
+    "hectorThinking": { "mascot": "hector", "pose": "thinking" },
+    "paywall": { "mascot": "hector", "pose": "waving" }
+  }
+}

@@ -23,4 +23,10 @@ describe("MascotBanner", () => {
     render(<MascotBanner mascot="alphonso" message="Streak saved" />);
     expect(screen.getByRole("img")).toHaveAccessibleName(/alphonso/i);
   });
+  it("takes a moment instead of a mascot and shows that moment's art", () => {
+    render(<MascotBanner moment="hectorIdle" message="Hi" />);
+    expect(screen.getByRole("img", { name: /hector/i }).getAttribute("src")).toMatch(
+      /^\/mascots\/hector(-happy)?\.png$/,
+    );
+  });
 });
