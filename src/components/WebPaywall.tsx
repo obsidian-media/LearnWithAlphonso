@@ -10,7 +10,8 @@ import {
 } from "@/lib/paywall-copy";
 
 type Offer = {
-  price: string;
+  /** Null when there is no price for this learner's country: checkout shows it in their currency. */
+  price: string | null;
   period: BillingPeriod;
   trialDays: number | null;
   purchaseUrl: string;

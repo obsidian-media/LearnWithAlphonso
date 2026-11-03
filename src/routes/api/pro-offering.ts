@@ -51,9 +51,15 @@ async function handle(request: Request): Promise<Response> {
   if (summary.status === "active") return Response.json({ error: "already-pro" }, { status: 409 });
 
   const trialDays = summary.trialEligible ? offer.trialDays : null;
+  // RevenueCat's price is for one country; checkout bills everyone else in their own currency, so elsewhere the
+  // paywall shows no number rather than a wrong one. Vercel sets the country header; without it (local runs) the
+  // price shows.
+  const viewerCountry = request.headers.get("x-vercel-ip-country")?.trim().toUpperCase() || null;
+  const priceHere =
+    offer.priceCountry !== null && (viewerCountry === null || viewerCountry === offer.priceCountry);
   return Response.json(
     {
-      price: offer.price,
+      price: priceHere ? offer.price : null,
       period: offer.period,
       trialDays,
       purchaseUrl: buildPurchaseUrl(trialDays ? trialLink : plainLink, data.user.id, source),

@@ -34,13 +34,14 @@ describe("getWebOffering", () => {
   const product = {
     id: "prod_web",
     subscription: { duration: "P1M", trial_duration: "P7D" },
-    indicative_price: { currency: "CAD", amount_micros: 12_990_000 },
+    indicative_price: { currency: "CAD", amount_micros: 12_990_000, country: "CA" },
   };
 
   it("reads price, period and trial from RevenueCat v2 with the v2 key, formatted in its own currency", async () => {
     const fetchImpl = productsResponse([{ id: "other" }, product]);
     expect(await getWebOffering(CONFIG, "prod_web", fetchImpl)).toEqual({
       price: new Intl.NumberFormat("en", { style: "currency", currency: "CAD" }).format(12.99),
+      priceCountry: "CA",
       period: "month",
       trialDays: 7,
     });

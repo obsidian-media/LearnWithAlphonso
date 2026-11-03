@@ -11,7 +11,16 @@ import type { BillingPeriod, PaywallSource } from "./paywall-copy";
 const API = "https://api.revenuecat.com/v2";
 const CACHE_MS = 10 * 60 * 1000;
 
-export type WebOffering = { price: string; period: BillingPeriod; trialDays: number | null };
+/**
+ * `price` is RevenueCat's indicative price, which is for one country (`priceCountry`, e.g. "US"). Checkout charges a
+ * learner elsewhere in their own currency (CA$12.99 in Canada), so the route only shows `price` in that country.
+ */
+export type WebOffering = {
+  price: string;
+  priceCountry: string | null;
+  period: BillingPeriod;
+  trialDays: number | null;
+};
 
 type Duration = { unit: "day" | "week" | "month" | "year"; value: number };
 
@@ -76,9 +85,10 @@ export async function getWebOffering(
     const priceRaw = Array.isArray(product.indicative_price)
       ? product.indicative_price[0]
       : product.indicative_price;
-    const { currency, amount_micros } = (priceRaw ?? {}) as {
+    const { currency, amount_micros, country } = (priceRaw ?? {}) as {
       currency?: string;
       amount_micros?: number;
+      country?: unknown;
     };
     if (typeof currency !== "string" || typeof amount_micros !== "number") return null;
     const period = periodOf(parseIsoDuration(product.subscription?.duration));
@@ -87,6 +97,7 @@ export async function getWebOffering(
       price: new Intl.NumberFormat("en", { style: "currency", currency }).format(
         amount_micros / 1_000_000,
       ),
+      priceCountry: typeof country === "string" && country ? country.toUpperCase() : null,
       period,
       trialDays: daysOf(parseIsoDuration(product.subscription?.trial_duration)),
     };

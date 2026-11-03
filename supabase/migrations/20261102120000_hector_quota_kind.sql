@@ -1,7 +1,7 @@
 -- Pro learners' Hector turns get their own daily allowance ('hector'), separate
 -- from the free 'chat' quota that Practice uses, so practising never blocks the
 -- feature a learner pays for (web Hector + Pro design, decision 8, 2026-11-02).
--- Still capped to bound AI cost; 150/day was proposed for the owner to confirm.
+-- Still capped to bound AI cost; 150/day, confirmed by the owner on 2026-11-03.
 --
 -- CREATE OR REPLACE replaces the whole function, so every existing limit is
 -- repeated verbatim from 20261005120000_saved_word_review_items.sql.

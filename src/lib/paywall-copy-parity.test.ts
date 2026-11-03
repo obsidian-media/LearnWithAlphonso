@@ -52,3 +52,22 @@ describe("web paywall lines follow the iPhone formats", () => {
     );
   });
 });
+
+describe("web paywall wording when the price is only known at checkout", () => {
+  it("names the plan and says the price comes in the learner's currency, with no number", () => {
+    expect(paywallPriceLine(null, "month")).toBe(
+      "Monthly plan, priced in your currency at checkout",
+    );
+    expect(paywallPriceLine(null, "year")).toBe("Yearly plan, priced in your currency at checkout");
+    expect(paywallTrialLine(null, "month", 7)).toBe(
+      "Free for 7 days, then the monthly price shown at checkout",
+    );
+    expect(paywallTrialLine(null, "month", null)).toBeNull();
+    expect(paywallDisclosure(null, "month", 7)).toBe(
+      "After the free trial, Alphonso Pro renews automatically at the monthly price shown at checkout until you cancel. Your card is charged when the trial ends. Cancel any time from Manage Subscription; cancelling stops the next renewal.",
+    );
+    expect(paywallDisclosure(null, "year", null)).toBe(
+      "Alphonso Pro renews automatically at the yearly price shown at checkout until you cancel. Your card is charged when you confirm the purchase. Cancel any time from Manage Subscription; cancelling stops the next renewal.",
+    );
+  });
+});

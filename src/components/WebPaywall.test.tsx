@@ -28,6 +28,24 @@ afterEach(() => {
 });
 
 describe("WebPaywall", () => {
+  it("shows no number when the server has no price for this learner's country", async () => {
+    serve(200, {
+      price: null,
+      period: "month",
+      trialDays: 7,
+      purchaseUrl: "https://pay.rev.cat/tok/u1?x=1",
+    });
+    render(<WebPaywall source="hector_tab" />);
+    expect(
+      await screen.findByText("Monthly plan, priced in your currency at checkout"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Free for 7 days, then the monthly price shown at checkout"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/\$/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start free trial" })).toBeInTheDocument();
+  });
+
   it("asks for the offer with its source and shows RevenueCat's price, trial and disclosure", async () => {
     serve(200, {
       price: "CA$12.99",

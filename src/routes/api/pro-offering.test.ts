@@ -20,13 +20,19 @@ const handler = (
   }
 ).GET;
 
-function req(source: string | null = "hector_tab", authorization: string | null = "Bearer t") {
+function req(
+  source: string | null = "hector_tab",
+  authorization: string | null = "Bearer t",
+  country?: string,
+) {
   const url = new URL("https://example.com/api/pro-offering");
   if (source !== null) url.searchParams.set("source", source);
-  return new Request(url, { headers: authorization ? { Authorization: authorization } : {} });
+  const headers: Record<string, string> = authorization ? { Authorization: authorization } : {};
+  if (country) headers["x-vercel-ip-country"] = country;
+  return new Request(url, { headers });
 }
 
-const OFFER = { price: "$9.99", period: "month", trialDays: 7 };
+const OFFER = { price: "$9.99", priceCountry: "US", period: "month", trialDays: 7 };
 
 beforeEach(() => {
   vi.unstubAllEnvs();
@@ -48,6 +54,26 @@ beforeEach(() => {
 });
 
 describe("GET /api/pro-offering", () => {
+  it("shows RevenueCat's price to a learner in the price's own country", async () => {
+    const body = await (await handler({ request: req("hector_tab", "Bearer t", "US") })).json();
+    expect(body.price).toBe("$9.99");
+  });
+
+  it("shows no price to a learner elsewhere: checkout charges their own currency (CA$12.99 for Canada)", async () => {
+    const res = await handler({ request: req("hector_tab", "Bearer t", "CA") });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.price).toBeNull();
+    expect(body).toMatchObject({ period: "month", trialDays: 7 });
+    expect(body).not.toHaveProperty("priceCountry");
+  });
+
+  it("shows no price when RevenueCat does not say which country its price is for", async () => {
+    getWebOffering.mockResolvedValue({ ...OFFER, priceCountry: null });
+    const body = await (await handler({ request: req("hector_tab", "Bearer t", "US") })).json();
+    expect(body.price).toBeNull();
+  });
+
   it("401 without a session", async () => {
     expect((await handler({ request: req("hector_tab", null) })).status).toBe(401);
   });
