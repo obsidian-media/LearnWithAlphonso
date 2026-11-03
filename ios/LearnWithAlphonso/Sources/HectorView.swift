@@ -11,6 +11,8 @@ struct HectorView: View {
     let entitlementStore: EntitlementStore
     let activeCourse: ActiveCourseModel
     let conversationStore: ConversationStore
+    /// Set when Hector is shown as a sheet (from lesson complete): adds a Done button.
+    var onClose: (() -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -32,6 +34,13 @@ struct HectorView: View {
             .background(AlphonsoColor.surface)
             .navigationTitle("Hector")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if let onClose {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done", action: onClose)
+                    }
+                }
+            }
         }
         .tint(AlphonsoColor.ember)
     }
@@ -138,9 +147,9 @@ private struct HectorConversationView: View {
 
     /// Hector's 3D art across the top: tall before the first turn, shorter once the conversation needs the room.
     private var hero: some View {
-        let art = MascotPoseCatalog.art(for: HectorStatus.moment(for: status))
+        let art = MascotArt.assetName(for: HectorStatus.moment(for: status))
         return ZStack(alignment: .bottomLeading) {
-            Image(art.assetName)
+            Image(art)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity)

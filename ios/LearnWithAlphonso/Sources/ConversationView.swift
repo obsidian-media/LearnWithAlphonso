@@ -9,6 +9,13 @@ struct ConversationView: View {
     let activeCourse: ActiveCourseModel
     let conversationStore: ConversationStore
     let entitlementStore: EntitlementStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Two tiles a row; one at accessibility text sizes, where two would wrap a title one word per line.
+    private var scenarioColumns: [GridItem] {
+        let count = dynamicTypeSize.isAccessibilitySize ? 1 : 2
+        return Array(repeating: GridItem(.flexible(), spacing: 12), count: count)
+    }
 
     @State private var showHectorPaywall = false
 
@@ -41,7 +48,7 @@ struct ConversationView: View {
                             campaigns: campaigns, course: course, session: session, conversationStore: conversationStore)
                         practiceSectionLabel("Scenarios")
                     }
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                    LazyVGrid(columns: scenarioColumns, spacing: 12) {
                         ForEach(Array(contentStore.scenarios(for: course).enumerated()), id: \.element.id) { index, scenario in
                             NavigationLink {
                                 ConversationSessionView(
@@ -77,13 +84,13 @@ struct ConversationView: View {
     }
 }
 
-/// The small coloured label above a group on the Practice screen.
+/// The heading above a group on the Practice screen.
 func practiceSectionLabel(_ text: String) -> some View {
-    Text(text.uppercased())
-        .font(AlphonsoFont.sans(12, weight: .semiBold))
-        .tracking(0.6)
-        .foregroundStyle(AlphonsoColor.ember)
+    Text(text)
+        .font(AlphonsoFont.display(20, weight: .bold))
+        .foregroundStyle(AlphonsoColor.ink)
         .padding(.top, AlphonsoSpacing.sm)
+        .accessibilityAddTraits(.isHeader)
 }
 
 /// Hold the mic to record, release to send; one full turn at a time

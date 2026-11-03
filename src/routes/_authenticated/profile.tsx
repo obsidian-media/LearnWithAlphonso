@@ -19,7 +19,7 @@ import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Icon3D } from "../../components/Icon3D";
-import type { TileTone } from "../../lib/tile-tones";
+import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
 /** The name went through confirm_display_name first; only the country write after it failed. */
 const DETAILS_SAVE_FAILED = "Your name was saved, but your country wasn't. Try again.";
@@ -492,14 +492,6 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
   );
 }
 
-const TONE_BG: Record<TileTone, string> = {
-  coral: "bg-tile-coral-bg text-tile-coral-ink",
-  sky: "bg-tile-sky-bg text-tile-sky-ink",
-  sun: "bg-tile-sun-bg text-tile-sun-ink",
-  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
-  mint: "bg-tile-mint-bg text-tile-mint-ink",
-};
-
 /** A big-number stat with a 3D icon on a colour tile. */
 function Stat({
   label,
@@ -516,11 +508,11 @@ function Stat({
     <div
       data-big-stat=""
       data-tone={tone}
-      className={`card-lift flex flex-col items-center rounded-3xl px-3 py-3 text-center ${TONE_BG[tone]}`}
+      className={`card-lift flex flex-col items-center rounded-3xl px-3 py-3 text-center ${TILE_TONE_CLASSES[tone]}`}
     >
       <Icon3D emoji={emoji} size={32} />
       <p className="tnum mt-1 font-display text-[26px] font-bold leading-none text-ink">{value}</p>
-      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
+      <p className="mt-1 text-xs font-semibold">{label}</p>
     </div>
   );
 }

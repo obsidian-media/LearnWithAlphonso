@@ -1,13 +1,5 @@
-import type { TileTone } from "../../lib/tile-tones";
+import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { Icon3D } from "../Icon3D";
-
-const TONE_CLASSES: Record<TileTone, string> = {
-  coral: "bg-tile-coral-bg text-tile-coral-ink",
-  sky: "bg-tile-sky-bg text-tile-sky-ink",
-  sun: "bg-tile-sun-bg text-tile-sun-ink",
-  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
-  mint: "bg-tile-mint-bg text-tile-mint-ink",
-};
 
 /**
  * A colour tile with a 3D icon, a title and an optional one-line description.
@@ -32,12 +24,12 @@ export function TileCard({
   return (
     <div
       data-tone={tone}
-      className={`card-lift flex h-full min-h-28 flex-col gap-1.5 rounded-3xl p-3.5 ${TONE_CLASSES[tone]} ${className}`}
+      className={`card-lift flex h-full min-h-28 flex-col gap-1.5 rounded-3xl p-3.5 ${TILE_TONE_CLASSES[tone]} ${className}`}
     >
       <div className="flex items-start justify-between gap-2">
         <Icon3D emoji={icon} size={44} />
         {badge ? (
-          <span className="rounded-full bg-white/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]">
+          <span className="rounded-full bg-white/55 px-2 py-0.5 text-[11px] font-semibold">
             {badge}
           </span>
         ) : null}

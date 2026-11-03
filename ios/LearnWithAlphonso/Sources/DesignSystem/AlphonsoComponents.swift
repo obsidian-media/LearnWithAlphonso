@@ -425,7 +425,7 @@ struct AlphonsoMascotBanner: View {
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Image(moment.map { MascotPoseCatalog.art(for: $0).assetName } ?? mascot.assetName)
+            Image(moment.map { MascotArt.assetName(for: $0) } ?? mascot.assetName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 52, height: 52)

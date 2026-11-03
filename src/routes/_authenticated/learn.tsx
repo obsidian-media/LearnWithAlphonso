@@ -23,7 +23,7 @@ import {
 } from "../../lib/sync.functions";
 import { fetchDueReviews } from "../../lib/review.functions";
 import { XP_HEART_COST } from "../../lib/hearts";
-import { tileTone, type TileTone } from "../../lib/tile-tones";
+import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { unitPathNodes } from "../../lib/unit-path";
 
 export const Route = createFileRoute("/_authenticated/learn")({
@@ -39,14 +39,6 @@ export const Route = createFileRoute("/_authenticated/learn")({
     ],
   }),
 });
-
-const NODE_TONE: Record<TileTone, string> = {
-  coral: "bg-tile-coral-bg",
-  sky: "bg-tile-sky-bg",
-  sun: "bg-tile-sun-bg",
-  lilac: "bg-tile-lilac-bg",
-  mint: "bg-tile-mint-bg",
-};
 
 /** The one loud card for the next lesson, with the unit's lessons as a short path. */
 function ContinueCard({
@@ -76,7 +68,7 @@ function ContinueCard({
           <span
             key={n.id}
             className={`grid size-9 place-items-center rounded-full ${
-              n.state === "locked" ? "bg-white/25 grayscale" : NODE_TONE[tileTone(i)]
+              n.state === "locked" ? "bg-white/25 grayscale" : TILE_TONE_CLASSES[tileTone(i)]
             } ${n.state === "next" ? "ring-2 ring-white" : ""}`}
           >
             <Icon3D
@@ -144,7 +136,7 @@ function LessonNode({
     "relative grid size-[72px] place-items-center rounded-full transition-transform";
   const stateClasses =
     state === "done"
-      ? `${NODE_TONE[tileTone(index)]} shadow-[0_4px_0_0_var(--color-hairline)]`
+      ? `${TILE_TONE_CLASSES[tileTone(index)]} shadow-[0_4px_0_0_var(--color-hairline)]`
       : state === "active"
         ? "bg-ember text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)]"
         : "bg-parchment text-ink-soft/40 ring-1 ring-hairline";

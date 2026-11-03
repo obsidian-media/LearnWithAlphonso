@@ -6,7 +6,7 @@ const GLYPHS = glyphEmoji as Record<string, string>;
 
 /** The 3D icon for an emoji, or null if the set has none. "⭐️" and "⭐" are the same icon. */
 export function icon3dSlug(emoji: string): string | null {
-  return SLUGS[emoji.replace(/️/g, "")] ?? null;
+  return SLUGS[emoji.replace(/\uFE0F/g, "")] ?? null;
 }
 
 /** The emoji that stands for an achievement's glyph key ("flame" is 🔥), or null for an unknown key. */

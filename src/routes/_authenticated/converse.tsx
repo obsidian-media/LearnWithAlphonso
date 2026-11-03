@@ -37,14 +37,11 @@ function ConversePage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-          Conversation partner
-        </p>
         <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
           Practice out loud
         </h1>
         <p className="mt-1.5 max-w-[320px] text-sm text-ink-soft/80">
-          Pick a scene and roleplay with an AI tutor. Type or hold to speak — get a natural reply
+          Pick a scene and roleplay with an AI tutor. Type or hold to speak and get a natural reply
           back.
         </p>
 
@@ -53,9 +50,7 @@ function ConversePage() {
             docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md */}
         {campaigns.length > 0 && (
           <div className="mt-7 grid grid-cols-1 gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
-              Campaigns
-            </p>
+            <h2 className="font-display text-xl font-bold text-ink">Campaigns</h2>
             {campaigns.map((c, i) => (
               <motion.div
                 key={c.id}
@@ -77,7 +72,7 @@ function ConversePage() {
                       {c.title}
                     </h2>
                     <p className="mt-0.5 text-xs">{c.blurb}</p>
-                    <span className="mt-2 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
+                    <span className="mt-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">
                       {c.scenes.length} scenes
                     </span>
                   </div>
@@ -88,9 +83,7 @@ function ConversePage() {
           </div>
         )}
 
-        <p className="mb-2 mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
-          Scenarios
-        </p>
+        <h2 className="mb-3 mt-8 font-display text-xl font-bold text-ink">Scenarios</h2>
         <div className="grid grid-cols-2 gap-3">
           {scenarios.map((s, i) => (
             <motion.div

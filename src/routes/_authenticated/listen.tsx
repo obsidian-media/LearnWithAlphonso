@@ -14,15 +14,7 @@ import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { Icon3D } from "../../components/Icon3D";
 import { mascotArt } from "../../lib/mascot-poses";
-import { tileTone, type TileTone } from "../../lib/tile-tones";
-
-const TONE_BG: Record<TileTone, string> = {
-  coral: "bg-tile-coral-bg text-tile-coral-ink",
-  sky: "bg-tile-sky-bg text-tile-sky-ink",
-  sun: "bg-tile-sun-bg text-tile-sun-ink",
-  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
-  mint: "bg-tile-mint-bg text-tile-mint-ink",
-};
+import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
 export const Route = createFileRoute("/_authenticated/listen")({
   component: ListenPage,
@@ -196,7 +188,7 @@ export function ListenFolderView({
               >
                 <span
                   data-tone={tileTone(i)}
-                  className={`grid size-12 shrink-0 place-items-center rounded-2xl ${TONE_BG[tileTone(i)]}`}
+                  className={`grid size-12 shrink-0 place-items-center rounded-2xl ${TILE_TONE_CLASSES[tileTone(i)]}`}
                 >
                   <Icon3D emoji="🎧" size={30} />
                 </span>

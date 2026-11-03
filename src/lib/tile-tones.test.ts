@@ -102,3 +102,34 @@ describe("tile tones", () => {
     expect(tileTone(-1)).toBe("coral");
   });
 });
+
+describe("tile tone classes", () => {
+  it("one shared class map: background plus matching ink for each tone", async () => {
+    const { TILE_TONE_CLASSES } = await import("./tile-tones");
+    for (const t of TILE_TONES) {
+      expect(TILE_TONE_CLASSES[t]).toBe(`bg-tile-${t}-bg text-tile-${t}-ink`);
+    }
+  });
+
+  it("no other file keeps its own copy of the map", async () => {
+    const { readFileSync, readdirSync, statSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const p = join(dir, name);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (
+          /\.tsx?$/.test(name) &&
+          !name.endsWith(".test.tsx") &&
+          !name.endsWith(".test.ts")
+        ) {
+          if (p.split(/[\\/]/).join("/").endsWith("lib/tile-tones.ts")) continue;
+          if (/coral:\s*"bg-tile-coral-bg/.test(readFileSync(p, "utf8"))) offenders.push(p);
+        }
+      }
+    };
+    walk("src");
+    expect(offenders).toEqual([]);
+  });
+});

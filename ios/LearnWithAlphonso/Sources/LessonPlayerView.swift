@@ -220,7 +220,8 @@ struct LessonPlayerView: View {
             if let hectorAccess {
                 HectorView(
                     session: session, entitlementStore: hectorAccess.entitlementStore,
-                    activeCourse: hectorAccess.activeCourse, conversationStore: hectorAccess.conversationStore)
+                    activeCourse: hectorAccess.activeCourse, conversationStore: hectorAccess.conversationStore,
+                    onClose: { showingHector = false })
             }
         }
         .sheet(isPresented: $showingHectorPaywall) {
@@ -856,7 +857,7 @@ private struct OverviewScreen: View {
         // navigation push boundary.
         ScrollView {
             VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                Image(MascotPoseCatalog.art(for: .emptyState).assetName)
+                Image(MascotArt.assetName(for: .emptyState))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 120, height: 120)
@@ -1086,7 +1087,7 @@ private struct FinishView: View {
                 // The exact "no imagery, just text/icon" pattern the
                 // spec's Background section calls out on PaywallView
                 // shows up here too -- same fix.
-                Image(MascotPoseCatalog.art(for: .lessonComplete).assetName)
+                Image(MascotArt.assetName(for: .lessonComplete))
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 180, height: 180)
@@ -1456,9 +1457,8 @@ private struct LessonRewardChipView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(title.uppercased())
-                .font(AlphonsoFont.sans(10, weight: .bold))
-                .tracking(0.6)
+            Text(title)
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .foregroundStyle(tone.ink)
             Icon3DView(emoji: chip.emoji, size: 28)
             Text(chip.value)

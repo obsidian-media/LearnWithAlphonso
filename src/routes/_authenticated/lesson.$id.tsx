@@ -3,7 +3,7 @@ import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
 import { mascotArt } from "../../lib/mascot-poses";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
-import type { TileTone } from "../../lib/tile-tones";
+import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
@@ -498,7 +498,7 @@ function LessonPage() {
           {q.type === "listening" && !canSpeak() && (
             <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
               <p className="text-xs text-ink-soft">
-                Audio is unavailable on this device — here is what you would hear:
+                Audio is unavailable on this device. Here is what you would hear:
               </p>
               <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
             </div>
@@ -791,7 +791,7 @@ function OverviewScreen({
             key={s.label}
             data-step=""
             data-tone={s.tone}
-            className={`card-lift grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl px-4 py-3.5 ${STEP_TONE[s.tone]}`}
+            className={`card-lift grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl px-4 py-3.5 ${TILE_TONE_CLASSES[s.tone]}`}
           >
             <Icon3D emoji={s.emoji} size={36} />
             <span className="min-w-0">
@@ -810,19 +810,11 @@ function OverviewScreen({
   );
 }
 
-const STEP_TONE: Record<TileTone, string> = {
-  coral: "bg-tile-coral-bg text-tile-coral-ink",
-  sky: "bg-tile-sky-bg text-tile-sky-ink",
-  sun: "bg-tile-sun-bg text-tile-sun-ink",
-  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
-  mint: "bg-tile-mint-bg text-tile-mint-ink",
-};
-
 const CHIP_TITLE = { xp: "XP", streak: "Streak", accuracy: "Accuracy" } as const;
 const CHIP_TONE = {
-  xp: "bg-tile-sun-bg text-tile-sun-ink",
-  streak: "bg-tile-coral-bg text-tile-coral-ink",
-  accuracy: "bg-tile-mint-bg text-tile-mint-ink",
+  xp: TILE_TONE_CLASSES.sun,
+  streak: TILE_TONE_CLASSES.coral,
+  accuracy: TILE_TONE_CLASSES.mint,
 } as const;
 
 export function FinishScreen({
@@ -870,7 +862,7 @@ export function FinishScreen({
         Lesson complete
       </p>
       <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
-      <p className="mt-1 text-sm font-semibold text-moss">Nice work — lesson complete!</p>
+      <p className="mt-1 text-sm font-semibold text-moss">Nice work, lesson complete!</p>
       <div className="mt-4 flex justify-center gap-2.5">
         {chips.map((c, i) => (
           <motion.div
@@ -882,7 +874,7 @@ export function FinishScreen({
             transition={{ delay: 0.15 + i * 0.12, duration: 0.35 }}
             className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
           >
-            <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.12em]">
+            <span aria-hidden="true" className="text-xs font-semibold">
               {CHIP_TITLE[c.kind]}
             </span>
             <Icon3D emoji={c.emoji} size={28} />
