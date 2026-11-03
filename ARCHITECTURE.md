@@ -1861,6 +1861,45 @@ fails closed. RevenueCat is pinned to `exactVersion: 5.92.0` (which fixes
 and `ios-release.yml` run `scripts/check-revenuecat-resolution.sh`, which fails
 unless Xcode resolved exactly the pin.
 
+## Alphonso Pro on the web (Hector, RevenueCat Web Billing)
+
+#339 (merged 2026-11-03). One Pro subscription, one RevenueCat entitlement
+(`pro`), whatever store sold it: the website sells it by card through
+RevenueCat Web Billing on Stripe, and an iPhone purchase unlocks web Hector
+too. No card form and no Stripe key live in this repo: checkout is
+RevenueCat's hosted Web Purchase Link.
+
+- `/api/pro-status` reads the entitlement (RevenueCat v1 subscribers API,
+  `REVENUECAT_SECRET_API_KEY`) and returns `pro`, `store`, `trialEligible` and
+  the manage URL. `/api/hector-respond` checks the entitlement again on every
+  turn and spends the separate `hector` daily quota (150/day,
+  `consume_ai_quota`, migration 20261102120000); free Practice keeps `chat`
+  (60/day).
+- `/api/pro-offering` reads the price and trial from the v2 products API
+  (`expand=items.indicative_price`, `REVENUECAT_V2_SECRET_KEY`,
+  `REVENUECAT_PROJECT_ID`, `REVENUECAT_WEB_PRODUCT_ID`) and builds the
+  learner's checkout link (the link plus `/<user id>` and
+  `metadata[paywall_source]`). One trial per person: a learner who ever had a
+  subscription gets `REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL`. Already Pro is 409
+  (no double purchase). RevenueCat's indicative price is for one country
+  (`indicative_price.country`, US); checkout bills everyone else in their own
+  currency, so the number is shown only when Vercel's `x-vercel-ip-country`
+  matches, and otherwise the paywall says the plan is priced in the learner's
+  currency at checkout.
+- `/pro-return` is where checkout redirects; it polls for up to 30 s and
+  stores a per-account "just paid" note (sessionStorage, one hour) so that
+  account sees "activating", never the paywall again.
+- Deleting an account cancels any web subscription first (v2 cancel), then
+  erases the RevenueCat customer; a failed cancel queues the id in
+  `revenuecat_erasure_pending` and erases nothing, and the scheduled retry
+  cancels, then erases.
+- **State 2026-11-03:** verified end to end in RevenueCat's Stripe sandbox on
+  the PR preview (purchase, Pro unlock, deletion cancels and erases). Production
+  is deliberately unconfigured (the web paywall shows "Couldn't load
+  subscription options") until a real Stripe account and the production
+  RevenueCat web app, products and purchase links (redirecting to the live
+  `/pro-return`) exist.
+
 ## Binary polish and release guards (iOS)
 
 #264 (2026-10-09). The privacy manifest declares the UserDefaults reasons the
