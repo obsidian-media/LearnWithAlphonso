@@ -1,4 +1,8 @@
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
+import { Icon3D } from "../../components/Icon3D";
+import { Button } from "../../components/ui/Button";
+import { mascotArt } from "../../lib/mascot-poses";
+import type { TileTone } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
@@ -746,51 +750,66 @@ function OverviewScreen({
   questions: number;
   onStart: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  const steps = [
-    { label: "Vocabulary", detail: `${words} word${words === 1 ? "" : "s"} with examples` },
-    { label: "Practice", detail: `${questions} questions` },
-    { label: "Review", detail: "Anything you miss comes back later" },
+  const steps: { label: string; detail: string; emoji: string; tone: TileTone }[] = [
+    {
+      label: "Vocabulary",
+      detail: `${words} word${words === 1 ? "" : "s"} with examples`,
+      emoji: "📚",
+      tone: "coral",
+    },
+    { label: "Practice", detail: `${questions} questions`, emoji: "🎯", tone: "sky" },
+    { label: "Review", detail: "Anything you miss comes back later", emoji: "⭐", tone: "mint" },
   ];
   return (
-    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
+    <div className="flex flex-1 flex-col px-6 pb-6 pt-6">
+      <div className="mb-4 flex justify-center">
+        <img
+          src={mascotArt("emptyState").src}
+          alt=""
+          width={120}
+          height={120}
+          decoding="async"
+          className="size-30 rounded-[28px] object-cover card-lift"
+        />
+      </div>
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
         {subtitle}
       </p>
-      <h2 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
+      <h2 className="text-balance font-display text-[30px] font-bold leading-tight text-ink">
         {title}
       </h2>
-      <div className={isStudioInk ? "mt-6 divide-y divide-hairline" : "mt-6 space-y-2.5"}>
-        {steps.map((s, i) => (
+      <div className="mt-5 space-y-3">
+        {steps.map((s) => (
           <div
             key={s.label}
-            className={
-              isStudioInk
-                ? "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-3.5"
-                : "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
-            }
+            data-step=""
+            data-tone={s.tone}
+            className={`card-lift grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl px-4 py-3.5 ${STEP_TONE[s.tone]}`}
           >
-            <span className="tnum grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-xs font-semibold text-ink">
-              {i + 1}
-            </span>
+            <Icon3D emoji={s.emoji} size={36} />
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-ink">{s.label}</span>
-              <span className="block truncate text-xs text-ink-soft/80">{s.detail}</span>
+              <span className="block font-display text-base font-bold">{s.label}</span>
+              <span className="block truncate text-xs opacity-80">{s.detail}</span>
             </span>
           </div>
         ))}
       </div>
       <div className="mt-auto pt-6">
-        <button
-          onClick={onStart}
-          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
-        >
+        <Button fullWidth onClick={onStart}>
           Begin lesson
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
+
+const STEP_TONE: Record<TileTone, string> = {
+  coral: "bg-tile-coral-bg text-tile-coral-ink",
+  sky: "bg-tile-sky-bg text-tile-sky-ink",
+  sun: "bg-tile-sun-bg text-tile-sun-ink",
+  lilac: "bg-tile-lilac-bg text-tile-lilac-ink",
+  mint: "bg-tile-mint-bg text-tile-mint-ink",
+};
 
 export function FinishScreen({
   xp,

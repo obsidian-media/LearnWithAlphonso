@@ -830,26 +830,34 @@ private struct OverviewScreen: View {
         // navigation push boundary.
         ScrollView {
             VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                Image(MascotPoseCatalog.art(for: .emptyState).assetName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 120, height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .alphonsoLift()
+                    .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
                 Text(lesson.subtitle.uppercased())
                     .font(AlphonsoFont.sans(12, weight: .semiBold))
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
                 Text(lesson.title)
-                    .font(AlphonsoFont.display(28, weight: .bold))
+                    .font(AlphonsoFont.display(32, weight: .bold))
                     .foregroundStyle(AlphonsoColor.ink)
 
                 VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
-                    overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                    overviewStep(emoji: "\u{1F4DA}", tone: .coral, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
                     if !previewImages.isEmpty {
                         HStack(spacing: 8) {
                             ForEach(previewImages, id: \.url) { image in
                                 VocabImageView(image: image, thumbnailSize: 44)
                             }
                         }
-                        .padding(.leading, 40)
+                        .padding(.leading, AlphonsoSpacing.md)
                     }
-                    overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
-                    overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
+                    overviewStep(emoji: "\u{1F3AF}", tone: .sky, label: "Practice", detail: "\(questionCount) questions")
+                    overviewStep(emoji: "\u{2B50}", tone: .mint, label: "Review", detail: "Anything you miss comes back later")
                 }
 
                 Button("Begin lesson", action: onStart)
@@ -861,28 +869,25 @@ private struct OverviewScreen: View {
         .background(AlphonsoColor.surface)
     }
 
-    private func overviewStep(number: Int, label: String, detail: String) -> some View {
+    /// One step as a coloured card with a 3D icon. The icon is decorative; the label carries the meaning.
+    private func overviewStep(emoji: String, tone: AlphonsoTileTone, label: String, detail: String) -> some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            // minWidth/minHeight + a Circle background, not a fixed
-            // .frame(width:height:) + .clipShape(Circle()) -- the number
-            // itself never grows past one digit, but its FONT does with
-            // Dynamic Type, and clipShape crops an oversized glyph instead
-            // of letting the badge grow to fit it. This lets the circle
-            // grow with the text at large accessibility sizes instead.
-            Text("\(number)")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.surface)
-                .frame(minWidth: 28, minHeight: 28)
-                .background(Circle().fill(AlphonsoColor.moss))
+            Icon3DView(emoji: emoji, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(AlphonsoFont.sans(15, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .font(AlphonsoFont.display(17, weight: .bold))
                 Text(detail)
                     .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .opacity(0.8)
             }
+            Spacer(minLength: 0)
         }
+        .foregroundStyle(tone.ink)
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.vertical, 12)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
     }
 }
 

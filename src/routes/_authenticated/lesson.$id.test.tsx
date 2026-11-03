@@ -171,6 +171,20 @@ describe("out of hearts", () => {
 });
 
 describe("Lesson page", () => {
+  it("overview shows the three steps as coloured cards and a chunky Begin lesson button", async () => {
+    const { container } = renderPage();
+    const begin = await screen.findByRole("button", { name: "Begin lesson" });
+    // The shared chunky Button: a bottom edge that presses down.
+    expect(begin.className).toContain("active:translate-y-1");
+    const steps = [...container.querySelectorAll<HTMLElement>("[data-step][data-tone]")];
+    expect(steps.map((s) => s.dataset.tone)).toEqual(["coral", "sky", "mint"]);
+    expect(steps.map((s) => s.querySelector("img")?.getAttribute("src"))).toEqual([
+      "/icons3d/books.png",
+      "/icons3d/bullseye.png",
+      "/icons3d/star.png",
+    ]);
+  });
+
   it("shows a not-found message for an unknown lesson id", async () => {
     currentLessonId = "does-not-exist";
     renderPage();
