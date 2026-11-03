@@ -1,7 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { classifyAsset, iosSceneAssetName } from "../../scripts/import-scenes";
-import { FIGURES, SCENES, figureSrc, sceneSrc } from "./scenes";
+import { CLIPS, FIGURES, SCENES, clipPoster, clipSrc, figureSrc, sceneSrc } from "./scenes";
 
 describe("scenes and figures", () => {
   it("the import script accepts only the approved scene and figure names", () => {
@@ -46,6 +46,23 @@ describe("scenes and figures", () => {
   it("scenes stay small enough not to slow the first paint", () => {
     for (const s of SCENES) {
       expect(readFileSync(`public${sceneSrc(s)}`).length, s).toBeLessThan(400_000);
+    }
+  });
+
+  it("every approved clip ships as a web video with its still first frame, and as an iPhone data asset with its poster", () => {
+    expect(CLIPS).toContain("complete");
+    const assets = "ios/LearnWithAlphonso/Sources/Assets.xcassets";
+    for (const c of CLIPS) {
+      expect(existsSync(`public${clipSrc(c)}`), clipSrc(c)).toBe(true);
+      expect(existsSync(`public${clipPoster(c)}`), clipPoster(c)).toBe(true);
+      expect(existsSync(`${assets}/Clip-${c}.dataset/clip-${c}.mp4`), c).toBe(true);
+      expect(existsSync(`${assets}/Clip-${c}-poster.imageset/Contents.json`), c).toBe(true);
+    }
+  });
+
+  it("clips stay small enough to download on a phone without a wait", () => {
+    for (const c of CLIPS) {
+      expect(statSync(`public${clipSrc(c)}`).size, c).toBeLessThan(1_500_000);
     }
   });
 });

@@ -3,9 +3,8 @@ import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
 import { MascotImage } from "../../components/MascotImage";
 import { PractiseWithHector } from "../../components/PractiseWithHector";
-import { Confetti, CountUp } from "../../components/Celebration";
-import { StandingFigure } from "../../components/StandingFigure";
-import { sceneSrc } from "../../lib/scenes";
+import { CountUp } from "../../components/Celebration";
+import { clipPoster, clipSrc } from "../../lib/scenes";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
@@ -845,21 +844,35 @@ export function FinishScreen({
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
+      {/* The whole celebration is one clip: the stage, confetti cannons, streamers, sweeping spotlights and
+          Alphonso cheering. Under Reduce Motion its first frame stands still. The window is framed on Alphonso
+          (he fills 23-91% of the clip's height). */}
       <div
         data-stage="complete"
-        className="relative -mx-6 -mt-6 mb-5 h-[330px] w-[calc(100%+3rem)] overflow-hidden rounded-b-[2.5rem] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
+        role="img"
+        aria-label="Alphonso celebrating on the stage"
+        className="relative -mx-6 -mt-6 mb-5 aspect-[10/13] w-[calc(100%+3rem)] overflow-hidden rounded-b-[2.5rem] bg-ink shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
       >
-        <img
-          src={sceneSrc("complete")}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-bottom"
-        />
-        {!reduceMotion && <Confetti />}
-        <div className="absolute inset-x-0 bottom-4 flex justify-center">
-          <StandingFigure figure="alphonso-proud" alt="Alphonso" height={268} enter />
-        </div>
+        {reduceMotion ? (
+          <img
+            src={clipPoster("complete")}
+            alt=""
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
+          />
+        ) : (
+          <video
+            src={clipSrc("complete")}
+            poster={clipPoster("complete")}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
+          />
+        )}
       </div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete

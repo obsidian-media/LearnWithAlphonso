@@ -482,10 +482,12 @@ describe("app icon", () => {
     const scenery = JSON.parse(read("src/data/scenes.json")) as {
       scenes: string[];
       figures: string[];
+      clips?: string[];
     };
     const sceneSets = [
       ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
       ...scenery.figures.map((n) => `Figure-${n}.imageset`),
+      ...(scenery.clips ?? []).map((n) => `Clip-${n}-poster.imageset`),
     ];
     expect(sets).toEqual(
       [

@@ -208,21 +208,26 @@ describe("FinishScreen celebration", () => {
   }
   afterEach(() => vi.useRealTimers());
 
-  it("Alphonso stands full size on the stage scene", () => {
+  it("the stage plays the celebration clip: Alphonso cheering, confetti and streamers all in the video", () => {
     setReducedMotion(false);
     const { container } = renderFinish();
-    expect(screen.getByRole("img", { name: "Alphonso" }).getAttribute("src")).toBe(
-      "/figures/alphonso-proud.png",
-    );
-    const stage = container.querySelector('[data-stage="complete"]')!;
-    expect(stage.querySelector("img")?.getAttribute("src")).toBe("/scenes/complete.jpg");
+    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
+    expect(stage.getAttribute("data-stage")).toBe("complete");
+    const video = stage.querySelector("video")!;
+    expect(video.getAttribute("src")).toBe("/clips/complete.mp4");
+    expect(video.getAttribute("poster")).toBe("/clips/complete.jpg");
+    expect(video.loop).toBe(true);
+    expect(video.muted).toBe(true);
+    expect(video.autoplay).toBe(true);
+    // One celebration on screen: no code confetti and no separate cut-out on top of the clip.
+    expect(container.querySelector("[data-confetti]")).toBeNull();
+    expect(container.querySelector("[data-figure]")).toBeNull();
   });
 
-  it("confetti bursts and the XP counts up from zero", async () => {
+  it("the XP counts up from zero", async () => {
     setReducedMotion(false);
     vi.useFakeTimers();
-    const { container } = renderFinish();
-    expect(container.querySelector("[data-confetti]")).not.toBeNull();
+    renderFinish();
     const xp = screen.getByRole("group", { name: "XP: +10" });
     expect(within(xp).getByText("+0")).toBeInTheDocument();
     await act(async () => {
@@ -231,9 +236,12 @@ describe("FinishScreen celebration", () => {
     expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
 
-  it("under Reduce Motion: no confetti and the numbers show their final values at once", () => {
+  it("under Reduce Motion: the clip's first frame stands still and the numbers show their final values at once", () => {
     setReducedMotion(true);
     const { container } = renderFinish();
+    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
+    expect(stage.querySelector("video")).toBeNull();
+    expect(stage.querySelector("img")?.getAttribute("src")).toBe("/clips/complete.jpg");
     expect(container.querySelector("[data-confetti]")).toBeNull();
     const xp = screen.getByRole("group", { name: "XP: +10" });
     expect(within(xp).getByText("+10")).toBeInTheDocument();
