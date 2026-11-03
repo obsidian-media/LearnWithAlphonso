@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { curriculum } from "../src/data/curriculum";
 import nameFixtures from "../src/lib/name-onboarding.fixtures.json" with { type: "json" };
@@ -133,7 +134,9 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
     await page.waitForTimeout(1300);
     await shot("lesson-complete");
   } catch (e) {
-    console.warn(`lesson-complete shot skipped: ${(e as Error).message}`);
+    // The github reporter drops console output, so leave the evidence next to the shots.
+    await shot("lesson-complete-failed").catch(() => {});
+    writeFileSync("test-results/visual-refresh/lesson-complete-failed.txt", String(e));
   }
   try {
     await page.goto("/hector");

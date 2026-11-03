@@ -1,13 +1,14 @@
 import { Icon3D } from "./Icon3D";
 import type { UnitPathNode } from "@/lib/unit-path";
 
-/** Where each node sits on the garden path, from the bottom up: [left %, bottom px]. */
+/** Where each node sits on the garden path, from the bottom up: [left %, bottom px]. Kept in the left third:
+ * Alphonso and his bubble stand in the right half of the clip. */
 const SPOTS: [number, number][] = [
-  [26, 6],
-  [46, 96],
-  [24, 180],
-  [44, 254],
-  [26, 320],
+  [24, 6],
+  [12, 96],
+  [30, 176],
+  [14, 252],
+  [30, 322],
 ];
 
 /** Tall enough that the sheet below starts under Alphonso's feet in the clip on a phone. */
@@ -71,7 +72,7 @@ export function LearnMap({ nodes, greeting }: { nodes: UnitPathNode[]; greeting:
 /** Alphonso's speech bubble, drawn on the Learn clip above his head (its tail points down at him). */
 export function SpeechBubble({ text }: { text: string }) {
   return (
-    <p className="relative mb-3 w-[min(220px,52vw)] rounded-2xl bg-surface px-3.5 py-2.5 text-center font-display text-[15px] font-bold leading-snug text-ink shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+    <p className="relative mb-3 w-[min(180px,46vw)] rounded-2xl bg-surface px-3.5 py-2.5 text-center font-display text-[15px] font-bold leading-snug text-ink shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
       {text}
       <span className="absolute -bottom-2 left-1/2 size-4 -translate-x-1/2 rotate-45 bg-surface" />
     </p>

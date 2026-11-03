@@ -292,7 +292,7 @@ function LearnPage() {
         scene="learn"
         clip="learn"
         // Alphonso stands at 67% across and his head is at 54% down in the clip (scripts/import-clips.ts input).
-        pin={{ x: 64, y: 53, node: <SpeechBubble text={greeting} /> }}
+        pin={{ x: 66, y: 53, node: <SpeechBubble text={greeting} /> }}
       />
       <div className="relative z-10 px-6 pb-10 pt-6">
         <h1 className="sr-only">Learn</h1>
