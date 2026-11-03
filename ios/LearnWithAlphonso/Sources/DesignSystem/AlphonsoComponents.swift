@@ -11,7 +11,7 @@ import LearnWithAlphonsoKit
 /// press rather than the default system dimming).
 struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     var tint: Color = AlphonsoColor.moss
-    var shadow: Color = AlphonsoColor.mossDeep
+    var shadow: Color = AlphonsoColor.edgeMoss
     var foreground: Color = AlphonsoColor.surface
     /// false for inline/chip usage (e.g. a word-bank token) where the
     /// button should size to its label instead of filling its container.
@@ -39,12 +39,13 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
                     .offset(y: configuration.isPressed ? 0 : 4)
             )
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 }
 
-/// Secondary/outline button: parchment fill, hairline border, ink text --
-/// no pressed shadow (reserved for primary CTAs, matching the web app's
-/// use of `.hard-shadow` only on its main action buttons).
+/// Secondary/outline button: surface fill, hairline border, ink text, and
+/// the same chunky bottom edge as the primary button, in hairline, so every
+/// button presses down the same way.
 struct AlphonsoSecondaryButtonStyle: ButtonStyle {
     var fullWidth: Bool = true
 
@@ -57,12 +58,19 @@ struct AlphonsoSecondaryButtonStyle: ButtonStyle {
             // About 36 pt before (8 pt padding around a 15 pt font). An inline icon button
             // (the friend nudge) also gets the minimum width.
             .frame(minWidth: AlphonsoSpacing.minTouchTarget, maxWidth: fullWidth ? .infinity : nil, minHeight: AlphonsoSpacing.minTouchTarget)
-            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
+            .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous)
-                    .strokeBorder(AlphonsoColor.hairline, lineWidth: 1)
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    .strokeBorder(AlphonsoColor.hairline, lineWidth: 2)
             )
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .offset(y: configuration.isPressed ? 3 : 0)
+            .background(
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    .fill(AlphonsoColor.hairline)
+                    .offset(y: configuration.isPressed ? 0 : 3)
+            )
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 }
 
@@ -71,7 +79,7 @@ extension ButtonStyle where Self == AlphonsoPrimaryButtonStyle {
         AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
     }
     static var alphonsoEmber: AlphonsoPrimaryButtonStyle {
-        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65), foreground: AlphonsoColor.onAccent)
+        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.edgeEmber, foreground: AlphonsoColor.onAccent)
     }
     static func alphonsoPrimary(fullWidth: Bool) -> AlphonsoPrimaryButtonStyle {
         AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary, fullWidth: fullWidth)
@@ -110,12 +118,65 @@ extension View {
 /// surface (lesson cards, leaderboard rows, achievement tiles, etc).
 struct AlphonsoCard<Content: View>: View {
     var padding: CGFloat = AlphonsoSpacing.md
+    /// Tappable cards get a soft lift so they read as buttons; plain surfaces stay flat.
+    var elevated: Bool = false
     @ViewBuilder var content: Content
 
     var body: some View {
         content
             .padding(padding)
-            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            .background(
+                elevated ? AlphonsoColor.surface : AlphonsoColor.parchment,
+                in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+            )
+            .alphonsoLift(elevated)
+    }
+}
+
+extension View {
+    /// The soft two-layer shadow for tappable cards and tiles (web: `card-lift`).
+    @ViewBuilder
+    func alphonsoLift(_ on: Bool = true) -> some View {
+        if on {
+            self
+                .shadow(color: AlphonsoColor.ink.opacity(0.08), radius: 1, y: 1)
+                .shadow(color: AlphonsoColor.ink.opacity(0.14), radius: 8, y: 6)
+        } else {
+            self
+        }
+    }
+}
+
+/// A colour tile with a 3D icon, a title and an optional one-line description
+/// (web: `TileCard`). Presentational: wrap it in a Button or NavigationLink.
+struct AlphonsoTile: View {
+    let tone: AlphonsoTileTone
+    let emoji: String
+    let title: String
+    var subtitle: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Icon3DView(emoji: emoji, size: 44)
+            Text(title)
+                .font(AlphonsoFont.display(17, weight: .bold))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+            if let subtitle {
+                Text(subtitle)
+                    .font(AlphonsoFont.sans(13))
+                    .opacity(0.8)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(tone.ink)
+        .padding(14)
+        .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -158,10 +219,10 @@ struct AlphonsoPillBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             if let icon {
-                Text(icon)
+                Icon3DView(emoji: icon, size: 20)
             }
             Text(text)
-                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                .font(AlphonsoFont.display(15, weight: .bold))
         }
         .foregroundStyle(tint)
         .padding(.vertical, 4)
@@ -422,7 +483,7 @@ struct AlphonsoRowCard: View {
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 2) {
             if let leadingEmoji {
-                Text(leadingEmoji).font(.largeTitle)
+                Icon3DView(emoji: leadingEmoji, size: 36)
                     // Purely decorative here -- the emoji illustrates the
                     // row, it doesn't carry information title/subtitle
                     // don't already say. Without this, VoiceOver enumerates
@@ -441,7 +502,7 @@ struct AlphonsoRowCard: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(AlphonsoFont.sans(16, weight: .medium))
+                    .font(AlphonsoFont.display(17, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
                 Text(subtitle)
                     .font(AlphonsoFont.sans(13))

@@ -77,6 +77,12 @@
   }
 }
 
+@utility card-lift {
+  box-shadow:
+    0 1px 2px 0 oklch(0.24 0.045 165 / 0.08),
+    0 6px 16px -6px oklch(0.24 0.045 165 / 0.18);
+}
+
 @utility tnum {
   font-variant-numeric: tabular-nums;
 }
