@@ -111,8 +111,8 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
   it("the current node glows, bounces gently, and is still under Reduce Motion", () => {
     const node = from(map, "struct PathNodeView");
     expect(node).toContain("@Environment(\\.accessibilityReduceMotion)");
-    expect(node).toMatch(/guard !reduceMotion else \{ return \}/);
-    const guardAt = node.indexOf("guard !reduceMotion else { return }");
+    expect(node).toContain("guard state == .next, !reduceMotion else");
+    const guardAt = node.indexOf("guard state == .next, !reduceMotion else");
     const loopAt = node.indexOf("repeatForever(autoreverses: true)");
     expect(guardAt).toBeGreaterThan(-1);
     expect(loopAt).toBeGreaterThan(guardAt);
@@ -121,7 +121,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
 
   it("only the current node is tappable, and it opens the lesson exactly like Up next's Continue", () => {
     expect(map).toContain("onOpen(node.id)");
-    expect(map).toContain('.accessibilityLabel("Continue: ');
+    expect(map).toContain(', current lesson")');
     expect(map).toContain("minWidth: AlphonsoSpacing.minTouchTarget");
     // The same destination builder serves the list rows, the Up next link and the node.
     expect(browser).toContain("private func lessonDestination(");

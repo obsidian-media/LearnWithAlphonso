@@ -96,6 +96,12 @@ extension View {
         }
     }
 
+    /// `screenScene` only when `show` is true, for a view that sometimes sits on a scene painted further out.
+    @ViewBuilder
+    func screenScene(_ scene: SceneName, if show: Bool) -> some View {
+        if show { screenScene(scene) } else { self }
+    }
+
     /// Reports this row's position to the enclosing `screenScene`.
     func sceneScrollProbe() -> some View {
         background(SceneScrollProbe())

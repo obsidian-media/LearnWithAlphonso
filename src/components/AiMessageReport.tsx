@@ -70,7 +70,7 @@ export function AiMessageReport({
         type="button"
         aria-label={AI_CONSENT_COPY.reportAction}
         onClick={() => setOpen(true)}
-        className="mt-1 text-[11px] text-ink-soft/70 underline"
+        className="mt-1 rounded-full bg-surface/85 px-2 py-0.5 text-[11px] text-ink-soft underline backdrop-blur-md"
       >
         Report
       </button>

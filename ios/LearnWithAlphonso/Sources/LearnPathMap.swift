@@ -123,7 +123,7 @@ struct LearnPathMap: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Continue: \(node.title)")
+            .accessibilityLabel("\(node.title), current lesson")
             .accessibilityAddTraits(.isButton)
         } else {
             PathNodeView(state: node.state)
@@ -226,12 +226,18 @@ struct PathNodeView: View {
         }
         .frame(width: size * 1.7, height: size + edge, alignment: .top)
         .offset(y: bouncing ? -8 : 0)
-        .onAppear {
-            guard state == .next else { return }
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                bouncing = true
-            }
+        .onAppear { updateBounce() }
+        // Reduce Motion switched on mid-session stops the bounce; switched off starts it again.
+        .onChange(of: reduceMotion) { _, _ in updateBounce() }
+    }
+
+    private func updateBounce() {
+        guard state == .next, !reduceMotion else {
+            withAnimation(nil) { bouncing = false }
+            return
+        }
+        withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+            bouncing = true
         }
     }
 }

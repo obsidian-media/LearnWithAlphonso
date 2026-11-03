@@ -272,7 +272,13 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
   if (isLoading || !folders) {
     return (
       <div className="px-5 py-8">
-        <p className="text-sm text-ink-soft/70">Loading…</p>
+        <SceneBackdrop scene="listen" />
+        <p
+          data-surface
+          className="relative z-10 rounded-2xl bg-surface/90 px-4 py-3 text-sm text-ink-soft backdrop-blur-md"
+        >
+          Loading…
+        </p>
       </div>
     );
   }

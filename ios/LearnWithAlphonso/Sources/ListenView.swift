@@ -164,7 +164,9 @@ struct ListenView: View {
                 player: player,
                 downloads: downloads,
                 networkMonitor: networkMonitor,
-                onEpisodesLoaded: rememberEpisodes
+                onEpisodesLoaded: rememberEpisodes,
+                // The root screen already paints the studio behind every state, the listing included.
+                showsScene: false
             )
         }
     }
@@ -280,6 +282,8 @@ private struct PodcastFolderListing: View {
     let downloads: PodcastDownloadManager
     let networkMonitor: NetworkMonitor
     let onEpisodesLoaded: ([PodcastEpisode]) -> Void
+    /// Pushed folders paint their own studio; the root's listing sits on the one ListenView paints.
+    var showsScene: Bool = true
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var isLoadingEpisodes = false
@@ -381,7 +385,7 @@ private struct PodcastFolderListing: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .screenScene(.listen)
+        .screenScene(.listen, if: showsScene)
         .navigationTitle(folder?.title ?? "Listen")
         .task(id: folder?.id) { await loadEpisodes() }
     }

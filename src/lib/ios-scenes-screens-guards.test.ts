@@ -194,7 +194,7 @@ describe("Listen: studio scene, large header, glass folder and episode cards", (
     const root = between(listen, "struct ListenView: View", "private func runSearch");
     expect(root).toContain(".screenScene(.listen)");
     expect(root).not.toContain(".background(AlphonsoColor.surface)");
-    expect(listing).toContain(".screenScene(.listen)");
+    expect(listing).toContain(".screenScene(.listen, if: showsScene)");
     expect(listing).not.toContain(".background(AlphonsoColor.surface)");
     expect(listing).toContain(".sceneScrollProbe()");
   });

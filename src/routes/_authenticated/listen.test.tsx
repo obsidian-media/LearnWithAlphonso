@@ -156,6 +156,23 @@ describe("Listen folder not found", () => {
     render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "nope"]} />);
     const text = screen.getByText(/couldn.t find that folder/i);
     expect(text.closest("[data-surface]")).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Back to all folders" }).closest("[data-surface]")).not.toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Back to all folders" }).closest("[data-surface]"),
+    ).not.toBeNull();
+  });
+});
+
+describe("Listen while loading", () => {
+  it("the studio is already there while the folders load, so it does not pop in", async () => {
+    const { ListenBrowser } = await import("./listen");
+    const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <ListenBrowser segments={[]} />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(container.querySelector('[data-scene="listen"]')).not.toBeNull();
   });
 });

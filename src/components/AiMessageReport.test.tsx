@@ -133,4 +133,9 @@ describe("AiMessageReport", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(opener.closest("[inert]")).toBeNull();
   });
+
+  it("the Report link sits on its own small surface, so it stays readable over a scene", () => {
+    render(<AiMessageReport message="hi" surface="conversation" course="en" scenarioId="coffee" />);
+    expect(screen.getByRole("button", { name: /report/i }).className).toContain("bg-surface");
+  });
 });
