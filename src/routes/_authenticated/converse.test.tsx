@@ -69,4 +69,30 @@ describe("Converse route", () => {
     }
     expect(screen.queryByRole("heading", { name: "Order coffee" })).toBeNull();
   });
+  it("scenarios render as colour tiles, toned in list order", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const tiles = [...container.querySelectorAll<HTMLElement>("[data-scenario-tile] [data-tone]")];
+    expect(tiles.length).toBe(scenariosFor("en").length);
+    expect(tiles[0].dataset.tone).toBe("coral");
+    expect(tiles[1].dataset.tone).toBe("sky");
+    expect(tiles[5].dataset.tone).toBe("coral");
+  });
+
+  it("scenario tiles show 3D icons, not emoji text", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const first = container.querySelector("[data-scenario-tile]")!;
+    expect(first.querySelector("img")?.getAttribute("src")).toMatch(/^\/icons3d\/.+\.png$/);
+  });
+
+  it("each campaign renders as a hero card with its scene count and 3D icon", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const heroes = container.querySelectorAll("[data-campaign-hero]");
+    expect(heroes.length).toBe(campaignsFor("en").length);
+    const c = campaignsFor("en")[0];
+    expect(heroes[0]).toHaveTextContent(`${c.scenes.length} scenes`);
+    expect(heroes[0].querySelector("img")?.getAttribute("src")).toMatch(/^\/icons3d\//);
+  });
 });

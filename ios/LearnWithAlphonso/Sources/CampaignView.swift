@@ -13,21 +13,57 @@ struct CampaignPickerSection: View {
     let conversationStore: ConversationStore
 
     var body: some View {
-        Section {
+        VStack(alignment: .leading, spacing: 12) {
+            practiceSectionLabel("Campaigns")
             ForEach(campaigns) { campaign in
                 NavigationLink {
                     CampaignSessionView(campaign: campaign, course: course, session: session, conversationStore: conversationStore)
                 } label: {
-                    AlphonsoRowCard(title: campaign.title, subtitle: campaign.blurb, leadingEmoji: campaign.emoji)
+                    CampaignHeroCard(campaign: campaign)
                 }
+                .buttonStyle(.plain)
             }
-        } header: {
-            Text("Campaigns")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(Color.clear)
+    }
+}
+
+/// A campaign as a big gradient card with its 3D icon and scene count.
+private struct CampaignHeroCard: View {
+    let campaign: Campaign
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.md) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Campaign · \(campaign.level)".uppercased())
+                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                    .tracking(0.6)
+                    .opacity(0.85)
+                Text(campaign.title)
+                    .font(AlphonsoFont.display(21, weight: .bold))
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(campaign.blurb)
+                    .font(AlphonsoFont.sans(13))
+                    .opacity(0.9)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("\(campaign.scenes.count) scenes")
+                    .font(AlphonsoFont.sans(11, weight: .bold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.white.opacity(0.18), in: Capsule())
+                    .padding(.top, 4)
+            }
+            Spacer(minLength: 0)
+            Icon3DView(emoji: campaign.emoji, size: 64)
+        }
+        .foregroundStyle(AlphonsoColor.onMossGradient)
+        .multilineTextAlignment(.leading)
+        .padding(AlphonsoSpacing.md)
+        .background(
+            LinearGradient(colors: [AlphonsoColor.moss, AlphonsoColor.mossDeep], startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous)
+        )
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
     }
 }
 

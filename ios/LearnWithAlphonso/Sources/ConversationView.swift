@@ -16,52 +16,52 @@ struct ConversationView: View {
         let course = activeCourse.course
         let campaigns = contentStore.campaigns(for: course)
         NavigationStack {
-            List {
-                // Pro's one feature is Hector, so this is the honest place to offer it: where a
-                // learner is already practising speaking. Hidden for Pro.
-                if !entitlementStore.isPro {
-                    Section {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                    // Pro's one feature is Hector, so this is the honest place to offer it: where a
+                    // learner is already practising speaking. Hidden for Pro.
+                    if !entitlementStore.isPro {
                         Button {
                             showHectorPaywall = true
                         } label: {
-                            AlphonsoRowCard(
+                            AlphonsoTile(
+                                tone: .lilac,
+                                emoji: "\u{2728}",
                                 title: PaywallCopy.practiceCardTitle,
-                                subtitle: PaywallCopy.practiceCardSubtitle,
-                                leadingEmoji: "\u{2728}"
+                                subtitle: PaywallCopy.practiceCardSubtitle
                             )
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("practiceHectorCard")
                     }
-                    .listRowBackground(Color.clear)
-                }
-                // V4 candidate #4: connected multi-scene campaigns, additive
-                // alongside the scenarios below. See CampaignView.swift.
-                if !campaigns.isEmpty {
-                    CampaignPickerSection(
-                        campaigns: campaigns, course: course, session: session, conversationStore: conversationStore)
-                }
-                Section {
-                    ForEach(contentStore.scenarios(for: course)) { scenario in
-                        NavigationLink {
-                            ConversationSessionView(
-                                scenario: scenario, course: course, session: session, conversationStore: conversationStore)
-                        } label: {
-                            AlphonsoRowCard(title: scenario.title, subtitle: scenario.blurb, leadingEmoji: scenario.emoji)
-                        }
-                        .accessibilityIdentifier("practiceScenarioRow")
-                    }
-                } header: {
+                    // V4 candidate #4: connected multi-scene campaigns, additive
+                    // alongside the scenarios below. See CampaignView.swift.
                     if !campaigns.isEmpty {
-                        Text("Scenarios")
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .tracking(0.4)
-                            .foregroundStyle(AlphonsoColor.ember)
+                        CampaignPickerSection(
+                            campaigns: campaigns, course: course, session: session, conversationStore: conversationStore)
+                        practiceSectionLabel("Scenarios")
+                    }
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                        ForEach(Array(contentStore.scenarios(for: course).enumerated()), id: \.element.id) { index, scenario in
+                            NavigationLink {
+                                ConversationSessionView(
+                                    scenario: scenario, course: course, session: session, conversationStore: conversationStore)
+                            } label: {
+                                AlphonsoTile(
+                                    tone: AlphonsoTileTone(rawValue: TileTone.forIndex(index)) ?? .coral,
+                                    emoji: scenario.emoji,
+                                    title: scenario.title,
+                                    subtitle: scenario.blurb
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("practiceScenarioRow")
+                        }
                     }
                 }
-                .listRowBackground(Color.clear)
+                .padding(.horizontal, AlphonsoSpacing.md)
+                .padding(.bottom, AlphonsoSpacing.lg)
             }
-            .scrollContentBackground(.hidden)
             .background(AlphonsoColor.surface)
             .navigationTitle("Practice speaking")
         }
@@ -75,6 +75,15 @@ struct ConversationView: View {
             PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: { showHectorPaywall = false })
         }
     }
+}
+
+/// The small coloured label above a group on the Practice screen.
+func practiceSectionLabel(_ text: String) -> some View {
+    Text(text.uppercased())
+        .font(AlphonsoFont.sans(12, weight: .semiBold))
+        .tracking(0.6)
+        .foregroundStyle(AlphonsoColor.ember)
+        .padding(.top, AlphonsoSpacing.sm)
 }
 
 /// Hold the mic to record, release to send; one full turn at a time

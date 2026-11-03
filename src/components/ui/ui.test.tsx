@@ -66,7 +66,8 @@ describe("TileCard", () => {
 
   it("is presentational: no subtitle line when none is given, so callers can wrap it in a Link", () => {
     const { container } = render(<TileCard tone="mint" icon="🩺" title="Doctor" />);
-    expect(container.querySelectorAll("p")).toHaveLength(1);
+    expect(container.querySelectorAll("p")).toHaveLength(0);
+    expect(container.querySelector("h2")).toHaveTextContent("Doctor");
     expect(container.querySelector("a, button")).toBeNull();
   });
 });

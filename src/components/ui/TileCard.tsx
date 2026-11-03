@@ -18,12 +18,15 @@ export function TileCard({
   icon,
   title,
   subtitle,
+  badge,
   className = "",
 }: {
   tone: TileTone;
   icon: string;
   title: string;
   subtitle?: string;
+  /** A small label beside the icon, such as the CEFR level. */
+  badge?: string;
   className?: string;
 }) {
   return (
@@ -31,8 +34,15 @@ export function TileCard({
       data-tone={tone}
       className={`card-lift flex h-full min-h-28 flex-col gap-1.5 rounded-3xl p-3.5 ${TONE_CLASSES[tone]} ${className}`}
     >
-      <Icon3D emoji={icon} size={44} />
-      <p className="font-display text-[17px] font-bold leading-tight">{title}</p>
+      <div className="flex items-start justify-between gap-2">
+        <Icon3D emoji={icon} size={44} />
+        {badge ? (
+          <span className="rounded-full bg-white/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+      <h2 className="font-display text-[17px] font-bold leading-tight">{title}</h2>
       {subtitle ? <p className="text-[13px] leading-snug opacity-80">{subtitle}</p> : null}
     </div>
   );
