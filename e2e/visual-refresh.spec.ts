@@ -84,17 +84,20 @@ test("screenshots of the redesigned screens in every theme", async ({ page }) =>
         await page.waitForLoadState("networkidle");
         // Let entrance animations settle so the shot shows the resting state.
         await page.waitForTimeout(700);
-        await page.screenshot({
-          path: `test-results/visual-refresh/${theme}-${width}-${screen.name}.png`,
-          fullPage: true,
-        });
-        // What a phone actually shows first. A full-page shot stretches the window to the page height, which
-        // blows fixed scene backgrounds up and drops sticky bars mid-page, so the phone frame is kept as well.
+        // What a phone actually shows first, taken from the top before the full-page shot. A full-page shot
+        // stretches the window to the page height, which blows fixed scene backgrounds up, drops sticky bars
+        // mid-page and can leave a long page scrolled.
         if (width === 390) {
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await page.waitForTimeout(150);
           await page.screenshot({
             path: `test-results/visual-refresh/${theme}-${width}-${screen.name}-screen.png`,
           });
         }
+        await page.screenshot({
+          path: `test-results/visual-refresh/${theme}-${width}-${screen.name}.png`,
+          fullPage: true,
+        });
       }
     }
   }
