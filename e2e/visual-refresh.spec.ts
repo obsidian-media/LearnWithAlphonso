@@ -139,6 +139,10 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
     writeFileSync("test-results/visual-refresh/lesson-complete-failed.txt", String(e));
   }
   try {
+    // The CI server has no RevenueCat, so answer "a free learner" here; the screenshot is about the page, not billing.
+    await page.route("**/api/pro-status", (r) =>
+      r.fulfill({ json: { pro: false, store: null, trialEligible: true, manageUrl: null } }),
+    );
     await page.goto("/hector");
     const allow = page.getByRole("button", { name: "Review and allow" });
     if (
