@@ -75,7 +75,9 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     expect(browser).toContain(".screenScene(.learn)");
     // The flat surface no longer paints over the scene: the list's own background is the scene.
     const list = from(browser, "List {");
-    expect(list.slice(0, list.indexOf(".task(id:"))).not.toContain(".background(AlphonsoColor.surface)");
+    expect(list.slice(0, list.indexOf(".task(id:"))).not.toContain(
+      ".background(AlphonsoColor.surface)",
+    );
     expect(browser).toContain(".sceneScrollProbe()");
   });
 
@@ -150,7 +152,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
       "TeamMissionSection(",
       "WeeklyChallengesSection(",
       "PlacementBannerSection(",
-      "title: \"Review\"",
+      'title: "Review"',
       "DeadLetterNoticeSection(",
     ]) {
       expect(browser, keep).toContain(keep);

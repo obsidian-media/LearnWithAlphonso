@@ -21,7 +21,11 @@ const between = (s: string, a: string, b: string) => {
 
 describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", () => {
   const lesson = read("LessonPlayerView.swift");
-  const finish = between(lesson, "private struct FinishView: View", "private struct GeneratedPracticeSection");
+  const finish = between(
+    lesson,
+    "private struct FinishView: View",
+    "private struct GeneratedPracticeSection",
+  );
   const celebration = read("DesignSystem/Celebration.swift");
 
   it("the stage scene is behind the finish screen and Alphonso stands proud on it", () => {
@@ -42,11 +46,17 @@ describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", (
   });
 
   it("the three buttons and the practice section behave and read exactly as before", () => {
-    expect(finish).toMatch(/Button\("Continue to next lesson", action: onContinueToNextLesson\)\s*\n\s*\.buttonStyle\(\.alphonsoEmber\)/);
-    expect(finish).toMatch(/Button\("Practise with Hector", action: onPractiseWithHector\)\s*\n\s*\.buttonStyle\(\.alphonsoSecondary\)/);
+    expect(finish).toMatch(
+      /Button\("Continue to next lesson", action: onContinueToNextLesson\)\s*\n\s*\.buttonStyle\(\.alphonsoEmber\)/,
+    );
+    expect(finish).toMatch(
+      /Button\("Practise with Hector", action: onPractiseWithHector\)\s*\n\s*\.buttonStyle\(\.alphonsoSecondary\)/,
+    );
     expect(finish).toContain("if let onContinueToNextLesson {");
     expect(finish).toContain("if let onPractiseWithHector {");
-    expect(finish).toContain("GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)");
+    expect(finish).toContain(
+      "GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)",
+    );
     expect(lesson).toContain('Text("Generate more practice")');
   });
 
@@ -76,7 +86,9 @@ describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", (
 
   it("the chips pop in one after another, and all at once under Reduce Motion", () => {
     expect(finish).toContain("@Environment(\\.accessibilityReduceMotion)");
-    expect(finish).toMatch(/\.springEntrance\(delay: reduceMotion \? 0 : 0\.15 \+ Double\(index\) \* 0\.12\)/);
+    expect(finish).toMatch(
+      /\.springEntrance\(delay: reduceMotion \? 0 : 0\.15 \+ Double\(index\) \* 0\.12\)/,
+    );
   });
 
   it("a success haptic fires once on appear, and is kept under Reduce Motion", () => {
@@ -93,7 +105,11 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
   const paywall = read("PaywallView.swift");
 
   it("the library scene is behind Hector's tab (paywall and conversation alike)", () => {
-    const view = between(hector, "struct HectorView: View", "private struct HectorConversationView");
+    const view = between(
+      hector,
+      "struct HectorView: View",
+      "private struct HectorConversationView",
+    );
     expect(view).toContain(".screenScene(.hector)");
     expect(view).not.toContain(".background(AlphonsoColor.surface)");
     // The conversation no longer paints a flat surface over the scene.
@@ -109,14 +125,18 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     expect(hero).not.toContain("AlphonsoColor.surface.opacity(0)");
     const title = from(hero, 'Text("Hector")');
     expect(title.slice(0, 700)).toContain(".alphonsoGlass(");
-    expect(hero).toContain('Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")');
+    expect(hero).toContain(
+      'Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")',
+    );
   });
 
   it("on the Hector tab the paywall shows Hector waving, about 220 pt, over the library", () => {
     expect(paywall).toContain('SceneFigure(assetName: "Figure-hector-waving", height: 220)');
     expect(paywall).toContain("source == .hectorTab");
     // The figure comes before the title and offer, above them.
-    expect(paywall.indexOf("Figure-hector-waving")).toBeLessThan(paywall.indexOf("presentation.titleText"));
+    expect(paywall.indexOf("Figure-hector-waving")).toBeLessThan(
+      paywall.indexOf("presentation.titleText"),
+    );
     // Everything the learner reads sits on glass when the library is behind it.
     expect(paywall).toContain(".alphonsoGlass(if: onScene)");
     // Other presentations (sheets from lesson complete or a refusal) keep the flat surface.
@@ -158,7 +178,11 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
 
 describe("Listen: studio scene, large header, glass folder and episode cards", () => {
   const listen = read("ListenView.swift");
-  const listing = between(listen, "private struct PodcastFolderListing", "private func subtitle(for episode");
+  const listing = between(
+    listen,
+    "private struct PodcastFolderListing",
+    "private func subtitle(for episode",
+  );
 
   it("the studio scene is behind Listen, at the root and in every pushed folder", () => {
     const root = between(listen, "struct ListenView: View", "private func runSearch");
@@ -170,7 +194,11 @@ describe("Listen: studio scene, large header, glass folder and episode cards", (
   });
 
   it("loading, offline, error and empty states sit on glass over the studio, not straight on the picture", () => {
-    const content = between(listen, "private var content: some View", "private func rememberEpisodes");
+    const content = between(
+      listen,
+      "private var content: some View",
+      "private func rememberEpisodes",
+    );
     expect(content.split(".alphonsoGlass()").length - 1).toBe(4);
     // The searchable results and the offline list keep their opaque surface.
     expect(listen.split(".background(AlphonsoColor.surface)").length - 1).toBe(3);
@@ -181,7 +209,7 @@ describe("Listen: studio scene, large header, glass folder and episode cards", (
     const header = from(listen, "private struct ListenSceneHeader: View");
     expect(header).toContain("minHeight: 190");
     expect(header).toContain(".alphonsoGlass(");
-    expect(listing).toContain("ListenSceneHeader(title: folder?.title ?? \"Listen\"");
+    expect(listing).toContain('ListenSceneHeader(title: folder?.title ?? "Listen"');
   });
 
   it("folders and episodes are larger glass cards with the existing 3D icons, same data and same actions", () => {
@@ -218,7 +246,14 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
   });
 
   it("tracks nothing new: the hub still loads no progress, so the hero shows no numbers", () => {
-    for (const forbidden of ["syncQueueStore", "lastKnownProgress", "ProgressSyncClient", ".task", "xp", "streak"]) {
+    for (const forbidden of [
+      "syncQueueStore",
+      "lastKnownProgress",
+      "ProgressSyncClient",
+      ".task",
+      "xp",
+      "streak",
+    ]) {
       expect(profile, forbidden).not.toContain(forbidden);
     }
   });
