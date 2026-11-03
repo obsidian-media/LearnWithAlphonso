@@ -155,3 +155,92 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     expect(paywall).toContain("private func font(_ style: PaywallTextStyle) -> Font");
   });
 });
+
+describe("Listen: studio scene, large header, glass folder and episode cards", () => {
+  const listen = read("ListenView.swift");
+  const listing = between(listen, "private struct PodcastFolderListing", "private func subtitle(for episode");
+
+  it("the studio scene is behind Listen, at the root and in every pushed folder", () => {
+    const root = between(listen, "struct ListenView: View", "private func runSearch");
+    expect(root).toContain(".screenScene(.listen)");
+    expect(root).not.toContain(".background(AlphonsoColor.surface)");
+    expect(listing).toContain(".screenScene(.listen)");
+    expect(listing).not.toContain(".background(AlphonsoColor.surface)");
+    expect(listing).toContain(".sceneScrollProbe()");
+  });
+
+  it("loading, offline, error and empty states sit on glass over the studio, not straight on the picture", () => {
+    const content = between(listen, "private var content: some View", "private func rememberEpisodes");
+    expect(content.split(".alphonsoGlass()").length - 1).toBe(4);
+    // The searchable results and the offline list keep their opaque surface.
+    expect(listen.split(".background(AlphonsoColor.surface)").length - 1).toBe(3);
+  });
+
+  it("a large header opens the list, with its title on glass", () => {
+    expect(listen).toContain("private struct ListenSceneHeader: View");
+    const header = from(listen, "private struct ListenSceneHeader: View");
+    expect(header).toContain("minHeight: 190");
+    expect(header).toContain(".alphonsoGlass(");
+    expect(listing).toContain("ListenSceneHeader(title: folder?.title ?? \"Listen\"");
+  });
+
+  it("folders and episodes are larger glass cards with the existing 3D icons, same data and same actions", () => {
+    const row = from(listen, "private struct ListenGlassRow: View");
+    expect(row).toContain("Icon3DView(emoji:");
+    expect(row).toContain(".alphonsoGlass(");
+    expect(row).toMatch(/minHeight: 7\d/);
+    expect(listing).toContain("ListenGlassRow(");
+    // Folders still navigate into PodcastFolderListing, episodes still play and mark played.
+    expect(listing).toContain("PodcastFolderListing(");
+    expect(listing).toContain("player.play(");
+    expect(listing).toContain("downloads.markPlayed(episodeID: episode.id)");
+    expect(listing).toContain("PodcastDownloadButton(");
+    // Titles and subtitles come from the same fields as before.
+    expect(listing).toContain("title: child.title");
+    expect(listing).toContain('subtitle: child.description ?? "Browse episodes"');
+    expect(listing).toContain("title: episode.title");
+    expect(listing).toContain("subtitle: subtitle(for: player.resumed(episode))");
+  });
+});
+
+describe("Profile: hall scene, hero, glass menu cards", () => {
+  const profile = read("ProfileHubView.swift");
+  const components = read("DesignSystem/AlphonsoComponents.swift");
+
+  it("the hall of achievements is behind Profile, with a hero row at the top", () => {
+    expect(profile).toContain(".screenScene(.profile)");
+    expect(profile).not.toContain(".background(AlphonsoColor.surface)");
+    expect(profile).toContain("ProfileHero()");
+    expect(profile).toContain(".sceneScrollProbe()");
+    const hero = from(profile, "private struct ProfileHero: View");
+    expect(hero).toContain("minHeight: 190");
+    expect(hero).toContain(".alphonsoGlass(");
+  });
+
+  it("tracks nothing new: the hub still loads no progress, so the hero shows no numbers", () => {
+    for (const forbidden of ["syncQueueStore", "lastKnownProgress", "ProgressSyncClient", ".task", "xp", "streak"]) {
+      expect(profile, forbidden).not.toContain(forbidden);
+    }
+  });
+
+  it("the four menu cards are the same four, as glass cards that open the same destinations", () => {
+    for (const keep of [
+      'title: "League"',
+      'title: "Friends"',
+      'title: "Achievements"',
+      'title: "Settings"',
+      "destination = target",
+      "LeaderboardView(session: session)",
+      "FriendsView(session: session)",
+      "SettingsView(session: session)",
+    ]) {
+      expect(profile, keep).toContain(keep);
+    }
+    expect(profile.match(/glass: true/g)?.length).toBe(1); // one shared row() builds all four
+    const tile = from(components, "struct AlphonsoTile: View");
+    expect(tile.slice(0, 1800)).toContain("var glass: Bool = false");
+    expect(tile.slice(0, 2600)).toContain("AnyShapeStyle(.regularMaterial)");
+    // Glass tiles keep the ink colour; the tone ink is only for the old coloured tiles.
+    expect(tile.slice(0, 2600)).toContain("glass ? AlphonsoColor.ink : tone.ink");
+  });
+});

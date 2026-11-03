@@ -32,6 +32,12 @@ struct ProfileHubView: View {
     var body: some View {
         NavigationStack {
             List {
+                ProfileHero()
+                    .sceneScrollProbe()
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
                 Section {
                     row(
                         .league,
@@ -69,7 +75,7 @@ struct ProfileHubView: View {
                 .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
-            .background(AlphonsoColor.surface)
+            .screenScene(.profile)
             .navigationTitle("Profile")
         }
         .tint(AlphonsoColor.moss)
@@ -101,10 +107,31 @@ struct ProfileHubView: View {
         Button {
             destination = target
         } label: {
-            AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle)
+            AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle, glass: true)
         }
         .buttonStyle(.plain)
         // The tiles carry their own shape; List separators between them read as stray lines.
         .listRowSeparator(.hidden)
+    }
+}
+
+/// The hall of achievements across the top of Profile. It shows no numbers: this hub loads no progress of its own,
+/// and showing numbers here would mean tracking something new.
+private struct ProfileHero: View {
+    var body: some View {
+        VStack(spacing: 2) {
+            Text("Your hall of achievements")
+                .font(AlphonsoFont.display(22, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+            Text("League, friends and badges")
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding(AlphonsoSpacing.md)
+        .alphonsoGlass()
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .frame(maxWidth: .infinity, minHeight: 190, alignment: .bottom)
     }
 }
