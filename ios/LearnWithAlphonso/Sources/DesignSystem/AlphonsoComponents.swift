@@ -398,6 +398,14 @@ enum AlphonsoMascot {
         }
     }
 
+    /// The everyday pose a banner named only by its mascot shows (the web's `MASCOT_MOMENT`).
+    var everydayMoment: MascotMoment {
+        switch self {
+        case .alphonso: return .learnGreeting
+        case .hector: return .hectorIdle
+        }
+    }
+
     /// VoiceOver needs a real description, not just a decorative image --
     /// the portrait is communicating something (who's "speaking"), not
     /// just decoration. Combined with `message` at the call site for the
@@ -425,11 +433,7 @@ struct AlphonsoMascotBanner: View {
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Image(moment.map { MascotArt.assetName(for: $0) } ?? mascot.assetName)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 52, height: 52)
-                .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            MascotTile(moment: moment ?? mascot.everydayMoment, size: 52, tone: .sun, radius: AlphonsoRadius.lg)
                 .overlay(
                     RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
                         .strokeBorder(.white.opacity(0.6), lineWidth: 2)

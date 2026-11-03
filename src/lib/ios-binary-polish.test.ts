@@ -474,12 +474,19 @@ describe("app icon", () => {
       .readdirSync(path.join(root, "ios/LearnWithAlphonso/Sources/Assets.xcassets"))
       .filter((d) => /\.(imageset|appiconset)$/.test(d))
       .sort();
-    expect(sets).toEqual([
-      "Alphonso.imageset",
-      "AppIcon.appiconset",
-      "GoogleG.imageset",
-      "Hector.imageset",
-    ]);
+    // The four originals plus one image set per approved mascot pose (scripts/import-mascot-poses.ts), nothing else.
+    const poses = (JSON.parse(read("src/data/mascot-poses-available.json")) as string[]).map(
+      (n) => `${n.replace(/^./, (c) => c.toUpperCase())}.imageset`,
+    );
+    expect(sets).toEqual(
+      [
+        "Alphonso.imageset",
+        "AppIcon.appiconset",
+        "GoogleG.imageset",
+        "Hector.imageset",
+        ...poses,
+      ].sort(),
+    );
     for (const f of ["GoogleG.png", "GoogleG@2x.png", "GoogleG@3x.png"]) {
       expect(
         fs.existsSync(

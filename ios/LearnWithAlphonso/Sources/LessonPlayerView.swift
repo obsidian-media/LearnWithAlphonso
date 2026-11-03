@@ -857,11 +857,7 @@ private struct OverviewScreen: View {
         // navigation push boundary.
         ScrollView {
             VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                Image(MascotArt.assetName(for: .emptyState))
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 120, height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                MascotTile(moment: .emptyState, size: 120, tone: .mint)
                     .alphonsoLift()
                     .frame(maxWidth: .infinity)
                     .accessibilityHidden(true)
@@ -1087,11 +1083,7 @@ private struct FinishView: View {
                 // The exact "no imagery, just text/icon" pattern the
                 // spec's Background section calls out on PaywallView
                 // shows up here too -- same fix.
-                Image(MascotArt.assetName(for: .lessonComplete))
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 180, height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+                MascotTile(moment: .lessonComplete, size: 180, tone: .sun, radius: 40)
                     .alphonsoLift()
                     .springEntrance()
                     .accessibilityHidden(true)

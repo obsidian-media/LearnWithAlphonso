@@ -134,11 +134,7 @@ struct ListenView: View {
             // A course with nothing published is a stated state, not a blank list.
             ContentUnavailableView {
                 VStack(spacing: AlphonsoSpacing.sm) {
-                    Image(MascotArt.assetName(for: .emptyState))
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 120, height: 120)
-                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    MascotTile(moment: .emptyState, size: 120, tone: .mint)
                         .alphonsoLift()
                         .accessibilityHidden(true)
                     Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
