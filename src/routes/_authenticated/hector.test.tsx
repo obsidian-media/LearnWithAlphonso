@@ -276,8 +276,12 @@ describe("web Hector in his library", () => {
       "/clips/hector.mp4",
     );
     expect(container.querySelector("[data-figure]")).toBeNull();
-    // Small viewport units: the offer does not jump when Safari's toolbar collapses mid-scroll.
-    expect(screen.getByRole("img", { name: /Hector/ }).className).toContain("svh");
+    // The offer starts at Hector's waist: in the clip he stands from 47% (head) to 80% (feet) of a frame about
+    // 160 px taller than the screen, so his waist is near 74% of the screen. Small viewport units: the offer does
+    // not jump when Safari's toolbar collapses mid-scroll.
+    expect(screen.getByRole("img", { name: /Hector/ }).className).toContain(
+      "h-[calc(74svh-4.5rem)]",
+    );
   });
 
   it("a Pro learner talks to Hector in front of the library", async () => {
