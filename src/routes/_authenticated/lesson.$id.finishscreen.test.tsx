@@ -40,6 +40,45 @@ function renderFinish() {
   );
 }
 
+describe("FinishScreen rewards", () => {
+  it("shows Alphonso, and xp, streak and accuracy chips", async () => {
+    const { useProgress } = await import("../../lib/progress");
+    useProgress.setState({ streak: 12 });
+    render(
+      <FinishScreen
+        xp={20}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="The Passive"
+        correct={11}
+        total={12}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
+    );
+    expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("XP: +20")).toBeInTheDocument();
+    expect(screen.getByLabelText("Streak: 12")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accuracy: 92%")).toBeInTheDocument();
+  });
+
+  it("leaves out the streak chip when there is no streak", async () => {
+    const { useProgress } = await import("../../lib/progress");
+    useProgress.setState({ streak: 0 });
+    renderFinish();
+    expect(screen.getByLabelText("XP: +10")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
+  });
+
+  it("Back to path is the chunky button", () => {
+    renderFinish();
+    expect(screen.getByRole("link", { name: "Back to path" }).className).toContain(
+      "active:translate-y-1",
+    );
+  });
+});
+
 describe("FinishScreen", () => {
   it("shows Alphonso celebrating", () => {
     render(

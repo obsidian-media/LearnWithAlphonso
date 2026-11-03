@@ -514,7 +514,7 @@ describe("Lesson page", () => {
       },
     });
 
-    expect(await screen.findByText("+60 XP")).toBeInTheDocument();
+    expect(await screen.findByLabelText("XP: +60")).toBeInTheDocument();
     expect(screen.getByText("7/8 correct")).toBeInTheDocument();
     expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
     expect(screen.getByText("First strides")).toBeInTheDocument();
@@ -540,7 +540,7 @@ describe("Lesson page", () => {
       await user.click(screen.getByRole("button", { name: label }));
     }
 
-    expect(await screen.findByText("+0 XP")).toBeInTheDocument();
+    expect(await screen.findByLabelText("XP: +0")).toBeInTheDocument();
     expect(useProgress.getState().completedLessons).not.toContain("u1l1");
   });
 
@@ -779,7 +779,7 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
       const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
       await user.click(screen.getByRole("button", { name: label }));
     }
-    await screen.findByText("+80 XP");
+    await screen.findByLabelText("XP: +80");
   }
 
   it("generates and lets the user practice extra questions", async () => {

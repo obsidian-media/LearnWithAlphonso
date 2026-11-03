@@ -2,16 +2,16 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
 import { mascotArt } from "../../lib/mascot-poses";
+import { lessonRewardChips } from "../../lib/lesson-rewards";
 import type { TileTone } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
-import { MascotBanner } from "../../components/MascotBanner";
 import { VocabImage } from "../../components/VocabImage";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
@@ -811,6 +811,13 @@ const STEP_TONE: Record<TileTone, string> = {
   mint: "bg-tile-mint-bg text-tile-mint-ink",
 };
 
+const CHIP_TITLE = { xp: "XP", streak: "Streak", accuracy: "Accuracy" } as const;
+const CHIP_TONE = {
+  xp: "bg-tile-sun-bg text-tile-sun-ink",
+  streak: "bg-tile-coral-bg text-tile-coral-ink",
+  accuracy: "bg-tile-mint-bg text-tile-mint-ink",
+} as const;
+
 export function FinishScreen({
   xp,
   unlocked,
@@ -833,22 +840,49 @@ export function FinishScreen({
   course: string;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  const streak = useProgress((s) => s.streak);
+  const reduceMotion = useReducedMotion();
+  const chips = lessonRewardChips({ xp, streak, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+      <motion.img
+        src={mascotArt("lessonComplete").src}
+        alt="Alphonso"
+        width={168}
+        height={168}
+        decoding="async"
+        initial={reduceMotion ? false : { scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="mb-6 w-full"
-      >
-        <MascotBanner mascot="alphonso" message="Nice work — lesson complete!" />
-      </motion.div>
+        className="card-lift mb-4 size-42 rounded-[40px] object-cover"
+      />
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete
       </p>
-      <h2 className="mt-1 font-display text-[24px] font-semibold text-ink">{lessonTitle}</h2>
-      <p className="mt-3 tnum text-lg font-semibold text-moss">+{xp} XP</p>
-      <p className="tnum mt-1 text-xs text-ink-soft">
+      <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
+      <p className="mt-1 text-sm font-semibold text-moss">Nice work — lesson complete!</p>
+      <div className="mt-4 flex justify-center gap-2.5">
+        {chips.map((c, i) => (
+          <motion.div
+            key={c.kind}
+            aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
+            role="group"
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 + i * 0.12, duration: 0.35 }}
+            className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
+          >
+            <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.12em]">
+              {CHIP_TITLE[c.kind]}
+            </span>
+            <Icon3D emoji={c.emoji} size={28} />
+            <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
+              {c.value}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+      <p className="tnum mt-2 text-xs text-ink-soft">
         {correct}/{total} correct
       </p>
       {heartsBonus && (
@@ -938,7 +972,7 @@ export function FinishScreen({
 
       <Link
         to="/learn"
-        className="mt-8 w-full rounded-full bg-ink px-4 py-3.5 text-center text-sm font-semibold text-surface"
+        className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-ember px-6 py-3 font-display text-base font-bold tracking-wide text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
       >
         Back to path
       </Link>

@@ -30,6 +30,8 @@ struct LessonBrowserView: View {
     /// Shared with Practice and Hector, so the course picked here is the course
     /// every conversation speaks. Persisted across launches.
     @Bindable var activeCourse: ActiveCourseModel
+    /// For the lesson-complete screen's "Practise with Hector" button.
+    var hectorAccess: HectorAccess? = nil
     private var course: Course { activeCourse.course }
     @State private var showingSettings = false
     @State private var showingReview = false
@@ -299,7 +301,7 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
-                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, hectorAccess: hectorAccess)
                         .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                 } else {
                     Text("Lesson not found")

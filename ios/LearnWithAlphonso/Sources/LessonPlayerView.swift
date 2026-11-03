@@ -28,11 +28,14 @@ struct LessonPlayerView: View {
     let contentStore: ContentStore
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    /// What "Practise with Hector" on the finish screen needs. Nil hides the button.
+    let hectorAccess: HectorAccess?
     @EnvironmentObject private var aiConsent: AIConsentStore
 
     init(
         lesson: Lesson, course: Course, session: Session, notificationScheduler: NotificationScheduler,
-        contentStore: ContentStore, networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore
+        contentStore: ContentStore, networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore,
+        hectorAccess: HectorAccess? = nil
     ) {
         _lesson = State(initialValue: lesson)
         self.course = course
@@ -41,6 +44,7 @@ struct LessonPlayerView: View {
         self.contentStore = contentStore
         self.networkMonitor = networkMonitor
         self.syncQueueStore = syncQueueStore
+        self.hectorAccess = hectorAccess
     }
 
     private enum Phase { case overview, vocab, quiz }
@@ -76,6 +80,8 @@ struct LessonPlayerView: View {
     @State private var outOfHearts: OutOfHeartsModel?
     @State private var heartsGateState: HeartsGateState = .open
     @State private var showingReviewInstead = false
+    @State private var showingHector = false
+    @State private var showingHectorPaywall = false
     @Environment(\.dismiss) private var dismiss
 
     private enum HeartsGateState { case open, blocked, reviewInstead }
@@ -170,18 +176,25 @@ struct LessonPlayerView: View {
         attemptSeed = UUID().uuidString
     }
 
+    private func practiseWithHector() {
+        guard let hectorAccess else { return }
+        if hectorAccess.entitlementStore.isPro { showingHector = true } else { showingHectorPaywall = true }
+    }
+
     var body: some View {
         Group {
             if let result {
                 FinishView(
                     result: result, correct: correctCount, total: total, contentStore: contentStore,
                     isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session,
-                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil
+                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil,
+                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector
                 )
             } else if let queuedOffline {
                 OfflineFinishView(
                     pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
-                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() })
+                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
+                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector)
             } else if let completionFailure {
                 LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
             } else if total == 0 {
@@ -202,6 +215,19 @@ struct LessonPlayerView: View {
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: lesson.id) { await openLessonSession() }
+        // "Practise with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
+        .sheet(isPresented: $showingHector) {
+            if let hectorAccess {
+                HectorView(
+                    session: session, entitlementStore: hectorAccess.entitlementStore,
+                    activeCourse: hectorAccess.activeCourse, conversationStore: hectorAccess.conversationStore)
+            }
+        }
+        .sheet(isPresented: $showingHectorPaywall) {
+            if let hectorAccess {
+                PaywallView(entitlementStore: hectorAccess.entitlementStore, source: .lessonComplete, onClose: { showingHectorPaywall = false })
+            }
+        }
         .sheet(item: $outOfHearts, onDismiss: {
             // Closed without a heart: leave the lesson (it can't be saved). "Review instead" opens Review first.
             switch heartsGateState {
@@ -1041,6 +1067,8 @@ private struct FinishView: View {
     /// button) at the end of a CEFR band -- see LessonPlayerView's
     /// nextLessonID doc comment for why that's deliberate.
     let onContinueToNextLesson: (() -> Void)?
+    /// Opens Hector (or the paywall) from the happiest moment. Nil hides the button.
+    let onPractiseWithHector: (() -> Void)?
 
     @State private var showPromotionOverlay = false
 
@@ -1058,12 +1086,26 @@ private struct FinishView: View {
                 // The exact "no imagery, just text/icon" pattern the
                 // spec's Background section calls out on PaywallView
                 // shows up here too -- same fix.
-                AlphonsoMascotBanner(mascot: .alphonso, message: LessonFinishCopy.headline(correct: correct, total: total))
-                Text("+\(result.xpGain) XP")
-                    .font(AlphonsoFont.display(32, weight: .bold))
+                Image(MascotPoseCatalog.art(for: .lessonComplete).assetName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 180, height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+                    .alphonsoLift()
+                    .springEntrance()
+                    .accessibilityHidden(true)
+                Text(LessonFinishCopy.headline(correct: correct, total: total))
+                    .font(AlphonsoFont.display(24, weight: .bold))
                     .foregroundStyle(AlphonsoColor.moss)
+                    .multilineTextAlignment(.center)
+                HStack(spacing: 10) {
+                    ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
+                        LessonRewardChipView(chip: chip)
+                            .springEntrance(delay: 0.15 + Double(index) * 0.12)
+                    }
+                }
                 Text("\(correct)/\(total) correct")
-                    .font(AlphonsoFont.sans(14))
+                    .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.inkSoft)
                 if let bonus = result.heartsBonus {
                     Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
@@ -1087,8 +1129,12 @@ private struct FinishView: View {
 
                 if let onContinueToNextLesson {
                     Button("Continue to next lesson", action: onContinueToNextLesson)
-                        .buttonStyle(.alphonsoPrimary)
+                        .buttonStyle(.alphonsoEmber)
                         .padding(.top, 4)
+                }
+                if let onPractiseWithHector {
+                    Button("Practise with Hector", action: onPractiseWithHector)
+                        .buttonStyle(.alphonsoSecondary)
                 }
 
                 GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
@@ -1288,6 +1334,7 @@ private struct OfflineFinishView: View {
     let total: Int
     let reason: LessonCompletionError
     let onContinue: () -> Void
+    let onPractiseWithHector: (() -> Void)?
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.md) {
@@ -1315,6 +1362,10 @@ private struct OfflineFinishView: View {
             Button("Continue", action: onContinue)
                 .buttonStyle(.alphonsoPrimary)
                 .padding(.top, AlphonsoSpacing.sm)
+            if let onPractiseWithHector {
+                Button("Practise with Hector", action: onPractiseWithHector)
+                    .buttonStyle(.alphonsoSecondary)
+            }
         }
         .padding()
         .background(AlphonsoColor.surface)
@@ -1373,5 +1424,52 @@ enum LeagueTierPalette {
 
     static func label(for tier: String) -> String {
         LeagueTierCopy.label(for: tier)
+    }
+}
+
+/// What the finish screen's "Practise with Hector" button needs to open Hector or the paywall.
+struct HectorAccess {
+    let entitlementStore: EntitlementStore
+    let activeCourse: ActiveCourseModel
+    let conversationStore: ConversationStore
+}
+
+/// One reward on the lesson-complete screen: a 3D icon, the value and its name, in a chunky bordered card.
+private struct LessonRewardChipView: View {
+    let chip: LessonRewardChip
+
+    private var title: String {
+        switch chip.kind {
+        case .xp: return "XP"
+        case .streak: return "Streak"
+        case .accuracy: return "Accuracy"
+        }
+    }
+
+    private var tone: AlphonsoTileTone {
+        switch chip.kind {
+        case .xp: return .sun
+        case .streak: return .coral
+        case .accuracy: return .mint
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title.uppercased())
+                .font(AlphonsoFont.sans(10, weight: .bold))
+                .tracking(0.6)
+                .foregroundStyle(tone.ink)
+            Icon3DView(emoji: chip.emoji, size: 28)
+            Text(chip.value)
+                .font(AlphonsoFont.display(18, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+        }
+        .frame(minWidth: 84)
+        .padding(.vertical, 10)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
+        .alphonsoLift()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(chip.value)")
     }
 }
