@@ -4,11 +4,11 @@ import type { UnitPathNode } from "@/lib/unit-path";
 
 /** Where each node sits on the garden path, from the bottom up: [left %, bottom px]. */
 const SPOTS: [number, number][] = [
-  [18, 6],
-  [44, 92],
-  [20, 178],
-  [46, 252],
-  [24, 318],
+  [26, 6],
+  [46, 96],
+  [24, 180],
+  [44, 254],
+  [26, 320],
 ];
 
 const NODE_CLASSES: Record<UnitPathNode["state"], string> = {
