@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { LessonFrame } from "../../components/AppShell";
+import { SceneBackdrop } from "../../components/SceneBackdrop";
+import { StandingFigure } from "../../components/StandingFigure";
 import { MascotImage } from "../../components/MascotImage";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
@@ -97,8 +99,14 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "free" || refusedSource) {
     return (
       <LessonFrame>
-        <div className="px-5 pt-6">
-          <WebPaywall source={refusedSource ?? "hector_tab"} />
+        <SceneBackdrop scene="hector" focus="50% 30%" />
+        <div className="relative z-10 px-5 pt-4">
+          <div className="flex justify-center">
+            <StandingFigure figure="hector-waving" alt="Hector" height={250} enter />
+          </div>
+          <div className="-mt-2">
+            <WebPaywall source={refusedSource ?? "hector_tab"} />
+          </div>
         </div>
       </LessonFrame>
     );
@@ -243,6 +251,7 @@ function HectorConversation({
 
   return (
     <LessonFrame>
+      <SceneBackdrop scene="hector" focus="50% 30%" />
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-[17px] font-semibold text-ink">Hector</h1>
@@ -250,7 +259,10 @@ function HectorConversation({
         </div>
         <ManageSubscription pro={pro} />
       </header>
-      <section aria-label="Hector" className="flex items-center gap-4 px-5 pt-4">
+      <section
+        aria-label="Hector"
+        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
+      >
         <MascotImage
           moment={hectorMoment(status)}
           size={messages.length === 0 ? 132 : 76}
@@ -278,14 +290,14 @@ function HectorConversation({
           )}
         </div>
       </section>
-      <div className="px-5">
+      <div className="relative z-10 mx-4 mt-3 rounded-2xl bg-surface/85 px-3 backdrop-blur-md">
         <SaveWordHint always />
       </div>
       <div
         role="log"
         aria-live="polite"
         aria-label="Conversation"
-        className="flex-1 overflow-y-auto px-5 py-6"
+        className="relative z-10 flex-1 overflow-y-auto px-5 py-6"
       >
         <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
@@ -305,7 +317,10 @@ function HectorConversation({
             </div>
           ))}
           {(sending || transcribing) && (
-            <p role="status" className="text-xs text-ink-soft/60">
+            <p
+              role="status"
+              className="self-start rounded-full bg-surface/90 px-3 py-1 text-xs text-ink-soft backdrop-blur-md"
+            >
               {transcribing ? "Transcribing…" : "Hector is thinking…"}
             </p>
           )}
@@ -319,7 +334,7 @@ function HectorConversation({
           )}
         </div>
       </div>
-      <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+      <div className="sticky bottom-0 z-20 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
         <form
           onSubmit={(e) => {
             e.preventDefault();

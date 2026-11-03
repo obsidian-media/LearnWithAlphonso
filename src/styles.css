@@ -291,3 +291,61 @@
     animation: none;
   }
 }
+
+/* Scenes (SceneBackdrop): a scrim keeps the top of the screen calm for the title and chips, and the bottom
+   blends into the page. Dark themes darken the whole scene so light text and cards stay comfortable. */
+.scene-scrim {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--color-surface) 72%, transparent) 0%,
+    color-mix(in oklab, var(--color-surface) 18%, transparent) 26%,
+    transparent 55%,
+    color-mix(in oklab, var(--color-surface) 30%, transparent) 100%
+  );
+}
+[data-theme="studio-ink"] .scene-scrim {
+  background:
+    linear-gradient(to bottom, oklch(0.16 0.01 260 / 0.85) 0%, oklch(0.16 0.01 260 / 0.35) 40%),
+    oklch(0.16 0.01 260 / 0.45);
+}
+
+/* The next lesson on the Learn map bobs gently to invite a tap. */
+@keyframes map-node-bounce {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -6px);
+  }
+}
+.map-node-bounce {
+  animation: map-node-bounce 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-node-bounce {
+    animation: none;
+  }
+}
+
+/* Lesson-complete confetti (Celebration.tsx): pieces fall through the stage, spinning, once. */
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -20px, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(14px, 360px, 0) rotate(540deg);
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1);
+  animation-fill-mode: both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    display: none;
+  }
+}

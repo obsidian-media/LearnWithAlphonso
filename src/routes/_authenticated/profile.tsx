@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
+import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { AchievementBadge } from "../../components/AchievementBadge";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { SegmentedControl } from "../../components/SegmentedControl";
@@ -115,8 +116,9 @@ function ProfilePage() {
 
   return (
     <MobileFrame>
-      <div className="px-6 pb-12 pt-6">
-        <div className="flex items-center gap-4">
+      <SceneBackdrop scene="profile" focus="50% 60%" />
+      <div className="relative z-10 px-6 pb-12 pt-6">
+        <div className="flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md">
           <div className="flex flex-col items-center gap-1.5">
             <span
               className="grid size-16 place-items-center rounded-full text-xl font-semibold text-surface"
@@ -144,190 +146,202 @@ function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-3 gap-2">
+        <div className="mt-24 grid grid-cols-3 gap-2">
           <Stat label="XP" value={p.xp} emoji="⚡" tone="sun" />
           <Stat label="Streak" value={p.streak} emoji="🔥" tone="coral" />
           <Stat label="Freezes" value={p.streakFreezes} emoji="❄️" tone="sky" />
         </div>
 
-        <ActivityHeatmap dates={p.activityDates} isStudioInk={isStudioInk} />
-
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Achievements</h2>
-        <p className="text-xs text-ink-soft">
-          {unlockedSet.size} of {ACHIEVEMENTS.length} unlocked
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {ACHIEVEMENTS.map((a) => (
-            <AchievementBadge key={a.id} achievement={a} unlocked={unlockedSet.has(a.id)} />
-          ))}
-        </div>
-
-        {weaknessTrend && weaknessTrend.categories.length > 0 && (
-          <>
-            <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Weakness trend</h2>
-            <p className="text-xs text-ink-soft">
-              Grammar gaps we've spotted, and how they're going
-            </p>
-            <div
-              className={
-                isStudioInk
-                  ? "mt-3 space-y-3 border-b border-hairline pb-4"
-                  : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
-              }
-            >
-              {weaknessTrend.categories.slice(0, 8).map((c) => (
-                <div key={c.category} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="capitalize text-ink">{c.category.replace(/-/g, " ")}</span>
-                  {c.openCount > 0 ? (
-                    <span className="whitespace-nowrap text-xs font-medium text-ember">
-                      Still working on it
-                    </span>
-                  ) : (
-                    <span className="whitespace-nowrap text-xs font-medium text-moss">
-                      Mastered ({c.resolvedCount}×)
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        <Link
-          to="/profile/friends"
-          className={
-            isStudioInk
-              ? "mt-8 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
-              : "mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
-          }
+        <div
+          data-sheet
+          className="-mx-6 mt-5 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-3 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
         >
-          <span className="flex items-center gap-3">
-            <Icon3D emoji="👥" size={36} />
-            <span>
-              <span className="block font-display text-base font-semibold text-ink">Friends</span>
-              <span className="block text-xs text-ink-soft/80">
-                See how your friends are doing, or invite one
+          <ActivityHeatmap dates={p.activityDates} isStudioInk={isStudioInk} />
+
+          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Achievements</h2>
+          <p className="text-xs text-ink-soft">
+            {unlockedSet.size} of {ACHIEVEMENTS.length} unlocked
+          </p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[
+              ...ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)),
+              ...ACHIEVEMENTS.filter((a) => !unlockedSet.has(a.id)),
+            ].map((a) => (
+              <div key={a.id} data-achievement={a.id}>
+                <AchievementBadge achievement={a} unlocked={unlockedSet.has(a.id)} />
+              </div>
+            ))}
+          </div>
+
+          {weaknessTrend && weaknessTrend.categories.length > 0 && (
+            <>
+              <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
+                Weakness trend
+              </h2>
+              <p className="text-xs text-ink-soft">
+                Grammar gaps we've spotted, and how they're going
+              </p>
+              <div
+                className={
+                  isStudioInk
+                    ? "mt-3 space-y-3 border-b border-hairline pb-4"
+                    : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
+                }
+              >
+                {weaknessTrend.categories.slice(0, 8).map((c) => (
+                  <div key={c.category} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="capitalize text-ink">{c.category.replace(/-/g, " ")}</span>
+                    {c.openCount > 0 ? (
+                      <span className="whitespace-nowrap text-xs font-medium text-ember">
+                        Still working on it
+                      </span>
+                    ) : (
+                      <span className="whitespace-nowrap text-xs font-medium text-moss">
+                        Mastered ({c.resolvedCount}×)
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <Link
+            to="/profile/friends"
+            className={
+              isStudioInk
+                ? "mt-8 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
+                : "mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+            }
+          >
+            <span className="flex items-center gap-3">
+              <Icon3D emoji="👥" size={36} />
+              <span>
+                <span className="block font-display text-base font-semibold text-ink">Friends</span>
+                <span className="block text-xs text-ink-soft/80">
+                  See how your friends are doing, or invite one
+                </span>
               </span>
             </span>
-          </span>
-          <span className="text-ink-soft">→</span>
-        </Link>
+            <span className="text-ink-soft">→</span>
+          </Link>
 
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
-        <div
-          className={
-            isStudioInk
-              ? "mt-3 border-b border-hairline pb-4"
-              : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
-          }
-        >
-          <SegmentedControl
-            ariaLabel="Choose a theme"
-            value={theme}
-            onChange={setTheme}
-            options={[
-              { value: "meadow", label: "Meadow" },
-              { value: "studio-ink", label: "Studio Ink" },
-              { value: "manuscript", label: "Manuscript" },
-              { value: "canopy", label: "Canopy" },
-            ]}
-          />
-        </div>
-
-        <AiFeaturesSetting />
-
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
-        <div
-          className={
-            isStudioInk
-              ? "mt-3 space-y-2 border-b border-hairline pb-4"
-              : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
-          }
-        >
-          <label
-            htmlFor="profile-display-name"
-            className="block text-[11px] uppercase tracking-wider text-ink-soft"
-          >
-            Display name
-          </label>
-          <input
-            id="profile-display-name"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setNameError(null);
-            }}
-            maxLength={40}
+          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
+          <div
             className={
               isStudioInk
-                ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm outline-none focus:border-moss"
-                : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
+                ? "mt-3 border-b border-hairline pb-4"
+                : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
             }
-          />
-          {nameError && (
-            <p role="alert" className="mt-2 text-sm text-ember">
-              {nameError}
-            </p>
-          )}
-          <label
-            htmlFor="profile-country"
-            className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft"
           >
-            Country (ISO code, e.g. US, GB)
-          </label>
-          <input
-            id="profile-country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            maxLength={2}
+            <SegmentedControl
+              ariaLabel="Choose a theme"
+              value={theme}
+              onChange={setTheme}
+              options={[
+                { value: "meadow", label: "Meadow" },
+                { value: "studio-ink", label: "Studio Ink" },
+                { value: "manuscript", label: "Manuscript" },
+                { value: "canopy", label: "Canopy" },
+              ]}
+            />
+          </div>
+
+          <AiFeaturesSetting />
+
+          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
+          <div
             className={
               isStudioInk
-                ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm uppercase outline-none focus:border-moss"
-                : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm uppercase outline-none focus:border-moss"
+                ? "mt-3 space-y-2 border-b border-hairline pb-4"
+                : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
             }
+          >
+            <label
+              htmlFor="profile-display-name"
+              className="block text-[11px] uppercase tracking-wider text-ink-soft"
+            >
+              Display name
+            </label>
+            <input
+              id="profile-display-name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setNameError(null);
+              }}
+              maxLength={40}
+              className={
+                isStudioInk
+                  ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm outline-none focus:border-moss"
+                  : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
+              }
+            />
+            {nameError && (
+              <p role="alert" className="mt-2 text-sm text-ember">
+                {nameError}
+              </p>
+            )}
+            <label
+              htmlFor="profile-country"
+              className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft"
+            >
+              Country (ISO code, e.g. US, GB)
+            </label>
+            <input
+              id="profile-country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value.toUpperCase())}
+              maxLength={2}
+              className={
+                isStudioInk
+                  ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm uppercase outline-none focus:border-moss"
+                  : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm uppercase outline-none focus:border-moss"
+              }
+            />
+            <button
+              onClick={save}
+              disabled={saving}
+              className="mt-2 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+
+          <YourData
+            isStudioInk={isStudioInk}
+            onSignedOut={() => navigate({ to: "/auth", replace: true })}
           />
+
           <button
-            onClick={save}
-            disabled={saving}
-            className="mt-2 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface disabled:opacity-50"
+            onClick={signOut}
+            className="mt-4 w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
           >
-            {saving ? "Saving…" : "Save"}
+            Sign out
           </button>
-        </div>
 
-        <YourData
-          isStudioInk={isStudioInk}
-          onSignedOut={() => navigate({ to: "/auth", replace: true })}
-        />
-
-        <button
-          onClick={signOut}
-          className="mt-4 w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
-        >
-          Sign out
-        </button>
-
-        {/* A visible way to report a problem or send feedback (the page has the address and the answers
+          {/* A visible way to report a problem or send feedback (the page has the address and the answers
             people arrive with). The iOS Settings screen has no equivalent yet; that needs a build. */}
-        <Link
-          to="/support"
-          className="mt-3 block w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-center text-sm font-medium text-ink-soft hover:text-ink"
-        >
-          Help and feedback
-        </Link>
+          <Link
+            to="/support"
+            className="mt-3 block w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-center text-sm font-medium text-ink-soft hover:text-ink"
+          >
+            Help and feedback
+          </Link>
 
-        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
-          <Link to="/privacy" className="hover:text-ink">
-            Privacy
-          </Link>
-          <span aria-hidden>·</span>
-          <Link to="/terms" className="hover:text-ink">
-            Terms
-          </Link>
-          <span aria-hidden>·</span>
-          <Link to="/cookies" className="hover:text-ink">
-            Cookies
-          </Link>
+          <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
+            <Link to="/privacy" className="hover:text-ink">
+              Privacy
+            </Link>
+            <span aria-hidden>·</span>
+            <Link to="/terms" className="hover:text-ink">
+              Terms
+            </Link>
+            <span aria-hidden>·</span>
+            <Link to="/cookies" className="hover:text-ink">
+              Cookies
+            </Link>
+          </div>
         </div>
       </div>
     </MobileFrame>

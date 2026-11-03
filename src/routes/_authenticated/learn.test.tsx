@@ -309,3 +309,36 @@ describe("Learn page", () => {
     expect(await screen.findByText("Not enough XP for a heart.")).toBeInTheDocument();
   });
 });
+
+describe("Learn in the garden", () => {
+  it("shows the garden scene behind the page", async () => {
+    const { container } = renderPage();
+    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    const scene = container.querySelector('[data-scene="learn"]');
+    expect(scene?.querySelector("img")?.getAttribute("src")).toBe("/scenes/learn.jpg");
+  });
+
+  it("Alphonso stands full size in the garden and says the greeting in a bubble", async () => {
+    useProgress.setState({ streak: 12 });
+    renderPage();
+    const alphonso = await screen.findByRole("img", { name: /alphonso/i });
+    expect(alphonso.getAttribute("src")).toBe("/figures/alphonso-waving.png");
+    expect(screen.getByText("Nice 12-day streak! Ready for today's lesson?")).toBeInTheDocument();
+  });
+
+  it("the map shows the current unit's lessons as big nodes, the next one marked current", async () => {
+    const { container } = renderPage();
+    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    const map = container.querySelector("[data-learn-map]")!;
+    const nodes = map.querySelectorAll("[data-node]");
+    expect(nodes.length).toBeGreaterThan(1);
+    expect(nodes[0].getAttribute("data-node")).toBe("next");
+    expect(nodes[1].getAttribute("data-node")).toBe("locked");
+  });
+
+  it("everything below the map sits on a solid sheet, never straight on the scene", async () => {
+    renderPage();
+    const team = await screen.findByTestId("team-mission-card");
+    expect(team.closest("[data-sheet]")).not.toBeNull();
+  });
+});

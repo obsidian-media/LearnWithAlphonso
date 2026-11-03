@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -192,5 +192,50 @@ describe("FinishScreen Practise with Hector", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Practise with Hector" }));
     expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
     expect(urls).toContain("/api/pro-offering?source=lesson_complete");
+  });
+});
+
+describe("FinishScreen celebration", () => {
+  function setReducedMotion(reduce: boolean) {
+    window.matchMedia = vi.fn().mockImplementation((q: string) => ({
+      matches: reduce && q.includes("prefers-reduced-motion"),
+      media: q,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    })) as unknown as typeof window.matchMedia;
+  }
+  afterEach(() => vi.useRealTimers());
+
+  it("Alphonso stands full size on the stage scene", () => {
+    setReducedMotion(false);
+    const { container } = renderFinish();
+    expect(screen.getByRole("img", { name: "Alphonso" }).getAttribute("src")).toBe(
+      "/figures/alphonso-proud.png",
+    );
+    const stage = container.querySelector('[data-stage="complete"]')!;
+    expect(stage.querySelector("img")?.getAttribute("src")).toBe("/scenes/complete.jpg");
+  });
+
+  it("confetti bursts and the XP counts up from zero", async () => {
+    setReducedMotion(false);
+    vi.useFakeTimers();
+    const { container } = renderFinish();
+    expect(container.querySelector("[data-confetti]")).not.toBeNull();
+    const xp = screen.getByRole("group", { name: "XP: +10" });
+    expect(within(xp).getByText("+0")).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    expect(within(xp).getByText("+10")).toBeInTheDocument();
+  });
+
+  it("under Reduce Motion: no confetti and the numbers show their final values at once", () => {
+    setReducedMotion(true);
+    const { container } = renderFinish();
+    expect(container.querySelector("[data-confetti]")).toBeNull();
+    const xp = screen.getByRole("group", { name: "XP: +10" });
+    expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
 });

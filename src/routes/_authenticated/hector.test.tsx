@@ -265,3 +265,21 @@ describe("web Hector in the new look", () => {
     await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorIdle").src));
   });
 });
+
+describe("web Hector in his library", () => {
+  it("a free learner meets Hector standing in his library above the offer", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    const { container } = await renderPage();
+    const hector = await screen.findByRole("img", { name: "Hector" });
+    expect(hector.getAttribute("src")).toBe("/figures/hector-waving.png");
+    expect(container.querySelector('[data-scene="hector"] img')?.getAttribute("src")).toBe(
+      "/scenes/hector.jpg",
+    );
+  });
+
+  it("a Pro learner talks to Hector in front of the library", async () => {
+    const { container } = await renderPage();
+    await screen.findByLabelText("Message Hector");
+    expect(container.querySelector('[data-scene="hector"]')).not.toBeNull();
+  });
+});

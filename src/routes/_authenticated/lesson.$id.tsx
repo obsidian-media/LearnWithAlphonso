@@ -3,6 +3,10 @@ import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
 import { MascotImage } from "../../components/MascotImage";
 import { PractiseWithHector } from "../../components/PractiseWithHector";
+import { Confetti, CountUp } from "../../components/Celebration";
+import { StandingFigure } from "../../components/StandingFigure";
+import { sceneSrc } from "../../lib/scenes";
+import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
@@ -837,19 +841,26 @@ export function FinishScreen({
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const streak = useProgress((s) => s.streak);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
-      <MascotImage
-        moment="lessonComplete"
-        size={168}
-        tone="sun"
-        radius={40}
-        alt="Alphonso"
-        enter
-        className="card-lift mb-4"
-      />
+      <div
+        data-stage="complete"
+        className="relative -mx-6 -mt-6 mb-5 h-[330px] w-[calc(100%+3rem)] overflow-hidden rounded-b-[2.5rem] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
+      >
+        <img
+          src={sceneSrc("complete")}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover object-bottom"
+        />
+        {!reduceMotion && <Confetti />}
+        <div className="absolute inset-x-0 bottom-4 flex justify-center">
+          <StandingFigure figure="alphonso-proud" alt="Alphonso" height={268} enter />
+        </div>
+      </div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete
       </p>
@@ -861,9 +872,9 @@ export function FinishScreen({
             key={c.kind}
             aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
             role="group"
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 + i * 0.12, duration: 0.35 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.6 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 320, damping: 16, delay: 0.45 + i * 0.15 }}
             className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
           >
             <span aria-hidden="true" className="text-xs font-semibold">
@@ -871,7 +882,7 @@ export function FinishScreen({
             </span>
             <Icon3D emoji={c.emoji} size={28} />
             <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
-              {c.value}
+              <CountUp value={c.value} animate={!reduceMotion} />
             </span>
           </motion.div>
         ))}

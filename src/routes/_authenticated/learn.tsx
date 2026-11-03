@@ -7,7 +7,8 @@ import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
 import { StarIcon } from "../../components/icons";
 import { Icon3D } from "../../components/Icon3D";
-import { MascotBanner } from "../../components/MascotBanner";
+import { LearnMap } from "../../components/LearnMap";
+import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -40,19 +41,17 @@ export const Route = createFileRoute("/_authenticated/learn")({
   }),
 });
 
-/** The one loud card for the next lesson, with the unit's lessons as a short path. */
+/** The one loud card for the next lesson. The unit's path is drawn on the scene below it (LearnMap). */
 function ContinueCard({
   unitTitle,
   lessonId,
   lessonTitle,
-  path,
   blocked,
   onBlockedClick,
 }: {
   unitTitle: string;
   lessonId: string;
   lessonTitle: string;
-  path: { id: string; state: "done" | "next" | "locked" }[];
   blocked: boolean;
   onBlockedClick: () => void;
 }) {
@@ -63,21 +62,6 @@ function ContinueCard({
         Up next · {unitTitle}
       </p>
       <p className="font-display text-2xl font-bold leading-tight">{lessonTitle}</p>
-      <div className="flex gap-2" aria-hidden="true">
-        {path.map((n, i) => (
-          <span
-            key={n.id}
-            className={`grid size-9 place-items-center rounded-full ${
-              n.state === "locked" ? "bg-white/25 grayscale" : TILE_TONE_CLASSES[tileTone(i)]
-            } ${n.state === "next" ? "ring-2 ring-white" : ""}`}
-          >
-            <Icon3D
-              emoji={n.state === "done" ? "📚" : n.state === "next" ? "🎯" : "🔒"}
-              size={20}
-            />
-          </span>
-        ))}
-      </div>
       <span className="self-start rounded-full bg-surface px-4 py-1.5 font-display text-sm font-bold text-ink">
         Continue
       </span>
@@ -299,9 +283,10 @@ function LearnPage() {
 
   return (
     <MobileFrame>
-      <div className="px-6 pb-10 pt-6">
+      <SceneBackdrop scene="learn" />
+      <div className="relative z-10 px-6 pb-10 pt-6">
         <h1 className="sr-only">Learn</h1>
-        <div className="mb-6 flex gap-2">
+        <div className="mb-5 flex gap-2">
           {COURSES.map((c) => (
             <button
               key={c.id}
@@ -311,7 +296,7 @@ function LearnPage() {
               className={`flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
                 c.id === course
                   ? "border-ink bg-ink text-surface"
-                  : "border-hairline bg-surface text-ink-soft hover:bg-parchment"
+                  : "border-hairline bg-surface/90 text-ink-soft backdrop-blur-md hover:bg-parchment"
               }`}
             >
               {c.flag} {c.label}
@@ -319,230 +304,236 @@ function LearnPage() {
           ))}
         </div>
 
-        <div className="mb-4">
-          <MascotBanner
-            moment="learnGreeting"
-            message={
-              hydrated && streak > 0
-                ? `Nice ${streak}-day streak! Ready for today's lesson?`
-                : "Ready for today's lesson?"
-            }
-          />
-        </div>
-
         {hydrated && firstUndone && nextUnit && (
-          <div className="mb-6">
+          <div className="mb-2">
             <ContinueCard
               unitTitle={nextUnit.title}
               lessonId={firstUndone.id}
               lessonTitle={firstUndone.title}
-              path={unitPathNodes(
-                nextUnit.lessons.map((l) => l.id),
-                completedSet,
-              )}
               blocked={outOfHearts}
               onBlockedClick={() => setShowHeartsModal(true)}
             />
           </div>
         )}
 
-        <div className="mb-6">
-          <TeamMissionCard />
-        </div>
-
-        <div className="mb-6">
-          <WeeklyChallengesCard />
-        </div>
-
-        <div className="mb-6">
-          <GoalCard course={course} />
-        </div>
-
-        {!placed &&
-          (isStudioInk ? (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 border-b border-hairline pb-5"
-            >
-              <p className="font-display text-base font-semibold text-ink">
-                Not sure where to start?
-              </p>
-              <p className="mt-1 text-xs text-ink-soft/80">
-                Take a quick placement test and we&apos;ll set your CEFR level for you.
-              </p>
-              <Link
-                to="/placement"
-                className="mt-3 inline-block text-[12px] font-semibold text-moss underline underline-offset-4"
-              >
-                Take the placement test →
-              </Link>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
-            >
-              <p className="font-display text-base font-semibold text-ink">
-                Not sure where to start?
-              </p>
-              <p className="mt-1 text-xs text-ink-soft/80">
-                Take a quick placement test and we&apos;ll set your CEFR level for you.
-              </p>
-              <Link
-                to="/placement"
-                className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
-              >
-                Take the placement test
-              </Link>
-            </motion.div>
-          ))}
-
-        <Link
-          to="/review"
-          className={
-            isStudioInk
-              ? "mb-6 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
-              : "mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+        <LearnMap
+          nodes={
+            nextUnit
+              ? unitPathNodes(
+                  nextUnit.lessons.map((l) => l.id),
+                  completedSet,
+                )
+              : []
           }
-        >
-          <span>
-            <span className="flex items-center gap-2">
-              <span className="block font-display text-base font-semibold text-ink">
-                Review missed items
-              </span>
-              {dueCount > 0 && (
-                <span
-                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-ink-on-ember"
-                  aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
-                >
-                  {dueCount}
-                </span>
-              )}
-            </span>
-            <span className="block text-xs text-ink-soft/80">
-              Spaced repetition brings back what you got wrong.
-            </span>
-          </span>
-          <span className="text-ink-soft">→</span>
-        </Link>
-
-        <div className="-mx-6 mb-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-          <SegmentedControl
-            ariaLabel="Select CEFR level"
-            value={level}
-            onChange={pick}
-            options={LEVELS.map((l) => {
-              const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
-              return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
-            })}
-          />
-        </div>
+          greeting={
+            hydrated && streak > 0
+              ? `Nice ${streak}-day streak! Ready for today's lesson?`
+              : "Ready for today's lesson?"
+          }
+        />
 
         <div
-          className={
-            isStudioInk
-              ? "mb-8 border-b border-hairline pb-4"
-              : "mb-8 rounded-2xl border border-hairline bg-parchment p-4"
-          }
+          data-sheet
+          className="-mx-6 mt-2 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-7 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
         >
-          <div className="flex items-baseline justify-between">
-            <p className="font-display text-lg font-semibold text-ink">
-              {meta.id} · {meta.name}
-            </p>
-            <span className="tnum text-[11px] font-medium text-ink-soft">{pct}%</span>
+          <div className="mb-6">
+            <TeamMissionCard />
           </div>
-          <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
-            <motion.div
-              className="h-full rounded-full bg-moss"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+
+          <div className="mb-6">
+            <WeeklyChallengesCard />
+          </div>
+
+          <div className="mb-6">
+            <GoalCard course={course} />
+          </div>
+
+          {!placed &&
+            (isStudioInk ? (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 border-b border-hairline pb-5"
+              >
+                <p className="font-display text-base font-semibold text-ink">
+                  Not sure where to start?
+                </p>
+                <p className="mt-1 text-xs text-ink-soft/80">
+                  Take a quick placement test and we&apos;ll set your CEFR level for you.
+                </p>
+                <Link
+                  to="/placement"
+                  className="mt-3 inline-block text-[12px] font-semibold text-moss underline underline-offset-4"
+                >
+                  Take the placement test →
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
+              >
+                <p className="font-display text-base font-semibold text-ink">
+                  Not sure where to start?
+                </p>
+                <p className="mt-1 text-xs text-ink-soft/80">
+                  Take a quick placement test and we&apos;ll set your CEFR level for you.
+                </p>
+                <Link
+                  to="/placement"
+                  className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
+                >
+                  Take the placement test
+                </Link>
+              </motion.div>
+            ))}
+
+          <Link
+            to="/review"
+            className={
+              isStudioInk
+                ? "mb-6 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
+                : "mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+            }
+          >
+            <span>
+              <span className="flex items-center gap-2">
+                <span className="block font-display text-base font-semibold text-ink">
+                  Review missed items
+                </span>
+                {dueCount > 0 && (
+                  <span
+                    className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-ink-on-ember"
+                    aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
+                  >
+                    {dueCount}
+                  </span>
+                )}
+              </span>
+              <span className="block text-xs text-ink-soft/80">
+                Spaced repetition brings back what you got wrong.
+              </span>
+            </span>
+            <span className="text-ink-soft">→</span>
+          </Link>
+
+          <div className="-mx-6 mb-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+            <SegmentedControl
+              ariaLabel="Select CEFR level"
+              value={level}
+              onChange={pick}
+              options={LEVELS.map((l) => {
+                const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
+                return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
+              })}
             />
           </div>
-        </div>
 
-        {units.map((unit, ui) => {
-          const allDone = hydrated && unit.lessons.every((l) => completedSet.has(l.id));
-          return (
-            <section key={unit.id} className="mb-14 last:mb-4">
-              <header className="mb-8 flex items-end justify-between">
-                <div className="relative">
-                  {isStudioInk && (
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute -left-1 -top-3 font-display text-[64px] font-semibold leading-none text-ink/5"
-                    >
-                      {String(ui + 1).padStart(2, "0")}
-                    </span>
-                  )}
-                  <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-                    {unit.eyebrow}
-                  </p>
-                  <h2 className="relative text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
-                    {unit.title}
-                  </h2>
-                  <p className="relative mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
-                    {unit.description}
-                  </p>
-                </div>
-                <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                  {hydrated ? unit.lessons.filter((l) => completedSet.has(l.id)).length : 0}/
-                  {unit.lessons.length}
-                </div>
-              </header>
-              <div className="relative flex flex-col items-center gap-7">
-                {unit.lessons.map((lesson, li) => {
-                  const isDone = hydrated && completedSet.has(lesson.id);
-                  const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
-                  const state = isDone
-                    ? "done"
-                    : isActive
-                      ? "active"
-                      : hydrated
-                        ? "locked"
-                        : "active";
-                  return (
-                    <LessonNode
-                      key={lesson.id}
-                      state={state}
-                      index={ui * 100 + li}
-                      placeInUnit={li}
-                      lessonId={lesson.id}
-                      title={lesson.title}
-                      blocked={outOfHearts}
-                      onBlockedClick={() => setShowHeartsModal(true)}
-                    />
-                  );
-                })}
-                {allDone &&
-                  (isStudioInk ? (
-                    <div className="mt-4 w-full border-t border-hairline pt-5 text-center">
-                      <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
-                        <StarIcon className="size-5" />
+          <div
+            className={
+              isStudioInk
+                ? "mb-8 border-b border-hairline pb-4"
+                : "mb-8 rounded-2xl border border-hairline bg-parchment p-4"
+            }
+          >
+            <div className="flex items-baseline justify-between">
+              <p className="font-display text-lg font-semibold text-ink">
+                {meta.id} · {meta.name}
+              </p>
+              <span className="tnum text-[11px] font-medium text-ink-soft">{pct}%</span>
+            </div>
+            <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
+              <motion.div
+                className="h-full rounded-full bg-moss"
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </div>
+          </div>
+
+          {units.map((unit, ui) => {
+            const allDone = hydrated && unit.lessons.every((l) => completedSet.has(l.id));
+            return (
+              <section key={unit.id} className="mb-14 last:mb-4">
+                <header className="mb-8 flex items-end justify-between">
+                  <div className="relative">
+                    {isStudioInk && (
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute -left-1 -top-3 font-display text-[64px] font-semibold leading-none text-ink/5"
+                      >
+                        {String(ui + 1).padStart(2, "0")}
+                      </span>
+                    )}
+                    <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+                      {unit.eyebrow}
+                    </p>
+                    <h2 className="relative text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
+                      {unit.title}
+                    </h2>
+                    <p className="relative mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
+                      {unit.description}
+                    </p>
+                  </div>
+                  <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+                    {hydrated ? unit.lessons.filter((l) => completedSet.has(l.id)).length : 0}/
+                    {unit.lessons.length}
+                  </div>
+                </header>
+                <div className="relative flex flex-col items-center gap-7">
+                  {unit.lessons.map((lesson, li) => {
+                    const isDone = hydrated && completedSet.has(lesson.id);
+                    const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
+                    const state = isDone
+                      ? "done"
+                      : isActive
+                        ? "active"
+                        : hydrated
+                          ? "locked"
+                          : "active";
+                    return (
+                      <LessonNode
+                        key={lesson.id}
+                        state={state}
+                        index={ui * 100 + li}
+                        placeInUnit={li}
+                        lessonId={lesson.id}
+                        title={lesson.title}
+                        blocked={outOfHearts}
+                        onBlockedClick={() => setShowHeartsModal(true)}
+                      />
+                    );
+                  })}
+                  {allDone &&
+                    (isStudioInk ? (
+                      <div className="mt-4 w-full border-t border-hairline pt-5 text-center">
+                        <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
+                          <StarIcon className="size-5" />
+                        </div>
+                        <p className="font-display text-base font-semibold">Unit complete</p>
+                        <p className="text-xs text-ink-soft">
+                          You mastered {unit.title.toLowerCase()}.
+                        </p>
                       </div>
-                      <p className="font-display text-base font-semibold">Unit complete</p>
-                      <p className="text-xs text-ink-soft">
-                        You mastered {unit.title.toLowerCase()}.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-4 w-full rounded-2xl border border-hairline bg-parchment p-5 text-center">
-                      <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
-                        <StarIcon className="size-5" />
+                    ) : (
+                      <div className="mt-4 w-full rounded-2xl border border-hairline bg-parchment p-5 text-center">
+                        <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
+                          <StarIcon className="size-5" />
+                        </div>
+                        <p className="font-display text-base font-semibold">Unit complete</p>
+                        <p className="text-xs text-ink-soft">
+                          You mastered {unit.title.toLowerCase()}.
+                        </p>
                       </div>
-                      <p className="font-display text-base font-semibold">Unit complete</p>
-                      <p className="text-xs text-ink-soft">
-                        You mastered {unit.title.toLowerCase()}.
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            </section>
-          );
-        })}
+                    ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </div>
       <HeartsModal
         open={showHeartsModal}

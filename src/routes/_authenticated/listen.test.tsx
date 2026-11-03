@@ -123,3 +123,30 @@ describe("PodcastSearchResults", () => {
     expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
   });
 });
+
+describe("Listen in the studio", () => {
+  it("the folder tree sits in front of the radio studio, under a large title", () => {
+    const { container } = render(
+      <ListenFolderView folders={folders} episodes={[]} segments={[]} />,
+    );
+    expect(container.querySelector('[data-scene="listen"] img')?.getAttribute("src")).toBe(
+      "/scenes/listen.jpg",
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Listen" }).className).toContain(
+      "text-3xl",
+    );
+  });
+
+  it("search results keep the studio behind them", () => {
+    const { container } = render(
+      <PodcastSearchResults query="coffee" results={[]} isLoading={false} />,
+    );
+    expect(container.querySelector('[data-scene="listen"]')).not.toBeNull();
+  });
+
+  it("the empty state sits on a card, not straight on the scene", () => {
+    render(<ListenFolderView folders={folders} episodes={[]} segments={["en", "a1"]} />);
+    const text = screen.getByText(/Nothing here yet/);
+    expect(text.closest("[data-surface]")).not.toBeNull();
+  });
+});
