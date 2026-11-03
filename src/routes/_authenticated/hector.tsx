@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { LessonFrame } from "../../components/AppShell";
+import { MascotImage } from "../../components/MascotImage";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
 import { WebPaywall } from "../../components/WebPaywall";
@@ -12,6 +13,7 @@ import { authHeaders } from "../../lib/auth-headers";
 import { PAYWALL_COPY, WEB_PAYWALL_COPY, type PaywallSource } from "../../lib/paywall-copy";
 import { useProgress } from "../../lib/progress";
 import { readApiError } from "../../lib/read-api-error";
+import { hectorMoment, hectorStatus, hectorStatusLabel } from "../../lib/hector-status";
 import { fetchProgress } from "../../lib/sync.functions";
 import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
@@ -139,6 +141,7 @@ function HectorConversation({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cefrLevel, setCefrLevel] = useState<string>("");
+  const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -162,10 +165,17 @@ function HectorConversation({
       audioRef.current?.pause();
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onended = () => URL.revokeObjectURL(url);
-      void audio.play().catch(() => {});
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        if (audioRef.current === audio) setSpeaking(false);
+      };
+      setSpeaking(true);
+      void audio.play().catch(() => {
+        if (audioRef.current === audio) setSpeaking(false);
+      });
     } catch {
       /* the text reply still shows */
+      setSpeaking(false);
     }
   }, []);
 
@@ -229,6 +239,7 @@ function HectorConversation({
   } = useSpeechCapture({ course, onTranscript: (t) => send(t) });
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
+  const status = hectorStatus({ recording, transcribing, sending, speaking });
 
   return (
     <LessonFrame>
@@ -239,6 +250,34 @@ function HectorConversation({
         </div>
         <ManageSubscription pro={pro} />
       </header>
+      <section aria-label="Hector" className="flex items-center gap-4 px-5 pt-4">
+        <MascotImage
+          moment={hectorMoment(status)}
+          size={messages.length === 0 ? 132 : 76}
+          tone="sky"
+          radius={messages.length === 0 ? 32 : 22}
+          alt="Hector"
+          className="card-lift"
+        />
+        <div className="min-w-0 space-y-1.5">
+          <p className="font-display text-2xl font-bold text-ink">Your tutor</p>
+          {status ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-ink card-lift">
+              <span
+                aria-hidden="true"
+                className={`size-2 rounded-full ${
+                  status === "listening"
+                    ? "animate-pulse bg-ember motion-reduce:animate-none"
+                    : "bg-moss"
+                }`}
+              />
+              {hectorStatusLabel(status)}
+            </span>
+          ) : (
+            <p className="text-xs text-ink-soft/70">Type or tap the mic to start talking.</p>
+          )}
+        </div>
+      </section>
       <div className="px-5">
         <SaveWordHint always />
       </div>

@@ -786,15 +786,16 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
   }
 
   it("generates and lets the user practice extra questions", async () => {
-    global.fetch = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          questions: [
-            { prompt: "Extra Q1", choices: ["a", "b"], answerIndex: 0, explanation: "why" },
-          ],
-        }),
-        { status: 200 },
-      ),
+    global.fetch = vi.fn().mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            questions: [
+              { prompt: "Extra Q1", choices: ["a", "b"], answerIndex: 0, explanation: "why" },
+            ],
+          }),
+          { status: 200 },
+        ),
     );
     const user = userEvent.setup();
     await finishLesson(user);
@@ -816,7 +817,9 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
   it("shows a message when no practice could be generated", async () => {
     global.fetch = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ questions: [] }), { status: 200 }));
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ questions: [] }), { status: 200 }),
+      );
     const user = userEvent.setup();
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
@@ -826,7 +829,7 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
   });
 
   it("shows an error message when the request fails", async () => {
-    global.fetch = vi.fn().mockResolvedValue(new Response("err", { status: 500 }));
+    global.fetch = vi.fn().mockImplementation(async () => new Response("err", { status: 500 }));
     const user = userEvent.setup();
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   PAYWALL_COPY,
   PAYWALL_SOURCES,
+  isPaywallSource,
   paywallDisclosure,
   paywallPriceLine,
   paywallTrialLine,
@@ -28,6 +29,9 @@ describe("web paywall copy matches the iPhone paywall", () => {
       expect(swift).toContain(`= "${source}"`);
     }
     expect(PAYWALL_SOURCES).toContain("practice_end_prompt");
+    // The lesson-complete "Practise with Hector" button: the iPhone's PaywallSource.lessonComplete raw value.
+    expect(PAYWALL_SOURCES).toContain("lesson_complete");
+    expect(isPaywallSource("lesson_complete")).toBe(true);
   });
 });
 

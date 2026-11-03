@@ -226,3 +226,42 @@ describe("web Hector", () => {
     );
   });
 });
+
+describe("web Hector in the new look", () => {
+  it("hector page shows the mascot art and status pill", async () => {
+    const { mascotArt } = await import("../../lib/mascot-poses");
+    const players: FakeAudio[] = [];
+    vi.stubGlobal(
+      "Audio",
+      class extends FakeAudio {
+        constructor(src: string) {
+          super(src);
+          players.push(this);
+        }
+      },
+    );
+    let answer: (r: Response) => void = () => {};
+    routes["/api/hector-respond"] = (() =>
+      new Promise<Response>((r) => (answer = r))) as unknown as Handler;
+    await renderPage();
+
+    const art = () => screen.getByRole("img", { name: "Hector" });
+    expect((await screen.findByRole("img", { name: "Hector" })).getAttribute("src")).toBe(
+      mascotArt("hectorIdle").src,
+    );
+    expect(screen.queryByText("Thinking", { exact: true })).toBeNull();
+
+    await userEvent.type(screen.getByLabelText("Message Hector"), "Bonjour");
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Thinking", { exact: true })).toBeInTheDocument();
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorThinking").src));
+
+    answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
+    expect(await screen.findByText("Speaking", { exact: true })).toBeInTheDocument();
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorSpeaking").src));
+
+    players[players.length - 1].onended?.();
+    await waitFor(() => expect(screen.queryByText("Speaking", { exact: true })).toBeNull());
+    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorIdle").src));
+  });
+});

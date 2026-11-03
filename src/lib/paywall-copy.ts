@@ -27,12 +27,13 @@ export const WEB_PAYWALL_COPY = {
   continueWithHectorSubtitle: "Keep talking with your AI tutor. Part of Alphonso Pro.",
 } as const;
 
-/** Where a paywall was opened from. The first three are the iPhone's raw values. */
+/** Where a paywall was opened from. All but practice_end_prompt are the iPhone's raw values. */
 export const PAYWALL_SOURCES = [
   "hector_tab",
   "hector_not_entitled",
   "practice_hector_card",
   "practice_end_prompt",
+  "lesson_complete",
 ] as const;
 export type PaywallSource = (typeof PAYWALL_SOURCES)[number];
 

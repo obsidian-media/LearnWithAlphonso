@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
 import { MascotImage } from "../../components/MascotImage";
+import { PractiseWithHector } from "../../components/PractiseWithHector";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
@@ -969,6 +970,9 @@ export function FinishScreen({
       >
         Back to path
       </Link>
+      <div className="mt-3 w-full">
+        <PractiseWithHector />
+      </div>
     </div>
   );
 }
