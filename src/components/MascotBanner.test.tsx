@@ -2,12 +2,13 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MascotBanner } from "./MascotBanner";
+import { mascotArt } from "../lib/mascot-poses";
 
 describe("MascotBanner", () => {
-  it("shows the mascot image and message", () => {
+  it("shows the mascot's everyday pose and the message", () => {
     render(<MascotBanner mascot="alphonso" message="Nice work!" />);
     const img = screen.getByRole("img", { name: /alphonso/i });
-    expect(img).toHaveAttribute("src", "/mascots/alphonso.png");
+    expect(img).toHaveAttribute("src", mascotArt("learnGreeting").src);
     expect(screen.getByText("Nice work!")).toBeInTheDocument();
   });
 
@@ -15,7 +16,7 @@ describe("MascotBanner", () => {
     render(<MascotBanner mascot="hector" message="Hi" />);
     expect(screen.getByRole("img", { name: /hector/i })).toHaveAttribute(
       "src",
-      "/mascots/hector.png",
+      mascotArt("hectorIdle").src,
     );
   });
 

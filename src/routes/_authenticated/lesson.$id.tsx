@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
-import { mascotArt } from "../../lib/mascot-poses";
+import { MascotImage } from "../../components/MascotImage";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
@@ -770,14 +770,7 @@ function OverviewScreen({
   return (
     <div className="flex flex-1 flex-col px-6 pb-6 pt-6">
       <div className="mb-4 flex justify-center">
-        <img
-          src={mascotArt("emptyState").src}
-          alt=""
-          width={120}
-          height={120}
-          decoding="async"
-          className="size-30 rounded-[28px] object-cover card-lift"
-        />
+        <MascotImage moment="emptyState" size={120} tone="mint" alt="" className="card-lift" />
       </div>
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
         {subtitle}
@@ -847,16 +840,14 @@ export function FinishScreen({
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
-      <motion.img
-        src={mascotArt("lessonComplete").src}
+      <MascotImage
+        moment="lessonComplete"
+        size={168}
+        tone="sun"
+        radius={40}
         alt="Alphonso"
-        width={168}
-        height={168}
-        decoding="async"
-        initial={reduceMotion ? false : { scale: 0.85, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="card-lift mb-4 size-42 rounded-[40px] object-cover"
+        enter
+        className="card-lift mb-4"
       />
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete

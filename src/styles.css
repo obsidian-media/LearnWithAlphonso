@@ -271,3 +271,23 @@
     color: var(--color-foreground);
   }
 }
+
+/* Mascots breathe: a slow rise and settle so they look alive at rest (MascotImage). */
+@keyframes mascot-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.015);
+  }
+}
+.mascot-breathe {
+  transform-origin: 50% 100%;
+  animation: mascot-breathe 4.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-breathe {
+    animation: none;
+  }
+}

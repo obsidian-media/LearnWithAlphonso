@@ -13,7 +13,7 @@ import {
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { Icon3D } from "../../components/Icon3D";
-import { mascotArt } from "../../lib/mascot-poses";
+import { MascotImage } from "../../components/MascotImage";
 import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
 export const Route = createFileRoute("/_authenticated/listen")({
@@ -141,13 +141,12 @@ export function ListenFolderView({
 
       {isEmpty ? (
         <div className="mt-6 flex flex-col items-center gap-3 text-center">
-          <img
-            src={mascotArt("emptyState").src}
+          <MascotImage
+            moment="emptyState"
+            size={120}
+            tone="mint"
             alt="Alphonso"
-            width={120}
-            height={120}
-            decoding="async"
-            className="card-lift size-30 rounded-[28px] object-cover"
+            className="card-lift"
           />
           <p className="text-sm text-ink-soft/70">
             Nothing here yet. New episodes appear as they are published.
