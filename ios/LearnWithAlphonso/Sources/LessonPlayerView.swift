@@ -1087,10 +1087,20 @@ private struct FinishView: View {
                     .padding(.vertical, AlphonsoSpacing.sm)
                     .alphonsoGlass(radius: AlphonsoRadius.xl)
 
-                // Alphonso stands proud on the stage (was a 180 pt sticker tile), with the same spring entrance.
-                SceneFigure(assetName: "Figure-alphonso-proud", height: 300)
+                // The whole celebration is one looping clip: the stage, confetti cannons, streamers, sweeping spotlights
+                // and Alphonso cheering. It sits in a 10:13 window framed on him (he fills 23-91% of the clip's height;
+                // the window shows the clip from its top 20% to 94%), the same framing as the web. Under Reduce Motion
+                // the clip's first frame stands still.
+                ClipBackdrop(clip: .complete, verticalAnchor: 0.76)
+                    .aspectRatio(10.0 / 13.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .background(AlphonsoColor.ink)
+                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .alphonsoLift()
                     .springEntrance()
-                    .accessibilityHidden(true)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Alphonso celebrating on the stage")
+                    .accessibilityAddTraits(.isImage)
 
                 VStack(spacing: AlphonsoSpacing.md) {
                     Text(LessonFinishCopy.headline(correct: correct, total: total))
@@ -1144,8 +1154,7 @@ private struct FinishView: View {
             }
             .padding()
         }
-        .screenScene(.complete)
-        .overlay { ConfettiBurst() }
+        .background(AlphonsoColor.surface)
         .sensoryFeedback(.success, trigger: celebrated)
         .onAppear {
             showPromotionOverlay = isLeaguePromotion

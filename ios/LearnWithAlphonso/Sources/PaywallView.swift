@@ -23,8 +23,9 @@ struct PaywallView: View {
     @State private var isPresentingManageSubscriptions = false
     @Environment(\.openURL) private var openURL
 
-    /// On the Hector tab the library scene is behind the paywall (HectorView paints it), with Hector standing in it.
-    /// Sheets from lesson complete or a refusal keep the flat surface. Look only: no copy or logic depends on this.
+    /// On the Hector tab the paywall paints the library clip behind itself, with Hector waving in it (his head is at 47%
+    /// of the clip, his feet at 80%). Sheets from lesson complete or a refusal keep the flat surface. Look only: no
+    /// copy or logic depends on this.
     private var onScene: Bool { source == .hectorTab }
 
     var body: some View {
@@ -33,7 +34,12 @@ struct PaywallView: View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.lg) {
                 if onScene {
-                    SceneFigure(assetName: "Figure-hector-waving", height: 220)
+                    // Room for Hector: the offer starts around his waist, below the head and the wave.
+                    Color.clear
+                        .containerRelativeFrame(.vertical) { height, _ in height * 0.6 }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Hector, waving in his library")
+                        .accessibilityAddTraits(.isImage)
                 }
 
                 VStack(spacing: AlphonsoSpacing.lg) {
@@ -80,6 +86,8 @@ struct PaywallView: View {
             .frame(maxWidth: .infinity)
         }
         .background(onScene ? Color.clear : AlphonsoColor.surface)
+        // The clip is anchored 30% down, like the web's backdrop, so a wide screen keeps Hector's head and wave in view.
+        .screenScene(.hector, clip: .hector, clipAnchor: 0.3, if: onScene)
         .task {
             entitlementStore.presented(from: source)
             await entitlementStore.loadOffering()

@@ -29,9 +29,11 @@ struct HectorView: View {
                     // A course switch is a fresh Hector
                     // in the new language; each course keeps its own thread.
                     .id(activeCourse.course)
+                    // The still library stays behind the conversation. The free state is the paywall, which paints
+                    // Hector's living clip itself.
+                    .screenScene(.hector)
                 }
             }
-            .screenScene(.hector)
             .navigationTitle("Hector")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
