@@ -21,6 +21,7 @@
 @import "@fontsource-variable/newsreader/opsz-italic.css";
 @import "@fontsource-variable/source-sans-3/wght.css";
 @import "@fontsource-variable/baloo-2/wght.css";
+@import "./styles/tile-tones.generated.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -95,6 +96,18 @@
  */
 
 @theme inline {
+  --color-tile-coral-bg: var(--tile-coral-bg);
+  --color-tile-coral-ink: var(--tile-coral-ink);
+  --color-tile-sky-bg: var(--tile-sky-bg);
+  --color-tile-sky-ink: var(--tile-sky-ink);
+  --color-tile-sun-bg: var(--tile-sun-bg);
+  --color-tile-sun-ink: var(--tile-sun-ink);
+  --color-tile-lilac-bg: var(--tile-lilac-bg);
+  --color-tile-lilac-ink: var(--tile-lilac-ink);
+  --color-tile-mint-bg: var(--tile-mint-bg);
+  --color-tile-mint-ink: var(--tile-mint-ink);
+  --color-edge-moss: var(--edge-moss);
+  --color-edge-ember: var(--edge-ember);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -227,10 +240,10 @@
   --color-parchment: oklch(0.945 0.028 165);
   --color-ink: oklch(0.24 0.045 165);
   --color-ink-soft: oklch(0.46 0.045 165);
-  --color-moss: oklch(0.46 0.10 160);
+  --color-moss: oklch(0.46 0.1 160);
   --color-moss-deep: oklch(0.33 0.06 160);
   --color-ember: oklch(0.64 0.18 32);
-  --color-ember-soft: oklch(0.90 0.05 32);
+  --color-ember-soft: oklch(0.9 0.05 32);
   --color-hairline: oklch(0.24 0.045 165 / 0.1);
   --color-ink-on-ember: var(--color-ink);
 
