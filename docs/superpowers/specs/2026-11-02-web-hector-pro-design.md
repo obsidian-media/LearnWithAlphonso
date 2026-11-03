@@ -1,6 +1,6 @@
 # Web Hector + Alphonso Pro on the web: design
 
-Status: draft for owner approval (2026-11-02). Brainstormed with the owner in the PR #337/#338 session; builder check done, its owner questions answered below.
+Status: implemented and merged (PR #339, 2026-11-03), sandbox-verified on the preview; production RevenueCat/Stripe setup waits for launch. Later decisions: 150/day Pro Hector allowance confirmed by the owner; no price number outside the indicative price's country. Originally a draft for owner approval (2026-11-02). Brainstormed with the owner in the PR #337/#338 session; builder check done, its owner questions answered below.
 
 ## Intent
 
