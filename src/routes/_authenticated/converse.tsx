@@ -70,13 +70,13 @@ function ConversePage() {
                   className="card-lift flex items-center gap-4 rounded-3xl bg-gradient-to-br from-moss to-moss-deep p-4 text-primary-foreground transition-transform active:scale-[0.99]"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-80">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
                       Campaign · {c.level}
                     </p>
                     <h2 className="mt-0.5 font-display text-xl font-bold leading-tight">
                       {c.title}
                     </h2>
-                    <p className="mt-0.5 text-xs opacity-85">{c.blurb}</p>
+                    <p className="mt-0.5 text-xs">{c.blurb}</p>
                     <span className="mt-2 inline-block rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
                       {c.scenes.length} scenes
                     </span>

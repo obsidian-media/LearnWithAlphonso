@@ -66,7 +66,8 @@ function ContinueCard({
 }) {
   const body = (
     <div className="card-lift flex flex-col gap-2.5 rounded-3xl bg-ember p-4 text-left text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)] transition-transform active:translate-y-1">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-90">
+      {/* Small text sits on surface chips: straight on ember it is below 4.5:1 in most themes. */}
+      <p className="self-start rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-ink">
         Up next · {unitTitle}
       </p>
       <p className="font-display text-2xl font-bold leading-tight">{lessonTitle}</p>
@@ -85,7 +86,7 @@ function ContinueCard({
           </span>
         ))}
       </div>
-      <span className="self-start rounded-full bg-surface px-4 py-1.5 font-display text-sm font-bold text-ember">
+      <span className="self-start rounded-full bg-surface px-4 py-1.5 font-display text-sm font-bold text-ink">
         Continue
       </span>
     </div>

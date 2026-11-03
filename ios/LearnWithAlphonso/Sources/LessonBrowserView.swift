@@ -527,10 +527,14 @@ private struct LearnContinueCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // Small text sits on a surface chip: straight on ember it is below 4.5:1 in most themes.
             Text("Up next · \(unitTitle)".uppercased())
-                .font(AlphonsoFont.sans(11, weight: .semiBold))
+                .font(AlphonsoFont.sans(11, weight: .bold))
                 .tracking(0.6)
-                .opacity(0.9)
+                .foregroundStyle(AlphonsoColor.ink)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(AlphonsoColor.surface, in: Capsule())
             Text(lessonTitle)
                 .font(AlphonsoFont.display(24, weight: .bold))
                 .fixedSize(horizontal: false, vertical: true)
@@ -542,7 +546,7 @@ private struct LearnContinueCard: View {
             .accessibilityHidden(true)
             Text("Continue")
                 .font(AlphonsoFont.display(15, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ember)
+                .foregroundStyle(AlphonsoColor.ink)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(AlphonsoColor.surface, in: Capsule())

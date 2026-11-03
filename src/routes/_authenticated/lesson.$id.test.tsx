@@ -113,6 +113,7 @@ beforeEach(() => {
   pickReinforcementQuestion.mockReset();
   pickReinforcementQuestion.mockReturnValue(null);
   useProgress.getState().reset();
+  useProgress.setState({ streak: 7 });
 });
 
 describe("out of hearts", () => {
@@ -542,6 +543,8 @@ describe("Lesson page", () => {
 
     expect(await screen.findByLabelText("XP: +0")).toBeInTheDocument();
     expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+    // Nothing was saved, so a streak from the stored progress would be a claim the server never made.
+    expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
   });
 
   it("navigates to /learn when the close button is clicked", async () => {

@@ -95,4 +95,13 @@ describe("Converse route", () => {
     expect(heroes[0]).toHaveTextContent(`${c.scenes.length} scenes`);
     expect(heroes[0].querySelector("img")?.getAttribute("src")).toMatch(/^\/icons3d\//);
   });
+
+  it("campaign hero text is never faded (white on moss is only 4.52:1 in studio-ink)", () => {
+    const ConversePage = Route.options.component!;
+    const { container } = render(<ConversePage />);
+    const hero = container.querySelector("[data-campaign-hero]")!;
+    for (const el of hero.querySelectorAll("p, h2, span")) {
+      expect(el.className).not.toMatch(/opacity-/);
+    }
+  });
 });

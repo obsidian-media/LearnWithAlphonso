@@ -139,6 +139,7 @@ function LessonPage() {
     xp: number;
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
+    saved: boolean;
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
@@ -362,9 +363,14 @@ function LessonPage() {
           ...res.newlyUnlocked.filter((a) => !state.unlockedAchievements.includes(a)),
         ],
       });
-      setDone({ xp: res.xpGain, unlocked: res.newlyUnlocked, heartsBonus: res.heartsBonus });
+      setDone({
+        xp: res.xpGain,
+        unlocked: res.newlyUnlocked,
+        heartsBonus: res.heartsBonus,
+        saved: true,
+      });
     } catch {
-      setDone({ xp: 0, unlocked: [], heartsBonus: null });
+      setDone({ xp: 0, unlocked: [], heartsBonus: null, saved: false });
     }
   }
 
@@ -426,6 +432,7 @@ function LessonPage() {
           xp={done.xp}
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
+          saved={done.saved}
           lessonTitle={lesson.title}
           correct={correct}
           total={total}
@@ -828,10 +835,13 @@ export function FinishScreen({
   missedQs,
   lessonId,
   course,
+  saved = true,
 }: {
   xp: number;
   unlocked: string[];
   heartsBonus: "streak" | "perfect" | null;
+  /** False when the completion did not reach the server: then no streak is shown, since none was confirmed. */
+  saved?: boolean;
   lessonTitle: string;
   correct: number;
   total: number;
@@ -842,7 +852,7 @@ export function FinishScreen({
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const streak = useProgress((s) => s.streak);
   const reduceMotion = useReducedMotion();
-  const chips = lessonRewardChips({ xp, streak, correct, total });
+  const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
       <motion.img

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -147,6 +147,18 @@ describe("Learn page", () => {
     renderPage();
     const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
     expect(link).toHaveAttribute("href", `/lesson/${firstLesson.id}`);
+  });
+
+  it("the Continue card's small text sits on surface chips, never faded or ember-on-surface", async () => {
+    // Small text straight on the ember card is below 4.5:1 in meadow, canopy and studio-ink.
+    renderPage();
+    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    for (const label of [/^Up next/, /^Continue$/]) {
+      const el = within(link).getByText(label);
+      expect(el.className).toContain("bg-surface");
+      expect(el.className).toContain("text-ink");
+      expect(el.className).not.toMatch(/opacity-|text-ember/);
+    }
   });
 
   it("moves the Continue card on once a lesson is done", async () => {
