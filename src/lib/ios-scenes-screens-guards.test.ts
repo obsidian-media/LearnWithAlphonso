@@ -19,7 +19,7 @@ const between = (s: string, a: string, b: string) => {
   return tail.slice(0, end);
 };
 
-describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", () => {
+describe("Lesson complete: celebration clip, count-up, haptic", () => {
   const lesson = read("LessonPlayerView.swift");
   const finish = between(
     lesson,
@@ -28,13 +28,14 @@ describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", (
   );
   const celebration = read("DesignSystem/Celebration.swift");
 
-  it("the stage scene is behind the finish screen and Alphonso stands proud on it", () => {
-    expect(finish).toContain(".screenScene(.complete)");
-    expect(finish).toContain('SceneFigure(assetName: "Figure-alphonso-proud"');
+  it("the stage is the complete clip with Alphonso in it (the still stage and cut-out are gone)", () => {
+    expect(finish).toContain("ClipBackdrop(clip: .complete");
+    expect(finish).not.toContain(".screenScene(.complete)");
+    expect(finish).not.toContain("Figure-alphonso-proud");
     // The 180 pt sticker tile is gone from the finish screen.
     expect(finish).not.toContain("MascotTile(moment: .lessonComplete");
-    // The spring entrance stays on the figure.
-    expect(finish).toMatch(/Figure-alphonso-proud[\s\S]{0,300}\.springEntrance\(\)/);
+    // The spring entrance stays on the stage.
+    expect(finish).toMatch(/ClipBackdrop\(clip: \.complete[\s\S]{0,600}\.springEntrance\(\)/);
   });
 
   it("text sits on a glass card, not straight on the stage", () => {
@@ -60,16 +61,11 @@ describe("Lesson complete: stage, proud Alphonso, confetti, count-up, haptic", (
     expect(lesson).toContain('Text("Generate more practice")');
   });
 
-  it("confetti is a Canvas burst with no package, and nothing at all under Reduce Motion", () => {
-    expect(celebration).toContain("struct ConfettiBurst: View");
-    expect(celebration).toContain("Canvas {");
-    expect(celebration).toContain("TimelineView(.animation)");
-    const burst = from(celebration, "struct ConfettiBurst");
-    expect(burst).toContain("@Environment(\\.accessibilityReduceMotion)");
-    expect(burst).toMatch(/if reduceMotion \|\| finished \{\s*\n\s*Color\.clear/);
-    expect(burst).toContain(".allowsHitTesting(false)");
-    expect(burst).toContain(".accessibilityHidden(true)");
-    expect(finish).toContain("ConfettiBurst()");
+  it("the code confetti is gone: the clip carries the confetti, so there is one celebration on screen", () => {
+    expect(celebration).not.toContain("ConfettiBurst");
+    expect(finish).not.toContain("ConfettiBurst");
+    // The count-up helpers it shared a file with stay.
+    expect(celebration).toContain("struct CountingText: View, Animatable");
   });
 
   it("XP and streak count up from 0 over about 0.8 s; accuracy and Reduce Motion show the final value", () => {
@@ -136,11 +132,11 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     );
   });
 
-  it("on the Hector tab the paywall shows Hector waving, about 220 pt, over the library", () => {
-    expect(paywall).toContain('SceneFigure(assetName: "Figure-hector-waving", height: 220)');
+  it("on the Hector tab the paywall plays Hector's library clip and the offer starts below him", () => {
     expect(paywall).toContain("source == .hectorTab");
-    // The figure comes before the title and offer, above them.
-    expect(paywall.indexOf("Figure-hector-waving")).toBeLessThan(
+    expect(paywall).not.toContain("Figure-hector-waving");
+    // The room for Hector comes before the title and offer, above them.
+    expect(paywall.indexOf("containerRelativeFrame(.vertical)")).toBeLessThan(
       paywall.indexOf("presentation.titleText"),
     );
     // Everything the learner reads sits on glass when the library is behind it.

@@ -42,6 +42,12 @@ struct ScreenScene: View {
     let scene: SceneName
     /// The probe's raw position, nil while no probe is on screen.
     var rawOffset: CGFloat? = nil
+    /// A living clip instead of the still image (the still stays the fallback for every screen without one).
+    var clip: ClipName? = nil
+    /// Where the clip sits vertically when the screen is wider than 9:16 would allow (1 = bottom-aligned).
+    var clipAnchor: CGFloat = 1
+    /// Something drawn on the clip, in the clip's own coordinates.
+    var pin: ClipPin? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
@@ -52,9 +58,7 @@ struct ScreenScene: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Image(scene.assetName)
-                    .resizable()
-                    .scaledToFill()
+                backdrop
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .scaleEffect(reduceMotion ? 1 : Self.overscan)
                     .offset(y: reduceMotion ? 0 : travel(height: proxy.size.height))
@@ -81,6 +85,19 @@ struct ScreenScene: View {
         }
     }
 
+    /// The clip (with its pin) when this screen has one, otherwise the scene still. Parallax moves either as one piece,
+    /// so a pin never drifts off the character.
+    @ViewBuilder
+    private var backdrop: some View {
+        if let clip {
+            ClipBackdrop(clip: clip, verticalAnchor: clipAnchor, pin: pin)
+        } else {
+            Image(scene.assetName)
+                .resizable()
+                .scaledToFill()
+        }
+    }
+
     /// Half the scroll distance, never more than the overscan can cover.
     private func travel(height: CGFloat) -> CGFloat {
         let limit = height * (Self.overscan - 1) / 2
@@ -94,6 +111,19 @@ extension View {
         backgroundPreferenceValue(SceneScrollKey.self) { offset in
             ScreenScene(scene: scene, rawOffset: offset)
         }
+    }
+
+    /// The scene's living clip behind this screen, with an optional pin (a speech bubble) in the clip's own frame.
+    func screenScene(_ scene: SceneName, clip: ClipName, clipAnchor: CGFloat = 1, pin: ClipPin? = nil) -> some View {
+        backgroundPreferenceValue(SceneScrollKey.self) { offset in
+            ScreenScene(scene: scene, rawOffset: offset, clip: clip, clipAnchor: clipAnchor, pin: pin)
+        }
+    }
+
+    /// The clip version of `screenScene(_:if:)`: the clip only when `show` is true.
+    @ViewBuilder
+    func screenScene(_ scene: SceneName, clip: ClipName, clipAnchor: CGFloat = 1, if show: Bool) -> some View {
+        if show { screenScene(scene, clip: clip, clipAnchor: clipAnchor) } else { self }
     }
 
     /// `screenScene` only when `show` is true, for a view that sometimes sits on a scene painted further out.

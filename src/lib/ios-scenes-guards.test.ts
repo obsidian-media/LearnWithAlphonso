@@ -71,8 +71,8 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
   const map = read("LearnPathMap.swift");
   const header = read("StatusHeaderView.swift");
 
-  it("the garden scene sits behind the Learn list, with a scroll probe for parallax", () => {
-    expect(browser).toContain(".screenScene(.learn)");
+  it("the garden scene (its living clip) sits behind the Learn list, with a scroll probe for parallax", () => {
+    expect(browser).toMatch(/\.screenScene\(\s*\.learn,\s*clip: \.learn/);
     // The flat surface no longer paints over the scene: the list's own background is the scene.
     const list = from(browser, "List {");
     expect(list.slice(0, list.indexOf(".task(id:"))).not.toContain(
@@ -134,13 +134,15 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     expect(view).not.toContain("Button");
   });
 
-  it("Alphonso stands beside the current node: waving figure, 170 to 200 pt, ground shadow", () => {
-    expect(map).toContain("Figure-alphonso-waving");
+  it("Alphonso waves in the garden clip beside the current node; the map keeps 170 to 200 pt of room clear for him", () => {
+    // The cut-out is gone (ios-clips-guards.test.ts pins the clip and the bubble); the room it took stays.
+    expect(map).not.toContain("Figure-alphonso-waving");
     const h = /static let figureHeight: CGFloat = (\d+)/.exec(map);
     expect(h).not.toBeNull();
     expect(Number(h![1])).toBeGreaterThanOrEqual(170);
     expect(Number(h![1])).toBeLessThanOrEqual(200);
-    expect(map).toContain("SceneFigure(");
+    expect(map).toContain("Self.figureHeight");
+    // SceneFigure itself stays in the design system for other screens, with its ground shadow.
     expect(read("DesignSystem/ScreenScene.swift")).toContain("Ellipse()");
   });
 

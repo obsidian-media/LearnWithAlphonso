@@ -8,8 +8,8 @@ struct PathMapNode: Identifiable, Equatable {
     let state: UnitPathState
 }
 
-/// The current unit's lessons as a winding path of big round 3D nodes over the garden scene, with Alphonso
-/// standing beside the current one and saying the greeting in a speech bubble. Look and layout only: tapping the
+/// The current unit's lessons as a winding path of big round 3D nodes over the garden clip. Alphonso waves in the
+/// clip beside the current one (room kept clear for him here) and his greeting is read out from this view. Look and layout only: tapping the
 /// current node calls `onOpen` with its lesson id, which the host answers exactly like the Up next card's Continue.
 struct LearnPathMap: View {
     static let nodeSize: CGFloat = 72
@@ -68,18 +68,14 @@ struct LearnPathMap: View {
                 }
 
                 if let current = currentIndex {
+                    // Alphonso waves in the garden clip behind the screen, and his speech bubble is pinned above him on the
+                    // clip (LessonBrowserView), so both are decorative there. This is the room he stands in, kept clear of
+                    // nodes, and the one place VoiceOver hears the greeting.
                     let figureCentreX = width * 0.76
                     let figureBottom = l.top + l.centres[current] + Self.currentNodeSize / 2
-                    SceneFigure(assetName: "Figure-alphonso-waving", height: Self.figureHeight)
-                        .frame(width: Self.figureColumnWidth, height: Self.figureHeight + 8, alignment: .bottom)
+                    Color.clear
+                        .frame(width: Self.figureColumnWidth, height: Self.figureHeight + 8)
                         .offset(x: figureCentreX - Self.figureColumnWidth / 2, y: figureBottom - Self.figureHeight)
-
-                    let bubbleWidth = min(230, width * 0.64)
-                    let bubbleCentreX = min(max(figureCentreX, bubbleWidth / 2 + 8), width - bubbleWidth / 2 - 8)
-                    PathSpeechBubble(message: greeting, tailOffset: figureCentreX - bubbleCentreX)
-                        .frame(width: bubbleWidth)
-                        .alignmentGuide(.top) { $0[.bottom] }
-                        .offset(x: bubbleCentreX - bubbleWidth / 2, y: figureBottom - Self.figureHeight + 4)
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("Alphonso: \(greeting)")
                 }

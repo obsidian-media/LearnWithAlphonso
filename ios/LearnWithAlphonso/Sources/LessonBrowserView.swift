@@ -287,7 +287,16 @@ struct LessonBrowserView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .screenScene(.learn)
+            .screenScene(
+                .learn,
+                clip: .learn,
+                // Alphonso waves at 67% across with his head top 54% down in the clip: the greeting bubble is pinned just
+                // above it (its tail points down at him). Only when the map is on screen, since the map is what speaks it.
+                pin: nextLesson == nil ? nil : ClipPin(x: 64, y: 53) {
+                    PathSpeechBubble(message: StatusHeaderView.greeting(streak: syncQueueStore.lastKnownProgress()?.streak ?? 0))
+                        .frame(width: 210)
+                }
+            )
             // Re-fetches on every course switch too, since CEFR level is
             // tracked per-language server-side (language_progress), not
             // once per account -- the level that was right for English
