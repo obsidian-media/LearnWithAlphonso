@@ -31,6 +31,7 @@ struct HectorView: View {
             }
             .background(AlphonsoColor.surface)
             .navigationTitle("Hector")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .tint(AlphonsoColor.ember)
     }
@@ -63,8 +64,12 @@ private struct HectorConversationView: View {
 
     private var key: ConversationKey { .hector(course: course) }
 
+    /// The status pill and Hector's pose come from the voice state the screen already has.
+    private var status: HectorStatus? { HectorStatus.from(phase: voice.phase, handsFree: voice.handsFreeStatus) }
+
     var body: some View {
         VStack(spacing: 0) {
+            hero
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
@@ -121,6 +126,74 @@ private struct HectorConversationView: View {
         }
     }
 
+    // MARK: - Hero
+
+    private var languageName: String {
+        switch course {
+        case .english: return "English"
+        case .french: return "French"
+        case .spanish: return "Spanish"
+        }
+    }
+
+    /// Hector's 3D art across the top: tall before the first turn, shorter once the conversation needs the room.
+    private var hero: some View {
+        let art = MascotPoseCatalog.art(for: HectorStatus.moment(for: status))
+        return ZStack(alignment: .bottomLeading) {
+            Image(art.assetName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity)
+                .frame(height: conversation.turns.isEmpty ? 300 : 180, alignment: .top)
+                .clipped()
+                .overlay(alignment: .bottom) {
+                    LinearGradient(colors: [AlphonsoColor.surface.opacity(0), AlphonsoColor.surface], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 110)
+                }
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Hector")
+                    .font(AlphonsoFont.display(30, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+            .padding(.horizontal, AlphonsoSpacing.md)
+            .padding(.bottom, AlphonsoSpacing.sm)
+        }
+        .overlay(alignment: .top) {
+            HStack {
+                heroPill { Text(languageName) }
+                Spacer()
+                if let status {
+                    heroPill {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(status == .listening ? AlphonsoColor.moss : AlphonsoColor.ember)
+                                .frame(width: 8, height: 8)
+                                .pulsingGlow()
+                            Text(status.label)
+                        }
+                    }
+                    .accessibilityLabel("Hector is \(status.label.lowercased())")
+                }
+            }
+            .padding(AlphonsoSpacing.md)
+        }
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: conversation.turns.isEmpty)
+    }
+
+    private func heroPill<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .font(AlphonsoFont.sans(12, weight: .semiBold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(.black.opacity(0.4), in: Capsule())
+    }
+
     // MARK: - Context
 
     /// Best-effort: a failed fetch just means this session starts without
@@ -151,25 +224,17 @@ private struct HectorConversationView: View {
 
     private func bubble(for turn: ChatMessage) -> some View {
         HStack(alignment: .bottom, spacing: 6) {
-            if turn.role == "assistant" {
-                Image("Hector")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 26, height: 26)
-                    .clipShape(Circle())
-                    .accessibilityHidden(true)
-            } else {
-                Spacer(minLength: 40)
-            }
+            if turn.role == "user" { Spacer(minLength: 40) }
             bubbleText(for: turn)
                 .font(AlphonsoFont.sans(15))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
-                    turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.parchment,
-                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+                    turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.surface,
+                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 4, style: .continuous)
                 )
-            if turn.role == "user" { Spacer(minLength: 40) }
+                .alphonsoLift(turn.role == "assistant")
+            if turn.role == "assistant" { Spacer(minLength: 40) }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
     }
@@ -240,6 +305,14 @@ private struct HectorConversationView: View {
                     onPress: { if voice.pressBegan() { notice = nil } },
                     onRelease: { voice.pressEnded() }
                 )
+                .background {
+                    // A soft glow ring while Hector is listening.
+                    Circle()
+                        .fill(AlphonsoColor.ember.opacity(voice.isRecording ? 0.25 : 0.12))
+                        .frame(width: 96, height: 96)
+                        .pulsingGlow(scale: voice.isRecording ? 1.15 : 1.05)
+                }
+                .padding(.vertical, 10)
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
