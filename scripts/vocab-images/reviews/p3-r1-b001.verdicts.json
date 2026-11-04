@@ -1,0 +1,115 @@
+{
+  "batch": "p3-r1-b001",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "alarm": {
+      "verdict": "approve",
+      "alt": "A silver twin-bell alarm clock stands on a windowsill between pale curtains.",
+      "peopleVisible": false
+    },
+    "ankle": {
+      "verdict": "approve",
+      "alt": "A person's bare ankle is being wrapped with black tape while they sit on a gym mat.",
+      "peopleVisible": true
+    },
+    "badminton": {
+      "verdict": "approve",
+      "alt": "A hand holds a white shuttlecock with a red band over a badminton racket.",
+      "peopleVisible": true
+    },
+    "blizzard": {
+      "verdict": "approve",
+      "alt": "Heavy snow falls over a city park and buildings in a white winter blizzard.",
+      "peopleVisible": false
+    },
+    "bride": {
+      "verdict": "approve",
+      "alt": "A bride in a pale wedding dress has the back of her gown laced up by another woman.",
+      "peopleVisible": true
+    },
+    "bus": {
+      "verdict": "approve",
+      "alt": "A green city bus drives along a street past tall buildings under a blue sky.",
+      "peopleVisible": false
+    },
+    "card games": {
+      "verdict": "approve",
+      "alt": "A hand rests on a small stack of red-backed playing cards.",
+      "peopleVisible": true
+    },
+    "cash": {
+      "verdict": "approve",
+      "alt": "A fanned pile of twenty-dollar banknotes lies on a dark surface.",
+      "peopleVisible": false
+    },
+    "checkout": {
+      "verdict": "approve",
+      "alt": "A woman uses a self-service checkout screen in a supermarket, with apples on the scale.",
+      "peopleVisible": true
+    },
+    "cone": {
+      "verdict": "approve",
+      "alt": "A row of orange and white traffic cones stands along a paved street edge.",
+      "peopleVisible": false
+    },
+    "cube": {
+      "verdict": "approve",
+      "alt": "A large blue cube and a smaller red cube sit side by side on a white surface.",
+      "peopleVisible": false
+    },
+    "cylinder": {
+      "verdict": "approve",
+      "alt": "A white cylinder stands beside a white cube on a wooden table in dramatic light.",
+      "peopleVisible": false
+    },
+    "driveway": {
+      "verdict": "approve",
+      "alt": "A paved driveway leads to a white house with two blue garage doors.",
+      "peopleVisible": false
+    },
+    "actress": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "arm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "boxing": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cricket": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "downpour": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

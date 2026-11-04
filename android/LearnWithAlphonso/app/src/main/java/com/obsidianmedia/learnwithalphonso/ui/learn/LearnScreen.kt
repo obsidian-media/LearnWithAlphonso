@@ -284,7 +284,7 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
         if (onBuyStreakFreeze != null) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft, modifier = Modifier.weight(1f))
-                TextButton(onClick = onBuyStreakFreeze) { Text("Buy freeze (50 XP)", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+                TextButton(onClick = onBuyStreakFreeze) { Text("Buy freeze ($STREAK_FREEZE_XP_COST XP)", color = palette.moss, fontWeight = FontWeight.SemiBold) }
             }
         }
     }

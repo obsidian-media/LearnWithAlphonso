@@ -1,0 +1,111 @@
+{
+  "batch": "p3-r1-b006",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b006",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "tennis": {
+      "verdict": "approve",
+      "alt": "Yellow tennis balls lie on a blue-green hard court beside the net.",
+      "peopleVisible": false
+    },
+    "thunderstorm": {
+      "verdict": "approve",
+      "alt": "Branching white lightning bolts light up a night sky behind dark fir trees.",
+      "peopleVisible": false
+    },
+    "tie": {
+      "verdict": "approve",
+      "alt": "Colourful ties hang from a hook on a stone wall next to two suit jackets on hangers.",
+      "peopleVisible": false
+    },
+    "toes": {
+      "verdict": "approve",
+      "alt": "Bare feet and toes stand in foamy water at the edge of the sea.",
+      "peopleVisible": true
+    },
+    "tourist": {
+      "verdict": "approve",
+      "alt": "Two tourists in sunglasses, one holding a camera, stand in front of a golden temple roof.",
+      "peopleVisible": true
+    },
+    "trainers": {
+      "verdict": "approve",
+      "alt": "A black high-top trainer with grey laces rests on a stone ledge while a hand adjusts it.",
+      "peopleVisible": true
+    },
+    "triangle": {
+      "verdict": "approve",
+      "alt": "Overlapping silver and blue triangle panels form a pattern across a wall.",
+      "peopleVisible": false
+    },
+    "tsunami": {
+      "verdict": "approve",
+      "alt": "A huge wave curls and crashes with white spray in front of palm trees.",
+      "peopleVisible": false
+    },
+    "underground": {
+      "verdict": "approve",
+      "alt": "An orange underground train stops beside a dim platform where a few people wait.",
+      "peopleVisible": true
+    },
+    "video games": {
+      "verdict": "approve",
+      "alt": "A black video game controller with two thumbsticks rests in low light.",
+      "peopleVisible": false
+    },
+    "vitamin": {
+      "verdict": "approve",
+      "alt": "Beige vitamin tablets spill out of an open white bottle onto a black surface.",
+      "peopleVisible": false
+    },
+    "waiter": {
+      "verdict": "approve",
+      "alt": "A waiter in a white shirt and dark tie carries a tray with a drink and fruit in a cafe.",
+      "peopleVisible": true
+    },
+    "watches": {
+      "verdict": "approve",
+      "alt": "A black wristwatch with a dark face is worn on a wrist.",
+      "peopleVisible": true
+    },
+    "wildfire": {
+      "verdict": "approve",
+      "alt": "A dirt track runs through a forest of scorched trees and burnt ground after a wildfire.",
+      "peopleVisible": false
+    },
+    "wind": {
+      "verdict": "approve",
+      "alt": "Two windswept trees lean sideways under a stormy sky in a black and white photo.",
+      "peopleVisible": false
+    },
+    "windy": {
+      "verdict": "approve",
+      "alt": "Four palm trees bend and their leaves blow sideways in strong wind.",
+      "peopleVisible": false
+    },
+    "wrist": {
+      "verdict": "approve",
+      "alt": "Two hands rest on a table while one hand holds the wrist of the other.",
+      "peopleVisible": true
+    },
+    "teeth": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tooth": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tornado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "batch": "p3-r1-b004",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "petrol": {
+      "verdict": "approve",
+      "alt": "Three white petrol pumps with black hoses stand under a forecourt canopy beside a graffiti wall.",
+      "peopleVisible": false
+    },
+    "photos": {
+      "verdict": "approve",
+      "alt": "Hands spread printed photos of plants and flowers on a cushion next to a camera.",
+      "peopleVisible": true
+    },
+    "plant": {
+      "verdict": "approve",
+      "alt": "Two white pots hold a small plant with round green leaves and pink flowers.",
+      "peopleVisible": false
+    },
+    "plastic": {
+      "verdict": "approve",
+      "alt": "Plastic bottles, bags and other rubbish pile up on a rocky shore beside dark water.",
+      "peopleVisible": false
+    },
+    "pollution": {
+      "verdict": "approve",
+      "alt": "Dark smoke rises from a tall chimney over a city skyline at an orange sunset.",
+      "peopleVisible": false
+    },
+    "pottery": {
+      "verdict": "approve",
+      "alt": "Hands covered in wet clay shape a small pot on a spinning pottery wheel.",
+      "peopleVisible": true
+    },
+    "pour": {
+      "verdict": "approve",
+      "alt": "A hand tips a white enamel mug and pours a thin stream of water.",
+      "peopleVisible": true
+    },
+    "prison": {
+      "verdict": "approve",
+      "alt": "A man reads on a bed inside a barred cell while another person's legs stand in front.",
+      "peopleVisible": true
+    },
+    "programmer": {
+      "verdict": "approve",
+      "alt": "A laptop on a wooden desk shows lines of program code on its screen.",
+      "peopleVisible": false
+    },
+    "pyjamas": {
+      "verdict": "approve",
+      "alt": "People in blue, white, yellow and lilac pyjamas hold coloured pillows, shown from the neck down.",
+      "peopleVisible": true
+    },
+    "rainy": {
+      "verdict": "approve",
+      "alt": "Raindrops splash on wet paving stones in a black and white photo.",
+      "peopleVisible": false
+    },
+    "park": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "photography": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "plumber": {
+      "verdict": "reject",
+      "reasons": [
+        "nudity-or-suggestive"
+      ]
+    },
+    "police officer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "postman": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "rain": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "recycling": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}

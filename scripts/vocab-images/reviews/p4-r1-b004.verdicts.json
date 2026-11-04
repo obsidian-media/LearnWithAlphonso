@@ -1,0 +1,55 @@
+{
+  "batch": "p4-r1-b004",
+  "pass": "first",
+  "reviewer": "agent:p4-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "stamps": {
+      "verdict": "approve",
+      "alt": "Stacks of collectable postage stamps in clear sleeves lie on a table.",
+      "peopleVisible": false
+    },
+    "strong": {
+      "verdict": "approve",
+      "alt": "A man in a sleeveless top lifts a heavy barbell across his shoulders in a gym, seen from behind.",
+      "peopleVisible": true
+    },
+    "subway": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "surprise": {
+      "verdict": "approve",
+      "alt": "A man in a red polo shirt looks surprised with wide eyes and an open mouth.",
+      "peopleVisible": true
+    },
+    "sweet": {
+      "verdict": "approve",
+      "alt": "Colourful sugar-coated sweets lie on a white surface.",
+      "peopleVisible": false
+    },
+    "tall": {
+      "verdict": "approve",
+      "alt": "A very tall glass skyscraper rises into a cloudy sky, seen from below.",
+      "peopleVisible": false
+    },
+    "teacher": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands in front of a whiteboard with the words Hello School written on it.",
+      "peopleVisible": true
+    },
+    "tidy": {
+      "verdict": "approve",
+      "alt": "A woman in yellow rubber gloves tidies and dusts books on a wall shelf.",
+      "peopleVisible": true
+    },
+    "very tired": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}

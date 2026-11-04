@@ -1,0 +1,78 @@
+{
+  "batch": "p4-2nd-b002",
+  "pass": "second",
+  "reviewer": "agent:p4-2nd-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "read": {
+      "verdict": "approve",
+      "alt": "A person reads an open paperback book beside slices of papaya and grapes.",
+      "peopleVisible": true
+    },
+    "reads": {
+      "verdict": "approve",
+      "alt": "A person reads an open paperback book beside slices of papaya and grapes.",
+      "peopleVisible": true
+    },
+    "riding": {
+      "verdict": "approve",
+      "alt": "A man in a blazer rides a black bicycle with turquoise wheels along a paved path.",
+      "peopleVisible": true
+    },
+    "roll": {
+      "verdict": "approve",
+      "alt": "Hands roll out yellow dough with a wooden rolling pin on a floured board.",
+      "peopleVisible": true
+    },
+    "sad": {
+      "verdict": "approve",
+      "alt": "A woman with short hair looks at the camera with tears in her eyes.",
+      "peopleVisible": true
+    },
+    "sadness": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's face with a tear running down her cheek.",
+      "peopleVisible": true
+    },
+    "shuttle": {
+      "verdict": "approve",
+      "alt": "The open door of a dark minibus shows rows of seats inside.",
+      "peopleVisible": false
+    },
+    "sick": {
+      "verdict": "approve",
+      "alt": "A woman lies in bed under a white duvet while a hand holds up a thermometer.",
+      "peopleVisible": true
+    },
+    "stamps": {
+      "verdict": "approve",
+      "alt": "Stacks of collectable postage stamps in clear sleeves lie on a table.",
+      "peopleVisible": false
+    },
+    "strong": {
+      "verdict": "approve",
+      "alt": "A man in a sleeveless top lifts a heavy barbell across his shoulders in a gym, seen from behind.",
+      "peopleVisible": true
+    },
+    "surprise": {
+      "verdict": "approve",
+      "alt": "A man in a red polo shirt looks surprised with wide eyes and an open mouth.",
+      "peopleVisible": true
+    },
+    "teacher": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands in front of a whiteboard with the words Hello School written on it.",
+      "peopleVisible": true
+    },
+    "tidy": {
+      "verdict": "approve",
+      "alt": "A woman in yellow rubber gloves tidies and dusts books on a wall shelf.",
+      "peopleVisible": true
+    },
+    "very tired": {
+      "verdict": "approve",
+      "alt": "A woman in a blue jacket yawns and covers her mouth while leaning on an office partition.",
+      "peopleVisible": true
+    }
+  }
+}

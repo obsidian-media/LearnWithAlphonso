@@ -1,0 +1,13 @@
+{
+  "batch": "p3-r1-b007",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b007",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "wrists": {
+      "verdict": "approve",
+      "alt": "Two hands rest on a table while one hand holds the wrist of the other.",
+      "peopleVisible": true
+    }
+  }
+}

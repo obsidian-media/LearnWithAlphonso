@@ -1,0 +1,159 @@
+{
+  "batch": "p4-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p4-2nd-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "actress": {
+      "verdict": "approve",
+      "alt": "An actress in a dark velvet dress stands with hands on hips in a spotlight on a theatre stage.",
+      "peopleVisible": true
+    },
+    "anger": {
+      "verdict": "approve",
+      "alt": "A bearded man with wild hair and glasses shouts angrily at the camera.",
+      "peopleVisible": true
+    },
+    "beat": {
+      "verdict": "approve",
+      "alt": "A woman beats eggs with a fork in a frying pan on a dark kitchen counter.",
+      "peopleVisible": true
+    },
+    "boredom": {
+      "verdict": "approve",
+      "alt": "A man with glasses rests his head on his arms on a desk next to an open laptop, looking bored.",
+      "peopleVisible": true
+    },
+    "boxing": {
+      "verdict": "approve",
+      "alt": "A boxer in a black t-shirt and yellow hand wraps throws a punch in a smoky gym.",
+      "peopleVisible": true
+    },
+    "busy": {
+      "verdict": "approve",
+      "alt": "A crowded market square with auto rickshaws, stalls and many people seen from above.",
+      "peopleVisible": true
+    },
+    "cooks": {
+      "verdict": "approve",
+      "alt": "A chef in a white jacket cooks in a steaming frying pan on a steel kitchen counter.",
+      "peopleVisible": true
+    },
+    "cough": {
+      "verdict": "approve",
+      "alt": "A woman coughs into her elbow while sitting at a cafe table.",
+      "peopleVisible": true
+    },
+    "decorate": {
+      "verdict": "approve",
+      "alt": "A woman in a checked shirt paints a grey wall with a paint roller.",
+      "peopleVisible": true
+    },
+    "delicious": {
+      "verdict": "approve",
+      "alt": "A plate of roast meat with carrots, asparagus and sauce on a white plate.",
+      "peopleVisible": false
+    },
+    "dirty": {
+      "verdict": "approve",
+      "alt": "Two muddy green shoes stand in wet soil with mud caked on the soles.",
+      "peopleVisible": true
+    },
+    "drain": {
+      "verdict": "approve",
+      "alt": "Water drains through a metal colander as a hand tips a pan of cooked prawns.",
+      "peopleVisible": true
+    },
+    "drives": {
+      "verdict": "approve",
+      "alt": "A woman in a white shirt drives a car with both hands on the steering wheel.",
+      "peopleVisible": true
+    },
+    "excitement": {
+      "verdict": "approve",
+      "alt": "A woman in a checked shirt jumps in the air with her fists raised in excitement.",
+      "peopleVisible": true
+    },
+    "exercise": {
+      "verdict": "approve",
+      "alt": "A woman in a purple jacket and leggings jogs along a path lined with autumn trees.",
+      "peopleVisible": true
+    },
+    "frustrated": {
+      "verdict": "approve",
+      "alt": "A bearded man grips his head with both hands and grimaces in frustration in front of a brick wall.",
+      "peopleVisible": true
+    },
+    "happiness": {
+      "verdict": "approve",
+      "alt": "An older woman laughs happily in a small kitchen.",
+      "peopleVisible": true
+    },
+    "heavy": {
+      "verdict": "approve",
+      "alt": "A man struggles to carry a tall stack of heavy cardboard boxes.",
+      "peopleVisible": true
+    },
+    "interview": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "listen": {
+      "verdict": "approve",
+      "alt": "A young woman in a dark coat listens to music with her hands on her headphones and her eyes closed.",
+      "peopleVisible": true
+    },
+    "listening": {
+      "verdict": "approve",
+      "alt": "A young woman in a dark coat listens to music with her hands on her headphones and her eyes closed.",
+      "peopleVisible": true
+    },
+    "loneliness": {
+      "verdict": "approve",
+      "alt": "A lone figure stands in a huge empty car park at night under bright lamps.",
+      "peopleVisible": true
+    },
+    "lonely": {
+      "verdict": "approve",
+      "alt": "A lone figure stands in a huge empty car park at night under bright lamps.",
+      "peopleVisible": true
+    },
+    "marble": {
+      "verdict": "approve",
+      "alt": "White marble with thin grey veins.",
+      "peopleVisible": false
+    },
+    "mix": {
+      "verdict": "approve",
+      "alt": "Two people in aprons mix dry ingredients in a large bowl with a wooden spoon.",
+      "peopleVisible": true
+    },
+    "pack": {
+      "verdict": "approve",
+      "alt": "A person sitting on the floor packs clothes into an open suitcase.",
+      "peopleVisible": true
+    },
+    "postman": {
+      "verdict": "approve",
+      "alt": "A courier in a yellow vest and cap checks a paper beside parcels in the back of a van.",
+      "peopleVisible": true
+    },
+    "pregnant": {
+      "verdict": "approve",
+      "alt": "A pregnant woman in a brown coat holds a paper-wrapped bouquet on a city street.",
+      "peopleVisible": true
+    },
+    "preheat": {
+      "verdict": "approve",
+      "alt": "An oven thermometer with a red needle stands on a table.",
+      "peopleVisible": false
+    },
+    "quiet": {
+      "verdict": "approve",
+      "alt": "A woman in glasses and a white shirt holds a finger to her lips to ask for quiet.",
+      "peopleVisible": true
+    }
+  }
+}

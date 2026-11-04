@@ -1,0 +1,115 @@
+{
+  "batch": "p3-r1-b005",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b005",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "roast": {
+      "verdict": "approve",
+      "alt": "Whole chickens turn on a rotisserie over a grill, with golden-brown crispy skin.",
+      "peopleVisible": false
+    },
+    "ruins": {
+      "verdict": "approve",
+      "alt": "Weathered stone arches stand in the ruins of an ancient building under a pale sky.",
+      "peopleVisible": false
+    },
+    "shopkeeper": {
+      "verdict": "approve",
+      "alt": "A smiling older shopkeeper sits in front of his shop window, with shoes and bags hanging above him.",
+      "peopleVisible": true
+    },
+    "shorts": {
+      "verdict": "approve",
+      "alt": "A woman in a white top and black denim shorts stands on a wooden deck among trees.",
+      "peopleVisible": true
+    },
+    "sleeves": {
+      "verdict": "approve",
+      "alt": "A man in a cream shirt holds his rolled-up sleeve on a dark background.",
+      "peopleVisible": true
+    },
+    "snow": {
+      "verdict": "approve",
+      "alt": "Fresh snow covers trees, a wooden fence and the shore of a frozen lake.",
+      "peopleVisible": false
+    },
+    "sphere": {
+      "verdict": "approve",
+      "alt": "Three glossy white spheres of different sizes sit on a red surface in a beam of light.",
+      "peopleVisible": false
+    },
+    "spicy": {
+      "verdict": "approve",
+      "alt": "A big pile of long green chilli peppers fills the frame.",
+      "peopleVisible": false
+    },
+    "sprinkle": {
+      "verdict": "approve",
+      "alt": "Coarse salt falls from above onto a raw piece of beef next to rosemary.",
+      "peopleVisible": false
+    },
+    "steam": {
+      "verdict": "approve",
+      "alt": "Steam rises from stacked bamboo steamers on a kitchen counter.",
+      "peopleVisible": false
+    },
+    "storm": {
+      "verdict": "approve",
+      "alt": "Dark grey storm clouds fill the sky.",
+      "peopleVisible": false
+    },
+    "suburb": {
+      "verdict": "approve",
+      "alt": "A row of similar houses stands behind a grass strip and a pond that reflects them.",
+      "peopleVisible": false
+    },
+    "subway": {
+      "verdict": "approve",
+      "alt": "A blurred train passes a dim station platform where a few people sit and walk.",
+      "peopleVisible": true
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "shuttle": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "stamp": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "stamps": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "stomach": {
+      "verdict": "reject",
+      "reasons": [
+        "nudity-or-suggestive"
+      ]
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "batch": "p4-r1-b003",
+  "pass": "first",
+  "reviewer": "agent:p4-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "pack": {
+      "verdict": "approve",
+      "alt": "A person sitting on the floor packs clothes into an open suitcase.",
+      "peopleVisible": true
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "postman": {
+      "verdict": "approve",
+      "alt": "A courier in a yellow vest and cap checks a paper beside parcels in the back of a van.",
+      "peopleVisible": true
+    },
+    "pregnant": {
+      "verdict": "approve",
+      "alt": "A pregnant woman in a brown coat holds a paper-wrapped bouquet on a city street.",
+      "peopleVisible": true
+    },
+    "preheat": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "quiet": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "read": {
+      "verdict": "approve",
+      "alt": "A person reads an open paperback book beside slices of papaya and grapes.",
+      "peopleVisible": true
+    },
+    "reads": {
+      "verdict": "approve",
+      "alt": "A person reads an open paperback book beside slices of papaya and grapes.",
+      "peopleVisible": true
+    },
+    "riding": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "roll": {
+      "verdict": "approve",
+      "alt": "Hands roll out yellow dough with a wooden rolling pin on a floured board.",
+      "peopleVisible": true
+    },
+    "sad": {
+      "verdict": "approve",
+      "alt": "A woman with short hair looks at the camera with tears in her eyes.",
+      "peopleVisible": true
+    },
+    "sadness": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's face with a tear running down her cheek.",
+      "peopleVisible": true
+    },
+    "sharpen": {
+      "verdict": "approve",
+      "alt": "Coloured pencils lie beside two pencil sharpeners and pencil shavings.",
+      "peopleVisible": false
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "shuttle": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "sick": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "slow": {
+      "verdict": "approve",
+      "alt": "A snail with a brown shell crawls slowly across a green leaf.",
+      "peopleVisible": false
+    },
+    "stamp": {
+      "verdict": "approve",
+      "alt": "A wooden box holds a set of small rubber letter stamps on brown paper.",
+      "peopleVisible": false
+    }
+  }
+}

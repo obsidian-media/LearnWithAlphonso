@@ -1,0 +1,121 @@
+{
+  "batch": "p4-r1-b002",
+  "pass": "first",
+  "reviewer": "agent:p4-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "empty": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "excitement": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "exercise": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fast": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "frustrated": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "happiness": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "approve",
+      "alt": "A woman's head in profile against a dark background.",
+      "peopleVisible": true
+    },
+    "heavy": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "hot": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "interview": {
+      "verdict": "approve",
+      "alt": "A man in a green jumper sits at a table facing a person holding a sheet of paper, in a job interview.",
+      "peopleVisible": true
+    },
+    "listen": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "listening": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "loneliness": {
+      "verdict": "approve",
+      "alt": "A lone figure stands in a huge empty car park at night under bright lamps.",
+      "peopleVisible": true
+    },
+    "lonely": {
+      "verdict": "approve",
+      "alt": "A lone figure stands in a huge empty car park at night under bright lamps.",
+      "peopleVisible": true
+    },
+    "marble": {
+      "verdict": "approve",
+      "alt": "White marble with thin grey veins.",
+      "peopleVisible": false
+    },
+    "marinate": {
+      "verdict": "approve",
+      "alt": "Slices of pork belly marinated in red sauce and sesame seeds on blue patterned plates.",
+      "peopleVisible": false
+    },
+    "mix": {
+      "verdict": "approve",
+      "alt": "Two people in aprons mix dry ingredients in a large bowl with a wooden spoon.",
+      "peopleVisible": true
+    },
+    "nervousness": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}
