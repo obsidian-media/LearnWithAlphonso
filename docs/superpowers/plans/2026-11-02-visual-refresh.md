@@ -1,5 +1,7 @@
 # Visual Refresh Implementation Plan
 
+> Status (2026-11-04): implemented and merged (#341).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give the iPhone app and the website a loud, illustrated, full look:

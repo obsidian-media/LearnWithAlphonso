@@ -1,5 +1,7 @@
 # OpenRouter Switch Implementation Plan
 
+> Status (2026-11-04): implemented and merged (#338).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move every AI text call off NVIDIA's hosted trial API (`integrate.api.nvidia.com`, whose terms forbid production use) to OpenRouter. The model list is configurable and ordered (default: Claude Haiku 5.5 on the owner's own Anthropic key, BYOK), so a fallback model is a config change, not a code change. Same speed, same safety rules.

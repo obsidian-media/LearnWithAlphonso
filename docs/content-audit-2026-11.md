@@ -2,7 +2,8 @@
 
 Measured on the English bank at main e4660169: 609 lessons, 3,096 questions,
 2,631 derived vocabulary cards. Counts come from the built course, not from the
-pack source.
+pack source. **This is a point-in-time audit; the tables below are the "before".**
+What has been done since is in "Status" at the end of this file (updated 2026-11-04).
 
 ## Numbers first
 
@@ -55,17 +56,15 @@ The cards are derived from the quiz. A question carries no gloss of its word, on
 an explanation of why the answer was right, so the old card printed that
 explanation as the word's meaning. Its example was the quiz prompt with an arrow.
 
-Now: meaning is empty, and the example is a real sentence only when the question
-is a cloze sentence with the answer put back in. A quiz stem such as
+At the time of this audit the fix was: meaning empty, and the example a real sentence only when the question
+is a cloze sentence with the answer put back in (since superseded by authored meanings, see Status). A quiz stem such as
 "Plural of "baby": ___" or "Which word completes ... ?" gives no example.
 Cards with a real example: 1,751 of 2,631 in English; French 1,117 of 2,565;
 Spanish 975 of 2,575.
 
 The picture key is unchanged (lowercased answer term into the image map).
 
-View change needed (not made here): the iOS, Android and web cards print
-`meaning` and `example` unconditionally; they must hide an empty line or the card
-shows a blank gap. Roughly every card now has an empty meaning.
+The clients were changed to hide an empty meaning or example line (web, iOS and Android). For English the line is no longer empty, see Status.
 
 ## (c) One template
 
@@ -84,11 +83,17 @@ photographed (would, was, had, is, have, on, were, could) and 245 are phrases of
 three or more words. Another agent is running the second photo pass through the
 existing pipeline; this audit does not plan it.
 
-## Status of plan item 1 (2026-11-04)
+## Status (2026-11-04)
 
-Done for English A1 (638 cards) and A2 (504 cards): optional `meaning` and `example` are the 3rd and 4th `|` fields of pair/cloze pack lines (and fields on the hand-written A1/A2 questions), bundled to iOS and Android through the existing exports, and held by `src/data/vocab-meanings.test.ts`. Review of the first version found about 13% defective cards; the second pass fixed them. `a2p12` ("How often does X happen?") has its definition as the answer, so the pack sets `termFromLeft` and each question carries an optional `term` (the adverb) that web, iOS and Android use as the card word, with no id, option or answer moved; an empty `term` makes a question produce no card (used for three grammar-sample sentences). The gate now matches short words whole ("on" is not in "London"), rejects a meaning that defines the word with itself, rejects an example that describes the word instead of using it, and `isMalformedPackLine` rejects an example without a meaning. B1 (500), B2 (486) and C1 (503) are done and gated the same way (meanings up to 8 words, examples up to 10 at B1 and 12 at B2/C1, vocabulary up to the card's own level). The idiom, connector and phrasal-verb packs whose answer is a definition (b1p1, b1p14, b2p15 to b2p17, c1p1, c1p12, c1p18) set termFromLeft.
+**Plan item 1, real meanings and examples: done for all of English A1 to C1** (#366 A1/A2, #369 B1 to C1). Measured on the built course: 2,629 cards (A1 636, A2 503, B1 500, B2 486, C1 504), every one with a meaning and an example; 509 have a photo. Optional `meaning` and `example` are the 3rd and 4th `|` fields of pair/cloze pack lines (and fields on the hand-written A1/A2 questions), bundled to iOS and Android through the existing exports, and held by `src/data/vocab-meanings.test.ts` for every level (meanings up to 8 words, examples up to 10 at A1 to B1 and 12 at B2/C1, vocabulary up to the card's own level, short words matched whole so "on" is not found in "London", no meaning that defines the word with itself, no example that describes the word instead of using it, no example without a meaning). Review of the first A1/A2 version found about 13% defective cards; the second pass fixed them. Packs whose answer is a definition (a2p12, b1p1, b1p14, b2p15 to b2p17, c1p1, c1p12, c1p18) set `termFromLeft`, and a question may carry an optional `term` that names the card word, with no id, option or answer moved; an empty `term` makes no card. French (2,565 cards) and Spanish (2,575) still have no authored meaning.
 
-## Plan (not done here)
+**Plan item 3 and problem (a), wrong answers that are not wrong:** worked through in #358 (policy `docs/distractor-policy.md`, the CI gate `src/data/distractor-gate.test.ts`, 815 reviewed rewrites in `docs/content-fixes-a1a2-phase1.md`), #363 and #365 (gate holes closed, absurd options replaced). Every gate budget is 0. A teacher-read sample of 60 questions against main measured 25% with problems and 10% with absurd options before #365 and 10% and 2% on its branch, so the gate is a floor, not proof.
+
+**Plan item 2, more question formats (problem c):** not done; the next content branch is `feat/question-variety-a1a2`.
+
+**Plan item 4, pictures (problem d):** the photo passes continue (1,154 live photos across the three courses on 2026-11-04).
+
+## Original plan (items 1, 3 and 4 are done, see Status)
 
 Costs are items and review time. No image credits and no paid API calls are needed
 for anything below.
@@ -115,8 +120,4 @@ for anything below.
 
 ## Decisions for the owner
 
-1. Accept empty meanings until item 1 above is done, or hold the card change until
-   the meanings are authored.
-2. Approve the model read for (a) and the authoring in item 1.
-3. The preposition packs now test "place word vs time word". Keep that as a stopgap
-   or rewrite those sentences with clues.
+Item 1 was approved on 2026-11-04 (#366). The work on (a) went ahead in #358, #363 and #365; whether the preposition packs keep the "place word vs time word" stopgap was not re-checked in this pass.
