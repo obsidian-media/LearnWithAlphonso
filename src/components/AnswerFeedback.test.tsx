@@ -69,13 +69,62 @@ describe("AnswerFeedback saving words", () => {
     expect(screen.queryByRole("button", { name: "quite" })).not.toBeInTheDocument();
   });
 
-  it("leaves French and Spanish explanations plain, with no hint about tapping", () => {
+  it("leaves French and Spanish explanations plain without a question, with no hint about tapping", () => {
     window.localStorage.clear();
     wrapped("fr");
     expect(screen.queryAllByRole("button")).toHaveLength(0);
     expect(screen.getByText("Use the past tense.")).toBeInTheDocument();
     // A hint for words that cannot be tapped would be a promise the page breaks.
     expect(screen.queryByText(/tap a word to save it/i)).not.toBeInTheDocument();
+  });
+
+  const salut = {
+    type: "fill",
+    prompt: 'How do you say "hello" in French? ___',
+    answer: "Salut",
+    explanation: "",
+  };
+
+  it("French: only the course-language span is tappable, English words never are", () => {
+    window.localStorage.clear();
+    render(
+      <SaveWordProvider>
+        <AnswerFeedback
+          correct
+          headline="Nice."
+          explanation="hello (informal) → Salut. Core greetings."
+          saveCourse="fr"
+          question={salut}
+        />
+      </SaveWordProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Salut" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "hello" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "greetings" })).not.toBeInTheDocument();
+    expect(screen.getByText(/tap a word to save it/i)).toBeInTheDocument();
+  });
+
+  it("French: a question whose answer is English offers nothing, even with a question given", () => {
+    window.localStorage.clear();
+    render(
+      <SaveWordProvider>
+        <AnswerFeedback
+          correct
+          headline="Nice."
+          explanation='tomber dans les pommes → "to faint". Idioms.'
+          saveCourse="fr"
+          question={{
+            type: "mc",
+            prompt: 'The idiom "tomber dans les pommes" means…',
+            answer: "to faint",
+            explanation: "",
+          }}
+        />
+      </SaveWordProvider>,
+    );
+    expect(screen.queryAllByRole("button")).toHaveLength(0);
+    // No spans, so no promise that anything can be tapped.
+    expect(screen.queryByText(/save it/i)).not.toBeInTheDocument();
   });
 
   it("stays plain when the page did not say which course it is", () => {

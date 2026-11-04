@@ -1,21 +1,49 @@
-import { allowsSaving } from "../lib/saved-word-client";
+import { Fragment } from "react";
+import {
+  courseLanguageSpans,
+  splitExplanation,
+  type SpanQuestion,
+} from "../lib/course-language-spans";
+import { allowsSaving, savesWholeText } from "../lib/saved-word-client";
 import { useTheme } from "../lib/theme";
 import { SaveWordHint } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
-/** The explanation text under a verdict; its words open the save dialog when saving is allowed for the course. */
+/**
+ * The explanation text under a verdict. English course: every word opens the save dialog. French and
+ * Spanish: only the course-language text the question itself proves (course-language-spans.ts); with
+ * no `question` (generated practice) or no such text, it stays plain.
+ */
 export function AnswerExplanation({
   explanation,
   saveCourse,
+  question,
 }: {
   explanation: string;
   saveCourse?: string;
+  question?: SpanQuestion;
 }) {
-  const savable = saveCourse !== undefined && allowsSaving(saveCourse);
+  const allowed = saveCourse !== undefined && allowsSaving(saveCourse);
+  const whole = allowed && savesWholeText(saveCourse);
+  const spans =
+    allowed && !whole && question ? courseLanguageSpans({ ...question, explanation }) : [];
+  const savable = whole || spans.length > 0;
   return (
     <>
       <p className="mt-0.5 text-ink-soft">
-        {savable ? <TappableText text={explanation} course={saveCourse} /> : explanation}
+        {whole ? (
+          <TappableText text={explanation} course={saveCourse} />
+        ) : spans.length > 0 ? (
+          splitExplanation(explanation, spans).map((piece, i) =>
+            piece.course ? (
+              <TappableText key={i} text={piece.text} course={saveCourse!} wholeCourseLanguage />
+            ) : (
+              <Fragment key={i}>{piece.text}</Fragment>
+            ),
+          )
+        ) : (
+          explanation
+        )}
       </p>
       {savable && <SaveWordHint />}
     </>
@@ -32,15 +60,20 @@ export function AnswerFeedback({
   headline,
   explanation,
   saveCourse,
+  question,
 }: {
   correct: boolean;
   headline: string;
   explanation: string;
   /** When set and saving is allowed for it, the explanation's words open the save dialog. */
   saveCourse?: string;
+  /** The question being explained; French and Spanish need it to find the course-language text. */
+  question?: SpanQuestion;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  const explanationBody = <AnswerExplanation explanation={explanation} saveCourse={saveCourse} />;
+  const explanationBody = (
+    <AnswerExplanation explanation={explanation} saveCourse={saveCourse} question={question} />
+  );
 
   if (isStudioInk) {
     return (

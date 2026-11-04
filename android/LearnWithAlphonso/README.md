@@ -47,8 +47,9 @@ Nothing known to be missing from iOS.
 Ported on 2026-10-17, not yet run on a device: save-any-word. Tap a word in a Hector reply, a Practice or Campaign
 reply, an English-course lesson or review explanation, or a podcast transcript (under its episode's course) to save it with its sentence; the sheet
 shows the meaning (the server writes it and the review card, through `/api/define-word`), and the word returns in Review
-as a multiple-choice card. It needs the account's AI consent, and lesson text offers it in the English course only (the
-explanation is English in every course). Tap targets are the web's segmenter, ported with its tests.
+as a multiple-choice card. It needs the account's AI consent. Lesson text offers every word in the English course; in French and Spanish
+(where the explanation is English with course text quoted inside) only the course-language text the question proves is tappable
+(`CourseLanguageSpans`, checked against `save-word-spans.fixtures.json`, the same file web and iOS assert). Tap targets are the web's segmenter, ported with its tests.
 
 Ported on 2026-10-17, not yet run on a device: the iOS offline-queue reliability work (#261, #284, #291, #293).
 A failed lesson save is classified by cause: offline, a timeout, server trouble and rate limits are queued and

@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeConsentApi, withAiConsent } from "../lib/__testutils__/ai-consent";
 import { SavedWordError, type SavedWordResult } from "../lib/saved-word-client";
+import { AnswerExplanation } from "./AnswerFeedback";
 import { SaveWordHint, SaveWordProvider } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
@@ -138,6 +139,32 @@ describe("save dialog", () => {
     expect(dialog).toHaveTextContent("I want tea.");
     // The disclosure is shown BEFORE anything is sent.
     expect(dialog).toHaveTextContent(/AI service/i);
+  });
+
+  it("a French lesson span saves under fr with the span as the sentence, never an English word", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn(async () => saved);
+    render(
+      withAiConsent(
+        <SaveWordProvider save={save}>
+          <AnswerExplanation
+            explanation="goodbye → Au revoir. Greetings."
+            saveCourse="fr"
+            question={{
+              type: "fill",
+              prompt: 'How do you say "goodbye" in French? ___',
+              answer: "Au revoir",
+              explanation: "",
+            }}
+          />
+        </SaveWordProvider>,
+        fakeConsentApi(),
+      ),
+    );
+    expect(screen.queryByRole("button", { name: "goodbye" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "revoir" }));
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    expect(save).toHaveBeenCalledWith({ word: "revoir", sentence: "Au revoir", course: "fr" });
   });
 
   it("sends nothing until the learner confirms", async () => {

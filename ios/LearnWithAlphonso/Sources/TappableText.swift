@@ -22,22 +22,74 @@ struct TappableText: View {
     /// The course the word is saved under ("en", "fr" or "es"): the course of the
     /// conversation or lesson the text came from.
     let course: String
+    /// Which words of `text` may be tapped. Required, with no default, so no caller can fall into a wrong
+    /// default by leaving it out.
+    let mode: Mode
     let onSave: (SaveWordRequest) -> Void
+
+    enum Mode: Equatable {
+        /// Every word: text wholly in the course's language (Hector, Practice and Campaign replies, podcast
+        /// transcripts, and English lessons).
+        case allWords
+        /// Only words inside these course-language strings (French and Spanish lesson explanations, where the
+        /// English text around them must stay plain); the saved sentence is that string (`CourseLanguageSpans`).
+        case spans([String])
+        /// Nothing is tappable (named `plain`, not `none`, so it can never be confused with Optional.none).
+        case plain
+
+        /// A lesson explanation: every word in the English course, only the proven spans in French and Spanish,
+        /// and nothing in a French or Spanish course that has no spans.
+        static func lesson(course: String, spans: [String]?) -> Mode {
+            if SavedWordPolicy.savesWholeText(inCourse: course) { return .allWords }
+            guard let spans, !spans.isEmpty else { return .plain }
+            return .spans(spans)
+        }
+    }
+
+    /// The text cut into pieces; `.allWords` is one piece in which every word is linkable.
+    private var pieces: [CourseLanguageSpans.Piece] {
+        switch mode {
+        case .allWords: return [.init(text: text, isCourseLanguage: true)]
+        case .plain: return [.init(text: text, isCourseLanguage: false)]
+        case .spans(let spans): return CourseLanguageSpans.split(text, spans: spans)
+        }
+    }
 
     private var attributed: AttributedString {
         var result = AttributedString()
         var offset = 0
-        for segment in WordSegmenter.segments(in: text) {
-            var piece = AttributedString(segment.text)
-            if segment.isWord, WordSegmenter.isSavable(segment.text),
-                let url = WordLink.url(for: segment.text, offset: offset)
-            {
-                piece.link = url
+        for part in pieces {
+            var partOffset = 0
+            for segment in WordSegmenter.segments(in: part.text) {
+                var piece = AttributedString(segment.text)
+                if part.isCourseLanguage, segment.isWord, WordSegmenter.isSavable(segment.text),
+                    let url = WordLink.url(for: segment.text, offset: offset + partOffset)
+                {
+                    piece.link = url
+                }
+                result.append(piece)
+                partOffset += segment.text.count
             }
-            result.append(piece)
-            offset += segment.text.count
+            offset += part.text.count
         }
         return result
+    }
+
+    /// The sentence to save for a tap at `offset`: the course-language piece it fell in when spans are used.
+    private func sentence(for word: String, atOffset offset: Int?) -> String {
+        guard case .spans = mode else {
+            return offset.map { WordSegmenter.sentence(containing: word, in: text, atOffset: $0) }
+                ?? WordSegmenter.sentence(containing: word, in: text)
+        }
+        var start = 0
+        for part in pieces {
+            let end = start + part.text.count
+            if part.isCourseLanguage, let offset, offset >= start, offset < end {
+                return WordSegmenter.sentence(containing: word, in: part.text, atOffset: offset - start)
+            }
+            start = end
+        }
+        return word
     }
 
     var body: some View {
@@ -46,10 +98,7 @@ struct TappableText: View {
             .tint(color)
             .environment(\.openURL, OpenURLAction { url in
                 guard let word = WordLink.word(from: url) else { return .systemAction }
-                let sentence =
-                    WordLink.offset(from: url).map {
-                        WordSegmenter.sentence(containing: word, in: text, atOffset: $0)
-                    } ?? WordSegmenter.sentence(containing: word, in: text)
+                let sentence = sentence(for: word, atOffset: WordLink.offset(from: url))
                 onSave(SaveWordRequest(word: word, sentence: sentence, course: course))
                 return .handled
             })

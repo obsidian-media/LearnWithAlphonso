@@ -156,6 +156,6 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
         // over from before would outlive the learner opting back in.
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
-        if (checked) Explanation(container, isCorrect, question.explanation, course)
+        if (checked) Explanation(container, isCorrect, question.explanation, course, question)
     }
 }
