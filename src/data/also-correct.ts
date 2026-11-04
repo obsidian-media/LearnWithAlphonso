@@ -73,6 +73,9 @@ function subjectOf(prompt: string): Num | null {
     .split(/\s+/)
     .filter(Boolean);
   const last = before[before.length - 1];
+  // After a modal, "to" or 'll the slot takes a bare verb: there is no subject to agree with.
+  if (last && (SLOT_MODALS.has(norm(last)) || norm(last) === "to" || /'(ll|d)$/.test(norm(last))))
+    return null;
   if (last && !WH.has(norm(last)) && !/^(how much|how many)$/.test(norm(last))) {
     // "How much ___ this cost?" style: wh-phrase then blank.
     if (before.length >= 2 && WH.has(norm(before[before.length - 2]!)))
@@ -306,8 +309,11 @@ export function alsoCorrectReason(
   const sameGroup = MODAL_GROUPS.some(
     (g) => g.includes(baseOf(a)) && g.includes(baseOf(c)) && !(conditional && g.includes("would")),
   );
+  // A bracketed clue ("(asking for permission)") already picks the one that fits.
+  const hasClue = /\([^)]{4,}\)\s*$/.test(prompt);
   // The result clause of a conditional takes a weaker modal as well as will/would.
   if (
+    !hasClue &&
     conditional &&
     ["will", "would"].includes(baseOf(a)) &&
     ["could", "might", "may", "should", "can"].includes(baseOf(c)) &&
@@ -315,7 +321,7 @@ export function alsoCorrectReason(
   ) {
     return `${c} is an acceptable modal in the result clause`;
   }
-  if (sameGroup && !PAST_CUE.test(prompt) && !FUTURE_CUE.test(prompt)) {
+  if (sameGroup && !hasClue && !PAST_CUE.test(prompt) && !FUTURE_CUE.test(prompt)) {
     // A sentence that already says "not" cannot take a positive or a negative modal freely.
     if (/\bnot\b|n't/i.test(prompt)) return null;
     return `${c} is an acceptable modal here`;
@@ -325,8 +331,6 @@ export function alsoCorrectReason(
   //     under / behind / beside / next to / near ... all make a correct sentence.
   //     Only when an article or possessive follows, so fixed phrases ("in cash",
   //     "by bus") are left alone.
-  // A bracketed clue ("(it is hiding below it)") already picks the one place word.
-  const hasClue = /\([^)]{4,}\)\s*$/.test(prompt);
   if (
     !hasClue &&
     LOCATIVE.has(a) &&

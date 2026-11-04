@@ -178,6 +178,13 @@ describe("modal and auxiliary slots are not giveaways", () => {
     expect(bad).toEqual([]);
   });
 
+  // A learner-error form of the same word ("wills", "can to", "wont") still looks like a
+  // member of the class, so it counts as a second option of that class.
+  const inClass = (option: string, set: Set<string>) => {
+    const w = option.toLowerCase().replace(/ to$/, "");
+    return set.has(w) || set.has(w.replace(/s$/, "")) || w === "wont" || w === "willn't";
+  };
+
   it("always leaves a second option of the answer's own class", () => {
     const bad: string[] = [];
     for (const unit of getCourse("en").curriculum)
@@ -190,7 +197,7 @@ describe("modal and auxiliary slots are not giveaways", () => {
           const options = q.type === "mc" ? q.choices : q.bank;
           for (const set of [MODALS, AUX]) {
             if (!set.has(answer.toLowerCase())) continue;
-            if (!options.some((o) => o !== answer && set.has(o.toLowerCase())))
+            if (!options.some((o) => o !== answer && inClass(o, set)))
               bad.push(`${q.id} "${q.prompt}" answer=${answer} options=${options.join("/")}`);
           }
         }
