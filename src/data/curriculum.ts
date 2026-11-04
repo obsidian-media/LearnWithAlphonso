@@ -1,4 +1,5 @@
 import { advancedUnits, type Level } from "./levels";
+import { applyQuestionFixes } from "./question-fixes";
 import { generatedUnits } from "./lesson-bank";
 export type { Level };
 export { LEVELS } from "./levels";
@@ -1060,7 +1061,10 @@ const existingCountByLevel = handAuthored.reduce(
   {} as Record<Level, number>,
 );
 
-export const curriculum: Unit[] = [...handAuthored, ...generatedUnits(existingCountByLevel)];
+/** The built curriculum before the hand-reviewed fixes in question-fixes.ts (for the review table). */
+export const rawCurriculum: Unit[] = [...handAuthored, ...generatedUnits(existingCountByLevel)];
+
+export const curriculum: Unit[] = applyQuestionFixes(rawCurriculum);
 
 export type QuestionRef = { lessonId: string; unitId: string; level: Level; question: Question };
 

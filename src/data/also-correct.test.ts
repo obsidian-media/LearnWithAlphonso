@@ -59,6 +59,9 @@ const GENUINELY_WRONG: [prompt: string, answer: string, wrong: string][] = [
   // A tag question must echo the main verb, so only one auxiliary fits.
   ["They were at the party, ___ they?", "weren't", "wasn't"],
   ["She doesn't like tea very much, ___ she?", "does", "did"],
+  // A bracketed clue after the blank picks the one place word that fits.
+  ["The cat is sitting ___ the table. (it is hiding below it)", "under", "behind"],
+  ["The cafe is ___ the station. (across the road from it)", "opposite", "next to"],
   // A conditional's tense fixes the modal.
   ["If he studied, he ___ pass.", "would", "will"],
   ["I ___ help if I could.", "would", "will"],
@@ -175,17 +178,26 @@ describe("modal and auxiliary slots are not giveaways", () => {
     expect(bad).toEqual([]);
   });
 
+  // A learner-error form of the same word ("wills", "can to", "wont") still looks like a
+  // member of the class, so it counts as a second option of that class.
+  const inClass = (option: string, set: Set<string>) => {
+    const w = option.toLowerCase().replace(/ to$/, "");
+    return set.has(w) || set.has(w.replace(/s$/, "")) || w === "wont" || w === "willn't";
+  };
+
   it("always leaves a second option of the answer's own class", () => {
     const bad: string[] = [];
     for (const unit of getCourse("en").curriculum)
       for (const lesson of unit.lessons)
         for (const q of lesson.questions) {
           if ((q.type !== "mc" && q.type !== "fill") || !q.prompt.includes("___")) continue;
+          // "Which verb goes with homework? do" is a collocation, not an auxiliary slot.
+          if (/^Which verb goes with/.test(q.prompt)) continue;
           const answer = q.type === "mc" ? q.choices[q.answer]! : q.answer;
           const options = q.type === "mc" ? q.choices : q.bank;
           for (const set of [MODALS, AUX]) {
             if (!set.has(answer.toLowerCase())) continue;
-            if (!options.some((o) => o !== answer && set.has(o.toLowerCase())))
+            if (!options.some((o) => o !== answer && inClass(o, set)))
               bad.push(`${q.id} "${q.prompt}" answer=${answer} options=${options.join("/")}`);
           }
         }

@@ -73,6 +73,9 @@ function subjectOf(prompt: string): Num | null {
     .split(/\s+/)
     .filter(Boolean);
   const last = before[before.length - 1];
+  // After a modal, "to" or 'll the slot takes a bare verb: there is no subject to agree with.
+  if (last && (SLOT_MODALS.has(norm(last)) || norm(last) === "to" || /'(ll|d)$/.test(norm(last))))
+    return null;
   if (last && !WH.has(norm(last)) && !/^(how much|how many)$/.test(norm(last))) {
     // "How much ___ this cost?" style: wh-phrase then blank.
     if (before.length >= 2 && WH.has(norm(before[before.length - 2]!)))
@@ -264,6 +267,26 @@ function tenseCue(prompt: string): "past" | "present" | "none" {
   return "none";
 }
 
+const VAGUE_CLUES =
+  /^(look at it|see it|use it|do it|it is|a thing|an item|this one|that one|the answer)$/i;
+
+/** The text of a bracketed clue at the end of the prompt, if there is one. */
+export function bracketClue(prompt: string): string | null {
+  const m = /\(([^)]{4,})\)\s*$/.exec(prompt);
+  return m ? m[1]!.trim() : null;
+}
+
+/**
+ * A bracket alone does not count: the clue must be specific, at least two words and 8
+ * characters, and not one of the vague stock phrases. Whether it truly rules the other
+ * options out is a review judgement (docs/distractor-policy.md); this only stops the
+ * empty ones ("(look at it)").
+ */
+export function clueIsSpecific(prompt: string): boolean {
+  const c = bracketClue(prompt);
+  return !!c && c.length >= 8 && c.split(/\s+/).length >= 2 && !VAGUE_CLUES.test(c);
+}
+
 /**
  * Why `candidate` would make a correct sentence in the blank of `prompt` (whose
  * intended answer is `answer`), or null if it is genuinely wrong there.
@@ -306,8 +329,11 @@ export function alsoCorrectReason(
   const sameGroup = MODAL_GROUPS.some(
     (g) => g.includes(baseOf(a)) && g.includes(baseOf(c)) && !(conditional && g.includes("would")),
   );
+  // A bracketed clue ("(asking for permission)") already picks the one that fits.
+  const hasClue = clueIsSpecific(prompt);
   // The result clause of a conditional takes a weaker modal as well as will/would.
   if (
+    !hasClue &&
     conditional &&
     ["will", "would"].includes(baseOf(a)) &&
     ["could", "might", "may", "should", "can"].includes(baseOf(c)) &&
@@ -315,7 +341,7 @@ export function alsoCorrectReason(
   ) {
     return `${c} is an acceptable modal in the result clause`;
   }
-  if (sameGroup && !PAST_CUE.test(prompt) && !FUTURE_CUE.test(prompt)) {
+  if (sameGroup && !hasClue && !PAST_CUE.test(prompt) && !FUTURE_CUE.test(prompt)) {
     // A sentence that already says "not" cannot take a positive or a negative modal freely.
     if (/\bnot\b|n't/i.test(prompt)) return null;
     return `${c} is an acceptable modal here`;
@@ -326,6 +352,7 @@ export function alsoCorrectReason(
   //     Only when an article or possessive follows, so fixed phrases ("in cash",
   //     "by bus") are left alone.
   if (
+    !hasClue &&
     LOCATIVE.has(a) &&
     (LOCATIVE.has(c) || (LOCATIVE_CANDIDATE_ONLY.has(c) && !TIME_OBJECT.test(after))) &&
     /^\s*(the|a|an|my|your|his|her|their|our|this|that)\b/i.test(after)
