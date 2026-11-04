@@ -176,7 +176,7 @@ private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId
         items(episodes, key = { "e-" + it.id }) { episode ->
             // The list is a snapshot from when the folder opened: show the position this device last stored, if newer.
             val shown = remember(positionsRevision, episode) { container.podcastPlayer.resumed(episode) }
-            EpisodeRow(container, shown, subtitle = PodcastLabel.rowSubtitle(shown.durationSeconds, resume = shown.positionSeconds > 0, aiNarrated = shown.aiNarrated), onPlay = { scope.launch { play(container, episode, episodes) } })
+            EpisodeRow(container, shown, subtitle = PodcastLabel.rowSubtitle(shown.durationSeconds, resume = shown.positionSeconds > 0, aiNarrated = shown.aiNarrated), hasQuiz = episode.id in state.quizEpisodeIds, onPlay = { scope.launch { play(container, episode, episodes) } })
         }
         if (children.isEmpty() && episodes.isEmpty() && !loading) {
             item { Text("Nothing here yet. New episodes appear as they're published.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft) }
@@ -217,13 +217,16 @@ private suspend fun play(container: AppContainer, episode: PodcastEpisode, queue
 }
 
 @Composable
-private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitle: String, onPlay: () -> Unit) {
+private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitle: String, onPlay: () -> Unit, hasQuiz: Boolean = false) {
     val palette = AlphonsoColor.palette
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(Modifier.weight(1f).clickable(onClick = onPlay).semantics { contentDescription = "Play ${episode.title}" }) {
-            AlphonsoRowCard(episode.title, subtitle, accent = if (episode.positionSeconds > 0) palette.ember else palette.moss, leadingEmoji = "🎧")
+    Column {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f).clickable(onClick = onPlay).semantics { contentDescription = "Play ${episode.title}" }) {
+                AlphonsoRowCard(episode.title, subtitle, accent = if (episode.positionSeconds > 0) palette.ember else palette.moss, leadingEmoji = "🎧")
+            }
+            DownloadButton(container, episode)
         }
-        DownloadButton(container, episode)
+        if (hasQuiz) PodcastQuizRowButton(container, episode)
     }
 }
 
@@ -281,6 +284,8 @@ fun PodcastMiniBar(container: AppContainer) {
 
     Column(Modifier.fillMaxWidth().background(palette.parchment)) {
         HorizontalDivider(color = palette.hairline)
+        // The quiz is offered once the episode has played to its end (and only if it has one the learner can see).
+        PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Column(Modifier.weight(1f)) {
                 Text(episode.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
