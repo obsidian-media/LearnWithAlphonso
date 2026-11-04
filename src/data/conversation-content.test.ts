@@ -215,10 +215,13 @@ describe("campaign prompt rules", () => {
 
   it("keeps campaign Spanish in the Latin American variety", () => {
     for (const { label, text } of campaignTexts("es")) {
-      // "piso" is the floor of a building here (Spain's "flat" sense is what the ban is for).
+      // Only the floor sense with an ordinal or number ("tercer piso", "piso 3") is allowed; a bare "el piso" reads as Spain's "flat".
       const cleaned = text
         .replace("nunca uses «vosotros» ni «vos»", "")
-        .replace(/(el|tercer) piso|\(piso,/g, "");
+        .replace(
+          /\b(primer|segundo|tercer|cuarto|quinto) piso\b|\bpiso \d+\b|\b\d+\.º piso\b/gi,
+          "",
+        );
       expect(cleaned, label).not.toMatch(/\bvosotr|\bvuestr|\bpiso\b|\bcoger\b|\bordenador\b/i);
     }
   });

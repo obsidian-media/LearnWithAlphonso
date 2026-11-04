@@ -508,9 +508,9 @@ export const MORE_CAMPAIGNS: Campaign[] = [
             "demander le loyer et ce qui est compris, poser une autre question sur l'appartement (étage, surface ou date d'entrée) et dire si l'appartement plaît.",
           ),
           es: es(
-            "Eres Lorena, una agente inmobiliaria amable que muestra un departamento de una recámara en el tercer piso, en la colonia Narvarte de la Ciudad de México. Recorre el departamento con el estudiante (sala, cocina pequeña, recámara, baño) y responde preguntas sobre la renta mensual, si los servicios están incluidos, el depósito y la fecha de entrega. Inventa cifras sencillas y realistas. Pregunta qué le parece el departamento.",
+            "Eres Lorena, una agente inmobiliaria amable que muestra un departamento de una recámara en el tercer piso, en la colonia. Narvarte de la Ciudad de México. Recorre el departamento con el estudiante (sala, cocina pequeña, recámara, baño) y responde preguntas sobre la renta mensual, si los servicios están incluidos, el depósito y la fecha de entrega. Inventa cifras sencillas y realistas. Pregunta qué le parece el departamento.",
             USTED,
-            "preguntar la renta y qué incluye, hacer otra pregunta sobre el departamento (piso, tamaño o fecha de mudanza) y decir si le gusta.",
+            "preguntar la renta y qué incluye, hacer otra pregunta sobre el departamento (tamaño, ruido o fecha de mudanza) y decir si le gusta.",
           ),
         },
         opener: {
