@@ -1219,7 +1219,6 @@ export type Database = {
       };
       profiles: {
         Row: {
-          active_language: string;
           ai_consent_at: string | null;
           avatar_seed: string;
           country: string | null;
@@ -1231,7 +1230,6 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          active_language?: string;
           ai_consent_at?: string | null;
           avatar_seed?: string;
           country?: string | null;
@@ -1243,7 +1241,6 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          active_language?: string;
           ai_consent_at?: string | null;
           avatar_seed?: string;
           country?: string | null;

@@ -266,7 +266,12 @@ describe("FinishScreen celebration", () => {
   it("the headline reads in ink, not moss, so it stays legible over the clip", () => {
     setReducedMotion(false);
     renderFinish();
-    expect(screen.getByText("Nice work, lesson complete!").className).toContain("text-ink");
-    expect(screen.getByText("Nice work, lesson complete!").className).not.toContain("text-moss");
+    // classList: a substring match would also pass "text-ink-soft".
+    expect(screen.getByText("Nice work, lesson complete!").classList.contains("text-ink")).toBe(
+      true,
+    );
+    expect(screen.getByText("Nice work, lesson complete!").className).not.toMatch(
+      /text-moss|text-ink-soft/,
+    );
   });
 });

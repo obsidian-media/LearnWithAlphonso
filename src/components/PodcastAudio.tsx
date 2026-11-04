@@ -28,9 +28,11 @@ export function PodcastAudio() {
   const episode = usePodcastPlayer((state) => state.episode);
   const isPlaying = usePodcastPlayer((state) => state.isPlaying);
   const retryToken = usePodcastPlayer((state) => state.retryToken);
+  const seekRequest = usePodcastPlayer((state) => state.seekRequest);
   const setPlaying = usePodcastPlayer((state) => state.setPlaying);
   const setElapsed = usePodcastPlayer((state) => state.setElapsed);
   const setFailed = usePodcastPlayer((state) => state.setFailed);
+  const setMediaDuration = usePodcastPlayer((state) => state.setMediaDuration);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedRef = useRef(0);
@@ -85,6 +87,15 @@ export function PodcastAudio() {
     }
   }, [isPlaying, episodeId, retryToken, setFailed]);
 
+  // The scrubber's seeks. Keyed on the token, so the same target twice is two requests; a seek is not a
+  // listen, so lastTickRef is cleared and the next tick does not count the jump as listening time.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !seekRequest) return;
+    audio.currentTime = seekRequest.seconds;
+    lastTickRef.current = null;
+  }, [seekRequest]);
+
   // A play session that ends by navigating away, closing the tab, or
   // simply stopping is still a play session. Without this, the only
   // event ever recorded is a completed episode, and abandonment -- the
@@ -134,6 +145,9 @@ export function PodcastAudio() {
   const onLoadedMetadata = () => {
     const audio = audioRef.current;
     if (!audio) return;
+    setMediaDuration(audio.duration);
+    // A learner who already dragged the scrubber has chosen a position; resuming now would undo it.
+    if (usePodcastPlayer.getState().seekRequest) return;
     const start = episode.positionSeconds;
     if (start <= 0) return;
     // Clamp against the MEDIA's duration, not the stored
@@ -174,6 +188,10 @@ export function PodcastAudio() {
       src={episode.audioUrl}
       preload="metadata"
       onLoadedMetadata={onLoadedMetadata}
+      onDurationChange={() => {
+        const audio = audioRef.current;
+        if (audio) setMediaDuration(audio.duration);
+      }}
       onTimeUpdate={onTimeUpdate}
       onError={() => setFailed(true)}
       onPlay={() => setPlaying(true)}
