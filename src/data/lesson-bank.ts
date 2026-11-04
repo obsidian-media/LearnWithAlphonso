@@ -2423,31 +2423,31 @@ const B2: Pack[] = [
     subtitle: "Passive structures",
     kind: "cloze",
     note: "Passive = be + past participle; the doer becomes optional.",
-    data: `The report ___ written last week.|was
-The bridge is ___ repaired.|being
-Nothing ___ been decided yet.|has
-The letters ___ sent yesterday.|were
-He ___ given a warning.|was
-The results will ___ announced soon.|be
-The room ___ cleaned every day.|is
-The car needs ___ .|repairing
-She ___ said to be brilliant.|is
-The house is ___ to have been built in 1820.|thought
-Mistakes ___ made.|were
-The film ___ directed by Lean.|was
-The data ___ being analysed now.|is
-Tickets can ___ bought online.|be
-The law ___ have been changed.|must
-He got ___ in the accident.|hurt
-The matter is ___ investigated.|being
-The plan ___ approved next month.|will be
-It is widely ___ that prices will rise.|believed
-The rules ___ to be followed.|have
-The parcel should ___ arrived.|have
-The offer was ___ down.|turned
-Our flight ___ cancelled.|was
-The issue ___ dealt with promptly.|was
-Nothing ___ be done about it.|can`,
+    data: `The report ___ written last week.|was|a past form of be for passives|The report was written last week.
+The bridge is ___ repaired.|being|shows that a passive action is in progress|The bridge is being repaired.
+Nothing ___ been decided yet.|has|a helper verb for a passive perfect action|Nothing has been decided yet.
+The letters ___ sent yesterday.|were|the plural past of be, for passives|The letters were sent yesterday.
+He ___ given a warning.|was|a helper verb for a past passive|He was given a warning.
+The results will ___ announced soon.|be|the plain verb form used after will|The results will be announced soon.
+The room ___ cleaned every day.|is|a form of be for habits in passives|The room is cleaned every day.
+The car needs ___ .|repairing|the -ing form used after needs|The car needs repairing.
+She ___ said to be brilliant.|is|a form of be used to report opinions|She is said to be brilliant.
+The house is ___ to have been built in 1820.|thought|believed by many people|The house is thought to date from 1820.
+Mistakes ___ made.|were|the plural past of be, used in passives|Mistakes were made.
+The film ___ directed by Lean.|was|a past form of be, used in passives|The film was directed by Lean.
+The data ___ being analysed now.|is|a form of be used with being|The data is being analysed now.
+Tickets can ___ bought online.|be|the plain verb form used after can|Tickets can be bought online.
+The law ___ have been changed.|must|shows that you are sure it happened|The law must have been changed.
+He got ___ in the accident.|hurt|injured; having a painful body|He got hurt in the accident.
+The matter is ___ investigated.|being|shows an action is happening now to something|The matter is being investigated.
+The plan ___ approved next month.|will be|shows a passive action in the future|The plan will be approved next month.
+It is widely ___ that prices will rise.|believed|thought to be true by many people|It is widely believed that prices will rise.
+The rules ___ to be followed.|have|a verb that shows a rule or duty|The rules have to be followed.
+The parcel should ___ arrived.|have|shows something probably happened already|The parcel should have arrived.
+The offer was ___ down.|turned|refused; rejected|The offer was turned down.
+Our flight ___ cancelled.|was|a past form of be in a passive|Our flight was cancelled.
+The issue ___ dealt with promptly.|was|a past form of be in a passive|The issue was dealt with promptly.
+Nothing ___ be done about it.|can|shows it is possible|Nothing can be done about it.`,
   },
   {
     id: "b2p2",
@@ -2456,31 +2456,31 @@ Nothing ___ be done about it.|can`,
     kind: "pair",
     prompt: 'Which fits: "%s"?',
     note: "These pairs are frequently mixed up by learners.",
-    data: `affect / effect (verb, to influence)|affect
-practice / practise (British verb)|practise
-principal / principle (a rule)|principle
-lose / loose (opposite of tight)|loose
-its / it's (belonging to it)|its
-advice / advise (noun)|advice
-economic / economical (money-saving)|economical
-historic / historical (of the past)|historical
-sensible / sensitive (easily hurt)|sensitive
-continual / continuous (unbroken)|continuous
-few / less (with countable nouns)|few
-among / between (three or more)|among
-bring / take (movement away)|take
-borrow / lend (give temporarily)|lend
-rise / raise (needs an object)|raise
-lie / lay (needs an object)|lay
-remember / remind (prompt someone)|remind
-say / tell (needs a person object)|tell
-travel / trip (a journey noun)|trip
-job / work (uncountable)|work
-alone / lonely (feeling sad)|lonely
-classic / classical (music style)|classical
-efficient / effective (achieves the goal)|effective
-assure / ensure (make certain)|ensure
-imply / infer (draw a conclusion)|infer`,
+    data: `affect / effect (verb, to influence)|affect|to change or influence something|Stress can affect your sleep.
+practice / practise (British verb)|practise|to do something again and again to improve|I practise the piano every day.
+principal / principle (a rule)|principle|a basic rule that guides behaviour|I follow the principle of honesty.
+lose / loose (opposite of tight)|loose|not fitting tightly|My shoes feel loose today.
+its / it's (belonging to it)|its|belonging to a thing or animal|The dog wagged its tail.
+advice / advise (noun)|advice|a suggestion about what someone should do|He gave me good advice.
+economic / economical (money-saving)|economical|saving money or resources|A small car is more economical.
+historic / historical (of the past)|historical|connected with past events|It is a historical building.
+sensible / sensitive (easily hurt)|sensitive|easily hurt or upset|She is sensitive about her age.
+continual / continuous (unbroken)|continuous|going on without any break|There was continuous noise all night.
+few / less (with countable nouns)|few|a small number of; not many|Few people came to the party.
+among / between (three or more)|among|in the middle of three or more|She stood among the crowd.
+bring / take (movement away)|take|to carry something away from here|Take this to the office.
+borrow / lend (give temporarily)|lend|to give something for a short time|Can you lend me a pen?
+rise / raise (needs an object)|raise|to lift something up|Please raise your hand.
+lie / lay (needs an object)|lay|to put something down flat|Lay the book on the table.
+remember / remind (prompt someone)|remind|to make someone think of something|Please remind me to call him.
+say / tell (needs a person object)|tell|to give information to someone|Tell me the truth.
+travel / trip (a journey noun)|trip|a short journey for a purpose|We took a trip to the coast.
+job / work (uncountable)|work|activity done to earn money|I have a lot of work today.
+alone / lonely (feeling sad)|lonely|sad because you have no company|He felt lonely in the big city.
+classic / classical (music style)|classical|of the traditional style of serious music|She plays classical music.
+efficient / effective (achieves the goal)|effective|successful in giving the result you want|This medicine is very effective.
+assure / ensure (make certain)|ensure|to make certain that something happens|Please ensure the door is locked.
+imply / infer (draw a conclusion)|infer|to reach a conclusion from clues|From his tone, I infer he is upset.`,
   },
   {
     id: "b2p3",
@@ -2488,31 +2488,31 @@ imply / infer (draw a conclusion)|infer`,
     subtitle: "Discourse markers",
     kind: "cloze",
     note: "Linkers signal contrast, cause, or addition — choose by logic.",
-    data: `It was raining; ___ , we went out.|nevertheless
-He was tired. ___ , he kept working.|Even so
-___ the cost, the project went ahead.|Despite
-She is talented; ___ , she lacks focus.|however
-___ of the delay, we arrived on time.|In spite
-The plan failed ___ poor planning.|due to
-___ , the results were encouraging.|Overall
-He studied hard; ___ , he passed.|therefore
-___ , let's review the numbers.|Firstly
-The data is old; ___ , it's still useful.|nonetheless
-___ addition, costs have risen.|In
-We must act ___ it's too late.|before
-___ as the report suggests, sales fell.|Just
-___ , the strategy needs revision.|In short
-She left early ___ she felt ill.|because
-___ contrast, exports grew.|In
-He is, ___ , the best candidate.|arguably
-___ hand, the risks are real.|On the other
-The trial failed; ___ , funding stopped.|consequently
-___ than complain, act.|Rather
-___ far, progress is slow.|So
-We agreed, ___ with conditions.|albeit
-___ this in mind, we proceeded.|With
-___ , nothing has changed.|Meanwhile
-The claim is, ___ , unproven.|however`,
+    data: `It was raining; ___ , we went out.|nevertheless|in spite of what was just said|It rained; nevertheless, we went out.
+He was tired. ___ , he kept working.|Even so|used to add a surprising contrast|He was tired. Even so, he kept working.
+___ the cost, the project went ahead.|Despite|used to show something happened anyway|Despite the cost, the project went ahead.
+She is talented; ___ , she lacks focus.|however|used to add a contrast|She is talented; however, she lacks focus.
+___ of the delay, we arrived on time.|In spite|used in the phrase before the delay|In spite of the delay, we arrived on time.
+The plan failed ___ poor planning.|due to|because of; caused by|The plan failed due to poor planning.
+___ , the results were encouraging.|Overall|used to sum up the main idea|Overall, the results were encouraging.
+He studied hard; ___ , he passed.|therefore|used to show a result|He studied hard; therefore, he passed.
+___ , let's review the numbers.|Firstly|used to begin a list of points|Firstly, let's review the numbers.
+The data is old; ___ , it's still useful.|nonetheless|in spite of that|The data is old; nonetheless, it's useful.
+___ addition, costs have risen.|In|used to add another point|In addition, costs have risen.
+We must act ___ it's too late.|before|earlier than a stated time|We must act before it's too late.
+___ as the report suggests, sales fell.|Just|in the same way|Just as the report suggests, sales fell.
+___ , the strategy needs revision.|In short|used to give a brief conclusion|In short, the strategy needs revision.
+She left early ___ she felt ill.|because|used to give a reason|She left early because she felt ill.
+___ contrast, exports grew.|In|used to show a difference|In contrast, exports grew.
+He is, ___ , the best candidate.|arguably|used for a claim that can be argued|He is, arguably, the best candidate.
+___ hand, the risks are real.|On the other|used to introduce an opposing point|On the other hand, the risks are real.
+The trial failed; ___ , funding stopped.|consequently|as a result|The trial failed; consequently, funding stopped.
+___ than complain, act.|Rather|instead of; used before a verb|Rather than complain, act.
+___ far, progress is slow.|So|up to this point|So far, progress is slow.
+We agreed, ___ with conditions.|albeit|although; even though|We agreed, albeit with conditions.
+___ this in mind, we proceeded.|With|keeping something in your thoughts|With this in mind, we proceeded.
+___ , nothing has changed.|Meanwhile|at the same time; in the meantime|Meanwhile, nothing has changed.
+The claim is, ___ , unproven.|however|used to add a contrast|The claim is, however, unproven.`,
   },
   {
     id: "b2p4",
@@ -2520,31 +2520,31 @@ The claim is, ___ , unproven.|however`,
     subtitle: "Backshift and reporting verbs",
     kind: "cloze",
     note: "Tenses usually shift back one step when reporting.",
-    data: `He said he ___ tired.|was
-She told me she ___ finished.|had
-They said they ___ come later.|would
-He asked ___ I was free.|if
-She asked me where I ___ .|lived
-He admitted ___ the mistake.|making
-She refused ___ comment.|to
-They denied ___ involved.|being
-He promised ___ help.|to
-She suggested ___ a break.|taking
-He warned us ___ to go.|not
-She explained that she ___ busy.|was
-He insisted ___ paying.|on
-They announced that prices ___ rise.|would
-She apologised ___ being late.|for
-He claimed he ___ seen nothing.|had
-She reminded me ___ call.|to
-He complained ___ the noise.|about
-They agreed ___ postpone.|to
-She wondered ___ it was true.|whether
-He offered ___ drive us.|to
-She accused him ___ lying.|of
-He recommended ___ the early train.|taking
-She confirmed that she ___ attend.|would
-He asked what time the meeting ___ .|started`,
+    data: `He said he ___ tired.|was|a past form of be in reported speech|He said he was tired.
+She told me she ___ finished.|had|a helper verb for reporting past actions|She told me she had finished.
+They said they ___ come later.|would|the reported form of will|They said they would come later.
+He asked ___ I was free.|if|used to report a yes-or-no question|He asked if I was free.
+She asked me where I ___ .|lived|the past tense of live|She asked me where I lived.
+He admitted ___ the mistake.|making|the -ing form used after admit|He admitted making the mistake.
+She refused ___ comment.|to|used before a verb after refuse|She refused to comment.
+They denied ___ involved.|being|the -ing form used after deny|They denied being involved.
+He promised ___ help.|to|used before a verb after promise|He promised to help.
+She suggested ___ a break.|taking|the -ing form used after suggest|She suggested taking a break.
+He warned us ___ to go.|not|used to give a negative warning|He warned us not to go.
+She explained that she ___ busy.|was|a past form of be in reported speech|She explained that she was busy.
+He insisted ___ paying.|on|a word that follows insist|He insisted on paying.
+They announced that prices ___ rise.|would|the reported form of will|They announced that prices would rise.
+She apologised ___ being late.|for|a word that follows apologise|She apologised for being late.
+He claimed he ___ seen nothing.|had|a helper verb for reporting an earlier action|He claimed he had seen nothing.
+She reminded me ___ call.|to|used before a verb after remind|She reminded me to call.
+He complained ___ the noise.|about|a word that follows complain|He complained about the noise.
+They agreed ___ postpone.|to|used before a verb after agree|They agreed to postpone.
+She wondered ___ it was true.|whether|used to report a question with doubt|She wondered whether it was true.
+He offered ___ drive us.|to|used before a verb after offer|He offered to drive us.
+She accused him ___ lying.|of|a word that follows accuse|She accused him of lying.
+He recommended ___ the early train.|taking|the -ing form used after recommend|He recommended taking the early train.
+She confirmed that she ___ attend.|would|the reported form of will|She confirmed that she would attend.
+He asked what time the meeting ___ .|started|began|He asked what time the meeting started.`,
   },
   {
     id: "b2p5",
@@ -2553,31 +2553,31 @@ He asked what time the meeting ___ .|started`,
     kind: "pair",
     prompt: 'Which word pairs with "%s"?',
     note: "Advanced fluency lives in collocation.",
-    data: `___ rain (very heavy)|heavy
-___ evidence (convincing)|compelling
-___ difference (large)|significant
-___ silence (complete)|utter
-___ mistake (serious)|grave
-___ opportunity (rare)|golden
-___ debate (intense)|heated
-___ progress (steady)|steady
-___ criticism (strong)|fierce
-___ demand (great)|high
-___ impact (large)|profound
-___ deadline (unmovable)|strict
-___ concern (increasing)|growing
-___ argument (persuasive)|convincing
-___ change (basic)|fundamental
-___ interest (strong)|keen
-___ traffic (crowded)|heavy
-___ knowledge (deep)|thorough
-___ apology (sincere)|heartfelt
-___ effort (concentrated)|concerted
-___ failure (total)|complete
-___ increase (sharp)|sharp
-___ resemblance (close)|striking
-___ decision (final)|firm
-___ support (broad)|widespread`,
+    data: `___ rain (very heavy)|heavy|large and strong in amount|Heavy rain fell all night.
+___ evidence (convincing)|compelling|so strong that it is hard to doubt|The police found compelling evidence.
+___ difference (large)|significant|large enough to be important|There is a significant difference between them.
+___ silence (complete)|utter|complete; total|They sat in utter silence.
+___ mistake (serious)|grave|very serious and worrying|He made a grave mistake.
+___ opportunity (rare)|golden|a chance that is rare and very good|It was a golden opportunity.
+___ debate (intense)|heated|full of strong feeling and anger|They had a heated debate.
+___ progress (steady)|steady|continuing at a regular rate|She is making steady progress.
+___ criticism (strong)|fierce|very strong and angry|The plan met fierce criticism.
+___ demand (great)|high|great in amount or level|There is high demand for tickets.
+___ impact (large)|profound|having a deep and strong effect|The news had a profound impact.
+___ deadline (unmovable)|strict|that must be followed exactly|We have a strict deadline.
+___ concern (increasing)|growing|becoming bigger over time|There is growing concern about prices.
+___ argument (persuasive)|convincing|able to make you believe it|She made a convincing argument.
+___ change (basic)|fundamental|affecting the most basic part|We need a fundamental change.
+___ interest (strong)|keen|eager and strongly interested|She takes a keen interest in art.
+___ traffic (crowded)|heavy|a lot of vehicles on the road|Heavy traffic delayed us.
+___ knowledge (deep)|thorough|complete and careful, with no gaps|He has a thorough knowledge of law.
+___ apology (sincere)|heartfelt|showing deep and honest feeling|She offered a heartfelt apology.
+___ effort (concentrated)|concerted|done together with great effort|It needs a concerted effort.
+___ failure (total)|complete|total; with nothing missing|The plan was a complete failure.
+___ increase (sharp)|sharp|sudden and large|There was a sharp increase in prices.
+___ resemblance (close)|striking|surprising because things are alike|There is a striking resemblance between them.
+___ decision (final)|firm|fixed and not likely to change|He made a firm decision.
+___ support (broad)|widespread|shared by many people over a large area|The idea has widespread support.`,
   },
   {
     id: "b2p6",
@@ -2586,31 +2586,31 @@ ___ support (broad)|widespread`,
     kind: "pair",
     prompt: 'Noun form of "%s":',
     note: "Suffix patterns are predictable once learned.",
-    data: `analyse|analysis
-decide|decision
-argue|argument
-achieve|achievement
-succeed|success
-fail|failure
-maintain|maintenance
-prove|proof
-choose|choice
-lose|loss
-believe|belief
-grow|growth
-know|knowledge
-solve|solution
-apply|application
-persuade|persuasion
-expand|expansion
-respond|response
-behave|behaviour
-survive|survival
-explain|explanation
-assume|assumption
-conclude|conclusion
-refuse|refusal
-depart|departure`,
+    data: `analyse|analysis|a careful study of something in parts|The analysis took a week.
+decide|decision|a choice you make|It was a hard decision.
+argue|argument|a discussion where people disagree|They had an argument about money.
+achieve|achievement|something you did well with effort|Passing the exam was a big achievement.
+succeed|success|doing well and getting what you wanted|The show was a great success.
+fail|failure|a lack of success|The experiment ended in failure.
+maintain|maintenance|work to keep something in good condition|The car needs regular maintenance.
+prove|proof|facts that show something is true|Do you have proof of payment?
+choose|choice|the act of picking one thing|You have a choice of three meals.
+lose|loss|the state of no longer having something|The loss of the keys was annoying.
+believe|belief|something you accept as true|It is my belief that he is honest.
+grow|growth|the process of getting bigger|There was strong growth last year.
+know|knowledge|facts and skills you have learned|He has great knowledge of history.
+solve|solution|an answer to a problem|We found a simple solution.
+apply|application|a formal request for a job or place|I sent my application today.
+persuade|persuasion|the act of making someone agree|Persuasion is part of selling.
+expand|expansion|the process of getting bigger|The company announced its expansion.
+respond|response|an answer or reaction|We are waiting for a response.
+behave|behaviour|the way a person acts|His behaviour was rude.
+survive|survival|staying alive in difficult conditions|The animals fought for survival.
+explain|explanation|reasons that make something clear|Her explanation was easy to follow.
+assume|assumption|something you accept as true without proof|That is just an assumption.
+conclude|conclusion|a final decision or opinion after thought|We came to the same conclusion.
+refuse|refusal|saying no to something|The refusal surprised everyone.
+depart|departure|the act of leaving a place|Departure is at six.`,
   },
   {
     id: "b2p7",
@@ -2618,31 +2618,31 @@ depart|departure`,
     subtitle: "Report what was said",
     kind: "cloze",
     note: "Reported speech shifts tense back and changes time and place words.",
-    data: `She said she ___ tired.|was
-He told ___ he would call.|me
-They asked where I ___ from.|came
-She wondered ___ I had finished.|whether
-He admitted ___ the money.|taking
-She denied ___ anything wrong.|doing
-He suggested ___ earlier.|leaving
-They insisted ___ paying the bill.|on
-She warned us ___ to touch it.|not
-He apologised ___ being late.|for
-She claimed ___ have seen him.|to
-He refused ___ comment.|to
-They announced that the deal ___ off.|was
-She explained ___ the system worked.|how
-She complained ___ the delay.|about
-She reminded me ___ lock the door.|to
-He accused her ___ lying.|of
-They agreed ___ meet on Friday.|to
-She promised she ___ help.|would
-He asked me ___ I needed anything.|if
-She pointed ___ the flaw in the plan.|out
-He implied that something ___ wrong.|was
-They confirmed the flight ___ been delayed.|had
-She urged them ___ reconsider.|to
-He maintained that he ___ innocent.|was`,
+    data: `She said she ___ tired.|was|a past form of be in reported speech|She said she was tired.
+He told ___ he would call.|me|the word for the speaker, after tell|He told me he would call.
+They asked where I ___ from.|came|the past of come|They asked where I came from.
+She wondered ___ I had finished.|whether|used to report a question with doubt|She wondered whether I had finished.
+He admitted ___ the money.|taking|the -ing form used after admit|He admitted taking the money.
+She denied ___ anything wrong.|doing|the -ing form used after deny|She denied doing anything wrong.
+He suggested ___ earlier.|leaving|the -ing form used after suggest|He suggested leaving earlier.
+They insisted ___ paying the bill.|on|a word that follows insist|They insisted on paying the bill.
+She warned us ___ to touch it.|not|used to give a negative warning|She warned us not to touch it.
+He apologised ___ being late.|for|a word that follows apologise|He apologised for being late.
+She claimed ___ have seen him.|to|used before a verb after claim|She claimed to have seen him.
+He refused ___ comment.|to|used before a verb after refuse|He refused to comment.
+They announced that the deal ___ off.|was|a past form of be in a passive|They announced that the deal was off.
+She explained ___ the system worked.|how|used to report the way something works|She explained how the system worked.
+She complained ___ the delay.|about|a word that follows complain|She complained about the delay.
+She reminded me ___ lock the door.|to|used before a verb after remind|She reminded me to lock the door.
+He accused her ___ lying.|of|a word that follows accuse|He accused her of lying.
+They agreed ___ meet on Friday.|to|used before a verb after agree|They agreed to meet on Friday.
+She promised she ___ help.|would|the reported form of will|She promised she would help.
+He asked me ___ I needed anything.|if|used to report a yes-or-no question|He asked me if I needed anything.
+She pointed ___ the flaw in the plan.|out|to show something by talking about it|She pointed out the flaw in the plan.
+He implied that something ___ wrong.|was|a past form of be in reported speech|He implied that something was wrong.
+They confirmed the flight ___ been delayed.|had|a helper verb for an earlier action|They confirmed the flight had been delayed.
+She urged them ___ reconsider.|to|used before a verb after urge|She urged them to reconsider.
+He maintained that he ___ innocent.|was|a past form of be in reported speech|He maintained that he was innocent.`,
   },
   {
     id: "b2p8",
@@ -2651,31 +2651,31 @@ He maintained that he ___ innocent.|was`,
     kind: "pair",
     prompt: 'Complete: "%s ___"',
     note: "Natural English depends on the right partner word.",
-    data: `make a|decision
-take a|risk
-pay|attention
-draw a|conclusion
-meet a|deadline
-raise|awareness
-break the|news
-keep a|promise
-run a|business
-hold a|meeting
-reach an|agreement
-set a|precedent
-bear in|mind
-take|responsibility
-place an|order
-gain|experience
-cause|damage
-express|concern
-launch a|campaign
-strike a|balance
-face a|challenge
-issue a|statement
-conduct|research
-achieve a|goal
-lose|patience`,
+    data: `make a|decision|a choice you make|You must make a decision today.
+take a|risk|a chance of loss or danger|It's worth taking a risk.
+pay|attention|careful listening or watching|Please pay attention to the teacher.
+draw a|conclusion|a final opinion reached after thought|We drew a conclusion from the facts.
+meet a|deadline|the time by which work must be done|We met the deadline.
+raise|awareness|knowledge that something exists or matters|The campaign raised awareness of the problem.
+break the|news|information about recent events|He had to break the news gently.
+keep a|promise|a statement that you will do something|She always keeps a promise.
+run a|business|a company that sells goods or services|He runs a small business.
+hold a|meeting|an event where people come to talk|The team holds a meeting each week.
+reach an|agreement|a decision that people both accept|They reached an agreement last night.
+set a|precedent|an earlier event used as an example|The ruling set a precedent.
+bear in|mind|in your thoughts; remembered|Bear in mind that it's a long trip.
+take|responsibility|the duty to accept blame or care|She takes responsibility for her work.
+place an|order|a request to buy goods|We placed an order online.
+gain|experience|skill you gain by doing something|He gained experience abroad.
+cause|damage|harm that spoils something|The storm caused serious damage.
+express|concern|to say that you are worried|She expressed concern about safety.
+launch a|campaign|a planned series of actions for a goal|They launched a campaign to save the park.
+strike a|balance|to find a fair mix of two things|It's hard to strike a balance between work and rest.
+face a|challenge|a difficult task that tests you|She faced a big challenge.
+issue a|statement|an official announcement|The company issued a statement.
+conduct|research|careful study to find new facts|Scientists conduct research on diseases.
+achieve a|goal|something you work to reach|He achieved his goal.
+lose|patience|the ability to wait calmly|I lose patience in traffic.`,
   },
   {
     id: "b2p9",
@@ -2683,31 +2683,31 @@ lose|patience`,
     subtitle: "Describing symptoms and care",
     kind: "cloze",
     note: "Intermediate-plus vocabulary for talking about health.",
-    data: `The doctor ___ a full recovery within weeks.|predicted
-She's been ___ from a bad cold all week.|suffering
-He was ___ to hospital after the accident.|admitted
-The medicine should ___ the pain quickly.|relieve
-She's ___ to penicillin, so avoid it.|allergic
-The nurse took his ___ before the appointment.|temperature
-He's on ___ to manage his blood pressure.|medication
-The wound needs to be ___ regularly.|dressed
-She was ___ with a mild infection.|diagnosed
-Rest and fluids should help you ___.|recover
-The clinic offers a free ___ once a year.|check-up
-He ___ his ankle playing football.|twisted
-The vaccine helps ___ the disease.|prevent
-She's been feeling ___ since yesterday.|nauseous
-The doctor ___ two weeks of rest.|recommended
-His symptoms ___ after a few days.|improved
-The hospital ___ him overnight for observation.|kept
-She takes a daily ___ for her allergies.|tablet
-The surgeon ___ the operation successfully.|performed
-He's ___ to a specialist for further tests.|referred
-The patient's condition remained ___.|stable
-She was given ___ before the procedure.|anaesthesia
-The clinic is fully ___ for emergencies.|equipped
-His recovery has been slow but ___.|steady
-The doctor advised him to ___ smoking.|quit`,
+    data: `The doctor ___ a full recovery within weeks.|predicted|said what would happen before it did|The doctor predicted a full recovery.
+She's been ___ from a bad cold all week.|suffering|feeling pain or illness|She has been suffering from a cold.
+He was ___ to hospital after the accident.|admitted|accepted into hospital as a patient|He was admitted after the accident.
+The medicine should ___ the pain quickly.|relieve|to make pain or worry less|This medicine will relieve the pain.
+She's ___ to penicillin, so avoid it.|allergic|made ill by something you eat or touch|I'm allergic to nuts.
+The nurse took his ___ before the appointment.|temperature|how hot or cold your body is|The nurse took his temperature.
+He's on ___ to manage his blood pressure.|medication|medicine that a doctor gives you|He takes medication for blood pressure.
+The wound needs to be ___ regularly.|dressed|covered with a clean bandage|The wound was dressed twice a day.
+She was ___ with a mild infection.|diagnosed|found to have a particular illness|She was diagnosed with a mild infection.
+Rest and fluids should help you ___.|recover|to get well again|You should recover soon.
+The clinic offers a free ___ once a year.|check-up|a routine medical examination|I have a check-up every year.
+He ___ his ankle playing football.|twisted|turned and hurt by a sudden movement|He twisted his ankle.
+The vaccine helps ___ the disease.|prevent|to stop something from happening|The vaccine helps prevent the disease.
+She's been feeling ___ since yesterday.|nauseous|feeling that you may be sick|I felt nauseous all morning.
+The doctor ___ two weeks of rest.|recommended|advised as a good thing to do|The doctor recommended two weeks of rest.
+His symptoms ___ after a few days.|improved|got better|His symptoms improved after a few days.
+The hospital ___ him overnight for observation.|kept|made someone stay in a place|The hospital kept him overnight.
+She takes a daily ___ for her allergies.|tablet|a small pill of medicine|She takes a tablet every day.
+The surgeon ___ the operation successfully.|performed|carried out a task or action|The surgeon performed the operation.
+He's ___ to a specialist for further tests.|referred|sent to another doctor or place|He was referred to a specialist.
+The patient's condition remained ___.|stable|not changing; not getting worse|The patient's condition stayed stable.
+She was given ___ before the procedure.|anaesthesia|drugs that stop you feeling pain|She was given anaesthesia before the operation.
+The clinic is fully ___ for emergencies.|equipped|having the tools and supplies needed|The clinic is well equipped.
+His recovery has been slow but ___.|steady|continuing at an even, regular rate|His recovery has been steady.
+The doctor advised him to ___ smoking.|quit|to stop doing something|He decided to quit smoking.`,
   },
   {
     id: "b2p10",
@@ -2715,31 +2715,31 @@ The doctor advised him to ___ smoking.|quit`,
     subtitle: "Talking about devices and news",
     kind: "cloze",
     note: "Everyday tech and media vocabulary at B2 level.",
-    data: `My phone's ___ died, so I couldn't call.|battery
-The app keeps ___ every time I open it.|crashing
-We need to ___ the software before using it.|update
-The article went ___ within hours.|viral
-He ___ his password and got locked out.|forgot
-The company was ___ over a data breach.|criticised
-Streaming services have ___ how we watch TV.|changed
-She ___ the video before sharing it.|verified
-The signal ___ whenever it rains.|drops
-This site collects your data without ___.|consent
-The report was ___ by several news outlets.|shared
-He ___ his old laptop for a new one.|upgraded
-The story was quickly ___ by fact-checkers.|debunked
-Most people now get news through social ___.|media
-The website ___ if too many users log in.|crashes
-She backed up her files to the ___.|cloud
-The headline was clearly ___.|misleading
-He ___ the news alert before reading it.|dismissed
-The device connects ___ to your phone.|wirelessly
-Online ___ can spread faster than facts.|misinformation
-The company issued a public ___.|apology
-She disabled ___ to save her battery.|notifications
-The article cited an ___ source.|unreliable
-His account was ___ after suspicious activity.|suspended
-The platform introduced stricter privacy ___.|settings`,
+    data: `My phone's ___ died, so I couldn't call.|battery|a small device that gives power|My phone's battery died.
+The app keeps ___ every time I open it.|crashing|suddenly stopping working|The app keeps crashing.
+We need to ___ the software before using it.|update|to change software to the newest version|Please update the software.
+The article went ___ within hours.|viral|spreading very fast online|The video went viral.
+He ___ his password and got locked out.|forgot|could not remember|He forgot his password.
+The company was ___ over a data breach.|criticised|blamed for doing something wrong|The company was criticised over the breach.
+Streaming services have ___ how we watch TV.|changed|made something different|Streaming has changed how we watch TV.
+She ___ the video before sharing it.|verified|checked that something is true|She verified the video first.
+The signal ___ whenever it rains.|drops|gets weaker or lost|The signal drops when it rains.
+This site collects your data without ___.|consent|permission to do something|They collect data without consent.
+The report was ___ by several news outlets.|shared|passed on to other people|Several outlets shared the report.
+He ___ his old laptop for a new one.|upgraded|replaced with a better version|He upgraded his old laptop.
+The story was quickly ___ by fact-checkers.|debunked|shown to be false|Fact-checkers debunked the story.
+Most people now get news through social ___.|media|websites where people share content|Most people get news through social media.
+The website ___ if too many users log in.|crashes|suddenly stops working|The website crashes if too many log in.
+She backed up her files to the ___.|cloud|online storage on distant computers|She backed up her files to the cloud.
+The headline was clearly ___.|misleading|giving a wrong idea on purpose|The headline was clearly misleading.
+He ___ the news alert before reading it.|dismissed|chose to ignore something|He dismissed the alert.
+The device connects ___ to your phone.|wirelessly|without any cables|The speaker connects wirelessly to your phone.
+Online ___ can spread faster than facts.|misinformation|false information that spreads|Misinformation can spread faster than facts.
+The company issued a public ___.|apology|a statement saying you are sorry|The company issued a public apology.
+She disabled ___ to save her battery.|notifications|messages from an app on your phone|I turned off notifications.
+The article cited an ___ source.|unreliable|that you cannot trust|The article cited an unreliable source.
+His account was ___ after suspicious activity.|suspended|stopped for a time|His account was suspended.
+The platform introduced stricter privacy ___.|settings|choices that control how an app works|Check your privacy settings.`,
   },
   {
     id: "b2p11",
@@ -2747,31 +2747,31 @@ The platform introduced stricter privacy ___.|settings`,
     subtitle: "Deals and workplace talk",
     kind: "cloze",
     note: "B2-level vocabulary for meetings and negotiations.",
-    data: `We need to ___ a deal before the deadline.|close
-Both sides made a ___ to reach agreement.|compromise
-The company plans to ___ into new markets.|expand
-We're hoping to ___ a long-term partnership.|build
-The talks broke down over pricing ___.|disputes
-She was promoted to ___ the new division.|head
-The merger was finally ___ this week.|approved
-We need to ___ the terms before signing.|finalise
-His proposal was ___ by the board.|rejected
-The company had to ___ several employees.|lay off
-We're aiming to ___ costs by ten percent.|cut
-The client asked for a better ___.|quote
-They reached a ___ after hours of talks.|deal
-The firm plans to ___ with a rival company.|merge
-We need more data before we can ___.|decide
-The negotiation ___ down to price alone.|came
-She's known for driving a hard ___.|bargain
-The board will ___ on the proposal tomorrow.|vote
-We're under pressure to ___ a decision quickly.|make
-The deal fell ___ at the last minute.|through
-They agreed to ___ the contract for a year.|extend
-The company issued new ___ to investors.|shares
-We need buy-in from all ___ involved.|stakeholders
-The CEO announced a major ___ in strategy.|shift
-Negotiations are still ___ ongoing.|very much`,
+    data: `We need to ___ a deal before the deadline.|close|to finish an agreement successfully|We want to close the deal.
+Both sides made a ___ to reach agreement.|compromise|an agreement where each side gives something up|Both sides made a compromise.
+The company plans to ___ into new markets.|expand|to grow bigger|The firm plans to expand abroad.
+We're hoping to ___ a long-term partnership.|build|to create over time|We want to build a partnership.
+The talks broke down over pricing ___.|disputes|serious disagreements|Pricing disputes ended the talks.
+She was promoted to ___ the new division.|head|to lead a group or department|She was promoted to head the division.
+The merger was finally ___ this week.|approved|officially accepted|The merger was approved this week.
+We need to ___ the terms before signing.|finalise|to agree the last details|We need to finalise the terms.
+His proposal was ___ by the board.|rejected|refused to accept|The board rejected his proposal.
+The company had to ___ several employees.|lay off|to stop employing workers|The company had to lay off staff.
+We're aiming to ___ costs by ten percent.|cut|to make smaller|We aim to cut costs.
+The client asked for a better ___.|quote|a price a seller says they will charge|The client asked for a better quote.
+They reached a ___ after hours of talks.|deal|an agreement in business|They struck a deal.
+The firm plans to ___ with a rival company.|merge|to join to form one company|The firm plans to merge with a rival.
+We need more data before we can ___.|decide|to choose after thinking|We need more data to decide.
+The negotiation ___ down to price alone.|came|reached the main point|It came down to price.
+She's known for driving a hard ___.|bargain|an agreement where both sides argue for terms|She drives a hard bargain.
+The board will ___ on the proposal tomorrow.|vote|to choose by raising a hand or ballot|The board will vote tomorrow.
+We're under pressure to ___ a decision quickly.|make|to reach a choice|We must make a decision quickly.
+The deal fell ___ at the last minute.|through|failed to happen|The deal fell through.
+They agreed to ___ the contract for a year.|extend|to make something last longer|They agreed to extend the contract.
+The company issued new ___ to investors.|shares|parts of a company that people can own|The firm issued new shares.
+We need buy-in from all ___ involved.|stakeholders|people with an interest in a business|We need all stakeholders involved.
+The CEO announced a major ___ in strategy.|shift|a change in direction|The CEO announced a shift in strategy.
+Negotiations are still ___ ongoing.|very much|to a great degree|Negotiations are very much ongoing.`,
   },
   {
     id: "b2p12",
@@ -2779,31 +2779,31 @@ Negotiations are still ___ ongoing.|very much`,
     subtitle: "Reporting incidents",
     kind: "cloze",
     note: "B2-level vocabulary for news and crime reports.",
-    data: `The suspect was ___ near the scene.|arrested
-Police are ___ the robbery as a priority case.|treating
-The witness gave a detailed ___ to police.|statement
-He was found ___ of the crime.|guilty
-The jury reached a ___ after two days.|verdict
-She was ___ to five years in prison.|sentenced
-The thief managed to ___ before police arrived.|escape
-Detectives are still ___ the case.|investigating
-The court will ___ the case next month.|hear
-He pleaded ___ to the charges.|not guilty
-The victim reported the ___ to the police.|theft
-CCTV footage helped ___ the suspect.|identify
-The judge dismissed the case due to lack of ___.|evidence
-The lawyer argued for a lighter ___.|sentence
-Police are appealing for ___ from the public.|witnesses
-The burglar broke ___ through a window.|in
-He was released on ___ pending trial.|bail
-The case was ___ due to insufficient evidence.|dropped
-The officer read him his ___.|rights
-The trial is expected to ___ several weeks.|last
-She was charged with ___ a false report.|filing
-The defendant appeared in court to ___ the charges.|answer
-Forensic experts examined the ___ carefully.|scene
-The gang was involved in a series of ___.|robberies
-He was found ___ innocent by the jury.|not`,
+    data: `The suspect was ___ near the scene.|arrested|taken by police for a suspected crime|The suspect was arrested.
+Police are ___ the robbery as a priority case.|treating|handling something in a certain way|Police are treating it as a priority.
+The witness gave a detailed ___ to police.|statement|a spoken or written account|The witness gave a statement.
+He was found ___ of the crime.|guilty|found to have done the crime|He was found guilty.
+The jury reached a ___ after two days.|verdict|the decision of a court jury|The jury reached a verdict.
+She was ___ to five years in prison.|sentenced|given a punishment by a judge|She was sentenced to five years.
+The thief managed to ___ before police arrived.|escape|to get away from a place|The thief tried to escape.
+Detectives are still ___ the case.|investigating|trying to find out the facts|Detectives are investigating the case.
+The court will ___ the case next month.|hear|to listen to a case in court|The court will hear the case next month.
+He pleaded ___ to the charges.|not guilty|saying you did not do the crime|He pleaded not guilty.
+The victim reported the ___ to the police.|theft|the crime of stealing|The victim reported the theft.
+CCTV footage helped ___ the suspect.|identify|to recognise who someone is|CCTV helped identify the suspect.
+The judge dismissed the case due to lack of ___.|evidence|facts that show something is true|The judge dismissed it for lack of evidence.
+The lawyer argued for a lighter ___.|sentence|a punishment given by a court|The lawyer argued for a lighter sentence.
+Police are appealing for ___ from the public.|witnesses|people who saw a crime happen|Police are appealing for witnesses.
+The burglar broke ___ through a window.|in|entered a building by force|The burglar broke in through a window.
+He was released on ___ pending trial.|bail|money paid so you can wait outside prison|He was released on bail.
+The case was ___ due to insufficient evidence.|dropped|stopped before it was finished|The case was dropped.
+The officer read him his ___.|rights|legal protections a person has|The officer read him his rights.
+The trial is expected to ___ several weeks.|last|to continue for a time|The trial will last several weeks.
+She was charged with ___ a false report.|filing|presenting a formal document|She was charged with filing a false report.
+The defendant appeared in court to ___ the charges.|answer|to give a formal reply to a charge|He appeared in court to answer the charges.
+Forensic experts examined the ___ carefully.|scene|the place where something happened|Experts examined the scene.
+The gang was involved in a series of ___.|robberies|crimes where things are stolen with force|The gang carried out a series of robberies.
+He was found ___ innocent by the jury.|not|a word that makes a sentence negative|The jury found him not guilty.`,
   },
   {
     id: "b2p13",
@@ -2811,31 +2811,31 @@ He was found ___ innocent by the jury.|not`,
     subtitle: "Government and public debate",
     kind: "cloze",
     note: "B2-level vocabulary for discussing politics and social issues.",
-    data: `The government announced a new ___ to tackle unemployment.|policy
-Voters will go to the ___ next month.|polls
-The party won a clear ___ in parliament.|majority
-Citizens have the right to ___ in elections.|vote
-The proposal sparked a heated public ___.|debate
-The minister was forced to ___ after the scandal.|resign
-The new law will ___ into effect next year.|come
-Protesters gathered to ___ against the reform.|demonstrate
-The opposition ___ the government's handling of the crisis.|criticised
-Many people feel ___ by the lack of change.|frustrated
-The council held a ___ to discuss local issues.|meeting
-The bill was passed after months of ___.|negotiation
-Inequality remains a major ___ in society.|issue
-The campaign focused on ___ reform in healthcare.|systemic
-Freedom of ___ is protected by the constitution.|speech
-The election result surprised most political ___.|analysts
-The president signed the treaty after lengthy ___.|talks
-Local communities are demanding greater ___ in decisions.|say
-The government faces pressure to ___ its spending.|cut
-Turnout at the election was ___ lower than expected.|significantly
-The candidate promised to ___ taxes for low earners.|lower
-Public trust in politicians has ___ in recent years.|declined
-The referendum will decide whether the country should ___ the union.|leave
-Activists are calling for stronger ___ rights.|workers'
-The new policy aims to reduce the wealth ___.|gap`,
+    data: `The government announced a new ___ to tackle unemployment.|policy|a plan of action used by a government|The government announced a new policy.
+Voters will go to the ___ next month.|polls|places where people vote in an election|Voters will go to the polls.
+The party won a clear ___ in parliament.|majority|more than half of the votes or seats|The party won a clear majority.
+Citizens have the right to ___ in elections.|vote|to choose someone in an election|Citizens have the right to vote.
+The proposal sparked a heated public ___.|debate|a formal talk where views are argued|The plan sparked a heated debate.
+The minister was forced to ___ after the scandal.|resign|to leave a job by choice|The minister had to resign.
+The new law will ___ into effect next year.|come|to begin to be in force|The law will come into effect.
+Protesters gathered to ___ against the reform.|demonstrate|to show opposition in a public march|Protesters gathered to demonstrate.
+The opposition ___ the government's handling of the crisis.|criticised|said what was wrong with something|The opposition criticised the government.
+Many people feel ___ by the lack of change.|frustrated|annoyed because you cannot change things|Many people feel frustrated.
+The council held a ___ to discuss local issues.|meeting|a gathering of people to talk and decide|The council held a meeting.
+The bill was passed after months of ___.|negotiation|talks to reach an agreement|The bill passed after months of negotiation.
+Inequality remains a major ___ in society.|issue|a subject people discuss or worry about|Inequality remains a major issue.
+The campaign focused on ___ reform in healthcare.|systemic|affecting a whole system|The campaign called for systemic reform.
+Freedom of ___ is protected by the constitution.|speech|the right to say what you think|Freedom of speech is protected.
+The election result surprised most political ___.|analysts|experts who study and explain events|Most analysts were surprised.
+The president signed the treaty after lengthy ___.|talks|conversations to reach an agreement|The president signed after lengthy talks.
+Local communities are demanding greater ___ in decisions.|say|a chance to influence a decision|Locals want more say in decisions.
+The government faces pressure to ___ its spending.|cut|to reduce|The government must cut its spending.
+Turnout at the election was ___ lower than expected.|significantly|by a large and clear amount|Turnout was significantly lower than expected.
+The candidate promised to ___ taxes for low earners.|lower|to make something smaller|He promised to lower taxes.
+Public trust in politicians has ___ in recent years.|declined|became less or worse|Public trust has declined.
+The referendum will decide whether the country should ___ the union.|leave|to go away from a group|Should the country leave the union?
+Activists are calling for stronger ___ rights.|workers'|belonging to people who work for pay|They call for stronger workers' rights.
+The new policy aims to reduce the wealth ___.|gap|a large difference between two groups|The policy aims to reduce the wealth gap.`,
   },
   {
     id: "b2p14",
@@ -2843,130 +2843,133 @@ The new policy aims to reduce the wealth ___.|gap`,
     subtitle: "Museums, film and performance",
     kind: "cloze",
     note: "B2-level vocabulary for discussing the arts.",
-    data: `The gallery is hosting an ___ of modern sculpture.|exhibition
-The film received ___ reviews from critics.|mixed
-The novel was later ___ into a successful film.|adapted
-The orchestra gave a ___ performance last night.|stunning
-The museum's new wing displays ___ artefacts.|ancient
-The play explores themes of loss and ___.|identity
-The concert was performed to a sold-out ___.|audience
-The director is known for his unique visual ___.|style
-The choreography was both bold and ___.|graceful
-The exhibition features works by local ___.|artists
-The band's latest album was a huge commercial ___.|success
-Critics praised the film's stunning ___.|cinematography
-The theatre company is famous for its innovative ___.|productions
-The museum acquired a private ___ of Impressionist works.|collection
-The festival celebrates classical and contemporary ___.|music
-The actor gave a deeply moving ___.|performance
-The sculpture was carved from a single block of ___.|marble
-The author's latest book explores modern ___.|society
-The gallery curator selected pieces that challenge ___.|perception
-The documentary sheds light on an overlooked ___ movement.|artistic
-The opera house is renowned for its stunning ___.|acoustics
-The mural depicts the city's rich cultural ___.|heritage
-The critics called the performance a true work of ___.|art
-The young pianist won critical ___ for her debut.|acclaim
-The novel won several literary ___ this year.|awards`,
+    data: `The gallery is hosting an ___ of modern sculpture.|exhibition|a public display of art|The gallery hosts an exhibition.
+The film received ___ reviews from critics.|mixed|both good and bad|The film received mixed reviews.
+The novel was later ___ into a successful film.|adapted|changed to suit a new form|The novel was adapted into a film.
+The orchestra gave a ___ performance last night.|stunning|very impressive|The orchestra gave a stunning performance.
+The museum's new wing displays ___ artefacts.|ancient|very old, from long ago|The museum shows ancient artefacts.
+The play explores themes of loss and ___.|identity|who a person is and what they are|The play explores identity.
+The concert was performed to a sold-out ___.|audience|people who watch a show|The audience applauded loudly.
+The director is known for his unique visual ___.|style|the special way something is made or done|He has a unique visual style.
+The choreography was both bold and ___.|graceful|moving in a smooth, beautiful way|The dance was bold and graceful.
+The exhibition features works by local ___.|artists|people who make paintings or sculptures|The show features local artists.
+The band's latest album was a huge commercial ___.|success|getting what you hoped for|The album was a huge success.
+Critics praised the film's stunning ___.|cinematography|the art of filming a movie|Critics praised the film's cinematography.
+The theatre company is famous for its innovative ___.|productions|shows put on at a theatre|The theatre is famous for its productions.
+The museum acquired a private ___ of Impressionist works.|collection|a group of objects gathered together|The museum acquired a private collection.
+The festival celebrates classical and contemporary ___.|music|sounds made by voices and instruments|The festival celebrates classical music.
+The actor gave a deeply moving ___.|performance|a show given before an audience|The actor gave a moving performance.
+The sculpture was carved from a single block of ___.|marble|a hard stone used for statues|The statue is carved from marble.
+The author's latest book explores modern ___.|society|people living together in a country|The book explores modern society.
+The gallery curator selected pieces that challenge ___.|perception|the way you see and understand things|Art can change our perception.
+The documentary sheds light on an overlooked ___ movement.|artistic|connected with painting or other art|It was an overlooked artistic movement.
+The opera house is renowned for its stunning ___.|acoustics|the way sound is heard in a room|The hall is known for its acoustics.
+The mural depicts the city's rich cultural ___.|heritage|traditions passed down from the past|The mural shows the city's cultural heritage.
+The critics called the performance a true work of ___.|art|paintings, music and other creative things|It was a true work of art.
+The young pianist won critical ___ for her debut.|acclaim|strong praise from critics|The pianist won critical acclaim.
+The novel won several literary ___ this year.|awards|prizes for good work|The novel won several awards.`,
   },
   {
     id: "b2p15",
     title: "Idioms & Fixed Expressions",
     subtitle: "Meaning match",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'The expression "%s" means…',
     note: "Common B2-level idioms and fixed expressions.",
-    data: `to be on the ball|to be alert and quick to understand
-to cost an arm and a leg|to be very expensive
-to hit the books|to study hard
-to get the ball rolling|to start something
-to be in hot water|to be in trouble
-to call it a day|to stop working for now
-to break the ice|to ease tension in a social situation
-to be under the weather|to feel slightly ill
-to keep an eye on|to watch carefully
-to make ends meet|to have just enough money to live on
-to be a piece of cake|to be very easy
-to spill the beans|to reveal a secret
-to be in the same boat|to be in the same difficult situation
-to give someone the benefit of the doubt|to trust them despite uncertainty
-to sit on the fence|to avoid choosing a side
-to get cold feet|to become nervous about doing something
-to go back to square one|to start again from the beginning
-to be a piece of the puzzle|to be one part of a larger issue
-to hit the nail on the head|to describe something exactly right
-to pull someone's leg|to joke with someone
-to be up in the air|to be undecided or uncertain
-to bite off more than you can chew|to take on too much
-to take something for granted|to not appreciate something properly
-to be out of the blue|to happen unexpectedly
-to keep your chin up|to stay positive during hard times`,
+    data: `to be on the ball|to be alert and quick to understand|to be alert and quick to understand|You need to be on the ball today.
+to cost an arm and a leg|to be very expensive|to be very expensive|It will cost an arm and a leg to fix.
+to hit the books|to study hard|to study hard|I need to hit the books tonight.
+to get the ball rolling|to start something|to start something|We need to get the ball rolling soon.
+to be in hot water|to be in trouble|to be in trouble|He seems to be in hot water with his boss.
+to call it a day|to stop working for now|to stop working for now|It's time to call it a day.
+to break the ice|to ease tension in a social situation|to ease tension in a social situation|A joke can help to break the ice.
+to be under the weather|to feel slightly ill|to feel slightly ill|I seem to be under the weather today.
+to keep an eye on|to watch carefully|to watch carefully|Please remember to keep an eye on my bag.
+to make ends meet|to have just enough money to live on|to have just enough money to live|It is hard to make ends meet.
+to be a piece of cake|to be very easy|to be very easy|The test should be a piece of cake to do.
+to spill the beans|to reveal a secret|to reveal a secret|Try not to spill the beans about it.
+to be in the same boat|to be in the same difficult situation|to share the same difficult situation|We seem to be in the same boat.
+to give someone the benefit of the doubt|to trust them despite uncertainty|to trust someone despite some doubt|I am willing to give someone the benefit of the doubt.
+to sit on the fence|to avoid choosing a side|to avoid choosing a side|He tends to sit on the fence.
+to get cold feet|to become nervous about doing something|to become nervous before doing something|She tends to get cold feet before a big talk.
+to go back to square one|to start again from the beginning|to start again from the beginning|We had to go back to square one.
+to be a piece of the puzzle|to be one part of a larger issue|to be one part of a larger issue|His comment seems to be a piece of the puzzle.
+to hit the nail on the head|to describe something exactly right|to describe something exactly right|You seem to hit the nail on the head!
+to pull someone's leg|to joke with someone|to joke with someone|He likes to pull someone's leg.
+to be up in the air|to be undecided or uncertain|to be undecided or uncertain|Our plans seem to be up in the air.
+to bite off more than you can chew|to take on too much|to take on too much|Try not to bite off more than you can chew.
+to take something for granted|to not appreciate something properly|to not value something enough|It is easy to take something for granted.
+to be out of the blue|to happen unexpectedly|to happen without warning|Her call seemed to be out of the blue.
+to keep your chin up|to stay positive during hard times|to stay positive in hard times|Try to keep your chin up.`,
   },
   {
     id: "b2p16",
     title: "Cause & Effect",
     subtitle: "Connectors for reasons and results",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'The connector "%s" is used to…',
     note: "B2-level connectors matched to how they signal cause or effect.",
-    data: `because|give a direct reason for something
-because of|introduce a noun reason
-due to|introduce a noun reason, often formal
-owing to|introduce a noun reason, formal
-as a result of|show what caused something, formal
-as a result|introduce the consequence of an action
-consequently|show a formal, logical consequence
-therefore|show a logical conclusion follows
-thus|show a formal result, similar to therefore
-hence|show a formal consequence, often written
-so|show an everyday, simple result
-which resulted in|link an event to its outcome, mid-sentence
-which led to|link a cause to its eventual outcome
-thanks to|give a positive reason for something
-on account of|give a formal reason, similar to because of
-in view of|introduce a reason that affects a decision
-for this reason|refer back to a reason just given
-as a consequence|introduce a formal result
-accordingly|show a result that logically follows
-that is why|give an informal reason in speech
-given that|introduce a condition-like reason
-seeing that|introduce an obvious reason, informal
-in light of|introduce a reason based on new information
-stemming from|show that something originates from a cause
-triggered by|show what set off a sudden reaction or event`,
+    data: `because|give a direct reason for something|used to give a direct reason for something|I stayed home because I was ill.
+because of|introduce a noun reason|used to introduce a noun reason|We stayed home because of the rain.
+due to|introduce a noun reason, often formal|used to introduce a reason in formal writing|The flight was late due to fog.
+owing to|introduce a noun reason, formal|used to introduce a formal reason|The match was off owing to rain.
+as a result of|show what caused something, formal|used to show a formal cause|Prices rose as a result of the storm.
+as a result|introduce the consequence of an action|used to introduce the effect of an action|As a result, sales fell.
+consequently|show a formal, logical consequence|used to show a logical, formal effect|Consequently, the plan was dropped.
+therefore|show a logical conclusion follows|used to show that a conclusion follows|He worked hard; therefore, he passed.
+thus|show a formal result, similar to therefore|used to show a formal result|The test failed; thus, we stopped.
+hence|show a formal consequence, often written|used to show a formal result in writing|Costs are rising; hence, prices will rise.
+so|show an everyday, simple result|used to show a simple, everyday result|It was late, so we left.
+which resulted in|link an event to its outcome, mid-sentence|used to link an event to its outcome|The error, which resulted in delay, was costly.
+which led to|link a cause to its eventual outcome|to link a cause to its later effect|The strike, which led to chaos, ended.
+thanks to|give a positive reason for something|used to give a good reason for something|We won thanks to your help.
+on account of|give a formal reason, similar to because of|used to give a formal reason|The game stopped on account of rain.
+in view of|introduce a reason that affects a decision|to give a reason that affects a decision|In view of the risks, we waited.
+for this reason|refer back to a reason just given|to point back to a reason just given|For this reason, we say no.
+as a consequence|introduce a formal result|used to introduce a formal result|As a consequence, the shop closed.
+accordingly|show a result that logically follows|used to show a result that follows logically|The weather turned; accordingly, we changed plans.
+that is why|give an informal reason in speech|used to give an informal reason in speech|He was ill, that is why he left.
+given that|introduce a condition-like reason|to give a reason that is already known|Given that it's late, let's stop.
+seeing that|introduce an obvious reason, informal|used to give an obvious reason, informally|Seeing that you're here, help me.
+in light of|introduce a reason based on new information|to give a reason based on new facts|In light of the news, we changed plans.
+stemming from|show that something originates from a cause|used to show where a problem comes from|Problems stemming from a lack of money grew.
+triggered by|show what set off a sudden reaction or event|to show what set off a sudden event|Panic triggered by the noise spread.`,
   },
   {
     id: "b2p17",
     title: "Phrasal Verbs II",
     subtitle: "Meaning match, everyday phrasal verbs",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'The phrasal verb "%s" means…',
     note: "B2-level phrasal verbs beyond the basics.",
-    data: `come across|to find something by chance
-get away with|to avoid punishment for something
-look into|to investigate something
-put off|to postpone something
-turn down|to refuse an offer
-figure out|to understand or solve something
-carry out|to perform or complete a task
-bring up|to mention a topic
-give up|to stop trying
-hold on|to wait a moment
-run into|to meet someone by chance
-set up|to arrange or establish something
-take after|to resemble a family member
-work out|to solve a problem or exercise
-break down|to stop functioning
-call off|to cancel something
-come up with|to think of an idea
-cut down on|to reduce the amount of something
-fall through|to fail to happen
-get by|to manage with limited resources
-go through with|to complete something as planned
-keep up with|to stay at the same pace as others
-look forward to|to feel excited about something future
-point out|to draw attention to something
-stand up for|to defend a person or belief`,
+    data: `come across|to find something by chance|to find something by chance|I might come across an old photo.
+get away with|to avoid punishment for something|to escape punishment|He will not get away with lying.
+look into|to investigate something|to investigate something|Police will look into the crime.
+put off|to postpone something|to postpone something|We had to put off the meeting.
+turn down|to refuse an offer|to refuse an offer|He turned down the job.
+figure out|to understand or solve something|to understand or solve something|I can't figure out this puzzle.
+carry out|to perform or complete a task|to perform or complete a task|Scientists carry out tests.
+bring up|to mention a topic|to mention a topic|Don't bring up politics.
+give up|to stop trying|to stop trying|Never give up.
+hold on|to wait a moment|to wait for a moment|Hold on, I'll be right back.
+run into|to meet someone by chance|to meet someone by chance|I may run into an old friend.
+set up|to arrange or establish something|to arrange or establish something|They set up a new company.
+take after|to resemble a family member|to look or behave like a relative|She takes after her mother.
+work out|to solve a problem or exercise|to solve a problem or to exercise|I work out every morning.
+break down|to stop functioning|to stop functioning|My car might break down.
+call off|to cancel something|to cancel something|They called off the wedding.
+come up with|to think of an idea|to think of an idea|Can you come up with a plan?
+cut down on|to reduce the amount of something|to reduce the amount of something|I want to cut down on sugar.
+fall through|to fail to happen|to fail to happen|The deal might fall through.
+get by|to manage with limited resources|to manage with little money|We can get by on a small salary.
+go through with|to complete something as planned|to do something as planned|She will go through with the wedding.
+keep up with|to stay at the same pace as others|to stay at the same pace as others|It's hard to keep up with the class.
+look forward to|to feel excited about something future|to feel excited about the future|I look forward to the holidays.
+point out|to draw attention to something|to draw attention to something|He pointed out my mistake.
+stand up for|to defend a person or belief|to defend a person or belief|You should stand up for your friends.`,
   },
   {
     id: "b2p18",
@@ -2974,31 +2977,31 @@ stand up for|to defend a person or belief`,
     subtitle: "Past, present, and unreal combinations",
     kind: "cloze",
     note: "B2-level mixed conditional structures.",
-    data: `If I ___ harder at school, I'd have a better job now.|had studied
-If she weren't so busy, she ___ have missed the meeting.|wouldn't
-If he had taken the job, he ___ be living abroad now.|would
-If they ___ more careful, the accident wouldn't have happened.|had been
-If I were you, I ___ have accepted the offer.|would
-If she had left earlier, she ___ be stuck in traffic now.|wouldn't
-If we hadn't missed the flight, we ___ be at the hotel now.|would
-If he weren't so stubborn, he ___ have listened to us.|would
-If I hadn't lost my job, I ___ be so stressed now.|wouldn't
-If she were more confident, she ___ have taken the promotion.|would
-If they had saved money, they ___ be able to travel now.|would
-If I weren't allergic, I ___ have eaten the cake.|would
-If he had trained harder, he ___ be a professional athlete now.|would
-If we ___ checked the weather, we wouldn't be stuck in the rain.|had
-If she hadn't quit, she ___ be the manager by now.|would
-If I were rich, I ___ have bought that house last year.|would
-If he ___ listened to advice, he wouldn't be in this mess now.|had
-If they weren't so tired, they ___ have finished the project.|would
-If I hadn't met her, my life ___ be very different now.|would
-If she were taller, she ___ have made the basketball team.|would
-If we had planned better, we ___ be so stressed right now.|wouldn't
-If he weren't afraid of flying, he ___ have taken the job abroad.|would
-If I ___ known about the traffic, I would have left earlier.|had
-If she hadn't studied medicine, she ___ be a doctor today.|wouldn't
-If they were more organised, they ___ have missed the deadline.|wouldn't`,
+    data: `If I ___ harder at school, I'd have a better job now.|had studied|did study before now, in an unreal case|If I had studied harder, I'd have a better job.
+If she weren't so busy, she ___ have missed the meeting.|wouldn't|the short form of would not|If she weren't busy, she wouldn't have missed it.
+If he had taken the job, he ___ be living abroad now.|would|shows a result of an unreal past|If he had taken it, he would be rich.
+If they ___ more careful, the accident wouldn't have happened.|had been|a helper verb for the past perfect|If they had been careful, no one would be hurt.
+If I were you, I ___ have accepted the offer.|would|shows what you imagine you would do|If I were you, I would have accepted.
+If she had left earlier, she ___ be stuck in traffic now.|wouldn't|shows the short form of would not|If she had left, she wouldn't be stuck.
+If we hadn't missed the flight, we ___ be at the hotel now.|would|shows a result of an unreal past|If we hadn't missed it, we would be there.
+If he weren't so stubborn, he ___ have listened to us.|would|shows an imagined result|If he weren't stubborn, he would have listened.
+If I hadn't lost my job, I ___ be so stressed now.|wouldn't|the short form of would not|If I hadn't lost it, I wouldn't be stressed.
+If she were more confident, she ___ have taken the promotion.|would|shows an imagined result|If she were bolder, she would have taken it.
+If they had saved money, they ___ be able to travel now.|would|shows what could be true now|If they had saved, they would be able to go.
+If I weren't allergic, I ___ have eaten the cake.|would|shows an imagined result|If I weren't allergic, I would have eaten it.
+If he had trained harder, he ___ be a professional athlete now.|would|shows what could be true now|If he had trained, he would be a pro.
+If we ___ checked the weather, we wouldn't be stuck in the rain.|had|a helper verb for the past perfect|If we had checked, we wouldn't be stuck.
+If she hadn't quit, she ___ be the manager by now.|would|shows what could be true now|If she hadn't quit, she would be the boss.
+If I were rich, I ___ have bought that house last year.|would|shows an imagined result|If I were rich, I would have bought it.
+If he ___ listened to advice, he wouldn't be in this mess now.|had|a helper verb for the past perfect|If he had listened, he wouldn't be in trouble.
+If they weren't so tired, they ___ have finished the project.|would|shows an imagined result|If they weren't tired, they would have finished.
+If I hadn't met her, my life ___ be very different now.|would|shows a result that is not real|If I hadn't met her, my life would be different.
+If she were taller, she ___ have made the basketball team.|would|shows an imagined result|If she were taller, she would have made the team.
+If we had planned better, we ___ be so stressed right now.|wouldn't|the short form of would not|If we had planned, we wouldn't be stressed.
+If he weren't afraid of flying, he ___ have taken the job abroad.|would|shows an imagined result|If he weren't afraid, he would have gone.
+If I ___ known about the traffic, I would have left earlier.|had|a helper verb for the past perfect|If I had known, I would have left earlier.
+If she hadn't studied medicine, she ___ be a doctor today.|wouldn't|the short form of would not|If she hadn't studied, she wouldn't be a doctor.
+If they were more organised, they ___ have missed the deadline.|wouldn't|the short form of would not|If they were organised, they wouldn't have missed it.`,
   },
   {
     id: "b2p19",
@@ -3006,31 +3009,31 @@ If they were more organised, they ___ have missed the deadline.|wouldn't`,
     subtitle: "Expressing regret and desire",
     kind: "cloze",
     note: "B2-level wish structures.",
-    data: `I wish I ___ more time to finish this project.|had
-If only I ___ studied harder for the exam.|had
-I wish she ___ stop interrupting me.|would
-If only he ___ listen to advice sometimes.|would
-I wish I ___ speak French fluently.|could
-If only we ___ afford a bigger house.|could
-I wish it ___ stop raining.|would
-If only I ___ known about the meeting earlier.|had
-I wish he ___ so careless with money.|weren't
-If only she ___ here to see this.|were
-I wish I ___ never said that to him.|had
-If only they ___ listened to the warning.|had
-I wish you ___ stop smoking.|would
-If only I ___ taller.|were
-I wish we ___ more time together.|had
-If only he ___ apologise for what he did.|would
-I wish I ___ that decision differently.|had made
-If only she ___ more patient with the children.|were
-I wish they ___ visit more often.|would
-If only I ___ studied medicine instead.|had
-I wish my neighbours ___ so noisy.|weren't
-If only we ___ booked the tickets earlier.|had
-I wish he ___ trust me more.|would
-If only I ___ able to help you then.|had been
-I wish this day ___ never end.|would`,
+    data: `I wish I ___ more time to finish this project.|had|owned or possessed|I wish I had more time.
+If only I ___ studied harder for the exam.|had|a helper verb for a past regret|If only I had studied harder.
+I wish she ___ stop interrupting me.|would|shows you want someone to change|I wish she would stop interrupting.
+If only he ___ listen to advice sometimes.|would|shows you want someone to change|If only he would listen.
+I wish I ___ speak French fluently.|could|shows an ability you do not have|I wish I could speak French.
+If only we ___ afford a bigger house.|could|shows an ability you do not have|If only we could afford it.
+I wish it ___ stop raining.|would|shows you want something to change|I wish it would stop raining.
+If only I ___ known about the meeting earlier.|had|a helper verb for a past regret|If only I had known earlier.
+I wish he ___ so careless with money.|weren't|the short form of were not|I wish he weren't so careless.
+If only she ___ here to see this.|were|a form of be used for wishes|If only she were here.
+I wish I ___ never said that to him.|had|a helper verb for a regret|I wish I had never said that.
+If only they ___ listened to the warning.|had|a helper verb for a regret|If only they had listened.
+I wish you ___ stop smoking.|would|shows you want someone to change|I wish you would stop smoking.
+If only I ___ taller.|were|a form of be used for wishes|If only I were taller.
+I wish we ___ more time together.|had|owned or possessed|I wish we had more time together.
+If only he ___ apologise for what he did.|would|shows you want someone to change|If only he would apologise.
+I wish I ___ that decision differently.|had made|a regret about a past choice|I wish I had made a different choice.
+If only she ___ more patient with the children.|were|a form of be used for wishes|If only she were more patient.
+I wish they ___ visit more often.|would|shows you want people to change|I wish they would visit more often.
+If only I ___ studied medicine instead.|had|a helper verb for a regret|If only I had studied medicine.
+I wish my neighbours ___ so noisy.|weren't|the short form of were not|I wish my neighbours weren't so noisy.
+If only we ___ booked the tickets earlier.|had|a helper verb for a regret|If only we had booked earlier.
+I wish he ___ trust me more.|would|shows you want someone to change|I wish he would trust me more.
+If only I ___ able to help you then.|had been|a regret about being unable to help|If only I had been able to help.
+I wish this day ___ never end.|would|shows you want something to change|I wish this day would never end.`,
   },
   {
     id: "b2p20",
@@ -3038,31 +3041,31 @@ I wish this day ___ never end.|would`,
     subtitle: "Kitchen vocabulary and techniques",
     kind: "cloze",
     note: "B2-level cooking vocabulary.",
-    data: `You need to ___ the onions before adding them.|chop
-Please ___ the sauce so it doesn't burn.|stir
-The chef decided to ___ the vegetables instead of boiling them.|roast
-You should ___ the meat before cooking it further.|marinate
-Let the soup ___ for twenty minutes.|simmer
-He likes to ___ the chicken until it's golden brown.|fry
-You need to ___ the pastry before baking it.|roll
-Add a pinch of salt to ___ the flavour.|enhance
-The recipe says to ___ the oven to 200 degrees.|preheat
-You should ___ the vegetables before serving.|steam
-Let the dough ___ for an hour before baking.|rise
-He likes to ___ fresh herbs over the dish.|sprinkle
-You need to ___ the sauce until it thickens.|reduce
-Please ___ the ingredients thoroughly.|combine
-The recipe calls for you to ___ the garlic finely.|mince
-You should ___ the meat before slicing it.|rest
-He decided to ___ the vegetables on the grill.|grill
-You need to ___ the excess fat from the pan.|drain
-Add the spices to ___ the dish more flavour.|give
-The chef used a whisk to ___ the eggs.|beat
-You should ___ the cake before removing it from the tin.|cool
-He likes to ___ the meat in breadcrumbs before frying.|coat
-You need to ___ the vegetables into small pieces.|dice
-Let the meat ___ overnight in the fridge.|chill
-The sauce needs to ___ before you can serve it.|thicken`,
+    data: `You need to ___ the onions before adding them.|chop|to cut food into small pieces|Chop the onions finely.
+Please ___ the sauce so it doesn't burn.|stir|to mix food by moving a spoon|Stir the sauce slowly.
+The chef decided to ___ the vegetables instead of boiling them.|roast|to cook food in an oven|Roast the vegetables for an hour.
+You should ___ the meat before cooking it further.|marinate|to soak meat in a tasty liquid|Marinate the meat overnight.
+Let the soup ___ for twenty minutes.|simmer|to cook gently just below boiling|Let the soup simmer.
+He likes to ___ the chicken until it's golden brown.|fry|to cook in hot oil|Fry the chicken until golden.
+You need to ___ the pastry before baking it.|roll|to flatten dough with a flat tool|Roll the pastry thinly.
+Add a pinch of salt to ___ the flavour.|enhance|to make better|Salt can enhance the flavour.
+The recipe says to ___ the oven to 200 degrees.|preheat|to heat the oven before cooking|Preheat the oven to 200 degrees.
+You should ___ the vegetables before serving.|steam|to cook using hot water vapour|Steam the vegetables briefly.
+Let the dough ___ for an hour before baking.|rise|to grow bigger by itself|The dough will rise in an hour.
+He likes to ___ fresh herbs over the dish.|sprinkle|to scatter small pieces over food|Sprinkle fresh herbs on top.
+You need to ___ the sauce until it thickens.|reduce|to boil until there is less liquid|Reduce the sauce until it thickens.
+Please ___ the ingredients thoroughly.|combine|to mix things together|Combine the ingredients well.
+The recipe calls for you to ___ the garlic finely.|mince|to cut into very small pieces|Mince the garlic finely.
+You should ___ the meat before slicing it.|rest|to leave food alone for a while|Let the meat rest before slicing.
+He decided to ___ the vegetables on the grill.|grill|to cook over direct heat|Grill the vegetables outside.
+You need to ___ the excess fat from the pan.|drain|to let liquid flow away|Drain the fat from the pan.
+Add the spices to ___ the dish more flavour.|give|to hand over or provide|Spices give the dish more flavour.
+The chef used a whisk to ___ the eggs.|beat|to mix quickly with a tool|Beat the eggs with a whisk.
+You should ___ the cake before removing it from the tin.|cool|to become less warm|Cool the cake before removing it.
+He likes to ___ the meat in breadcrumbs before frying.|coat|to cover with a layer|Coat the meat in breadcrumbs.
+You need to ___ the vegetables into small pieces.|dice|to cut into small cubes|Dice the vegetables.
+Let the meat ___ overnight in the fridge.|chill|to make cold; to keep in a fridge|Chill the meat overnight.
+The sauce needs to ___ before you can serve it.|thicken|to become thick|The sauce will thicken as it cools.`,
   },
   {
     id: "b2p21",
@@ -3189,33 +3192,34 @@ const C1: Pack[] = [
     title: "Idioms",
     subtitle: "Meaning match",
     kind: "pair",
+    termFromLeft: true,
     prompt: '"%s" means:',
     note: "Idioms are fixed — the words can't be swapped.",
-    data: `bite the bullet|accept something unpleasant
-hit the nail on the head|be exactly right
-under the weather|slightly unwell
-a blessing in disguise|a hidden benefit
-cut corners|do something cheaply or badly
-on the fence|undecided
-the ball is in your court|it's your decision
-let the cat out of the bag|reveal a secret
-break the ice|start a conversation
-go the extra mile|make extra effort
-throw in the towel|give up
-a grey area|something unclear
-call it a day|stop working
-take it with a pinch of salt|be sceptical
-back to square one|start again
-in the long run|eventually
-pull strings|use influence
-the bottom line|the essential point
-jump the gun|act too soon
-sit on one's hands|do nothing
-a steep learning curve|hard to learn quickly
-touch base|make brief contact
-move the goalposts|change the rules unfairly
-play devil's advocate|argue the opposing view
-cost an arm and a leg|be very expensive`,
+    data: `bite the bullet|accept something unpleasant|to accept something unpleasant and move on|You will have to bite the bullet and pay.
+hit the nail on the head|be exactly right|to be exactly right|You seem to hit the nail on the head.
+under the weather|slightly unwell|slightly unwell|I feel a bit under the weather today.
+a blessing in disguise|a hidden benefit|a bad thing that turns out good|Losing that job was a blessing in disguise.
+cut corners|do something cheaply or badly|to do something cheaply or badly|Builders who cut corners put people at risk.
+on the fence|undecided|undecided; not choosing a side|On the issue of tax, she is on the fence.
+the ball is in your court|it's your decision|it's your turn to decide|We made the offer, so the ball is in your court.
+let the cat out of the bag|reveal a secret|to reveal a secret by mistake|He let the cat out of the bag about the party.
+break the ice|start a conversation|to ease the tension at a first meeting|A joke helped to break the ice.
+go the extra mile|make extra effort|to make an extra effort|She will go the extra mile for clients.
+throw in the towel|give up|to give up|After two years he threw in the towel.
+a grey area|something unclear|a situation where rules are unclear|The law here is a grey area.
+call it a day|stop working|to stop working for the day|It's late, so let's call it a day.
+take it with a pinch of salt|be sceptical|to doubt that something is completely true|Take it with a pinch of salt.
+back to square one|start again|to start again from the beginning|The test failed, so we're back to square one.
+in the long run|eventually|after a long time; in the end|In the long run, saving pays off.
+pull strings|use influence|to use your influence to get something|He had to pull strings to get the job.
+the bottom line|the essential point|the most important point|The bottom line is that we need more money.
+jump the gun|act too soon|to act too soon|Don't jump the gun before the results arrive.
+sit on one's hands|do nothing|to wait and do nothing|It is wrong to sit on one's hands.
+a steep learning curve|hard to learn quickly|something hard to learn at first|The new software has a steep learning curve.
+touch base|make brief contact|to make short contact with someone|Let's touch base on Friday.
+move the goalposts|change the rules unfairly|to change the rules in an unfair way|They keep moving the goalposts on us.
+play devil's advocate|argue the opposing view|to argue the other side for debate|Let me play devil's advocate for a moment.
+cost an arm and a leg|be very expensive|to be very expensive|Repairing the roof will cost an arm and a leg.`,
   },
   {
     id: "c1p2",
@@ -3224,31 +3228,31 @@ cost an arm and a leg|be very expensive`,
     kind: "pair",
     prompt: 'Formal equivalent of "%s":',
     note: "Academic and professional writing prefers Latinate verbs.",
-    data: `find out|ascertain
-get|obtain
-help|assist
-show|demonstrate
-start|commence
-end|terminate
-need|require
-tell|inform
-ask for|request
-put off|postpone
-look at|examine
-think about|consider
-set up|establish
-go up|increase
-go down|decline
-leave out|omit
-deal with|address
-point out|indicate
-give up|relinquish
-talk about|discuss
-make up|constitute
-cut down|reduce
-bring about|induce
-carry out|conduct
-back up|corroborate`,
+    data: `find out|ascertain|to find the facts about something|We must ascertain the cause of the fire.
+get|obtain|to get something by asking or effort|You must obtain a visa first.
+help|assist|to help someone do something|Staff will assist passengers at the gate.
+show|demonstrate|to make something clear by showing it|The results demonstrate a clear trend.
+start|commence|to begin|The course will commence in September.
+end|terminate|to bring something to an end|The contract was terminated last week.
+need|require|to need something as a rule|All visitors are required to sign in.
+tell|inform|to give someone facts|Please inform us of any change.
+ask for|request|to ask politely or formally for something|I wish to request a refund.
+put off|postpone|to arrange for a later time|The meeting was postponed until Friday.
+look at|examine|to look at something closely|The doctor will examine the results.
+think about|consider|to think carefully about something|Please consider our offer carefully.
+set up|establish|to create something lasting|They established the firm in 1990.
+go up|increase|to become greater in number or size|Prices tend to increase in winter.
+go down|decline|to become less or worse|Sales continued to decline last year.
+leave out|omit|to leave something out|Please do not omit any details.
+deal with|address|to give attention to a problem|The committee must address these concerns.
+point out|indicate|to show or point towards something|The figures indicate a rise in costs.
+give up|relinquish|to give up a right or claim|He chose to relinquish his title.
+talk about|discuss|to talk about a subject in detail|We will discuss the budget tomorrow.
+make up|constitute|to form or be the parts of something|Women constitute half of the workforce.
+cut down|reduce|to make smaller in amount|We aim to reduce waste by half.
+bring about|induce|to cause something to happen|The drug can induce sleep.
+carry out|conduct|to organise and carry out an activity|Researchers conduct tests in the lab.
+back up|corroborate|to support a claim with more evidence|New data corroborate the earlier findings.`,
   },
   {
     id: "c1p3",
@@ -3256,31 +3260,31 @@ back up|corroborate`,
     subtitle: "Advanced structures",
     kind: "cloze",
     note: "Fronted negatives and adverbials trigger question word order.",
-    data: `Never ___ I seen such chaos.|have
-Rarely ___ she complain.|does
-Not only ___ he late, he was rude.|was
-Hardly ___ we arrived when it rained.|had
-Under no circumstances ___ you leave.|should
-Only then ___ I understand.|did
-No sooner ___ he spoken than she left.|had
-Little ___ they know the truth.|did
-So loud ___ the music that we left.|was
-Seldom ___ such talent appear.|does
-Not until later ___ we hear the news.|did
-Such ___ his anger that he shouted.|was
-In no way ___ this acceptable.|is
-Were ___ to leave, we'd struggle.|he
-Had I ___ , I'd have helped.|known
-Should you ___ questions, ask.|have
-What I need ___ more time.|is
-It ___ she who solved it.|was
-Only by working together ___ we succeed.|can
-Nowhere ___ the report mention costs.|does
-On no account ___ the door be opened.|must
-Scarcely ___ she begun when he interrupted.|had
-Never before ___ this happened.|has
-So rarely ___ it snow here.|does
-Not once ___ he apologise.|did`,
+    data: `Never ___ I seen such chaos.|have|a helper verb placed first after never|Never have I seen such chaos.
+Rarely ___ she complain.|does|a helper verb placed first after rarely|Rarely does she complain.
+Not only ___ he late, he was rude.|was|a past form of be placed first|Not only was he late, he was rude.
+Hardly ___ we arrived when it rained.|had|a helper verb for an earlier past action|Hardly had we arrived when it rained.
+Under no circumstances ___ you leave.|should|a helper verb that gives a strong order|Under no circumstances should you leave.
+Only then ___ I understand.|did|a helper verb for the past|Only then did I understand.
+No sooner ___ he spoken than she left.|had|a helper verb for an earlier past action|No sooner had he spoken than she left.
+Little ___ they know the truth.|did|a helper verb for the past|Little did they know the truth.
+So loud ___ the music that we left.|was|a past form of be placed first|So loud was the music that we left.
+Seldom ___ such talent appear.|does|a helper verb placed first after seldom|Seldom does such talent appear.
+Not until later ___ we hear the news.|did|a helper verb for the past|Not until later did we hear the news.
+Such ___ his anger that he shouted.|was|a past form of be placed first|Such was his anger that he shouted.
+In no way ___ this acceptable.|is|a form of be placed first|In no way is this acceptable.
+Were ___ to leave, we'd struggle.|he|the man or boy already mentioned|Were he to leave, we'd struggle.
+Had I ___ , I'd have helped.|known|understood or had the facts|Had I known, I'd have helped.
+Should you ___ questions, ask.|have|to own or possess|Should you have questions, ask.
+What I need ___ more time.|is|a form of be that links two parts|What I need is more time.
+It ___ she who solved it.|was|a past form of be for focus|It was she who solved it.
+Only by working together ___ we succeed.|can|a modal verb of ability placed first|Only by working together can we succeed.
+Nowhere ___ the report mention costs.|does|a helper verb placed first after nowhere|Nowhere does the report mention costs.
+On no account ___ the door be opened.|must|a modal verb that forbids something|On no account must the door be opened.
+Scarcely ___ she begun when he interrupted.|had|a helper verb for an earlier past action|Scarcely had she begun when he interrupted.
+Never before ___ this happened.|has|a helper verb for a perfect action|Never before has this happened.
+So rarely ___ it snow here.|does|a helper verb placed first after so rarely|So rarely does it snow here.
+Not once ___ he apologise.|did|a helper verb for the past|Not once did he apologise.`,
   },
   {
     id: "c1p4",
@@ -3288,31 +3292,31 @@ Not once ___ he apologise.|did`,
     subtitle: "Nuanced signposting",
     kind: "cloze",
     note: "Each connector carries a distinct logical relationship.",
-    data: `The claim is plausible; ___ , evidence is thin.|that said
-___ , the two datasets differ in scope.|Crucially
-Sales rose, ___ modestly.|albeit
-___ , the policy achieved its aim.|Broadly speaking
-The theory holds ___ certain conditions.|under
-___ , this contradicts earlier findings.|Notably
-The results are, ___ , inconclusive.|at best
-___ far as the data allows, we conclude X.|In so
-___ , the mechanism remains unclear.|As yet
-The method is robust; ___ , costly.|conversely
-___ of the criticism, the model persists.|Regardless
-His argument is sound ___ its premises.|given
-___ , consider the counterexample.|By way of illustration
-The findings, ___ preliminary, are promising.|though
-___ , we assume linear growth.|For simplicity
-The effect is small ___ statistically significant.|yet
-___ , attention turns to causation.|Accordingly
-The sample was small; ___ , caution is advised.|hence
-___ speaking, the trend is upward.|Generally
-This is true ___ in urban settings.|particularly
-___ , the hypothesis was rejected.|Ultimately
-The data ___ suggests a link.|arguably
-___ this evidence, revision is needed.|In light of
-The study is limited ___ its scope.|in terms of
-___ , no consensus has emerged.|To date`,
+    data: `The claim is plausible; ___ , evidence is thin.|that said|used to add a contrast to a claim|The claim is plausible; that said, evidence is thin.
+___ , the two datasets differ in scope.|Crucially|used to stress a very important point|Crucially, the two datasets differ in scope.
+Sales rose, ___ modestly.|albeit|although; even though|Sales rose, albeit modestly.
+___ , the policy achieved its aim.|Broadly speaking|in a general way|Broadly speaking, the policy achieved its aim.
+The theory holds ___ certain conditions.|under|within a set of conditions|The theory holds under certain conditions.
+___ , this contradicts earlier findings.|Notably|used to point out something worth noting|Notably, this contradicts earlier findings.
+The results are, ___ , inconclusive.|at best|in the best possible case|The results are, at best, inconclusive.
+___ far as the data allows, we conclude X.|In so|to the degree that|In so far as the data allows, we conclude X.
+___ , the mechanism remains unclear.|As yet|up to now; used when something may change|As yet, the mechanism remains unclear.
+The method is robust; ___ , costly.|conversely|in the opposite way|The method is robust; conversely, it is costly.
+___ of the criticism, the model persists.|Regardless|in spite of something|Regardless of criticism, the model persists.
+His argument is sound ___ its premises.|given|taking something into account|His argument is sound given its premises.
+___ , consider the counterexample.|By way of illustration|used to introduce an example|By way of illustration, consider this case.
+The findings, ___ preliminary, are promising.|though|although; used before an adjective|The findings, though preliminary, are promising.
+___ , we assume linear growth.|For simplicity|to make things easier to explain|For simplicity, we assume linear growth.
+The effect is small ___ statistically significant.|yet|but; used to add a surprising contrast|The effect is small yet significant.
+___ , attention turns to causation.|Accordingly|in line with what came before|Accordingly, attention turns to causation.
+The sample was small; ___ , caution is advised.|hence|for this reason; as a result|The sample was small; hence, caution is advised.
+___ speaking, the trend is upward.|Generally|in a general way|Generally speaking, the trend is upward.
+This is true ___ in urban settings.|particularly|especially; more than in other cases|This is true particularly in cities.
+___ , the hypothesis was rejected.|Ultimately|in the end|Ultimately, the hypothesis was rejected.
+The data ___ suggests a link.|arguably|used for a claim that can be argued|The data arguably suggests a link.
+___ this evidence, revision is needed.|In light of|taking new facts into account|In light of this evidence, revision is needed.
+The study is limited ___ its scope.|in terms of|used to say which aspect you mean|The study is limited in terms of scope.
+___ , no consensus has emerged.|To date|up to the present time|To date, no consensus has emerged.`,
   },
   {
     id: "c1p5",
@@ -3321,31 +3325,31 @@ ___ , no consensus has emerged.|To date`,
     kind: "pair",
     prompt: 'Which verb means "%s"?',
     note: "Reporting verbs encode your stance on a claim.",
-    data: `state something as true without proof|assert
-suggest indirectly|imply
-provide evidence for|substantiate
-weaken an argument|undermine
-say something is caused by|attribute
-present as an example|illustrate
-question the validity of|challenge
-express agreement with findings|corroborate
-restate more clearly|clarify
-soften a claim|qualify
-draw out an implication|infer
-set out systematically|delineate
-compare to establish difference|differentiate
-declare formally|posit
-put forward for consideration|propose
-examine in detail|scrutinise
-reduce to essentials|distil
-show to be false|refute
-give approximate value|estimate
-place in a category|classify
-explain the reasons for|account for
-bring together findings|synthesise
-consider as a possibility|entertain
-insist despite objection|maintain
-support with authority|endorse`,
+    data: `state something as true without proof|assert|to state something as true without proof|Critics assert that the plan will fail.
+suggest indirectly|imply|to suggest something without saying it|His silence seemed to imply guilt.
+provide evidence for|substantiate|to prove a claim with evidence|Data substantiate the claim.
+weaken an argument|undermine|to weaken something slowly|Doubt can undermine trust.
+say something is caused by|attribute|to say something is caused by|Scientists attribute the rise to pollution.
+present as an example|illustrate|to explain with an example|Let me illustrate the point.
+question the validity of|challenge|to question whether something is right|Some experts challenge the findings.
+express agreement with findings|corroborate|to support a finding with more evidence|New data corroborate the earlier study.
+restate more clearly|clarify|to make something easier to understand|Please clarify what you mean.
+soften a claim|qualify|to limit or soften a claim|You should qualify that statement.
+draw out an implication|infer|to reach a conclusion from evidence|We can infer a link from these facts.
+set out systematically|delineate|to describe or mark out in detail|The report delineates the main duties.
+compare to establish difference|differentiate|to see or show how things differ|It is hard to differentiate the two twins.
+declare formally|posit|to put forward as a basis for argument|The author posits a new theory.
+put forward for consideration|propose|to put forward an idea to consider|I propose a new schedule.
+examine in detail|scrutinise|to look at something very carefully|Auditors scrutinise every account.
+reduce to essentials|distil|to reduce to the most important parts|The essay distils years of research.
+show to be false|refute|to prove that a claim is false|New evidence refutes the theory.
+give approximate value|estimate|to judge a rough value or amount|We estimate the cost at ten thousand.
+place in a category|classify|to arrange things into groups|Librarians classify books by subject.
+explain the reasons for|account for|to give the reasons for something|Weather accounts for the delay.
+bring together findings|synthesise|to combine information into one whole|The review synthesises many studies.
+consider as a possibility|entertain|to think about an idea without accepting it|I could not entertain such an idea.
+insist despite objection|maintain|to keep saying something is true|He maintained his innocence to the end.
+support with authority|endorse|to publicly support an idea or person|Several experts endorse the plan.`,
   },
   {
     id: "c1p6",
@@ -3353,31 +3357,31 @@ support with authority|endorse`,
     subtitle: "Cautious academic language",
     kind: "cloze",
     note: "Hedging protects claims from overstatement.",
-    data: `The results ___ suggest a correlation.|appear to
-This ___ be attributed to sampling error.|may
-The data ___ indicate causation.|do not necessarily
-It ___ that the effect is small.|seems
-The trend is ___ consistent.|broadly
-Findings should be treated with ___ .|caution
-There is ___ evidence of bias.|some
-The link is ___ established.|not fully
-It is ___ that the model oversimplifies.|possible
-The effect was ___ negligible.|virtually
-These figures are ___ estimates.|approximate
-The theory is ___ contested.|widely
-One ___ argue the opposite.|could
-The sample ___ not be representative.|might
-Results were ___ inconclusive.|largely
-This ___ to support the hypothesis.|tends
-The claim ___ further testing.|warrants
-There ___ to be a threshold effect.|appears
-Evidence is ___ at best.|suggestive
-Conclusions remain ___ .|tentative
-The pattern is ___ apparent.|only partly
-It would be ___ to generalise.|premature
-The difference is ___ significant.|marginally
-Such readings are ___ open to dispute.|arguably
-The mechanism is ___ understood.|poorly`,
+    data: `The results ___ suggest a correlation.|appear to|used to show something seems true|The results appear to suggest a correlation.
+This ___ be attributed to sampling error.|may|used to show something is possible|This may be due to sampling error.
+The data ___ indicate causation.|do not necessarily|used to say a cause is not certain|The data do not necessarily indicate causation.
+It ___ that the effect is small.|seems|gives the impression that|It seems that the effect is small.
+The trend is ___ consistent.|broadly|in a general way|The trend is broadly consistent.
+Findings should be treated with ___ .|caution|great care to avoid harm or mistakes|Treat the findings with caution.
+There is ___ evidence of bias.|some|an amount, but not a lot|There is some evidence of bias.
+The link is ___ established.|not fully|not completely|The link is not fully established.
+It is ___ that the model oversimplifies.|possible|able to happen or be true|It is possible that the model oversimplifies.
+The effect was ___ negligible.|virtually|almost; nearly|The effect was virtually negligible.
+These figures are ___ estimates.|approximate|close to the real figure, but not exact|These figures are approximate estimates.
+The theory is ___ contested.|widely|by many people|The theory is widely contested.
+One ___ argue the opposite.|could|a modal verb for a polite suggestion|One could argue the opposite.
+The sample ___ not be representative.|might|a modal verb for a weak possibility|The sample might not be representative.
+Results were ___ inconclusive.|largely|for the most part|Results were largely inconclusive.
+This ___ to support the hypothesis.|tends|is likely or inclined to do something|This tends to support the hypothesis.
+The claim ___ further testing.|warrants|makes something necessary or deserved|The claim warrants further testing.
+There ___ to be a threshold effect.|appears|seems to be|There appears to be a threshold effect.
+Evidence is ___ at best.|suggestive|hinting at something, but not proving it|Evidence is suggestive at best.
+Conclusions remain ___ .|tentative|not final; open to change|Conclusions remain tentative.
+The pattern is ___ apparent.|only partly|to a small degree|The pattern is only partly apparent.
+It would be ___ to generalise.|premature|too early; before it is wise|It would be premature to generalise.
+The difference is ___ significant.|marginally|by a very small amount|The difference is marginally significant.
+Such readings are ___ open to dispute.|arguably|used for a claim that can be argued|Such readings are arguably open to dispute.
+The mechanism is ___ understood.|poorly|badly; not well enough|The mechanism is poorly understood.`,
   },
   {
     id: "c1p7",
@@ -3385,31 +3389,31 @@ The mechanism is ___ understood.|poorly`,
     subtitle: "Contract and policy language",
     kind: "cloze",
     note: "Formal, legalistic register found in contracts, policies, and official notices.",
-    data: `The tenant shall ___ the premises in good condition.|maintain
-This agreement is ___ upon signature by both parties.|binding
-The clause shall be ___ null and void if breached.|deemed
-Either party may ___ this contract with 30 days' notice.|terminate
-The company reserves the ___ to amend these terms.|right
-All disputes shall be ___ by arbitration.|resolved
-The parties hereby ___ to the following terms.|agree
-This policy is ___ to change without prior notice.|subject
-The signatory ___ that all information is accurate.|warrants
-Failure to comply may result in immediate ___.|termination
-The agreement shall remain in ___ for two years.|effect
-Nothing herein shall be ___ as legal advice.|construed
-The buyer shall ___ full payment within 14 days.|remit
-This clause is ___ from the rest of the contract.|severable
-The undersigned hereby ___ receipt of the goods.|acknowledges
-The contract is governed by the ___ of this state.|laws
-Any amendment must be made in ___.|writing
-The company shall not be held ___ for delays.|liable
-The parties agree to keep the terms ___.|confidential
-This document shall ___ all prior agreements.|supersede
-The recipient must ___ the terms before proceeding.|accept
-The obligation shall ___ upon the successor entity.|pass
-Each party shall bear its own ___ costs.|legal
-The waiver shall not be ___ as a precedent.|interpreted
-The clause takes ___ immediately upon execution.|force`,
+    data: `The tenant shall ___ the premises in good condition.|maintain|to keep something in good condition|The tenant shall maintain the premises.
+This agreement is ___ upon signature by both parties.|binding|legally required to be obeyed|This agreement is binding on both parties.
+The clause shall be ___ null and void if breached.|deemed|judged or considered to be|The clause shall be deemed void if breached.
+Either party may ___ this contract with 30 days' notice.|terminate|to end an agreement officially|Either party may terminate this contract.
+The company reserves the ___ to amend these terms.|right|a legal claim or power to do something|The company reserves the right to amend these terms.
+All disputes shall be ___ by arbitration.|resolved|settled; solved|All disputes shall be resolved by arbitration.
+The parties hereby ___ to the following terms.|agree|to accept something officially|The parties hereby agree to these terms.
+This policy is ___ to change without prior notice.|subject|likely to be affected by something|This policy is subject to change.
+The signatory ___ that all information is accurate.|warrants|promises that a fact is true|The signatory warrants that all details are accurate.
+Failure to comply may result in immediate ___.|termination|the act of ending something officially|Failure to comply may result in termination.
+The agreement shall remain in ___ for two years.|effect|valid and in use|The agreement shall remain in effect for two years.
+Nothing herein shall be ___ as legal advice.|construed|understood or interpreted in a certain way|Nothing herein shall be construed as advice.
+The buyer shall ___ full payment within 14 days.|remit|to send money as payment|The buyer shall remit full payment promptly.
+This clause is ___ from the rest of the contract.|severable|able to be separated from the rest|This clause is severable from the contract.
+The undersigned hereby ___ receipt of the goods.|acknowledges|admits that something is true or received|The undersigned acknowledges receipt of the goods.
+The contract is governed by the ___ of this state.|laws|the rules made by a government|The contract is governed by the laws of this state.
+Any amendment must be made in ___.|writing|words put on paper|Any amendment must be made in writing.
+The company shall not be held ___ for delays.|liable|legally responsible for something|The company shall not be liable for delays.
+The parties agree to keep the terms ___.|confidential|meant to be kept secret|The parties keep the terms confidential.
+This document shall ___ all prior agreements.|supersede|to take the place of something older|This document shall supersede all prior agreements.
+The recipient must ___ the terms before proceeding.|accept|to agree to receive something|The recipient must accept the terms.
+The obligation shall ___ upon the successor entity.|pass|to be handed on to someone else|The obligation shall pass to the successor.
+Each party shall bear its own ___ costs.|legal|connected with the law|Each party bears its own legal costs.
+The waiver shall not be ___ as a precedent.|interpreted|explained or understood in a particular way|The waiver shall not be interpreted as a precedent.
+The clause takes ___ immediately upon execution.|force|legal strength or power|The clause takes force upon execution.`,
   },
   {
     id: "c1p8",
@@ -3418,31 +3422,31 @@ The clause takes ___ immediately upon execution.|force`,
     kind: "pair",
     prompt: 'Which trait means "%s"?',
     note: "C1-level adjectives for describing character precisely.",
-    data: `extremely careful with details|meticulous
-boldly daring, sometimes reckless|audacious
-refusing to change one's mind|obstinate
-quick to notice small details|perceptive
-excessively proud of oneself|conceited
-easily annoyed or irritated|irascible
-showing great attention to duty|conscientious
-lacking confidence or self-esteem|insecure
-unwilling to spend money|frugal
-openly expressing one's feelings|candid
-avoiding unnecessary risk|prudent
-having a sharp, cutting wit|acerbic
-easily influenced by others|impressionable
-showing no emotion outwardly|impassive
-tending to think the worst will happen|pessimistic
-having strong, unshakeable opinions|dogmatic
-quick to take offence|touchy
-showing deep, genuine care|compassionate
-lacking experience or worldliness|naive
-skilled at avoiding difficulty|resourceful
-overly critical of small faults|fastidious
-reluctant to reveal information|reticent
-having a calm, unshakeable temperament|imperturbable
-excessively eager to please|obsequious
-unpredictable and prone to sudden mood changes|capricious`,
+    data: `extremely careful with details|meticulous|extremely careful about every detail|A meticulous editor checked every line.
+boldly daring, sometimes reckless|audacious|bold in a daring way, even reckless|It was an audacious plan.
+refusing to change one's mind|obstinate|stubborn; refusing to change your mind|He remained obstinate despite the evidence.
+quick to notice small details|perceptive|quick to notice small details|A perceptive teacher spotted the problem.
+excessively proud of oneself|conceited|too proud of yourself|The conceited actor ignored his fans.
+easily annoyed or irritated|irascible|easily made angry|My irascible uncle shouted at the waiter.
+showing great attention to duty|conscientious|careful to do your duty well|She is a conscientious worker.
+lacking confidence or self-esteem|insecure|lacking confidence in yourself|He felt insecure about his looks.
+unwilling to spend money|frugal|careful not to spend money|A frugal family saves every month.
+openly expressing one's feelings|candid|honest and direct about your feelings|She gave a candid answer.
+avoiding unnecessary risk|prudent|careful to avoid danger or loss|It's prudent to save for the future.
+having a sharp, cutting wit|acerbic|sharp and bitter in a clever way|Her acerbic wit stung him.
+easily influenced by others|impressionable|easily affected by others|Children are impressionable.
+showing no emotion outwardly|impassive|showing no feeling on the face|He stayed impassive during the verdict.
+tending to think the worst will happen|pessimistic|expecting the worst result|A pessimistic forecast scared investors.
+having strong, unshakeable opinions|dogmatic|holding opinions as unquestionable truth|He is dogmatic about politics.
+quick to take offence|touchy|easily hurt or offended|She is touchy about her age.
+showing deep, genuine care|compassionate|feeling kindness for others who suffer|A compassionate nurse sat with her.
+lacking experience or worldliness|naive|lacking experience of life|It was naive to trust him.
+skilled at avoiding difficulty|resourceful|good at finding ways to solve problems|A resourceful cook made dinner from scraps.
+overly critical of small faults|fastidious|hard to please because of small details|He is fastidious about cleanliness.
+reluctant to reveal information|reticent|unwilling to share your thoughts|She was reticent about her past.
+having a calm, unshakeable temperament|imperturbable|never upset or worried by events|The pilot stayed imperturbable in the storm.
+excessively eager to please|obsequious|too eager to please important people|The obsequious waiter bowed constantly.
+unpredictable and prone to sudden mood changes|capricious|changing mood or mind without warning|The weather is capricious in spring.`,
   },
   {
     id: "c1p9",
@@ -3450,31 +3454,31 @@ unpredictable and prone to sudden mood changes|capricious`,
     subtitle: "Argumentative language",
     kind: "cloze",
     note: "C1-level vocabulary for constructing a persuasive argument.",
-    data: `The speaker made a ___ case for reform.|compelling
-Her argument ___ on a single flawed assumption.|hinges
-The evidence ___ against his claim.|militates
-This point ___ the very heart of the debate.|strikes
-The policy has been ___ criticised by experts.|widely
-His speech was designed to ___ public opinion.|sway
-The argument ___ down to a matter of values.|boils
-She ___ her point with a striking example.|illustrated
-The rhetoric was ___ but ultimately hollow.|persuasive
-His claim does not ___ up to scrutiny.|stand
-The debate ___ on questions of fairness.|turns
-She skilfully ___ the opposing argument.|dismantled
-The speech was carefully ___ to appeal to emotion.|crafted
-His conclusion ___ naturally from the evidence.|follows
-The argument gained ___ as more facts emerged.|traction
-She ___ the audience with a powerful anecdote.|won over
-The claim is ___ by a wealth of research.|substantiated
-His tone ___ conviction rather than certainty.|conveyed
-The counterargument ___ to address the core issue.|fails
-She ___ her opponent's logic point by point.|unpicked
-The rhetoric ___ more heat than light.|generated
-His appeal was ___ rather than rational.|emotional
-The argument ___ scrutiny remarkably well.|withstands
-She ___ the audience's scepticism head-on.|addressed
-The speech left little room for ___.|doubt`,
+    data: `The speaker made a ___ case for reform.|compelling|very convincing|She made a compelling case for reform.
+Her argument ___ on a single flawed assumption.|hinges|depends completely on one thing|The case hinges on a single assumption.
+The evidence ___ against his claim.|militates|has a strong effect against something|The evidence militates against his claim.
+This point ___ the very heart of the debate.|strikes|hits or affects an important part|This point strikes at the heart of it.
+The policy has been ___ criticised by experts.|widely|by many people in many places|The policy was widely criticised.
+His speech was designed to ___ public opinion.|sway|to change what people think|He tried to sway public opinion.
+The argument ___ down to a matter of values.|boils|is simply a matter of one basic thing|It boils down to values.
+She ___ her point with a striking example.|illustrated|explained with an example|She illustrated her point well.
+The rhetoric was ___ but ultimately hollow.|persuasive|able to make people believe something|The speech was persuasive but hollow.
+His claim does not ___ up to scrutiny.|stand|to be strong enough to bear a test|His claim does not stand up to scrutiny.
+The debate ___ on questions of fairness.|turns|depends on one important point|The debate turns on fairness.
+She skilfully ___ the opposing argument.|dismantled|took apart piece by piece|She dismantled the opposing argument.
+The speech was carefully ___ to appeal to emotion.|crafted|made with skill and care|The speech was carefully crafted.
+His conclusion ___ naturally from the evidence.|follows|comes as a logical result|His conclusion follows from the evidence.
+The argument gained ___ as more facts emerged.|traction|growing support or progress|The argument gained traction.
+She ___ the audience with a powerful anecdote.|won over|persuaded someone to support you|She won over the audience.
+The claim is ___ by a wealth of research.|substantiated|shown to be true by evidence|The claim is substantiated by research.
+His tone ___ conviction rather than certainty.|conveyed|made an idea or feeling known|His tone conveyed conviction.
+The counterargument ___ to address the core issue.|fails|does not do what is needed|The counterargument fails to address the issue.
+She ___ her opponent's logic point by point.|unpicked|took apart step by step|She unpicked her opponent's logic.
+The rhetoric ___ more heat than light.|generated|caused or produced|The debate generated more heat than light.
+His appeal was ___ rather than rational.|emotional|based on feeling, not reason|His appeal was emotional.
+The argument ___ scrutiny remarkably well.|withstands|survives a test or attack|The argument withstands scrutiny.
+She ___ the audience's scepticism head-on.|addressed|dealt with directly|She addressed the audience's scepticism.
+The speech left little room for ___.|doubt|a feeling of not being sure|The speech left little room for doubt.`,
   },
   {
     id: "c1p10",
@@ -3482,31 +3486,31 @@ The speech left little room for ___.|doubt`,
     subtitle: "Precision in research writing",
     kind: "cloze",
     note: "C1-level vocabulary for describing scientific findings.",
-    data: `The experiment was ___ under controlled conditions.|conducted
-The results were ___ across multiple trials.|consistent
-The hypothesis was ___ by the data.|supported
-Researchers ___ a significant correlation.|observed
-The findings ___ from earlier studies.|diverge
-The sample size was ___ to ensure reliability.|sufficient
-The variables were ___ carefully controlled.|meticulously
-The study's ___ limits its generalisability.|scope
-The data was ___ using standard statistical methods.|analysed
-The results were ___ reproducible.|largely
-The team ___ a novel methodology.|developed
-The findings ___ implications for future research.|carry
-The experiment was ___ due to funding cuts.|discontinued
-The paper was ___ in a peer-reviewed journal.|published
-The results ___ the initial hypothesis.|confirm
-The methodology has since been ___ by other researchers.|adopted
-The study's ___ have been widely debated.|conclusions
-The data set was ___ for anomalies.|screened
-The researchers ___ several confounding variables.|controlled for
-The findings were ___ with caution.|presented
-The experiment's ___ remains a subject of debate.|validity
-The results were ___ statistically significant.|deemed
-The team ___ their methodology in the appendix.|detailed
-The study ___ a gap in the existing literature.|addresses
-The conclusions are ___ by the limited sample.|constrained`,
+    data: `The experiment was ___ under controlled conditions.|conducted|carried out an activity|The experiment was conducted in controlled conditions.
+The results were ___ across multiple trials.|consistent|always giving the same result|The results were consistent across trials.
+The hypothesis was ___ by the data.|supported|shown to be true by evidence|The data supported the hypothesis.
+Researchers ___ a significant correlation.|observed|noticed by watching carefully|Researchers observed a significant correlation.
+The findings ___ from earlier studies.|diverge|differ or move apart|The findings diverge from earlier studies.
+The sample size was ___ to ensure reliability.|sufficient|enough for what is needed|The sample size was sufficient.
+The variables were ___ carefully controlled.|meticulously|with extreme care|The variables were meticulously controlled.
+The study's ___ limits its generalisability.|scope|the range of what is covered|The study's scope limits its use.
+The data was ___ using standard statistical methods.|analysed|examined closely to find results|The data was analysed statistically.
+The results were ___ reproducible.|largely|for the most part|The results were largely reproducible.
+The team ___ a novel methodology.|developed|created over time|The team developed a new method.
+The findings ___ implications for future research.|carry|have or hold as a result|The findings carry implications for future work.
+The experiment was ___ due to funding cuts.|discontinued|stopped; no longer continued|The experiment was discontinued.
+The paper was ___ in a peer-reviewed journal.|published|printed or put out for the public|The paper was published in a journal.
+The results ___ the initial hypothesis.|confirm|to show that something is true|The results confirm the hypothesis.
+The methodology has since been ___ by other researchers.|adopted|taken and used by others|The method was adopted by other researchers.
+The study's ___ have been widely debated.|conclusions|final judgements based on evidence|The study's conclusions are debated.
+The data set was ___ for anomalies.|screened|checked for problems|The data was screened for anomalies.
+The researchers ___ several confounding variables.|controlled for|took steps to remove the effect of|They controlled for confounding variables.
+The findings were ___ with caution.|presented|shown to others|The findings were presented with caution.
+The experiment's ___ remains a subject of debate.|validity|the quality of being sound and true|The experiment's validity is debated.
+The results were ___ statistically significant.|deemed|judged or considered|The results were deemed significant.
+The team ___ their methodology in the appendix.|detailed|explained in full|The team detailed their methods.
+The study ___ a gap in the existing literature.|addresses|deals with a problem or issue|The study addresses a gap in the literature.
+The conclusions are ___ by the limited sample.|constrained|limited or held back|The conclusions are constrained by the sample.`,
   },
   {
     id: "c1p11",
@@ -3514,64 +3518,65 @@ The conclusions are ___ by the limited sample.|constrained`,
     subtitle: "Softening and hedging in formal talk",
     kind: "cloze",
     note: "C1-level diplomatic phrasing for sensitive conversations.",
-    data: `With all due ___, I have to disagree with that assessment.|respect
-It might be ___ to reconsider the timing of this decision.|prudent
-We would ___ appreciate a more detailed explanation.|greatly
-Perhaps we could ___ this matter from a different angle.|approach
-It's not entirely ___ that the plan will succeed.|clear
-There are, ___, a few concerns we should address first.|however
-We understand your ___, but the budget remains fixed.|position
-It would be ___ to say the negotiations went smoothly.|generous
-Let's not ___ this issue any further today.|belabour
-We ___ acknowledge the difficulties this has caused.|fully
-It might be worth ___ a compromise instead.|considering
-We remain open to ___ should circumstances change.|discussion
-While we ___ your concerns, the decision stands.|understand
-It would be ___ to comment further at this stage.|premature
-We'd like to ___ our gratitude for your patience.|express
-There is, ___, room for further discussion.|admittedly
-We should ___ from making any hasty judgements.|refrain
-It may be ___ to revisit this proposal next quarter.|advisable
-We ___ hope this matter can be resolved amicably.|sincerely
-Let us ___ the matter with the care it deserves.|treat
-It would be ___ to overstate the challenges ahead.|easy
-We trust this explanation will ___ any confusion.|clear up
-Some concerns, ___ valid, fall outside our remit.|while
-We ___ that further consultation is required.|maintain
-It is with some ___ that we must decline the offer.|reluctance`,
+    data: `With all due ___, I have to disagree with that assessment.|respect|polite regard for someone's feelings|With all due respect, I disagree.
+It might be ___ to reconsider the timing of this decision.|prudent|wise and careful|It might be prudent to wait.
+We would ___ appreciate a more detailed explanation.|greatly|very much|We would greatly appreciate more detail.
+Perhaps we could ___ this matter from a different angle.|approach|to deal with a subject in a way|Let us approach this from another angle.
+It's not entirely ___ that the plan will succeed.|clear|easy to understand or see|It's not entirely clear that it will work.
+There are, ___, a few concerns we should address first.|however|used to add a contrast|There are, however, a few concerns.
+We understand your ___, but the budget remains fixed.|position|the way someone thinks about something|We understand your position, but the budget is fixed.
+It would be ___ to say the negotiations went smoothly.|generous|kind in judging too well of something|It would be generous to say it went well.
+Let's not ___ this issue any further today.|belabour|to talk about too long|Let's not belabour the issue today.
+We ___ acknowledge the difficulties this has caused.|fully|completely|We fully acknowledge the difficulties.
+It might be worth ___ a compromise instead.|considering|thinking about something carefully|It's worth considering a compromise.
+We remain open to ___ should circumstances change.|discussion|talk about a subject|We remain open to discussion.
+While we ___ your concerns, the decision stands.|understand|know why someone feels something|While we understand your concerns, the decision stands.
+It would be ___ to comment further at this stage.|premature|too early|It would be premature to comment.
+We'd like to ___ our gratitude for your patience.|express|to show a feeling in words|We would like to express our gratitude.
+There is, ___, room for further discussion.|admittedly|used to agree something is true|There is, admittedly, room for discussion.
+We should ___ from making any hasty judgements.|refrain|to hold yourself back from doing something|We should refrain from hasty judgements.
+It may be ___ to revisit this proposal next quarter.|advisable|wise to do|It may be advisable to revisit this.
+We ___ hope this matter can be resolved amicably.|sincerely|in an honest, true way|We sincerely hope this can be resolved.
+Let us ___ the matter with the care it deserves.|treat|to deal with something in a certain way|Let us treat the matter carefully.
+It would be ___ to overstate the challenges ahead.|easy|not hard to do|It would be easy to overstate the challenges.
+We trust this explanation will ___ any confusion.|clear up|to remove a problem|This should clear up any confusion.
+Some concerns, ___ valid, fall outside our remit.|while|although; used before an adjective|Some concerns, while valid, are outside our remit.
+We ___ that further consultation is required.|maintain|to claim that something is true|We maintain that more consultation is needed.
+It is with some ___ that we must decline the offer.|reluctance|an unwillingness to do something|It is with some reluctance that we decline.`,
   },
   {
     id: "c1p12",
     title: "Idiomatic Expressions II",
     subtitle: "Meaning match, advanced idioms",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'The idiom "%s" means…',
     note: "Advanced idioms beyond the basics.",
-    data: `to jump on the bandwagon|to join something popular
-to read between the lines|to understand hidden meaning
-to bite the bullet|to accept something difficult
-to burn bridges|to end a relationship badly
-to see eye to eye|to agree completely
-to go the extra mile|to make extra effort
-to cut to the chase|to get to the point quickly
-to hit the nail on the head|to be exactly right
-to be on the same page|to have the same understanding
-to throw in the towel|to give up
-to keep someone at arm's length|to avoid becoming close
-to have a change of heart|to change one's opinion
-to be caught red-handed|to be caught doing something wrong
-to take something with a grain of salt|to not fully believe it
-to beat around the bush|to avoid speaking directly
-to be a blessing in disguise|to seem bad but turn out good
-to let the cat out of the bag|to reveal a secret
-to go back to the drawing board|to start planning again
-to raise the bar|to increase the standard expected
-to be under the weather|to feel slightly unwell
-to pull strings|to use influence to get something
-to be a double-edged sword|to have both good and bad effects
-to keep one's fingers crossed|to hope for good luck
-to be at a crossroads|to face an important decision
-to weather the storm|to survive a difficult period`,
+    data: `to jump on the bandwagon|to join something popular|to join something popular|Many firms want to jump on the bandwagon.
+to read between the lines|to understand hidden meaning|to understand a hidden meaning|You have to read between the lines.
+to bite the bullet|to accept something difficult|to accept something difficult|He had to bite the bullet and apologise.
+to burn bridges|to end a relationship badly|to end a relationship badly|Try not to burn bridges when you quit.
+to see eye to eye|to agree completely|to agree completely|We rarely see eye to eye on politics.
+to go the extra mile|to make extra effort|to make an extra effort|She is willing to go the extra mile for you.
+to cut to the chase|to get to the point quickly|to get to the point quickly|Let's cut to the chase.
+to hit the nail on the head|to be exactly right|to be exactly right|You seem to hit the nail on the head.
+to be on the same page|to have the same understanding|to have the same understanding|We need to be on the same page.
+to throw in the towel|to give up|to give up|He decided to throw in the towel after a year.
+to keep someone at arm's length|to avoid becoming close|to avoid becoming close|She likes to keep someone at arm's length.
+to have a change of heart|to change one's opinion|to change your opinion|He seems to have a change of heart.
+to be caught red-handed|to be caught doing something wrong|to be caught doing something wrong|The thief was lucky not to be caught red-handed.
+to take something with a grain of salt|to not fully believe it|to not fully believe something|Try to take something with a grain of salt.
+to beat around the bush|to avoid speaking directly|to avoid speaking directly|Stop trying to beat around the bush!
+to be a blessing in disguise|to seem bad but turn out good|something that seems bad but proves good|It might turn out to be a blessing in disguise.
+to let the cat out of the bag|to reveal a secret|to reveal a secret|Try not to let the cat out of the bag.
+to go back to the drawing board|to start planning again|to start planning again|We had to go back to the drawing board.
+to raise the bar|to increase the standard expected|to increase the standard expected|She aims to raise the bar for everyone.
+to be under the weather|to feel slightly unwell|to feel slightly unwell|I seem to be under the weather today.
+to pull strings|to use influence to get something|to use influence to get something|He pulled strings to get the job.
+to be a double-edged sword|to have both good and bad effects|something with both good and bad effects|Fame can prove to be a double-edged sword.
+to keep one's fingers crossed|to hope for good luck|to hope for good luck|It helps to keep one's fingers crossed.
+to be at a crossroads|to face an important decision|to face an important decision|The firm appears to be at a crossroads.
+to weather the storm|to survive a difficult period|to survive a difficult period|The company managed to weather the storm.`,
   },
   {
     id: "c1p13",
@@ -3579,31 +3584,31 @@ to weather the storm|to survive a difficult period`,
     subtitle: "Advanced passive structures",
     kind: "cloze",
     note: "C1-level passive and causative constructions.",
-    data: `The report is believed to have been ___ deliberately.|leaked
-It is thought that the decision will be ___ soon.|reversed
-The building is said to have been ___ in the 1920s.|designed
-She had her car ___ while she was on holiday.|stolen
-He got his proposal ___ by the board.|approved
-The bridge is due to be ___ next year.|completed
-It is rumoured that the company is planning ___.|layoffs
-The contract is expected to be ___ by Friday.|signed
-She had the documents ___ before the meeting.|translated
-The changes are said to have ___ efficiency.|improved
-He had his passport ___ at the embassy.|renewed
-It is widely believed that the treaty will be ___.|ratified
-The results are yet to be ___.|confirmed
-She got her essay ___ before submitting it.|proofread
-The suspect is alleged to have ___ the country.|fled
-The proposal is being carefully ___ by the committee.|considered
-It is understood that negotiations are ___.|ongoing
-He had the roof ___ after the storm.|repaired
-The findings are reported to have ___ researchers.|surprised
-She had her application ___ by a lawyer.|reviewed
-The policy is expected to be ___ next year.|revised
-It is claimed that the figures were ___.|manipulated
-He had the engine ___ before the long trip.|serviced
-The event is scheduled to take ___ in June.|place
-The data is believed to have been ___.|compromised`,
+    data: `The report is believed to have been ___ deliberately.|leaked|secretly made known|The report was leaked deliberately.
+It is thought that the decision will be ___ soon.|reversed|changed to the opposite|The decision will be reversed soon.
+The building is said to have been ___ in the 1920s.|designed|planned and drawn up|The building was designed in the 1920s.
+She had her car ___ while she was on holiday.|stolen|taken by a thief|She had her car stolen.
+He got his proposal ___ by the board.|approved|accepted officially|He got his proposal approved.
+The bridge is due to be ___ next year.|completed|finished|The bridge is due to be completed next year.
+It is rumoured that the company is planning ___.|layoffs|losses of jobs when firms cut staff|The company is planning layoffs.
+The contract is expected to be ___ by Friday.|signed|put your name on a document|The contract will be signed by Friday.
+She had the documents ___ before the meeting.|translated|changed into another language|She had the documents translated.
+The changes are said to have ___ efficiency.|improved|become better|Changes are said to have improved efficiency.
+He had his passport ___ at the embassy.|renewed|made valid for another period|He had his passport renewed.
+It is widely believed that the treaty will be ___.|ratified|confirmed officially by a vote|The treaty will be ratified.
+The results are yet to be ___.|confirmed|shown to be true|The results are yet to be confirmed.
+She got her essay ___ before submitting it.|proofread|checked for mistakes|She got her essay proofread.
+The suspect is alleged to have ___ the country.|fled|ran away quickly|The suspect is alleged to have fled.
+The proposal is being carefully ___ by the committee.|considered|thought about carefully|The proposal is being considered.
+It is understood that negotiations are ___.|ongoing|continuing now|Negotiations are ongoing.
+He had the roof ___ after the storm.|repaired|fixed after damage|He had the roof repaired.
+The findings are reported to have ___ researchers.|surprised|caused a feeling of shock|The findings surprised researchers.
+She had her application ___ by a lawyer.|reviewed|checked by an expert|She had her application reviewed.
+The policy is expected to be ___ next year.|revised|changed to make better|The policy will be revised next year.
+It is claimed that the figures were ___.|manipulated|changed in a dishonest way|The figures were manipulated.
+He had the engine ___ before the long trip.|serviced|checked and fixed by a mechanic|He had the engine serviced.
+The event is scheduled to take ___ in June.|place|to happen|The event will take place in June.
+The data is believed to have been ___.|compromised|made less safe or secret|The data was compromised.`,
   },
   {
     id: "c1p14",
@@ -3611,31 +3616,31 @@ The data is believed to have been ___.|compromised`,
     subtitle: "Professional written English",
     kind: "cloze",
     note: "C1-level phrases for formal written communication.",
-    data: `I am writing to ___ your attention to a recent issue.|draw
-Please do not ___ to contact me if you need further information.|hesitate
-I would be ___ if you could confirm receipt of this email.|grateful
-With reference ___ our earlier conversation, I am attaching the report.|to
-I ___ forward to hearing from you soon.|look
-Please find ___ the requested documents.|attached
-I am writing ___ behalf of the marketing department.|on
-Should you have any questions, please do not hesitate to ___ out.|reach
-I apologise ___ any inconvenience this may have caused.|for
-We would like to ___ you for your continued support.|thank
-I am ___ to inform you that your application has been successful.|pleased
-Following ___ discussion, I have revised the proposal.|our
-Please let me know if this ___ with your schedule.|fits
-I trust this email finds you ___.|well
-We ___ to inform you that the position has been filled.|regret
-Kindly ___ me know your availability for next week.|let
-I am writing to ___ up on my previous email.|follow
-Please ___ this matter as a priority.|treat
-I would appreciate it if you could ___ this at your earliest convenience.|address
-We are ___ forward to a successful collaboration.|looking
-Please accept our ___ apologies for the delay.|sincere
-I am ___ that you found the presentation useful.|glad
-Should circumstances ___, please inform us immediately.|change
-We remain at your ___ should you require further assistance.|disposal
-I look forward to your ___ response.|prompt`,
+    data: `I am writing to ___ your attention to a recent issue.|draw|to pull or lead towards something|I wish to draw your attention to a problem.
+Please do not ___ to contact me if you need further information.|hesitate|to pause because you are unsure|Please do not hesitate to contact me.
+I would be ___ if you could confirm receipt of this email.|grateful|thankful|I would be grateful for a reply.
+With reference ___ our earlier conversation, I am attaching the report.|to|links a topic with a comment|With reference to our call, here is the report.
+I ___ forward to hearing from you soon.|look|to turn your eyes towards something|I look forward to hearing from you.
+Please find ___ the requested documents.|attached|joined to an email as a file|Please find attached the documents.
+I am writing ___ behalf of the marketing department.|on|part of the phrase "on behalf of"|I am writing on behalf of the team.
+Should you have any questions, please do not hesitate to ___ out.|reach|to make contact with someone|Please feel free to reach out.
+I apologise ___ any inconvenience this may have caused.|for|introduces what you are sorry about|I apologise for any inconvenience.
+We would like to ___ you for your continued support.|thank|to say you are grateful|We would like to thank you for your support.
+I am ___ to inform you that your application has been successful.|pleased|happy to do something|I am pleased to inform you of the result.
+Following ___ discussion, I have revised the proposal.|our|belonging to us|Following our discussion, I revised the plan.
+Please let me know if this ___ with your schedule.|fits|is suitable for|Please tell me if this fits your schedule.
+I trust this email finds you ___.|well|in good health|I trust this email finds you well.
+We ___ to inform you that the position has been filled.|regret|to feel sorry about something|We regret to inform you the post is filled.
+Kindly ___ me know your availability for next week.|let|to allow something to be known|Kindly let me know your availability.
+I am writing to ___ up on my previous email.|follow|to ask again about an earlier matter|I am writing to follow up on my email.
+Please ___ this matter as a priority.|treat|to handle in a certain way|Please treat this matter as a priority.
+I would appreciate it if you could ___ this at your earliest convenience.|address|to deal with a problem|Please address this at your earliest convenience.
+We are ___ forward to a successful collaboration.|looking|turning your eyes towards the future|We are looking forward to working together.
+Please accept our ___ apologies for the delay.|sincere|honest and heartfelt|Please accept our sincere apologies.
+I am ___ that you found the presentation useful.|glad|pleased|I am glad you found it useful.
+Should circumstances ___, please inform us immediately.|change|to become different|Should circumstances change, tell us.
+We remain at your ___ should you require further assistance.|disposal|ready to be used by someone|We remain at your disposal.
+I look forward to your ___ response.|prompt|done quickly|I look forward to your prompt reply.`,
   },
   {
     id: "c1p15",
@@ -3644,31 +3649,31 @@ I look forward to your ___ response.|prompt`,
     kind: "pair",
     prompt: 'The noun form of "%s" is…',
     note: "C1-level nominalisation, common in academic and formal writing.",
-    data: `to decide|decision
-to argue|argument
-to analyse|analysis
-to conclude|conclusion
-to assume|assumption
-to describe|description
-to explain|explanation
-to suggest|suggestion
-to develop|development
-to require|requirement
-to fail|failure
-to succeed|success
-to propose|proposal
-to reduce|reduction
-to improve|improvement
-to discover|discovery
-to expand|expansion
-to achieve|achievement
-to establish|establishment
-to interpret|interpretation
-to justify|justification
-to maintain|maintenance
-to produce|production
-to recognise|recognition
-to resolve|resolution`,
+    data: `to decide|decision|a choice made after thought|The committee reached a decision.
+to argue|argument|a reason put forward against or for something|The argument lasted an hour.
+to analyse|analysis|a careful study of something in parts|The analysis took weeks.
+to conclude|conclusion|a final decision reached after thought|We reached a clear conclusion.
+to assume|assumption|something you accept as true without proof|It was a false assumption.
+to describe|description|words that say what something is like|Give a full description of the thief.
+to explain|explanation|words that make something clear|Her explanation was easy to follow.
+to suggest|suggestion|an idea you offer to others|He made a helpful suggestion.
+to develop|development|growth or a new step forward|There was a major development in the case.
+to require|requirement|something that is needed|Fitness is a requirement for the job.
+to fail|failure|a lack of success|The plan ended in failure.
+to succeed|success|getting what you wanted|The film was a huge success.
+to propose|proposal|a plan offered for others to consider|Our proposal was accepted.
+to reduce|reduction|a fall in amount or size|There was a big reduction in cost.
+to improve|improvement|a change that makes something better|We saw an improvement in sales.
+to discover|discovery|finding something new|The discovery changed medicine.
+to expand|expansion|growth in size or range|The firm planned expansion abroad.
+to achieve|achievement|something done well with effort|Graduating was a great achievement.
+to establish|establishment|the act of founding something|The establishment of the school took years.
+to interpret|interpretation|an explanation of what something means|Each critic offered a different interpretation.
+to justify|justification|a good reason for an action|She could offer no justification.
+to maintain|maintenance|work to keep something in good condition|The road needs regular maintenance.
+to produce|production|the process of making goods|Production rose last year.
+to recognise|recognition|the act of knowing someone or something again|She won recognition for her work.
+to resolve|resolution|a solution to a problem|We found a resolution to the dispute.`,
   },
   {
     id: "c1p16",
@@ -3676,31 +3681,31 @@ to resolve|resolution`,
     subtitle: "Emphasis through structure",
     kind: "cloze",
     note: "C1-level cleft sentence structures for emphasis.",
-    data: `___ was John who broke the vase, not me.|it
-What I really need ___ a good night's sleep.|is
-It was the manager ___ made the final decision.|who
-What surprised me most ___ his honesty.|was
-It was ___ in 1990 that the company was founded.|not
-What we need to do ___ act quickly.|is
-It was because of the delay ___ we missed the flight.|that
-What annoys me most ___ people who are always late.|is
-It ___ the weather that ruined our plans.|was
-What she wants ___ a bit of peace and quiet.|is
-It was only ___ that I realised my mistake.|later
-What matters most to me ___ my family's happiness.|is
-It was the teacher ___ noticed the problem first.|who
-What I admire about her ___ her determination.|is
-It was ___ during the meeting that he resigned.|not
-What we found strange ___ his sudden silence.|was
-It was the noise ___ woke everyone up.|that
-What she really meant ___ something quite different.|was
-It was not until later ___ we understood the plan.|that
-What impressed the judges most ___ his confidence.|was
-It ___ the traffic, not the weather, that delayed us.|was
-What I regret most ___ not speaking up sooner.|is
-It was her ___ who suggested the idea first.|colleague
-What worries me ___ the lack of preparation.|is
-It ___ exactly what I expected.|was`,
+    data: `___ was John who broke the vase, not me.|it|a word that puts focus on one part|It was John who broke the vase.
+What I really need ___ a good night's sleep.|is|a form of be that links two parts|What I really need is sleep.
+It was the manager ___ made the final decision.|who|links a person to a clause|It was the manager who decided.
+What surprised me most ___ his honesty.|was|a past form of be linking two parts|What surprised me most was his honesty.
+It was ___ in 1990 that the company was founded.|not|a word that makes a sentence negative|It was not in 1990 that it was founded.
+What we need to do ___ act quickly.|is|a form of be that links two parts|What we need to do is act quickly.
+It was because of the delay ___ we missed the flight.|that|links a reason to a result|It was because of the delay that we missed it.
+What annoys me most ___ people who are always late.|is|a form of be that links two parts|What annoys me most is lateness.
+It ___ the weather that ruined our plans.|was|a past form of be for focus|It was the weather that ruined our plans.
+What she wants ___ a bit of peace and quiet.|is|a form of be that links two parts|What she wants is peace and quiet.
+It was only ___ that I realised my mistake.|later|at a time after something|It was only later that I realised.
+What matters most to me ___ my family's happiness.|is|a form of be that links two parts|What matters most is my family.
+It was the teacher ___ noticed the problem first.|who|links a person to a clause|It was the teacher who noticed it.
+What I admire about her ___ her determination.|is|a form of be that links two parts|What I admire about her is her determination.
+It was ___ during the meeting that he resigned.|not|a word that makes a sentence negative|It was not during the meeting that he resigned.
+What we found strange ___ his sudden silence.|was|a past form of be linking two parts|What we found strange was his silence.
+It was the noise ___ woke everyone up.|that|links a thing to a clause|It was the noise that woke everyone.
+What she really meant ___ something quite different.|was|a past form of be linking two parts|What she really meant was something different.
+It was not until later ___ we understood the plan.|that|links a time to a clause|It was not until later that we understood.
+What impressed the judges most ___ his confidence.|was|a past form of be linking two parts|What impressed the judges most was his confidence.
+It ___ the traffic, not the weather, that delayed us.|was|a past form of be for focus|It was the traffic that delayed us.
+What I regret most ___ not speaking up sooner.|is|a form of be that links two parts|What I regret most is not speaking up.
+It was her ___ who suggested the idea first.|colleague|a person you work with|It was her colleague who suggested it.
+What worries me ___ the lack of preparation.|is|a form of be that links two parts|What worries me is the lack of preparation.
+It ___ exactly what I expected.|was|a past form of be linking two parts|It was exactly what I expected.`,
   },
   {
     id: "c1p17",
@@ -3709,64 +3714,65 @@ It ___ exactly what I expected.|was`,
     kind: "pair",
     prompt: 'Complete the collocation with "%s"…',
     note: "C1-level fixed collocations with common light verbs.",
-    data: `make|a decision
-make|an effort
-make|a mistake
-make|progress
-make|a difference
-do|homework
-do|business
-do|damage
-do|research
-do|a favour
-take|responsibility
-take|a risk
-take|advantage
-take|notice
-take|a break
-have|an argument
-have|a conversation
-have|an impact
-have|a look
-have|a chance
-make|an impression
-do|harm
-take|action
-have|doubts
-make|arrangements`,
+    data: `make|a decision|a choice reached after thinking|I must make a decision today.
+make|an effort|hard work to do something|She made an effort to smile.
+make|a mistake|something you did that was wrong|Everyone can make a mistake.
+make|progress|forward movement toward a goal|You are making progress.
+make|a difference|a change for the better|Your help made a difference.
+do|homework|schoolwork done at home|Do your homework before dinner.
+do|business|buying and selling goods|We do business with many countries.
+do|damage|harm that spoils something|The storm did damage to the roof.
+do|research|a careful study to find facts|They do research on diseases.
+do|a favour|a kind act you do for someone|Could you do me a favour?
+take|responsibility|a duty to accept blame or care|Take responsibility for your actions.
+take|a risk|a chance of loss or danger|It's worth taking a risk.
+take|advantage|a chance to gain from something|Take advantage of the offer.
+take|notice|attention paid to something|Take no notice of him.
+take|a break|a short rest|Let's take a break.
+have|an argument|a quarrel with someone|They had an argument last night.
+have|a conversation|a talk with someone|We had a long conversation.
+have|an impact|an effect on something|The law will have an impact.
+have|a look|a quick view of something|Have a look at this.
+have|a chance|an opportunity to do something|You have a chance to win.
+make|an impression|a first feeling about a person|She hoped to make an impression.
+do|harm|damage or pain|Smoking can do harm.
+take|action|steps taken to deal with something|We must take action now.
+have|doubts|feelings of not being sure|I have doubts about the plan.
+make|arrangements|plans made in advance|She made arrangements for the trip.`,
   },
   {
     id: "c1p18",
     title: "Euphemisms & Indirect Language",
     subtitle: "Softening sensitive topics",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'The phrase "%s" is a polite way of saying…',
     note: "C1-level euphemisms for sensitive or blunt topics.",
-    data: `to pass away|to die
-to let someone go|to fire someone
-between jobs|unemployed
-economical with the truth|dishonest
-pre-owned|second-hand
-downsize|reduce staff numbers
-in a delicate condition|pregnant
-senior moment|forgetfulness
-differently abled|disabled
-economically disadvantaged|poor
-correctional facility|prison
-collateral damage|unintended harm
-letting you go|firing you
-put to sleep|euthanised
-vertically challenged|short
-a bit under the weather|slightly ill
-of a certain age|older
-enhanced interrogation|torture
-negative growth|decline
-downsized position|job cut
-substance abuse|drug addiction
-in between opportunities|currently without a job
-not the sharpest tool in the shed|not very intelligent
-letting nature take its course|not intervening medically
-economical|cheap or stingy`,
+    data: `to pass away|to die|to die|Sadly, he is about to pass away.
+to let someone go|to fire someone|to fire someone|The firm had to let someone go.
+between jobs|unemployed|unemployed|She is between jobs at the moment.
+economical with the truth|dishonest|dishonest|The minister was economical with the truth.
+pre-owned|second-hand|second-hand|We bought a pre-owned car.
+downsize|reduce staff numbers|to reduce staff numbers|The firm plans to downsize.
+in a delicate condition|pregnant|pregnant|She was in a delicate condition.
+senior moment|forgetfulness|forgetfulness|I had a senior moment.
+differently abled|disabled|disabled|He is differently abled.
+economically disadvantaged|poor|poor|The fund helps economically disadvantaged families.
+correctional facility|prison|prison|He was sent to a correctional facility.
+collateral damage|unintended harm|unintended harm|Civilians suffered as collateral damage.
+letting you go|firing you|firing you|I'm sorry, we are letting you go.
+put to sleep|euthanised|killed painlessly; euthanised|The old dog was put to sleep.
+vertically challenged|short|short|He is vertically challenged.
+a bit under the weather|slightly ill|slightly ill|I'm a bit under the weather.
+of a certain age|older|older|A woman of a certain age waved.
+enhanced interrogation|torture|torture|Critics called it enhanced interrogation.
+negative growth|decline|decline|The firm reported negative growth.
+downsized position|job cut|job cut|His downsized position was removed.
+substance abuse|drug addiction|drug addiction|He is treated for substance abuse.
+in between opportunities|currently without a job|currently without a job|She is in between opportunities.
+not the sharpest tool in the shed|not very intelligent|not very intelligent|He's not the sharpest tool in the shed.
+letting nature take its course|not intervening medically|not intervening medically|The family agreed on letting nature take its course.
+economical|cheap or stingy|cheap or stingy|He is economical with money.`,
   },
   {
     id: "c1p19",
@@ -3774,31 +3780,31 @@ economical|cheap or stingy`,
     subtitle: "Advanced linking of opposing ideas",
     kind: "cloze",
     note: "C1-level connectors for contrast and concession.",
-    data: `___ the heavy rain, the match went ahead as planned.|despite
-The plan succeeded, ___ several early setbacks.|notwithstanding
-___ he was exhausted, he kept working.|although
-The project failed ___ the team's best efforts.|in spite of
-He accepted the offer, ___ his initial doubts.|regardless of
-The company thrived, ___ competitors struggled badly.|whereas
-He stayed calm ___ his colleagues panicked.|while
-The results were disappointing; ___, the team kept trying.|however
-The setbacks were serious; ___, morale remained high.|nevertheless
-The plan had flaws; it worked out well ___.|nonetheless
-Sales were falling, ___ the company kept hiring.|yet
-The risks were high; he took the job ___.|even so
-It was a difficult year; profits rose, ___.|that said
-He is, ___ talented, still very inexperienced.|albeit
-___ the results are disappointing, we should continue.|granted that
-The evidence is weak; it may, ___, still be true.|be that as it may
-He was tired; he finished the race ___.|all the same
-The rules are strict; ___, exceptions are sometimes made.|on the other hand
-Critics say it failed; ___, sales figures suggest otherwise.|on the contrary
-He apologised; ___, the damage had already been done.|for all that
-The odds were against them; they pressed on ___.|still
-The forecast was poor; ___, they went ahead with the trip.|in any case
-___ appearances, the company was struggling.|contrary to
-___ popular belief, the theory has been disproven.|contrary to what most think
-Experts warned against it; they proceeded with the plan ___.|regardless`,
+    data: `___ the heavy rain, the match went ahead as planned.|despite|in spite of|Despite the rain, the match went ahead.
+The plan succeeded, ___ several early setbacks.|notwithstanding|in spite of; used in formal writing|It worked, notwithstanding several setbacks.
+___ he was exhausted, he kept working.|although|even though|Although he was tired, he kept working.
+The project failed ___ the team's best efforts.|in spite of|despite|The project failed in spite of our efforts.
+He accepted the offer, ___ his initial doubts.|regardless of|without being affected by|He accepted the offer regardless of his doubts.
+The company thrived, ___ competitors struggled badly.|whereas|used to compare two contrasting facts|The firm thrived whereas rivals struggled.
+He stayed calm ___ his colleagues panicked.|while|at the same time as|He stayed calm while others panicked.
+The results were disappointing; ___, the team kept trying.|however|used to add a contrast|Results were poor; however, the team kept trying.
+The setbacks were serious; ___, morale remained high.|nevertheless|in spite of that|Setbacks were serious; nevertheless, morale stayed high.
+The plan had flaws; it worked out well ___.|nonetheless|in spite of what was said|The plan had flaws; it worked nonetheless.
+Sales were falling, ___ the company kept hiring.|yet|but; used to add a surprising contrast|Sales fell, yet the company kept hiring.
+The risks were high; he took the job ___.|even so|in spite of that|It was risky; he took the job even so.
+It was a difficult year; profits rose, ___.|that said|used to add a good point|It was hard; that said, profits rose.
+He is, ___ talented, still very inexperienced.|albeit|although; used before an adjective|He is, albeit talented, inexperienced.
+___ the results are disappointing, we should continue.|granted that|admitting that something may be true|Granted that it's disappointing, we should continue.
+The evidence is weak; it may, ___, still be true.|be that as it may|used to accept a point but still disagree|Be that as it may, we should go on.
+He was tired; he finished the race ___.|all the same|in spite of that|He was tired; he finished the race all the same.
+The rules are strict; ___, exceptions are sometimes made.|on the other hand|used to give an opposing point|On the other hand, exceptions are made.
+Critics say it failed; ___, sales figures suggest otherwise.|on the contrary|used to say the opposite is true|On the contrary, sales suggest otherwise.
+He apologised; ___, the damage had already been done.|for all that|in spite of that|For all that, the damage was done.
+The odds were against them; they pressed on ___.|still|even so; used to add a contrast|They pressed on still.
+The forecast was poor; ___, they went ahead with the trip.|in any case|whatever happens|In any case, they went ahead.
+___ appearances, the company was struggling.|contrary to|against what seems true|Contrary to appearances, the firm was struggling.
+___ popular belief, the theory has been disproven.|contrary to what most think|against what most people think|Contrary to what most think, it was disproven.
+Experts warned against it; they proceeded with the plan ___.|regardless|without caring about something|They proceeded regardless.`,
   },
   {
     id: "c1p20",
@@ -3806,31 +3812,31 @@ Experts warned against it; they proceeded with the plan ___.|regardless`,
     subtitle: "Linking ideas across a text",
     kind: "cloze",
     note: "C1-level cohesive devices for academic writing.",
-    data: `___ mentioned earlier, the results support the hypothesis.|as
-The ___ point to consider is the sample size.|next
-Having established this, we can now ___ to the next issue.|turn
-This ___ raises further questions about the methodology.|finding
-Building ___ this idea, the next chapter examines causation.|on
-The ___ section will explore alternative explanations.|following
-In ___ of the above, further research is needed.|light
-To ___ up, the study has several key limitations.|sum
-This leads us ___ to the question of validity.|onward
-The ___ mentioned study supports this conclusion.|above
-Broadly ___, the findings align with prior research.|speaking
-This ___ ties in with the earlier discussion of ethics.|point
-The argument outlined above rests upon ___ core assumptions.|three
-Taking this ___ account, the results seem reliable.|into
-The following ___ builds on the previous analysis.|section
-This brings us ___ to the central argument.|back
-The data ___ referred to can be found in the appendix.|previously
-It is ___ to note the limitations of this approach.|worth
-This ___ leads into a discussion of policy implications.|naturally
-The ___ analysis reveals a clear pattern.|subsequent
-As ___ in Table 2, the results vary by region.|shown
-This ___ us to the final point of the discussion.|brings
-The closing chapter will ___ these concerns in detail.|address
-Consistent ___ with prior research, the findings confirm the theory.|with
-In ___ words, the results were not as expected.|other`,
+    data: `___ mentioned earlier, the results support the hypothesis.|as|in the way that|As mentioned earlier, the results support it.
+The ___ point to consider is the sample size.|next|coming straight after this one|The next point to consider is the sample size.
+Having established this, we can now ___ to the next issue.|turn|to move your attention to something new|We can now turn to the next issue.
+This ___ raises further questions about the methodology.|finding|a result that people discover|This finding raises further questions.
+Building ___ this idea, the next chapter examines causation.|on|a word used to add to an idea|Building on this idea, the next chapter examines causes.
+The ___ section will explore alternative explanations.|following|coming straight after|The following section explores alternatives.
+In ___ of the above, further research is needed.|light|taking something into account|In light of the above, more research is needed.
+To ___ up, the study has several key limitations.|sum|to give the main points at the end|To sum up, the study has limits.
+This leads us ___ to the question of validity.|onward|forward in a text or process|This leads us onward to the question of validity.
+The ___ mentioned study supports this conclusion.|above|written earlier in the text|The above study supports this conclusion.
+Broadly ___, the findings align with prior research.|speaking|in a general way|Broadly speaking, the findings match prior research.
+This ___ ties in with the earlier discussion of ethics.|point|an idea or detail to make|This point ties in with the earlier discussion.
+The argument outlined above rests upon ___ core assumptions.|three|the number 3|The argument rests upon three core assumptions.
+Taking this ___ account, the results seem reliable.|into|links a fact to a result|Taking this into account, the results seem reliable.
+The following ___ builds on the previous analysis.|section|a part of a longer text|The following section builds on the analysis.
+This brings us ___ to the central argument.|back|to an earlier point|This brings us back to the central argument.
+The data ___ referred to can be found in the appendix.|previously|before now|The data previously referred to is in the appendix.
+It is ___ to note the limitations of this approach.|worth|deserving the effort|It is worth noting the limits of this approach.
+This ___ leads into a discussion of policy implications.|naturally|in an easy, logical way|This naturally leads into policy implications.
+The ___ analysis reveals a clear pattern.|subsequent|coming later|The subsequent analysis reveals a clear pattern.
+As ___ in Table 2, the results vary by region.|shown|made clear for the eyes|As shown in Table 2, results vary.
+This ___ us to the final point of the discussion.|brings|leads us to a point|This brings us to the final point.
+The closing chapter will ___ these concerns in detail.|address|to deal with a problem|The closing chapter will address these concerns.
+Consistent ___ with prior research, the findings confirm the theory.|with|together or in agreement|Consistent with prior research, the findings confirm it.
+In ___ words, the results were not as expected.|other|different; not the same|In other words, results were not as expected.`,
   },
   {
     id: "c1p21",

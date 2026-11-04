@@ -12,7 +12,7 @@ import type { Level } from "./levels";
  * then holds it there. Never remove a level, and never loosen a rule to let a card
  * through: fix the card.
  */
-const GATED_LEVELS: Level[] = ["A1", "A2", "B1"];
+const GATED_LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1"];
 
 const MAX_MEANING_WORDS = 8;
 /** A1 to B1 examples stay short; B2 and C1 sentences need a few more words to sound natural. */
