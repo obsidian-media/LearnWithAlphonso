@@ -74,8 +74,8 @@ struct AnswerVerdictPanel: View {
 }
 
 /// One multiple-choice (or listening) answer: a chunky tile with a darker bottom edge that collapses while pressed.
-/// Parchment when idle, moss when picked, moss with a check when it is the right answer, red with a cross when it
-/// was the wrong pick. Shared by the lesson player and review.
+/// Parchment when idle, moss when picked, moss with a check when it is the right answer, the theme's wrong-answer colour with a
+/// cross when it was the wrong pick. Shared by the lesson player and review.
 struct AnswerChoiceButton: View {
     let choice: String
     let picked: String?
@@ -107,10 +107,12 @@ struct AnswerChoiceButton: View {
                     .multilineTextAlignment(.leading)
                 Spacer()
                 if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
+                    Image(systemName: "checkmark.circle.fill").symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, AlphonsoColor.moss)
                         .accessibilityHidden(true)
                 } else if checked && isPicked {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.wrongAnswer)
+                    Image(systemName: "xmark.circle.fill").symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, AlphonsoColor.wrongAnswer)
                         .accessibilityHidden(true)
                 }
             }

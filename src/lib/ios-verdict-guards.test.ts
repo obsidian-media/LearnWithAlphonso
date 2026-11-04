@@ -90,19 +90,24 @@ describe("chunky answer tiles and word chips", () => {
 
   it("the picked wrong tile uses the theme's wrong-answer colour (as the verdict panel does), with a distinct cross badge", () => {
     const tile = between(panel, "struct AnswerChoiceButton: View", "struct ChunkyTileStyle");
-    // Fill, edge and badge all follow AlphonsoColor.wrongAnswer: coral in Meadow/Canopy, destructive in the themes
-    // where ember == moss. The raw destructive red would sit beside the panel's coral.
-    expect(tile).toContain("AlphonsoColor.wrongAnswer.opacity(0.18)");
-    expect(tile).toContain("if checked && isPicked { return AlphonsoColor.wrongAnswer }");
-    expect(tile).toContain(
-      'Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.wrongAnswer)',
+    const fill = between(tile, "private var fill: Color {", "private var edge: Color {");
+    const edge = between(tile, "private var edge: Color {", "var body: some View {");
+    // Fill and edge follow AlphonsoColor.wrongAnswer in the picked-and-wrong branch, never the correct branch.
+    expect(fill).toContain(
+      "if checked && isPicked { return AlphonsoColor.wrongAnswer.opacity(0.18) }",
     );
+    expect(edge).toContain("if checked && isPicked { return AlphonsoColor.wrongAnswer }");
+    expect(fill).not.toMatch(/isCorrectChoice \{ return AlphonsoColor\.wrongAnswer/);
+    expect(edge).not.toMatch(/isCorrectChoice \{ return AlphonsoColor\.wrongAnswer/);
     expect(tile).not.toContain("AlphonsoColor.destructive");
-    // The badge stays distinguishable from the right answer's by shape in every theme, never by colour alone.
-    expect(tile).toContain(
-      'Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)',
+    // Badges: white glyph on a solid disc (3:1 on the tile tint; a tinted glyph on the 18% tint fell to 2.8:1).
+    expect(tile).toMatch(
+      /"xmark\.circle\.fill"\)\.symbolRenderingMode\(\.palette\)\s*\.foregroundStyle\(\.white, AlphonsoColor\.wrongAnswer\)/,
     );
-    // And the colour split itself still guarantees a non-moss wrong colour where ember == moss.
+    expect(tile).toMatch(
+      /"checkmark\.circle\.fill"\)\.symbolRenderingMode\(\.palette\)\s*\.foregroundStyle\(\.white, AlphonsoColor\.moss\)/,
+    );
+    // Distinct by shape in every theme, and the colour split still keeps a non-moss wrong colour.
     const theme = read("DesignSystem/AlphonsoTheme.swift");
     expect(theme).toContain("case .studioInk, .manuscript: return false");
     expect(theme).toContain("wrongAnswerUsesEmber ? ember : destructive");

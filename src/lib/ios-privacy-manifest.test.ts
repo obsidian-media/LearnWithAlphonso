@@ -213,7 +213,7 @@ describe("app privacy manifest: collected data types (match the App Store Connec
     NSPrivacyCollectedDataTypeProductInteraction: /PaywallSource\.attributeKey/,
   };
   const ALSO_PERSONALIZATION: Record<string, RegExp> = {
-    NSPrivacyCollectedDataTypeProductInteraction: /ReviewQueue/,
+    NSPrivacyCollectedDataTypeProductInteraction: /ReviewQueueResolution/,
   };
 
   it("every type is linked to the user except diagnostics, never used for tracking, for app functionality (plus the declared analytics)", () => {
