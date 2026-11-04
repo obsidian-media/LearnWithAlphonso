@@ -17,6 +17,15 @@ export type QuestionFix = {
   prompt?: string;
   /** Replacement wrong options, in order. Exactly as many as the question has now. */
   wrong?: string[];
+  /** Reviewed slot type, when it cannot be inferred (for example the irregular past went / go / goed). */
+  slot?: "inflection";
+  /** Photo key in VOCAB_IMAGES that shows the answer; multiple choice only. */
+  imageKey?: string;
+  /**
+   * Reviewed: the sentence itself already rules the other options out, so no bracketed
+   * clue is needed. The value says why, for the review table.
+   */
+  context?: string;
   /** One line for the review table: what was wrong with the old question. */
   why: string;
 };
@@ -28,7 +37,11 @@ function fixQuestion(key: string, q: Question, fix: QuestionFix): Question {
   const prompt = fix.prompt ?? q.prompt;
   if (q.prompt.includes("___") && !prompt.includes("___"))
     throw new Error(`${key}: prompt lost its blank`);
-  if (!fix.wrong) return { ...q, prompt };
+  if (fix.imageKey && q.type !== "mc")
+    throw new Error(`${key}: only multiple choice can show a photo`);
+  const withImage = (x: Question): Question =>
+    fix.imageKey && x.type === "mc" ? { ...x, imageKey: fix.imageKey } : x;
+  if (!fix.wrong) return withImage({ ...q, prompt });
   const answerText = q.type === "mc" ? q.choices[q.answer]! : q.answer;
   const options = q.type === "mc" ? q.choices : q.bank;
   const slots = options.filter((o) => o !== answerText).length;
@@ -40,7 +53,9 @@ function fixQuestion(key: string, q: Question, fix: QuestionFix): Question {
   if (new Set(lower).size !== lower.length) throw new Error(`${key}: duplicate wrong options`);
   let next = 0;
   const replaced = options.map((o) => (o === answerText ? o : fix.wrong![next++]!));
-  return q.type === "mc" ? { ...q, prompt, choices: replaced } : { ...q, prompt, bank: replaced };
+  return withImage(
+    q.type === "mc" ? { ...q, prompt, choices: replaced } : { ...q, prompt, bank: replaced },
+  );
 }
 
 export function applyQuestionFixes(

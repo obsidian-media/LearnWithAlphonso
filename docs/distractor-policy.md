@@ -78,3 +78,19 @@ For every A1/A2 question in the English bank:
 
 The gate is mutation-checked on real examples: "into / down / behind / during" and
 "ought / used / can to / can" must fail it.
+
+## How a question is disambiguated in the data
+
+A `QuestionFix` (src/data/question-fixes-a1a2.ts) can carry:
+
+- `prompt`: the prompt with a bracketed clue added;
+- `wrong`: replacement wrong options, in order (answer text, answer index and id never change);
+- `imageKey`: a reviewed photo from `VOCAB_IMAGES` that shows the answer (multiple choice only);
+- `context`: reviewed, the sentence already rules the other options out, so no clue is needed;
+- `slot`: a reviewed slot type where inference cannot know it (irregular verb forms).
+
+Hand-authored phrase questions (greetings, replies, set phrases) are `phrase` slots. They
+must be listed in `src/data/reviewed-phrases.ts` after someone has read them.
+
+Topic-word clues describe the situation, not the dictionary definition: "(you tap your card)",
+not "(a kind of payment)". Wrong options for a topic word are other words of the same topic.

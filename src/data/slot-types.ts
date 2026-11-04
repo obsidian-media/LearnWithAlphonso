@@ -15,12 +15,13 @@ export type SlotType =
   | "quantifier"
   | "collocation-verb"
   | "inflection"
-  | "category";
+  | "category"
+  | "phrase";
 
 const set = (s: string) => new Set(s.split(",").map((x) => x.trim()));
 
 /** Curated pools. A wrong option for a slot must come from its pool (or be allow-listed). */
-export const POOLS: Record<Exclude<SlotType, "inflection" | "category">, Set<string>> = {
+export const POOLS: Record<Exclude<SlotType, "inflection" | "category" | "phrase">, Set<string>> = {
   "fixed-prep": set(
     "in,on,at,by,with,of,for,to,from,into,onto,under,over,through,during,since,until,before,after,up,down",
   ),
@@ -76,6 +77,9 @@ export function inferSlot(
   const text = prompt.trim();
   if (/^which verb goes with/i.test(text)) return "collocation-verb";
   if (PRONOUNLESS_STEM.test(text)) return "inflection";
+  // Pair packs ("Opposite of ...", "Someone who ..."): the other answers of the pack are the pool.
+  if (!text.includes("___") && PACK_RE.test(questionId)) return "category";
+  if (!text.includes("___") && /^q[0-9]+$/.test(questionId)) return "phrase";
   // Every option is a form of one lemma (study / studies / are study): an inflection slot.
   const bare = options.map((o) => norm(o).replace(/^(is|are|am|to|more|most) /, ""));
   const common = bare.reduce((p, o) => {
@@ -113,12 +117,23 @@ export function inferSlot(
     return "time-prep";
   }
   if (PACK_RE.test(questionId)) return "category";
+  // Hand-authored phrase and function questions (greetings, replies, requests).
+  if (/^q[0-9]+$/.test(questionId)) return "phrase";
   return null;
 }
 
 /** A bracketed clue after the blank, or a picture, picks the one option that fits. */
+/** Pair-pack prompts that already define the answer ("Someone who cooks food is a..."). */
+const DEFINITION_STEM =
+  /^(someone who|an animal that|something that|opposite of|female form of|the body part|this hobby involves|which (sport or hobby|noun goes with)|how often does)/i;
+
 export function hasClue(prompt: string, hasImage = false): boolean {
-  return hasImage || /\([^)]{4,}\)\s*$/.test(prompt) || /\?\s+[A-Z][^?]*[.!]$/.test(prompt);
+  return (
+    hasImage ||
+    DEFINITION_STEM.test(prompt.trim()) ||
+    /\([^)]{4,}\)\s*$/.test(prompt) ||
+    /\?\s+[A-Z][^?]*[.!]$/.test(prompt)
+  );
 }
 
 /** Reviewed exceptions: question key (`lessonId/questionId`) -> options allowed outside the pool. */
@@ -137,27 +152,34 @@ export type QuestionShape = {
   answer: string;
   options: string[];
   hasImage?: boolean;
+  /** Reviewed: the sentence itself rules the other options out (QuestionFix.context). */
+  clued?: boolean;
+  /** Reviewed slot type that overrides inference. */
+  slot?: SlotType;
   /** Answers of the question's whole pack, for `category` slots. */
   packAnswers?: Set<string>;
+  /** A hand-authored phrase question that was read and judged sound (see reviewed-phrases.ts). */
+  reviewed?: boolean;
 };
 
 /** Everything wrong with a question's options under docs/distractor-policy.md. */
 export function checkDistractors(q: QuestionShape): Issue[] {
-  const slot = inferSlot(q.prompt, q.answer, q.options, q.id);
+  const slot = q.slot ?? inferSlot(q.prompt, q.answer, q.options, q.id);
   const wrong = q.options.filter((o) => o !== q.answer);
   if (!slot) return [{ kind: "unclassified" }];
+  if (slot === "phrase" && !q.reviewed) return [{ kind: "unclassified" }];
   const issues: Issue[] = [];
   const allow = new Set((DISTRACTOR_ALLOW[q.key]?.options ?? []).map(norm));
   for (const w of wrong) {
     const n = norm(w);
     let inPool: boolean;
     if (slot === "category") inPool = q.packAnswers?.has(w) ?? true;
-    else if (slot === "inflection")
+    else if (slot === "inflection" || slot === "phrase")
       inPool = true; // checked by inferSlot: every option is one lemma
     else inPool = POOLS[slot].has(n);
     if (!inPool && !allow.has(n)) issues.push({ kind: "off-pool", option: w, slot });
   }
-  const clue = hasClue(q.prompt, q.hasImage);
+  const clue = hasClue(q.prompt, q.hasImage || q.clued);
   if (!clue && q.prompt.includes("___")) {
     for (const w of wrong) {
       const why = alsoCorrectReason(q.prompt, q.answer, w);

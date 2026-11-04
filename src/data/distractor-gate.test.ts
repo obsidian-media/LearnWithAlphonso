@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
-import { checkDistractors, inferSlot, type QuestionShape } from "./slot-types";
+import { QUESTION_FIXES } from "./question-fixes";
+import { REVIEWED_PHRASES } from "./reviewed-phrases";
+import { checkDistractors, hasClue, inferSlot, type QuestionShape } from "./slot-types";
 
 /**
  * The gate for docs/distractor-policy.md. Two parts:
@@ -126,6 +128,9 @@ describe("the A1/A2 English bank", () => {
             answer,
             options,
             hasImage: q.type === "mc" && !!q.imageKey,
+            clued: !!QUESTION_FIXES[`${lesson.id}/${q.id}`]?.context,
+            slot: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.slot,
+            reviewed: REVIEWED_PHRASES.has(`${lesson.id}/${q.id}`),
           },
         });
       }
@@ -167,12 +172,13 @@ describe("the A1/A2 English bank", () => {
     expect(bad).toEqual([]);
   });
 
-  // Known debt, pinned so it can only go down. A category question (a word from a topic
-  // pack) needs a clue or a picture, because every word of the topic fits the sentence
-  // until something rules it out. A question whose slot cannot be inferred is not yet
-  // typed. Lower these when questions gain clues or slot types; never raise them.
-  const NEEDS_CLUE_BUDGET = 605;
-  const UNCLASSIFIED_BUDGET = 193;
+  // Both are zero. A topic-word question needs a photo, a bracketed clue or a reviewed
+  // sentence context, because every word of the topic fits until something rules it out.
+  // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
+  // has read (reviewed-phrases.ts), is not allowed in.
+  const PINNED_SPLIT = { picture: 47, context: 286, clue: 431 };
+  const NEEDS_CLUE_BUDGET = 0;
+  const UNCLASSIFIED_BUDGET = 0;
 
   it("does not add category questions without a clue", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "needs-clue")).length;
@@ -182,5 +188,18 @@ describe("the A1/A2 English bank", () => {
   it("does not add questions with an unknown slot", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "unclassified")).length;
     expect(n).toBeLessThanOrEqual(UNCLASSIFIED_BUDGET);
+  });
+
+  // The split of how topic-word questions are disambiguated, pinned so a change is a
+  // decision: a reviewed photo, a bracketed clue, or a sentence that already rules the
+  // others out. There are no bare topic questions (above).
+  it("pins how pack questions are disambiguated", () => {
+    const topic = all.filter(({ it }) => /^a[12]p[0-9]+q[0-9]+$/.test(it.shape.id));
+    const count = (f: (s: QuestionShape) => boolean) =>
+      topic.filter(({ it }) => f(it.shape)).length;
+    const picture = count((s) => !!s.hasImage);
+    const context = count((s) => !s.hasImage && !!s.clued);
+    const clue = count((s) => !s.hasImage && !s.clued && hasClue(s.prompt));
+    expect({ picture, context, clue }).toEqual(PINNED_SPLIT);
   });
 });
