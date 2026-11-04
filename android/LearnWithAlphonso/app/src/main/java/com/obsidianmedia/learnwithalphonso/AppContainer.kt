@@ -125,6 +125,10 @@ class AppContainer(context: Context) {
     val tutorClient = TutorConversationClient(apiHttp, deviceId())
     val micPermission = MicPermission(app)
     val notificationPermission = NotificationPermission(app, prefs)
+    val reminderPromptStore = com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptStore(
+        get = { if (prefs.contains(it)) prefs.getLong(it, 0L) else null },
+        put = { k, v -> prefs.edit().putLong(k, v).apply() },
+    )
     fun newRecorder() = TurnRecorder(app)
     fun newPlayback() = AudioPlayback(app)
     val entitlements = EntitlementStore(RevenueCatBilling.createIfConfigured(app, BuildConfig.REVENUECAT_PUBLIC_KEY))

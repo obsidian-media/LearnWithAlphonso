@@ -9,13 +9,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPermission
 import kotlinx.coroutines.CompletableDeferred
 
 /**
- * POST_NOTIFICATIONS (API 33+), asked at the first lesson completion and
- * only while undetermined, so a prior decline is never re-prompted (the
- * LessonPlayerView.swift priming moment). Android does not expose "never
- * asked" directly, so a preference records that the prompt was shown once.
+ * POST_NOTIFICATIONS (API 33+), requested only from the lesson-complete reminder card's "Remind me" (never
+ * cold after a lesson) and only while undetermined, so a prior decline is never re-prompted. Android does not
+ * expose "never asked" directly, so a preference records that the prompt was shown once.
  */
 class NotificationPermission(private val context: Context, private val prefs: SharedPreferences) {
     private var launcher: ActivityResultLauncher<String>? = null
@@ -30,6 +30,13 @@ class NotificationPermission(private val context: Context, private val prefs: Sh
 
     fun isGranted(): Boolean =
         Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    /** The reminder card's view of the permission: granted, asked-and-refused, or never asked. */
+    fun status(): ReminderPermission = when {
+        isGranted() -> ReminderPermission.GRANTED
+        isUndetermined() -> ReminderPermission.UNDETERMINED
+        else -> ReminderPermission.DENIED
+    }
 
     fun isUndetermined(): Boolean = !isGranted() && !prefs.getBoolean(ASKED_KEY, false)
 
