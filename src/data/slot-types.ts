@@ -199,7 +199,34 @@ export type QuestionShape = {
   allow?: string[];
 };
 
+/**
+ * Hand labels for topic words whose generated tag is wrong or missing (answer-pos.ts reads a
+ * single sentence, so "cold" is an adjective in weather and a noun in health). Per pack, and
+ * only where a wrong tag blocked a question that is in fact sound.
+ */
+const nouns = (s: string) => Object.fromEntries(s.split(",").map((w) => [w.trim(), "Noun"]));
+const POS_FIX: Record<string, Record<string, string>> = {
+  a1p11: nouns("coins,notes"),
+  a1p14: nouns("time,year,January,Monday"),
+  a1p19: nouns("till,trolley,price,vegetables,oil,debit"),
+  a2p7: nouns("kitchen,bedroom,bathroom,house,garage,garden,flat,dining room"),
+  a2p9: nouns("cold,cough,fever,headache,bruise,nuts,bread,milk,eggs"),
+  a2p11: nouns("nuts,bread,milk,eggs"),
+  a2p15: nouns("stamp"),
+  a2p16: { ...nouns("centre,park,stop,market"), local: "Adjective" },
+  a2p17: {
+    above: "Preposition",
+    beside: "Preposition",
+    beneath: "Preposition",
+    alongside: "Preposition",
+    behind: "Preposition",
+    inside: "Preposition",
+  },
+  a2p20: { long: "Adjective", fluent: "Adjective", warm: "Adjective", tall: "Adjective" },
+};
+
 const posOf = (packId: string | undefined, word: string): string | undefined =>
+  (packId ? POS_FIX[packId]?.[word] : undefined) ??
   (packId ? PACK_ANSWER_POS[packId]?.[word] : undefined) ??
   ANSWER_POS[word] ??
   ANSWER_POS[word.toLowerCase()];

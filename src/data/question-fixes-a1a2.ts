@@ -199,8 +199,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "Could I get a ___ for this purchase? (proof that I paid)",
   },
   "a1p11l3/a1p11q13": {
-    why: "reason added",
-    context: "A price can include tax; it cannot include a receipt, an amount or a sale.",
+    why: '"amount / sale" are odd after includes',
+    context:
+      "The price includes tax; a receipt, a total and a bill are what you get after paying, not part of the price.",
+    wrong: ["receipt", "total", "bill"],
+    allow: ["receipt", "total", "bill"],
   },
   "a1p11l3/a1p11q14": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -319,9 +322,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "January is the first month; days, week and Friday are not months.",
   },
   "a1p14l3/a1p14q12": {
-    why: "reason added",
-    context:
-      "Halloween is on 31 October; July and June are other months and weekend is not a month.",
+    why: '"celebrated in weekend" was not a real option',
+    context: "Halloween is on 31 October; July, June and November are other months.",
+    wrong: ["July", "June", "November"],
+    allow: ["July", "June", "November"],
   },
   "a1p14l3/a1p14q13": {
     why: "reason added",
@@ -612,10 +616,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "map",
   },
   "a1p17l4/a1p17q18": {
-    why: "reason added",
-    context:
-      "You hand in homework; a bell and a board cannot be handed in and you keep your ruler.",
-    wrong: ["bell", "ruler", "board"],
+    why: '"hand in your ruler" is arguable',
+    context: "You hand in homework; a bell, a desk and a board cannot be handed in.",
+    wrong: ["bell", "desk", "board"],
+    allow: ["bell", "desk", "board"],
   },
   "a1p17l4/a1p17q19": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -759,17 +763,23 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "Shops offer a big discount; an amount, a list or a bag is not an offer.",
   },
   "a1p19l4/a1p19q16": {
-    why: "reason added",
+    why: "a bag for life, an item and a dairy section are not bought for cooking",
     context: "You cook with oil; a bag for life, an item and a dairy section are not cooked with.",
+    prompt: "I need to buy some ___ for cooking. (you fry food in it)",
+    wrong: ["lettuce", "soap", "sugar"],
+    allow: ["lettuce", "soap", "sugar"],
   },
   "a1p19l4/a1p19q17": {
     why: "reason added",
     context: "A queue forms at the till; you cannot queue at a trolley, a price or vegetables.",
   },
   "a1p19l4/a1p19q18": {
-    why: "reason added",
+    why: "a bag for life, an item and a dairy section are not for frozen food",
     context:
       "Frozen food goes in the freezer; a bag for life is not cold and a dairy section is a shop area.",
+    prompt: "Please put the frozen food in the ___. (it keeps food frozen)",
+    wrong: ["basket", "trolley", "bag"],
+    allow: ["basket", "trolley", "bag"],
   },
   "a1p19l4/a1p19q19": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -788,9 +798,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     allow: ["seven", "ten", "twelve"],
   },
   "a1p19l5/a1p19q22": {
-    why: "reason added",
+    why: '"debit / oil / till" cannot carry bags',
     context: "A bag for life carries shopping; debit, oil and till do not carry bags.",
-    wrong: ["debit", "oil", "till"],
+    wrong: ["basket", "trolley", "till"],
+    prompt: "I need a ___ to carry all these bags. (a strong reusable carrier)",
+    allow: ["basket", "trolley", "till"],
   },
   "a1p19l5/a1p19q23": {
     why: "reason added",
@@ -925,9 +937,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "plane",
   },
   "a1p20l2/a1p20q5": {
-    why: "reason added",
+    why: '"flight stop / ticket stop" were not stops',
     context:
       "A coach stop is where coaches pick people up; a flight, a ticket or petrol is not a kind of stop.",
+    prompt: "Could you tell me where the ___ stop is? (for long-distance buses)",
+    wrong: ["bus", "tram", "taxi"],
+    allow: ["bus", "tram", "taxi"],
   },
   "a1p20l2/a1p20q6": {
     why: "reason added",
@@ -1005,21 +1020,26 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["detour", "keys", "petrol"],
   },
   "a1p20l5/a1p20q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"check the airport / flight" also fitted; the clue says it lists departures',
     context: "the sentence already rules out the other options",
     wrong: ["petrol", "keys", "seatbelt"],
+    prompt: "I always check the ___ before I travel. (it lists when trains leave)",
   },
   "a1p20l5/a1p20q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A car needs fuel before a trip; it does not need a tram, a taxi or a cab.",
   },
   "a1p20l5/a1p20q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You arrive at an airport two hours early for a flight; a bike, a jet or a carriage is not a place to arrive at.",
   },
   "a1p20l5/a1p20q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "a ticket, a flight and petrol do not take you anywhere",
+    context:
+      "A subway runs underground across a city; a bus, a taxi and a ferry do not go underground.",
+    wrong: ["bus", "taxi", "ferry"],
+    allow: ["bus", "taxi", "ferry"],
   },
   "a1p22l1/a1p22q0": {
     why: '"reading a new language" is also correct',
@@ -1658,17 +1678,19 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["more useful", "usefulest", "most usefuler"],
   },
   "a2p11l1/a2p11q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You ask to see the menu; vegetarian, tip and kids need another noun after them.",
   },
   "a2p11l1/a2p11q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["looking", "ketchup", "booked"],
+    why: "looking, ketchup and booked: ketchup is not a verb form",
+    context:
+      "Book a table follows I would like to; booking, booked and books are the wrong forms of the verb.",
+    wrong: ["booking", "booked", "books"],
+    allow: ["booking", "booked", "books"],
   },
   "a2p11l1/a2p11q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A waiter asks if you are ready to order; doggy, credit and bill are not verbs.",
   },
   "a2p11l1/a2p11q3": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -1680,17 +1702,22 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["ketchup", "cards", "order"],
   },
   "a2p11l2/a2p11q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Included in the price is the phrase; booked in, have in and book in the price do not fit.",
   },
   "a2p11l2/a2p11q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Dishes without meat are vegetarian; menu dishes, water dishes and ketchup dishes are not.",
     wrong: ["menu", "water", "ketchup"],
   },
   "a2p11l2/a2p11q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "dishes is not a food",
     context: "the sentence already rules out the other options",
+    prompt: "I'm allergic to ___, so no peanuts please. (they grow in a shell)",
+    wrong: ["bread", "milk", "eggs"],
+    allow: ["bread", "milk", "eggs"],
   },
   "a2p11l2/a2p11q8": {
     why: '"window / medium / bill" cannot follow "tap"',
@@ -1699,8 +1726,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["ketchup", "bread", "dish"],
   },
   "a2p11l2/a2p11q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"the book / dish / water recommended" are absurd',
+    context: "A waiter recommends food; a book, a dish or water cannot recommend anything.",
+    prompt: "The ___ recommended the fish today. (he brings your food to the table)",
+    wrong: ["chef", "manager", "cook"],
+    allow: ["chef", "manager", "cook"],
   },
   "a2p11l3/a2p11q10": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1708,67 +1738,84 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["book", "booked", "included"],
   },
   "a2p11l3/a2p11q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "dish, medium and bill are not things you ask for more of",
     context: "the sentence already rules out the other options",
+    prompt: "Could you bring some more ___, please? (we want to eat it with butter)",
+    wrong: ["water", "soup", "wine"],
+    allow: ["water", "soup", "wine"],
   },
   "a2p11l3/a2p11q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "kids, cards and order are not ways of cooking",
+    context:
+      "Medium is a way of cooking steak; well done, burnt and overcooked are the opposite of not too well done.",
+    wrong: ["well done", "burnt", "overcooked"],
+    allow: ["well done", "burnt", "overcooked"],
   },
   "a2p11l3/a2p11q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Kids menu is the phrase; credit menu, water menu and window menu do not exist.",
     wrong: ["credit", "water", "window"],
   },
   "a2p11l3/a2p11q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Credit card is the phrase; bill card, window card and bread card do not exist.",
   },
   "a2p11l4/a2p11q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "tip, book and bill are not places",
     context: "the sentence already rules out the other options",
-    wrong: ["tip", "book", "bill"],
+    wrong: ["kitchen", "bar", "toilets"],
+    prompt: "We would like to sit by the ___, please. (so we can see the street)",
+    allow: ["kitchen", "bar", "toilets"],
   },
   "a2p11l4/a2p11q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "book, order and ketchup are not adverbs",
     context: "the sentence already rules out the other options",
+    prompt: "This soup is ___ hot, be careful. (it could burn you)",
+    wrong: ["barely", "hardly", "slightly"],
+    allow: ["barely", "hardly", "slightly"],
   },
   "a2p11l4/a2p11q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Ketchup goes with fries; a meal, a menu and credit do not go with fries.",
   },
   "a2p11l4/a2p11q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "book, ketchup and credit are not things a chef cooks",
     context: "the sentence already rules out the other options",
-    wrong: ["book", "ketchup", "credit"],
+    wrong: ["dish", "menu", "bill"],
+    prompt: "The ___ was excellent tonight, please thank the chef. (everything we ate)",
   },
   "a2p11l4/a2p11q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "cards, ketchup and credit are not things you order",
     context: "the sentence already rules out the other options",
-    wrong: ["cards", "ketchup", "credit"],
+    wrong: ["menu", "bill", "table"],
+    prompt: "I will have the same ___ as my friend. (what is on the plate)",
+    allow: ["menu", "bill", "table"],
   },
   "a2p11l5/a2p11q20": {
-    why: '"vegetarian / dinner / kids" were not things a shop takes; these are things a learner might say, and only cards fit "or only cash"',
-    context: "the sentence already rules out the other options",
-    wrong: ["coupons", "menus", "orders"],
-    allow: ["coupons", "menus", "orders"],
+    why: '"Do you take coupons?" is also a sentence',
+    context:
+      "You take cards as payment, in contrast to cash; menus, orders and tables are not payment.",
+    wrong: ["menus", "orders", "tables"],
+    allow: ["menus", "orders", "tables"],
   },
   "a2p11l5/a2p11q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Doggy bag is the phrase for taking leftovers home; menu bag, ketchup bag and credit bag do not exist.",
   },
   "a2p11l5/a2p11q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["book", "order", "doggy"],
+    why: "book, order and doggy are not participles",
+    context: "A busy restaurant is fully booked; fully ordered, delayed or declined is not said.",
+    wrong: ["ordered", "delayed", "declined"],
+    allow: ["ordered", "delayed", "declined"],
   },
   "a2p11l5/a2p11q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You leave a tip for the staff; you cannot leave water, a window or medium.",
   },
   "a2p11l5/a2p11q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Waiters say enjoy your dinner; enjoy your credit, window or medium is not said.",
     wrong: ["credit", "window", "medium"],
   },
   "a2p12l1/a2p12q0": {
@@ -1955,8 +2002,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["behind", "beside", "near"],
   },
   "a2p13l2/a2p13q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You cross a road; you cannot cross an end, a right or an exit carefully.",
   },
   "a2p13l2/a2p13q8": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -1969,8 +2016,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["across", "into", "over"],
   },
   "a2p13l3/a2p13q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "down, round and road are not nouns for a part of a street",
+    context: "End of the street is the phrase; down, round and road of the street do not fit.",
+    prompt: "The station is at the ___ of the street. (where the street stops)",
+    wrong: ["start", "middle", "side"],
+    allow: ["start", "middle", "side"],
   },
   "a2p13l3/a2p13q11": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -1983,8 +2033,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["in", "inside", "between"],
   },
   "a2p13l3/a2p13q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "in, down and right are not nouns",
+    context: "First turning on your left is the phrase; in, down and right are not nouns.",
+    prompt: "Take the first ___ on your left. (a small side road)",
+    wrong: ["corner", "junction", "bridge"],
+    allow: ["corner", "junction", "bridge"],
   },
   "a2p13l3/a2p13q14": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2002,8 +2055,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["above", "beside", "behind"],
   },
   "a2p13l4/a2p13q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Signs lead you to an exit; in and down are not nouns and a walk is not something signs reach.",
     wrong: ["in", "down", "walk"],
   },
   "a2p13l4/a2p13q18": {
@@ -2044,73 +2098,85 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["outside", "opposite", "behind"],
   },
   "a2p14l1/a2p14q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Go out for dinner is the phrase; agree out, forward out and postpone out do not exist.",
   },
   "a2p14l1/a2p14q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "I'm going to a party; make it to, book to and check to do not fit after I'm.",
   },
   "a2p14l1/a2p14q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Free means available; are you set, check or book this weekend do not ask whether someone is available.",
   },
   "a2p14l1/a2p14q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Meet up is the phrasal verb for arranging to see someone; keep up, planning up and forward up do not mean that.",
     wrong: ["keep", "planning", "forward"],
   },
   "a2p14l1/a2p14q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason refreshed",
+    context:
+      "I already have plans is the polite excuse; have book, have check or have change is not an excuse.",
   },
   "a2p14l2/a2p14q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Postpone to next week means move it later; pick, agree and manage do not take to next week.",
   },
   "a2p14l2/a2p14q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Can't make it means can't attend; can't let, pick or forward does not.",
     wrong: ["let", "pick", "forward"],
   },
   "a2p14l2/a2p14q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["make it", "looking", "pick"],
+    why: '"pick a date" is also correct; the options now cannot replace fix a date',
+    context:
+      "Fix a date means agree one; make it a date, looking a date and keep a date are not the usual phrase.",
+    wrong: ["make it", "looking", "keep"],
   },
   "a2p14l2/a2p14q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Call it a rain check is the idiom; looking it, make it it and leave it a rain check do not exist.",
   },
   "a2p14l2/a2p14q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You check your schedule before confirming; go, pick or looking your schedule do not.",
     wrong: ["go", "pick", "looking"],
   },
   "a2p14l3/a2p14q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Let me know is the phrase; manage me know, pick me know and going me know are wrong.",
   },
   "a2p14l3/a2p14q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "We're planning to have a picnic; we're go, fix or forward to have do not agree.",
   },
   "a2p14l3/a2p14q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["set", "check", "manage"],
+    why: '"set you up" has another meaning',
+    context:
+      "Pick you up at eight means collect you; check you up, manage you up and show you up do not mean collecting.",
+    wrong: ["check", "manage", "show"],
+    allow: ["check", "manage", "show"],
   },
   "a2p14l3/a2p14q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You arrange to meet for coffee; postpone, book and pick for coffee do not arrange a meeting.",
   },
   "a2p14l3/a2p14q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Looking forward to is the fixed phrase; write, set and check forward to do not exist.",
   },
   "a2p14l4/a2p14q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Forward me an invite means send it on; meet me an invite, let me an invite and planning me an invite are wrong.",
     wrong: ["meet", "let", "planning"],
   },
   "a2p14l4/a2p14q16": {
@@ -2118,148 +2184,180 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["does", "did", "doing"],
   },
   "a2p14l4/a2p14q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You write someone a text; postpone you a text, book you a text and pick you a text do not exist.",
   },
   "a2p14l4/a2p14q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["check", "pick", "manage"],
+    why: '"pick it for Thursday" is also correct',
+    context:
+      "Keep it for Thursday means leave the plan but on that day; check, manage and miss it for Thursday do not.",
+    wrong: ["check", "manage", "miss"],
+    allow: ["check", "manage", "miss"],
   },
   "a2p14l4/a2p14q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["call", "forward", "pick"],
+    why: '"pick that day" is also a sentence',
+    context:
+      "Can't manage that day means not available; call, forward and hold that day do not mean that.",
+    wrong: ["call", "forward", "hold"],
+    allow: ["call", "forward", "hold"],
   },
   "a2p14l5/a2p14q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Change the time to later means alter it; call, forward and book the time to later do not.",
   },
   "a2p14l5/a2p14q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Leave it for another day means postpone it; agree it, planning it and looking it for another day do not.",
     wrong: ["agree", "planning", "looking"],
   },
   "a2p14l5/a2p14q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Agree on a place means choose together; write on, let on and go on a place do not.",
   },
   "a2p14l5/a2p14q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["set", "make it", "pick"],
+    why: '"pick the tickets" is also a sentence',
+    context:
+      "Book the tickets in advance means reserve them; set, make it and look the tickets do not.",
+    wrong: ["set", "make it", "look"],
+    allow: ["set", "make it", "look"],
   },
   "a2p14l5/a2p14q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "All set means ready; all pick, manage or looking to meet is wrong.",
     wrong: ["pick", "manage", "looking"],
   },
   "a2p15l1/a2p15q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"send this order to Spain" is also correct',
+    context: "You send a parcel to Spain; you cannot send change, days or a balance.",
+    wrong: ["change", "days", "balance"],
   },
   "a2p15l1/a2p15q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A letter needs a stamp; a parcel, a bank or an ATM is not stuck on a letter.",
   },
   "a2p15l1/a2p15q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You deposit money into an account; cash, declined and fill in do not take into my account.",
   },
   "a2p15l1/a2p15q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You withdraw cash from a machine; you deposit cash into one, and renew or fill in do not take cash from it.",
   },
   "a2p15l1/a2p15q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"stamp / stamps" were not bank things',
+    context: "You open a bank account; a bank receipt or stamp is not something you open.",
+    prompt: "I'd like to open a new bank ___. (where your money is kept)",
+    wrong: ["branch", "balance", "card"],
+    allow: ["branch", "balance", "card"],
   },
   "a2p15l2/a2p15q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Three working days is the phrase; three working accounts, orders or changes are not.",
   },
   "a2p15l2/a2p15q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You weigh a package; a bank, an ATM or a branch cannot be weighed.",
     wrong: ["bank", "ATM", "branch"],
   },
   "a2p15l2/a2p15q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You fill in a form; withdraw, declined or cash a form does not make sense.",
   },
   "a2p15l2/a2p15q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "An ATM machine is outside a bank; airmail, post office and days do not describe a cash machine.",
   },
   "a2p15l2/a2p15q9": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "receipt",
   },
   "a2p15l3/a2p15q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "post office / days / receipt are not kinds of post",
+    context:
+      "Airmail post is the phrase; post office post, days post and receipt post do not exist.",
+    prompt: "I'd like to send this by ___ post. (it travels by plane)",
+    wrong: ["second-class", "surface", "registered"],
+    allow: ["second-class", "surface", "registered"],
   },
   "a2p15l3/a2p15q11": {
-    why: '"cash" is not a verb; the options are now verbs of the same pack',
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "A machine can decline a card; was withdraw, was deposit and was fill in are not passive forms.",
     wrong: ["withdraw", "deposit", "fill in"],
   },
   "a2p15l3/a2p15q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"fill in my PIN number" is also a sentence',
+    context: "You change a PIN; parcel, cash and post my PIN number do not make sense.",
+    wrong: ["parcel", "cash", "post"],
+    allow: ["parcel", "cash", "post"],
   },
   "a2p15l3/a2p15q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "stamp, PIN and balance are not places",
     context: "the sentence already rules out the other options",
-    wrong: ["stamp", "PIN", "balance"],
+    wrong: ["bank", "branch", "ATM"],
+    prompt: "The queue at the ___ was very long today. (where you send parcels)",
   },
   "a2p15l3/a2p15q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You check an account balance; account stamp, account branch and account ATM do not exist.",
   },
   "a2p15l4/a2p15q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "the options were not verbs for a cheque you exchange",
     context: "the sentence already rules out the other options",
-    wrong: ["renew", "fill in", "stamp"],
+    wrong: ["deposit", "fill in", "renew"],
+    prompt: "I'd like to ___ a cheque, please. (exchange it for money)",
   },
   "a2p15l4/a2p15q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"more airmail" also fitted; options now cannot be stuck on a letter',
+    context:
+      "Letters sent abroad need stamps; a cost, a bank or an order is not stuck on a letter.",
+    wrong: ["cost", "bank", "order"],
   },
   "a2p15l4/a2p15q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"forgot my order number" is also correct; the clue says the four digits for my card',
     context: "the sentence already rules out the other options",
+    prompt: "I forgot my ___ number for the account. (the four digits for my card)",
+    wrong: ["branch", "order", "balance"],
   },
   "a2p15l4/a2p15q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You transfer money to a bank; a package, a cost or a stamp does not receive money.",
     wrong: ["package", "cost", "stamp"],
   },
   "a2p15l4/a2p15q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A bank branch closes at five; a PIN, a parcel or a balance does not close.",
   },
   "a2p15l5/a2p15q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "An expired card is renewed; you cannot withdraw, deposit or fill in a card.",
     wrong: ["withdraw", "deposit", "fill in"],
   },
   "a2p15l5/a2p15q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You ask for the cost of sending a parcel; the stamp, the bank or the ATM is not a cost.",
   },
   "a2p15l5/a2p15q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A standing order is a regular payment; standing fill in, balance and cost are not.",
   },
   "a2p15l5/a2p15q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You sign a form; you cannot renew, withdraw or deposit one.",
     wrong: ["renew", "withdraw", "deposit"],
   },
   "a2p15l5/a2p15q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You collect a delivery from a post office; stamps are bought and a balance or a PIN is not collected.",
     wrong: ["stamps", "balance", "PIN"],
   },
   "a2p16l1/a2p16q0": {
@@ -2287,9 +2385,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["park", "field", "market"],
   },
   "a2p16l2/a2p16q5": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: "shopping, bus and train are nouns in an adjective slot",
     prompt: "My area has lots of ___ shops. (near to where I live)",
-    wrong: ["shopping", "bus", "train"],
+    wrong: ["busy", "quiet", "clean"],
+    allow: ["busy", "quiet", "clean"],
   },
   "a2p16l2/a2p16q6": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2297,9 +2396,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["bus", "train", "school"],
   },
   "a2p16l2/a2p16q7": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: '"a quiet area" also fitted',
     prompt: "I live in a ___ area, not the city. (mostly houses, few shops)",
-    wrong: ["shopping", "bus", "train"],
+    wrong: ["shopping", "commercial", "industrial"],
+    allow: ["shopping", "commercial", "industrial"],
   },
   "a2p16l2/a2p16q8": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2331,9 +2431,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["school", "park", "market"],
   },
   "a2p16l3/a2p16q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "years, clean and quiet are not nouns",
     context: "the sentence already rules out the other options",
-    wrong: ["years", "clean", "quiet"],
+    wrong: ["park", "stop", "market"],
+    prompt: "My neighbourhood is close to the city ___. (the middle of the city)",
   },
   "a2p16l4/a2p16q15": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2384,8 +2485,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["above", "behind", "beside"],
   },
   "a2p17l1/a2p17q1": {
-    why: "several pool members fit without a clue; the bracketed clue picks one",
-    prompt: "The book is ___ the shelf. (on its top surface)",
+    why: 'duplicate of the A1 sentence "Put the book on the shelf"; the A2 version uses a new sentence',
+    prompt: "The vase stands ___ the shelf. (on its top surface)",
     wrong: ["in", "under", "behind"],
   },
   "a2p17l1/a2p17q2": {
@@ -2399,9 +2500,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["behind", "above", "opposite"],
   },
   "a2p17l2/a2p17q5": {
-    why: '"inside / down" are not options for "next to"',
-    context: "the sentence already rules out the other options",
-    wrong: ["near", "behind", "far"],
+    why: '"near to his sister" is also correct',
+    context: "Sitting next to is the phrase; behind to, far to and beside to his sister are wrong.",
+    wrong: ["behind", "far", "beside"],
+    allow: ["behind", "far", "beside"],
   },
   "a2p17l2/a2p17q6": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2429,9 +2531,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["up", "over", "across"],
   },
   "a2p17l3/a2p17q11": {
-    why: "several pool members fit without a clue; the bracketed clue picks one",
-    prompt: "The plane flew ___ the clouds. (higher than them)",
+    why: 'duplicate of the A1 sentence "The plane flies above the clouds"; the A2 version uses a new sentence',
+    prompt: "The balloon floated ___ the village. (higher than the houses)",
     wrong: ["below", "among", "in"],
+    allow: ["below", "among", "in"],
   },
   "a2p17l3/a2p17q12": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2478,9 +2581,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["behind", "beside", "in front of"],
   },
   "a2p17l5/a2p17q22": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: "reason added",
     prompt: "The car is parked ___ the garage. (next to it, not inside)",
     wrong: ["in", "behind", "inside"],
+    context:
+      "Alongside the garage means next to it; in, behind and inside do not mean beside the building.",
   },
   "a2p17l5/a2p17q23": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2818,8 +2923,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "She is as ___ as her sister. (the same height)",
   },
   "a2p20l1/a2p20q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"strong" also fitted a test',
+    context: "A test is difficult or easy; a warm, tall or sweet test is not said.",
+    wrong: ["warm", "tall", "sweet"],
   },
   "a2p20l1/a2p20q3": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2832,40 +2938,44 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["sweet", "cold", "hard"],
   },
   "a2p20l2/a2p20q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Films and books are good or bad; they are not tall, warm or cold.",
   },
   "a2p20l2/a2p20q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Sprinters are quick; a runner is not fluent, sweet or busy in that way.",
   },
   "a2p20l2/a2p20q7": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "This hotel is as ___ as the other one. (it costs the same)",
   },
   "a2p20l2/a2p20q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "English is described as fluent; fun English, tall English and cold English are not said.",
   },
   "a2p20l2/a2p20q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Weather is cold or hot; sweet, busy and spicy weather is not said.",
   },
   "a2p20l3/a2p20q10": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "This restaurant is as ___ as the one downtown. (it has as many customers)",
   },
   "a2p20l3/a2p20q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "An exam is hard or easy; a fast, popular or peaceful exam is not the usual comparison.",
   },
   "a2p20l3/a2p20q12": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "This coffee is as ___ as the one at home. (it wakes you up just as much)",
   },
   "a2p20l3/a2p20q13": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: "reason added",
     prompt: "The journey was as ___ as we expected. (it took the same time)",
+    context:
+      "The clue says it took the same time; fluent, warm and tall do not describe how long a journey is.",
   },
   "a2p20l3/a2p20q14": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2888,8 +2998,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "The city is as ___ as the countryside. (just as quiet and calm)",
   },
   "a2p20l4/a2p20q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A jacket is warm; a hard, tall or peaceful jacket is not.",
   },
   "a2p20l5/a2p20q20": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -3127,119 +3237,144 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["usefuler", "most useful", "more usefuler"],
   },
   "a2p4l1/a2p4q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Try on is the phrasal verb for clothes; take on, check in on and return on do not mean testing a fit.",
   },
   "a2p4l1/a2p4q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You book a hotel room; you cannot write, catch or fit a room.",
     wrong: ["write", "catch", "fit"],
   },
   "a2p4l1/a2p4q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"cash machine / out / return" are not things you ask a waiter for',
+    context:
+      "At the end of a meal you ask for the bill; a cash machine and return are not things you ask for with the and out is not a noun.",
+    prompt: "Could I have the ___ , please? (we want to pay)",
+    wrong: ["menu", "receipt", "change"],
+    allow: ["menu", "receipt", "change"],
   },
   "a2p4l1/a2p4q3": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
     wrong: ["do", "is", "are"],
   },
   "a2p4l1/a2p4q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "A shop takes payment by card; change by card, looking by card and return by card make no sense.",
   },
   "a2p4l2/a2p4q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "At an airport you check in luggage; you cannot fit, look at or delay luggage after where do I.",
     wrong: ["fit", "looking", "delayed"],
   },
   "a2p4l2/a2p4q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "A train departs from a platform; taken, does and try do not give a verb that agrees with the train.",
   },
   "a2p4l2/a2p4q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Return ticket is the phrase; bill ticket, fit ticket and looking ticket are not tickets.",
   },
   "a2p4l2/a2p4q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Taken means someone is sitting there; out, does and try cannot follow Is this seat.",
   },
   "a2p4l2/a2p4q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You ask someone to show you the way; try, return and delayed cannot take the way to the museum.",
   },
   "a2p4l3/a2p4q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "I'm just looking is the polite answer in a shop; just trying, returning or delayed do not fit.",
   },
   "a2p4l3/a2p4q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"bigger return / cash machine / out" are absurd',
+    context: "A size can be bigger; a bigger colour, style or shape is not said.",
+    wrong: ["colour", "style", "shape"],
+    allow: ["colour", "style", "shape"],
   },
   "a2p4l3/a2p4q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"cash machine / check in / out" are not things you do to a jacket',
+    context:
+      "You return a jacket to a shop; a cash machine is not a verb, and check in or out do not apply to clothes.",
+    prompt: "I'd like to ___ this jacket. (take it back to the shop)",
+    wrong: ["wear", "try", "buy"],
+    allow: ["wear", "try", "buy"],
   },
   "a2p4l3/a2p4q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Check-out time is what hotel guests ask; catch out, check in out and write out do not fit.",
   },
   "a2p4l3/a2p4q14": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "cash machine",
   },
   "a2p4l4/a2p4q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A flight can be delayed; it cannot be returned, taken or tried.",
   },
   "a2p4l4/a2p4q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Write down is the phrasal verb for noting something; check down, departs down and out down do not exist.",
   },
   "a2p4l4/a2p4q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You change money at a bureau; bill, fit and show money make no sense.",
   },
   "a2p4l4/a2p4q18": {
-    why: '"check / out / change" are not options for a place in the queue',
+    why: '"Are you behind in the queue?" is also correct; the clue says your turn is next',
     context: "the sentence already rules out the other options",
     wrong: ["behind", "near", "far"],
+    prompt: "Are you ___ in the queue? (it is your turn after this person)",
+    allow: ["behind", "near", "far"],
   },
   "a2p4l4/a2p4q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You get a taxi to the airport; a bill, a fit or a size is not transport.",
     wrong: ["bill", "fit", "size"],
   },
   "a2p4l5/a2p4q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Clothes fit you; after doesn't, the verbs does, change and looking are wrong.",
   },
   "a2p4l5/a2p4q21": {
-    why: '"write / includes / departs" are verbs; the options are particles',
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Out of stock is the phrase; off of, away of and back of stock do not exist.",
     wrong: ["off", "away", "back"],
   },
   "a2p4l5/a2p4q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "In a shop I'll take it means I'm buying; I'll write it, looking it and delayed it do not.",
     wrong: ["write", "looking", "delayed"],
   },
   "a2p4l5/a2p4q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["out", "fit", "write"],
+    why: '"out" is not a verb',
+    context: "You catch a bus; you cannot fit, write or wash it.",
+    wrong: ["fit", "write", "wash"],
+    allow: ["fit", "write", "wash"],
   },
   "a2p4l5/a2p4q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "A hotel includes breakfast in the price; departs, check and catch do not take breakfast.",
   },
   "a2p5l3/a2p5q11": {
     why: "the wrong options were filler from outside the slot's pool",
     wrong: ["many", "few", "several"],
   },
   "a2p5l4/a2p5q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "A pinch of salt is the measure; lots of, much and plenty of salt cannot follow the article a.",
   },
   "a2p5l5/a2p5q22": {
     why: "the wrong options were filler from outside the slot's pool",
@@ -3378,77 +3513,94 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "kitchen",
   },
   "a2p7l1/a2p7q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"in the kitchen / garage" are also sentences; the clue says a cupboard in the bedroom',
     context: "the sentence already rules out the other options",
-    wrong: ["hook", "mat", "driveway"],
+    wrong: ["kitchen", "garage", "bathroom"],
+    prompt: "I keep my clothes in the ___. (a tall cupboard in my bedroom)",
   },
   "a2p7l1/a2p7q2": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "living room",
   },
   "a2p7l1/a2p7q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"in the hallway / garage" are also sentences; the clue says next to the shower',
     context: "the sentence already rules out the other options",
-    wrong: ["cupboard", "ceiling", "driveway"],
+    wrong: ["kitchen", "garage", "hallway"],
+    prompt: "He's brushing his teeth in the ___. (next to the shower)",
   },
   "a2p7l1/a2p7q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"plates in the hallway" is also a sentence; the clue says a shelf behind a door',
     context: "the sentence already rules out the other options",
-    wrong: ["ceiling", "driveway", "mat"],
+    wrong: ["hallway", "garage", "attic"],
+    prompt: "Put the plates in the ___. (they go on a shelf behind a door)",
   },
   "a2p7l2/a2p7q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "the options were not rooms (ceiling, cupboard)",
     context: "the sentence already rules out the other options",
+    prompt: "We sleep in the ___. (it has the beds)",
+    wrong: ["kitchen", "garage", "bathroom"],
   },
   "a2p7l2/a2p7q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["light", "mattress", "hook"],
+    why: '"light / mattress / hook" are not places',
+    context:
+      "Gardens are behind a house; nothing can be behind a window, a ceiling or a floor as a place for a garden.",
+    wrong: ["window", "ceiling", "floor"],
+    prompt: "There's a nice garden behind the ___.",
+    allow: ["window", "ceiling", "floor"],
   },
   "a2p7l2/a2p7q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"on the wardrobe" is also a sentence; the clue says where we eat',
     context: "the sentence already rules out the other options",
-    wrong: ["hallway", "wardrobe", "attic"],
+    wrong: ["wardrobe", "attic", "garage"],
+    prompt: "I left my keys on the ___. (where we eat)",
   },
   "a2p7l2/a2p7q8": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "sofa",
   },
   "a2p7l2/a2p7q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"on the table" fitted; the clue says a small bent piece on the wall',
     context: "the sentence already rules out the other options",
+    prompt: "Hang your coat on the ___. (a small bent piece on the wall)",
+    wrong: ["table", "kitchen", "hallway"],
   },
   "a2p7l3/a2p7q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "the options were not rooms (light, mattress, hook)",
     context: "the sentence already rules out the other options",
-    wrong: ["light", "mattress", "hook"],
+    wrong: ["kitchen", "bedroom", "bathroom"],
+    prompt: "We eat breakfast in the ___. (the room with the big table for meals)",
   },
   "a2p7l3/a2p7q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "garage",
   },
   "a2p7l3/a2p7q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"in the kitchen" is also correct; the clue says a separate room',
     context: "the sentence already rules out the other options",
-    wrong: ["table", "mattress", "ceiling"],
+    wrong: ["kitchen", "bedroom", "hallway"],
+    prompt: "The washing machine is in the ___. (a separate room just for washing clothes)",
   },
   "a2p7l3/a2p7q13": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "window",
   },
   "a2p7l3/a2p7q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"close the bedroom" is odd; the clue says you walk through it',
     context: "the sentence already rules out the other options",
+    prompt: "Please close the ___ when you leave. (you walk through it)",
+    wrong: ["bedroom", "attic", "basement"],
   },
   "a2p7l4/a2p7q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"in the garage" is also correct; the clue says outside',
     context: "the sentence already rules out the other options",
-    wrong: ["cupboard", "mattress", "ceiling"],
+    wrong: ["garage", "kitchen", "attic"],
+    prompt: "We keep the car in the ___. (outside, in front of the house)",
   },
   "a2p7l4/a2p7q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"up to the bathroom / hallway" fitted; the clue says under the roof',
     context: "the sentence already rules out the other options",
-    wrong: ["window", "mat", "driveway"],
+    wrong: ["bathroom", "hallway", "kitchen"],
+    prompt: "The stairs lead up to the ___. (the room under the roof)",
   },
   "a2p7l4/a2p7q17": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -3464,22 +3616,28 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "mattress",
   },
   "a2p7l5/a2p7q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "an attic, a mat and a house cannot be turned off",
+    context:
+      "You turn off a light before sleeping; you cannot turn off the attic, the mat or the house.",
+    prompt: "Turn off the ___ before you sleep. (it makes the room bright)",
+    wrong: ["television", "heating", "oven"],
+    allow: ["television", "heating", "oven"],
   },
   "a2p7l5/a2p7q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "the options were not homes (bathroom, mat)",
     context: "the sentence already rules out the other options",
-    wrong: ["bathroom", "dining room", "mat"],
+    wrong: ["house", "garage", "garden"],
+    prompt: "We're renting a small ___ downtown. (an apartment on one floor of a building)",
   },
   "a2p7l5/a2p7q22": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "ceiling",
   },
   "a2p7l5/a2p7q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"in the wardrobe / attic" fitted; the clue says under the ground floor',
     context: "the sentence already rules out the other options",
-    wrong: ["sofa", "driveway", "mat"],
+    wrong: ["attic", "garage", "kitchen"],
+    prompt: "I store old boxes in the ___. (the room under the ground floor)",
   },
   "a2p7l5/a2p7q24": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -3491,53 +3649,80 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["cricket", "music", "golf"],
   },
   "a2p9l1/a2p9q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "a bad cough is also possible; the clue says a blocked nose",
     context: "the sentence already rules out the other options",
+    prompt: "I have a bad ___ and can't stop sneezing. (my nose is blocked)",
+    wrong: ["cough", "fever", "headache"],
+    allow: ["cough", "fever", "headache"],
   },
   "a2p9l1/a2p9q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "options are now illnesses, ruled out by pain in her head",
     context: "the sentence already rules out the other options",
+    prompt: "She's got a ___ — take some painkillers. (pain in her head)",
+    wrong: ["cough", "fever", "bruise"],
+    allow: ["cough", "fever", "bruise"],
   },
   "a2p9l1/a2p9q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "options were not body parts you run with",
     context: "the sentence already rules out the other options",
-    wrong: ["medicine", "spray", "fever"],
+    wrong: ["arm", "throat", "wrist"],
+    prompt: "My ___ hurts after running. (the part you run with)",
+    allow: ["arm", "throat", "wrist"],
   },
   "a2p9l1/a2p9q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "pulse, throat and fever cannot be broken",
     context: "the sentence already rules out the other options",
-    wrong: ["pulse", "throat", "fever"],
+    wrong: ["leg", "ankle", "throat"],
+    prompt: "He broke his ___ playing football. (his hand was in a sling)",
+    allow: ["leg", "ankle", "throat"],
   },
   "a2p9l1/a2p9q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"I feel sick" is also correct; the clue says the room is spinning',
     context: "the sentence already rules out the other options",
-    wrong: ["nuts", "injured", "bruise"],
+    wrong: ["sick", "injured", "hungry"],
+    prompt: "I feel ___ — I need to sit down. (the room is spinning)",
+    allow: ["sick", "injured", "hungry"],
   },
   "a2p9l2/a2p9q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "options were body parts; now illnesses, ruled out by the pain in her head",
     context: "the sentence already rules out the other options",
-    wrong: ["ankle", "finger", "dentist"],
+    wrong: ["cough", "fever", "bruise"],
+    prompt: "She has a ___ — please be quiet. (a very bad pain in her head)",
+    allow: ["cough", "fever", "bruise"],
   },
   "a2p9l2/a2p9q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not body parts",
+    context: "Shouting strains the throat; an ankle, a knee or a wrist is not used for shouting.",
+    wrong: ["ankle", "knee", "wrist"],
+    allow: ["ankle", "knee", "wrist"],
   },
   "a2p9l2/a2p9q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not things measured",
+    context:
+      "A high temperature is what a thermometer shows; a high cough, headache or bruise is not said.",
+    wrong: ["cough", "headache", "bruise"],
+    allow: ["cough", "headache", "bruise"],
   },
   "a2p9l2/a2p9q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "options were not joints",
     context: "the sentence already rules out the other options",
+    prompt: "I twisted my ___ on the stairs. (the joint above my foot)",
+    wrong: ["wrist", "knee", "elbow"],
+    allow: ["wrist", "knee", "elbow"],
   },
   "a2p9l2/a2p9q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "sick, injured and faint are adjectives",
     context: "the sentence already rules out the other options",
+    prompt: "She's allergic to ___. (small hard foods in a shell)",
+    wrong: ["bread", "milk", "eggs"],
+    allow: ["bread", "milk", "eggs"],
   },
   "a2p9l3/a2p9q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "a doctor also gives a spray; the clue says you swallow it",
     context: "the sentence already rules out the other options",
-    wrong: ["bruise", "throat", "ankle"],
+    wrong: ["spray", "cream", "bruise"],
+    prompt: "The doctor gave me some ___. (I swallow it)",
+    allow: ["spray", "cream", "bruise"],
   },
   "a2p9l3/a2p9q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -3550,14 +3735,18 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["fever", "dentist", "headache"],
   },
   "a2p9l3/a2p9q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "nuts, spray and tooth are nouns",
     context: "the sentence already rules out the other options",
-    wrong: ["nuts", "spray", "tooth"],
+    wrong: ["dizzy", "faint", "upset"],
+    prompt: "He's been ___ since Monday. (ill in bed all week)",
+    allow: ["dizzy", "faint", "upset"],
   },
   "a2p9l3/a2p9q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "nuts and wrist are nouns",
     context: "the sentence already rules out the other options",
-    wrong: ["nuts", "injured", "wrist"],
+    wrong: ["injured", "upset", "hungry"],
+    prompt: "She fainted because she felt ___. (like she was about to pass out)",
+    allow: ["injured", "upset", "hungry"],
   },
   "a2p9l4/a2p9q15": {
     why: '"headache / fever / ankle": "I cut my ankle" is also correct; the options are now things that cannot be cut',
@@ -3565,24 +3754,30 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["fever", "cough", "bruise"],
   },
   "a2p9l4/a2p9q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"checked my fever" also fits; the clue says the beat of the heart',
     context: "the sentence already rules out the other options",
-    wrong: ["cough", "dentist", "fever"],
+    wrong: ["cough", "fever", "dentist"],
+    prompt: "The nurse checked my ___. (the beat of my heart)",
   },
   "a2p9l4/a2p9q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["upset", "faint", "nuts"],
+    why: "nuts is a food",
+    context:
+      "An injured leg needs rest; upset, faint and dizzy describe how a person feels, not a leg.",
+    wrong: ["upset", "faint", "dizzy"],
+    allow: ["upset", "faint", "dizzy"],
   },
   "a2p9l4/a2p9q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["faint", "cold", "sick"],
+    why: "reason added",
+    context: "Upset starts with a vowel sound so an fits; faint, cold and sick take a.",
+    wrong: ["faint", "sick", "tired"],
+    allow: ["faint", "sick", "tired"],
   },
   "a2p9l4/a2p9q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "throat, arm and ankle are not illnesses",
     context: "the sentence already rules out the other options",
-    wrong: ["throat", "arm", "ankle"],
+    wrong: ["cough", "bruise", "cold"],
+    prompt: "She's recovering from a ___. (a high temperature)",
+    allow: ["cough", "bruise", "cold"],
   },
   "a2p9l5/a2p9q20": {
     why: '"My back hurt after lifting the box" is a correct past; the wrong options are now bad forms of hurt',
@@ -3590,23 +3785,30 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     allow: ["hurting", "hurted", "is hurts"],
   },
   "a2p9l5/a2p9q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not things on a knee",
+    context: "A bruise appears on a knee; a fever, cough or headache cannot be on a knee.",
+    wrong: ["fever", "cough", "headache"],
+    allow: ["fever", "cough", "headache"],
   },
   "a2p9l5/a2p9q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "a dentist, spray or medicine is not a symptom",
     context: "the sentence already rules out the other options",
-    wrong: ["dentist", "spray", "medicine"],
+    wrong: ["headache", "ankle", "fever"],
+    prompt: "I should see a doctor about my ___. (I keep coughing at night)",
+    allow: ["headache", "ankle", "fever"],
   },
   "a2p9l5/a2p9q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "migraine, cough and fever cannot be sprained",
     context: "the sentence already rules out the other options",
-    wrong: ["migraine", "cough", "fever"],
+    wrong: ["ankle", "knee", "elbow"],
+    prompt: "She sprained her ___ at the gym. (the joint between her hand and arm)",
+    allow: ["ankle", "knee", "elbow"],
   },
   "a2p9l5/a2p9q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "the options were body parts; now things a pharmacist could mention",
     context: "the sentence already rules out the other options",
-    wrong: ["arm", "throat", "ankle"],
+    wrong: ["medicine", "cough", "bruise"],
+    prompt: "The pharmacist recommended this ___ for allergies. (you squirt it into your nose)",
   },
   "u1l1/q4": {
     why: "Fine/Nice evening are also fine greetings; the clue says which",

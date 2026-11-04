@@ -244,11 +244,11 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 118, clue: 453 };
+  const PINNED_SPLIT = { picture: 45, context: 225, clue: 492 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
-  const POS_MISMATCH_BUDGET = 18;
-  const WEAK_CONTEXT_BUDGET = 146;
-  const NEEDS_CLUE_BUDGET = 143;
+  const POS_MISMATCH_BUDGET = 0;
+  const WEAK_CONTEXT_BUDGET = 0;
+  const NEEDS_CLUE_BUDGET = 0;
   const UNCLASSIFIED_BUDGET = 0;
 
   it("does not add topic-word options of another part of speech", () => {

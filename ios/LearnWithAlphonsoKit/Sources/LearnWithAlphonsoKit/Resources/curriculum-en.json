@@ -5831,10 +5831,10 @@
               "type": "mc",
               "prompt": "The sky is ___ and blue.",
               "choices": [
-                "weather",
-                "brown",
+                "foggy",
+                "rainy",
                 "clear",
-                "ice"
+                "freezing"
               ],
               "answer": 2,
               "explanation": "\"clear\" is correct here. Basic weather vocabulary and seasonal expressions."
@@ -5903,10 +5903,10 @@
               "type": "fill",
               "prompt": "Summer is the ___ season of the year.",
               "bank": [
-                "snow",
-                "clear",
+                "hotter",
+                "hotest",
                 "hottest",
-                "mild"
+                "most hot"
               ],
               "answer": "hottest",
               "explanation": "\"hottest\" is correct here. Basic weather vocabulary and seasonal expressions."
@@ -6059,11 +6059,11 @@
             {
               "id": "a1p10q17",
               "type": "fill",
-              "prompt": "We had a picnic on a ___ day.",
+              "prompt": "We had a picnic on a ___ day. (the sun was shining)",
               "bank": [
-                "fall",
                 "rainy",
-                "thunder",
+                "foggy",
+                "windy",
                 "sunny"
               ],
               "answer": "sunny",
@@ -6134,8 +6134,8 @@
               "prompt": "Autumn is also called ___ in American English.",
               "bank": [
                 "ice",
-                "rained",
-                "foggy",
+                "wind",
+                "cloud",
                 "fall"
               ],
               "answer": "fall",
@@ -6201,9 +6201,9 @@
               "type": "fill",
               "prompt": "I keep a jar of one-pound ___ on the shelf.",
               "bank": [
-                "change",
-                "up",
-                "more",
+                "receipts",
+                "wallets",
+                "cards",
                 "coins"
               ],
               "answer": "coins",
@@ -6215,9 +6215,9 @@
               "prompt": "I'd like to ___ some money from the machine.",
               "choices": [
                 "withdraw",
-                "more",
-                "up",
-                "enough"
+                "deposit",
+                "save",
+                "pay"
               ],
               "answer": 0,
               "explanation": "\"withdraw\" is correct here. Everyday number and money vocabulary."
@@ -6240,10 +6240,10 @@
               "type": "mc",
               "prompt": "Could you ___ this twenty-pound note for smaller ones?",
               "choices": [
-                "equally",
-                "card",
+                "save",
+                "withdraw",
                 "change",
-                "twenty"
+                "deposit"
               ],
               "answer": 2,
               "explanation": "\"change\" is correct here. Everyday number and money vocabulary."
@@ -6258,12 +6258,12 @@
             {
               "id": "a1p11q5",
               "type": "fill",
-              "prompt": "I need to ___ some money for the trip.",
+              "prompt": "I need to ___ some money for the trip. (put it aside, not spend it)",
               "bank": [
                 "save",
-                "up",
-                "more",
-                "enough"
+                "spend",
+                "change",
+                "withdraw"
               ],
               "answer": "save",
               "explanation": "\"save\" is correct here. Everyday number and money vocabulary."
@@ -6271,12 +6271,12 @@
             {
               "id": "a1p11q6",
               "type": "mc",
-              "prompt": "She ___ ten dollars on the gift.",
+              "prompt": "She ___ ten dollars on the gift. (she paid for it)",
               "choices": [
                 "spent",
                 "save",
-                "more",
-                "enough"
+                "withdraw",
+                "change"
               ],
               "answer": 0,
               "explanation": "\"spent\" is correct here. Everyday number and money vocabulary."
@@ -6310,11 +6310,11 @@
             {
               "id": "a1p11q9",
               "type": "fill",
-              "prompt": "Do you have ___ change for a ten?",
+              "prompt": "Do you have ___ change for a ten? (the right coins, no more and no less)",
               "bank": [
-                "up",
                 "contactless",
-                "spent",
+                "enough",
+                "big",
                 "exact"
               ],
               "answer": "exact",
@@ -6348,7 +6348,7 @@
                 "card",
                 "discount",
                 "notes",
-                "up"
+                "balance"
               ],
               "answer": 0,
               "explanation": "\"card\" is correct here. Everyday number and money vocabulary."
@@ -6372,9 +6372,9 @@
               "prompt": "The price includes ___.",
               "choices": [
                 "receipt",
-                "amount",
+                "total",
                 "tax",
-                "sale"
+                "bill"
               ],
               "answer": 2,
               "explanation": "\"tax\" is correct here. Everyday number and money vocabulary."
@@ -6402,12 +6402,12 @@
             {
               "id": "a1p11q15",
               "type": "mc",
-              "prompt": "I only have a few ___ left.",
+              "prompt": "I only have a few ___ left. (paper money)",
               "choices": [
                 "notes",
+                "coins",
                 "balance",
-                "tax",
-                "discount"
+                "tax"
               ],
               "answer": 0,
               "explanation": "\"notes\" is correct here. Everyday number and money vocabulary."
@@ -6415,12 +6415,12 @@
             {
               "id": "a1p11q16",
               "type": "fill",
-              "prompt": "He borrowed ___ dollars from his brother.",
+              "prompt": "He borrowed ___ dollars from his brother. (the number 50)",
               "bank": [
-                "change",
+                "twenty",
                 "fifty",
-                "up",
-                "contactless"
+                "fifteen",
+                "three"
               ],
               "answer": "fifty",
               "explanation": "\"fifty\" is correct here. Everyday number and money vocabulary."
@@ -6430,10 +6430,10 @@
               "type": "mc",
               "prompt": "The shop only accepts ___ payments. (you tap your card)",
               "choices": [
-                "up",
-                "sale",
+                "exact",
+                "enough",
                 "contactless",
-                "change"
+                "expensive"
               ],
               "answer": 2,
               "explanation": "\"contactless\" is correct here. Everyday number and money vocabulary."
@@ -6441,12 +6441,12 @@
             {
               "id": "a1p11q18",
               "type": "fill",
-              "prompt": "We split the bill ___.",
+              "prompt": "We split the bill ___. (everyone paid the same)",
               "bank": [
                 "equally",
-                "change",
-                "more",
-                "up"
+                "quickly",
+                "secretly",
+                "later"
               ],
               "answer": "equally",
               "explanation": "\"equally\" is correct here. Everyday number and money vocabulary."
@@ -6527,12 +6527,12 @@
             {
               "id": "a1p11q24",
               "type": "mc",
-              "prompt": "I need to check my bank ___.",
+              "prompt": "I need to check my bank ___. (how much money is in it)",
               "choices": [
                 "balance",
-                "more",
                 "notes",
-                "up"
+                "receipt",
+                "tax"
               ],
               "answer": 0,
               "explanation": "\"balance\" is correct here. Everyday number and money vocabulary."
@@ -7368,8 +7368,8 @@
               "type": "mc",
               "prompt": "We usually sleep at ___.",
               "choices": [
-                "days",
-                "months",
+                "noon",
+                "afternoon",
                 "night",
                 "Wednesday"
               ],
@@ -7405,12 +7405,12 @@
             {
               "id": "a1p14q8",
               "type": "fill",
-              "prompt": "My birthday is in the month of ___.",
+              "prompt": "My birthday is in the month of ___. (it is the seventh month)",
               "bank": [
                 "July",
-                "noon",
-                "afternoon",
-                "week"
+                "June",
+                "October",
+                "December"
               ],
               "answer": "July",
               "explanation": "\"July\" is correct here. Days of the week, months, and simple time phrases."
@@ -7469,7 +7469,7 @@
                 "October",
                 "July",
                 "June",
-                "weekend"
+                "November"
               ],
               "answer": 0,
               "explanation": "\"October\" is correct here. Days of the week, months, and simple time phrases."
@@ -7527,8 +7527,8 @@
               "choices": [
                 "June",
                 "October",
-                "January",
-                "February"
+                "March",
+                "November"
               ],
               "answer": 0,
               "explanation": "\"June\" is correct here. Days of the week, months, and simple time phrases."
@@ -8180,8 +8180,8 @@
               "choices": [
                 "washes",
                 "drives",
-                "set",
-                "checks"
+                "sets",
+                "sleeps"
               ],
               "answer": 0,
               "explanation": "\"washes\" is correct here. Simple present tense sentences describing a typical day."
@@ -8204,10 +8204,10 @@
               "type": "mc",
               "prompt": "I ___ a book before bed.",
               "choices": [
-                "takes",
                 "walk",
+                "come",
                 "read",
-                "come"
+                "sleep"
               ],
               "answer": 2,
               "explanation": "\"read\" is correct here. Simple present tense sentences describing a typical day."
@@ -8233,7 +8233,7 @@
                 "glances at",
                 "watch",
                 "walk",
-                "set"
+                "sleep"
               ],
               "answer": 0,
               "explanation": "\"glances at\" is correct here. Simple present tense sentences describing a typical day."
@@ -8250,9 +8250,9 @@
               "type": "fill",
               "prompt": "We ___ the house before we leave in the morning.",
               "bank": [
-                "set",
-                "drives",
-                "cooks",
+                "drive",
+                "cook",
+                "sleep",
                 "tidy"
               ],
               "answer": "tidy",
@@ -8376,7 +8376,7 @@
               "bank": [
                 "gets",
                 "set",
-                "have",
+                "hear",
                 "glances at"
               ],
               "answer": "set",
@@ -8417,10 +8417,10 @@
               "type": "fill",
               "prompt": "Please write on the ___.",
               "bank": [
-                "down",
+                "bell",
                 "whiteboard",
-                "desks",
-                "bell"
+                "rubber",
+                "calculator"
               ],
               "answer": "whiteboard",
               "explanation": "\"whiteboard\" is correct here. Common classroom vocabulary for beginners."
@@ -8444,8 +8444,8 @@
               "type": "fill",
               "prompt": "Can I borrow your ___ to draw a line?",
               "bank": [
-                "up",
-                "board",
+                "rubber",
+                "calculator",
                 "bell",
                 "ruler"
               ],
@@ -8519,8 +8519,8 @@
               "choices": [
                 "close",
                 "sharpen",
-                "up",
-                "down"
+                "erase",
+                "ring"
               ],
               "answer": 0,
               "explanation": "\"close\" is correct here. Common classroom vocabulary for beginners."
@@ -8528,12 +8528,12 @@
             {
               "id": "a1p17q9",
               "type": "fill",
-              "prompt": "The teacher gave us a new ___ today.",
+              "prompt": "The teacher gave us a new ___ today. (a printed page of exercises)",
               "bank": [
-                "up",
-                "down",
+                "rubber",
+                "bell",
                 "worksheet",
-                "bell"
+                "map"
               ],
               "answer": "worksheet",
               "explanation": "\"worksheet\" is correct here. Common classroom vocabulary for beginners."
@@ -8550,10 +8550,10 @@
               "type": "fill",
               "prompt": "I forgot my ___, so I can't do the maths today.",
               "bank": [
-                "whiteboard",
-                "calculator",
                 "bell",
-                "map"
+                "calculator",
+                "map",
+                "desks"
               ],
               "answer": "calculator",
               "explanation": "\"calculator\" is correct here. Common classroom vocabulary for beginners."
@@ -8563,10 +8563,10 @@
               "type": "mc",
               "prompt": "Please ___ to the teacher carefully.",
               "choices": [
-                "down",
-                "up",
+                "sharpen",
+                "raise",
                 "listen",
-                "book"
+                "erase"
               ],
               "answer": 2,
               "explanation": "\"listen\" is correct here. Common classroom vocabulary for beginners."
@@ -8636,9 +8636,9 @@
               "prompt": "I need to ___ my pencil, it's too short.",
               "bank": [
                 "sharpen",
-                "down",
-                "book",
-                "up"
+                "erase",
+                "close",
+                "ring"
               ],
               "answer": "sharpen",
               "explanation": "\"sharpen\" is correct here. Common classroom vocabulary for beginners."
@@ -8664,7 +8664,7 @@
               "bank": [
                 "bell",
                 "homework",
-                "ruler",
+                "desk",
                 "board"
               ],
               "answer": "homework",
@@ -8723,9 +8723,9 @@
               "prompt": "The teacher wrote the date on the ___.",
               "choices": [
                 "board",
-                "pencil case",
-                "up",
-                "bell"
+                "bell",
+                "teacher",
+                "pencil case"
               ],
               "answer": 0,
               "explanation": "\"board\" is correct here. Common classroom vocabulary for beginners."
@@ -8748,10 +8748,10 @@
               "type": "mc",
               "prompt": "Please be ___ during the exam.",
               "choices": [
-                "up",
-                "down",
+                "noisy",
+                "loud",
                 "quiet",
-                "book"
+                "rude"
               ],
               "answer": 2,
               "explanation": "\"quiet\" is correct here. Common classroom vocabulary for beginners."
@@ -9184,7 +9184,7 @@
             {
               "id": "a1p19q3",
               "type": "fill",
-              "prompt": "We're out of ___, so I need to buy more bread.",
+              "prompt": "We're out of ___, so there's nothing to make toast with.",
               "bank": [
                 "amount",
                 "cashier",
@@ -9197,12 +9197,12 @@
             {
               "id": "a1p19q4",
               "type": "mc",
-              "prompt": "Please check the ___ before you buy the milk.",
+              "prompt": "Please check the ___ before you buy the milk. (to see when it goes off)",
               "choices": [
                 "trolley",
                 "debit",
                 "date",
-                "food"
+                "price"
               ],
               "answer": 2,
               "explanation": "\"date\" is correct here. Everyday vocabulary for grocery shopping."
@@ -9377,11 +9377,11 @@
             {
               "id": "a1p19q16",
               "type": "fill",
-              "prompt": "I need to buy some ___ for cooking.",
+              "prompt": "I need to buy some ___ for cooking. (you fry food in it)",
               "bank": [
-                "bag for life",
-                "item",
-                "dairy section",
+                "lettuce",
+                "soap",
+                "sugar",
                 "oil"
               ],
               "answer": "oil",
@@ -9403,12 +9403,12 @@
             {
               "id": "a1p19q18",
               "type": "fill",
-              "prompt": "Please put the frozen food in the ___.",
+              "prompt": "Please put the frozen food in the ___. (it keeps food frozen)",
               "bank": [
-                "bag for life",
-                "item",
+                "basket",
+                "trolley",
                 "freezer",
-                "dairy section"
+                "bag"
               ],
               "answer": "freezer",
               "explanation": "\"freezer\" is correct here. Everyday vocabulary for grocery shopping."
@@ -9450,12 +9450,12 @@
             {
               "id": "a1p19q21",
               "type": "fill",
-              "prompt": "The shop closes at ___ o'clock.",
+              "prompt": "The shop closes at ___ o'clock. (the number 9)",
               "bank": [
                 "nine",
-                "checkout",
-                "lettuce",
-                "discount"
+                "seven",
+                "ten",
+                "twelve"
               ],
               "answer": "nine",
               "explanation": "\"nine\" is correct here. Everyday vocabulary for grocery shopping."
@@ -9463,10 +9463,10 @@
             {
               "id": "a1p19q22",
               "type": "mc",
-              "prompt": "I need a ___ to carry all these bags.",
+              "prompt": "I need a ___ to carry all these bags. (a strong reusable carrier)",
               "choices": [
-                "debit",
-                "oil",
+                "basket",
+                "trolley",
                 "bag for life",
                 "till"
               ],
@@ -9523,7 +9523,7 @@
                 "walk",
                 "airport",
                 "bus",
-                "carriage"
+                "petrol"
               ],
               "answer": 2,
               "explanation": "\"bus\" is correct here. Basic transport vocabulary for beginners."
@@ -9592,12 +9592,12 @@
             {
               "id": "a1p20q5",
               "type": "fill",
-              "prompt": "Could you tell me where the ___ stop is?",
+              "prompt": "Could you tell me where the ___ stop is? (for long-distance buses)",
               "bank": [
                 "coach",
-                "flight",
-                "ticket",
-                "petrol"
+                "bus",
+                "tram",
+                "taxi"
               ],
               "answer": "coach",
               "explanation": "\"coach\" is correct here. Basic transport vocabulary for beginners."
@@ -9752,12 +9752,12 @@
             {
               "id": "a1p20q16",
               "type": "fill",
-              "prompt": "The ___ dropped us right outside the hotel.",
+              "prompt": "The ___ dropped us right outside the hotel. (a car with a driver you pay)",
               "bank": [
-                "petrol",
-                "underground",
+                "train",
+                "plane",
                 "cab",
-                "metro"
+                "ferry"
               ],
               "answer": "cab",
               "explanation": "\"cab\" is correct here. Basic transport vocabulary for beginners."
@@ -9767,10 +9767,10 @@
               "type": "mc",
               "prompt": "I need to ___ my ticket before boarding.",
               "choices": [
-                "station",
-                "walk",
+                "fasten",
+                "ride",
                 "show",
-                "train"
+                "queue"
               ],
               "answer": 2,
               "explanation": "\"show\" is correct here. Basic transport vocabulary for beginners."
@@ -9824,7 +9824,7 @@
             {
               "id": "a1p20q21",
               "type": "fill",
-              "prompt": "I always check the ___ before I travel.",
+              "prompt": "I always check the ___ before I travel. (it lists when trains leave)",
               "bank": [
                 "petrol",
                 "keys",
@@ -9866,9 +9866,9 @@
               "prompt": "The ___ takes you underground across the city.",
               "choices": [
                 "subway",
-                "ticket",
-                "flight",
-                "petrol"
+                "bus",
+                "taxi",
+                "ferry"
               ],
               "answer": 0,
               "explanation": "\"subway\" is correct here. Basic transport vocabulary for beginners."
@@ -12695,12 +12695,12 @@
             {
               "id": "a2p4q2",
               "type": "fill",
-              "prompt": "Could I have the ___ , please?",
+              "prompt": "Could I have the ___ , please? (we want to pay)",
               "bank": [
-                "cash machine",
-                "out",
+                "menu",
+                "receipt",
                 "bill",
-                "return"
+                "change"
               ],
               "answer": "bill",
               "explanation": "\"bill\" is correct here. Fixed travel and shopping phrases."
@@ -12828,10 +12828,10 @@
               "type": "fill",
               "prompt": "Do you have this in a bigger ___ ?",
               "bank": [
-                "return",
-                "cash machine",
+                "colour",
+                "style",
                 "size",
-                "out"
+                "shape"
               ],
               "answer": "size",
               "explanation": "\"size\" is correct here. Fixed travel and shopping phrases."
@@ -12839,12 +12839,12 @@
             {
               "id": "a2p4q12",
               "type": "mc",
-              "prompt": "I'd like to ___ this jacket.",
+              "prompt": "I'd like to ___ this jacket. (take it back to the shop)",
               "choices": [
-                "cash machine",
-                "check in",
+                "wear",
+                "try",
                 "return",
-                "out"
+                "buy"
               ],
               "answer": 2,
               "explanation": "\"return\" is correct here. Fixed travel and shopping phrases."
@@ -12925,7 +12925,7 @@
             {
               "id": "a2p4q18",
               "type": "mc",
-              "prompt": "Are you ___ in the queue?",
+              "prompt": "Are you ___ in the queue? (it is your turn after this person)",
               "choices": [
                 "next",
                 "behind",
@@ -12999,10 +12999,10 @@
               "type": "mc",
               "prompt": "Where can I ___ the bus?",
               "choices": [
-                "out",
                 "fit",
+                "write",
                 "catch",
-                "write"
+                "wash"
               ],
               "answer": 2,
               "explanation": "\"catch\" is correct here. Fixed travel and shopping phrases."
@@ -13785,12 +13785,12 @@
             {
               "id": "a2p7q1",
               "type": "fill",
-              "prompt": "I keep my clothes in the ___.",
+              "prompt": "I keep my clothes in the ___. (a tall cupboard in my bedroom)",
               "bank": [
-                "hook",
-                "mat",
+                "kitchen",
+                "garage",
                 "wardrobe",
-                "driveway"
+                "bathroom"
               ],
               "answer": "wardrobe",
               "explanation": "\"wardrobe\" is correct here. Everyday vocabulary for describing where you live."
@@ -13812,11 +13812,11 @@
             {
               "id": "a2p7q3",
               "type": "fill",
-              "prompt": "He's brushing his teeth in the ___.",
+              "prompt": "He's brushing his teeth in the ___. (next to the shower)",
               "bank": [
-                "cupboard",
-                "ceiling",
-                "driveway",
+                "kitchen",
+                "garage",
+                "hallway",
                 "bathroom"
               ],
               "answer": "bathroom",
@@ -13825,12 +13825,12 @@
             {
               "id": "a2p7q4",
               "type": "mc",
-              "prompt": "Put the plates in the ___.",
+              "prompt": "Put the plates in the ___. (they go on a shelf behind a door)",
               "choices": [
-                "ceiling",
-                "driveway",
+                "hallway",
+                "garage",
                 "cupboard",
-                "mat"
+                "attic"
               ],
               "answer": 2,
               "explanation": "\"cupboard\" is correct here. Everyday vocabulary for describing where you live."
@@ -13845,11 +13845,11 @@
             {
               "id": "a2p7q5",
               "type": "fill",
-              "prompt": "We sleep in the ___.",
+              "prompt": "We sleep in the ___. (it has the beds)",
               "bank": [
-                "ceiling",
-                "laundry room",
-                "cupboard",
+                "kitchen",
+                "garage",
+                "bathroom",
                 "bedroom"
               ],
               "answer": "bedroom",
@@ -13861,9 +13861,9 @@
               "prompt": "There's a nice garden behind the ___.",
               "choices": [
                 "house",
-                "light",
-                "mattress",
-                "hook"
+                "window",
+                "ceiling",
+                "floor"
               ],
               "answer": 0,
               "explanation": "\"house\" is correct here. Everyday vocabulary for describing where you live."
@@ -13871,12 +13871,12 @@
             {
               "id": "a2p7q7",
               "type": "fill",
-              "prompt": "I left my keys on the ___.",
+              "prompt": "I left my keys on the ___. (where we eat)",
               "bank": [
                 "table",
-                "hallway",
                 "wardrobe",
-                "attic"
+                "attic",
+                "garage"
               ],
               "answer": "table",
               "explanation": "\"table\" is correct here. Everyday vocabulary for describing where you live."
@@ -13898,7 +13898,7 @@
             {
               "id": "a2p7q9",
               "type": "fill",
-              "prompt": "Hang your coat on the ___.",
+              "prompt": "Hang your coat on the ___. (a small bent piece on the wall)",
               "bank": [
                 "table",
                 "hook",
@@ -13918,11 +13918,11 @@
             {
               "id": "a2p7q10",
               "type": "fill",
-              "prompt": "We eat breakfast in the ___.",
+              "prompt": "We eat breakfast in the ___. (the room with the big table for meals)",
               "bank": [
-                "light",
-                "mattress",
-                "hook",
+                "kitchen",
+                "bedroom",
+                "bathroom",
                 "dining room"
               ],
               "answer": "dining room",
@@ -13945,11 +13945,11 @@
             {
               "id": "a2p7q12",
               "type": "fill",
-              "prompt": "The washing machine is in the ___.",
+              "prompt": "The washing machine is in the ___. (a separate room just for washing clothes)",
               "bank": [
-                "table",
-                "mattress",
-                "ceiling",
+                "kitchen",
+                "bedroom",
+                "hallway",
                 "laundry room"
               ],
               "answer": "laundry room",
@@ -13972,7 +13972,7 @@
             {
               "id": "a2p7q14",
               "type": "fill",
-              "prompt": "Please close the ___ when you leave.",
+              "prompt": "Please close the ___ when you leave. (you walk through it)",
               "bank": [
                 "bedroom",
                 "attic",
@@ -13992,12 +13992,12 @@
             {
               "id": "a2p7q15",
               "type": "mc",
-              "prompt": "We keep the car in the ___.",
+              "prompt": "We keep the car in the ___. (outside, in front of the house)",
               "choices": [
                 "driveway",
-                "cupboard",
-                "mattress",
-                "ceiling"
+                "garage",
+                "kitchen",
+                "attic"
               ],
               "answer": 0,
               "explanation": "\"driveway\" is correct here. Everyday vocabulary for describing where you live."
@@ -14005,11 +14005,11 @@
             {
               "id": "a2p7q16",
               "type": "fill",
-              "prompt": "The stairs lead up to the ___.",
+              "prompt": "The stairs lead up to the ___. (the room under the roof)",
               "bank": [
-                "window",
-                "mat",
-                "driveway",
+                "bathroom",
+                "hallway",
+                "kitchen",
                 "attic"
               ],
               "answer": "attic",
@@ -14066,12 +14066,12 @@
             {
               "id": "a2p7q20",
               "type": "mc",
-              "prompt": "Turn off the ___ before you sleep.",
+              "prompt": "Turn off the ___ before you sleep. (it makes the room bright)",
               "choices": [
                 "light",
-                "attic",
-                "mat",
-                "house"
+                "television",
+                "heating",
+                "oven"
               ],
               "answer": 0,
               "explanation": "\"light\" is correct here. Everyday vocabulary for describing where you live."
@@ -14079,11 +14079,11 @@
             {
               "id": "a2p7q21",
               "type": "fill",
-              "prompt": "We're renting a small ___ downtown.",
+              "prompt": "We're renting a small ___ downtown. (an apartment on one floor of a building)",
               "bank": [
-                "bathroom",
-                "dining room",
-                "mat",
+                "house",
+                "garage",
+                "garden",
                 "flat"
               ],
               "answer": "flat",
@@ -14106,12 +14106,12 @@
             {
               "id": "a2p7q23",
               "type": "fill",
-              "prompt": "I store old boxes in the ___.",
+              "prompt": "I store old boxes in the ___. (the room under the ground floor)",
               "bank": [
                 "basement",
-                "sofa",
-                "driveway",
-                "mat"
+                "attic",
+                "garage",
+                "kitchen"
               ],
               "answer": "basement",
               "explanation": "\"basement\" is correct here. Everyday vocabulary for describing where you live."
@@ -14518,12 +14518,12 @@
             {
               "id": "a2p9q0",
               "type": "mc",
-              "prompt": "I have a bad ___ and can't stop coughing.",
+              "prompt": "I have a bad ___ and can't stop sneezing. (my nose is blocked)",
               "choices": [
                 "cold",
-                "nuts",
-                "sick",
-                "injured"
+                "cough",
+                "fever",
+                "headache"
               ],
               "answer": 0,
               "explanation": "\"cold\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14531,10 +14531,10 @@
             {
               "id": "a2p9q1",
               "type": "fill",
-              "prompt": "She's got a ___ — take some painkillers.",
+              "prompt": "She's got a ___ — take some painkillers. (pain in her head)",
               "bank": [
-                "ankle",
-                "dentist",
+                "cough",
+                "fever",
                 "bruise",
                 "headache"
               ],
@@ -14544,12 +14544,12 @@
             {
               "id": "a2p9q2",
               "type": "mc",
-              "prompt": "My ___ hurts after running.",
+              "prompt": "My ___ hurts after running. (the part you run with)",
               "choices": [
-                "medicine",
-                "spray",
+                "arm",
+                "throat",
                 "leg",
-                "fever"
+                "wrist"
               ],
               "answer": 2,
               "explanation": "\"leg\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14557,11 +14557,11 @@
             {
               "id": "a2p9q3",
               "type": "fill",
-              "prompt": "He broke his ___ playing football.",
+              "prompt": "He broke his ___ playing football. (his hand was in a sling)",
               "bank": [
-                "pulse",
+                "leg",
+                "ankle",
                 "throat",
-                "fever",
                 "arm"
               ],
               "answer": "arm",
@@ -14570,12 +14570,12 @@
             {
               "id": "a2p9q4",
               "type": "mc",
-              "prompt": "I feel ___ — I need to sit down.",
+              "prompt": "I feel ___ — I need to sit down. (the room is spinning)",
               "choices": [
                 "dizzy",
-                "nuts",
+                "sick",
                 "injured",
-                "bruise"
+                "hungry"
               ],
               "answer": 0,
               "explanation": "\"dizzy\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14590,12 +14590,12 @@
             {
               "id": "a2p9q5",
               "type": "fill",
-              "prompt": "She has a ___ — please be quiet.",
+              "prompt": "She has a ___ — please be quiet. (a very bad pain in her head)",
               "bank": [
                 "migraine",
-                "ankle",
-                "finger",
-                "dentist"
+                "cough",
+                "fever",
+                "bruise"
               ],
               "answer": "migraine",
               "explanation": "\"migraine\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14605,10 +14605,10 @@
               "type": "mc",
               "prompt": "My ___ is sore from shouting.",
               "choices": [
-                "bruise",
-                "temperature",
+                "ankle",
+                "knee",
                 "throat",
-                "arm"
+                "wrist"
               ],
               "answer": 2,
               "explanation": "\"throat\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14619,9 +14619,9 @@
               "prompt": "He's got a high ___.",
               "bank": [
                 "temperature",
-                "leg",
-                "spray",
-                "medicine"
+                "cough",
+                "headache",
+                "bruise"
               ],
               "answer": "temperature",
               "explanation": "\"temperature\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14629,12 +14629,12 @@
             {
               "id": "a2p9q8",
               "type": "mc",
-              "prompt": "I twisted my ___ on the stairs.",
+              "prompt": "I twisted my ___ on the stairs. (the joint above my foot)",
               "choices": [
                 "ankle",
-                "spray",
-                "throat",
-                "bruise"
+                "wrist",
+                "knee",
+                "elbow"
               ],
               "answer": 0,
               "explanation": "\"ankle\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14642,12 +14642,12 @@
             {
               "id": "a2p9q9",
               "type": "fill",
-              "prompt": "She's allergic to ___.",
+              "prompt": "She's allergic to ___. (small hard foods in a shell)",
               "bank": [
-                "sick",
-                "injured",
+                "bread",
+                "milk",
                 "nuts",
-                "faint"
+                "eggs"
               ],
               "answer": "nuts",
               "explanation": "\"nuts\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14662,12 +14662,12 @@
             {
               "id": "a2p9q10",
               "type": "fill",
-              "prompt": "The doctor gave me some ___.",
+              "prompt": "The doctor gave me some ___. (I swallow it)",
               "bank": [
-                "bruise",
-                "throat",
+                "spray",
+                "cream",
                 "medicine",
-                "ankle"
+                "bruise"
               ],
               "answer": "medicine",
               "explanation": "\"medicine\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14702,12 +14702,12 @@
             {
               "id": "a2p9q13",
               "type": "mc",
-              "prompt": "He's been ___ since Monday.",
+              "prompt": "He's been ___ since Monday. (ill in bed all week)",
               "choices": [
                 "sick",
-                "nuts",
-                "spray",
-                "tooth"
+                "dizzy",
+                "faint",
+                "upset"
               ],
               "answer": 0,
               "explanation": "\"sick\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14715,11 +14715,11 @@
             {
               "id": "a2p9q14",
               "type": "fill",
-              "prompt": "She fainted because she felt ___.",
+              "prompt": "She fainted because she felt ___. (like she was about to pass out)",
               "bank": [
-                "nuts",
                 "injured",
-                "wrist",
+                "upset",
+                "hungry",
                 "faint"
               ],
               "answer": "faint",
@@ -14749,12 +14749,12 @@
             {
               "id": "a2p9q16",
               "type": "fill",
-              "prompt": "The nurse checked my ___.",
+              "prompt": "The nurse checked my ___. (the beat of my heart)",
               "bank": [
                 "cough",
                 "pulse",
-                "dentist",
-                "fever"
+                "fever",
+                "dentist"
               ],
               "answer": "pulse",
               "explanation": "\"pulse\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14767,7 +14767,7 @@
                 "injured",
                 "upset",
                 "faint",
-                "nuts"
+                "dizzy"
               ],
               "answer": 0,
               "explanation": "\"injured\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14779,8 +14779,8 @@
               "bank": [
                 "faint",
                 "upset",
-                "cold",
-                "sick"
+                "sick",
+                "tired"
               ],
               "answer": "upset",
               "explanation": "\"upset\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14788,12 +14788,12 @@
             {
               "id": "a2p9q19",
               "type": "mc",
-              "prompt": "She's recovering from a ___ .",
+              "prompt": "She's recovering from a ___. (a high temperature)",
               "choices": [
-                "throat",
-                "arm",
+                "cough",
+                "bruise",
                 "fever",
-                "ankle"
+                "cold"
               ],
               "answer": 2,
               "explanation": "\"fever\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14823,10 +14823,10 @@
               "type": "fill",
               "prompt": "He's got a nasty ___ on his knee.",
               "bank": [
-                "temperature",
+                "fever",
                 "bruise",
-                "medicine",
-                "arm"
+                "cough",
+                "headache"
               ],
               "answer": "bruise",
               "explanation": "\"bruise\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14834,12 +14834,12 @@
             {
               "id": "a2p9q22",
               "type": "mc",
-              "prompt": "I should see a doctor about my ___.",
+              "prompt": "I should see a doctor about my ___. (I keep coughing at night)",
               "choices": [
                 "cough",
-                "dentist",
-                "spray",
-                "medicine"
+                "headache",
+                "ankle",
+                "fever"
               ],
               "answer": 0,
               "explanation": "\"cough\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14847,12 +14847,12 @@
             {
               "id": "a2p9q23",
               "type": "fill",
-              "prompt": "She sprained her ___ at the gym.",
+              "prompt": "She sprained her ___ at the gym. (the joint between her hand and arm)",
               "bank": [
-                "migraine",
-                "cough",
+                "ankle",
+                "knee",
                 "wrist",
-                "fever"
+                "elbow"
               ],
               "answer": "wrist",
               "explanation": "\"wrist\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14860,12 +14860,12 @@
             {
               "id": "a2p9q24",
               "type": "mc",
-              "prompt": "The pharmacist recommended this ___ for allergies.",
+              "prompt": "The pharmacist recommended this ___ for allergies. (you squirt it into your nose)",
               "choices": [
-                "arm",
-                "throat",
+                "medicine",
+                "cough",
                 "spray",
-                "ankle"
+                "bruise"
               ],
               "answer": 2,
               "explanation": "\"spray\" is correct here. Basic health vocabulary for describing how you feel."
@@ -15273,10 +15273,10 @@
               "type": "mc",
               "prompt": "I'd like to ___ a table for two.",
               "choices": [
-                "looking",
-                "ketchup",
+                "booking",
+                "booked",
                 "book",
-                "booked"
+                "books"
               ],
               "answer": 2,
               "explanation": "\"book\" is correct here. Common phrases for eating out."
@@ -15356,12 +15356,12 @@
             {
               "id": "a2p11q7",
               "type": "mc",
-              "prompt": "I'm allergic to ___, so no peanuts please.",
+              "prompt": "I'm allergic to ___, so no peanuts please. (they grow in a shell)",
               "choices": [
                 "nuts",
-                "book",
-                "order",
-                "bill"
+                "bread",
+                "milk",
+                "eggs"
               ],
               "answer": 0,
               "explanation": "\"nuts\" is correct here. Common phrases for eating out."
@@ -15382,12 +15382,12 @@
             {
               "id": "a2p11q9",
               "type": "mc",
-              "prompt": "The ___ recommended the fish today.",
+              "prompt": "The ___ recommended the fish today. (he brings your food to the table)",
               "choices": [
-                "book",
-                "dish",
+                "chef",
+                "manager",
                 "waiter",
-                "water"
+                "cook"
               ],
               "answer": 2,
               "explanation": "\"waiter\" is correct here. Common phrases for eating out."
@@ -15415,11 +15415,11 @@
             {
               "id": "a2p11q11",
               "type": "fill",
-              "prompt": "Could you bring some more ___, please?",
+              "prompt": "Could you bring some more ___, please? (we want to eat it with butter)",
               "bank": [
-                "dish",
-                "medium",
-                "bill",
+                "water",
+                "soup",
+                "wine",
                 "bread"
               ],
               "answer": "bread",
@@ -15431,9 +15431,9 @@
               "prompt": "I'd like my steak ___, not too well done.",
               "choices": [
                 "medium",
-                "kids",
-                "cards",
-                "order"
+                "well done",
+                "burnt",
+                "overcooked"
               ],
               "answer": 0,
               "explanation": "\"medium\" is correct here. Common phrases for eating out."
@@ -15474,12 +15474,12 @@
             {
               "id": "a2p11q15",
               "type": "fill",
-              "prompt": "We'd like to sit by the ___, please.",
+              "prompt": "We would like to sit by the ___, please. (so we can see the street)",
               "bank": [
                 "window",
-                "tip",
-                "book",
-                "bill"
+                "kitchen",
+                "bar",
+                "toilets"
               ],
               "answer": "window",
               "explanation": "\"window\" is correct here. Common phrases for eating out."
@@ -15487,12 +15487,12 @@
             {
               "id": "a2p11q16",
               "type": "mc",
-              "prompt": "This soup is ___ hot, be careful.",
+              "prompt": "This soup is ___ hot, be careful. (it could burn you)",
               "choices": [
                 "very",
-                "book",
-                "order",
-                "ketchup"
+                "barely",
+                "hardly",
+                "slightly"
               ],
               "answer": 0,
               "explanation": "\"very\" is correct here. Common phrases for eating out."
@@ -15513,12 +15513,12 @@
             {
               "id": "a2p11q18",
               "type": "mc",
-              "prompt": "The ___ was excellent tonight, please thank the chef.",
+              "prompt": "The ___ was excellent tonight, please thank the chef. (everything we ate)",
               "choices": [
-                "book",
-                "ketchup",
+                "dish",
+                "menu",
                 "meal",
-                "credit"
+                "bill"
               ],
               "answer": 2,
               "explanation": "\"meal\" is correct here. Common phrases for eating out."
@@ -15526,12 +15526,12 @@
             {
               "id": "a2p11q19",
               "type": "fill",
-              "prompt": "I'll have the same ___ as my friend.",
+              "prompt": "I will have the same ___ as my friend. (what is on the plate)",
               "bank": [
-                "cards",
+                "menu",
                 "dish",
-                "ketchup",
-                "credit"
+                "bill",
+                "table"
               ],
               "answer": "dish",
               "explanation": "\"dish\" is correct here. Common phrases for eating out."
@@ -15548,10 +15548,10 @@
               "type": "fill",
               "prompt": "Do you take ___ or only cash?",
               "bank": [
-                "coupons",
-                "cards",
                 "menus",
-                "orders"
+                "cards",
+                "orders",
+                "tables"
               ],
               "answer": "cards",
               "explanation": "\"cards\" is correct here. Common phrases for eating out."
@@ -15574,10 +15574,10 @@
               "type": "fill",
               "prompt": "The restaurant was fully ___, so we waited outside.",
               "bank": [
-                "book",
+                "ordered",
                 "booked",
-                "order",
-                "doggy"
+                "delayed",
+                "declined"
               ],
               "answer": "booked",
               "explanation": "\"booked\" is correct here. Common phrases for eating out."
@@ -16140,12 +16140,12 @@
             {
               "id": "a2p13q10",
               "type": "mc",
-              "prompt": "The station is at the ___ of the street.",
+              "prompt": "The station is at the ___ of the street. (where the street stops)",
               "choices": [
                 "end",
-                "down",
-                "round",
-                "road"
+                "start",
+                "middle",
+                "side"
               ],
               "answer": 0,
               "explanation": "\"end\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16179,11 +16179,11 @@
             {
               "id": "a2p13q13",
               "type": "fill",
-              "prompt": "Take the first ___ on your left.",
+              "prompt": "Take the first ___ on your left. (a small side road)",
               "bank": [
-                "in",
-                "down",
-                "right",
+                "corner",
+                "junction",
+                "bridge",
                 "turning"
               ],
               "answer": "turning",
@@ -16468,7 +16468,7 @@
                 "fix",
                 "make it",
                 "looking",
-                "pick"
+                "keep"
               ],
               "answer": "fix",
               "explanation": "\"fix\" is correct here. Everyday phrases for arranging to meet and making plans."
@@ -16537,10 +16537,10 @@
               "type": "fill",
               "prompt": "I'll ___ you up at eight o'clock.",
               "bank": [
-                "set",
-                "pick",
                 "check",
-                "manage"
+                "pick",
+                "manage",
+                "show"
               ],
               "answer": "pick",
               "explanation": "\"pick\" is correct here. Everyday phrases for arranging to meet and making plans."
@@ -16623,8 +16623,8 @@
               "prompt": "Let's ___ it for Thursday instead.",
               "bank": [
                 "check",
-                "pick",
                 "manage",
+                "miss",
                 "keep"
               ],
               "answer": "keep",
@@ -16638,7 +16638,7 @@
                 "manage",
                 "call",
                 "forward",
-                "pick"
+                "hold"
               ],
               "answer": 0,
               "explanation": "\"manage\" is correct here. Everyday phrases for arranging to meet and making plans."
@@ -16696,7 +16696,7 @@
               "bank": [
                 "set",
                 "make it",
-                "pick",
+                "look",
                 "book"
               ],
               "answer": "book",
@@ -16738,8 +16738,8 @@
               "bank": [
                 "change",
                 "parcel",
-                "order",
-                "days"
+                "days",
+                "balance"
               ],
               "answer": "parcel",
               "explanation": "\"parcel\" is correct here. A2-level vocabulary for post office and banking errands."
@@ -16786,11 +16786,11 @@
             {
               "id": "a2p15q4",
               "type": "fill",
-              "prompt": "I'd like to open a new bank ___.",
+              "prompt": "I'd like to open a new bank ___. (where your money is kept)",
               "bank": [
-                "receipt",
-                "stamp",
-                "stamps",
+                "branch",
+                "balance",
+                "card",
                 "account"
               ],
               "answer": "account",
@@ -16879,12 +16879,12 @@
             {
               "id": "a2p15q10",
               "type": "mc",
-              "prompt": "I'd like to send this by ___ post.",
+              "prompt": "I'd like to send this by ___ post. (it travels by plane)",
               "choices": [
-                "post office",
-                "days",
+                "second-class",
+                "surface",
                 "airmail",
-                "receipt"
+                "registered"
               ],
               "answer": 2,
               "explanation": "\"airmail\" is correct here. A2-level vocabulary for post office and banking errands."
@@ -16909,8 +16909,8 @@
               "choices": [
                 "change",
                 "parcel",
-                "fill in",
-                "cash"
+                "cash",
+                "post"
               ],
               "answer": 0,
               "explanation": "\"change\" is correct here. A2-level vocabulary for post office and banking errands."
@@ -16918,11 +16918,11 @@
             {
               "id": "a2p15q13",
               "type": "fill",
-              "prompt": "The queue at the ___ was very long today.",
+              "prompt": "The queue at the ___ was very long today. (where you send parcels)",
               "bank": [
-                "stamp",
-                "PIN",
-                "balance",
+                "bank",
+                "branch",
+                "ATM",
                 "post office"
               ],
               "answer": "post office",
@@ -16951,12 +16951,12 @@
             {
               "id": "a2p15q15",
               "type": "fill",
-              "prompt": "I'd like to ___ a cheque, please.",
+              "prompt": "I'd like to ___ a cheque, please. (exchange it for money)",
               "bank": [
-                "renew",
+                "deposit",
                 "fill in",
                 "cash",
-                "stamp"
+                "renew"
               ],
               "answer": "cash",
               "explanation": "\"cash\" is correct here. A2-level vocabulary for post office and banking errands."
@@ -16968,8 +16968,8 @@
               "choices": [
                 "stamps",
                 "cost",
-                "airmail",
-                "bank"
+                "bank",
+                "order"
               ],
               "answer": 0,
               "explanation": "\"stamps\" is correct here. A2-level vocabulary for post office and banking errands."
@@ -16977,7 +16977,7 @@
             {
               "id": "a2p15q17",
               "type": "fill",
-              "prompt": "I forgot my ___ number for the account.",
+              "prompt": "I forgot my ___ number for the account. (the four digits for my card)",
               "bank": [
                 "PIN",
                 "branch",
@@ -17179,9 +17179,9 @@
               "prompt": "My area has lots of ___ shops. (near to where I live)",
               "bank": [
                 "local",
-                "shopping",
-                "bus",
-                "train"
+                "busy",
+                "quiet",
+                "clean"
               ],
               "answer": "local",
               "explanation": "\"local\" is correct here. A2-level vocabulary for describing a local area."
@@ -17206,8 +17206,8 @@
               "bank": [
                 "shopping",
                 "residential",
-                "bus",
-                "train"
+                "commercial",
+                "industrial"
               ],
               "answer": "residential",
               "explanation": "\"residential\" is correct here. A2-level vocabulary for describing a local area."
@@ -17301,12 +17301,12 @@
             {
               "id": "a2p16q14",
               "type": "fill",
-              "prompt": "My neighbourhood is close to the city ___.",
+              "prompt": "My neighbourhood is close to the city ___. (the middle of the city)",
               "bank": [
-                "years",
+                "park",
                 "centre",
-                "clean",
-                "quiet"
+                "stop",
+                "market"
               ],
               "answer": "centre",
               "explanation": "\"centre\" is correct here. A2-level vocabulary for describing a local area."
@@ -17487,7 +17487,7 @@
             {
               "id": "a2p17q1",
               "type": "mc",
-              "prompt": "The book is ___ the shelf. (on its top surface)",
+              "prompt": "The vase stands ___ the shelf. (on its top surface)",
               "choices": [
                 "on",
                 "in",
@@ -17549,9 +17549,9 @@
               "prompt": "He is sitting ___ to his sister.",
               "choices": [
                 "next",
-                "near",
                 "behind",
-                "far"
+                "far",
+                "beside"
               ],
               "answer": 0,
               "explanation": "\"next\" is correct here. A2-level prepositions describing location."
@@ -17631,7 +17631,7 @@
             {
               "id": "a2p17q11",
               "type": "fill",
-              "prompt": "The plane flew ___ the clouds. (higher than them)",
+              "prompt": "The balloon floated ___ the village. (higher than the houses)",
               "bank": [
                 "below",
                 "among",
@@ -18611,7 +18611,7 @@
               "bank": [
                 "warm",
                 "tall",
-                "strong",
+                "sweet",
                 "difficult"
               ],
               "answer": "difficult",
