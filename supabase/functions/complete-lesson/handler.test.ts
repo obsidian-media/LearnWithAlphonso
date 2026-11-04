@@ -163,6 +163,7 @@ function setup(
     pushFails?: boolean;
     consent?: boolean;
     now?: Date;
+    sessionAgeMs?: number;
   } = {},
 ) {
   const db = new FakeDb();
@@ -193,7 +194,7 @@ function setup(
       tokenClaims.push(claim as unknown as Row);
       return opts.tokenOk ?? true;
     },
-    sessionIssuedAt: () => (opts.now ?? NOW).getTime() - 60 * 60 * 1000,
+    sessionIssuedAt: () => (opts.now ?? NOW).getTime() - (opts.sessionAgeMs ?? 60 * 60 * 1000),
     sendPush: (_admin, userId) => {
       pushes.push(userId);
       // The real sendPushToUser fails asynchronously, so the fake rejects rather than throws.
@@ -243,6 +244,28 @@ Deno.test(
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
     assertEquals((db.rpcCalls[0].args._next as Row).streak, 5);
+  },
+);
+
+Deno.test(
+  "a dated replay never moves the activity marker backwards or restarts the streak",
+  async () => {
+    // The learner already trained online today (2026-10-18); the offline lesson from yesterday syncs afterwards.
+    const now = new Date("2026-10-18T09:00:00Z");
+    const { db, handler } = setup({ now, sessionAgeMs: 24 * 60 * 60 * 1000 });
+    db.tables.user_progress = [{
+      user_id: USER, streak: 7, longest_streak: 9, last_active_date: "2026-10-18",
+      hearts: 5, hearts_refill_at: null, streak_freezes: 0, updated_at: "2026-10-18T08:00:00Z",
+    }];
+    const res = await handler(post({
+      ...body(["a", "d"]),
+      completedAt: "2026-10-17T22:00:00.000Z",
+    }));
+    assertEquals(res.status, 200);
+    const next = db.rpcCalls[0].args._next as Row;
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
+    assertEquals(next.last_active_date, "2026-10-18");
+    assertEquals(next.streak, 7);
   },
 );
 

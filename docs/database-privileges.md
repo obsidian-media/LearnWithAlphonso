@@ -104,3 +104,9 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 1. ~~Trim `authenticated`'s inert DML privileges~~ done (second step). ~~Inert SELECT~~ done (third step) except `content_reports`.
 2. ~~Limit `anon` SELECT to the public content tables~~ done (third step).
 3. If a table is ever created by `supabase_admin`, run `REVOKE ALL ... FROM anon, authenticated` on it by hand.
+
+## Fourth step (2026-11-03)
+
+`content_reports`: `authenticated` INSERT is now column-level on `reporter, reported, reason, kind, context`
+(`20261103100000`). The table-level grant let a client set `created_at`, which the report-notify throttle counts on, and `id`.
+`profiles.active_language` was dropped (`20261103100100`): never written, never read.

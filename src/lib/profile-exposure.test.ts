@@ -14,7 +14,6 @@ const SENSITIVE = [
   "theme",
   "created_at",
   "updated_at",
-  "active_language",
 ];
 
 /** function -> sensitive columns it may read, and why. Own-row readers must also filter on the caller. */
