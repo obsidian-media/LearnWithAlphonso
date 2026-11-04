@@ -1,0 +1,188 @@
+{
+  "batch": "p4-r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p4-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "bank": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "beat": {
+      "verdict": "approve",
+      "alt": "A woman beats eggs with a fork in a frying pan on a dark kitchen counter.",
+      "peopleVisible": true
+    },
+    "boredom": {
+      "verdict": "approve",
+      "alt": "A man with glasses rests his head on his arms on a desk next to an open laptop, looking bored.",
+      "peopleVisible": true
+    },
+    "boxing": {
+      "verdict": "approve",
+      "alt": "A boxer in a black t-shirt and yellow hand wraps throws a punch in a smoky gym.",
+      "peopleVisible": true
+    },
+    "brushes": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "clean": {
+      "verdict": "approve",
+      "alt": "A bright white kitchen with a cooker, sink and tiled floor, all spotless.",
+      "peopleVisible": false
+    },
+    "cough": {
+      "verdict": "approve",
+      "alt": "A woman coughs into her elbow while sitting at a cafe table.",
+      "peopleVisible": true
+    },
+    "empty": {
+      "verdict": "approve",
+      "alt": "A large empty room with bare walls, closed doors and a fluorescent light.",
+      "peopleVisible": false
+    },
+    "excitement": {
+      "verdict": "approve",
+      "alt": "A woman in a checked shirt jumps in the air with her fists raised in excitement.",
+      "peopleVisible": true
+    },
+    "exercise": {
+      "verdict": "approve",
+      "alt": "A woman in a purple jacket and leggings jogs along a path lined with autumn trees.",
+      "peopleVisible": true
+    },
+    "fast": {
+      "verdict": "approve",
+      "alt": "A cheetah runs at full speed through dry grass.",
+      "peopleVisible": false
+    },
+    "frustrated": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "happiness": {
+      "verdict": "approve",
+      "alt": "An older woman laughs happily in a small kitchen.",
+      "peopleVisible": true
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "heavy": {
+      "verdict": "approve",
+      "alt": "A man struggles to carry a tall stack of heavy cardboard boxes.",
+      "peopleVisible": true
+    },
+    "hot": {
+      "verdict": "approve",
+      "alt": "A bright sun glows in an orange sky above hot desert sand dunes.",
+      "peopleVisible": false
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "listen": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "listening": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "nervousness": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "preheat": {
+      "verdict": "approve",
+      "alt": "An oven thermometer with a red needle stands on a table.",
+      "peopleVisible": false
+    },
+    "quiet": {
+      "verdict": "approve",
+      "alt": "A woman in glasses and a white shirt holds a finger to her lips to ask for quiet.",
+      "peopleVisible": true
+    },
+    "riding": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "shopping": {
+      "verdict": "approve",
+      "alt": "A row of empty metal shopping trolleys stands against a green tiled wall.",
+      "peopleVisible": false
+    },
+    "shuttle": {
+      "verdict": "approve",
+      "alt": "The open door of a dark minibus shows rows of seats inside.",
+      "peopleVisible": false
+    },
+    "sick": {
+      "verdict": "approve",
+      "alt": "A woman lies in bed under a white duvet while a hand holds up a thermometer.",
+      "peopleVisible": true
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "subway": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "very tired": {
+      "verdict": "approve",
+      "alt": "A woman in a blue jacket yawns and covers her mouth while leaning on an office partition.",
+      "peopleVisible": true
+    }
+  }
+}

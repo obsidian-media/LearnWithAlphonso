@@ -1,0 +1,116 @@
+{
+  "batch": "p4-r1-b001",
+  "pass": "first",
+  "reviewer": "agent:p4-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "actress": {
+      "verdict": "approve",
+      "alt": "An actress in a dark velvet dress stands with hands on hips in a spotlight on a theatre stage.",
+      "peopleVisible": true
+    },
+    "anger": {
+      "verdict": "approve",
+      "alt": "A bearded man with wild hair and glasses shouts angrily at the camera.",
+      "peopleVisible": true
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "beat": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "boredom": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "boxing": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "brushes": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "busy": {
+      "verdict": "approve",
+      "alt": "A crowded market square with auto rickshaws, stalls and many people seen from above.",
+      "peopleVisible": true
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "clean": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "closed": {
+      "verdict": "approve",
+      "alt": "Old dark wooden barn doors are shut with metal latches and padlocks.",
+      "peopleVisible": false
+    },
+    "cold": {
+      "verdict": "approve",
+      "alt": "Long icicles hang from a snow-covered wooden roof edge in winter.",
+      "peopleVisible": false
+    },
+    "cooks": {
+      "verdict": "approve",
+      "alt": "A chef in a white jacket cooks in a steaming frying pan on a steel kitchen counter.",
+      "peopleVisible": true
+    },
+    "cough": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "decorate": {
+      "verdict": "approve",
+      "alt": "A woman in a checked shirt paints a grey wall with a paint roller.",
+      "peopleVisible": true
+    },
+    "delicious": {
+      "verdict": "approve",
+      "alt": "A plate of roast meat with carrots, asparagus and sauce on a white plate.",
+      "peopleVisible": false
+    },
+    "dirty": {
+      "verdict": "approve",
+      "alt": "Two muddy green shoes stand in wet soil with mud caked on the soles.",
+      "peopleVisible": true
+    },
+    "drain": {
+      "verdict": "approve",
+      "alt": "Water drains through a metal colander as a hand tips a pan of cooked prawns.",
+      "peopleVisible": true
+    },
+    "drives": {
+      "verdict": "approve",
+      "alt": "A woman in a white shirt drives a car with both hands on the steering wheel.",
+      "peopleVisible": true
+    },
+    "earthquake": {
+      "verdict": "approve",
+      "alt": "A long crack runs across a pink plastered wall.",
+      "peopleVisible": false
+    }
+  }
+}
