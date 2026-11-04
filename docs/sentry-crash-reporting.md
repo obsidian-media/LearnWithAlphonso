@@ -7,7 +7,7 @@ PostHog product analytics is a separate, later piece of work.
 
 |            | Where                                                                                                                           | On when                              | DSN                        |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------- |
-| Web client | `src/lib/sentry-client.ts` (started from `getRouter` in `src/router.tsx`; fed by `reportError` in `src/lib/error-reporting.ts`) | production browser build             | `src/lib/sentry-config.ts` |
+| Web client | `src/lib/sentry-client.ts` (started from `getRouter` in `src/router.tsx`; fed by `reportError` in `src/lib/error-reporting.ts`) | production build on Vercel production | `src/lib/sentry-config.ts` |
 | Web server | `src/lib/sentry-server.ts`, called from `src/start.ts` and `src/server.ts`                                                      | `NODE_ENV=production`                | same                       |
 | iOS        | `ios/LearnWithAlphonso/Sources/CrashReporting.swift`, first line of the app's `init`                                            | Release builds (`#if DEBUG` returns) | in that file               |
 | Android    | `android/.../CrashReporting.kt`, from `AlphonsoApplication.onCreate`                                                            | non-debug builds                     | in that file               |
@@ -32,7 +32,7 @@ The DSNs are the public client DSNs (they can only submit events), so they are c
 1. (Done by the owner) In each of the three Sentry projects: Data Scrubber and Prevent Storing of IP Addresses on; Replay off.
 2. Create an organization auth token (scopes `project:releases`, `org:read`, `project:write`) and store it as the GitHub
    secret `SENTRY_AUTH_TOKEN`. Then enable the disabled upload steps below.
-3. App Store Connect App Privacy and Play data safety answers: see the PR that added this file.
+3. App Store Connect App Privacy and Play data safety answers: the iOS privacy manifest and `android/LearnWithAlphonso/play/data-safety.md` already declare crash data (#368); the App Store Connect answers are the owner's.
 
 ## Disabled until the auth token exists
 

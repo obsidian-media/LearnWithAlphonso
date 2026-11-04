@@ -23,6 +23,10 @@ imported by application code, and a guard test
 
 - `french-verbs-transitive` and `french-contractions` (also from RosaeNLG) are pulled in by `french-verbs`. Their data is under CC BY-SA 3.0. They are development-only, never imported by application code, and no extract is committed.
 
+## Fluent Emoji 3D icons (shipped)
+
+The 3D icons (`public/icons3d/`, the iOS and Android icon sets; 30 on the web) are a curated subset of Microsoft's Fluent Emoji 3D set, MIT licensed. The licence text is kept at `assets/fluent-3d/LICENSE` and the source PNGs in `assets/fluent-3d/source/`. Added with the visual refresh (#341).
+
 ## Wiktionary extracts (check-only, not committed)
 
 `scripts/check-wiktionary.ts` reads the kaikki.org extracts of Wiktionary (CC BY-SA 4.0)

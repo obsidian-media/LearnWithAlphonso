@@ -1,8 +1,10 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-10-09 (a full pass against
-`main` at #270; the 2026-10-07 to 2026-10-09 changes are summarised in the
-sections from "AI integrations" through "Release and QA tooling") — re-verify
+Written 2026-09-13, last substantially updated 2026-11-04 (a full documentation pass
+against `main` at #365; the 2026-10-07 to 2026-10-09 changes are summarised in the
+sections from "AI integrations" through "Release and QA tooling", and the
+2026-10-19 to 2026-11-04 changes in "Word cards", "Podcast quiz" and "Anti-farming and quotas" after
+"Vocab images") — re-verify
 against `supabase/migrations/*.sql` and `src/routes/` before trusting a
 detail here; this codebase's own audit history shows even a careful
 point-in-time doc goes stale within weeks. This doc favors "where to look"
@@ -57,8 +59,10 @@ over "what the answer currently is," since the latter goes stale fast.
 | `friend_activity_events`                                         | Feed rows (`lesson_completed`/`streak_milestone`/`league_promotion`) written by `complete-lesson`/`completeLessonRemote` when something feed-worthy happens; read scoped to friends via `friendships`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `nudges`                                                         | `(sender_id, recipient_id, read_at)` — the weaker, polling-based nudge-a-friend feature (see "Native iOS app" below); recipient's app checks for unread rows on foreground, not real push                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `review_items`                                                   | SRS queue: `(user_id, item_key, language)` unique, `ease`/`interval_days`/`repetitions`/`due_on`/`lapses`. `source` (`"lesson"` default / `"weakness"` / `"saved_word"`) discriminates a real lesson-question item from the two self-contained kinds: a synthetic weakness-detection item (`weakness_label`/`weakness_display`/`prompt`/`choices`/`answer_index`/`explanation` — embedded gradable content, no `lessons`/`questions` row to point at) and a learner-saved word (`saved_word`/`saved_context` plus the same prompt/choices/answer/explanation, written only by `POST /api/define-word`; `lesson_id = "savedword"`, `item_key = "savedword:<16 hex>"`). `grade-review` and web `gradeReview` grade both self-contained kinds from the stored `choices[answer_index]`. See "AI integrations" below.                                                                                                                                                                                                            |
-| `ai_usage`                                                       | Daily per-kind (chat/stt/tts/translate/define) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `ai_usage`                                                       | Daily per-kind (chat/stt/tts/translate/define/hector) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `ai_rate_limits`                                                 | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `lesson_completion_hits` | Anti-farming (#367): one row per accepted lesson completion `(user_id, at)`, service-role only (`-- client-grants: none`), pruned after 2 days by `consume_lesson_completion_slot`. See "Anti-farming and quotas" |
+| `podcast_quiz_questions` / `podcast_quiz_awards` | Podcast quiz (#374): authored questions keyed by (course, folder slug, episode slug), seeded from `src/data/podcast-quizzes.ts` by a generated migration, and the per-user best score per episode that XP is paid against. `authenticated` has SELECT only (questions: published episodes only, and, like lesson questions, the key is readable; awards: own rows); every write goes through `submit_podcast_quiz` / the `complete-podcast-quiz` Edge Function. See "Podcast quiz" |
 | `levels` / `units` / `lessons` / `questions`                     | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`.                                                                                                                                                                                     |
 | `vocab_images` / `placement_questions` / `scenarios`             | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet. The `vocab_images` rows point at the self-hosted public `vocab-images` Storage bucket (see "Vocab images" below)                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `teams` / `team_members` / `team_weekly_rewards`                 | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`. **Broken until 2026-10-06:** `_join_team_impl` and `get_my_team` shipped with an unqualified `team_id` that clashed with their own `RETURNS TABLE(team_id ...)` column (run-time error 42702), so no team could be created or joined and a member could not load their team (`claim_weekly_quest` had the same mistake in a `SELECT xp INTO` and stopped every weekly quest claim); fixed in `20261006170000_fix_team_joins_and_course_aware_payouts.sql`, and `src/lib/plpgsql-output-column-clash.test.ts` now guards the class. The weekly +100 team bonus pays each member on the course they study (their latest completed lesson), not `profiles.active_language`. **Private teams are private (2026-10-10, #272, #273):** `get_team_leaderboard` lists public teams plus the caller's own team; the `teams` SELECT policy `teams_select_visible` shows a row only when the team is public or the caller belongs to it, and `team_members_select_own_team` shows membership rows only for the caller's own team, both via the `SECURITY DEFINER` helper `_my_team_id()` (callable by signed-in users, not by `anon`). The apps read these tables directly only for the team-name report lookup (a team shown on the public board) and the account export (the caller's own row); everything else goes through definer functions. The `get_my_team` last-week winner is deliberately global (it only decides the payout). |
@@ -223,9 +227,9 @@ a link out to a web profile is what gets rejected.
 
 **AI consent (rewritten 2026-10-08; the earlier per-device `AIDisclosureGate` flag is gone).** Consent is an account fact (`profiles.ai_consent_at`) enforced by the server on every AI endpoint; see "AI consent, safety and the chat model" below. On iOS the Kit's `AIConsentStore` reads and writes it through `get_ai_consent` / `set_ai_consent` (a choice made on the web counts on iOS and the reverse; a failed read is a retry state, never "AI is off"; a 403 `ai-consent-required` from any AI call closes the gate). Screens that are wholly AI (Hector, Practice, Campaigns) sit behind a gate that is never unmounted once shown, so a transcript survives a withdrawal. Lessons and review are never walled: each item decides (`AIConsentPolicy`). A translate answer is graded on the device without consent and offers "Turn on AI grading", `SpeakQuestionCard` types by default and names the cause when it falls back, and placement is graded on the device only. Settings has the "AI features" switch (off withdraws at once).
 
-**Save-any-word (Hector, Practice and Campaign replies, English-course lesson explanations and podcast transcripts, 2026-10-05).** In `HectorView`, `ConversationView` and `CampaignView`, each assistant reply is a `TappableText` (one shared view; it takes the course and hands back a ready `SaveWordRequest`): one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The saved sentence is the one the word was TAPPED in (`WordSegmenter.sentence(containing:in:atOffset:)`; the link carries the word's Character offset), it must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one, and its 300 limit is measured in UTF-16 units like the server's JS `.length`. Words the server would reject (over 40 units after NFC) are not linked, and "letter" is Unicode category L, exactly the server's `\p{L}`. `AIConversationClient.defineWord` calls the route, which makes one AI call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Lesson and review explanations reach it through the environment: a screen provides `saveWordHandler` once and the shared `ExplanationView` / `AlphonsoTipCard` read it, but only for a course whose text is wholly in its own language (`SavedWordPolicy`, English today), because French and Spanish explanations are English text with quoted foreign words. Podcast transcripts (`PodcastTranscriptSheet`) use `TappableText` with course `en`. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
+**Save-any-word (Hector, Practice and Campaign replies, English-course lesson explanations and podcast transcripts, 2026-10-05).** In `HectorView`, `ConversationView` and `CampaignView`, each assistant reply is a `TappableText` (one shared view; it takes the course and hands back a ready `SaveWordRequest`): one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The saved sentence is the one the word was TAPPED in (`WordSegmenter.sentence(containing:in:atOffset:)`; the link carries the word's Character offset), it must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one, and its 300 limit is measured in UTF-16 units like the server's JS `.length`. Words the server would reject (over 40 units after NFC) are not linked, and "letter" is Unicode category L, exactly the server's `\p{L}`. `AIConversationClient.defineWord` calls the route, which makes one AI call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Lesson and review explanations reach it through the environment: a screen provides `saveWordHandler` once and the shared `ExplanationView` / `AlphonsoTipCard` read it, for every word in the English course and, in French and Spanish, only for the course-language spans (`SavedWordPolicy`, `CourseLanguageSpans`), because those explanations are English text with quoted foreign words. `TappableText` takes an explicit required `Mode` (`.allWords`, `.spans`, `.plain`), so "no spans" can never silently switch off saving in Hector replies or transcripts. Podcast transcripts (`PodcastTranscriptSheet`) use `TappableText` in `.allWords` mode under the episode's own course. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
 
-**Save-any-word on the web (phase 4, 2026-10-05).** `SaveWordProvider` (`src/components/SaveWord.tsx`) holds one confirmation dialog and exposes an `open(request, returnFocusTo)` function through context; `TappableText` renders each savable word as a `<button>` that calls it, and renders plain text when there is no provider above it or `allowsSaving(course)` is false (English only, like iOS). Pages opt in with a wrapper component registered as the route `component` (`ConverseChatPageWithSave`, `CampaignChatPageWithSave`, `LessonPageWithSave`, `ReviewPageWithSave`); `PodcastTranscriptPanel` wraps its own body. The dialog shows the word and the sentence and states that they are sent to an AI service BEFORE anything is sent, then calls `POST /api/define-word` through `saveWord` (`src/lib/saved-word-client.ts`), which maps the route's statuses to the same user messages as iOS and treats a 200 of the wrong shape as a failure. The tapped sentence is chosen by position (`saveRequestFor`), windowed to 300 UTF-16 units in code points around the tapped occurrence. Transcript words are `tabIndex=-1` (hundreds of tab stops would bury the page) with a keyboard path instead: one tabbable "Browse words with the keyboard" button focuses the first `[data-save-word]` and a native keydown listener on the scroll container walks them with the arrow keys; chat and explanation words are tabbable. No new route, table or quota: the web reuses the route and the stored row shape unchanged.
+**Save-any-word on the web (phase 4, 2026-10-05).** `SaveWordProvider` (`src/components/SaveWord.tsx`) holds one confirmation dialog and exposes an `open(request, returnFocusTo)` function through context; `TappableText` renders each savable word as a `<button>` that calls it, and renders plain text when there is no provider above it or `allowsSaving(course)` is false (en, fr and es since #371). In a French or Spanish lesson only the spans `courseLanguageSpans` proves are course-language are tappable (translate answers, listening audio text, speak answers, and mc/fill answers whose prompt names the language), and the saved sentence is that text, never the English around it; iOS (`CourseLanguageSpans.swift`, #373) and Android (#372) twin it and all three assert one shared `save-word-spans.fixtures.json`. Pages opt in with a wrapper component registered as the route `component` (`ConverseChatPageWithSave`, `CampaignChatPageWithSave`, `LessonPageWithSave`, `ReviewPageWithSave`); `PodcastTranscriptPanel` wraps its own body. The dialog shows the word and the sentence and states that they are sent to an AI service BEFORE anything is sent, then calls `POST /api/define-word` through `saveWord` (`src/lib/saved-word-client.ts`), which maps the route's statuses to the same user messages as iOS and treats a 200 of the wrong shape as a failure. The tapped sentence is chosen by position (`saveRequestFor`), windowed to 300 UTF-16 units in code points around the tapped occurrence. Transcript words are `tabIndex=-1` (hundreds of tab stops would bury the page) with a keyboard path instead: one tabbable "Browse words with the keyboard" button focuses the first `[data-save-word]` and a native keydown listener on the scroll container walks them with the arrow keys; chat and explanation words are tabbable. No new route, table or quota: the web reuses the route and the stored row shape unchanged.
 
 **Learning goal planner (2026-10-06).** `learning_goals(user_id, language, target_level, target_date, created_at, updated_at)`, PK `(user_id, language)`, RLS select-own, no client write grant. `/api/learning-goal` authenticates with the Bearer token, reads `language_progress.cefr_level` and `lesson_completions` once (`loadLearnerState`, which throws on a database error so a failed read is a 500 and never "no goal"), and calls the pure `planGoal`. Lessons remaining are the uncompleted lessons in the course's units from the learner's CURRENT level through the target level (a learner who placed at B1 is not charged for A1); the weekly requirement is that number over the weeks left, rounded up, with at least a one-day week; status compares first-completions of IN-SCOPE lessons in the last 7 days to it (`just_started` for the first 7 days or a preview, `ahead` at 1.25x, `expired` once the date is today or earlier, with no weekly number). `goal.createdAt` is normalised to ISO-8601 with milliseconds and Z for Swift decoders. The web offline cache is keyed by user id and used only when the failure is network-offline. A target below the learner's level returns `plan: null` rather than an error. GET with `targetLevel` and `targetDate` is a preview that writes nothing. Days are UTC like the rest of the app.
 
@@ -455,7 +459,7 @@ build predates this change** and will see permission-denied errors on
 heart loss / CEFR level / placement save until a new build ships.
 
 **Applying migrations:** `.github/workflows/ci.yml`'s `deploy-supabase` job
-now runs `supabase db push` (and redeploys all three Edge Functions)
+now runs `supabase db push` (and redeploys all six Edge Functions)
 automatically on every push to `main`, gated on `lint-and-typecheck`/`e2e`/
 `deno-tests` passing first. The generated-types freshness check
 (`types-fresh`) is deliberately NOT in that gate: it fails on any PR that adds
@@ -490,10 +494,11 @@ placement pool) for `"en"`, `"fr"`, or `"es"`. Each course pairs
 hand-written units (`curriculum.ts` / `curriculum-fr.ts` / `curriculum-es.ts`)
 with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
-counts, verified 2026-09-25 (re-run the count rather than trusting this
+counts, measured 2026-11-04 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 609 lessons / 3,096 questions, French 575 lessons
-/ 2,875 questions, Spanish 583 lessons / 2,915 questions. French's phase 2
+kept in sync): English 609 lessons / 3,096 questions, French 611 lessons
+/ 3,055 questions, Spanish 610 lessons / 3,050 questions (French and Spanish
+were 575 / 583 until the generated practice packs shipped in #319). French's phase 2
 (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
 closed the type gap English opened on 2026-09-24 by porting
 `listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
@@ -520,7 +525,7 @@ ports, a categorical silent-h rule (h is silent except inside the "ch"
 digraph) rather than French's elision rule, since Spanish has no
 phonological equivalent to elision — round-tripped through the real
 normaliser before authoring). Spanish now has full type parity with
-English and French at 583 lessons / 2,915 questions. French/Spanish
+English and French (583 lessons / 2,915 questions at the time). French/Spanish
 still need a native-speaker review pass for grammar/naturalness
 (`docs/BACKLOG.md`, gitignored), and each new pack adds to that same
 unreviewed surface.
@@ -806,6 +811,7 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
   `FCM_SERVICE_ACCOUNT_JSON` and `FCM_PROJECT_ID` are set as Edge
   Function secrets; `not_configured` now means neither sender is
   configured. `fcm.test.ts` runs in `ci.yml`'s `deno-tests` job.
+- **`complete-podcast-quiz`** — #374: the podcast quiz's one write path. Takes `{ episodeId, answers, completedAt }` (never a score) and calls `submit_podcast_quiz` through the service role after the caller's JWT is checked; the grading, the XP and every anti-farming rule live in that SQL transaction. Its handler is unit-tested in `deno-tests` (10 cases) and `src/lib/edge-functions-deploy.test.ts` fails if a function directory is missing from the CI deploy list. See "Podcast quiz".
 - **`get-season-status`** — V4 #7 (deeper gamification): resolves the
   caller's previous week's season-ladder cohort lazily (a side effect
   of this call, same no-cron pattern as `get_my_duels`), ensures a
@@ -1750,12 +1756,14 @@ Added 2026-10-08 (#249). Every vocab image is self-hosted in the public
 metadata stripped, `?v=<hash>` cache key; migration `20261008140000`). Only
 picturable terms get an image (a closed-default classifier,
 `scripts/vocab-imageability.json`); abstract words, phrases and anything
-sensitive get a text-only card. **730 images are live** (English 240, French
-230, Spanish 260), each visually reviewed (every image showing a person, plus a
+sensitive get a text-only card. **1,154 images are live** (English 444, French
+356, Spanish 354), each visually reviewed (every image showing a person, plus a
 10% sample, twice) and signed off by the owner (`signoff.json` digest). The
 first pass (#249) was 415 images (English 212, Spanish 176, French 27); a
-second pass of 315 more (#268, 2026-10-09) ships in build 50, because the iOS
-app bundles `vocab-images.json`. The renderers (web `VocabImage`, iOS
+second pass of 315 more (#268, 2026-10-09) shipped in build 50, passes 3 and 4
+(#352, #353) are in build 55 (886 images), and passes 5 and 6 (#360 English, #370
+the first new French and Spanish photos) ship with the next iOS build, because
+the iOS and Android apps bundle `vocab-images.json`. The renderers (web `VocabImage`, iOS
 `VocabImageView`, Kit `VocabImagePolicy`) accept only bucket URLs, show a
 placeholder while loading and collapse the whole slot on failure. The iOS
 state is keyed by the loaded URL and exposes `vocab-image-loaded` /
@@ -1766,6 +1774,49 @@ provider URL in the source or native exports, sign-off digest) and the
 `vocab-image-links.yml` workflow (PRs touching the data, weekly; nothing
 `needs` it, so it never gates a deploy). Pipeline and commands:
 `LESSON_ASSETS.md`.
+
+## Word cards
+
+A lesson's vocabulary is derived from its questions (`deriveVocab`, ported to
+`VocabDerivation.swift` and `VocabDerivation.kt`); questions carry no gloss, so the
+meaning and example are authored on the pack line. English A1 to C1 (2,629 cards,
+all with a meaning and an example, 509 with a photo) got them in #366 and #369: optional
+3rd and 4th `|` fields on pair/cloze pack lines, `meaning`/`example` on hand-written
+questions, bundled to iOS and Android by the existing exports. A pack whose answer is a
+definition sets `termFromLeft`, and a question may carry an optional `term` that names the
+card word (an empty `term` makes no card), with no id, option or answer moved.
+`src/data/vocab-meanings.test.ts` gates every level (see AGENTS.md). French and Spanish
+cards (2,565 and 2,575) have no authored meaning, only a filled-cloze example where there is
+one (1,117 and 975), and every client hides an empty line. A word with no photo shows a coloured
+band with the word on it (iOS, #350). The web and iOS lesson shows the cards one at a time.
+
+## Podcast quiz
+
+#374 (backend), #375 (web UI), 2026-11-04; the iOS screen is #376 and Android has none.
+`src/data/podcast-quizzes.ts` holds 110 authored multiple-choice questions for 16 episodes
+and is the source of truth: `scripts/gen-podcast-quiz-migration.ts` regenerates the seed
+migration (`20261104100300`) and a test fails on drift, another grounds every answer in the
+episode transcript. Episodes are keyed by (course, folder slug, episode slug) because ids differ
+per database. `submit_podcast_quiz` does everything in one transaction: grades from the stored
+key (clients send answers, never a score), pays 10 XP per correct answer (at most 70 an
+episode, no pass mark), pays only the improvement over the stored best
+(`podcast_quiz_awards`), takes the shared lesson hourly slot only when XP is paid, and updates
+the streak, activity day, 7-day heart refill and 10-day freeze as a lesson does (the client's
+`completedAt` is clamped into [now - 3 h, now]). Access follows the episode (unpublished means no
+quiz). The Edge Function `complete-podcast-quiz` is the HTTP entry point for native clients; the web
+uses a server function (`src/lib/podcast-quiz.functions.ts`). The web player offers the quiz inside
+the player bar when playback ends (the store's `finished` flag), and `PodcastQuiz` shows the server's
+score, never its own marking.
+
+## Anti-farming and quotas
+
+#367, 2026-11-04, machine speed only (owner decision: no minimum lesson time, no daily XP
+cap). `consume_lesson_completion_slot(user, at, limit = 60)` refuses a 61st completion in a rolling
+hour (counted at the clamped completion instant, serialised per user with an advisory lock);
+`release_lesson_completion_slot` returns the slot when the save then fails. Production's busiest
+real hour was 7. The podcast quiz shares the ceiling. Daily AI allowances in `consume_ai_quota`
+(and `DAILY_LIMITS` in `src/lib/ai-quota.server.ts`, compared by a test): chat 60, stt 120 (was a
+temporary 300), tts 80, translate 60, define 40, hector 150; per-minute limits are unchanged.
 
 ## Sign-in and onboarding (iOS)
 
@@ -1919,7 +1970,7 @@ Debug-only UI-test launch arguments are pinned inside `#if DEBUG`, and
 build number is not above App Store Connect's latest, if the app and widget
 versions differ, or if the exported .ipa's name, microphone string, manifest
 reasons, icon name or licence files are wrong. The checked-in project is
-version 1.0, build 50.
+version 1.0, build 55.
 
 ## Release and QA tooling
 
@@ -2282,8 +2333,8 @@ deploy`, both easy to forget (this bit a real session that added several
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
-  2026-10-18 there are 301 web test files (3,612 tests in CI on main after
-  #326), 1,080 Swift Kit tests and 758 Android JVM tests; run `bun run
+  2026-11-04 there are 373 web test files (4,485 tests plus 1 skipped, in CI on main after
+  #374), 1,163 Swift Kit tests and 800 Android JVM tests (counted from `@Test`); run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer

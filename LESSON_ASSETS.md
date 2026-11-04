@@ -1,9 +1,9 @@
 # Learn with Alphonso — Complete Lesson Asset List
 
-> **Status (2026-09-13, counts refreshed 2026-10-09):** this file's
+> **Status (2026-09-13, counts refreshed 2026-11-04):** this file's
 > premise — a uniform 300-lesson curriculum (60/level) — is stale.
-> Actual counts: **English 609 lessons (137/119/119/117/117), French 575
-> (115 per level), Spanish 583 (115/116/119/117/116)**, 1,767 in all.
+> Actual counts: **English 609 lessons (137/119/119/117/117), French 611
+> (115/133/133/115/115), Spanish 610 (115/143/119/117/116)**, 1,830 in all.
 > The rest of this file is not current. See `AGENTS.md`'s Content
 > Structure table for the authoritative numbers going forward.
 >
@@ -18,11 +18,12 @@
 > `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`; `--prune` is a dry run unless `--apply`, and refuses a tiny keep-set or more than 10% deletions without `--force-large`)
 > → `scripts/write-vocab-images.ts` → owner sheet and
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
-> `scripts/seed-vocab-images-db.ts`. **Live today: 730 images** (English 240,
-> French 230, Spanish 260, all owner-signed-off and uploaded). The first pass
+> `scripts/seed-vocab-images-db.ts`. **Live today: 1,154 images** (English 444,
+> French 356, Spanish 354, all owner-signed-off and uploaded). The first pass
 > (415: English 212, Spanish 176, French 27) went live on 2026-10-08; the second
-> pass of 315 more (#268, 2026-10-09) ships in build 50, because the iOS app
-> bundles `vocab-images.json`. Run the upload and reseed from Git Bash with the
+> pass of 315 more (#268) shipped in build 50; passes 3 and 4 (#352, #353) are in
+> build 55; passes 5 and 6 (#360, #370, the first new French and Spanish photos)
+> ship with the next iOS build, because the apps bundle `vocab-images.json`. Run the upload and reseed from Git Bash with the
 > service-role key; `--prune` is a dry run first. `src/data/vocab-images.guard.test.ts`
 > enforces host, denylist, review stamp, imageability and sign-off on every PR,
 > and `.github/workflows/vocab-image-links.yml` checks every URL on PRs and weekly.
