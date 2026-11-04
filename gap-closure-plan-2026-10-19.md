@@ -1,5 +1,7 @@
 # Learn With Alphonso — Gap Closure Plan
 
+> **Status 2026-11-04:** a historical record. PR #337 (the pre-launch hardening it describes) merged as `fab509c1` on 2026-11-02; the vocab-image counts, branch names and CI run ids below are as of 2026-10-19/20 and are not updated. For current state read `AGENTS.md`, `ARCHITECTURE.md` and `CHANGELOG.md`.
+
 **Based on:** launch audit dated 2026-10-19  
 **Outcome sought:** evidence-backed readiness for web public launch and iOS App Store/TestFlight launch.
 

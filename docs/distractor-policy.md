@@ -71,10 +71,13 @@ Do not swap in an absurd word to make the question "work".
 For every A1/A2 question in the English bank:
 
 - every wrong option is in its slot's pool, or on the reviewed allow-list
-  (`DISTRACTOR_ALLOW`, each entry with a reason);
+  (`DISTRACTOR_ALLOW`, each entry with a reason; it is empty today) or in the pack's reviewed
+  extra vocabulary (`src/data/pack-extra-vocab.ts`, same-kind words a pack never teaches);
 - no wrong option is also correct (the detector, unless a clue disambiguates);
-- a `category:<pack>` question needs a clue or picture; the number without one is
-  tracked as known debt and may only go down.
+- a `category:<pack>` question needs a clue or picture, an inflection question needs a time
+  anchor, and a reviewed context needs a reason written for that question; all of these budgets
+  are 0 and stay 0;
+- unit lessons u1-u9 are covered as well as the packs.
 
 The gate is mutation-checked on real examples: "into / down / behind / during" and
 "ought / used / can to / can" must fail it.

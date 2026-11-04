@@ -1,5 +1,7 @@
 # Visual Refresh Round 4 Implementation Plan
 
+> Status (2026-11-04): implemented and merged (#347).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the remaining in-lesson visual gap with Learna/Duolingo: a full-screen lesson-complete clip, a green/red answer verdict panel with Alphonso reacting, chunky answer tiles, a one-word-at-a-time vocabulary deck, a richer Learn lesson list, and correct English unit numbering. Web and iOS both get every change.

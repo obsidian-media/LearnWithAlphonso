@@ -1,5 +1,7 @@
 # Web Hector + Alphonso Pro on the web: Implementation Plan
 
+> Status (2026-11-04): implemented and merged (#339).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Learners can talk with Hector on the web after subscribing to the same Alphonso Pro as iPhone. They pay by card through RevenueCat Web Billing on Stripe.

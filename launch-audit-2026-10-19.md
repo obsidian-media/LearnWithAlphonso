@@ -1,5 +1,7 @@
 # Learn With Alphonso — Launch and Pre-Launch Audit
 
+> **Status 2026-11-04:** a historical record. PR #337 (the pre-launch hardening it describes) merged as `fab509c1` on 2026-11-02; the vocab-image counts, branch names and CI run ids below are as of 2026-10-19/20 and are not updated. For current state read `AGENTS.md`, `ARCHITECTURE.md` and `CHANGELOG.md`.
+
 > **Current-state addendum — 2026-10-20 (supersedes older CI-status statements in this historical audit):** Branch `Codex-pre-Launch` is at `50daff9`; PR #337 is open. Current PR CI run 39364973259 passed web/admin, Deno, E2E, Swift test, and iOS build jobs; vocab-image link check 39364973139 passed. Android run 39364973250 passed JVM/lint and APK jobs; the initial API 34 instrumentation attempt failed due to ADB connectivity, then failed-job rerun 118442600009 passed. All CodeQL analyses, including Swift, passed in 39364968983. Android Room 3→4 and SwiftData V1→V2 are client-local migrations; this branch adds no Supabase migration. This is not a launch sign-off: physical-device checks, French/Spanish native-speaker approval, live production headers/account configuration, commercial/App Store state, operational alerting, and owner approval remain open or unverified. See `docs/BACKLOG.md` and `gap-closure-plan-2026-10-19.md` for task-level evidence and next steps.
 
 **Audit date:** 2026-10-19  

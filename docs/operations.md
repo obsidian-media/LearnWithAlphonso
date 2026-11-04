@@ -73,6 +73,14 @@ No request waits on a provider without a limit. A timeout returns a retryable `5
 | Text-to-speech (`/api/tts`)                                   | 30 s                                |
 | Subscription check and RevenueCat erase                       | 5 s                                 |
 
+## Abuse limits
+
+Not switches, fixed in the database: `complete-lesson` and `complete-podcast-quiz` share a rolling-hour ceiling of 60 paid completions per user (`consume_lesson_completion_slot`; there is no minimum lesson time and no daily XP cap). Daily AI allowances per user: chat 60, speech-to-text 120, text-to-speech 80, translate 60, define 40, Hector 150 (`consume_ai_quota`; per-minute limits in `consume_ai_rate_limit`). Raising one means a new migration that restates the whole function plus the matching constant in `src/lib/ai-quota.server.ts`.
+
+## Crash reporting
+
+Sentry (org `obsidian-media`) receives crashes and errors from production web, iOS and Android release builds only; see `docs/sentry-crash-reporting.md`. It is not an alerting setup: look at the three projects in Sentry.
+
 ## Uptime check
 
 `.github/workflows/uptime.yml` runs every 15 minutes from GitHub, outside the app. It makes six unauthenticated requests (landing page, privacy policy, a server route, the sign-in service, the database API, an Edge Function) and fails if any does not give the status a healthy service gives. A failed run is the alert: GitHub notifies people watching the repository's Actions. Turn that on under GitHub **Settings > Notifications > Actions** ("Send notifications for failed workflows only").

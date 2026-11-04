@@ -1,6 +1,6 @@
 # Generative sentence content for French and Spanish (design)
 
-**Status:** design only. No dependency is installed and no code is changed by the PR that adds this file.
+**Status (2026-11-04):** implemented: the pipeline (#317) and the shipped packs (#319: 12 French and 9 Spanish packs, French 575 to 611 lessons, Spanish 583 to 610). Originally design only.
 **Date:** 2026-10-17
 **Builds on:** `2026-09-22-generative-sentence-content-design.md` (the English pilot), `2026-09-24-french-content-audit-design.md` §8 (the `french-verbs` adoption).
 

@@ -56,7 +56,7 @@ Tick each line in a copy of this file and attach it to the release PR.
 
 ## Notifications and push (Plan 4)
 
-- [ ] Completing the first lesson asks for notification permission once; a later lesson never asks again.
+- [ ] No lesson, including the first, shows the system notification prompt by itself. After the second completed lesson the finish screen shows a "Keep your streak going" card with "Remind me" and "Not now"; only "Remind me" shows the system prompt. "Not now" hides the card, it is offered at most once more, no sooner than 3 days later, then never. With permission already granted or denied, no card.
 - [ ] With permission granted and no lesson done today, set the phone clock to 19:59 and wait: "Keep your streak alive" arrives at 20:00.
 - [ ] From a second account, nudge this account: a "You've been nudged!" notification arrives on the lock screen (needs owner items 2, 3 and 4).
 - [ ] Sign out: the `device_tokens` row for this device disappears (check in Supabase Table Editor).
@@ -228,7 +228,7 @@ Use a QA account with AI allowed. The server writes a real review item each time
 - [ ] Tap the same word again in the same reply: "Already saved" with the same meaning, instantly (no extra AI use).
 - [ ] The same word in two different sentences of one reply: each tap shows the sentence it was tapped in.
 - [ ] Practice and a Campaign reply: words are tappable, the hint says "Tap any word in a reply to save it.", and saving works in French and Spanish with the right language in the card.
-- [ ] A lesson in the English course: answer a question; the explanation's words are tappable (right answer: the grey line, wrong answer: Alphonso's tip), and "Tap a word to save it." shows for the first three explanations only, then never again. In a French or Spanish lesson the explanation is plain text (no hint).
+- [ ] A lesson in the English course: answer a question; the explanation's words are tappable (right answer: the grey line, wrong answer: Alphonso's tip), and "Tap a word to save it." shows for the first three explanations only, then never again. In a French or Spanish lesson only text the question proves is French or Spanish (a translate answer, listening audio text, a speak answer, or a right answer to "How do you say ... in French?") is tappable, and saves that text as the sentence; an explanation with none of that has no hint. Words in the English around it are never tappable.
 - [ ] Review (English course): the explanation after answering is tappable the same way.
 - [ ] A podcast transcript (the notes button on the player): "Tap any word to save it."; tapping saves the word under the episode's course, which is its root folder's course (a French folder's episode saves under French). Open the transcript of an English episode, save a word, close it, then open the transcript of a different episode and tap a word: the sheet shows the NEW word and a Save button, never the previous word with "Saved". Reopen the same transcript a third time: same.
 - [ ] Review: a saved word appears as a multiple-choice card ("What does "tea" mean here?" with the sentence), grades like any card, and shows the meaning after answering. It appears in the course it was saved under.
