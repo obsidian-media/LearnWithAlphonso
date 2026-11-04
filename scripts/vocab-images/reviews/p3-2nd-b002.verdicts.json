@@ -1,0 +1,134 @@
+{
+  "batch": "p3-2nd-b002",
+  "pass": "second",
+  "reviewer": "agent:p3-2nd-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "plumber": {
+      "verdict": "approve",
+      "alt": "A worker in a yellow hard hat and high-visibility vest holds a large pipe wrench.",
+      "peopleVisible": true
+    },
+    "police officer": {
+      "verdict": "approve",
+      "alt": "Six police officers in dark uniforms and high-visibility vests stand on a city pavement.",
+      "peopleVisible": true
+    },
+    "pottery": {
+      "verdict": "approve",
+      "alt": "Hands covered in wet clay shape a small pot on a spinning pottery wheel.",
+      "peopleVisible": true
+    },
+    "pour": {
+      "verdict": "approve",
+      "alt": "A hand tips a white enamel mug and pours a thin stream of water.",
+      "peopleVisible": true
+    },
+    "prison": {
+      "verdict": "approve",
+      "alt": "A man reads on a bed inside a barred cell while another person's legs stand in front.",
+      "peopleVisible": true
+    },
+    "pyjamas": {
+      "verdict": "approve",
+      "alt": "People in blue, white, yellow and lilac pyjamas hold coloured pillows, shown from the neck down.",
+      "peopleVisible": true
+    },
+    "rain": {
+      "verdict": "approve",
+      "alt": "People shelter under umbrellas on a rainy street seen through a window in black and white.",
+      "peopleVisible": true
+    },
+    "rainy": {
+      "verdict": "approve",
+      "alt": "Raindrops splash on wet paving stones in a black and white photo.",
+      "peopleVisible": false
+    },
+    "shopkeeper": {
+      "verdict": "approve",
+      "alt": "A smiling older shopkeeper sits in front of his shop window, with shoes and bags hanging above him.",
+      "peopleVisible": true
+    },
+    "shorts": {
+      "verdict": "approve",
+      "alt": "A woman in a white top and black denim shorts stands on a wooden deck among trees.",
+      "peopleVisible": true
+    },
+    "sleeves": {
+      "verdict": "approve",
+      "alt": "A man in a cream shirt holds his rolled-up sleeve on a dark background.",
+      "peopleVisible": true
+    },
+    "stomach": {
+      "verdict": "approve",
+      "alt": "A man rests both hands on his bare stomach, with a skull tattoo on his side.",
+      "peopleVisible": true
+    },
+    "subway": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "teeth": {
+      "verdict": "approve",
+      "alt": "A black and white close view of a woman's smile showing her white teeth.",
+      "peopleVisible": true
+    },
+    "toes": {
+      "verdict": "approve",
+      "alt": "Bare feet and toes stand in foamy water at the edge of the sea.",
+      "peopleVisible": true
+    },
+    "tooth": {
+      "verdict": "approve",
+      "alt": "A hand brushes a model set of teeth with a white toothbrush.",
+      "peopleVisible": true
+    },
+    "tourist": {
+      "verdict": "approve",
+      "alt": "Two tourists in sunglasses, one holding a camera, stand in front of a golden temple roof.",
+      "peopleVisible": true
+    },
+    "trainers": {
+      "verdict": "approve",
+      "alt": "A black high-top trainer with grey laces rests on a stone ledge while a hand adjusts it.",
+      "peopleVisible": true
+    },
+    "underground": {
+      "verdict": "approve",
+      "alt": "An orange underground train stops beside a dim platform where a few people wait.",
+      "peopleVisible": true
+    },
+    "video games": {
+      "verdict": "approve",
+      "alt": "A black video game controller with two thumbsticks rests in low light.",
+      "peopleVisible": false
+    },
+    "vitamin": {
+      "verdict": "approve",
+      "alt": "Beige vitamin tablets spill out of an open white bottle onto a black surface.",
+      "peopleVisible": false
+    },
+    "waiter": {
+      "verdict": "approve",
+      "alt": "A waiter in a white shirt and dark tie carries a tray with a drink and fruit in a cafe.",
+      "peopleVisible": true
+    },
+    "watches": {
+      "verdict": "approve",
+      "alt": "A black wristwatch with a dark face is worn on a wrist.",
+      "peopleVisible": true
+    },
+    "wrist": {
+      "verdict": "approve",
+      "alt": "Two hands rest on a table while one hand holds the wrist of the other.",
+      "peopleVisible": true
+    },
+    "wrists": {
+      "verdict": "approve",
+      "alt": "Two hands rest on a table while one hand holds the wrist of the other.",
+      "peopleVisible": true
+    }
+  }
+}

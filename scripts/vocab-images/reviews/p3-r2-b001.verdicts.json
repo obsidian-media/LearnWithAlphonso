@@ -1,0 +1,119 @@
+{
+  "batch": "p3-r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r2-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "arm": {
+      "verdict": "approve",
+      "alt": "A man in a white shirt crosses his arms, showing a tattoo sleeve and a black wristband.",
+      "peopleVisible": true
+    },
+    "cricket": {
+      "verdict": "approve",
+      "alt": "A cricketer in a helmet, pads and gloves runs across a dry grass field under a blue sky.",
+      "peopleVisible": true
+    },
+    "downpour": {
+      "verdict": "approve",
+      "alt": "Heavy rain drops cover a car window at night, with blurred red and yellow lights behind.",
+      "peopleVisible": false
+    },
+    "ear": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's ear with a small gold earring.",
+      "peopleVisible": true
+    },
+    "ears": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's ear with a small gold earring.",
+      "peopleVisible": true
+    },
+    "elbow": {
+      "verdict": "approve",
+      "alt": "A woman in a black top rubs the inside of her elbow with her other hand.",
+      "peopleVisible": true
+    },
+    "headache": {
+      "verdict": "approve",
+      "alt": "A woman at a desk presses her hand to her forehead and squints in pain over an open notebook.",
+      "peopleVisible": true
+    },
+    "neck": {
+      "verdict": "approve",
+      "alt": "A black and white close view of a man's neck and chin with a hand resting on his collar.",
+      "peopleVisible": true
+    },
+    "oil": {
+      "verdict": "approve",
+      "alt": "Olive oil pours from a small bottle into a black frying pan on a gas hob.",
+      "peopleVisible": true
+    },
+    "actress": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "boxing": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "earthquake": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "heatwave": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "jam": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "marble": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

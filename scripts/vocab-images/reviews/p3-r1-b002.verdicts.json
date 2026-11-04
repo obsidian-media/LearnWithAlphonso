@@ -1,0 +1,116 @@
+{
+  "batch": "p3-r1-b002",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "drought": {
+      "verdict": "approve",
+      "alt": "Dry brown soil cracked into many pieces, with a few dead leaves and twigs on top.",
+      "peopleVisible": false
+    },
+    "eruption": {
+      "verdict": "approve",
+      "alt": "Glowing orange lava breaks through dark hardened lava rock.",
+      "peopleVisible": false
+    },
+    "exhibition": {
+      "verdict": "approve",
+      "alt": "Paintings stand on wooden easels in rows along a bright hall with a tiled floor.",
+      "peopleVisible": true
+    },
+    "exit": {
+      "verdict": "approve",
+      "alt": "A glowing green exit sign with arrows shines in a dark room.",
+      "peopleVisible": false
+    },
+    "field": {
+      "verdict": "approve",
+      "alt": "An aerial view of farm fields with neat green and brown crop rows and a few workers.",
+      "peopleVisible": true
+    },
+    "flood": {
+      "verdict": "approve",
+      "alt": "Fast grey flood water rushes over and around a floating dock on a swollen river.",
+      "peopleVisible": false
+    },
+    "fog": {
+      "verdict": "approve",
+      "alt": "Thick fog hides most of a hillside village above dark pine trees.",
+      "peopleVisible": false
+    },
+    "foggy": {
+      "verdict": "approve",
+      "alt": "A cycle path and small wooden bridge disappear into pink morning fog.",
+      "peopleVisible": false
+    },
+    "freezer": {
+      "verdict": "approve",
+      "alt": "Two clear freezer drawers hold bread wrapped in plastic bags.",
+      "peopleVisible": false
+    },
+    "golf": {
+      "verdict": "approve",
+      "alt": "A greenkeeper mows the smooth green of a golf course under a cloudy sky.",
+      "peopleVisible": true
+    },
+    "grill": {
+      "verdict": "approve",
+      "alt": "Sausages, corn and courgette cook on a small barbecue grill while people stand around it.",
+      "peopleVisible": true
+    },
+    "hook": {
+      "verdict": "approve",
+      "alt": "A metal hook on a turnbuckle rests on a woven wire mesh.",
+      "peopleVisible": false
+    },
+    "ear": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "ears": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "earthquake": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "elbow": {
+      "verdict": "reject",
+      "reasons": [
+        "nudity-or-suggestive"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "headache": {
+      "verdict": "reject",
+      "reasons": [
+        "stereotype-demeaning-poverty-distress"
+      ]
+    },
+    "heatwave": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    }
+  }
+}

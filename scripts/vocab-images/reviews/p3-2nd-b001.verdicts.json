@@ -1,0 +1,158 @@
+{
+  "batch": "p3-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p3-2nd-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "ankle": {
+      "verdict": "approve",
+      "alt": "A person's bare ankle is being wrapped with black tape while they sit on a gym mat.",
+      "peopleVisible": true
+    },
+    "arm": {
+      "verdict": "approve",
+      "alt": "A man in a white shirt crosses his arms, showing a tattoo sleeve and a black wristband.",
+      "peopleVisible": true
+    },
+    "badminton": {
+      "verdict": "approve",
+      "alt": "A hand holds a white shuttlecock with a red band over a badminton racket.",
+      "peopleVisible": true
+    },
+    "blizzard": {
+      "verdict": "approve",
+      "alt": "Heavy snow falls over a city park and buildings in a white winter blizzard.",
+      "peopleVisible": false
+    },
+    "bride": {
+      "verdict": "approve",
+      "alt": "A bride in a pale wedding dress has the back of her gown laced up by another woman.",
+      "peopleVisible": true
+    },
+    "card games": {
+      "verdict": "approve",
+      "alt": "A hand rests on a small stack of red-backed playing cards.",
+      "peopleVisible": true
+    },
+    "checkout": {
+      "verdict": "approve",
+      "alt": "A woman uses a self-service checkout screen in a supermarket, with apples on the scale.",
+      "peopleVisible": true
+    },
+    "cricket": {
+      "verdict": "approve",
+      "alt": "A cricketer in a helmet, pads and gloves runs across a dry grass field under a blue sky.",
+      "peopleVisible": true
+    },
+    "driveway": {
+      "verdict": "approve",
+      "alt": "A paved driveway leads to a white house with two blue garage doors.",
+      "peopleVisible": false
+    },
+    "ear": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's ear with a small gold earring.",
+      "peopleVisible": true
+    },
+    "ears": {
+      "verdict": "approve",
+      "alt": "A close view of a woman's ear with a small gold earring.",
+      "peopleVisible": true
+    },
+    "elbow": {
+      "verdict": "approve",
+      "alt": "A woman in a black top rubs the inside of her elbow with her other hand.",
+      "peopleVisible": true
+    },
+    "exhibition": {
+      "verdict": "approve",
+      "alt": "Paintings stand on wooden easels in rows along a bright hall with a tiled floor.",
+      "peopleVisible": true
+    },
+    "field": {
+      "verdict": "approve",
+      "alt": "An aerial view of farm fields with neat green and brown crop rows and a few workers.",
+      "peopleVisible": true
+    },
+    "golf": {
+      "verdict": "approve",
+      "alt": "A greenkeeper mows the smooth green of a golf course under a cloudy sky.",
+      "peopleVisible": true
+    },
+    "grill": {
+      "verdict": "approve",
+      "alt": "Sausages, corn and courgette cook on a small barbecue grill while people stand around it.",
+      "peopleVisible": true
+    },
+    "headache": {
+      "verdict": "approve",
+      "alt": "A woman at a desk presses her hand to her forehead and squints in pain over an open notebook.",
+      "peopleVisible": true
+    },
+    "heatwave": {
+      "verdict": "approve",
+      "alt": "A huge white sun glows in an orange sky above a hazy city skyline.",
+      "peopleVisible": false
+    },
+    "jam": {
+      "verdict": "approve",
+      "alt": "Hands press brown paper over a jar of orange marmalade next to a net bag of oranges.",
+      "peopleVisible": true
+    },
+    "journalist": {
+      "verdict": "approve",
+      "alt": "A reporter in a red jacket speaks into a microphone while a camera operator films her.",
+      "peopleVisible": true
+    },
+    "knee": {
+      "verdict": "approve",
+      "alt": "Six bare knees of seated people line up side by side on a wooden floor.",
+      "peopleVisible": true
+    },
+    "knives": {
+      "verdict": "approve",
+      "alt": "Three kitchen knives lie in a row on a white cutting board beside a red pepper and garlic.",
+      "peopleVisible": true
+    },
+    "lawyer": {
+      "verdict": "approve",
+      "alt": "A woman in a black robe and white bands sits at a desk before a scales of justice emblem.",
+      "peopleVisible": true
+    },
+    "leg": {
+      "verdict": "approve",
+      "alt": "Two bent bare legs face each other against a plain grey background.",
+      "peopleVisible": true
+    },
+    "legs": {
+      "verdict": "approve",
+      "alt": "A person's legs in black trousers and white trainers walk along a path covered in autumn leaves.",
+      "peopleVisible": true
+    },
+    "nap": {
+      "verdict": "approve",
+      "alt": "A person lies asleep on a grey sofa under a soft teal blanket.",
+      "peopleVisible": true
+    },
+    "neck": {
+      "verdict": "approve",
+      "alt": "A black and white close view of a man's neck and chin with a hand resting on his collar.",
+      "peopleVisible": true
+    },
+    "oil": {
+      "verdict": "approve",
+      "alt": "Olive oil pours from a small bottle into a black frying pan on a gas hob.",
+      "peopleVisible": true
+    },
+    "photography": {
+      "verdict": "approve",
+      "alt": "A photographer in a dark jacket holds one camera and carries another on a strap.",
+      "peopleVisible": true
+    },
+    "photos": {
+      "verdict": "approve",
+      "alt": "Hands spread printed photos of plants and flowers on a cushion next to a camera.",
+      "peopleVisible": true
+    }
+  }
+}
