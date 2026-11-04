@@ -132,8 +132,13 @@ function agrees(form: string, subj: Num): boolean {
 const MODAL_GROUPS: string[][] = [
   ["can", "could", "may", "might"],
   ["will", "would", "shall"],
+  // Deduction / advice: "She must / should / might / may / could / needn't be at work now".
+  ["must", "should", "need", "might", "may", "could", "will", "would"],
 ];
 const MODAL_NEG_BASE: Record<string, string> = {
+  "mustn't": "must",
+  "shouldn't": "should",
+  "needn't": "need",
   "won't": "will",
   "wouldn't": "would",
   "can't": "can",
@@ -295,7 +300,21 @@ export function alsoCorrectReason(
   // 2. Interchangeable modals (can/could/may/might, will/would/shall) and their
   //    negatives. A past or future cue fixes the form, so those are left alone.
   const baseOf = (w: string) => MODAL_NEG_BASE[w] ?? w;
-  const sameGroup = MODAL_GROUPS.some((g) => g.includes(baseOf(a)) && g.includes(baseOf(c)));
+  // In a conditional or a wish the tense of the other clause picks will or would,
+  // so that pair is not interchangeable there.
+  const conditional = /\b(if|wish)\b/i.test(prompt);
+  const sameGroup = MODAL_GROUPS.some(
+    (g) => g.includes(baseOf(a)) && g.includes(baseOf(c)) && !(conditional && g.includes("would")),
+  );
+  // The result clause of a conditional takes a weaker modal as well as will/would.
+  if (
+    conditional &&
+    ["will", "would"].includes(baseOf(a)) &&
+    ["could", "might", "may", "should", "can"].includes(baseOf(c)) &&
+    !/\bnot\b|n't/i.test(prompt)
+  ) {
+    return `${c} is an acceptable modal in the result clause`;
+  }
   if (sameGroup && !PAST_CUE.test(prompt) && !FUTURE_CUE.test(prompt)) {
     // A sentence that already says "not" cannot take a positive or a negative modal freely.
     if (/\bnot\b|n't/i.test(prompt)) return null;
@@ -308,10 +327,16 @@ export function alsoCorrectReason(
   //     "by bus") are left alone.
   if (
     LOCATIVE.has(a) &&
-    LOCATIVE.has(c) &&
+    (LOCATIVE.has(c) || (LOCATIVE_CANDIDATE_ONLY.has(c) && !TIME_OBJECT.test(after))) &&
     /^\s*(the|a|an|my|your|his|her|their|our|this|that)\b/i.test(after)
   ) {
     return `${c} is another place preposition that fits before "${after.trim().split(/[.?!]/)[0]}"`;
+  }
+
+  // 2c. After "I wish" / "if only" a past-perfect "had been" is a correct sentence
+  //     before an adjective ("I wish my neighbours had been so noisy").
+  if (c === "had been" && fa?.family === "be" && /\b(wish|if only)\b/i.test(prompt)) {
+    return `"had been" is a correct past-perfect wish here`;
   }
 
   // 3. A lexical verb in a be/aux slot, where the rest of the sentence is only an
@@ -327,9 +352,18 @@ export function alsoCorrectReason(
   return null;
 }
 
-// Deliberately NOT in/on/at/by/around/along: those carry fixed phrases ("in a larger
-// size", "at the weekend") and are the contrast a preposition lesson teaches.
+// A place-preposition ANSWER from this set makes any other member (and any word in
+// LOCATIVE_CANDIDATE_ONLY) a correct wrong answer before a definite place noun.
+// in/on/at/by/along are candidate-only: they carry fixed phrases ("in a larger
+// size", "at the weekend") and are the contrast a preposition lesson teaches, so
+// they are not flagged when THEY are the answer.
 const LOCATIVE = new Set([
+  "next to",
+  "in front of",
+  "close to",
+  "around",
+  "round",
+  "against",
   "under",
   "behind",
   "beside",
@@ -348,6 +382,9 @@ const LOCATIVE = new Set([
   "towards",
   "toward",
 ]);
+const TIME_OBJECT =
+  /\b(period|week|month|year|day|hour|minute|morning|evening|night|time|weekend|season|century)\b/i;
+const LOCATIVE_CANDIDATE_ONLY = new Set(["in", "on", "at", "by", "along"]);
 /** Time prepositions: clearly wrong where a place is needed. */
 const WRONG_LOCATIVE = ["during", "since", "for", "until"];
 
@@ -384,7 +421,15 @@ export function clearlyWrongFor(prompt: string, answer: string): string[] {
       ? w[0]!.toUpperCase() + w.slice(1)
       : w;
   let raw: string[] = [];
-  if (fa && subj) {
+  const mbase = MODAL_NEG_BASE[a] ?? a;
+  const before = prompt.slice(0, Math.max(0, prompt.indexOf("___"))).trim();
+  const prev = norm(before.split(/\s+/).pop() ?? "");
+  const afterModal = SLOT_MODALS.has(prev) || prev === "to" || /'(ll|d)$/.test(prev);
+  if (fa && afterModal && (fa.family === "do" || fa.family === "have")) {
+    // "We should ___ this again": the slot takes a bare verb, so any inflected
+    // do/have/be form is wrong there.
+    raw = ["does", "is", "has"];
+  } else if (fa && subj) {
     const table = fa.family === "be" ? WRONG_BE : fa.family === "do" ? WRONG_DO : WRONG_HAVE;
     raw = [...table[subj]];
     if (fa.family === "be") raw.push("be");
@@ -392,8 +437,48 @@ export function clearlyWrongFor(prompt: string, answer: string): string[] {
     if (fa.family === "have") raw.push("having", "to");
   } else if (LOCATIVE.has(a)) {
     raw = WRONG_LOCATIVE;
-  } else if (MODAL_GROUPS.some((g) => g.includes(a)) || a === "won't") {
-    raw = ["to", "is", "does"];
+  } else if (MODAL_GROUPS.some((g) => g.includes(mbase))) {
+    // Before a bare verb "ought" and "used" need a "to", and "<modal> to" is the
+    // classic learner error: all three look like modals and are wrong. "does" and
+    // "is" were the old fillers; "does" is correct before a bare verb ("She does
+    // speak ..."), and all of them left the answer as the only modal on screen.
+    const base = mbase;
+    raw = [];
+    if (/\bif\b/i.test(prompt) && (base === "would" || base === "will"))
+      raw.push(base === "would" ? "will" : "would");
+    raw.push("ought", "used", `${answer} to`);
   }
   return raw.map(cap).filter((w) => norm(w) !== a && alsoCorrectReason(prompt, answer, w) === null);
+}
+
+const SLOT_MODALS = new Set(
+  "can could may might will would shall should must can't couldn't won't wouldn't needn't mustn't shouldn't ought".split(
+    " ",
+  ),
+);
+
+/**
+ * "modal" or "aux" when `word` is a modal or a be/do/have form, else null. A cloze
+ * question whose answer has one of these classes must keep a second option of the
+ * same class on screen, or the answer is the only modal/auxiliary among the
+ * choices and gives itself away.
+ */
+export function slotClassOf(word: string): "modal" | "aux" | null {
+  const w = norm(word);
+  if (SLOT_MODALS.has(w)) return "modal";
+  if (FAMILY[w]) return "aux";
+  return null;
+}
+
+const TWINS: [string, string][] = [
+  ["round", "around"],
+  ["toward", "towards"],
+  ["among", "amongst"],
+];
+
+/** True when two options are two spellings of one word, so showing both is noise. */
+export function isTwinSpelling(a: string, b: string): boolean {
+  const x = norm(a);
+  const y = norm(b);
+  return TWINS.some(([p, q]) => (x === p && y === q) || (x === q && y === p));
 }

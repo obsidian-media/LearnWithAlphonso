@@ -41,7 +41,14 @@ private fun exampleOf(question: Question): String {
     if (blank < 0 || answer.isEmpty() || STEM.containsMatchIn(prompt.trim())) return ""
     val last = prompt.substring(0, blank).trim().lastOrNull()
     if (last != null && last in ":?…\"“") return ""
-    return prompt.replaceFirst("___", answer)
+    // Tidy the join, same steps as the web: drop every bracket hint after the blank,
+    // drop the space the data leaves between the blank and its punctuation ("taken ?"),
+    // and capitalise the first letter.
+    val after = prompt.substring(blank + 3)
+        .replace(Regex("\\s*\\([^)]*\\)"), "")
+        .replace(Regex("^\\s+(?=[?!.,;:])"), "")
+    val sentence = prompt.substring(0, blank) + answer + after
+    return sentence.replaceFirstChar { it.uppercaseChar() }
 }
 
 /** Dedupes by term, case-insensitively, in question order. `images` is keyed by the lowercased term. */

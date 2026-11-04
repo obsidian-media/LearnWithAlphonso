@@ -101,7 +101,14 @@ private func exampleOf(_ question: Question) -> String {
     if stemPattern.firstMatch(in: trimmed, options: [], range: whole) != nil { return "" }
     let before = prompt[..<blank.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
     if let last = before.last, ":?…\"“".contains(last) { return "" }
-    return prompt.replacingCharacters(in: blank, with: answer)
+    // Tidy the join, same steps as the web: drop every bracket hint after the blank,
+    // drop the space the data leaves between the blank and its punctuation
+    // ("taken ?"), and capitalise the first letter.
+    var after = String(prompt[blank.upperBound...])
+    after = after.replacingOccurrences(of: "\\s*\\([^)]*\\)", with: "", options: .regularExpression)
+    after = after.replacingOccurrences(of: "^\\s+(?=[?!.,;:])", with: "", options: .regularExpression)
+    let sentence = String(prompt[..<blank.lowerBound]) + answer + after
+    return sentence.prefix(1).uppercased() + sentence.dropFirst()
 }
 
 /// Builds the vocabulary module for a lesson from its own questions,

@@ -979,9 +979,9 @@
               "prompt": "___ you help me?",
               "bank": [
                 "Could",
-                "Should",
-                "Must",
-                "Will"
+                "Ought",
+                "Does",
+                "Are"
               ],
               "answer": "Could",
               "explanation": "\"Could you…?\" is polite."
@@ -1875,7 +1875,7 @@
               "prompt": "If I ___ rich, I'd travel.",
               "bank": [
                 "were",
-                "be",
+                "are",
                 "will be",
                 "been"
               ],
@@ -1901,7 +1901,7 @@
               "prompt": "I ___ help if I could.",
               "bank": [
                 "would",
-                "helping",
+                "will",
                 "am",
                 "did"
               ],
@@ -3092,7 +3092,7 @@
               "bank": [
                 "goes",
                 "are",
-                "fly",
+                "is",
                 "plays"
               ],
               "answer": "are",
@@ -3638,9 +3638,9 @@
               "type": "fill",
               "prompt": "The cat is ___ the table.",
               "bank": [
+                "into",
+                "during",
                 "down",
-                "in",
-                "next to",
                 "under"
               ],
               "answer": "under",
@@ -3696,10 +3696,10 @@
               "type": "fill",
               "prompt": "The shop is ___ the bank.",
               "bank": [
-                "above",
-                "in",
-                "next to",
-                "opposite"
+                "into",
+                "during",
+                "down",
+                "next to"
               ],
               "answer": "next to",
               "explanation": "\"next to\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3794,9 +3794,9 @@
               "prompt": "The plane flies ___ the clouds.",
               "bank": [
                 "above",
+                "into",
                 "down",
-                "in",
-                "next to"
+                "during"
               ],
               "answer": "above",
               "explanation": "\"above\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3814,9 +3814,9 @@
               "prompt": "Walk ___ the bridge.",
               "choices": [
                 "across",
-                "at",
-                "by",
-                "on"
+                "down",
+                "into",
+                "during"
               ],
               "answer": 0,
               "explanation": "\"across\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3826,10 +3826,10 @@
               "type": "fill",
               "prompt": "The dog is ___ the door.",
               "bank": [
+                "into",
                 "down",
                 "behind",
-                "in",
-                "next to"
+                "during"
               ],
               "answer": "behind",
               "explanation": "\"behind\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3897,10 +3897,10 @@
               "type": "fill",
               "prompt": "The cafe is ___ the station.",
               "bank": [
-                "next to",
-                "in",
+                "during",
                 "down",
-                "opposite"
+                "opposite",
+                "into"
               ],
               "answer": "opposite",
               "explanation": "\"opposite\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -8119,7 +8119,7 @@
                 "washes",
                 "brushes",
                 "have",
-                "drives"
+                "has"
               ],
               "answer": 2,
               "explanation": "\"have\" is correct here. Simple present tense sentences describing a typical day."
@@ -12075,7 +12075,7 @@
                 "was",
                 "used",
                 "lost",
-                "were playing"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"was\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12118,10 +12118,10 @@
               "type": "fill",
               "prompt": "We ___ hear anything.",
               "bank": [
-                "used",
                 "didn't",
                 "were talking",
-                "got"
+                "got",
+                "does"
               ],
               "answer": "didn't",
               "explanation": "\"didn't\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12682,7 +12682,7 @@
                 "taken",
                 "try",
                 "does",
-                "delayed"
+                "do"
               ],
               "answer": 2,
               "explanation": "\"does\" is correct here. Fixed travel and shopping phrases."
@@ -13378,7 +13378,7 @@
               "prompt": "I think it ___ rain.",
               "bank": [
                 "starts",
-                "are",
+                "ought",
                 "going",
                 "will"
               ],
@@ -13393,7 +13393,7 @@
                 "will",
                 "starts",
                 "are",
-                "leaves"
+                "is"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13403,9 +13403,9 @@
               "type": "fill",
               "prompt": "She ___ meeting Tom at six.",
               "bank": [
-                "starts",
                 "is",
                 "going",
+                "am",
                 "will"
               ],
               "answer": "is",
@@ -13419,7 +13419,7 @@
                 "Will",
                 "going",
                 "starts",
-                "are"
+                "Ought"
               ],
               "answer": 0,
               "explanation": "\"Will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13462,7 +13462,7 @@
               "prompt": "They ___ probably be late.",
               "bank": [
                 "starts",
-                "are",
+                "ought",
                 "going",
                 "will"
               ],
@@ -13486,7 +13486,7 @@
               "prompt": "I ___ have the soup, please.",
               "bank": [
                 "are",
-                "leaves",
+                "ought",
                 "will",
                 "taking"
               ],
@@ -13501,7 +13501,7 @@
                 "going",
                 "leaves",
                 "are",
-                "won't"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13521,7 +13521,7 @@
                 "starts",
                 "going",
                 "will",
-                "are"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13547,7 +13547,7 @@
                 "won't",
                 "starts",
                 "going",
-                "having"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"won't\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13590,7 +13590,7 @@
               "type": "fill",
               "prompt": "___ we take a taxi?",
               "bank": [
-                "going",
+                "Ought",
                 "is",
                 "are",
                 "Shall"
@@ -13662,7 +13662,7 @@
               "bank": [
                 "having",
                 "won't",
-                "taking",
+                "ought",
                 "going"
               ],
               "answer": "won't",
@@ -13676,7 +13676,7 @@
                 "won't",
                 "leaves",
                 "are",
-                "taking"
+                "is"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13686,7 +13686,7 @@
               "type": "fill",
               "prompt": "I ___ call you when I arrive.",
               "bank": [
-                "having",
+                "ought",
                 "will",
                 "going",
                 "is"
@@ -13702,7 +13702,7 @@
                 "is",
                 "will",
                 "going",
-                "starts"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"is\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13712,7 +13712,7 @@
               "type": "fill",
               "prompt": "Nobody ___ notice.",
               "bank": [
-                "leaves",
+                "ought",
                 "are",
                 "will",
                 "taking"
@@ -14732,7 +14732,7 @@
             {
               "id": "a2p9q18",
               "type": "fill",
-              "prompt": "I have a ___ stomach.",
+              "prompt": "I have an ___ stomach.",
               "bank": [
                 "injured",
                 "upset",
@@ -15259,7 +15259,7 @@
                 "have",
                 "booked",
                 "included",
-                "book"
+                "does"
               ],
               "answer": 0,
               "explanation": "\"have\" is correct here. Common phrases for eating out."
@@ -15956,7 +15956,7 @@
               "prompt": "Go ___ at the traffic lights.",
               "bank": [
                 "round",
-                "around",
+                "near",
                 "up",
                 "straight"
               ],
@@ -16043,7 +16043,7 @@
                 "between",
                 "for",
                 "right",
-                "in"
+                "down"
               ],
               "answer": "between",
               "explanation": "\"between\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16067,9 +16067,9 @@
               "prompt": "The museum is just ___ the corner.",
               "bank": [
                 "left",
-                "around",
-                "along",
-                "under"
+                "for",
+                "turning",
+                "around"
               ],
               "answer": "around",
               "explanation": "\"around\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16125,10 +16125,10 @@
               "type": "mc",
               "prompt": "The hotel is ___ the city centre.",
               "choices": [
-                "around",
+                "right",
                 "walk",
                 "near",
-                "right"
+                "down"
               ],
               "answer": 2,
               "explanation": "\"near\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16184,10 +16184,10 @@
               "type": "mc",
               "prompt": "The car park is ___ the shopping centre.",
               "choices": [
-                "in",
+                "down",
                 "right",
                 "under",
-                "down"
+                "straight"
               ],
               "answer": 2,
               "explanation": "\"under\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16211,9 +16211,9 @@
               "prompt": "The pharmacy is ___ the corner from here.",
               "choices": [
                 "round",
-                "next",
-                "over",
-                "walk"
+                "walk",
+                "left",
+                "up"
               ],
               "answer": 0,
               "explanation": "\"round\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16243,10 +16243,10 @@
               "type": "fill",
               "prompt": "The bus stop is ___ the church.",
               "bank": [
+                "up",
                 "outside",
                 "straight",
-                "round",
-                "around"
+                "walk"
               ],
               "answer": "outside",
               "explanation": "\"outside\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16285,7 +16285,7 @@
                 "down",
                 "straight",
                 "inside",
-                "round"
+                "up"
               ],
               "answer": 2,
               "explanation": "\"inside\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16554,7 +16554,7 @@
               "prompt": "We should ___ this again sometime.",
               "bank": [
                 "manage",
-                "going",
+                "is",
                 "do",
                 "planning"
               ],
@@ -17431,10 +17431,10 @@
               "type": "fill",
               "prompt": "The cat is sitting ___ the table.",
               "bank": [
-                "against",
+                "through",
                 "under",
-                "down",
-                "in"
+                "alongside",
+                "down"
               ],
               "answer": "under",
               "explanation": "\"under\" is correct here. A2-level prepositions describing location."
@@ -17457,10 +17457,10 @@
               "type": "fill",
               "prompt": "She is standing ___ the door.",
               "bank": [
+                "through",
                 "behind",
-                "around",
-                "against",
-                "round"
+                "alongside",
+                "down"
               ],
               "answer": "behind",
               "explanation": "\"behind\" is correct here. A2-level prepositions describing location."
@@ -17483,10 +17483,10 @@
               "type": "fill",
               "prompt": "The park is ___ the school and the shop.",
               "bank": [
-                "on",
                 "into",
                 "between",
-                "by"
+                "past",
+                "down"
               ],
               "answer": "between",
               "explanation": "\"between\" is correct here. A2-level prepositions describing location."
@@ -17516,10 +17516,10 @@
               "type": "fill",
               "prompt": "The picture is hanging ___ the wall.",
               "bank": [
+                "through",
                 "against",
-                "near",
-                "above",
-                "in"
+                "alongside",
+                "down"
               ],
               "answer": "against",
               "explanation": "\"against\" is correct here. A2-level prepositions describing location."
@@ -17529,10 +17529,10 @@
               "type": "mc",
               "prompt": "The dog is running ___ the garden.",
               "choices": [
+                "through",
                 "alongside",
-                "opposite",
                 "around",
-                "between"
+                "into"
               ],
               "answer": 2,
               "explanation": "\"around\" is correct here. A2-level prepositions describing location."
@@ -17542,10 +17542,10 @@
               "type": "fill",
               "prompt": "The shop is right ___ the corner.",
               "bank": [
-                "among",
-                "over",
-                "round",
-                "in"
+                "through",
+                "into",
+                "alongside",
+                "round"
               ],
               "answer": "round",
               "explanation": "\"round\" is correct here. A2-level prepositions describing location."
@@ -17556,9 +17556,9 @@
               "prompt": "She parked the car ___ the building.",
               "choices": [
                 "outside",
-                "around",
-                "round",
-                "down"
+                "down",
+                "alongside",
+                "through"
               ],
               "answer": 0,
               "explanation": "\"outside\" is correct here. A2-level prepositions describing location."
@@ -17588,10 +17588,10 @@
               "type": "fill",
               "prompt": "The plane flew ___ the clouds.",
               "bank": [
+                "through",
                 "down",
-                "around",
                 "above",
-                "in"
+                "alongside"
               ],
               "answer": "above",
               "explanation": "\"above\" is correct here. A2-level prepositions describing location."
@@ -17601,10 +17601,10 @@
               "type": "mc",
               "prompt": "The cat hid ___ the sofa cushions.",
               "choices": [
-                "in",
-                "against",
+                "alongside",
+                "down",
                 "beneath",
-                "down"
+                "through"
               ],
               "answer": 2,
               "explanation": "\"beneath\" is correct here. A2-level prepositions describing location."
@@ -17629,8 +17629,8 @@
               "choices": [
                 "over",
                 "through",
-                "round",
-                "in"
+                "down",
+                "into"
               ],
               "answer": 0,
               "explanation": "\"over\" is correct here. A2-level prepositions describing location."
@@ -17673,9 +17673,9 @@
               "type": "fill",
               "prompt": "The lamp is ___ the desk.",
               "bank": [
-                "against",
+                "into",
                 "down",
-                "in",
+                "alongside",
                 "beside"
               ],
               "answer": "beside",
@@ -17687,9 +17687,9 @@
               "prompt": "She placed the vase ___ the window.",
               "choices": [
                 "near",
-                "against",
-                "in",
-                "down"
+                "down",
+                "into",
+                "alongside"
               ],
               "answer": 0,
               "explanation": "\"near\" is correct here. A2-level prepositions describing location."
@@ -17719,10 +17719,10 @@
               "type": "fill",
               "prompt": "The cinema is ___ the shopping centre.",
               "bank": [
-                "in",
+                "alongside",
                 "down",
-                "around",
-                "inside"
+                "inside",
+                "past"
               ],
               "answer": "inside",
               "explanation": "\"inside\" is correct here. A2-level prepositions describing location."
@@ -17734,8 +17734,8 @@
               "choices": [
                 "among",
                 "into",
-                "by",
-                "in"
+                "down",
+                "alongside"
               ],
               "answer": 0,
               "explanation": "\"among\" is correct here. A2-level prepositions describing location."
@@ -17771,10 +17771,10 @@
               "type": "fill",
               "prompt": "The path leads ___ the forest.",
               "bank": [
-                "in",
+                "into",
                 "down",
                 "towards",
-                "by"
+                "past"
               ],
               "answer": "towards",
               "explanation": "\"towards\" is correct here. A2-level prepositions describing location."
@@ -18169,7 +18169,7 @@
               "type": "fill",
               "prompt": "I ___ swim very well when I was younger.",
               "bank": [
-                "to",
+                "ought",
                 "may",
                 "could",
                 "can"
@@ -18182,10 +18182,10 @@
               "type": "mc",
               "prompt": "___ I open the window, please?",
               "choices": [
-                "is",
-                "to",
+                "used",
+                "ought",
                 "may",
-                "does"
+                "may to"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18195,9 +18195,9 @@
               "type": "fill",
               "prompt": "She ___ speak three languages fluently.",
               "bank": [
-                "does",
-                "is",
-                "to",
+                "ought",
+                "used",
+                "can to",
                 "can"
               ],
               "answer": "can",
@@ -18209,9 +18209,9 @@
               "prompt": "___ you help me carry this bag?",
               "choices": [
                 "could",
-                "to",
-                "is",
-                "does"
+                "ought",
+                "used",
+                "could to"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18221,9 +18221,9 @@
               "type": "fill",
               "prompt": "We ___ leave early if we finish the work.",
               "bank": [
-                "does",
-                "is",
-                "to",
+                "ought",
+                "used",
+                "can to",
                 "can"
               ],
               "answer": "can",
@@ -18241,10 +18241,10 @@
               "type": "mc",
               "prompt": "___ I use your phone for a moment?",
               "choices": [
-                "is",
-                "to",
+                "used",
+                "ought",
                 "may",
-                "does"
+                "may to"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18254,7 +18254,7 @@
               "type": "fill",
               "prompt": "He ___ ride a bike when he was five.",
               "bank": [
-                "to",
+                "ought",
                 "may",
                 "could",
                 "can"
@@ -18280,10 +18280,10 @@
               "type": "fill",
               "prompt": "___ I ask you a question?",
               "bank": [
-                "does",
-                "is",
+                "ought",
+                "may to",
                 "may",
-                "to"
+                "used"
               ],
               "answer": "may",
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18296,7 +18296,7 @@
                 "may",
                 "can",
                 "could",
-                "to"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18326,10 +18326,10 @@
               "type": "fill",
               "prompt": "___ you pass me the salt, please?",
               "bank": [
-                "does",
                 "could",
-                "is",
-                "to"
+                "ought",
+                "could to",
+                "used"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18353,9 +18353,9 @@
               "prompt": "He ___ not swim before he took lessons.",
               "bank": [
                 "could",
-                "is",
-                "to",
-                "can"
+                "ought",
+                "can",
+                "used"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18365,10 +18365,10 @@
               "type": "mc",
               "prompt": "___ I sit here, or is this seat taken?",
               "choices": [
-                "is",
-                "to",
+                "used",
+                "ought",
                 "may",
-                "does"
+                "may to"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18401,7 +18401,7 @@
                 "could",
                 "can",
                 "may",
-                "to"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18411,10 +18411,10 @@
               "type": "fill",
               "prompt": "___ we borrow your umbrella, please?",
               "bank": [
-                "does",
                 "could",
-                "is",
-                "to"
+                "ought",
+                "could to",
+                "used"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18424,10 +18424,10 @@
               "type": "mc",
               "prompt": "He ___ lift very heavy weights at the gym.",
               "choices": [
-                "is",
-                "to",
+                "used",
+                "ought",
                 "can",
-                "does"
+                "can to"
               ],
               "answer": 2,
               "explanation": "\"can\" is correct here. A2-level modal verbs for ability and permission."
@@ -18437,10 +18437,10 @@
               "type": "fill",
               "prompt": "___ I leave the room for a moment?",
               "bank": [
-                "does",
+                "may to",
                 "may",
-                "is",
-                "to"
+                "ought",
+                "used"
               ],
               "answer": "may",
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18458,8 +18458,8 @@
               "prompt": "They ___ not afford the tickets last year.",
               "bank": [
                 "may",
-                "to",
                 "can",
+                "ought",
                 "could"
               ],
               "answer": "could",
@@ -18483,10 +18483,10 @@
               "type": "fill",
               "prompt": "___ you show me the way to the station?",
               "bank": [
-                "is",
-                "to",
+                "used",
+                "ought",
                 "could",
-                "does"
+                "could to"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18499,7 +18499,7 @@
                 "could",
                 "may",
                 "can",
-                "to"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18509,10 +18509,10 @@
               "type": "fill",
               "prompt": "I ___ help you with your homework if you want.",
               "bank": [
-                "is",
-                "to",
+                "used",
                 "can",
-                "does"
+                "ought",
+                "can to"
               ],
               "answer": "can",
               "explanation": "\"can\" is correct here. A2-level modal verbs for ability and permission."
@@ -20209,7 +20209,7 @@
               "prompt": "If it rains, we ___ stay home.",
               "bank": [
                 "am",
-                "could",
+                "would",
                 "worked",
                 "will"
               ],
@@ -20224,7 +20224,7 @@
                 "were",
                 "would",
                 "will",
-                "melts"
+                "is"
               ],
               "answer": 0,
               "explanation": "\"were\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20282,8 +20282,8 @@
               "choices": [
                 "would",
                 "were",
-                "is",
-                "call"
+                "will",
+                "is"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20293,9 +20293,9 @@
               "type": "fill",
               "prompt": "Unless you hurry, you ___ miss it.",
               "bank": [
-                "call",
                 "were",
                 "die",
+                "ought",
                 "will"
               ],
               "answer": "will",
@@ -20309,7 +20309,7 @@
                 "tell",
                 "tried",
                 "were",
-                "will"
+                "is"
               ],
               "answer": 2,
               "explanation": "\"were\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20335,7 +20335,7 @@
                 "will",
                 "die",
                 "call",
-                "won"
+                "would"
               ],
               "answer": 0,
               "explanation": "\"will\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20355,7 +20355,7 @@
                 "were",
                 "die",
                 "will",
-                "would"
+                "is"
               ],
               "answer": 0,
               "explanation": "\"were\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20393,8 +20393,8 @@
               "bank": [
                 "would",
                 "tried",
-                "melts",
-                "could"
+                "will",
+                "melts"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20496,7 +20496,7 @@
               "type": "fill",
               "prompt": "Provided you pay, we ___ deliver.",
               "bank": [
-                "were",
+                "ought",
                 "worked",
                 "will",
                 "had"
@@ -20525,7 +20525,7 @@
                 "will",
                 "is",
                 "had left",
-                "am"
+                "would"
               ],
               "answer": "will",
               "explanation": "\"will\" is correct here. First conditional: if + present, will. Second: if + past, would."
@@ -20579,8 +20579,8 @@
               "choices": [
                 "should",
                 "can",
-                "may",
-                "need"
+                "had",
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"should\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20603,10 +20603,10 @@
               "type": "mc",
               "prompt": "Visitors ___ wear a badge.",
               "choices": [
+                "can't",
                 "can",
-                "might",
                 "must",
-                "can't"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"must\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20630,9 +20630,9 @@
               "prompt": "She ___ be at work now.",
               "choices": [
                 "might",
-                "should",
-                "must",
-                "needn't"
+                "had",
+                "ought",
+                "used"
               ],
               "answer": 0,
               "explanation": "\"might\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20662,10 +20662,10 @@
               "type": "mc",
               "prompt": "He ___ have missed the train.",
               "choices": [
-                "should",
-                "Would",
+                "had",
+                "ought",
                 "may",
-                "must"
+                "used"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20675,9 +20675,9 @@
               "type": "fill",
               "prompt": "You ___ have told me!",
               "bank": [
-                "may",
                 "should",
-                "must",
+                "ought",
+                "had",
                 "can"
               ],
               "answer": "should",
@@ -20747,9 +20747,9 @@
               "type": "fill",
               "prompt": "It ___ be true; I saw it.",
               "bank": [
+                "had",
                 "ought",
-                "would",
-                "needn't",
+                "can",
                 "must"
               ],
               "answer": "must",
@@ -20761,9 +20761,9 @@
               "prompt": "___ I open the window?",
               "choices": [
                 "May",
-                "must",
-                "needn't",
-                "Would"
+                "ought",
+                "had",
+                "Used"
               ],
               "answer": 0,
               "explanation": "\"May\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20775,7 +20775,7 @@
               "bank": [
                 "had",
                 "can't",
-                "might",
+                "has",
                 "must"
               ],
               "answer": "had",
@@ -20793,10 +20793,10 @@
               "type": "mc",
               "prompt": "She ___ have forgotten.",
               "choices": [
-                "must",
-                "would",
+                "had",
+                "ought",
                 "could",
-                "should"
+                "used"
               ],
               "answer": 2,
               "explanation": "\"could\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20806,10 +20806,10 @@
               "type": "fill",
               "prompt": "You ___ to apologise.",
               "bank": [
-                "Would",
+                "had",
+                "ought",
                 "need",
-                "needn't",
-                "must"
+                "can't"
               ],
               "answer": "need",
               "explanation": "\"need\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20820,9 +20820,9 @@
               "prompt": "Passengers ___ remain seated.",
               "choices": [
                 "must",
-                "could",
-                "Would",
-                "need"
+                "can",
+                "can't",
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"must\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20845,10 +20845,10 @@
               "type": "mc",
               "prompt": "___ you mind helping?",
               "choices": [
-                "should",
-                "could",
+                "ought",
+                "had",
                 "Would",
-                "had"
+                "can't"
               ],
               "answer": 2,
               "explanation": "\"Would\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20865,10 +20865,10 @@
               "type": "mc",
               "prompt": "I ___ rather stay home.",
               "choices": [
-                "must",
-                "may",
+                "can't",
+                "ought",
                 "would",
-                "ought"
+                "can"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20879,9 +20879,9 @@
               "prompt": "They ___ have arrived by now.",
               "bank": [
                 "should",
-                "need",
-                "Would",
-                "may"
+                "had",
+                "can't",
+                "ought"
               ],
               "answer": "should",
               "explanation": "\"should\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20892,9 +20892,9 @@
               "prompt": "You ___ be joking.",
               "choices": [
                 "must",
-                "could",
-                "Would",
-                "need"
+                "can",
+                "can't",
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"must\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20917,10 +20917,10 @@
               "type": "mc",
               "prompt": "___ you like some tea?",
               "choices": [
-                "may",
-                "must",
+                "had",
+                "can",
                 "Would",
-                "need"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"Would\" is correct here. Modals express degree of certainty, permission, or obligation."
@@ -20947,7 +20947,7 @@
               "prompt": "I ___ never been to Japan.",
               "bank": [
                 "have lost",
-                "read",
+                "has",
                 "saw",
                 "have"
               ],
@@ -21313,7 +21313,7 @@
             {
               "id": "b1p5q0",
               "type": "mc",
-              "prompt": "Which word completes \"make a ___ (job application)\"?",
+              "prompt": "Which word completes \"make an ___ (job application)\"?",
               "choices": [
                 "conclusion",
                 "meeting",
@@ -21321,7 +21321,7 @@
                 "challenge"
               ],
               "answer": 2,
-              "explanation": "make a ___ (job application) → application. Collocations make speech sound natural."
+              "explanation": "make an ___ (job application) → application. Collocations make speech sound natural."
             },
             {
               "id": "b1p5q1",
@@ -25018,8 +25018,8 @@
               "choices": [
                 "would",
                 "used",
-                "to",
-                "is"
+                "ought",
+                "would to"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25040,10 +25040,10 @@
               "type": "mc",
               "prompt": "He ___ play football every weekend as a teenager.",
               "choices": [
-                "to",
+                "ought",
                 "used",
                 "would",
-                "is"
+                "would to"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25073,8 +25073,8 @@
               "choices": [
                 "would",
                 "used",
-                "to",
-                "is"
+                "ought",
+                "would to"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25095,10 +25095,10 @@
               "type": "mc",
               "prompt": "We ___ spend hours playing outside after school.",
               "choices": [
-                "to",
+                "ought",
                 "used",
                 "would",
-                "is"
+                "would to"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25121,8 +25121,8 @@
               "choices": [
                 "would",
                 "used",
-                "to",
-                "is"
+                "ought",
+                "would to"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25161,10 +25161,10 @@
               "type": "mc",
               "prompt": "They ___ meet at the same café every Friday.",
               "choices": [
-                "to",
+                "ought",
                 "used",
                 "would",
-                "is"
+                "would to"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25203,10 +25203,10 @@
               "type": "fill",
               "prompt": "We ___ stay up late telling stories.",
               "bank": [
-                "is",
                 "used",
                 "would",
-                "to"
+                "ought",
+                "would to"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25227,10 +25227,10 @@
               "type": "fill",
               "prompt": "He ___ complain about the weather every winter.",
               "bank": [
-                "is",
                 "used",
+                "ought",
                 "would",
-                "to"
+                "would to"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25271,8 +25271,8 @@
               "bank": [
                 "used",
                 "would",
-                "to",
-                "is"
+                "ought",
+                "would to"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25304,10 +25304,10 @@
               "type": "mc",
               "prompt": "I ___ collect stamps when I was younger.",
               "choices": [
-                "to",
+                "ought",
                 "used",
                 "would",
-                "is"
+                "would to"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B1-level structures for talking about past habits."
@@ -25373,7 +25373,7 @@
                 "can't",
                 "aren't",
                 "doesn't",
-                "has"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"can't\" is correct here. B1-level question tag practice."
@@ -25615,7 +25615,7 @@
                 "would",
                 "aren't",
                 "were",
-                "hasn't"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B1-level question tag practice."
@@ -25635,7 +25635,7 @@
                 "couldn't",
                 "aren't",
                 "were",
-                "hasn't"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"couldn't\" is correct here. B1-level question tag practice."
@@ -25971,7 +25971,7 @@
                 "think",
                 "hear",
                 "can't",
-                "see"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"can't\" is correct here. B1-level phrases for discussion and debate."
@@ -28232,8 +28232,8 @@
               "type": "fill",
               "prompt": "She ___ said to be brilliant.",
               "bank": [
-                "can",
                 "thought",
+                "am",
                 "is",
                 "will be"
               ],
@@ -28268,7 +28268,7 @@
                 "were",
                 "can",
                 "repairing",
-                "hurt"
+                "is"
               ],
               "answer": 0,
               "explanation": "\"were\" is correct here. Passive = be + past participle; the doer becomes optional."
@@ -28294,7 +28294,7 @@
                 "can",
                 "will be",
                 "is",
-                "repairing"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"is\" is correct here. Passive = be + past participle; the doer becomes optional."
@@ -28320,7 +28320,7 @@
                 "must",
                 "is",
                 "being",
-                "was"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"must\" is correct here. Passive = be + past participle; the doer becomes optional."
@@ -28461,7 +28461,7 @@
               "type": "fill",
               "prompt": "Nothing ___ be done about it.",
               "bank": [
-                "has",
+                "ought",
                 "have",
                 "is",
                 "can"
@@ -29231,7 +29231,7 @@
                 "was",
                 "making",
                 "would",
-                "to"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"was\" is correct here. Tenses usually shift back one step when reporting."
@@ -29257,7 +29257,7 @@
                 "started",
                 "to",
                 "would",
-                "being"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. Tenses usually shift back one step when reporting."
@@ -29388,7 +29388,7 @@
                 "would",
                 "lived",
                 "was",
-                "taking"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"was\" is correct here. Tenses usually shift back one step when reporting."
@@ -29414,7 +29414,7 @@
                 "would",
                 "to",
                 "had",
-                "taking"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. Tenses usually shift back one step when reporting."
@@ -29447,7 +29447,7 @@
                 "taking",
                 "would",
                 "had",
-                "started"
+                "have"
               ],
               "answer": 2,
               "explanation": "\"had\" is correct here. Tenses usually shift back one step when reporting."
@@ -29555,10 +29555,10 @@
               "type": "fill",
               "prompt": "She confirmed that she ___ attend.",
               "bank": [
+                "ought",
                 "would",
                 "taking",
-                "had",
-                "to"
+                "had"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. Tenses usually shift back one step when reporting."
@@ -30508,7 +30508,7 @@
                 "was",
                 "taking",
                 "to",
-                "if"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"was\" is correct here. Reported speech shifts tense back and changes time and place words."
@@ -30593,7 +30593,7 @@
                 "was",
                 "came",
                 "would",
-                "leaving"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. Reported speech shifts tense back and changes time and place words."
@@ -30639,7 +30639,7 @@
                 "doing",
                 "out",
                 "was",
-                "how"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"was\" is correct here. Reported speech shifts tense back and changes time and place words."
@@ -30649,7 +30649,7 @@
               "type": "fill",
               "prompt": "They confirmed the flight ___ been delayed.",
               "bank": [
-                "doing",
+                "have",
                 "not",
                 "had",
                 "to"
@@ -34420,10 +34420,10 @@
               "type": "fill",
               "prompt": "If he had taken the job, he ___ be living abroad now.",
               "bank": [
-                "had",
                 "had been",
                 "would",
-                "had studied"
+                "had studied",
+                "wouldn't"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B2-level mixed conditional structures."
@@ -34449,7 +34449,7 @@
                 "had",
                 "had been",
                 "would",
-                "had studied"
+                "wouldn't"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B2-level mixed conditional structures."
@@ -34519,9 +34519,9 @@
               "prompt": "If she were more confident, she ___ have taken the promotion.",
               "choices": [
                 "would",
+                "wouldn't",
                 "had studied",
-                "had",
-                "had been"
+                "had"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B2-level mixed conditional structures."
@@ -34540,8 +34540,8 @@
               "choices": [
                 "would",
                 "had studied",
-                "had been",
-                "had"
+                "wouldn't",
+                "had been"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B2-level mixed conditional structures."
@@ -34564,10 +34564,10 @@
               "type": "mc",
               "prompt": "If he had trained harder, he ___ be a professional athlete now.",
               "choices": [
-                "had studied",
+                "wouldn't",
                 "had been",
                 "would",
-                "had"
+                "had studied"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B2-level mixed conditional structures."
@@ -34578,7 +34578,7 @@
               "prompt": "If we ___ checked the weather, we wouldn't be stuck in the rain.",
               "bank": [
                 "had",
-                "had studied",
+                "has",
                 "had been",
                 "would"
               ],
@@ -34626,7 +34626,7 @@
                 "had been",
                 "would",
                 "had",
-                "had studied"
+                "have"
               ],
               "answer": 2,
               "explanation": "\"had\" is correct here. B2-level mixed conditional structures."
@@ -34663,8 +34663,8 @@
               "prompt": "If she were taller, she ___ have made the basketball team.",
               "bank": [
                 "had",
+                "wouldn't",
                 "had studied",
-                "had been",
                 "would"
               ],
               "answer": "would",
@@ -34682,10 +34682,10 @@
               "type": "fill",
               "prompt": "If we had planned better, we ___ be so stressed right now.",
               "bank": [
+                "would",
                 "had studied",
                 "wouldn't",
-                "had been",
-                "had"
+                "had been"
               ],
               "answer": "wouldn't",
               "explanation": "\"wouldn't\" is correct here. B2-level mixed conditional structures."
@@ -34710,7 +34710,7 @@
               "bank": [
                 "had studied",
                 "wouldn't",
-                "had been",
+                "has",
                 "had"
               ],
               "answer": "had",
@@ -34734,9 +34734,9 @@
               "type": "fill",
               "prompt": "If they were more organised, they ___ have missed the deadline.",
               "bank": [
+                "would",
                 "had studied",
                 "wouldn't",
-                "had been",
                 "had"
               ],
               "answer": "wouldn't",
@@ -34792,7 +34792,7 @@
                 "weren't",
                 "had",
                 "would",
-                "had made"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -34804,8 +34804,8 @@
               "bank": [
                 "would",
                 "weren't",
-                "had",
-                "could"
+                "will",
+                "had"
               ],
               "answer": "would",
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -34851,7 +34851,7 @@
                 "were",
                 "had been",
                 "would",
-                "had"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -34876,8 +34876,8 @@
               "choices": [
                 "weren't",
                 "would",
-                "had been",
-                "could"
+                "could",
+                "were"
               ],
               "answer": 0,
               "explanation": "\"weren't\" is correct here. B2-level wish structures."
@@ -34933,7 +34933,7 @@
               "type": "fill",
               "prompt": "I wish you ___ stop smoking.",
               "bank": [
-                "could",
+                "ought",
                 "weren't",
                 "had",
                 "would"
@@ -34982,7 +34982,7 @@
                 "weren't",
                 "had",
                 "would",
-                "were"
+                "will"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -35008,7 +35008,7 @@
                 "were",
                 "had made",
                 "would",
-                "had been"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"were\" is correct here. B2-level wish structures."
@@ -35019,7 +35019,7 @@
               "prompt": "I wish they ___ visit more often.",
               "bank": [
                 "were",
-                "could",
+                "ought",
                 "would",
                 "had been"
               ],
@@ -35054,7 +35054,7 @@
                 "would",
                 "had",
                 "weren't",
-                "had been"
+                "could"
               ],
               "answer": 2,
               "explanation": "\"weren't\" is correct here. B2-level wish structures."
@@ -35080,7 +35080,7 @@
                 "would",
                 "were",
                 "had been",
-                "had"
+                "ought"
               ],
               "answer": 0,
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -35106,7 +35106,7 @@
                 "were",
                 "had been",
                 "would",
-                "had"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"would\" is correct here. B2-level wish structures."
@@ -37224,8 +37224,8 @@
               "prompt": "Under no circumstances ___ you leave.",
               "bank": [
                 "did",
+                "ought",
                 "should",
-                "had",
                 "known"
               ],
               "answer": "should",
@@ -37429,7 +37429,7 @@
                 "did",
                 "does",
                 "can",
-                "is"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"can\" is correct here. Fronted negatives and adverbials trigger question word order."
@@ -37459,9 +37459,9 @@
               "type": "fill",
               "prompt": "On no account ___ the door be opened.",
               "bank": [
+                "can",
                 "was",
                 "must",
-                "should",
                 "has"
               ],
               "answer": "must",
@@ -38292,8 +38292,8 @@
               "prompt": "This ___ be attributed to sampling error.",
               "bank": [
                 "may",
+                "ought",
                 "warrants",
-                "seems",
                 "do not necessarily"
               ],
               "answer": "may",
@@ -38449,7 +38449,7 @@
               "prompt": "One ___ argue the opposite.",
               "bank": [
                 "seems",
-                "not fully",
+                "ought",
                 "could",
                 "appear to"
               ],
@@ -38464,7 +38464,7 @@
                 "appears",
                 "do not necessarily",
                 "might",
-                "seems"
+                "ought"
               ],
               "answer": 2,
               "explanation": "\"might\" is correct here. Hedging protects claims from overstatement."
@@ -41984,7 +41984,7 @@
                 "not",
                 "later",
                 "is",
-                "that"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"is\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42010,7 +42010,7 @@
                 "was",
                 "that",
                 "who",
-                "not"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"was\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42043,7 +42043,7 @@
                 "later",
                 "that",
                 "is",
-                "not"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"is\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42079,8 +42079,8 @@
               "type": "fill",
               "prompt": "It ___ the weather that ruined our plans.",
               "bank": [
-                "that",
                 "was",
+                "am",
                 "who",
                 "not"
               ],
@@ -42125,8 +42125,8 @@
               "type": "fill",
               "prompt": "What matters most to me ___ my family's happiness.",
               "bank": [
-                "it",
                 "is",
+                "am",
                 "not",
                 "that"
               ],
@@ -42152,8 +42152,8 @@
               "prompt": "What I admire about her ___ her determination.",
               "bank": [
                 "who",
+                "am",
                 "is",
-                "not",
                 "that"
               ],
               "answer": "is",
@@ -42186,8 +42186,8 @@
               "bank": [
                 "who",
                 "was",
-                "that",
-                "not"
+                "am",
+                "that"
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42210,8 +42210,8 @@
               "type": "fill",
               "prompt": "What she really meant ___ something quite different.",
               "bank": [
-                "who",
                 "was",
+                "am",
                 "that",
                 "not"
               ],
@@ -42236,8 +42236,8 @@
               "type": "fill",
               "prompt": "What impressed the judges most ___ his confidence.",
               "bank": [
-                "who",
                 "was",
+                "am",
                 "not",
                 "that"
               ],
@@ -42257,9 +42257,9 @@
               "prompt": "It ___ the traffic, not the weather, that delayed us.",
               "bank": [
                 "that",
+                "am",
                 "was",
-                "who",
-                "not"
+                "who"
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42272,7 +42272,7 @@
                 "who",
                 "it",
                 "is",
-                "that"
+                "am"
               ],
               "answer": 2,
               "explanation": "\"is\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42298,7 +42298,7 @@
                 "is",
                 "not",
                 "colleague",
-                "that"
+                "am"
               ],
               "answer": 0,
               "explanation": "\"is\" is correct here. C1-level cleft sentence structures for emphasis."
@@ -42309,7 +42309,7 @@
               "prompt": "It ___ exactly what I expected.",
               "bank": [
                 "that",
-                "who",
+                "am",
                 "was",
                 "not"
               ],

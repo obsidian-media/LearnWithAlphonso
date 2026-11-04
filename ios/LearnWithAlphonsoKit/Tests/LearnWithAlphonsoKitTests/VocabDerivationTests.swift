@@ -49,6 +49,23 @@ final class VocabDerivationTests: XCTestCase {
         }
     }
 
+    // Mirrors "tidies the sentence" in src/data/vocab.test.ts.
+    func testTidiesTheSentence() {
+        func example(_ prompt: String, _ answer: String) -> String? {
+            let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
+                mc(id: "q1", prompt: prompt, choices: [answer, "x", "y"], answer: 0, explanation: "e"),
+            ])
+            return deriveVocab(lesson: lesson, images: [:]).first?.example
+        }
+        XCTAssertEqual(example("Is this seat ___ ?", "taken"), "Is this seat taken?")
+        XCTAssertEqual(example("While we ___ , the phone rang.", "were talking"), "While we were talking, the phone rang.")
+        XCTAssertEqual(example("___ I open the window, please?", "may"), "May I open the window, please?")
+        XCTAssertEqual(example("Je ___ (boire) de l'eau.", "bois"), "Je bois de l'eau.")
+        XCTAssertEqual(example("It's ___ past six. (30 min)", "half"), "It's half past six.")
+        // French keeps its own space before ? elsewhere; only the join is tidied.
+        XCTAssertEqual(example("Excusez-moi, où est la gare ? Et ___ ?", "vous"), "Excusez-moi, où est la gare ? Et vous?")
+    }
+
     func testAPromptWithNoBlankGivesNoExample() {
         let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
             fill(id: "q1", prompt: "Translate hello", bank: [], answer: "hola", explanation: "Greeting."),

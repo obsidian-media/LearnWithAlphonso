@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import { ANSWER_POS, PACK_ANSWER_POS } from "./answer-pos";
+import { clearlyWrongFor } from "./also-correct";
 
 /**
  * The effective class of a word for a given pack: a hand label if that pack has
@@ -23,15 +24,12 @@ function posIn(packId: string, word: string): string | undefined {
  * Exactly that happened once: 12 words lost their tags, the ratio moved from
  * 0.0361 to 0.0269, and 43 questions across 11 packs got worse.
  *
- * Measured at 521. It was 482 before also-correct.ts: that filter drops a wrong
- * answer that is really a right one and fills the gap with a clearly wrong form
- * ("is" for "They ___", "during" for a place slot, ...). Those 39 supplements are
- * appended AFTER ranking, so rank() never sees them and they cannot be promoted
- * over a better candidate; they are untagged by construction, not by tag loss.
- * Set AT the measured value, not above it, so any future loss of coverage trips
- * it rather than being absorbed by slack.
+ * Measured at 482. Fillers from also-correct.ts (clearlyWrongFor) are not counted:
+ * they are appended after ranking, so they cannot be promoted, and they are
+ * untagged by construction. Set AT the measured value, not above it, so any
+ * future loss of coverage trips it rather than being absorbed by slack.
  */
-const UNTAGGED_CANDIDATE_BUDGET = 521;
+const UNTAGGED_CANDIDATE_BUDGET = 482;
 
 function choicesFor(key: string): string[] {
   const ref = getCourse("en").questionIndex[key];
@@ -144,6 +142,9 @@ describe("English distractor plausibility", () => {
         if (choice === answer) continue;
         const pos = posIn(packId, choice);
         if (!pos) {
+          // A clearly-wrong filler from also-correct.ts is appended after ranking,
+          // so it can never be promoted over a better candidate: not tag loss.
+          if (clearlyWrongFor(q.prompt, answer!).includes(choice)) continue;
           // Skipped by the ratio, but NOT harmless: rank() treats this as a
           // perfect match, so it is offered ahead of a known wrong-class word.
           // Counted separately so tag loss cannot hide in the denominator.

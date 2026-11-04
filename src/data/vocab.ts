@@ -44,7 +44,16 @@ function exampleOf(q: Question): string {
   const blank = q.prompt.indexOf("___");
   if (blank < 0 || !answer || STEM.test(q.prompt.trim())) return "";
   if (/[:?…"“]$/.test(q.prompt.slice(0, blank).trim())) return "";
-  return q.prompt.replace("___", answer);
+  // Tidy the join. Drop every bracket hint after the blank ("Je ___ (boire) ...",
+  // "C'est mon livre (à moi).", "... six. (30 min)"), and the space the
+  // data leaves between the blank and its punctuation ("taken ?"). French keeps its
+  // own spaces before ? and ! elsewhere in the sentence; only the join is tidied.
+  const after = q.prompt
+    .slice(blank + 3)
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/^\s+(?=[?!.,;:])/, "");
+  const sentence = q.prompt.slice(0, blank) + answer + after;
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
 function titleCaseKey(s: string) {

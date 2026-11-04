@@ -767,7 +767,7 @@ const foundationUnits: Unit[] = [
             id: "q2",
             type: "fill",
             prompt: "___ you help me?",
-            bank: ["Could", "Should", "Must", "Will"],
+            bank: ["Could", "Ought", "Does", "Are"],
             answer: "Could",
             explanation: '"Could you…?" is polite.',
           },

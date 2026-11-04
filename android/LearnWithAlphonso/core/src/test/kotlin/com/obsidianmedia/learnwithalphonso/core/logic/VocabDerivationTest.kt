@@ -76,4 +76,19 @@ class VocabDerivationTest {
         assertEquals("u", items[1].image?.url)
         assertNull(items[0].image)
     }
+
+    @Test
+    fun `tidies the sentence - no space before punctuation, capital first letter, no bracket hint`() {
+        fun example(prompt: String, answer: String): String =
+            deriveVocab(
+                Lesson("l", "t", "s", listOf(Question.MultipleChoice("q", prompt, listOf(answer, "x", "y"), 0, "e"))),
+                emptyMap(),
+            )[0].example
+        assertEquals("Is this seat taken?", example("Is this seat ___ ?", "taken"))
+        assertEquals("While we were talking, the phone rang.", example("While we ___ , the phone rang.", "were talking"))
+        assertEquals("May I open the window, please?", example("___ I open the window, please?", "may"))
+        assertEquals("Je bois de l'eau.", example("Je ___ (boire) de l'eau.", "bois"))
+        assertEquals("It's half past six.", example("It's ___ past six. (30 min)", "half"))
+        assertEquals("Excusez-moi, où est la gare ? Et vous?", example("Excusez-moi, où est la gare ? Et ___ ?", "vous"))
+    }
 }
