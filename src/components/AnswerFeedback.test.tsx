@@ -123,6 +123,8 @@ describe("AnswerFeedback saving words", () => {
       </SaveWordProvider>,
     );
     expect(screen.queryAllByRole("button")).toHaveLength(0);
+    // No spans, so no promise that anything can be tapped.
+    expect(screen.queryByText(/save it/i)).not.toBeInTheDocument();
   });
 
   it("stays plain when the page did not say which course it is", () => {

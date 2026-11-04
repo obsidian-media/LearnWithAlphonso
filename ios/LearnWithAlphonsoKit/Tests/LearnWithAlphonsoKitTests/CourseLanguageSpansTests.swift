@@ -76,23 +76,60 @@ final class CourseLanguageSpansTests: XCTestCase {
             ])
     }
 
-    /// The same counts the web test sees over the same exported curriculum: the two implementations
-    /// cannot drift apart without one of these failing. (Web: fr 1500, es 1810.)
-    func testRealCurriculumYieldsTheSameSpansAsTheWeb() throws {
+    /// The web implementation's exact spans and positions for every French and Spanish question
+    /// (Fixtures/save-word-spans.fixtures.json, a byte-for-byte copy guarded by
+    /// src/lib/save-word-spans-fixture.test.ts). Every question must give the same spans, in the same places;
+    /// a question absent from the fixture must give none.
+    func testRealCurriculumMatchesTheWebFixtureExactly() throws {
+        let url = try XCTUnwrap(
+            Bundle.module.url(forResource: "save-word-spans.fixtures", withExtension: "json", subdirectory: "Fixtures"))
+        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: [String: [String: Any]]])
         let store = try ContentStore()
-        for (bundle, expected) in [(store.french, 1500), (store.spanish, 1810)] {
-            var total = 0
+        for (code, bundle) in [("fr", store.french), ("es", store.spanish)] {
+            let expected = try XCTUnwrap(root[code])
+            var seen = 0
             for unit in bundle.units {
                 for lesson in unit.lessons {
-                    for q in lesson.questions { total += CourseLanguageSpans.spans(for: q, explanation: q.explanationText).count }
+                    for q in lesson.questions {
+                        let key = "\(lesson.id):\(q.idText)"
+                        let spans = CourseLanguageSpans.spans(for: q, explanation: q.explanationText)
+                        let entry = expected[key]
+                        XCTAssertEqual(spans, entry?["spans"] as? [String] ?? [], "\(code) \(key)")
+                        guard let entry else { continue }
+                        seen += 1
+                        let pieces = CourseLanguageSpans.split(q.explanationText, spans: spans)
+                        let want = try XCTUnwrap(entry["pieces"] as? [[Any]], key)
+                        XCTAssertEqual(pieces.map(\.text), want.map { $0[0] as? String ?? "" }, "\(code) \(key)")
+                        XCTAssertEqual(pieces.map { $0.isCourseLanguage ? 1 : 0 }, want.map { $0[1] as? Int ?? -1 }, "\(code) \(key)")
+                    }
                 }
             }
-            XCTAssertEqual(total, expected)
+            XCTAssertEqual(seen, expected.count, code)
+        }
+    }
+
+    /// Positions, not just strings: the word before an arrow is the English side and is never tappable.
+    func testTextBeforeAnArrowIsNeverTappable() {
+        for piece in CourseLanguageSpans.split("hello (informal) → Salut. Core greetings.", spans: ["Salut"])
+        where piece.isCourseLanguage {
+            XCTAssertFalse(piece.text.contains("→"))
+            XCTAssertEqual(piece.text, "Salut")
         }
     }
 }
 
 private extension Question {
+    var idText: String {
+        switch self {
+        case .multipleChoice(let q): return q.id
+        case .fillInBlank(let q): return q.id
+        case .reorder(let q): return q.id
+        case .listening(let q): return q.id
+        case .speak(let q): return q.id
+        case .translate(let q): return q.id
+        }
+    }
+
     var explanationText: String {
         switch self {
         case .multipleChoice(let q): return q.explanation

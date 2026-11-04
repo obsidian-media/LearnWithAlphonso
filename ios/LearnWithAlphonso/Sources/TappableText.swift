@@ -30,7 +30,12 @@ struct TappableText: View {
 
     /// The text cut into pieces; with no `courseSpans` it is one piece in which every word is linkable.
     private var pieces: [CourseLanguageSpans.Piece] {
-        guard let courseSpans else { return [.init(text: text, isCourseLanguage: true)] }
+        // No spans means "the whole text is in the course's language", which is true only of the English
+        // course. For any other course it means nothing is linkable, so a caller that forgets the spans
+        // can never offer English words under French or Spanish.
+        guard let courseSpans else {
+            return [.init(text: text, isCourseLanguage: SavedWordPolicy.savesWholeText(inCourse: course))]
+        }
         return CourseLanguageSpans.split(text, spans: courseSpans)
     }
 

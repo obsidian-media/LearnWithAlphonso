@@ -618,7 +618,9 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                     .tracking(0.3)
                     .foregroundStyle(AlphonsoColor.ember)
-                if let saveCourse, let saveWordHandler {
+                if let saveCourse, let saveWordHandler,
+                    SavedWordPolicy.savesWholeText(inCourse: saveCourse) || courseSpans != nil
+                {
                     TappableText(
                         text: explanation, color: AlphonsoColor.ink, course: saveCourse,
                         onSave: saveWordHandler, courseSpans: courseSpans
