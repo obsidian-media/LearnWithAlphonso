@@ -3,54 +3,62 @@ import type { QuestionFix } from "./question-fixes";
 /** Phase 1 rewrites for English A1/A2, written under docs/distractor-policy.md. Review table: docs/content-fixes-a1a2-phase1.md */
 export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a1p10l1/a1p10q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "An umbrella is for rain; freezing, clear and hot weather do not call for one.",
   },
   "a1p10l1/a1p10q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options are now weather adjectives; a foggy or rainy sky is not blue",
+    context: "A foggy or rainy sky is not blue; only a clear sky is blue.",
+    wrong: ["foggy", "rainy", "freezing"],
   },
   "a1p10l1/a1p10q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You wear a coat when it is cold; sunny and hot weather do not need one and mild is not cold.",
     wrong: ["sunny", "hot", "mild"],
   },
   "a1p10l1/a1p10q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Only wind blows; the sun, a cloud and thunder do not blow.",
   },
   "a1p10l1/a1p10q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "All night is finished, so the past form rained is needed; snow, clear and fall are base forms.",
   },
   "a1p10l2/a1p10q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "After will a base verb is needed and the weather itself snows; fall needs a subject like snow and rained is past.",
   },
   "a1p10l2/a1p10q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "After the, season needs a superlative; hotter is a comparative and hotest and most hot are the common mistakes.",
+    wrong: ["hotter", "hotest", "most hot"],
+    allow: ["hotter", "hotest", "most hot"],
   },
   "a1p10l2/a1p10q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Leaves change colour in autumn; harsh, clear and mild are not colours.",
   },
   "a1p10l2/a1p10q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Over thirty degrees is hot; snow is not an adjective and clear and mild do not describe such heat.",
   },
   "a1p10l2/a1p10q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: 'You go to the beach when the sun is out; a storm, fall or the clear are not "out".',
   },
   "a1p10l3/a1p10q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A loud noise during a storm is thunder; ice, weather and fog make no sound.",
     wrong: ["ice", "weather", "fog"],
   },
   "a1p10l3/a1p10q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Barely seeing means fog; cold, sunny and clear weather do not stop you seeing.",
     wrong: ["cold", "sunny", "clear"],
   },
   "a1p10l3/a1p10q12": {
@@ -66,13 +74,14 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     allow: ["slowly", "gradually", "softly"],
   },
   "a1p10l3/a1p10q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Spring brings warmer weather; warmer ice, fog or thunder makes no sense.",
     wrong: ["ice", "fog", "thunder"],
   },
   "a1p10l4/a1p10q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Icy ground means below zero; mild and hot are the opposite and snow is not an adjective.",
     wrong: ["mild", "snow", "hot"],
   },
   "a1p10l4/a1p10q16": {
@@ -80,9 +89,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "cloud",
   },
   "a1p10l4/a1p10q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"a rainy day" is also a day for a picnic; the clue says the sun was shining',
     context: "the sentence already rules out the other options",
-    wrong: ["fall", "rainy", "thunder"],
+    wrong: ["rainy", "foggy", "windy"],
+    prompt: "We had a picnic on a ___ day. (the sun was shining)",
   },
   "a1p10l4/a1p10q18": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -98,12 +108,13 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "It's too ___ to go swimming today. (the waves and trees were moving a lot)",
   },
   "a1p10l5/a1p10q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Only ice melts in the sun; weather, thunder and fall cannot melt.",
   },
   "a1p10l5/a1p10q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options are now seasons-style nouns instead of a verb and an adjective",
+    context: "Fall is the American word for autumn; ice, wind and cloud are not seasons.",
+    wrong: ["ice", "wind", "cloud"],
   },
   "a1p10l5/a1p10q23": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -119,35 +130,47 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "This shirt costs ___ dollars. (the number 20)",
   },
   "a1p11l1/a1p11q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not plural nouns",
+    context:
+      "A jar of one-pound items holds coins; receipts, wallets and cards do not come in one-pound units.",
+    wrong: ["receipts", "wallets", "cards"],
+    allow: ["receipts", "wallets", "cards"],
   },
   "a1p11l1/a1p11q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["more", "up", "enough"],
+    why: "options were not verbs",
+    context:
+      "You withdraw money from a machine; you cannot deposit, save or pay it out of the machine.",
+    wrong: ["deposit", "save", "pay"],
+    allow: ["deposit", "save", "pay"],
   },
   "a1p11l1/a1p11q3": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "The bill comes to ___ euros. (the number 15)",
   },
   "a1p11l1/a1p11q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not verbs",
+    context:
+      "A note is changed for smaller ones; you do not save, withdraw or deposit a note for smaller ones.",
+    wrong: ["save", "withdraw", "deposit"],
+    allow: ["save", "withdraw", "deposit"],
   },
   "a1p11l2/a1p11q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"change / withdraw some money for the trip" are also correct; the clue says put aside',
     context: "the sentence already rules out the other options",
-    wrong: ["up", "more", "enough"],
+    wrong: ["spend", "change", "withdraw"],
+    prompt: "I need to ___ some money for the trip. (put it aside, not spend it)",
+    allow: ["spend", "change", "withdraw"],
   },
   "a1p11l2/a1p11q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"saved ten dollars on the gift" is also correct; the clue says she paid',
     context: "the sentence already rules out the other options",
-    wrong: ["save", "more", "enough"],
+    wrong: ["save", "withdraw", "change"],
+    prompt: "She ___ ten dollars on the gift. (she paid for it)",
   },
   "a1p11l2/a1p11q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You ask for a discount on a price; change, a receipt or a balance cannot be taken off a price.",
   },
   "a1p11l2/a1p11q8": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -155,25 +178,29 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["less", "fewer", "much"],
   },
   "a1p11l2/a1p11q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"enough change" is also correct; the clue says exactly the right coins',
     context: "the sentence already rules out the other options",
-    wrong: ["up", "contactless", "spent"],
+    wrong: ["contactless", "enough", "big"],
+    prompt: "Do you have ___ change for a ten? (the right coins, no more and no less)",
+    allow: ["contactless", "enough", "big"],
   },
   "a1p11l3/a1p11q10": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "The total is ___ pounds and fifty pence. (the sum 3.50)",
   },
   "a1p11l3/a1p11q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options were not nouns for a payment",
+    context:
+      "By card contrasts with cash; a discount, notes (cash) or a balance are not ways of paying.",
+    wrong: ["discount", "notes", "balance"],
   },
   "a1p11l3/a1p11q12": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "Could I get a ___ for this purchase? (proof that I paid)",
   },
   "a1p11l3/a1p11q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A price can include tax; it cannot include a receipt, an amount or a sale.",
   },
   "a1p11l3/a1p11q14": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -181,30 +208,37 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["sale", "tax", "wallet"],
   },
   "a1p11l4/a1p11q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"a few discounts" fitted; the clue says paper money',
     context: "the sentence already rules out the other options",
+    prompt: "I only have a few ___ left. (paper money)",
+    wrong: ["coins", "balance", "tax"],
   },
   "a1p11l4/a1p11q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: "options were not numbers",
     context: "the sentence already rules out the other options",
-    wrong: ["change", "up", "contactless"],
+    wrong: ["twenty", "fifteen", "three"],
+    prompt: "He borrowed ___ dollars from his brother. (the number 50)",
   },
   "a1p11l4/a1p11q17": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: "options were not adjectives",
     prompt: "The shop only accepts ___ payments. (you tap your card)",
-    wrong: ["up", "sale", "change"],
+    wrong: ["exact", "enough", "expensive"],
+    allow: ["exact", "enough", "expensive"],
   },
   "a1p11l4/a1p11q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: "options were not adverbs",
     context: "the sentence already rules out the other options",
+    prompt: "We split the bill ___. (everyone paid the same)",
+    wrong: ["quickly", "secretly", "later"],
+    allow: ["quickly", "secretly", "later"],
   },
   "a1p11l4/a1p11q19": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "wallet",
   },
   "a1p11l5/a1p11q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "On sale means reduced in price; on receipt, on wallet or on balance does not.",
   },
   "a1p11l5/a1p11q21": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -222,111 +256,128 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["discount", "change", "wallet"],
   },
   "a1p11l5/a1p11q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"bank notes" is also a phrase; the clue says how much is in the account',
     context: "the sentence already rules out the other options",
+    prompt: "I need to check my bank ___. (how much money is in it)",
+    wrong: ["notes", "receipt", "tax"],
   },
   "a1p14l1/a1p14q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Monday starts the school week; Wednesday is the middle, and days and afternoon are not days of the week.",
   },
   "a1p14l1/a1p14q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Sunday ends the weekend; Tuesday is a weekday, and morning and February are not days.",
   },
   "a1p14l1/a1p14q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Christmas is on 25 December; June is another month, and weekend and week are not months.",
   },
   "a1p14l1/a1p14q3": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "February has 28 days, the fewest; October has 31, and night and hour are not months.",
   },
   "a1p14l1/a1p14q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Lunch is eaten in the afternoon; you cannot say in the year, in the Monday or in the July.",
   },
   "a1p14l2/a1p14q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "People sleep at night; noon and afternoon are the working day and at Wednesday is wrong.",
+    wrong: ["noon", "afternoon", "Wednesday"],
   },
   "a1p14l2/a1p14q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Seven days make a week; a morning, a minute and December are not seven days long.",
   },
   "a1p14l2/a1p14q7": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A year has twelve months; June, weekend and night are single units.",
   },
   "a1p14l2/a1p14q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: 'any month fits "my birthday is in the month of"; the clue picks the seventh',
     context: "the sentence already rules out the other options",
-    wrong: ["noon", "afternoon", "week"],
+    wrong: ["June", "October", "December"],
+    prompt: "My birthday is in the month of ___. (it is the seventh month)",
   },
   "a1p14l2/a1p14q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A clock shows the time; it cannot show the year, January or Monday.",
   },
   "a1p14l3/a1p14q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Early in the morning is a time of day; early in the year, January or Monday would need other words.",
   },
   "a1p14l3/a1p14q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "January is the first month; days, week and Friday are not months.",
   },
   "a1p14l3/a1p14q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Halloween is on 31 October; July and June are other months and weekend is not a month.",
   },
   "a1p14l3/a1p14q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Weekday mornings is the usual phrase; weekday noon, January or year do not fit.",
     wrong: ["noon", "January", "year"],
   },
   "a1p14l3/a1p14q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "A year has 365 days; noon, Saturday and afternoon are single points or days.",
   },
   "a1p14l4/a1p14q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Saturday follows Friday; a year, February and a morning are not days.",
   },
   "a1p14l4/a1p14q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
-    wrong: ["October", "January", "February"],
+    why: "January and February are summer in the southern hemisphere",
+    context:
+      "Summer holidays begin in June or July in Europe and North America; October, March and November are not summer.",
+    wrong: ["October", "March", "November"],
+    allow: ["October", "March", "November"],
   },
   "a1p14l4/a1p14q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Tuesday comes before Wednesday; Sunday and Saturday are weekend days and July is a month.",
   },
   "a1p14l4/a1p14q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "New Year's Eve ends the year; the last day of June or Friday is not the end of the year.",
   },
   "a1p14l4/a1p14q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Sixty minutes make an hour; an needs a vowel sound, and Saturday, night and weekend are not an hour long.",
   },
   "a1p14l5/a1p14q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Sixty seconds make a minute; a morning, February and a Tuesday are much longer.",
   },
   "a1p14l5/a1p14q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Wednesday is the middle weekday; noon, days and afternoon are not days.",
   },
   "a1p14l5/a1p14q22": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Twelve o'clock midday is noon; Sunday, Saturday and July are not times of day.",
   },
   "a1p14l5/a1p14q23": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "People relax at the weekend; October and December need in, and an hour is too short to relax on.",
   },
   "a1p14l5/a1p14q24": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Friday follows Thursday; mornings, week and weekend are not single days.",
   },
   "a1p15l1/a1p15q2": {
     why: "a sphere is also perfectly round",
@@ -337,16 +388,17 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["rectangle", "octagon", "circle"],
   },
   "a1p16l1/a1p16q0": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Wake up is the phrasal verb for getting out of bed; eat up, washes up and choose up do not mean that.",
   },
   "a1p16l1/a1p16q1": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You take a shower; you do not cook, pack or spend one.",
   },
   "a1p16l1/a1p16q2": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Hair is brushed; wake, works and come do not take hair and do not agree with She.",
   },
   "a1p16l1/a1p16q3": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -354,16 +406,18 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["eats", "eating", "are eat"],
   },
   "a1p16l1/a1p16q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Get dressed is the phrase; checks does not agree with I, and spend dressed or pack dressed are not English.",
   },
   "a1p16l2/a1p16q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Travels agrees with She and goes with by bus; get, read and walk do not agree with She.",
   },
   "a1p16l2/a1p16q6": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You check your email first thing; you do not eat, watch or pack it.",
     wrong: ["eat", "watch", "pack"],
   },
   "a1p16l2/a1p16q7": {
@@ -371,49 +425,61 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["has", "having", "hasn't"],
   },
   "a1p16l2/a1p16q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You come home from work; eat and watch do not take home from, and works does not agree with I.",
   },
   "a1p16l2/a1p16q9": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Cooks dinner; drives, set and checks do not produce a dinner for the family.",
   },
   "a1p16l3/a1p16q10": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"checks the dishes" fitted; options now cannot be done to dishes',
+    context: "Dishes are washed; they are not driven, set aside or slept.",
+    wrong: ["drives", "sets", "sleeps"],
+    allow: ["drives", "sets", "sleeps"],
   },
   "a1p16l3/a1p16q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "You watch television; goes and travels do not agree with We or take television.",
   },
   "a1p16l3/a1p16q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"takes a book" fitted; options now cannot be done to a book',
+    context: "You read a book before bed; you cannot walk, come or sleep a book.",
+    wrong: ["walk", "come", "sleep"],
+    allow: ["walk", "come", "sleep"],
   },
   "a1p16l3/a1p16q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "Goes to bed agrees with She; have and tidy do not agree with She and arrives to bed is wrong.",
   },
   "a1p16l3/a1p16q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"set his phone" fitted; options now cannot be done to a phone',
+    context: "You glance at your phone once; you cannot watch, walk or sleep it one last time.",
+    wrong: ["watch", "walk", "sleep"],
+    allow: ["watch", "walk", "sleep"],
   },
   "a1p16l4/a1p16q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "options now agree with We so only the meaning rules them out",
+    context: "You tidy a house before leaving; you do not drive, cook or sleep one.",
+    wrong: ["drive", "cook", "sleep"],
+    allow: ["drive", "cook", "sleep"],
   },
   "a1p16l4/a1p16q16": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "You pack a bag the night before; you do not read or spend a bag and travels does not agree with I.",
   },
   "a1p16l4/a1p16q17": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context:
+      "She drives the kids to school; watch, pack and tidy do not agree with She or move children.",
     wrong: ["watch", "pack", "tidy"],
   },
   "a1p16l4/a1p16q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "reason added",
+    context: "Work out means to exercise; come out, tidy out and spend out do not.",
   },
   "a1p16l4/a1p16q19": {
     why: '"We watch the dog" is also correct; the clue says what we do with it',

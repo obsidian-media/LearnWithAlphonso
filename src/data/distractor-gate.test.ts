@@ -240,9 +240,9 @@ describe("the A1/A2 English bank", () => {
   // has read (reviewed-phrases.ts), is not allowed in.
   const PINNED_SPLIT = { picture: 45, context: 283, clue: 433 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
-  const POS_MISMATCH_BUDGET = 26;
-  const WEAK_CONTEXT_BUDGET = 283;
-  const NEEDS_CLUE_BUDGET = 275;
+  const POS_MISMATCH_BUDGET = 20;
+  const WEAK_CONTEXT_BUDGET = 219;
+  const NEEDS_CLUE_BUDGET = 198;
   const UNCLASSIFIED_BUDGET = 0;
 
   it("does not add topic-word options of another part of speech", () => {
