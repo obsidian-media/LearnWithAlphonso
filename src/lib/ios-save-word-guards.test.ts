@@ -31,8 +31,12 @@ describe("tap-to-save never offers English words under French or Spanish", () =>
 
   it("TappableText: each mode links what it says", () => {
     const pieces = between(tappable, "private var pieces", "private var attributed");
-    expect(pieces).toMatch(/case \.allWords: return \[\.init\(text: text, isCourseLanguage: true\)\]/);
-    expect(pieces).toMatch(/case \.plain: return \[\.init\(text: text, isCourseLanguage: false\)\]/);
+    expect(pieces).toMatch(
+      /case \.allWords: return \[\.init\(text: text, isCourseLanguage: true\)\]/,
+    );
+    expect(pieces).toMatch(
+      /case \.plain: return \[\.init\(text: text, isCourseLanguage: false\)\]/,
+    );
     expect(pieces).toContain("CourseLanguageSpans.split(text, spans: spans)");
   });
 
@@ -59,13 +63,17 @@ describe("tap-to-save never offers English words under French or Spanish", () =>
     for (const f of files) {
       const src = readFileSync(f, "utf8").replace(/\r\n/g, "\n");
       for (const m of src.matchAll(/TappableText\(([\s\S]*?)\)\s*(?:\{|\n\s*\.)/g)) {
-        const mode = /mode: (\.allWords|\.lesson\([^)]*\)|mode)(?=[,\s]|$)/.exec(m[1])?.[1] ?? "MISSING";
+        const mode =
+          /mode: (\.allWords|\.lesson\([^)]*\)|mode)(?=[,\s]|$)/.exec(m[1])?.[1] ?? "MISSING";
         (found[f.slice(SRC.length + 1).replaceAll("\\", "/")] ??= []).push(mode);
       }
     }
     expect(found).toEqual({
       "AssistantReply.swift": [".allWords"],
-      "DesignSystem/AlphonsoComponents.swift": ["mode", ".lesson(course: saveCourse, spans: courseSpans)"],
+      "DesignSystem/AlphonsoComponents.swift": [
+        "mode",
+        ".lesson(course: saveCourse, spans: courseSpans)",
+      ],
       "LessonPlayerView.swift": [".allWords"],
       "PodcastMiniBar.swift": [".allWords"],
     });
