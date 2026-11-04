@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import { ANSWER_POS, PACK_ANSWER_POS } from "./answer-pos";
 import { clearlyWrongFor } from "./also-correct";
+import { QUESTION_FIXES } from "./question-fixes";
 
 /**
  * The effective class of a word for a given pack: a hand label if that pack has
@@ -134,6 +135,8 @@ describe("English distractor plausibility", () => {
     for (const ref of Object.values(getCourse("en").questionIndex)) {
       const q = ref.question;
       if (q.type !== "mc") continue;
+      // Hand-picked wrong options (question-fixes.ts) bypass ranking on purpose.
+      if (QUESTION_FIXES[`${ref.lessonId}/${q.id}`]?.wrong) continue;
       const packId = q.id.replace(/q\d+$/, "");
       const answer = q.choices[q.answer];
       const answerPos = answer ? posIn(packId, answer) : undefined;

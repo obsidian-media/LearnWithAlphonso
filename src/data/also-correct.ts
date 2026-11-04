@@ -325,7 +325,10 @@ export function alsoCorrectReason(
   //     under / behind / beside / next to / near ... all make a correct sentence.
   //     Only when an article or possessive follows, so fixed phrases ("in cash",
   //     "by bus") are left alone.
+  // A bracketed clue ("(it is hiding below it)") already picks the one place word.
+  const hasClue = /\([^)]{4,}\)\s*$/.test(prompt);
   if (
+    !hasClue &&
     LOCATIVE.has(a) &&
     (LOCATIVE.has(c) || (LOCATIVE_CANDIDATE_ONLY.has(c) && !TIME_OBJECT.test(after))) &&
     /^\s*(the|a|an|my|your|his|her|their|our|this|that)\b/i.test(after)

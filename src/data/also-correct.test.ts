@@ -59,6 +59,9 @@ const GENUINELY_WRONG: [prompt: string, answer: string, wrong: string][] = [
   // A tag question must echo the main verb, so only one auxiliary fits.
   ["They were at the party, ___ they?", "weren't", "wasn't"],
   ["She doesn't like tea very much, ___ she?", "does", "did"],
+  // A bracketed clue after the blank picks the one place word that fits.
+  ["The cat is sitting ___ the table. (it is hiding below it)", "under", "behind"],
+  ["The cafe is ___ the station. (across the road from it)", "opposite", "next to"],
   // A conditional's tense fixes the modal.
   ["If he studied, he ___ pass.", "would", "will"],
   ["I ___ help if I could.", "would", "will"],
@@ -181,6 +184,8 @@ describe("modal and auxiliary slots are not giveaways", () => {
       for (const lesson of unit.lessons)
         for (const q of lesson.questions) {
           if ((q.type !== "mc" && q.type !== "fill") || !q.prompt.includes("___")) continue;
+          // "Which verb goes with homework? do" is a collocation, not an auxiliary slot.
+          if (/^Which verb goes with/.test(q.prompt)) continue;
           const answer = q.type === "mc" ? q.choices[q.answer]! : q.answer;
           const options = q.type === "mc" ? q.choices : q.bank;
           for (const set of [MODALS, AUX]) {
