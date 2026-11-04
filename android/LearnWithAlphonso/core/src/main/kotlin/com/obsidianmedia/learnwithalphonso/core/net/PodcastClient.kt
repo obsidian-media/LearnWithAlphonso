@@ -6,13 +6,24 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayback
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPublishedEpisodeRef
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizAnswer
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizBest
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizError
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizException
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizOffer
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizQuestion
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizResult
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
@@ -20,6 +31,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import java.io.IOException
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
@@ -150,6 +162,87 @@ class PodcastClient(
     /** Through the SECURITY DEFINER RPC only; authenticated has no INSERT grant on the table. */
     suspend fun recordPlayEvent(episodeId: String, secondsListened: Int) {
         requireSuccess(http.rpc("record_podcast_play_event", buildJsonObject { put("_episode_id", episodeId); put("_seconds_listened", secondsListened) }))
+    }
+
+    /**
+     * An episode's quiz as the signed-in learner may see it, plus their banked best. RLS decides visibility, like the
+     * episode's audio and transcript. Null when there is no quiz. A row the app cannot read is an error, never dropped: a
+     * quiz with a hole in it would be rejected by the server as the wrong number of answers, or look complete while missing
+     * a question. A failed read of the best score never hides the quiz; it is only a label.
+     */
+    suspend fun fetchQuiz(episodeId: String): PodcastQuizOffer? {
+        val questions = rows(
+            http.rest(HttpMethod.Get, "podcast_quiz_questions", mapOf("select" to "id,prompt,choices,answer_index", "episode_id" to "eq.$episodeId", "order" to "sort_order.asc")),
+        ).map { row ->
+            val id = row.str("id")
+            val prompt = row.str("prompt")
+            val choices = (row["choices"] as? JsonArray)?.map { el -> (el as? JsonPrimitive)?.takeIf { it.isString }?.content ?: throw PodcastClientError.InvalidPayload() }
+            val answerIndex = row.int("answer_index")
+            if (id == null || prompt == null || choices == null || answerIndex == null || answerIndex !in choices.indices) throw PodcastClientError.InvalidPayload()
+            PodcastQuizQuestion(id, prompt, choices, answerIndex)
+        }
+        if (questions.isEmpty()) return null
+        val best = try {
+            rows(http.rest(HttpMethod.Get, "podcast_quiz_awards", mapOf("select" to "best_correct,best_xp", "episode_id" to "eq.$episodeId", "limit" to "1"))).firstOrNull()?.let { row ->
+                val correct = row.int("best_correct")
+                val xp = row.int("best_xp")
+                if (correct != null && xp != null) PodcastQuizBest(correct, xp) else null
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+        return PodcastQuizOffer(questions, best)
+    }
+
+    /** Which of these episodes have a quiz the learner can open, for the "Take the quiz" button. One request; none for an empty list. */
+    suspend fun fetchQuizEpisodeIds(episodeIds: List<String>): Set<String> {
+        if (episodeIds.isEmpty()) return emptySet()
+        return rows(http.rest(HttpMethod.Get, "podcast_quiz_questions", mapOf("select" to "episode_id", "episode_id" to "in.(${episodeIds.joinToString(",")})")))
+            .mapNotNull { it.str("episode_id") }.toSet()
+    }
+
+    /**
+     * Sends the learner's chosen answers and the time they finished to the complete-podcast-quiz Edge Function, never a
+     * score. The server clamps `completedAt` like a lesson's. Throws [PodcastQuizException]; a 2xx that cannot be read is
+     * an error, never a score (the server may have recorded it, and a resend is harmless: a replay that adds nothing pays nothing).
+     */
+    suspend fun submitQuiz(episodeId: String, answers: List<PodcastQuizAnswer>, completedAtMillis: Long): PodcastQuizResult {
+        val body = buildJsonObject {
+            put("episodeId", episodeId)
+            put("answers", buildJsonArray { answers.forEach { add(buildJsonObject { put("questionId", it.questionId); put("choiceIndex", it.choiceIndex) }) } })
+            put("completedAt", DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(completedAtMillis)))
+        }
+        val response = try {
+            http.function("complete-podcast-quiz", body)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            throw PodcastQuizException(PodcastQuizError.OFFLINE)
+        } catch (e: Exception) {
+            throw PodcastQuizException(PodcastQuizError.SERVER)
+        }
+        when (response.status.value) {
+            in 200..299 -> Unit
+            429 -> throw PodcastQuizException(PodcastQuizError.RATE_LIMITED)
+            404 -> throw PodcastQuizException(PodcastQuizError.NOT_FOUND)
+            400 -> throw PodcastQuizException(PodcastQuizError.INVALID_ANSWERS)
+            401, 403 -> throw PodcastQuizException(PodcastQuizError.UNAUTHORIZED)
+            else -> throw PodcastQuizException(PodcastQuizError.SERVER)
+        }
+        val text = try { response.bodyAsText() } catch (e: CancellationException) { throw e } catch (e: Exception) { throw PodcastQuizException(PodcastQuizError.SERVER) }
+        val obj = runCatching { ContentJson.json.parseToJsonElement(text).jsonObject }.getOrNull() ?: throw PodcastQuizException(PodcastQuizError.SERVER)
+        if (obj.str("status") != "applied") throw PodcastQuizException(PodcastQuizError.SERVER)
+        return PodcastQuizResult(
+            correct = obj.int("correct") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            total = obj.int("total") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            xpGain = obj.int("xpGain") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            streak = obj.int("streak") ?: 0,
+            bestCorrect = obj.int("bestCorrect") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            bestXp = obj.int("bestXp") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            missedQuestionIds = (obj["missedQuestionIds"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content } ?: emptyList(),
+        )
     }
 
     private fun episode(row: JsonObject, position: Int, updatedAt: String?): PodcastEpisode? {
