@@ -1,0 +1,175 @@
+{
+  "batch": "p6-r1-b008",
+  "pass": "first",
+  "reviewer": "agent:p6-b008",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "oreja": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "orgulloso": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "palacio de justicia": {
+      "verdict": "approve",
+      "alt": "A grand stone staircase with columns and statues inside a neoclassical courthouse.",
+      "peopleVisible": false
+    },
+    "partido": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "película": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "periodista": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "periódico": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "pico": {
+      "verdict": "approve",
+      "alt": "Chopped onion and sliced mushrooms lie on a wooden chopping board.",
+      "peopleVisible": false
+    },
+    "pie": {
+      "verdict": "approve",
+      "alt": "A newborn baby's bare feet stick out of a white blanket in a wicker basket.",
+      "peopleVisible": false
+    },
+    "pierna": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "piqûre": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "planchar": {
+      "verdict": "approve",
+      "alt": "A green iron presses a white shirt on an ironing board.",
+      "peopleVisible": false
+    },
+    "precio": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "preocupado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "presión arterial": {
+      "verdict": "approve",
+      "alt": "A doctor fits a pressure cuff with a dial gauge on a patient's arm.",
+      "peopleVisible": true
+    },
+    "probador": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "protesta": {
+      "verdict": "reject",
+      "reasons": [
+        "politics-protest-religion"
+      ]
+    },
+    "rallo": {
+      "verdict": "approve",
+      "alt": "Grated cheese lies in a pile next to a block of cheese and a metal grater.",
+      "peopleVisible": false
+    },
+    "reciclaje": {
+      "verdict": "approve",
+      "alt": "A row of grey and yellow-lidded wheelie bins stands outside.",
+      "peopleVisible": false
+    },
+    "regar": {
+      "verdict": "approve",
+      "alt": "A hand drips water onto a small green seedling growing in dark soil.",
+      "peopleVisible": true
+    },
+    "repasser": {
+      "verdict": "approve",
+      "alt": "A green iron presses a white shirt on an ironing board.",
+      "peopleVisible": false
+    },
+    "retrato": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "revuelvo": {
+      "verdict": "approve",
+      "alt": "A man and a woman stir a large pot together in a restaurant kitchen.",
+      "peopleVisible": true
+    },
+    "rhume": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "rire": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "réparer": {
+      "verdict": "approve",
+      "alt": "Hands use tweezers to repair a smartphone opened up on a wooden desk.",
+      "peopleVisible": true
+    },
+    "sacudir": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "salsa": {
+      "verdict": "approve",
+      "alt": "A wooden bowl of green sauce topped with red chili peppers, with limes and herbs around it.",
+      "peopleVisible": false
+    },
+    "sequía": {
+      "verdict": "approve",
+      "alt": "Dry sun-baked earth cracked into many pieces.",
+      "peopleVisible": false
+    }
+  }
+}

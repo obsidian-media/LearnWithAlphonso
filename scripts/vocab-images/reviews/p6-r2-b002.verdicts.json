@@ -1,0 +1,174 @@
+{
+  "batch": "p6-r2-b002",
+  "pass": "first",
+  "reviewer": "agent:p6-r2-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "l'inondation": {
+      "verdict": "approve",
+      "alt": "A cyclist rides through a flooded street in front of a yellow wall.",
+      "peopleVisible": true
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'école": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'épaule": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la banque": {
+      "verdict": "approve",
+      "alt": "The grand stone facade of a bank building with columns and a tiled roof.",
+      "peopleVisible": false
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la dent": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "minor visible"
+    },
+    "la déforestation": {
+      "verdict": "approve",
+      "alt": "Tree stumps cover an open patch of ground where a forest was cut down.",
+      "peopleVisible": false
+    },
+    "la robotique": {
+      "verdict": "approve",
+      "alt": "An orange industrial robot arm with a grey gripper.",
+      "peopleVisible": false
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la tête": {
+      "verdict": "approve",
+      "alt": "Silhouettes of a woman's head and a man's head facing each other in profile.",
+      "peopleVisible": true
+    },
+    "la voiture": {
+      "verdict": "approve",
+      "alt": "A red vintage coupe with the number 21 on its door stands on a city street.",
+      "peopleVisible": false
+    },
+    "le bras": {
+      "verdict": "approve",
+      "alt": "A muscular man flexes both arms behind him, seen from behind in black and white.",
+      "peopleVisible": true
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le cou": {
+      "verdict": "approve",
+      "alt": "A smiling woman wears a large silver necklace around her neck.",
+      "peopleVisible": true
+    },
+    "le coude": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dictionnaire": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le festival": {
+      "verdict": "approve",
+      "alt": "A crowd cheers with raised hands in front of a lit stage at a music festival.",
+      "peopleVisible": true
+    },
+    "le football": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "le handball": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "minor visible"
+    },
+    "le juge": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le magazine": {
+      "verdict": "approve",
+      "alt": "A stack of open glossy magazines with colourful pages.",
+      "peopleVisible": false
+    },
+    "le menton": {
+      "verdict": "approve",
+      "alt": "A young man rests his chin on his hand and looks at the camera.",
+      "peopleVisible": true
+    },
+    "le piéton": {
+      "verdict": "approve",
+      "alt": "A blurred crowd of pedestrians crosses a zebra crossing.",
+      "peopleVisible": true
+    },
+    "le recyclage": {
+      "verdict": "approve",
+      "alt": "A row of grey and yellow-lidded wheelie bins stands outside.",
+      "peopleVisible": false
+    },
+    "le roman": {
+      "verdict": "approve",
+      "alt": "A woman sits by the sea and reads a book.",
+      "peopleVisible": true
+    },
+    "le réalisateur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le soldat": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le taxi": {
+      "verdict": "approve",
+      "alt": "Yellow taxis drive along a New York street lined with tall buildings.",
+      "peopleVisible": true
+    }
+  }
+}

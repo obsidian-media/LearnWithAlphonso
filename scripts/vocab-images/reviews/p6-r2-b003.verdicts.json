@@ -1,0 +1,174 @@
+{
+  "batch": "p6-r2-b003",
+  "pass": "first",
+  "reviewer": "agent:p6-r2-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "le tribunal": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le visage": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "llave": {
+      "verdict": "approve",
+      "alt": "A pile of keys of many sizes and colours.",
+      "peopleVisible": false
+    },
+    "mano": {
+      "verdict": "approve",
+      "alt": "Two open hands reach toward each other against a white background.",
+      "peopleVisible": true
+    },
+    "medianoche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "moneda": {
+      "verdict": "approve",
+      "alt": "A heap of gold-coloured euro coins.",
+      "peopleVisible": false
+    },
+    "nariz": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "minor visible"
+    },
+    "nevando": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "noche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "nublado": {
+      "verdict": "approve",
+      "alt": "A person in a long coat sits on a beach looking out at the sea under a grey cloudy sky.",
+      "peopleVisible": true
+    },
+    "oreja": {
+      "verdict": "approve",
+      "alt": "A bronze statue of a man cups his hand behind his ear to listen.",
+      "peopleVisible": false
+    },
+    "orgulloso": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "partido": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "periodista": {
+      "verdict": "approve",
+      "alt": "A crowd of journalists holds up video cameras and microphones at a press event.",
+      "peopleVisible": true
+    },
+    "periódico": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "pierna": {
+      "verdict": "approve",
+      "alt": "A person's legs in blue jeans and pink sneakers stand crossed against a rusty wall.",
+      "peopleVisible": true
+    },
+    "piqûre": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "precio": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "preocupado": {
+      "verdict": "approve",
+      "alt": "A woman with glasses bites a pencil as she looks anxiously at her laptop.",
+      "peopleVisible": true
+    },
+    "probador": {
+      "verdict": "approve",
+      "alt": "A clothes shop with a row of fitting rooms closed by dark curtains.",
+      "peopleVisible": false
+    },
+    "retrato": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "rhume": {
+      "verdict": "approve",
+      "alt": "A woman in a red jacket blows her nose into a tissue in a field of yellow flowers.",
+      "peopleVisible": true
+    },
+    "rire": {
+      "verdict": "approve",
+      "alt": "Two young women hold hands and laugh in a field of tall grass.",
+      "peopleVisible": true
+    },
+    "sacudir": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "sobras": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "sorprendido": {
+      "verdict": "approve",
+      "alt": "A woman with a towel wrapped around her hair opens her mouth wide in surprise.",
+      "peopleVisible": true
+    },
+    "surpris": {
+      "verdict": "approve",
+      "alt": "A woman with a towel wrapped around her hair opens her mouth wide in surprise.",
+      "peopleVisible": true
+    },
+    "tos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tribunal": {
+      "verdict": "approve",
+      "alt": "A wooden gavel and microphones stand on a polished desk in a courtroom.",
+      "peopleVisible": false
+    }
+  }
+}

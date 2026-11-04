@@ -1,0 +1,167 @@
+{
+  "batch": "p6-r1-b003",
+  "pass": "first",
+  "reviewer": "agent:p6-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "enamorado": {
+      "verdict": "approve",
+      "alt": "A couple kisses in a grassy field while the man dips the woman, with a turquoise car behind them.",
+      "peopleVisible": true
+    },
+    "enfermo": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "ennuyé": {
+      "verdict": "approve",
+      "alt": "A man in a green hoodie slumps on a brown leather sofa with a hand against his head, looking bored.",
+      "peopleVisible": true
+    },
+    "enojado": {
+      "verdict": "approve",
+      "alt": "A woman with long hair and folded arms glares at the camera with an angry frown.",
+      "peopleVisible": true
+    },
+    "espalda": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "estampilla": {
+      "verdict": "approve",
+      "alt": "Three postage stamps with sailing ships lie on a wooden table.",
+      "peopleVisible": false
+    },
+    "exprimo": {
+      "verdict": "approve",
+      "alt": "A hand with a tattooed arm squeezes half a lemon against a pink background.",
+      "peopleVisible": true
+    },
+    "farmacia": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fatigué": {
+      "verdict": "approve",
+      "alt": "A man in a dark shirt covers his mouth with his hand as he yawns with his eyes closed.",
+      "peopleVisible": true
+    },
+    "fiebre": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fièvre": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fregar": {
+      "verdict": "approve",
+      "alt": "A woman in an apron washes plates at a kitchen sink under running water.",
+      "peopleVisible": true
+    },
+    "frustré": {
+      "verdict": "approve",
+      "alt": "A bearded man grabs at the air in frustration in front of a laptop.",
+      "peopleVisible": true
+    },
+    "fútbol": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "graduación": {
+      "verdict": "approve",
+      "alt": "Black and red graduation caps with tassels lie on a white surface.",
+      "peopleVisible": false
+    },
+    "habitación": {
+      "verdict": "approve",
+      "alt": "A tidy double bed with grey bedding in a bedroom with a green-grey wall and two hanging lamps.",
+      "peopleVisible": false
+    },
+    "hacer clic": {
+      "verdict": "approve",
+      "alt": "A hand with red nails rests on a wireless computer mouse next to a laptop.",
+      "peopleVisible": true
+    },
+    "hiervo": {
+      "verdict": "approve",
+      "alt": "Water boils in a steel pot with garlic on a gas stove.",
+      "peopleVisible": false
+    },
+    "hombro": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "horneo": {
+      "verdict": "approve",
+      "alt": "Round loaves of bread bake on racks inside a dark oven.",
+      "peopleVisible": false
+    },
+    "imprimer": {
+      "verdict": "approve",
+      "alt": "A woman places paper into a printer at a desk with a cup of coffee.",
+      "peopleVisible": true
+    },
+    "inquiet": {
+      "verdict": "approve",
+      "alt": "A woman with curly hair holds a tissue to her mouth and looks worried.",
+      "peopleVisible": true
+    },
+    "juez": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'agriculteur": {
+      "verdict": "approve",
+      "alt": "A farmer in a straw hat leans on a red tractor and looks at the camera.",
+      "peopleVisible": true
+    },
+    "l'architecture": {
+      "verdict": "approve",
+      "alt": "Looking up at the sharp angled glass and concrete corner of a modern building.",
+      "peopleVisible": false
+    },
+    "l'argent": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "l'argent liquide": {
+      "verdict": "approve",
+      "alt": "A fan of twenty dollar bills lies on a dark surface.",
+      "peopleVisible": false
+    },
+    "l'artiste": {
+      "verdict": "approve",
+      "alt": "A painter works on a large canvas laid on a table in a bright studio with paintings behind him.",
+      "peopleVisible": true
+    },
+    "l'ascenseur": {
+      "verdict": "approve",
+      "alt": "A glass elevator tower stands beside a stairway with a town and mountains behind it.",
+      "peopleVisible": false
+    }
+  }
+}

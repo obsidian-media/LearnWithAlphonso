@@ -1,0 +1,150 @@
+{
+  "batch": "p6-2nd-2nd-b004",
+  "pass": "second",
+  "reviewer": "agent:p6-2nd-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "malade": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "manger": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "mano": {
+      "verdict": "approve",
+      "alt": "Two open hands reach toward each other against a white background.",
+      "peopleVisible": true
+    },
+    "masa": {
+      "verdict": "approve",
+      "alt": "Floury hands knead a round of dough on a wooden work surface.",
+      "peopleVisible": true
+    },
+    "mudarse": {
+      "verdict": "approve",
+      "alt": "A person kneels and packs a cardboard moving box on a concrete floor.",
+      "peopleVisible": true
+    },
+    "nettoyer": {
+      "verdict": "approve",
+      "alt": "A woman wipes a window with a blue cloth.",
+      "peopleVisible": true
+    },
+    "nublado": {
+      "verdict": "approve",
+      "alt": "A person in a long coat sits on a beach looking out at the sea under a grey cloudy sky.",
+      "peopleVisible": true
+    },
+    "oreja": {
+      "verdict": "approve",
+      "alt": "A bronze statue of a man cups his hand behind his ear to listen.",
+      "peopleVisible": false
+    },
+    "partido": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "periodista": {
+      "verdict": "approve",
+      "alt": "A crowd of journalists holds up video cameras and microphones at a press event.",
+      "peopleVisible": true
+    },
+    "periódico": {
+      "verdict": "approve",
+      "alt": "An older man and woman sit outside and read newspapers.",
+      "peopleVisible": true
+    },
+    "pierna": {
+      "verdict": "approve",
+      "alt": "A person's legs in blue jeans and pink sneakers stand crossed against a rusty wall.",
+      "peopleVisible": true
+    },
+    "preocupado": {
+      "verdict": "approve",
+      "alt": "A woman with glasses bites a pencil as she looks anxiously at her laptop.",
+      "peopleVisible": true
+    },
+    "presión arterial": {
+      "verdict": "approve",
+      "alt": "A doctor fits a pressure cuff with a dial gauge on a patient's arm.",
+      "peopleVisible": true
+    },
+    "regar": {
+      "verdict": "approve",
+      "alt": "A hand drips water onto a small green seedling growing in dark soil.",
+      "peopleVisible": true
+    },
+    "revuelvo": {
+      "verdict": "approve",
+      "alt": "A man and a woman stir a large pot together in a restaurant kitchen.",
+      "peopleVisible": true
+    },
+    "rhume": {
+      "verdict": "approve",
+      "alt": "A woman in a red jacket blows her nose into a tissue in a field of yellow flowers.",
+      "peopleVisible": true
+    },
+    "rire": {
+      "verdict": "approve",
+      "alt": "Two young women hold hands and laugh in a field of tall grass.",
+      "peopleVisible": true
+    },
+    "réparer": {
+      "verdict": "approve",
+      "alt": "Hands use tweezers to repair a smartphone opened up on a wooden desk.",
+      "peopleVisible": true
+    },
+    "sacudir": {
+      "verdict": "approve",
+      "alt": "A smiling young woman holds up a long feather duster.",
+      "peopleVisible": true
+    },
+    "sorprendido": {
+      "verdict": "approve",
+      "alt": "A woman with a towel wrapped around her hair opens her mouth wide in surprise.",
+      "peopleVisible": true
+    },
+    "surpris": {
+      "verdict": "approve",
+      "alt": "A woman with a towel wrapped around her hair opens her mouth wide in surprise.",
+      "peopleVisible": true
+    },
+    "turista": {
+      "verdict": "approve",
+      "alt": "A man in a woolly hat and glasses reads a street map on a busy city street.",
+      "peopleVisible": true
+    },
+    "vacuna": {
+      "verdict": "approve",
+      "alt": "A hand holds a syringe next to a person's upper arm to give an injection.",
+      "peopleVisible": true
+    },
+    "viajar": {
+      "verdict": "approve",
+      "alt": "A traveler with a backpack and a hood holds out a thumb on an empty road.",
+      "peopleVisible": true
+    },
+    "voyager": {
+      "verdict": "approve",
+      "alt": "A traveler in a red jacket with a backpack looks out over the sea from a ship's rail.",
+      "peopleVisible": true
+    },
+    "écouter": {
+      "verdict": "approve",
+      "alt": "A woman lies on a pink background listening to music through white headphones.",
+      "peopleVisible": true
+    }
+  }
+}
