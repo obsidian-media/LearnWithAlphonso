@@ -44,8 +44,24 @@ struct StreakFreezeRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        // The same card as the lesson rows (parchment, hairline edge, soft foot) so the text never sits straight on the
+        // garden photo; ink and inkSoft on parchment is the pair every Learn row already uses, in all four themes.
         .padding(.horizontal, AlphonsoSpacing.md)
-        .padding(.vertical, AlphonsoSpacing.sm)
+        .padding(.vertical, AlphonsoSpacing.sm + 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(AlphonsoColor.hairline, lineWidth: 2)
+        )
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(AlphonsoColor.hairline)
+                .offset(y: 4)
+        )
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.top, AlphonsoSpacing.xs)
+        .padding(.bottom, AlphonsoSpacing.xs + 4)
         // Another course has another balance: forget the old one at once, then read the new one.
         .task(id: "\(course.wireCode)-\(isOnline)") {
             status = nil

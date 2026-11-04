@@ -518,7 +518,7 @@ private struct ReviewQuestionCard: View {
                     }
                     .buttonStyle(.alphonsoSecondary(fullWidth: false))
                 }
-                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                AskingAlphonso(prompt: q.prompt)
                 ForEach(q.choices, id: \.self) { choice in
                     AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
                 }
@@ -528,7 +528,7 @@ private struct ReviewQuestionCard: View {
             }
         case .fillInBlank(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                AskingAlphonso(prompt: q.prompt)
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                     .textFieldStyle(.plain)
                     .padding(AlphonsoSpacing.sm)
@@ -553,7 +553,7 @@ private struct ReviewQuestionCard: View {
             }
         case .reorder(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                AskingAlphonso(prompt: q.prompt)
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
@@ -577,7 +577,7 @@ private struct ReviewQuestionCard: View {
                     Label("Play audio", systemImage: "speaker.wave.2.fill")
                 }
                 .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                AskingAlphonso(prompt: q.prompt)
                 ForEach(q.choices, id: \.self) { choice in
                     // `answer` is the choice text, not an index.
                     AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }

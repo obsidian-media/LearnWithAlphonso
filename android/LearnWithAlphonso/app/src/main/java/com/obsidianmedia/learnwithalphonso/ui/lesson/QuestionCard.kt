@@ -43,6 +43,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
+import com.obsidianmedia.learnwithalphonso.ui.components.AskingAlphonso
 import com.obsidianmedia.learnwithalphonso.ui.components.ChoiceButton
 import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -75,14 +76,14 @@ fun QuestionCard(
             is Question.MultipleChoice -> {
                 question.imageKey?.let { vocabImages[it] }?.let { VocabImage(it, height = 160.dp) }
                 question.audioText?.let { audio -> PlayAudioButton { Speech.get(context).speak(audio, course) } }
-                Prompt(question.prompt)
+                AskingAlphonso(question.prompt)
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.choices[question.answer] == choice, onClick = { onPick(choice) })
                 }
                 if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.FillInBlank -> {
-                Prompt(question.prompt)
+                AskingAlphonso(question.prompt)
                 AnswerField(picked ?: "", onPick, "Type your answer", enabled = !checked)
                 if (question.bank.isNotEmpty()) {
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -92,14 +93,14 @@ fun QuestionCard(
                 if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Reorder -> {
-                Prompt(question.prompt)
+                AskingAlphonso(question.prompt)
                 ReorderArea(question.tokens, checked, onPick)
                 if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Listening -> {
                 AlphonsoSectionHeader("Listening")
                 PlayAudioButton { Speech.get(context).speak(question.audioText, course) }
-                Prompt(question.prompt)
+                AskingAlphonso(question.prompt)
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.answer == choice, onClick = { onPick(choice) })
                 }
@@ -107,7 +108,7 @@ fun QuestionCard(
             }
             is Question.Translate -> {
                 AlphonsoSectionHeader("Write it yourself")
-                Prompt(question.prompt)
+                AskingAlphonso(question.prompt)
                 AnswerField(picked ?: "", onPick, "Write your answer", enabled = !checked, multiline = true)
                 // Without the account's AI consent the written answer is checked against our list only, and the learner
                 // is told so with a way to turn AI grading on. Never a wall: the lesson goes on. Only when the account
@@ -155,11 +156,6 @@ internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanatio
         ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, saveMode = mode)
         if (saveCourse != null && LocalSaveWordHandler.current != null) SaveWordHintLine(container)
     }
-}
-
-@Composable
-private fun Prompt(text: String) {
-    Text(text, style = MaterialTheme.typography.headlineSmall, color = AlphonsoColor.palette.ink)
 }
 
 @Composable
