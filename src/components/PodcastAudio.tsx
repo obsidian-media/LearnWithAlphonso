@@ -32,6 +32,7 @@ export function PodcastAudio() {
   const setPlaying = usePodcastPlayer((state) => state.setPlaying);
   const setElapsed = usePodcastPlayer((state) => state.setElapsed);
   const setFailed = usePodcastPlayer((state) => state.setFailed);
+  const setMediaDuration = usePodcastPlayer((state) => state.setMediaDuration);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedRef = useRef(0);
@@ -144,6 +145,9 @@ export function PodcastAudio() {
   const onLoadedMetadata = () => {
     const audio = audioRef.current;
     if (!audio) return;
+    setMediaDuration(audio.duration);
+    // A learner who already dragged the scrubber has chosen a position; resuming now would undo it.
+    if (usePodcastPlayer.getState().seekRequest) return;
     const start = episode.positionSeconds;
     if (start <= 0) return;
     // Clamp against the MEDIA's duration, not the stored
@@ -184,6 +188,10 @@ export function PodcastAudio() {
       src={episode.audioUrl}
       preload="metadata"
       onLoadedMetadata={onLoadedMetadata}
+      onDurationChange={() => {
+        const audio = audioRef.current;
+        if (audio) setMediaDuration(audio.duration);
+      }}
       onTimeUpdate={onTimeUpdate}
       onError={() => setFailed(true)}
       onPlay={() => setPlaying(true)}

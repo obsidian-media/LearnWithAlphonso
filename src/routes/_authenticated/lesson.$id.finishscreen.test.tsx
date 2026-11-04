@@ -270,6 +270,8 @@ describe("FinishScreen celebration", () => {
     expect(screen.getByText("Nice work, lesson complete!").classList.contains("text-ink")).toBe(
       true,
     );
-    expect(screen.getByText("Nice work, lesson complete!").className).not.toContain("text-moss");
+    expect(screen.getByText("Nice work, lesson complete!").className).not.toMatch(
+      /text-moss|text-ink-soft/,
+    );
   });
 });

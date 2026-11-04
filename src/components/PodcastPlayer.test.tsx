@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { PodcastPlayer } from "./PodcastPlayer";
@@ -144,10 +144,37 @@ describe("PodcastPlayer scrubber", () => {
     expect(usePodcastPlayer.getState().elapsedSeconds).toBe(0);
   });
 
-  it("has a visible focus ring and no motion for people who asked for none", () => {
+  it("is the first stop in the tab order and takes focus from the keyboard", async () => {
+    const user = userEvent.setup();
     const slider = load();
-    expect(slider.className).toContain("focus-visible:ring-2");
-    expect(slider.className).toContain("motion-reduce:transition-none");
+    expect(slider).toBeEnabled();
+    await user.tab();
+    expect(slider).toHaveFocus();
+  });
+
+  it("takes its length from the media itself once known, not the stored duration", () => {
+    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setMediaDuration(200);
+    usePodcastPlayer.getState().setElapsed(50);
+    render(<PodcastPlayer />);
+    const slider = screen.getByRole("slider", { name: "Seek" });
+    expect(slider).toHaveAttribute("max", "200");
+    expect(screen.getByText("-2:30")).toBeInTheDocument();
+    // An unusable value falls back to the stored length.
+    act(() => usePodcastPlayer.getState().setMediaDuration(Number.NaN));
+    expect(slider).toHaveAttribute("max", "300");
+  });
+
+  it("while a drag is in progress only the readout moves; the seek happens once, on release", () => {
+    const slider = load(0);
+    fireEvent.pointerDown(slider);
+    fireEvent.change(slider, { target: { value: "60" } });
+    fireEvent.change(slider, { target: { value: "90" } });
+    expect(screen.getByText("1:30")).toBeInTheDocument();
+    expect(usePodcastPlayer.getState().seekRequest).toBeNull();
+    fireEvent.pointerUp(slider);
+    expect(usePodcastPlayer.getState().seekRequest?.seconds).toBe(90);
+    expect(usePodcastPlayer.getState().seekRequest?.token).toBe(1);
   });
 
   it("is hidden while playback has failed, where there is nothing to seek", () => {

@@ -26,6 +26,9 @@ type PodcastPlayerState = {
    * reaches the audio element, which applies it to currentTime (PodcastAudio.tsx).
    */
   seekRequest: { seconds: number; token: number } | null;
+  /** The media element's own length, once it reports a usable one; the stored duration can disagree with the file. */
+  mediaDuration: number | null;
+  setMediaDuration: (seconds: number) => void;
   play: (episode: PodcastEpisode) => void;
   toggle: () => void;
   /** Mirrors the media element's own play/pause state back into the UI. */
@@ -45,6 +48,9 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   failed: false,
   retryToken: 0,
   seekRequest: null,
+  mediaDuration: null,
+  setMediaDuration: (seconds) =>
+    set({ mediaDuration: Number.isFinite(seconds) && seconds > 0 ? seconds : null }),
   play: (episode) =>
     set({
       episode,
@@ -52,6 +58,7 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
       elapsedSeconds: episode.positionSeconds ?? 0,
       failed: false,
       seekRequest: null,
+      mediaDuration: null,
     }),
   toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
   setPlaying: (isPlaying) => set({ isPlaying }),
@@ -62,7 +69,8 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   seek: (seconds) =>
     set((state) => {
       if (!state.episode) return {};
-      const max = state.episode.durationSeconds > 0 ? state.episode.durationSeconds : seconds;
+      const length = state.mediaDuration ?? state.episode.durationSeconds;
+      const max = length > 0 ? length : seconds;
       const clamped = Math.min(Math.max(Number.isFinite(seconds) ? seconds : 0, 0), max);
       return {
         elapsedSeconds: clamped,
@@ -70,7 +78,14 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
       };
     }),
   close: () =>
-    set({ episode: null, isPlaying: false, elapsedSeconds: 0, failed: false, seekRequest: null }),
+    set({
+      episode: null,
+      isPlaying: false,
+      elapsedSeconds: 0,
+      failed: false,
+      seekRequest: null,
+      mediaDuration: null,
+    }),
 }));
 
 /** m:ss, the format the episode list and the player both render. */

@@ -482,6 +482,19 @@ describe("Lesson page", () => {
     expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
   });
 
+  it("the arrow keys still work right after a click on Next word or the speaker, which leaves that button focused", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Next word" }));
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowRight}");
+    expect(await screen.findByText("Word 3 of 8")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Play pronunciation for/ }));
+    await user.keyboard("{ArrowLeft}");
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+  });
+
   it("announces card changes: the Word n of N counter is a polite, atomic live region", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -509,8 +522,16 @@ describe("Lesson page", () => {
     await user.keyboard("{ArrowRight}");
     area.remove();
 
-    screen.getByRole("button", { name: "Next word" }).focus();
-    await user.keyboard("{ArrowRight}");
+    // Widgets that really use the arrows keep them.
+    for (const role of ["slider", "listbox", "radiogroup", "tablist"]) {
+      const widget = document.createElement("div");
+      widget.setAttribute("role", role);
+      widget.tabIndex = 0;
+      document.body.appendChild(widget);
+      widget.focus();
+      await user.keyboard("{ArrowRight}");
+      widget.remove();
+    }
 
     const dialog = document.createElement("div");
     dialog.setAttribute("role", "dialog");

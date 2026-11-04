@@ -100,6 +100,25 @@ describe("PodcastAudio", () => {
     expect(audio.currentTime).toBe(120);
   });
 
+  it("does not drag a learner back to the resume point after they have already seeked", () => {
+    usePodcastPlayer.getState().play({ ...episode, positionSeconds: 50 });
+    render(<PodcastAudio />);
+    const audio = screen.getByTestId("podcast-audio") as HTMLAudioElement;
+    Object.defineProperty(audio, "duration", { value: 300, configurable: true });
+    act(() => usePodcastPlayer.getState().seek(120));
+    fireEvent.loadedMetadata(audio);
+    expect(audio.currentTime).toBe(120);
+  });
+
+  it("reports the media's own length to the store", () => {
+    usePodcastPlayer.getState().play(episode);
+    render(<PodcastAudio />);
+    const audio = screen.getByTestId("podcast-audio") as HTMLAudioElement;
+    Object.defineProperty(audio, "duration", { value: 187, configurable: true });
+    fireEvent.durationChange(audio);
+    expect(usePodcastPlayer.getState().mediaDuration).toBe(187);
+  });
+
   it("clears isPlaying when the episode ends, so the bar stops claiming it is playing", () => {
     usePodcastPlayer.getState().play(episode);
     render(<PodcastAudio />);

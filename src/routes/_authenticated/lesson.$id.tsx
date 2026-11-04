@@ -761,12 +761,16 @@ function VocabDeckScreen({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Arrows belong to whatever has focus: a field moves its caret, a button or dialog its own widgets, and a
+      // Arrows belong to whatever has focus: a field moves its caret, a dialog or arrow-driven widget its own selection (a focused button does not use them, and a click leaves one focused), and a
       // modified arrow is a browser or screen reader shortcut. This listener is mounted only while the deck is
       // showing, so no other screen can receive it.
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       const target = e.target instanceof Element ? e.target : null;
-      if (target?.closest("input, textarea, select, button, [contenteditable], [role='dialog']"))
+      if (
+        target?.closest(
+          "input, textarea, select, [contenteditable], [role='dialog'], [role='slider'], [role='listbox'], [role='radiogroup'], [role='tablist']",
+        )
+      )
         return;
       if (e.key === "ArrowRight") setIndex((i) => Math.min(i + 1, count - 1));
       if (e.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../lib/progress";
 import { transcriptSaveCourse } from "../lib/podcast-tree";
 import { AI_NARRATED_LABEL } from "../lib/podcast-label";
@@ -22,6 +22,7 @@ export function PodcastPlayer() {
   const toggle = usePodcastPlayer((state) => state.toggle);
   const retry = usePodcastPlayer((state) => state.retry);
   const seek = usePodcastPlayer((state) => state.seek);
+  const mediaDuration = usePodcastPlayer((state) => state.mediaDuration);
   const close = usePodcastPlayer((state) => state.close);
 
   const [showTranscript, setShowTranscript] = useState(false);
@@ -98,7 +99,11 @@ export function PodcastPlayer() {
             {failed ? (
               <p className="text-xs text-rose-600">We couldn&apos;t play this episode.</p>
             ) : (
-              <Scrubber elapsed={elapsedSeconds} duration={episode.durationSeconds} onSeek={seek} />
+              <Scrubber
+                elapsed={elapsedSeconds}
+                duration={mediaDuration ?? episode.durationSeconds}
+                onSeek={seek}
+              />
             )}
           </div>
 
@@ -156,7 +161,8 @@ const PAGE_STEP_SECONDS = 30;
  * Seek bar with elapsed on the left and time remaining on the right (the iOS mini-bar has a Slider too).
  * A native range input, so pointer, touch and assistive-technology adjustment all work; the keys are
  * overridden only to take bigger steps than one second, which is useless on a five-minute episode.
- * The thumb has no transition at all under Reduce Motion.
+ * Nothing here animates, so there is no motion for Reduce Motion to remove. A drag moves only the readout;
+ * the seek happens once on release, so the audio element is not flooded with requests.
  */
 function Scrubber({
   elapsed,
@@ -169,7 +175,16 @@ function Scrubber({
 }) {
   const max = duration > 0 ? Math.round(duration) : 0;
   const value = Math.min(Math.max(Math.round(elapsed), 0), max);
-  const remaining = Math.max(max - value, 0);
+  const [draft, setDraft] = useState<number | null>(null);
+  const dragging = useRef(false);
+  const shown = draft ?? value;
+  const remaining = Math.max(max - shown, 0);
+
+  const commit = () => {
+    dragging.current = false;
+    if (draft !== null) onSeek(draft);
+    setDraft(null);
+  };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const delta: Record<string, number> = {
@@ -189,19 +204,29 @@ function Scrubber({
 
   return (
     <div className="mt-1 flex items-center gap-2">
-      <span className="tnum w-9 shrink-0 text-xs text-ink-soft/70">{formatDuration(value)}</span>
+      <span className="tnum w-9 shrink-0 text-xs text-ink-soft/70">{formatDuration(shown)}</span>
       <input
         type="range"
         aria-label="Seek"
-        aria-valuetext={`${formatDuration(value)} of ${formatDuration(max)}`}
+        aria-valuetext={`${formatDuration(shown)} of ${formatDuration(max)}`}
         min={0}
         max={max}
         step={1}
-        value={value}
+        value={shown}
         disabled={max === 0}
-        onChange={(event) => onSeek(Number(event.target.value))}
+        onPointerDown={() => {
+          dragging.current = true;
+        }}
+        onPointerUp={commit}
+        onPointerCancel={commit}
+        onChange={(event) => {
+          const next = Number(event.target.value);
+          // Without a pointer drag (assistive technology, a click on the track) there is no release to wait for.
+          if (dragging.current) setDraft(next);
+          else onSeek(next);
+        }}
         onKeyDown={onKeyDown}
-        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 rounded-full"
+        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 rounded-full"
       />
       <span className="tnum w-10 shrink-0 text-right text-xs text-ink-soft/70">
         -{formatDuration(remaining)}
