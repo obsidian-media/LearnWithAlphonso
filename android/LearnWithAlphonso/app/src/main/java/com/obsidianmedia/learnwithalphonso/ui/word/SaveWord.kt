@@ -54,7 +54,8 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordHint
-import com.obsidianmedia.learnwithalphonso.core.logic.WordSegmenter
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordPart
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordParts
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
@@ -99,6 +100,10 @@ fun SaveWordHost(container: AppContainer, content: @Composable () -> Unit) {
  * the words are reached through a custom action, "Save a word", which lists them (the counterpart of iOS's rotor). Any
  * [extraActions] (for example "Report this response") are kept beside it, and [accessibilityPrefix] ("Correct.") is
  * announced first.
+ *
+ * [courseSpans]: French and Spanish lesson explanations mix English with quoted course text. When set, only words inside
+ * these course-language strings are links, and the saved sentence is that string ([SaveWordParts]). Null links every
+ * word (Hector, Practice and transcripts, and English lessons, are wholly in the course's language).
  */
 @Composable
 fun TappableText(
@@ -110,26 +115,27 @@ fun TappableText(
     color: Color = AlphonsoColor.palette.ink,
     extraActions: List<CustomAccessibilityAction> = emptyList(),
     accessibilityPrefix: String? = null,
+    courseSpans: List<String>? = null,
 ) {
     val save by rememberUpdatedState(onSave)
-    val segments = remember(text) { WordSegmenter.segments(text) }
-    val annotated = remember(text, course, color) {
+    val parts = remember(text, course, courseSpans) { SaveWordParts.of(text, course, courseSpans) }
+    val annotated = remember(parts, color) {
         buildAnnotatedString {
-            for (segment in segments) {
-                if (segment.isWord && WordSegmenter.isSavable(segment.text)) {
+            parts.forEachIndexed { index, part ->
+                if (part is SaveWordPart.Word) {
                     val link = LinkAnnotation.Clickable(
-                        tag = "word:${segment.start}",
+                        tag = "word:$index",
                         styles = TextLinkStyles(style = SpanStyle(color = color)),
-                    ) { save(WordSegmenter.requestFor(text, segment, course)) }
-                    withLink(link) { append(segment.text) }
+                    ) { save(part.request) }
+                    withLink(link) { append(part.text) }
                 } else {
-                    append(segment.text)
+                    append(part.text)
                 }
             }
         }
     }
     var showWords by rememberSaveable { mutableStateOf(false) }
-    val spoken = (accessibilityPrefix?.let { "$it " } ?: "") + segments.joinToString("") { it.text }
+    val spoken = (accessibilityPrefix?.let { "$it " } ?: "") + parts.joinToString("") { it.text }
     Text(
         annotated,
         modifier = modifier.clearAndSetSemantics {
@@ -140,19 +146,17 @@ fun TappableText(
     )
     if (showWords) {
         // One entry per distinct word, in reading order, each saving the sentence of its first occurrence.
-        val words = remember(segments) {
-            segments.filter { it.isWord && WordSegmenter.isSavable(it.text) }.distinctBy { it.text.lowercase() }
-        }
+        val words = remember(parts) { parts.filterIsInstance<SaveWordPart.Word>().distinctBy { it.text.lowercase() } }
         AlertDialog(
             onDismissRequest = { showWords = false },
             title = { Text(SavedWordCopy.PICK_TITLE) },
             text = {
                 LazyColumn(Modifier.heightIn(max = 360.dp)) {
-                    items(words, key = { it.start }) { segment ->
+                    items(words, key = { it.text.lowercase() }) { word ->
                         TextButton(
-                            onClick = { showWords = false; save(WordSegmenter.requestFor(text, segment, course)) },
+                            onClick = { showWords = false; save(word.request) },
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text(segment.text, color = AlphonsoColor.palette.ink) }
+                        ) { Text(word.text, color = AlphonsoColor.palette.ink) }
                     }
                 }
             },

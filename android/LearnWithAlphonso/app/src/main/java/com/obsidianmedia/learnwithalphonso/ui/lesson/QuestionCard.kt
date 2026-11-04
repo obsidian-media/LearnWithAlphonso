@@ -78,7 +78,7 @@ fun QuestionCard(
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.choices[question.answer] == choice, onClick = { onPick(choice) })
                 }
-                if (checked) Explanation(container, isCorrect, question.explanation, course)
+                if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.FillInBlank -> {
                 Prompt(question.prompt)
@@ -88,12 +88,12 @@ fun QuestionCard(
                         question.bank.forEach { word -> AlphonsoSecondaryButton(word, onClick = { onPick(word) }, enabled = !checked, fullWidth = false) }
                     }
                 }
-                if (checked) Explanation(container, isCorrect, question.explanation, course)
+                if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Reorder -> {
                 Prompt(question.prompt)
                 ReorderArea(question.tokens, checked, onPick)
-                if (checked) Explanation(container, isCorrect, question.explanation, course)
+                if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Listening -> {
                 AlphonsoSectionHeader("Listening")
@@ -102,7 +102,7 @@ fun QuestionCard(
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.answer == choice, onClick = { onPick(choice) })
                 }
-                if (checked) Explanation(container, isCorrect, question.explanation, course)
+                if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Translate -> {
                 AlphonsoSectionHeader("Write it yourself")
@@ -127,7 +127,7 @@ fun QuestionCard(
                         Text(question.acceptableAnswers.firstOrNull() ?: "", style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                     }
                 }
-                if (checked) Explanation(container, isCorrect, question.explanation, course)
+                if (checked) Explanation(container, isCorrect, question.explanation, course, question)
             }
             is Question.Speak -> SpeakQuestionCard(container, question, course, checked, isCorrect, picked, onPick)
         }
@@ -135,15 +135,24 @@ fun QuestionCard(
 }
 
 /**
- * The explanation under a checked question. Its words are tappable in the English course only (SavedWordPolicy: the
- * explanation is written in English, so in French or Spanish it is mostly not the course's language), and only on a screen
- * that can open the save sheet. A hint says so for the first few times.
+ * The explanation under a checked question (SavedWordPolicy.scope). Its words are tappable in the English course, and in
+ * French and Spanish only where the question proves the text is course-language ([CourseLanguageSpans]); the English
+ * words around them stay plain. [question] is null for generated practice, which has nothing to prove the language of
+ * and so stays English-only. Only on a screen that can open the save sheet; a hint says so for the first few times.
  */
 @Composable
-internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course) {
-    val saveCourse = course.code.takeIf { SavedWordPolicy.allowsSaving(it) }
+internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course, question: Question? = null) {
+    val scope = if (question != null) {
+        SavedWordPolicy.scope(question, explanation, course.code)
+    } else if (SavedWordPolicy.savesWholeText(course.code)) {
+        SavedWordPolicy.Scope.WholeText
+    } else {
+        SavedWordPolicy.Scope.None
+    }
+    val saveCourse = course.code.takeIf { scope != SavedWordPolicy.Scope.None }
+    val courseSpans = (scope as? SavedWordPolicy.Scope.Spans)?.spans
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse)
+        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, courseSpans = courseSpans)
         if (saveCourse != null && LocalSaveWordHandler.current != null) SaveWordHintLine(container)
     }
 }

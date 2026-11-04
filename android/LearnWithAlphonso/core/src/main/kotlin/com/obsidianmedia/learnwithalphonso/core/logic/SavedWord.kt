@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
+import com.obsidianmedia.learnwithalphonso.core.content.Question
 import java.text.Normalizer
 
 /**
@@ -44,11 +45,39 @@ class SavedWordException(val error: SavedWordError) : Exception(error.name)
 /**
  * Where a lesson's text may offer "save this word" (SavedWordPolicy.swift). A saved word is filed under a course and
  * explained by the model as a word OF THAT LANGUAGE. A lesson's explanation is written in English in every course, with
- * French or Spanish words quoted inside it, so only the English course is wholly the course's language. Hector, Practice
- * and Campaign replies are different: they are wholly in the language being practised, so they are not gated by this.
+ * French or Spanish words quoted inside it. In the English course the explanation is wholly English, so every word on
+ * screen is a word of the course ([savesWholeText]). In the French and Spanish courses most of it is not, so only the
+ * course-language text the question itself proves is offered ([CourseLanguageSpans]); everything else, including the
+ * English words around it, stays plain. Hector, Practice and Campaign replies are different: they are wholly in the
+ * language being practised, so they are not gated by this.
  */
 object SavedWordPolicy {
-    fun allowsSaving(courseCode: String): Boolean = courseCode == "en"
+    /** What a lesson explanation offers for saving. */
+    sealed interface Scope {
+        data object None : Scope
+
+        /** Every word (the English course). */
+        data object WholeText : Scope
+
+        /** Only words inside these course-language strings (French and Spanish). */
+        data class Spans(val spans: List<String>) : Scope
+    }
+
+    fun allowsSaving(courseCode: String): Boolean = courseCode == "en" || courseCode == "fr" || courseCode == "es"
+
+    /** True where the whole of a lesson's text is in the course's language. */
+    fun savesWholeText(courseCode: String): Boolean = courseCode == "en"
+
+    /**
+     * What the explanation under [question] offers. Generated practice has no [Question]: it uses [savesWholeText] and
+     * stays English-only.
+     */
+    fun scope(question: Question, explanation: String, courseCode: String): Scope {
+        if (!allowsSaving(courseCode)) return Scope.None
+        if (savesWholeText(courseCode)) return Scope.WholeText
+        val spans = CourseLanguageSpans.spans(question, explanation)
+        return if (spans.isEmpty()) Scope.None else Scope.Spans(spans)
+    }
 }
 
 /** When to show the "Tap a word to save it." hint under a lesson explanation: the first few times only (SavedWordHint.swift). */

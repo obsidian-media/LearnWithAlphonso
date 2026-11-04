@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordPolicy
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -177,13 +178,13 @@ fun AlphonsoMascotBanner(message: String, modifier: Modifier = Modifier, mascot:
 
 /** "Alphonso says" tip shown on a wrong answer. */
 @Composable
-fun AlphonsoTipCard(explanation: String, modifier: Modifier = Modifier, saveCourse: String? = null) {
+fun AlphonsoTipCard(explanation: String, modifier: Modifier = Modifier, saveCourse: String? = null, courseSpans: List<String>? = null) {
     val p = AlphonsoColor.palette
-    // The words are links only when the caller knows the text is wholly in the course's language (SavedWordPolicy) and
-    // the screen can open a save sheet. Then the card is a container whose children read themselves, so TalkBack can reach
+    // The words are links only when the caller knows which text is in the course's language (SavedWordPolicy.scope: all of it
+    // in English, the proven spans in French and Spanish) and the screen can open a save sheet. Then the card is a container whose children read themselves, so TalkBack can reach
     // the links; a merged label would hide them.
     val onSave = LocalSaveWordHandler.current
-    val linksReachable = saveCourse != null && onSave != null
+    val linksReachable = saveCourse != null && onSave != null && (SavedWordPolicy.savesWholeText(saveCourse) || courseSpans != null)
     Row(
         modifier.fillMaxWidth().then(
             if (linksReachable) Modifier else Modifier.semantics(mergeDescendants = true) { contentDescription = "Incorrect. Alphonso says: $explanation" },
@@ -203,7 +204,7 @@ fun AlphonsoTipCard(explanation: String, modifier: Modifier = Modifier, saveCour
                 "Alphonso says", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp), color = p.ember,
                 modifier = if (linksReachable) Modifier.semantics { contentDescription = "Incorrect. Alphonso says" } else Modifier,
             )
-            if (linksReachable) TappableText(explanation, saveCourse!!, onSave!!, style = MaterialTheme.typography.bodyMedium, color = p.ink)
+            if (linksReachable) TappableText(explanation, saveCourse!!, onSave!!, style = MaterialTheme.typography.bodyMedium, color = p.ink, courseSpans = courseSpans)
             else Text(explanation, style = MaterialTheme.typography.bodyMedium, color = p.ink)
         }
         Spacer(Modifier.width(6.dp))
@@ -218,16 +219,16 @@ fun AlphonsoTipCard(explanation: String, modifier: Modifier = Modifier, saveCour
 
 /** The explanation under a checked question: quiet when right, a tip card when wrong. */
 @Composable
-fun ExplanationBlock(isCorrect: Boolean, explanation: String, modifier: Modifier = Modifier, saveCourse: String? = null) {
+fun ExplanationBlock(isCorrect: Boolean, explanation: String, modifier: Modifier = Modifier, saveCourse: String? = null, courseSpans: List<String>? = null) {
     val onSave = LocalSaveWordHandler.current
     if (isCorrect) {
-        if (saveCourse != null && onSave != null) {
-            TappableText(explanation, saveCourse, onSave, modifier = modifier, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft, accessibilityPrefix = "Correct.")
+        if (saveCourse != null && onSave != null && (SavedWordPolicy.savesWholeText(saveCourse) || courseSpans != null)) {
+            TappableText(explanation, saveCourse, onSave, modifier = modifier, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft, accessibilityPrefix = "Correct.", courseSpans = courseSpans)
         } else {
             Text(explanation, modifier = modifier.semantics { contentDescription = "Correct. $explanation" }, style = MaterialTheme.typography.bodySmall, color = AlphonsoColor.palette.inkSoft)
         }
     } else {
-        AlphonsoTipCard(explanation, modifier, saveCourse)
+        AlphonsoTipCard(explanation, modifier, saveCourse, courseSpans)
     }
 }
 
