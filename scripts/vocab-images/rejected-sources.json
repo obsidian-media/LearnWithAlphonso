@@ -51,6 +51,12 @@
       "politics-protest-religion"
     ]
   },
+  "pexels:12032762": {
+    "key": "post office",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:12098660": {
     "key": "escultura",
     "reasons": [
@@ -103,6 +109,19 @@
   },
   "pexels:13753910": {
     "key": "postman",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:13811358": {
+    "key": "alcohol",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:13907455": {
+    "key": "throw",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -183,6 +202,12 @@
   },
   "pexels:16135635": {
     "key": "photography",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:163332": {
+    "key": "catch",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -592,6 +617,13 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:35251427": {
+    "key": "notes",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
   "pexels:35429950": {
     "key": "comisaría",
     "reasons": [
@@ -762,6 +794,13 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:38928712": {
+    "key": "wait",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
   "pexels:39037790": {
     "key": "driving",
     "reasons": [
@@ -803,6 +842,12 @@
     "key": "heatwave",
     "reasons": [
       "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:40317538": {
+    "key": "reception",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:4452530": {
@@ -856,6 +901,12 @@
   },
   "pexels:4922356": {
     "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4968634": {
+    "key": "pay",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -931,6 +982,13 @@
     "key": "empty",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:586072": {
+    "key": "hurricane",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
     ]
   },
   "pexels:6169014": {
@@ -2030,6 +2088,12 @@
     "key": "le taxi",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7933279": {
+    "key": "drinks",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
     ]
   },
   "pixabay:79612": {

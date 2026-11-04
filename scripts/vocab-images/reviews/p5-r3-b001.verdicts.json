@@ -1,0 +1,19 @@
+{
+  "batch": "p5-r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p5-b005",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "pay": {
+      "verdict": "approve",
+      "alt": "A customer holds a bank card against a card reader at a shop checkout counter while the cashier holds it.",
+      "peopleVisible": true
+    },
+    "wait": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}
