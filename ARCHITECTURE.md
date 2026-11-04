@@ -1792,7 +1792,7 @@ band with the word on it (iOS, #350). The web and iOS lesson shows the cards one
 
 ## Podcast quiz
 
-#374 (backend), #375 (web UI), #376 (iOS UI: Kit `PodcastQuiz.swift`, `PodcastQuizSheet`, offered by `PodcastMiniBar` when playback finishes and from a `PodcastQuizRowButton` under episode rows), 2026-11-04; Android has none yet (in progress).
+#374 (backend), #375 (web UI), #376 (iOS UI: Kit `PodcastQuiz.swift`, `PodcastQuizSheet`, offered by `PodcastMiniBar` when playback finishes and from a `PodcastQuizRowButton` under episode rows), #381 (Android UI: core `PodcastQuiz`/`PodcastQuizSession`, `PodcastClient`, `PodcastQuizUi`), 2026-11-04; the quiz runs on web, iOS and Android.
 `src/data/podcast-quizzes.ts` holds 110 authored multiple-choice questions for 16 episodes
 and is the source of truth: `scripts/gen-podcast-quiz-migration.ts` regenerates the seed
 migration (`20261104100300`) and a test fails on drift, another grounds every answer in the
@@ -2334,7 +2334,7 @@ deploy`, both easy to forget (this bit a real session that added several
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
   2026-11-04 there are 378 web test files (4,558 tests plus 1 skipped, in CI on main after
-  #376), 1,189 Swift Kit tests and 800 Android JVM tests (counted from `@Test`); run `bun run
+  #376), 1,189 Swift Kit tests and 833 Android JVM tests (counted from `@Test`); run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
