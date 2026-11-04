@@ -8,6 +8,6 @@
 -- auth.uid() and it defaults to that.
 --
 -- Rollback: REVOKE INSERT (reporter, reported, reason, kind, context) ON public.content_reports FROM authenticated;
---           GRANT INSERT ON public.content_reports TO authenticated;
-REVOKE INSERT ON public.content_reports FROM authenticated;
+--           GRANT INSERT, SELECT ON public.content_reports TO authenticated;
+REVOKE INSERT, SELECT ON public.content_reports FROM authenticated;  -- SELECT was inert: no SELECT policy
 GRANT INSERT (reporter, reported, reason, kind, context) ON public.content_reports TO authenticated;

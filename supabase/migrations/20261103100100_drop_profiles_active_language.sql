@@ -4,5 +4,5 @@
 -- unpaid, so remove it rather than leave the trap.
 --
 -- Rollback: ALTER TABLE public.profiles ADD COLUMN active_language text NOT NULL DEFAULT 'en';
---           (column-level grants for authenticated would need re-adding.)
+--           GRANT INSERT, SELECT, UPDATE (active_language) ON public.profiles TO authenticated;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS active_language;

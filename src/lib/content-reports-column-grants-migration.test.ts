@@ -35,7 +35,7 @@ describe("content_reports column grants (real Postgres)", () => {
         WITH CHECK ((SELECT auth.uid()) = reporter);
       GRANT USAGE ON SCHEMA auth, public TO authenticated;
       GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;
-      GRANT INSERT ON public.content_reports TO authenticated;  -- the live state before the migration
+      GRANT INSERT, SELECT ON public.content_reports TO authenticated;  -- the live state before the migration
       GRANT ALL ON public.content_reports TO service_role;
     `);
     await db.exec(migration);
@@ -65,6 +65,12 @@ describe("content_reports column grants (real Postgres)", () => {
         [USER],
       ),
     ).rejects.toThrow(/permission denied/);
+  });
+
+  it("no longer lets clients read reports back (no SELECT policy, so the grant was inert)", async () => {
+    await expect(db.query("SELECT 1 FROM public.content_reports")).rejects.toThrow(
+      /permission denied/,
+    );
   });
 
   it("refuses a client-chosen id", async () => {
