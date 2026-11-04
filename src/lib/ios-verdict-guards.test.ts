@@ -160,7 +160,7 @@ describe("final review fixes", () => {
   it("a word card scrolls its own words, and its picture shrinks on a short screen", () => {
     const card = between(
       lesson,
-      "private func wordCard(_ item: VocabItem) -> some View",
+      "private func cardWords(_ item: VocabItem, index: Int) -> some View",
       "private var listContent",
     );
     expect(card).toContain("ScrollView {");

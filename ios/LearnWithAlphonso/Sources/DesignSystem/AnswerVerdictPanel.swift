@@ -22,7 +22,8 @@ struct AnswerVerdictPanel: View {
         return "Answer: \(correctAnswer)"
     }
 
-    private var tint: Color { correct ? AlphonsoColor.moss : AlphonsoColor.destructive }
+    /// Build 55: a wrong answer is the brand's coral (ember), not alarm red; it reads as "not quite", not as an error.
+    private var tint: Color { correct ? AlphonsoColor.moss : AlphonsoColor.ember }
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.sm + 4) {
@@ -46,13 +47,7 @@ struct AnswerVerdictPanel: View {
                 Spacer(minLength: 0)
             }
             Button(continueTitle, action: onContinue)
-                .buttonStyle(
-                    correct
-                        ? AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
-                        : AlphonsoPrimaryButtonStyle(
-                            tint: AlphonsoColor.destructive, shadow: Color(red: 0.55, green: 0, blue: 0.04),
-                            foreground: .white)
-                )
+                .buttonStyle(correct ? AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary) : AlphonsoPrimaryButtonStyle.alphonsoEmber)
         }
         .padding(AlphonsoSpacing.md)
         .background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 28, style: .continuous))

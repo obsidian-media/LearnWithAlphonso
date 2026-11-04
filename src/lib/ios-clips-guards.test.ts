@@ -222,7 +222,7 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
     expect(scrimAt).toBeGreaterThan(-1);
     expect(pinAt).toBeGreaterThan(scrimAt);
     expect(body).toContain(".opacity(pinOpacity)");
-    expect(sceneFile).toMatch(/pinOpacity: Double \{[^}]*held[^}]*60/s);
+    expect(sceneFile).toMatch(/pinOpacity: Double \{[\s\S]{0,120}?held[^}]*60/);
     // The scroll distance is tracked under Reduce Motion too (the fade is not motion; only parallax is gated).
     expect(between(body, ".onChange(of: rawOffset)", "}")).not.toContain("reduceMotion");
   });

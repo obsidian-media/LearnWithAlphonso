@@ -696,6 +696,8 @@ private struct QuestionCard: View {
                                 Button(word) { picked = word }
                                     .buttonStyle(.alphonsoWordChip(picked: picked == word))
                                     .disabled(checked)
+                                    // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
+                                    .padding(.bottom, 4)
                             }
                         }
                     }
@@ -798,6 +800,8 @@ private struct QuestionCard: View {
                         Button(token) { orderPicks.append(i) }
                             .buttonStyle(.alphonsoWordChip(picked: false))
                             .disabled(checked)
+                            // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
+                            .padding(.bottom, 4)
                     }
                 }
             }
@@ -914,35 +918,38 @@ private struct VocabScreen: View {
     /// to it. Swiping also moves between cards.
     private var deck: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Vocabulary · \(lesson.subtitle)".uppercased())
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                    Text(lesson.title)
-                        .font(AlphonsoFont.display(24, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.ink)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Vocabulary · \(lesson.subtitle)".uppercased())
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
+                Text(lesson.title)
+                    .font(AlphonsoFont.display(24, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                // Skip shares the counter's row (build 55): beside the title it crowded long titles.
+                HStack {
                     Text("Word \(page + 1) of \(items.count)")
                         .font(AlphonsoFont.sans(14))
                         .foregroundStyle(AlphonsoColor.inkSoft)
                         .monospacedDigit()
-                }
-                Spacer(minLength: 0)
-                if items.count > 1 {
-                    Button("Skip to practice", action: onStart)
-                        .font(AlphonsoFont.sans(14, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                    Spacer(minLength: 0)
+                    if items.count > 1 {
+                        Button("Skip to practice", action: onStart)
+                            .font(AlphonsoFont.sans(14, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                    }
                 }
             }
 
             TabView(selection: $page) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    wordCard(item)
+                    wordCard(item, index: index)
                         .padding(.horizontal, 2)
                         .padding(.top, 14)
                         .padding(.bottom, 8)
+                        // The card keeps its own height, at the top of the page.
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .tag(index)
                 }
             }
@@ -975,49 +982,86 @@ private struct VocabScreen: View {
     /// The card's picture: 180 pt, smaller on a short screen (an iPhone SE) so the words below it still fit.
     private static var cardImageHeight: CGFloat { min(180, UIScreen.main.bounds.height * 0.2) }
 
-    private func wordCard(_ item: VocabItem) -> some View {
-        // The words scroll inside the card when they still do not fit (a long example on a short screen).
-        ScrollView {
+    private func speakButton(_ item: VocabItem, foreground: Color = AlphonsoColor.ink) -> some View {
+        Button {
+            speak(item.term, course: course)
+        } label: {
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.body)
+                .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
+                .background(AlphonsoColor.surface, in: Circle())
+                .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(foreground)
+        .accessibilityLabel("Play pronunciation for \(item.term)")
+    }
+
+    /// A word with no photo (grammar words never have one) gets a coloured band with the word itself, large, in
+    /// place of the picture: a different tile tone per card so the deck still feels illustrated.
+    private func wordBand(_ item: VocabItem, index: Int) -> some View {
+        let tone = AlphonsoTileTone.allCases[index % AlphonsoTileTone.allCases.count]
+        return VStack(spacing: AlphonsoSpacing.sm) {
+            Text(item.term)
+                .font(AlphonsoFont.display(40, weight: .bold))
+                .foregroundStyle(tone.ink)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.5)
+                .lineLimit(2)
+            speakButton(item, foreground: tone.ink)
+        }
+        .padding(.horizontal, 56)
+        .padding(.vertical, AlphonsoSpacing.md + 4)
+        .frame(maxWidth: .infinity)
+        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg + 4, style: .continuous))
+    }
+
+    private func cardWords(_ item: VocabItem, index: Int) -> some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
             if let image = item.image {
                 VocabImageView(image: image, cardHeight: Self.cardImageHeight)
-            }
-            HStack(spacing: AlphonsoSpacing.sm) {
-                Text(item.term)
-                    .font(AlphonsoFont.display(34, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(2)
-                Button {
-                    speak(item.term, course: course)
-                } label: {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.body)
-                        .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
-                        .background(AlphonsoColor.surface, in: Circle())
-                        .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+                HStack(spacing: AlphonsoSpacing.sm) {
+                    Text(item.term)
+                        .font(AlphonsoFont.display(34, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(2)
+                    speakButton(item)
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(AlphonsoColor.ink)
-                .accessibilityLabel("Play pronunciation for \(item.term)")
+                .padding(.trailing, 56)
+            } else {
+                wordBand(item, index: index)
             }
-            .padding(.trailing, 56)
-            Text(item.meaning)
-                .font(AlphonsoFont.sans(16))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            Text(item.example)
-                .font(AlphonsoFont.sans(15).italic())
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .padding(.horizontal, AlphonsoSpacing.md)
-                .padding(.vertical, AlphonsoSpacing.sm + 2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            // Either line can be empty when the lesson data has no real meaning or example for the word.
+            if !item.meaning.isEmpty {
+                Text(item.meaning)
+                    .font(AlphonsoFont.sans(16))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !item.example.isEmpty {
+                Text(item.example)
+                    .font(AlphonsoFont.sans(15).italic())
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .padding(.vertical, AlphonsoSpacing.sm + 2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            }
         }
         .padding(AlphonsoSpacing.md + 4)
         .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    /// One card, as tall as its words (no stretched empty box). It scrolls inside only when the words do not fit
+    /// (a long example on an iPhone SE).
+    private func wordCard(_ item: VocabItem, index: Int) -> some View {
+        ViewThatFits(in: .vertical) {
+            cardWords(item, index: index)
+            ScrollView { cardWords(item, index: index) }
+                .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
         .background(
@@ -1176,7 +1220,7 @@ private struct FinishView: View {
     @Environment(\.dismiss) private var dismiss
 
     /// Clear space over the clip before the card starts, so Alphonso is seen first.
-    private static var clipWindow: CGFloat { UIScreen.main.bounds.height * 0.46 }
+    private static var clipWindow: CGFloat { UIScreen.main.bounds.height * 0.34 }
 
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
