@@ -4164,4 +4164,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: 'the sentence read "Consistent with with"; the blank follows the adjective, so the word before it is dropped',
     prompt: "Consistent ___ prior research, the findings confirm the theory.",
   },
+  "b1p17l5/b1p17q20": {
+    why: 'the sentence read "kind of two minds", which is not English; "kind of torn" keeps the answer kind',
+    prompt: "I'm ___ of torn about this.",
+  },
 };
