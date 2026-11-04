@@ -203,17 +203,33 @@ describe("app privacy manifest: collected data types (match the App Store Connec
    * the RevenueCat customer so the owner can see which one sells. Everything else is app functionality only.
    */
   const ANALYTICS = "NSPrivacyCollectedDataTypePurposeAnalytics";
+  /**
+   * Product Interaction is also Product Personalization: the learning record drives the due-review queue and the
+   * weak-word practice (ReviewQueueResolution), and the Play data-safety sheet already declares "personalisation"
+   * for the same data (android/.../play/data-safety.md).
+   */
+  const PERSONALIZATION = "NSPrivacyCollectedDataTypePurposeProductPersonalization";
   const ALSO_ANALYTICS: Record<string, RegExp> = {
     NSPrivacyCollectedDataTypeProductInteraction: /PaywallSource\.attributeKey/,
+  };
+  const ALSO_PERSONALIZATION: Record<string, RegExp> = {
+    NSPrivacyCollectedDataTypeProductInteraction: /ReviewQueueResolution/,
   };
 
   it("every type is linked to the user except diagnostics, never used for tracking, for app functionality (plus the declared analytics)", () => {
     for (const t of types) {
       expect(t.linked, t.type).toBe(!NOT_LINKED.includes(t.type));
       expect(t.tracking, t.type).toBe(false);
-      expect(t.purposes, t.type).toEqual(
-        t.type in ALSO_ANALYTICS ? [APP_FUNCTIONALITY, ANALYTICS] : [APP_FUNCTIONALITY],
-      );
+      const expected = [APP_FUNCTIONALITY];
+      if (t.type in ALSO_ANALYTICS) expected.push(ANALYTICS);
+      if (t.type in ALSO_PERSONALIZATION) expected.push(PERSONALIZATION);
+      expect(t.purposes.slice().sort(), t.type).toEqual(expected.sort());
+    }
+    for (const [type, evidence] of Object.entries(ALSO_PERSONALIZATION)) {
+      expect(
+        evidence.test(appCode),
+        `${type}: personalization declared but no code evidence ${evidence}`,
+      ).toBe(true);
     }
     for (const [type, evidence] of Object.entries(ALSO_ANALYTICS)) {
       expect(

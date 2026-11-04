@@ -92,6 +92,31 @@ describe("chunky answer tiles and word chips", () => {
     );
   });
 
+  it("the picked wrong tile uses the theme's wrong-answer colour (as the verdict panel does), with a distinct cross badge", () => {
+    const tile = between(panel, "struct AnswerChoiceButton: View", "struct ChunkyTileStyle");
+    const fill = between(tile, "private var fill: Color {", "private var edge: Color {");
+    const edge = between(tile, "private var edge: Color {", "var body: some View {");
+    // Fill and edge follow AlphonsoColor.wrongAnswer in the picked-and-wrong branch, never the correct branch.
+    expect(fill).toContain(
+      "if checked && isPicked { return AlphonsoColor.wrongAnswer.opacity(0.18) }",
+    );
+    expect(edge).toContain("if checked && isPicked { return AlphonsoColor.wrongAnswer }");
+    expect(fill).not.toMatch(/isCorrectChoice \{ return AlphonsoColor\.wrongAnswer/);
+    expect(edge).not.toMatch(/isCorrectChoice \{ return AlphonsoColor\.wrongAnswer/);
+    expect(tile).not.toContain("AlphonsoColor.destructive");
+    // Badges: white glyph on a solid disc (3:1 on the tile tint; a tinted glyph on the 18% tint fell to 2.8:1).
+    expect(tile).toMatch(
+      /"xmark\.circle\.fill"\)\.symbolRenderingMode\(\.palette\)\s*\.foregroundStyle\(\.white, AlphonsoColor\.wrongAnswer\)/,
+    );
+    expect(tile).toMatch(
+      /"checkmark\.circle\.fill"\)\.symbolRenderingMode\(\.palette\)\s*\.foregroundStyle\(\.white, AlphonsoColor\.moss\)/,
+    );
+    // Distinct by shape in every theme, and the colour split still keeps a non-moss wrong colour.
+    const theme = read("DesignSystem/AlphonsoTheme.swift");
+    expect(theme).toContain("case .studioInk, .manuscript: return false");
+    expect(theme).toContain("wrongAnswerUsesEmber ? ember : destructive");
+  });
+
   it("word banks and reorder pools use the chunky chip, highlighted when picked", () => {
     for (const file of [lesson, review]) {
       expect(file).toContain(".buttonStyle(.alphonsoWordChip(picked: picked == word))");
