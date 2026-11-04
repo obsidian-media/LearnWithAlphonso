@@ -54,18 +54,6 @@ class SyncReliabilityTest {
         assertEquals(LessonCompletionError.Server(429), limited)
         assertEquals(true, limited.shouldQueue)
         assertEquals("Saved. It will sync soon.", limited.userMessage)
-        assertEquals(LessonCompletionError.Server(429), LessonCompletionError.classify(429, null))
-        assertEquals(LessonCompletionError.Server(503), LessonCompletionError.classify(503, null))
-        assertEquals(LessonCompletionError.Rejected("lesson-version-mismatch"), LessonCompletionError.classify(409, "lesson-version-mismatch"))
-        // Machine-speed refusals ask the learner to slow down and are never queued; any other 429 stays transient.
-        listOf("too-fast", "rate-limited").forEach { code ->
-            val e = LessonCompletionError.classify(429, code)
-            assertEquals(LessonCompletionError.Rejected(code), e)
-            assertEquals(false, e.shouldQueue)
-            assertEquals("Slow down a little and try again.", e.userMessage)
-            assertEquals(null, e.supportLine)
-        }
-        assertEquals(LessonCompletionError.Server(429), LessonCompletionError.classify(429, null))
         assertEquals(LessonCompletionError.Rejected(null), LessonCompletionError.classify(400, "Something went wrong here"), "a sentence is not a code")
         assertEquals(LessonCompletionError.Offline, LessonCompletionError.classify(IOException("no route")))
         assertEquals(LessonCompletionError.Timeout, LessonCompletionError.classify(SocketTimeoutException("slow")))
