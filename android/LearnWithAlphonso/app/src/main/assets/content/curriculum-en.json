@@ -15324,7 +15324,7 @@
             {
               "id": "a2p7q24",
               "type": "mc",
-              "prompt": "Please wipe your feet on the ___ by the front door.",
+              "prompt": "Please wipe your feet on the ___ by the door.",
               "choices": [
                 "mat",
                 "bed",
@@ -17776,7 +17776,7 @@
               ],
               "answer": "on",
               "explanation": "\"on\" is correct here. Everyday vocabulary for giving and following directions.",
-              "meaning": "touching a place; \"on the corner\" means at the point where two streets meet",
+              "meaning": "touching a place, as in \"on the corner\"",
               "example": "Turn left, the bank is on the corner."
             },
             {
@@ -17918,7 +17918,7 @@
             {
               "id": "a2p14q6",
               "type": "mc",
-              "prompt": "I'm afraid I can't ___ to your party, I have other plans.",
+              "prompt": "I can't ___ to your party tonight.",
               "choices": [
                 "make it",
                 "do",
@@ -18569,7 +18569,7 @@
               ],
               "answer": "order",
               "explanation": "\"order\" is correct here. A2-level vocabulary for post office and banking errands.",
-              "meaning": "an instruction; in \"standing order\", a regular payment your bank makes for you",
+              "meaning": "a bank instruction, as in \"standing order\"",
               "example": "I set up a standing order for my rent."
             },
             {

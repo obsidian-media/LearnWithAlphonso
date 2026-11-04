@@ -1303,7 +1303,7 @@ The pharmacy is ___ the corner from here.|round|British way to say "around"
 It's about a five-minute ___ from here.|walk|a short trip on foot
 The bus stop is ___ the church.|outside|not inside a building
 Go ___ this road until you reach the roundabout.|down|along or to a lower place
-The café is ___ the corner of Main Street.|on|touching a place; "on the corner" means at the point where two streets meet|Turn left, the bank is on the corner.
+The café is ___ the corner of Main Street.|on|touching a place, as in "on the corner"|Turn left, the bank is on the corner.
 The nearest ATM is ___ the entrance.|inside|in the inner part of
 You can't miss it, it's ___ the town square.|in|inside a place or area`,
   },
@@ -1367,7 +1367,7 @@ Could I transfer money to another ___?|bank|a place that keeps people's money
 The bank ___ closes at five o'clock.|branch|one office of a bank
 I need to ___ my bank card, it's expired.|renew|to get a new copy
 Could you tell me the ___ to send this parcel?|cost|the price of something
-I'd like to set up a standing ___.|order|an instruction; in "standing order", a regular payment your bank makes for you|I set up a standing order for my rent.
+I'd like to set up a standing ___.|order|a bank instruction, as in "standing order"|I set up a standing order for my rent.
 The clerk asked me to ___ the form.|sign|to write your name on
 I need to collect a ___ from the post office.|delivery|something brought to your home`,
   },

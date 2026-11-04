@@ -2256,7 +2256,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a2p14l2/a2p14q6": {
     why: "reason added",
     wrong: ["do", "take", "have"],
-    prompt: "I'm afraid I can't ___ to your party, I have other plans.",
+    prompt: "I can't ___ to your party tonight.",
     context:
       "Make it to a party means to attend, and in the negative it politely declines; the other verbs build different phrases with to.",
   },
@@ -3835,7 +3835,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a2p7l5/a2p7q24": {
     why: "options and wording fixed after the third review",
     imageKey: "mat",
-    prompt: "Please wipe your feet on the ___ by the front door.",
+    prompt: "Please wipe your feet on the ___ by the door.",
     wrong: ["bed", "sofa", "wardrobe"],
   },
   "a2p8l4/a2p8q18": { why: "sewing also uses a needle", wrong: ["swimming", "badminton", "golf"] },
