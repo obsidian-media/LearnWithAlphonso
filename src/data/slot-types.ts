@@ -41,7 +41,7 @@ export const POOLS: Record<Exclude<SlotType, "inflection" | "category">, Set<str
     "what,when,where,why,who,whose,whom,which,how,how much,how many,how often,how long,how far,how old",
   ),
   quantifier: set(
-    "much,many,few,little,a few,a little,some,any,no,enough,plenty,several,lots of,a lot of,most,all,whole,more,both,neither,each,every,none,of,too",
+    "much,many,few,little,a few,a little,some,any,no,enough,plenty,several,lots of,a lot of,most,all,whole,more,less,fewer,both,neither,each,every,none,of,too",
   ),
   "collocation-verb": set(
     "make,do,take,have,get,give,go,spend,pay,catch,play,watch,listen to,ask,speak,write,ride,wash,brush,throw,say,tell,keep,break,save,run,see,look,read",
@@ -51,6 +51,9 @@ export const POOLS: Record<Exclude<SlotType, "inflection" | "category">, Set<str
 const PLACE = POOLS["place-prep"];
 const MOTION = POOLS["motion-prep"];
 const TIME = POOLS["time-prep"];
+// A fixed phrase ("by bus", "opposite from", "went up") can take any preposition or particle.
+for (const w of [...PLACE, ...MOTION, ...TIME, "off", "out", "away", "back", "next", "right"])
+  POOLS["fixed-prep"].add(w);
 
 const norm = (s: string) => s.toLowerCase().replace(/’/g, "'").trim();
 
@@ -98,11 +101,12 @@ export function inferSlot(
     // No article or possessive after the blank: a fixed phrase ("by bus", "in cash").
     if (
       !/^\s*(the|a|an|my|your|his|her|their|our|this|that)\b/i.test(after) &&
-      !TIME_OBJECT.test(after)
+      !(TIME_OBJECT.test(after) && TIME.has(a))
     )
       return "fixed-prep";
     const timey =
-      TIME_OBJECT.test(after) || ["during", "since", "until", "before", "after"].includes(a);
+      (TIME_OBJECT.test(after) && TIME.has(a)) ||
+      ["during", "since", "until", "before", "after"].includes(a);
     if (timey) return "time-prep";
     if (MOTION.has(a) && (MOTION_VERB.test(text) || !PLACE.has(a))) return "motion-prep";
     if (PLACE.has(a)) return "place-prep";

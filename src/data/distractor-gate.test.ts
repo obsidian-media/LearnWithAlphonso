@@ -142,10 +142,10 @@ describe("the A1/A2 English bank", () => {
     i: ReturnType<typeof checkDistractors>[number],
   ) => `${key} "${prompt}" ${JSON.stringify(i)}`;
 
-  // Pinned at the measured value and lowered by the phase 1 rewrite; never raised.
+  // Zero: every wrong option comes from its slot's pool (or the reviewed allow-list).
   // Target: 0. These are the questions whose wrong options come from outside their
   // slot's pool ("I ___ a student": am / plays, "The dog is ___ the door": into).
-  const OFF_POOL_QUESTION_BUDGET = 139;
+  const OFF_POOL_QUESTION_BUDGET = 0;
 
   it("does not add questions with a wrong option outside its slot's pool", () => {
     const bad = all.filter(({ issues }) => issues.some((i) => i.kind === "off-pool"));

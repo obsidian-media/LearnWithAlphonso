@@ -976,12 +976,12 @@
             {
               "id": "q2",
               "type": "fill",
-              "prompt": "___ you help me?",
+              "prompt": "___ you help me? (a polite request)",
               "bank": [
                 "Could",
-                "Ought",
-                "Does",
-                "Are"
+                "Must",
+                "Shall",
+                "Might"
               ],
               "answer": "Could",
               "explanation": "\"Could you…?\" is polite."
@@ -1250,12 +1250,12 @@
             {
               "id": "q6",
               "type": "fill",
-              "prompt": "The bank is ___ the café.",
+              "prompt": "The bank is ___ the café. (right beside it)",
               "bank": [
                 "next to",
-                "next of",
-                "next by",
-                "next in"
+                "opposite",
+                "behind",
+                "in front of"
               ],
               "answer": "next to",
               "explanation": "\"Next to\" = beside."
@@ -1613,7 +1613,7 @@
                 "in",
                 "on",
                 "at",
-                "of"
+                "by"
               ],
               "answer": "in",
               "explanation": "\"In\" is used with sizes and colours."
@@ -2862,9 +2862,9 @@
               "prompt": "I ___ a student.",
               "choices": [
                 "am",
-                "does",
+                "is",
                 "are",
-                "plays"
+                "be"
               ],
               "answer": 0,
               "explanation": "\"am\" is correct here. Match the verb form to the subject."
@@ -2874,9 +2874,9 @@
               "type": "fill",
               "prompt": "She ___ my sister.",
               "bank": [
-                "lives",
                 "are",
-                "does",
+                "am",
+                "be",
                 "is"
               ],
               "answer": "is",
@@ -2887,10 +2887,10 @@
               "type": "mc",
               "prompt": "They ___ at home.",
               "choices": [
-                "isn't",
-                "have",
+                "is",
+                "am",
                 "are",
-                "drinks"
+                "be"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. Match the verb form to the subject."
@@ -2934,8 +2934,8 @@
               "prompt": "It ___ cold today.",
               "bank": [
                 "are",
-                "opens",
-                "study",
+                "am",
+                "be",
                 "is"
               ],
               "answer": "is",
@@ -2947,9 +2947,9 @@
               "prompt": "My parents ___ teachers.",
               "choices": [
                 "is",
-                "fly",
+                "am",
                 "are",
-                "has"
+                "be"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. Match the verb form to the subject."
@@ -2973,9 +2973,9 @@
               "prompt": "I ___ like spicy food.",
               "choices": [
                 "don't",
-                "am",
-                "drinks",
-                "has"
+                "doesn't",
+                "isn't",
+                "aren't"
               ],
               "answer": 0,
               "explanation": "\"don't\" is correct here. Match the verb form to the subject."
@@ -2985,10 +2985,10 @@
               "type": "fill",
               "prompt": "He ___ not live here.",
               "bank": [
-                "have",
+                "do",
                 "does",
-                "drinks",
-                "am"
+                "is",
+                "are"
               ],
               "answer": "does",
               "explanation": "\"does\" is correct here. Match the verb form to the subject."
@@ -3006,9 +3006,9 @@
               "prompt": "___ you from Spain?",
               "bank": [
                 "Are",
-                "don't",
-                "lives",
-                "have"
+                "Is",
+                "Am",
+                "Do"
               ],
               "answer": "Are",
               "explanation": "\"Are\" is correct here. Match the verb form to the subject."
@@ -3018,10 +3018,10 @@
               "type": "mc",
               "prompt": "___ she speak French?",
               "choices": [
-                "goes",
-                "fly",
+                "Do",
+                "Is",
                 "Does",
-                "are"
+                "Are"
               ],
               "answer": 2,
               "explanation": "\"Does\" is correct here. Match the verb form to the subject."
@@ -3031,10 +3031,10 @@
               "type": "fill",
               "prompt": "The keys ___ on the table.",
               "bank": [
-                "opens",
+                "is",
                 "are",
-                "have",
-                "isn't"
+                "am",
+                "be"
               ],
               "answer": "are",
               "explanation": "\"are\" is correct here. Match the verb form to the subject."
@@ -3057,8 +3057,8 @@
               "type": "fill",
               "prompt": "I ___ two brothers.",
               "bank": [
-                "drinks",
                 "has",
+                "am",
                 "are",
                 "have"
               ],
@@ -3077,10 +3077,10 @@
               "type": "mc",
               "prompt": "She ___ a car.",
               "choices": [
+                "have",
                 "is",
-                "gets",
                 "has",
-                "don't"
+                "having"
               ],
               "answer": 2,
               "explanation": "\"has\" is correct here. Match the verb form to the subject."
@@ -3090,10 +3090,10 @@
               "type": "fill",
               "prompt": "We ___ not ready.",
               "bank": [
-                "goes",
-                "are",
                 "is",
-                "plays"
+                "are",
+                "am",
+                "be"
               ],
               "answer": "are",
               "explanation": "\"are\" is correct here. Match the verb form to the subject."
@@ -3104,9 +3104,9 @@
               "prompt": "___ it your birthday?",
               "choices": [
                 "Is",
-                "are",
-                "lives",
-                "don't"
+                "Are",
+                "Am",
+                "Do"
               ],
               "answer": 0,
               "explanation": "\"Is\" is correct here. Match the verb form to the subject."
@@ -3116,9 +3116,9 @@
               "type": "fill",
               "prompt": "They ___ breakfast at seven.",
               "bank": [
-                "lives",
+                "has",
+                "having",
                 "are",
-                "plays",
                 "have"
               ],
               "answer": "have",
@@ -3176,9 +3176,9 @@
               "prompt": "My phone ___ working.",
               "choices": [
                 "isn't",
-                "study",
-                "Does",
-                "have"
+                "aren't",
+                "doesn't",
+                "don't"
               ],
               "answer": 0,
               "explanation": "\"isn't\" is correct here. Match the verb form to the subject."
@@ -3612,9 +3612,9 @@
               "type": "fill",
               "prompt": "I was born ___ 1998.",
               "bank": [
-                "down",
                 "on",
-                "across",
+                "at",
+                "for",
                 "in"
               ],
               "answer": "in",
@@ -3627,8 +3627,8 @@
               "choices": [
                 "at",
                 "in",
-                "beside",
-                "opposite"
+                "on",
+                "for"
               ],
               "answer": 0,
               "explanation": "\"at\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3636,11 +3636,11 @@
             {
               "id": "a1p4q3",
               "type": "fill",
-              "prompt": "The cat is ___ the table.",
+              "prompt": "The cat is ___ the table. (below it)",
               "bank": [
-                "into",
-                "during",
-                "down",
+                "above",
+                "behind",
+                "beside",
                 "under"
               ],
               "answer": "under",
@@ -3651,10 +3651,10 @@
               "type": "mc",
               "prompt": "She lives ___ Paris.",
               "choices": [
+                "on",
                 "at",
-                "opposite",
                 "in",
-                "across"
+                "to"
               ],
               "answer": 2,
               "explanation": "\"in\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3669,12 +3669,12 @@
             {
               "id": "a1p4q5",
               "type": "fill",
-              "prompt": "Put the book ___ the shelf.",
+              "prompt": "Put the book ___ the shelf. (on its top surface)",
               "bank": [
-                "into",
-                "at",
+                "in",
+                "under",
                 "on",
-                "in"
+                "behind"
               ],
               "answer": "on",
               "explanation": "\"on\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3684,9 +3684,9 @@
               "type": "mc",
               "prompt": "I'll see you ___ the weekend.",
               "choices": [
-                "on",
+                "in",
                 "at",
-                "above"
+                "of"
               ],
               "answer": 1,
               "explanation": "\"at\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3694,11 +3694,11 @@
             {
               "id": "a1p4q7",
               "type": "fill",
-              "prompt": "The shop is ___ the bank.",
+              "prompt": "The shop is ___ the bank. (right beside it)",
               "bank": [
-                "into",
-                "during",
-                "down",
+                "opposite",
+                "behind",
+                "in front of",
                 "next to"
               ],
               "answer": "next to",
@@ -3712,7 +3712,7 @@
                 "on",
                 "at",
                 "in",
-                "above"
+                "for"
               ],
               "answer": 2,
               "explanation": "\"in\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3740,11 +3740,11 @@
             {
               "id": "a1p4q10",
               "type": "mc",
-              "prompt": "The bus stops ___ the corner.",
+              "prompt": "The bus stops ___ the corner. (at that exact point)",
               "choices": [
                 "at",
-                "into",
-                "on"
+                "in",
+                "under"
               ],
               "answer": 0,
               "explanation": "\"at\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3752,12 +3752,12 @@
             {
               "id": "a1p4q11",
               "type": "mc",
-              "prompt": "There is a picture ___ the wall.",
+              "prompt": "There is a picture ___ the wall. (touching its surface)",
               "choices": [
                 "on",
                 "in",
-                "into",
-                "at"
+                "under",
+                "behind"
               ],
               "answer": 0,
               "explanation": "\"on\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3765,11 +3765,11 @@
             {
               "id": "a1p4q12",
               "type": "fill",
-              "prompt": "The keys are ___ my bag.",
+              "prompt": "The keys are ___ my bag. (inside it)",
               "bank": [
-                "across",
-                "down",
                 "on",
+                "under",
+                "behind",
                 "in"
               ],
               "answer": "in",
@@ -3778,12 +3778,12 @@
             {
               "id": "a1p4q13",
               "type": "mc",
-              "prompt": "She sits ___ me in class.",
+              "prompt": "She sits ___ me in class. (right next to me)",
               "choices": [
-                "down",
                 "behind",
+                "opposite",
                 "beside",
-                "above"
+                "in front of"
               ],
               "answer": 2,
               "explanation": "\"beside\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3791,12 +3791,12 @@
             {
               "id": "a1p4q14",
               "type": "fill",
-              "prompt": "The plane flies ___ the clouds.",
+              "prompt": "The plane flies ___ the clouds. (higher than them)",
               "bank": [
                 "above",
-                "into",
-                "down",
-                "during"
+                "below",
+                "among",
+                "in"
               ],
               "answer": "above",
               "explanation": "\"above\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3811,12 +3811,12 @@
             {
               "id": "a1p4q15",
               "type": "mc",
-              "prompt": "Walk ___ the bridge.",
+              "prompt": "Walk ___ the bridge. (from one side to the other)",
               "choices": [
                 "across",
-                "down",
-                "into",
-                "during"
+                "along",
+                "under",
+                "into"
               ],
               "answer": 0,
               "explanation": "\"across\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3824,12 +3824,12 @@
             {
               "id": "a1p4q16",
               "type": "fill",
-              "prompt": "The dog is ___ the door.",
+              "prompt": "The dog is ___ the door. (hidden on the other side)",
               "bank": [
-                "into",
-                "down",
+                "in front of",
+                "beside",
                 "behind",
-                "during"
+                "on"
               ],
               "answer": "behind",
               "explanation": "\"behind\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3837,12 +3837,12 @@
             {
               "id": "a1p4q17",
               "type": "mc",
-              "prompt": "Come ___ the room.",
+              "prompt": "Come ___ the room. (enter it)",
               "choices": [
-                "on",
-                "down",
+                "onto",
+                "across",
                 "into",
-                "in"
+                "past"
               ],
               "answer": 2,
               "explanation": "\"into\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3867,7 +3867,7 @@
               "choices": [
                 "at",
                 "on",
-                "into"
+                "in"
               ],
               "answer": 0,
               "explanation": "\"at\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3887,7 +3887,7 @@
                 "in",
                 "at",
                 "on",
-                "above"
+                "for"
               ],
               "answer": 0,
               "explanation": "\"in\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3895,12 +3895,12 @@
             {
               "id": "a1p4q21",
               "type": "fill",
-              "prompt": "The cafe is ___ the station.",
+              "prompt": "The cafe is ___ the station. (across the road from it)",
               "bank": [
-                "during",
-                "down",
+                "behind",
+                "next to",
                 "opposite",
-                "into"
+                "inside"
               ],
               "answer": "opposite",
               "explanation": "\"opposite\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3910,10 +3910,10 @@
               "type": "mc",
               "prompt": "He is ___ holiday.",
               "choices": [
-                "across",
+                "in",
                 "at",
                 "on",
-                "down"
+                "to"
               ],
               "answer": 2,
               "explanation": "\"on\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3921,12 +3921,12 @@
             {
               "id": "a1p4q23",
               "type": "fill",
-              "prompt": "The ball rolled ___ the hill.",
+              "prompt": "The ball rolled ___ the hill. (from the top to the bottom)",
               "bank": [
-                "next to",
+                "up",
                 "down",
-                "on",
-                "into"
+                "along",
+                "across"
               ],
               "answer": "down",
               "explanation": "\"down\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -6282,12 +6282,12 @@
             {
               "id": "a1p11q8",
               "type": "mc",
-              "prompt": "This costs ___ than I expected.",
+              "prompt": "This costs ___ than I expected. (a higher price)",
               "choices": [
-                "money",
-                "spent",
+                "less",
+                "fewer",
                 "more",
-                "enough"
+                "much"
               ],
               "answer": 2,
               "explanation": "\"more\" is correct here. Everyday number and money vocabulary."
@@ -6472,12 +6472,12 @@
             {
               "id": "a1p11q21",
               "type": "fill",
-              "prompt": "She saved ___ money for college.",
+              "prompt": "She saved ___ money for college. (as much as she needed)",
               "bank": [
                 "enough",
-                "contactless",
-                "exact",
-                "more"
+                "many",
+                "few",
+                "several"
               ],
               "answer": "enough",
               "explanation": "\"enough\" is correct here. Everyday number and money vocabulary."
@@ -6485,12 +6485,12 @@
             {
               "id": "a1p11q22",
               "type": "mc",
-              "prompt": "The price went ___ last month.",
+              "prompt": "The price went ___ last month. (it became more expensive)",
               "choices": [
-                "enough",
-                "money",
+                "down",
+                "off",
                 "up",
-                "change"
+                "out"
               ],
               "answer": 2,
               "explanation": "\"up\" is correct here. Everyday number and money vocabulary."
@@ -8116,10 +8116,10 @@
               "type": "mc",
               "prompt": "We ___ lunch at around one o'clock.",
               "choices": [
-                "washes",
-                "brushes",
+                "has",
+                "having",
                 "have",
-                "has"
+                "haves"
               ],
               "answer": 2,
               "explanation": "\"have\" is correct here. Simple present tense sentences describing a typical day."
@@ -8460,9 +8460,9 @@
               "prompt": "Please put your hand ___ if you know the answer.",
               "bank": [
                 "up",
-                "homework",
-                "ruler",
-                "listen"
+                "down",
+                "out",
+                "off"
               ],
               "answer": "up",
               "explanation": "\"up\" is correct here. Common classroom vocabulary for beginners."
@@ -8584,9 +8584,9 @@
               "prompt": "Please sit ___ and be quiet.",
               "bank": [
                 "down",
-                "board",
-                "desks",
-                "raise"
+                "out",
+                "off",
+                "away"
               ],
               "answer": "down",
               "explanation": "\"down\" is correct here. Common classroom vocabulary for beginners."
@@ -8675,10 +8675,10 @@
               "type": "mc",
               "prompt": "We have a test ___ Friday.",
               "choices": [
-                "down",
-                "book",
+                "in",
+                "at",
                 "on",
-                "up"
+                "for"
               ],
               "answer": 2,
               "explanation": "\"on\" is correct here. Common classroom vocabulary for beginners."
@@ -11916,7 +11916,7 @@
               "prompt": "She ___ cooking when I arrived.",
               "choices": [
                 "were",
-                "started",
+                "is",
                 "was",
                 "did"
               ],
@@ -11926,12 +11926,12 @@
             {
               "id": "a2p2q2",
               "type": "fill",
-              "prompt": "They ___ not come to the party.",
+              "prompt": "They ___ not come to the party last night.",
               "bank": [
-                "was",
+                "do",
                 "did",
-                "lost",
-                "were playing"
+                "was",
+                "were"
               ],
               "answer": "did",
               "explanation": "\"did\" is correct here. Past simple for finished events; past continuous for background action."
@@ -11989,8 +11989,8 @@
               "bank": [
                 "was",
                 "were",
-                "used",
-                "didn't"
+                "are",
+                "did"
               ],
               "answer": "were",
               "explanation": "\"were\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12011,12 +12011,12 @@
             {
               "id": "a2p2q8",
               "type": "fill",
-              "prompt": "I ___ tired, so I left.",
+              "prompt": "Yesterday I ___ tired, so I left.",
               "bank": [
                 "was",
-                "didn't",
-                "arrived",
-                "were talking"
+                "were",
+                "am",
+                "is"
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12026,10 +12026,10 @@
               "type": "mc",
               "prompt": "She ___ used to smoke.",
               "choices": [
-                "arrived",
-                "was",
+                "doesn't",
+                "don't",
                 "didn't",
-                "went"
+                "wasn't"
               ],
               "answer": 2,
               "explanation": "\"didn't\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12044,12 +12044,12 @@
             {
               "id": "a2p2q10",
               "type": "mc",
-              "prompt": "It ___ raining all morning.",
+              "prompt": "It ___ raining all morning yesterday.",
               "choices": [
-                "started",
-                "went",
+                "were",
+                "is",
                 "was",
-                "were"
+                "are"
               ],
               "answer": 2,
               "explanation": "\"was\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12073,8 +12073,8 @@
               "prompt": "He ___ never late before.",
               "choices": [
                 "was",
-                "used",
-                "lost",
+                "were",
+                "is",
                 "am"
               ],
               "answer": 0,
@@ -12116,12 +12116,12 @@
             {
               "id": "a2p2q15",
               "type": "fill",
-              "prompt": "We ___ hear anything.",
+              "prompt": "We ___ hear anything last night.",
               "bank": [
                 "didn't",
-                "were talking",
-                "got",
-                "does"
+                "don't",
+                "weren't",
+                "wasn't"
               ],
               "answer": "didn't",
               "explanation": "\"didn't\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12142,11 +12142,11 @@
             {
               "id": "a2p2q17",
               "type": "fill",
-              "prompt": "What ___ you doing at six?",
+              "prompt": "What ___ you doing at six yesterday?",
               "bank": [
-                "used",
-                "didn't",
                 "was",
+                "are",
+                "did",
                 "were"
               ],
               "answer": "were",
@@ -12203,10 +12203,10 @@
               "type": "mc",
               "prompt": "I ___ reading when she called.",
               "choices": [
-                "got",
-                "did",
+                "were",
+                "am",
                 "was",
-                "used"
+                "did"
               ],
               "answer": 2,
               "explanation": "\"was\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12214,12 +12214,12 @@
             {
               "id": "a2p2q22",
               "type": "fill",
-              "prompt": "They ___ a great time.",
+              "prompt": "They ___ a great time last summer.",
               "bank": [
-                "were talking",
+                "have",
                 "had",
-                "were",
-                "was"
+                "has",
+                "having"
               ],
               "answer": "had",
               "explanation": "\"had\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12242,10 +12242,10 @@
               "type": "fill",
               "prompt": "She ___ born in Lisbon.",
               "bank": [
-                "started",
                 "were",
+                "is",
                 "was",
-                "went"
+                "did"
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12679,10 +12679,10 @@
               "type": "mc",
               "prompt": "How much ___ this cost?",
               "choices": [
-                "taken",
-                "try",
+                "do",
+                "is",
                 "does",
-                "do"
+                "are"
               ],
               "answer": 2,
               "explanation": "\"does\" is correct here. Fixed travel and shopping phrases."
@@ -13165,10 +13165,10 @@
               "type": "mc",
               "prompt": "There's ___ of space.",
               "choices": [
-                "much",
-                "pinch",
+                "many",
+                "few",
                 "plenty",
-                "more"
+                "several"
               ],
               "answer": 2,
               "explanation": "\"plenty\" is correct here. Countable nouns take many/few; uncountable nouns take much/little."
@@ -13323,9 +13323,9 @@
               "prompt": "Both ___ them agreed.",
               "choices": [
                 "of",
-                "much",
-                "no",
-                "more"
+                "to",
+                "with",
+                "from"
               ],
               "answer": 0,
               "explanation": "\"of\" is correct here. Countable nouns take many/few; uncountable nouns take much/little."
@@ -13335,9 +13335,9 @@
               "type": "fill",
               "prompt": "Neither ___ us was ready.",
               "bank": [
-                "no",
-                "more",
-                "much",
+                "to",
+                "with",
+                "from",
                 "of"
               ],
               "answer": "of",
@@ -13375,11 +13375,11 @@
             {
               "id": "a2p6q0",
               "type": "fill",
-              "prompt": "I think it ___ rain.",
+              "prompt": "I think it ___ rain tomorrow. (a prediction, not a possibility)",
               "bank": [
-                "starts",
-                "ought",
-                "going",
+                "might",
+                "may",
+                "could",
                 "will"
               ],
               "answer": "will",
@@ -13388,12 +13388,12 @@
             {
               "id": "a2p6q1",
               "type": "mc",
-              "prompt": "We ___ going to move house.",
+              "prompt": "We ___ going to move house next month.",
               "choices": [
-                "will",
-                "starts",
+                "is",
+                "am",
                 "are",
-                "is"
+                "were"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13401,12 +13401,12 @@
             {
               "id": "a2p6q2",
               "type": "fill",
-              "prompt": "She ___ meeting Tom at six.",
+              "prompt": "She ___ meeting Tom at six tonight.",
               "bank": [
                 "is",
-                "going",
+                "are",
                 "am",
-                "will"
+                "was"
               ],
               "answer": "is",
               "explanation": "\"is\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13414,12 +13414,12 @@
             {
               "id": "a2p6q3",
               "type": "mc",
-              "prompt": "___ you help me, please?",
+              "prompt": "___ you help me, please? (a polite request)",
               "choices": [
                 "Will",
-                "going",
-                "starts",
-                "Ought"
+                "Shall",
+                "Must",
+                "Might"
               ],
               "answer": 0,
               "explanation": "\"Will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13459,11 +13459,11 @@
             {
               "id": "a2p6q6",
               "type": "fill",
-              "prompt": "They ___ probably be late.",
+              "prompt": "They ___ probably be late. (a prediction)",
               "bank": [
-                "starts",
-                "ought",
-                "going",
+                "might",
+                "can",
+                "must",
                 "will"
               ],
               "answer": "will",
@@ -13483,12 +13483,12 @@
             {
               "id": "a2p6q8",
               "type": "fill",
-              "prompt": "I ___ have the soup, please.",
+              "prompt": "I ___ have the soup, please. (deciding now, and sure)",
               "bank": [
-                "are",
-                "ought",
+                "might",
+                "may",
                 "will",
-                "taking"
+                "could"
               ],
               "answer": "will",
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13498,10 +13498,10 @@
               "type": "mc",
               "prompt": "What ___ you doing tonight?",
               "choices": [
-                "going",
-                "leaves",
+                "is",
+                "am",
                 "are",
-                "am"
+                "were"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13516,12 +13516,12 @@
             {
               "id": "a2p6q10",
               "type": "mc",
-              "prompt": "He ___ be twenty next month.",
+              "prompt": "He ___ be twenty next month. (a certain fact)",
               "choices": [
-                "starts",
-                "going",
+                "might",
+                "may",
                 "will",
-                "ought"
+                "could"
               ],
               "answer": 2,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13531,10 +13531,10 @@
               "type": "fill",
               "prompt": "We're ___ dinner at eight.",
               "bank": [
-                "is",
+                "have",
                 "having",
-                "leaves",
-                "will"
+                "has",
+                "had"
               ],
               "answer": "having",
               "explanation": "\"having\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13542,12 +13542,12 @@
             {
               "id": "a2p6q12",
               "type": "mc",
-              "prompt": "I promise I ___ tell anyone.",
+              "prompt": "I promise I ___ tell anyone. (a promise)",
               "choices": [
                 "won't",
-                "starts",
-                "going",
-                "ought"
+                "can't",
+                "shouldn't",
+                "mustn't"
               ],
               "answer": 0,
               "explanation": "\"won't\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13588,11 +13588,11 @@
             {
               "id": "a2p6q15",
               "type": "fill",
-              "prompt": "___ we take a taxi?",
+              "prompt": "___ we take a taxi? (an offer or suggestion)",
               "bank": [
-                "Ought",
-                "is",
-                "are",
+                "Must",
+                "Might",
+                "Would",
                 "Shall"
               ],
               "answer": "Shall",
@@ -13601,12 +13601,12 @@
             {
               "id": "a2p6q16",
               "type": "mc",
-              "prompt": "By June I ___ have finished.",
+              "prompt": "By June I ___ have finished. (certain)",
               "choices": [
                 "will",
-                "taking",
-                "leaves",
-                "Shall"
+                "might",
+                "may",
+                "could"
               ],
               "answer": 0,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13625,12 +13625,12 @@
             {
               "id": "a2p6q18",
               "type": "mc",
-              "prompt": "Perhaps they ___ come later.",
+              "prompt": "I'm certain they ___ come later.",
               "choices": [
-                "is",
-                "Shall",
+                "might",
+                "may",
                 "will",
-                "going"
+                "could"
               ],
               "answer": 2,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13658,12 +13658,12 @@
             {
               "id": "a2p6q20",
               "type": "fill",
-              "prompt": "It ___ be easy, I'm afraid.",
+              "prompt": "It ___ be easy, I'm afraid. (it is certain to be hard)",
               "bank": [
-                "having",
+                "will",
                 "won't",
-                "ought",
-                "going"
+                "might",
+                "may"
               ],
               "answer": "won't",
               "explanation": "\"won't\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13671,12 +13671,12 @@
             {
               "id": "a2p6q21",
               "type": "mc",
-              "prompt": "We ___ going to need help.",
+              "prompt": "We ___ going to need help soon.",
               "choices": [
-                "won't",
-                "leaves",
+                "is",
+                "am",
                 "are",
-                "is"
+                "were"
               ],
               "answer": 2,
               "explanation": "\"are\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13684,12 +13684,12 @@
             {
               "id": "a2p6q22",
               "type": "fill",
-              "prompt": "I ___ call you when I arrive.",
+              "prompt": "I ___ call you when I arrive. (a promise)",
               "bank": [
-                "ought",
+                "might",
                 "will",
-                "going",
-                "is"
+                "may",
+                "could"
               ],
               "answer": "will",
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13700,9 +13700,9 @@
               "prompt": "She ___ flying to Rome tomorrow.",
               "choices": [
                 "is",
-                "will",
-                "going",
-                "am"
+                "are",
+                "am",
+                "was"
               ],
               "answer": 0,
               "explanation": "\"is\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -13710,12 +13710,12 @@
             {
               "id": "a2p6q24",
               "type": "fill",
-              "prompt": "Nobody ___ notice.",
+              "prompt": "Nobody ___ notice. (I am sure)",
               "bank": [
-                "ought",
-                "are",
+                "might",
+                "may",
                 "will",
-                "taking"
+                "could"
               ],
               "answer": "will",
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements."
@@ -15257,9 +15257,9 @@
               "prompt": "I'll ___ the chicken, please.",
               "choices": [
                 "have",
-                "booked",
-                "included",
-                "does"
+                "has",
+                "having",
+                "had"
               ],
               "answer": 0,
               "explanation": "\"have\" is correct here. Common phrases for eating out."
@@ -15992,12 +15992,12 @@
             {
               "id": "a2p13q3",
               "type": "mc",
-              "prompt": "The supermarket is ___ from the bakery.",
+              "prompt": "The supermarket is ___ from the bakery. (on the other side of the street)",
               "choices": [
-                "down",
-                "behind",
+                "next",
+                "near",
                 "opposite",
-                "next"
+                "behind"
               ],
               "answer": 2,
               "explanation": "\"opposite\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16028,9 +16028,9 @@
               "prompt": "Walk ___ two blocks and you'll see it.",
               "choices": [
                 "for",
+                "on",
                 "around",
-                "up",
-                "on"
+                "to"
               ],
               "answer": 0,
               "explanation": "\"for\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16038,12 +16038,12 @@
             {
               "id": "a2p13q6",
               "type": "fill",
-              "prompt": "The bank is ___ the post office and the cafe.",
+              "prompt": "The bank is ___ the post office and the cafe. (with one on each side)",
               "bank": [
                 "between",
-                "for",
-                "right",
-                "down"
+                "behind",
+                "beside",
+                "near"
               ],
               "answer": "between",
               "explanation": "\"between\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16064,11 +16064,11 @@
             {
               "id": "a2p13q8",
               "type": "fill",
-              "prompt": "The museum is just ___ the corner.",
+              "prompt": "The museum is just ___ the corner. (just out of sight, past the bend)",
               "bank": [
-                "left",
-                "for",
-                "turning",
+                "over",
+                "through",
+                "into",
                 "around"
               ],
               "answer": "around",
@@ -16077,12 +16077,12 @@
             {
               "id": "a2p13q9",
               "type": "mc",
-              "prompt": "Keep walking ___ the river.",
+              "prompt": "Keep walking ___ the river. (beside it, in its direction)",
               "choices": [
                 "along",
-                "right",
-                "in",
-                "between"
+                "across",
+                "into",
+                "over"
               ],
               "answer": 0,
               "explanation": "\"along\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16110,12 +16110,12 @@
             {
               "id": "a2p13q11",
               "type": "fill",
-              "prompt": "Go ___ the bridge to reach the old town.",
+              "prompt": "Go ___ the bridge to reach the old town. (from one side to the other)",
               "bank": [
                 "over",
-                "walk",
-                "up",
-                "left"
+                "under",
+                "along",
+                "into"
               ],
               "answer": "over",
               "explanation": "\"over\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16123,12 +16123,12 @@
             {
               "id": "a2p13q12",
               "type": "mc",
-              "prompt": "The hotel is ___ the city centre.",
+              "prompt": "The hotel is ___ the city centre. (close to it, not in it)",
               "choices": [
-                "right",
-                "walk",
+                "in",
+                "inside",
                 "near",
-                "down"
+                "between"
               ],
               "answer": 2,
               "explanation": "\"near\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16149,12 +16149,12 @@
             {
               "id": "a2p13q14",
               "type": "mc",
-              "prompt": "The library is ___ the town hall.",
+              "prompt": "The library is ___ the town hall. (at the back of it)",
               "choices": [
                 "behind",
-                "straight",
-                "up",
-                "walk"
+                "in front of",
+                "beside",
+                "opposite"
               ],
               "answer": 0,
               "explanation": "\"behind\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16169,12 +16169,12 @@
             {
               "id": "a2p13q15",
               "type": "fill",
-              "prompt": "Go ___ the stairs to the first floor.",
+              "prompt": "Go ___ the stairs to the first floor. (to a higher floor)",
               "bank": [
-                "over",
-                "walk",
+                "down",
+                "along",
                 "up",
-                "left"
+                "past"
               ],
               "answer": "up",
               "explanation": "\"up\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16182,12 +16182,12 @@
             {
               "id": "a2p13q16",
               "type": "mc",
-              "prompt": "The car park is ___ the shopping centre.",
+              "prompt": "The car park is ___ the shopping centre. (below it, underground)",
               "choices": [
-                "down",
-                "right",
+                "above",
+                "beside",
                 "under",
-                "straight"
+                "behind"
               ],
               "answer": 2,
               "explanation": "\"under\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16208,12 +16208,12 @@
             {
               "id": "a2p13q18",
               "type": "mc",
-              "prompt": "The pharmacy is ___ the corner from here.",
+              "prompt": "The pharmacy is ___ the corner from here. (just out of sight, past the bend)",
               "choices": [
                 "round",
-                "walk",
-                "left",
-                "up"
+                "over",
+                "through",
+                "into"
               ],
               "answer": 0,
               "explanation": "\"round\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16241,12 +16241,12 @@
             {
               "id": "a2p13q20",
               "type": "fill",
-              "prompt": "The bus stop is ___ the church.",
+              "prompt": "The bus stop is ___ the church. (not inside it)",
               "bank": [
-                "up",
+                "in",
                 "outside",
-                "straight",
-                "walk"
+                "inside",
+                "between"
               ],
               "answer": "outside",
               "explanation": "\"outside\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16254,12 +16254,12 @@
             {
               "id": "a2p13q21",
               "type": "mc",
-              "prompt": "Go ___ this road until you reach the roundabout.",
+              "prompt": "Go ___ this road until you reach the roundabout. (follow it along)",
               "choices": [
                 "down",
-                "next",
+                "across",
                 "over",
-                "round"
+                "into"
               ],
               "answer": 0,
               "explanation": "\"down\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16267,12 +16267,12 @@
             {
               "id": "a2p13q22",
               "type": "fill",
-              "prompt": "The café is ___ the corner of Main Street.",
+              "prompt": "The café is ___ the corner of Main Street. (on the corner itself)",
               "bank": [
                 "on",
-                "right",
-                "walk",
-                "along"
+                "in",
+                "under",
+                "behind"
               ],
               "answer": "on",
               "explanation": "\"on\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16280,12 +16280,12 @@
             {
               "id": "a2p13q23",
               "type": "mc",
-              "prompt": "The nearest ATM is ___ the entrance.",
+              "prompt": "The nearest ATM is ___ the entrance. (within the building)",
               "choices": [
-                "down",
-                "straight",
+                "outside",
+                "behind",
                 "inside",
-                "up"
+                "opposite"
               ],
               "answer": 2,
               "explanation": "\"inside\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16293,11 +16293,11 @@
             {
               "id": "a2p13q24",
               "type": "fill",
-              "prompt": "You can't miss it, it's ___ the town square.",
+              "prompt": "You can't miss it, it's ___ the town square. (in the middle of it)",
               "bank": [
-                "turning",
                 "outside",
                 "opposite",
+                "behind",
                 "in"
               ],
               "answer": "in",
@@ -16554,9 +16554,9 @@
               "prompt": "We should ___ this again sometime.",
               "bank": [
                 "does",
-                "manage",
+                "did",
                 "do",
-                "planning"
+                "doing"
               ],
               "answer": "do",
               "explanation": "\"do\" is correct here. Everyday phrases for arranging to meet and making plans."
@@ -17429,12 +17429,12 @@
             {
               "id": "a2p17q0",
               "type": "fill",
-              "prompt": "The cat is sitting ___ the table.",
+              "prompt": "The cat is sitting ___ the table. (below it)",
               "bank": [
-                "through",
+                "above",
                 "under",
-                "alongside",
-                "down"
+                "behind",
+                "beside"
               ],
               "answer": "under",
               "explanation": "\"under\" is correct here. A2-level prepositions describing location."
@@ -17442,12 +17442,12 @@
             {
               "id": "a2p17q1",
               "type": "mc",
-              "prompt": "The book is ___ the shelf.",
+              "prompt": "The book is ___ the shelf. (on its top surface)",
               "choices": [
                 "on",
-                "into",
-                "by",
-                "in"
+                "in",
+                "under",
+                "behind"
               ],
               "answer": 0,
               "explanation": "\"on\" is correct here. A2-level prepositions describing location."
@@ -17455,12 +17455,12 @@
             {
               "id": "a2p17q2",
               "type": "fill",
-              "prompt": "She is standing ___ the door.",
+              "prompt": "She is standing ___ the door. (hidden on the other side of it)",
               "bank": [
-                "through",
+                "in front of",
                 "behind",
-                "alongside",
-                "down"
+                "beside",
+                "against"
               ],
               "answer": "behind",
               "explanation": "\"behind\" is correct here. A2-level prepositions describing location."
@@ -17481,12 +17481,12 @@
             {
               "id": "a2p17q4",
               "type": "fill",
-              "prompt": "The park is ___ the school and the shop.",
+              "prompt": "The park is ___ the school and the shop. (in the middle of the two)",
               "bank": [
-                "into",
+                "behind",
                 "between",
-                "past",
-                "down"
+                "above",
+                "opposite"
               ],
               "answer": "between",
               "explanation": "\"between\" is correct here. A2-level prepositions describing location."
@@ -17514,12 +17514,12 @@
             {
               "id": "a2p17q6",
               "type": "fill",
-              "prompt": "The picture is hanging ___ the wall.",
+              "prompt": "The picture is hanging ___ the wall. (touching it)",
               "bank": [
-                "through",
+                "near",
                 "against",
-                "alongside",
-                "down"
+                "behind",
+                "in front of"
               ],
               "answer": "against",
               "explanation": "\"against\" is correct here. A2-level prepositions describing location."
@@ -17527,10 +17527,10 @@
             {
               "id": "a2p17q7",
               "type": "mc",
-              "prompt": "The dog is running ___ the garden.",
+              "prompt": "The dog is running ___ the garden. (in circles)",
               "choices": [
                 "through",
-                "alongside",
+                "across",
                 "around",
                 "into"
               ],
@@ -17540,11 +17540,11 @@
             {
               "id": "a2p17q8",
               "type": "fill",
-              "prompt": "The shop is right ___ the corner.",
+              "prompt": "The shop is right ___ the corner. (just past the bend)",
               "bank": [
+                "over",
                 "through",
                 "into",
-                "alongside",
                 "round"
               ],
               "answer": "round",
@@ -17553,12 +17553,12 @@
             {
               "id": "a2p17q9",
               "type": "mc",
-              "prompt": "She parked the car ___ the building.",
+              "prompt": "She parked the car ___ the building. (not inside it)",
               "choices": [
                 "outside",
-                "down",
-                "alongside",
-                "through"
+                "inside",
+                "in",
+                "between"
               ],
               "answer": 0,
               "explanation": "\"outside\" is correct here. A2-level prepositions describing location."
@@ -17573,12 +17573,12 @@
             {
               "id": "a2p17q10",
               "type": "mc",
-              "prompt": "The ball rolled ___ the stairs.",
+              "prompt": "The ball rolled ___ the stairs. (from the top to the bottom)",
               "choices": [
                 "down",
-                "under",
-                "around",
-                "opposite"
+                "up",
+                "over",
+                "across"
               ],
               "answer": 0,
               "explanation": "\"down\" is correct here. A2-level prepositions describing location."
@@ -17586,12 +17586,12 @@
             {
               "id": "a2p17q11",
               "type": "fill",
-              "prompt": "The plane flew ___ the clouds.",
+              "prompt": "The plane flew ___ the clouds. (higher than them)",
               "bank": [
-                "through",
-                "down",
+                "below",
+                "among",
                 "above",
-                "alongside"
+                "in"
               ],
               "answer": "above",
               "explanation": "\"above\" is correct here. A2-level prepositions describing location."
@@ -17612,11 +17612,11 @@
             {
               "id": "a2p17q13",
               "type": "fill",
-              "prompt": "The children are playing ___ the swings.",
+              "prompt": "The children are playing ___ the swings. (next to them)",
               "bank": [
-                "into",
-                "towards",
                 "among",
+                "inside",
+                "under",
                 "by"
               ],
               "answer": "by",
@@ -17648,9 +17648,9 @@
               "prompt": "The bank is ___ from the café.",
               "bank": [
                 "opposite",
-                "under",
-                "around",
-                "near"
+                "next",
+                "near",
+                "behind"
               ],
               "answer": "opposite",
               "explanation": "\"opposite\" is correct here. A2-level prepositions describing location."
@@ -17658,12 +17658,12 @@
             {
               "id": "a2p17q16",
               "type": "mc",
-              "prompt": "He walked ___ the room and sat down.",
+              "prompt": "He walked ___ the room and sat down. (entered it)",
               "choices": [
-                "among",
-                "by",
+                "onto",
+                "across",
                 "into",
-                "in"
+                "through"
               ],
               "answer": 2,
               "explanation": "\"into\" is correct here. A2-level prepositions describing location."
@@ -17671,11 +17671,11 @@
             {
               "id": "a2p17q17",
               "type": "fill",
-              "prompt": "The lamp is ___ the desk.",
+              "prompt": "The lamp is ___ the desk. (right next to it)",
               "bank": [
-                "into",
-                "down",
-                "alongside",
+                "under",
+                "behind",
+                "opposite",
                 "beside"
               ],
               "answer": "beside",
@@ -17684,12 +17684,12 @@
             {
               "id": "a2p17q18",
               "type": "mc",
-              "prompt": "She placed the vase ___ the window.",
+              "prompt": "She placed the vase ___ the window. (close to it, not touching)",
               "choices": [
                 "near",
-                "down",
-                "into",
-                "alongside"
+                "in",
+                "on",
+                "against"
               ],
               "answer": 0,
               "explanation": "\"near\" is correct here. A2-level prepositions describing location."
@@ -17697,12 +17697,12 @@
             {
               "id": "a2p17q19",
               "type": "fill",
-              "prompt": "The tunnel goes ___ the mountain.",
+              "prompt": "The tunnel goes ___ the mountain. (from one side to the other, inside it)",
               "bank": [
-                "down",
+                "over",
                 "through",
                 "around",
-                "in"
+                "along"
               ],
               "answer": "through",
               "explanation": "\"through\" is correct here. A2-level prepositions describing location."
@@ -17717,12 +17717,12 @@
             {
               "id": "a2p17q20",
               "type": "fill",
-              "prompt": "The cinema is ___ the shopping centre.",
+              "prompt": "The cinema is ___ the shopping centre. (within the building)",
               "bank": [
-                "alongside",
-                "down",
+                "outside",
+                "behind",
                 "inside",
-                "past"
+                "opposite"
               ],
               "answer": "inside",
               "explanation": "\"inside\" is correct here. A2-level prepositions describing location."
@@ -17730,12 +17730,12 @@
             {
               "id": "a2p17q21",
               "type": "mc",
-              "prompt": "He stood ___ the crowd, watching.",
+              "prompt": "He stood ___ the crowd, watching. (in the middle of the people)",
               "choices": [
                 "among",
-                "into",
-                "down",
-                "alongside"
+                "behind",
+                "beside",
+                "in front of"
               ],
               "answer": 0,
               "explanation": "\"among\" is correct here. A2-level prepositions describing location."
@@ -17756,12 +17756,12 @@
             {
               "id": "a2p17q23",
               "type": "mc",
-              "prompt": "The plane flew ___ the city.",
+              "prompt": "The plane flew ___ the city. (it went by without stopping)",
               "choices": [
-                "in",
-                "round",
+                "into",
+                "towards",
                 "past",
-                "down"
+                "onto"
               ],
               "answer": 2,
               "explanation": "\"past\" is correct here. A2-level prepositions describing location."
@@ -17958,9 +17958,9 @@
               "prompt": "They were ___ dinner when the doorbell rang.",
               "choices": [
                 "having",
-                "shopping",
-                "dreaming",
-                "cooking"
+                "have",
+                "had",
+                "has"
               ],
               "answer": 0,
               "explanation": "\"having\" is correct here. A2-level past continuous tense practice."
@@ -18169,10 +18169,10 @@
               "type": "fill",
               "prompt": "I ___ swim very well when I was younger.",
               "bank": [
-                "ought",
+                "can",
                 "may",
                 "could",
-                "can"
+                "will"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18180,12 +18180,12 @@
             {
               "id": "a2p19q1",
               "type": "mc",
-              "prompt": "___ I open the window, please?",
+              "prompt": "___ I open the window, please? (asking for permission)",
               "choices": [
-                "used",
-                "ought",
+                "will",
+                "would",
                 "may",
-                "may to"
+                "must"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18193,11 +18193,11 @@
             {
               "id": "a2p19q2",
               "type": "fill",
-              "prompt": "She ___ speak three languages fluently.",
+              "prompt": "She ___ speak three languages fluently. (she has the skill)",
               "bank": [
-                "ought",
-                "used",
-                "can to",
+                "must",
+                "might",
+                "would",
                 "can"
               ],
               "answer": "can",
@@ -18206,12 +18206,12 @@
             {
               "id": "a2p19q3",
               "type": "mc",
-              "prompt": "___ you help me carry this bag?",
+              "prompt": "___ you help me carry this bag? (a polite request)",
               "choices": [
                 "could",
-                "ought",
-                "used",
-                "could to"
+                "must",
+                "shall",
+                "might"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18219,11 +18219,11 @@
             {
               "id": "a2p19q4",
               "type": "fill",
-              "prompt": "We ___ leave early if we finish the work.",
+              "prompt": "We ___ leave early if we finish the work. (it is possible)",
               "bank": [
-                "ought",
-                "used",
-                "can to",
+                "would",
+                "must",
+                "mustn't",
                 "can"
               ],
               "answer": "can",
@@ -18239,12 +18239,12 @@
             {
               "id": "a2p19q5",
               "type": "mc",
-              "prompt": "___ I use your phone for a moment?",
+              "prompt": "___ I use your phone for a moment? (asking for permission)",
               "choices": [
-                "used",
-                "ought",
+                "will",
+                "would",
                 "may",
-                "may to"
+                "must"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18254,10 +18254,10 @@
               "type": "fill",
               "prompt": "He ___ ride a bike when he was five.",
               "bank": [
-                "ought",
+                "can",
                 "may",
                 "could",
-                "can"
+                "will"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18278,12 +18278,12 @@
             {
               "id": "a2p19q8",
               "type": "fill",
-              "prompt": "___ I ask you a question?",
+              "prompt": "___ I ask you a question? (asking for permission)",
               "bank": [
-                "ought",
-                "may to",
+                "will",
+                "would",
                 "may",
-                "used"
+                "must"
               ],
               "answer": "may",
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18296,7 +18296,7 @@
                 "may",
                 "can",
                 "could",
-                "ought"
+                "will"
               ],
               "answer": 2,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18324,12 +18324,12 @@
             {
               "id": "a2p19q11",
               "type": "fill",
-              "prompt": "___ you pass me the salt, please?",
+              "prompt": "___ you pass me the salt, please? (a polite request)",
               "bank": [
                 "could",
-                "ought",
-                "could to",
-                "used"
+                "must",
+                "shall",
+                "might"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18353,9 +18353,9 @@
               "prompt": "He ___ not swim before he took lessons.",
               "bank": [
                 "could",
-                "ought",
                 "can",
-                "used"
+                "may",
+                "will"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18363,12 +18363,12 @@
             {
               "id": "a2p19q14",
               "type": "mc",
-              "prompt": "___ I sit here, or is this seat taken?",
+              "prompt": "___ I sit here, or is this seat taken? (asking for permission)",
               "choices": [
-                "used",
-                "ought",
+                "will",
+                "would",
                 "may",
-                "may to"
+                "must"
               ],
               "answer": 2,
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18401,7 +18401,7 @@
                 "could",
                 "can",
                 "may",
-                "ought"
+                "will"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18409,12 +18409,12 @@
             {
               "id": "a2p19q17",
               "type": "fill",
-              "prompt": "___ we borrow your umbrella, please?",
+              "prompt": "___ we borrow your umbrella, please? (a polite request)",
               "bank": [
                 "could",
-                "ought",
-                "could to",
-                "used"
+                "must",
+                "will",
+                "shall"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18422,12 +18422,12 @@
             {
               "id": "a2p19q18",
               "type": "mc",
-              "prompt": "He ___ lift very heavy weights at the gym.",
+              "prompt": "He ___ lift very heavy weights at the gym. (he is strong enough)",
               "choices": [
-                "used",
-                "ought",
+                "must",
+                "would",
                 "can",
-                "can to"
+                "should"
               ],
               "answer": 2,
               "explanation": "\"can\" is correct here. A2-level modal verbs for ability and permission."
@@ -18435,12 +18435,12 @@
             {
               "id": "a2p19q19",
               "type": "fill",
-              "prompt": "___ I leave the room for a moment?",
+              "prompt": "___ I leave the room for a moment? (asking for permission)",
               "bank": [
-                "may to",
+                "will",
                 "may",
-                "ought",
-                "used"
+                "would",
+                "must"
               ],
               "answer": "may",
               "explanation": "\"may\" is correct here. A2-level modal verbs for ability and permission."
@@ -18457,9 +18457,9 @@
               "type": "fill",
               "prompt": "They ___ not afford the tickets last year.",
               "bank": [
-                "may",
                 "can",
-                "ought",
+                "may",
+                "will",
                 "could"
               ],
               "answer": "could",
@@ -18481,12 +18481,12 @@
             {
               "id": "a2p19q22",
               "type": "fill",
-              "prompt": "___ you show me the way to the station?",
+              "prompt": "___ you show me the way to the station? (a polite request)",
               "bank": [
-                "used",
-                "ought",
+                "must",
+                "shall",
                 "could",
-                "could to"
+                "might"
               ],
               "answer": "could",
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18497,9 +18497,9 @@
               "prompt": "She ___ not attend school due to illness.",
               "choices": [
                 "could",
-                "may",
                 "can",
-                "ought"
+                "may",
+                "will"
               ],
               "answer": 0,
               "explanation": "\"could\" is correct here. A2-level modal verbs for ability and permission."
@@ -18507,12 +18507,12 @@
             {
               "id": "a2p19q24",
               "type": "fill",
-              "prompt": "I ___ help you with your homework if you want.",
+              "prompt": "I ___ help you with your homework if you want. (I am able to)",
               "bank": [
-                "used",
+                "must",
                 "can",
-                "ought",
-                "can to"
+                "should",
+                "would"
               ],
               "answer": "can",
               "explanation": "\"can\" is correct here. A2-level modal verbs for ability and permission."
