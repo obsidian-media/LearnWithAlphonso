@@ -25,6 +25,11 @@ function answerOf(q: Question): string {
   return "";
 }
 
+/** The card's word: the authored `term` when the pack sets one, else the answer. "" means no card. */
+function termOf(q: Question): string {
+  return (q.type === "mc" || q.type === "fill" ? q.term : undefined) ?? answerOf(q);
+}
+
 /** Quiz instructions and pair-drill stems: filling their blank gives a label, not a sentence. */
 const STEM =
   /^(choose|which|select|complete|fill|plural of|opposite of|past (simple )?of|female form|male form|comparative|superlative|what is|what does|match)\b/i;
@@ -56,6 +61,11 @@ function exampleOf(q: Question): string {
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
+/** An authored card field on the question, if any. Only mc/fill questions carry them. */
+function authored(q: Question, field: "meaning" | "example"): string {
+  return (q.type === "mc" || q.type === "fill" ? q[field] : undefined)?.trim() ?? "";
+}
+
 function titleCaseKey(s: string) {
   return s.trim().toLowerCase();
 }
@@ -63,10 +73,11 @@ function titleCaseKey(s: string) {
 /**
  * Builds the vocabulary module for any lesson from its own questions.
  *
- * `meaning` is always "" today. The questions carry an explanation of why the
+ * `meaning` is the authored gloss on the question (pack line field 3), "" when
+ * none is authored yet. The quiz explanation is never used for it: it says why the
  * answer was right ("'am' is correct here. Match the verb form to the subject."),
- * never a gloss of the word, and printing that under the word as its meaning was
- * wrong. A real meaning needs authored data (see docs/content-audit-2026-11.md).
+ * not what the word means. `example` is the authored sentence (pack line field 4),
+ * falling back to the filled cloze sentence (see docs/content-audit-2026-11.md).
  */
 export function deriveVocab(lesson: Lesson): VocabItem[] {
   return deriveVocabWithContext(lesson).map(({ context: _context, ...item }) => item);
@@ -81,15 +92,15 @@ export function deriveVocabWithContext(lesson: Lesson): (VocabItem & { context: 
   const seen = new Set<string>();
   const items: (VocabItem & { context: string })[] = [];
   for (const q of lesson.questions) {
-    const term = answerOf(q).trim();
+    const term = termOf(q).trim();
     if (!term) continue;
     const key = titleCaseKey(term);
     if (seen.has(key)) continue;
     seen.add(key);
     items.push({
       term,
-      meaning: "",
-      example: exampleOf(q),
+      meaning: authored(q, "meaning"),
+      example: authored(q, "example") || exampleOf(q),
       image: VOCAB_IMAGES[key],
       context: q.explanation,
     });

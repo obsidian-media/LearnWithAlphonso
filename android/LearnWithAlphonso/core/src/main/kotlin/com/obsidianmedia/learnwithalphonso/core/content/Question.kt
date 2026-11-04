@@ -28,6 +28,11 @@ sealed interface Question {
         override val explanation: String,
         val imageKey: String? = null,
         val audioText: String? = null,
+        /** Authored word-card gloss / example sentence (curriculum.ts `meaning`/`example`). */
+        val meaning: String? = null,
+        val example: String? = null,
+        /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
+        val term: String? = null,
     ) : Question
 
     @Serializable
@@ -37,6 +42,11 @@ sealed interface Question {
         val bank: List<String>,
         val answer: String,
         override val explanation: String,
+        /** Authored word-card gloss / example sentence (curriculum.ts `meaning`/`example`). */
+        val meaning: String? = null,
+        val example: String? = null,
+        /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
+        val term: String? = null,
     ) : Question
 
     @Serializable

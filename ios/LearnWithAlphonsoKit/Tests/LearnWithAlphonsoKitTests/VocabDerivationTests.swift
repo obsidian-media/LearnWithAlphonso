@@ -142,4 +142,58 @@ final class VocabDerivationTests: XCTestCase {
         XCTAssertNil(ref.reviewedAt)
         XCTAssertEqual(ref, VocabImageRef(url: "u", alt: "a", credit: "c"))
     }
+
+    // Authored card fields (pack line fields 3 and 4, bundled on the question).
+
+    func testAuthoredMeaningAndExampleAreUsed() {
+        let lesson = Lesson(id: "a1p1l1", title: "t", subtitle: "s", questions: [
+            .multipleChoice(Question.MultipleChoice(
+                id: "q1", prompt: "Plural of \"child\": ___", choices: ["children", "childs"], answer: 0,
+                explanation: "x", meaning: "more than one child", example: "The children play outside.")),
+        ])
+
+        XCTAssertEqual(
+            deriveVocab(lesson: lesson, images: [:]),
+            [VocabItem(term: "children", meaning: "more than one child", example: "The children play outside.", image: nil)])
+    }
+
+    func testAnAuthoredMeaningWithoutAnExampleKeepsTheFilledClozeSentence() {
+        let lesson = Lesson(id: "a1p2l1", title: "t", subtitle: "s", questions: [
+            .fillInBlank(Question.FillInBlank(
+                id: "q1", prompt: "I ___ to the store.", bank: ["go", "went"], answer: "went",
+                explanation: "x", meaning: "moved to a place in the past")),
+        ])
+
+        XCTAssertEqual(
+            deriveVocab(lesson: lesson, images: [:]),
+            [VocabItem(term: "went", meaning: "moved to a place in the past", example: "I went to the store.", image: nil)])
+    }
+
+    func testAnAuthoredTermReplacesTheAnswerAndAnEmptyOneMakesNoCard() {
+        let lesson = Lesson(id: "a2p12l1", title: "t", subtitle: "s", questions: [
+            .multipleChoice(Question.MultipleChoice(
+                id: "q1", prompt: "How often does \"always\" happen?", choices: ["every time", "never"], answer: 0,
+                explanation: "x", meaning: "every time, without exception",
+                example: "I always brush my teeth.", term: "always")),
+            .multipleChoice(Question.MultipleChoice(
+                id: "q2", prompt: "Which is the present simple?", choices: ["I ate.", "I eat."], answer: 1,
+                explanation: "x", term: "")),
+        ])
+
+        XCTAssertEqual(
+            deriveVocab(lesson: lesson, images: [:]),
+            [VocabItem(term: "always", meaning: "every time, without exception", example: "I always brush my teeth.", image: nil)])
+    }
+
+    func testTheBundledEnglishA1CardsAllHaveAMeaning() throws {
+        let store = try ContentStore()
+        let a1 = store.english.units.filter { $0.level == "A1" }.flatMap { $0.lessons }
+        XCTAssertFalse(a1.isEmpty)
+        for lesson in a1 {
+            for item in deriveVocab(lesson: lesson, images: [:]) {
+                XCTAssertFalse(item.meaning.isEmpty, "\(lesson.id) \(item.term) has no meaning")
+                XCTAssertFalse(item.example.isEmpty, "\(lesson.id) \(item.term) has no example")
+            }
+        }
+    }
 }

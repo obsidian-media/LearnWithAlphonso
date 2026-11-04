@@ -8,7 +8,9 @@ import {
 import { alsoCorrectReason, clearlyWrongFor, isTwinSpelling, slotClassOf } from "./also-correct";
 
 /**
- * Compact content bank. Each pack holds 25 items written as terse lines;
+ * Compact content bank. Each pack holds 25 items written as terse lines
+ * (pair and cloze lines may carry an optional third and fourth `|` field, the
+ * authored word-card meaning and example -- see packQuestions);
  * the generator below expands them into 5-question lessons and groups
  * lessons into units, giving 30 generated lessons per CEFR band.
  */
@@ -34,6 +36,11 @@ type Pack = {
    * every wording the list misses costs an AI call to accept.
    */
   kind: "pair" | "cloze" | "listening" | "speak" | "translate";
+  /**
+   * Pair packs whose answer (right side) is a definition: the word-card term is the
+   * left side instead, carried on each question as `term`. Moves no ids, options or answers.
+   */
+  termFromLeft?: boolean;
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -47,31 +54,31 @@ const A1: Pack[] = [
     kind: "pair",
     prompt: 'Plural of "%s":',
     note: "Irregular and spelling-change plurals must be memorised.",
-    data: `child|children
-man|men
-woman|women
-person|people
-foot|feet
-tooth|teeth
-mouse|mice
-goose|geese
-knife|knives
-leaf|leaves
-wife|wives
-shelf|shelves
-city|cities
-baby|babies
-party|parties
-box|boxes
-watch|watches
-bus|buses
-dish|dishes
-potato|potatoes
-photo|photos
-sheep|sheep
-fish|fish
-half|halves
-life|lives`,
+    data: `child|children|more than one child|The children play in the park.
+man|men|more than one man|Two men are at the door.
+woman|women|more than one woman|The women talk after class.
+person|people|more than one person; many men and women|Many people live in this town.
+foot|feet|the parts of your body you walk on|My feet are very tired.
+tooth|teeth|the hard white parts in your mouth|Brush your teeth every night.
+mouse|mice|more than one mouse; small animals|Mice eat cheese in the story.
+goose|geese|more than one goose; big water birds|The geese swim on the lake.
+knife|knives|more than one knife; tools for cutting|Put the knives on the table.
+leaf|leaves|the green parts of a tree|The leaves fall in autumn.
+wife|wives|more than one wife|Both wives came to the party.
+shelf|shelves|flat boards on a wall for books|The shelves are full of books.
+city|cities|big places where many people live|London and Paris are big cities.
+baby|babies|very young children|The babies sleep all day.
+party|parties|times when friends meet to have fun|There are two parties this weekend.
+box|boxes|containers for storing or carrying things|The boxes are under the bed.
+watch|watches|small clocks you wear on your wrist|Her watches are on the shelf.
+bus|buses|big vehicles that carry many people|Two buses stop here every hour.
+dish|dishes|plates and bowls for food|Please wash the dishes after dinner.
+potato|potatoes|round brown vegetables that grow under the ground|We cook potatoes for dinner.
+photo|photos|pictures made with a camera|Look at my holiday photos.
+sheep|sheep|woolly farm animals; one word for many|The sheep eat grass on the hill.
+fish|fish|water animals; the same for one or many|Fish live in the sea.
+half|halves|two equal parts of one thing|Cut the apple into two halves.
+life|lives|the time that people are alive|Doctors work to save lives.`,
   },
   {
     id: "a1p2",
@@ -79,31 +86,31 @@ life|lives`,
     subtitle: "Core verb forms",
     kind: "cloze",
     note: "Match the verb form to the subject.",
-    data: `I ___ a student.|am
-She ___ my sister.|is
-They ___ at home.|are
-He ___ to work by bus.|goes
-We ___ English every day.|study
-It ___ cold today.|is
-My parents ___ teachers.|are
-She ___ coffee in the morning.|drinks
-I ___ like spicy food.|don't
-He ___ not live here.|does
-___ you from Spain?|Are
-___ she speak French?|Does
+    data: `I ___ a student.|am|the verb be, used with I
+She ___ my sister.|is|the verb be, used with he or she
+They ___ at home.|are|the verb be, used with they or we
+He ___ to work by bus.|goes|moves or travels; used with he or she
+We ___ English every day.|study|to learn about something
+It ___ cold today.|is|the verb be; tells about the weather
+My parents ___ teachers.|are|be, used with more than one person
+She ___ coffee in the morning.|drinks|takes liquid into the mouth
+I ___ like spicy food.|don't|short for do not; makes a negative
+He ___ not live here.|does|helps make a negative with he or she
+___ you from Spain?|Are|starts a question with you
+___ she speak French?|Does|starts a question with he or she
 The keys ___ on the table.|are
-Tom ___ football on Sundays.|plays
-I ___ two brothers.|have
-She ___ a car.|has
-We ___ not ready.|are
-___ it your birthday?|Is
-They ___ breakfast at seven.|have
-He ___ up at six.|gets
-The shop ___ at nine.|opens
-Birds ___ south in winter.|fly
-My phone ___ working.|isn't
-You ___ right.|are
-She ___ in London.|lives`,
+Tom ___ football on Sundays.|plays|takes part in a game or sport
+I ___ two brothers.|have|shows what or who someone has
+She ___ a car.|has|shows what he, she or it owns
+We ___ not ready.|are|the verb be, used with we
+___ it your birthday?|Is|starts a question with it
+They ___ breakfast at seven.|have|to eat or drink a meal
+He ___ up at six.|gets|"gets up" means to leave your bed
+The shop ___ at nine.|opens|becomes ready for people to come in
+Birds ___ south in winter.|fly|to move through the air
+My phone ___ working.|isn't|short for is not
+You ___ right.|are|the verb be, used with you
+She ___ in London.|lives|has a home in a place`,
   },
   {
     id: "a1p3",
@@ -112,31 +119,31 @@ She ___ in London.|lives`,
     kind: "pair",
     prompt: 'Opposite of "%s":',
     note: "Learning adjectives in pairs doubles your vocabulary.",
-    data: `big|small
-hot|cold
-old|young
-fast|slow
-happy|sad
-easy|difficult
-cheap|expensive
-early|late
-open|closed
-clean|dirty
-full|empty
-light|heavy
-near|far
-strong|weak
-long|short
-wet|dry
-loud|quiet
-right|wrong
-rich|poor
-soft|hard
-new|old
-high|low
-safe|dangerous
-same|different
-first|last`,
+    data: `big|small|little in size|My room is small but nice.
+hot|cold|not hot; with a low temperature|The water is cold today.
+old|young|not old; having lived a short time|My sister is very young.
+fast|slow|not fast; taking a long time|The bus is very slow today.
+happy|sad|unhappy; feeling bad|He is sad about his lost dog.
+easy|difficult|not easy; hard to do|This test is difficult for me.
+cheap|expensive|costing a lot of money|That coat is too expensive.
+early|late|after the right time|I am late for school.
+open|closed|not open; shut|The shop is closed on Sundays.
+clean|dirty|not clean; covered with dirt|Your shoes are dirty.
+full|empty|with nothing inside|The box is empty.
+light|heavy|weighing a lot; hard to lift|This bag is very heavy.
+near|far|a long way away|The beach is far from here.
+strong|weak|not strong; without much power|She felt weak after the long illness.
+long|short|not long; small in length|My hair is short.
+wet|dry|with no water on it|The towel is dry now.
+loud|quiet|making very little noise|Please be quiet in the library.
+right|wrong|not correct|Your answer is wrong.
+rich|poor|having very little money|The poor man has no home.
+soft|hard|not soft; firm|This bed is too hard.
+new|old|not new; used for many years|This house is very old.
+high|low|not high; near the ground|The table is low.
+safe|dangerous|not safe; able to hurt you|The road is dangerous at night.
+same|different|not the same|My shoes are different from yours.
+first|last|coming after all the others|He was the last person here.`,
   },
   {
     id: "a1p4",
@@ -144,30 +151,30 @@ first|last`,
     subtitle: "Basic prepositions",
     kind: "cloze",
     note: "Use in for months/years, on for days/dates, at for clock times.",
-    data: `The exam is ___ 15 March.|on
-I was born ___ 1998.|in
-We eat ___ seven o'clock.|at
-The cat is ___ the table.|under
+    data: `The exam is ___ 15 March.|on|used with days and dates
+I was born ___ 1998.|in|used with years, months and seasons
+We eat ___ seven o'clock.|at|used with exact times
+The cat is ___ the table.|under|in a lower place than something
 She lives ___ Paris.|in
-Put the book ___ the shelf.|on
-I'll see you ___ the weekend.|at
-The shop is ___ the bank.|next to
-He arrives ___ May.|in
+Put the book ___ the shelf.|on|touching the top of something
+I'll see you ___ the weekend.|at|used with the weekend and holidays
+The shop is ___ the bank.|next to|very close to the side of
+He arrives ___ May.|in|used with months
 We meet ___ Friday evening.|on
-The bus stops ___ the corner.|at
-There is a picture ___ the wall.|on
-The keys are ___ my bag.|in
-She sits ___ me in class.|beside
-The plane flies ___ the clouds.|above
-Walk ___ the bridge.|across
-The dog is ___ the door.|behind
-Come ___ the room.|into
-We travel ___ train.|by
-The party is ___ midnight.|at
-I study ___ the morning.|in
-The cafe is ___ the station.|opposite
-He is ___ holiday.|on
-The ball rolled ___ the hill.|down
+The bus stops ___ the corner.|at|shows an exact place
+There is a picture ___ the wall.|on|touching a wall or other surface
+The keys are ___ my bag.|in|inside something
+She sits ___ me in class.|beside|at the side of someone
+The plane flies ___ the clouds.|above|higher than something
+Walk ___ the bridge.|across|from one side to the other
+The dog is ___ the door.|behind|at the back of something
+Come ___ the room.|into|moving to the inside of a place
+We travel ___ train.|by|shows how you travel
+The party is ___ midnight.|at|used before a clock time|The class starts at nine.
+I study ___ the morning.|in|used with parts of the day
+The cafe is ___ the station.|opposite|facing something on the other side
+He is ___ holiday.|on|used in the phrase "on holiday"
+The ball rolled ___ the hill.|down|from a high place to a low place
 She waited ___ the rain.|in`,
   },
   {
@@ -177,31 +184,31 @@ She waited ___ the rain.|in`,
     kind: "pair",
     prompt: 'Which verb goes with "%s"?',
     note: "English fixes certain verbs to certain nouns.",
-    data: `a shower|take
-breakfast|have
-homework|do
+    data: `a shower|take|to have; used in "take a shower"|I take a shower every morning.
+breakfast|have|to eat; used in "have breakfast"|We have breakfast at eight.
+homework|do|to carry out a task or activity|I do my homework after school.
 a photo|take
-a mistake|make
-the bus|catch
-music|listen to
-TV|watch
-a question|ask
-money|spend
-friends|make
-a bike|ride
-the dishes|wash
-your teeth|brush
-a nap|take
-a decision|make
-the shopping|do
-a language|speak
-a letter|write
-the piano|play
-a bed|make
-a cold|catch
-a party|throw
-attention|pay
-care|take`,
+a mistake|make|to create or cause something|Everyone can make a mistake.
+the bus|catch|to get on a bus or train|I catch the bus at seven.
+music|listen to|to hear something carefully|I listen to music on the bus.
+TV|watch|to look at something moving|We watch TV after dinner.
+a question|ask|to say something to get an answer|May I ask a question?
+money|spend|to pay money for things|He likes to spend money on games.
+friends|make|to start a friendship with people|She makes friends very easily.
+a bike|ride|to sit on a bike and move|I ride my bike to school.
+the dishes|wash|to clean with water|I wash the dishes after dinner.
+your teeth|brush|to clean or tidy teeth or hair|Brush your teeth twice a day.
+a nap|take|to have; used in "take a nap"|I take a nap after lunch.
+a decision|make|used with "decision"; means to choose|You must make a decision today.
+the shopping|do|used with "the shopping"; to buy things|I do the shopping on Saturdays.
+a language|speak|to say words aloud; to talk|She can speak three languages.
+a letter|write|to put words on paper|I write a letter to my friend.
+the piano|play|to make music on an instrument|He plays the piano well.
+a bed|make|to tidy the sheets on a bed|I make my bed every morning.
+a cold|catch|to get an illness|Wear a coat or you will catch a cold.
+a party|throw|to hold or give a party|They throw a big party every year.
+attention|pay|to give, as in "pay attention"|Please pay attention to the teacher.
+care|take|used in "take care"; to be careful|Take care when you cross the road.`,
   },
   {
     id: "a1p6",
@@ -209,31 +216,31 @@ care|take`,
     subtitle: "Question words",
     kind: "cloze",
     note: "Choose the question word that matches the answer you want.",
-    data: `___ is your name?|What
-___ do you live?|Where
-___ are you late?|Why
-___ does the film start?|When
-___ is that woman?|Who
-___ much is the ticket?|How
-___ book is this?|Whose
-___ colour do you like?|Which
+    data: `___ is your name?|What|asks about a thing
+___ do you live?|Where|asks about a place
+___ are you late?|Why|asks for a reason
+___ does the film start?|When|asks about a time
+___ is that woman?|Who|asks about a person
+___ much is the ticket?|How|asks about price, way or amount
+___ book is this?|Whose|asks who owns something
+___ colour do you like?|Which|asks you to choose from a group
 ___ old are you?|How
-___ are you going?|Where
-___ many people came?|How
-___ is your favourite singer?|Who
-___ time is it?|What
+___ are you going?|Where|asks about a place
+___ many people came?|How|used in "how many" to ask about number
+___ is your favourite singer?|Who|asks about a person|Who is your best friend?
+___ time is it?|What|used in "what time" to ask the hour
 ___ often do you exercise?|How
 ___ do you get to work?|How
-___ is the meeting about?|What
-___ did you choose that one?|Why
-___ one is cheaper?|Which
-___ far is the beach?|How
-___ are you free?|When
-___ told you that?|Who
-___ is the problem?|What
-___ long does it take?|How
-___ bag is on the chair?|Whose
-___ do we start?|When`,
+___ is the meeting about?|What|asks about the topic of something
+___ did you choose that one?|Why|asks for a reason
+___ one is cheaper?|Which|asks about one thing among others
+___ far is the beach?|How|used in "how far" to ask distance
+___ are you free?|When|asks about a time or day
+___ told you that?|Who|asks about a person
+___ is the problem?|What|asks about a thing or problem
+___ long does it take?|How|used in "how long" to ask about time
+___ bag is on the chair?|Whose|asks who owns something
+___ do we start?|When|asks about a time`,
   },
   {
     id: "a1p7",
@@ -242,31 +249,31 @@ ___ do we start?|When`,
     kind: "pair",
     prompt: 'Female form of "%s":',
     note: "Many family and role words change form by gender in English.",
-    data: `father|mother
-brother|sister
-son|daughter
-husband|wife
-uncle|aunt
-nephew|niece
-grandfather|grandmother
-boy|girl
-man|woman
-king|queen
-prince|princess
-actor|actress
-waiter|waitress
-host|hostess
-hero|heroine
-groom|bride
-gentleman|lady
-godfather|godmother
-grandson|granddaughter
-stepfather|stepmother
-father-in-law|mother-in-law
-landlord|landlady
-widower|widow
-duke|duchess
-salesman|saleswoman`,
+    data: `father|mother|your female parent|My mother works at a school.
+brother|sister|a girl with the same parents|My sister is older than me.
+son|daughter|your female child|Their daughter is ten years old.
+husband|wife|a woman who is married|His wife is a nurse.
+uncle|aunt|the sister of your mother or father|My aunt lives in Spain.
+nephew|niece|the daughter of your brother or sister|My niece is five years old.
+grandfather|grandmother|the mother of your mother or father|My grandmother makes great soup.
+boy|girl|a young female person|The girl is reading a book.
+man|woman|an adult female person|That woman is my teacher.
+king|queen|a woman who rules a country|The queen lives in a big palace.
+prince|princess|the daughter of a king or queen|The princess wore a gold crown.
+actor|actress|a woman who acts in films|The actress won a big prize.
+waiter|waitress|a woman who brings food in a restaurant|The waitress brought our soup.
+host|hostess|a woman who invites guests to her home|The hostess welcomed every guest.
+hero|heroine|a brave woman in a story|The heroine saves the village.
+groom|bride|a woman on her wedding day|The bride wore a white dress.
+gentleman|lady|a polite word for a woman|That lady helped me find the bus.
+godfather|godmother|a special woman friend of a child's family|My godmother sends me a gift each year.
+grandson|granddaughter|the daughter of your son or daughter|Her granddaughter visits every Sunday.
+stepfather|stepmother|your father's new wife|My stepmother cooks very well.
+father-in-law|mother-in-law|the mother of your husband or wife|My mother-in-law lives nearby.
+landlord|landlady|a woman who owns the house you rent|The landlady fixed the broken door.
+widower|widow|a woman whose husband has died|The widow lives alone.
+duke|duchess|a woman with a very high title|The duchess opened the new library.
+salesman|saleswoman|a woman who sells things for work|The saleswoman showed me a new phone.`,
   },
   {
     id: "a1p8",
@@ -274,31 +281,31 @@ salesman|saleswoman`,
     subtitle: "Everyday meals",
     kind: "cloze",
     note: "High-frequency food vocabulary used in daily conversation.",
-    data: `I'd like a cup of ___, please.|coffee
-Can I have some ___ with my tea?|milk
-We had ___ and eggs for breakfast.|bacon
-She ordered a bowl of ___ soup.|tomato
-Pass the ___ and pepper, please.|salt
-I'll have a slice of ___ bread.|brown
-Would you like some ___ on your salad?|dressing
-He always has ___ for dessert.|cake
-Can we get the ___ for the table?|menu
-I'm allergic to ___.|peanuts
-She drinks ___ juice every morning.|orange
-We need more ___ for the sandwiches.|cheese
-Could you pass the ___ for my tea?|sugar
-Let's order a ___ of pizza to share.|slice
-He spread some ___ on his toast.|jam
-I prefer ___ tea to green tea.|black
-Could I have the bill, or the ___?|check
-This restaurant is famous for its ___.|steak
-She's a vegetarian, so no ___ for her.|meat
-We ran out of ___ for breakfast.|bread
-This dish needs a squeeze of ___.|lemon
-He always orders his steak ___.|rare
-Could we split the ___ between us?|bill
-This cake is made with real ___.|butter
-Would you like ___ or sparkling water?|still`,
+    data: `I'd like a cup of ___, please.|coffee|a hot brown drink
+Can I have some ___ with my tea?|milk|a white drink from cows
+We had ___ and eggs for breakfast.|bacon|salty meat from a pig
+She ordered a bowl of ___ soup.|tomato|a round red vegetable
+Pass the ___ and pepper, please.|salt|white powder you put on food
+I'll have a slice of ___ bread.|brown|the colour of wood or mud
+Would you like some ___ on your salad?|dressing|sauce you put on a salad
+He always has ___ for dessert.|cake|a sweet food baked in an oven
+Can we get the ___ for the table?|menu|a list of food you can order
+I'm allergic to ___.|peanuts|small nuts that grow in the ground
+She drinks ___ juice every morning.|orange|a sweet round fruit
+We need more ___ for the sandwiches.|cheese|a food made from milk
+Could you pass the ___ for my tea?|sugar|sweet white powder for food and drinks
+Let's order a ___ of pizza to share.|slice|a thin piece cut from food
+He spread some ___ on his toast.|jam|a sweet food made from fruit
+I prefer ___ tea to green tea.|black|very dark; tea with no milk
+Could I have the bill, or the ___?|check|the bill you pay in a restaurant
+This restaurant is famous for its ___.|steak|a thick piece of cooked beef
+She's a vegetarian, so no ___ for her.|meat|food that comes from animals
+We ran out of ___ for breakfast.|bread|a food baked from flour
+This dish needs a squeeze of ___.|lemon|a sour yellow fruit
+He always orders his steak ___.|rare|cooked a little, still red inside
+Could we split the ___ between us?|bill|the paper that shows what you must pay
+This cake is made with real ___.|butter|soft yellow food made from milk
+Would you like ___ or sparkling water?|still|water without bubbles`,
   },
   {
     id: "a1p9",
@@ -306,31 +313,31 @@ Would you like ___ or sparkling water?|still`,
     subtitle: "What people wear",
     kind: "cloze",
     note: "Common clothing vocabulary with colour adjectives.",
-    data: `She's wearing a red ___.|dress
-He always wears a black ___.|jacket
-I need new ___ for winter.|boots
-Put on your ___ before you go out.|coat
-These ___ are too tight.|jeans
-She bought a blue ___ for work.|shirt
-He wears ___ to bed.|pyjamas
-I can't find my left ___.|sock
-It's cold — wear a ___.|scarf
-She never leaves home without her ___.|sunglasses
-He wore a ___ to the wedding.|suit
-These shoes have a broken ___.|lace
-I like your green ___.|sweater
-She wears a ___ on her wrist.|watch
-He always carries a leather ___.|bag
-Take your ___ — it might rain.|umbrella
-She wore a yellow ___ to the party.|hat
-He loosened his ___ after a long day.|tie
-I need to buy new ___ for the gym.|shorts
-She wore a white ___ under her jacket.|blouse
-He put on his ___ before the run.|trainers
-These ___ don't match my shoes.|socks
-She tied her hair back with a ___.|ribbon
-He rolled up his ___.|sleeves
-I ironed my ___ this morning.|trousers`,
+    data: `She's wearing a red ___.|dress|clothing with a top and skirt in one
+He always wears a black ___.|jacket|a short coat
+I need new ___ for winter.|boots|strong shoes that cover your ankles
+Put on your ___ before you go out.|coat|warm clothing you wear outside
+These ___ are too tight.|jeans|strong blue trousers
+She bought a blue ___ for work.|shirt|clothing for the top of your body
+He wears ___ to bed.|pyjamas|clothes you wear in bed
+I can't find my left ___.|sock|a soft cover for your foot
+It's cold — wear a ___.|scarf|cloth you wear around your neck
+She never leaves home without her ___.|sunglasses|dark glasses that protect your eyes from sun
+He wore a ___ to the wedding.|suit|a jacket and trousers that match
+These shoes have a broken ___.|lace|a string you tie on a shoe
+I like your green ___.|sweater|warm clothing made of wool
+She wears a ___ on her wrist.|watch|a small clock you wear on your wrist
+He always carries a leather ___.|bag|a container you carry things in
+Take your ___ — it might rain.|umbrella|something that keeps the rain off you
+She wore a yellow ___ to the party.|hat|a covering for your head
+He loosened his ___ after a long day.|tie|a long cloth worn around the neck
+I need to buy new ___ for the gym.|shorts|trousers that end above the knee
+She wore a white ___ under her jacket.|blouse|a light shirt for women
+He put on his ___ before the run.|trainers|soft shoes for sport
+These ___ don't match my shoes.|socks|soft coverings for your feet
+She tied her hair back with a ___.|ribbon|a thin strip of cloth for tying
+He rolled up his ___.|sleeves|the parts of clothes for your arms
+I ironed my ___ this morning.|trousers|clothing for your legs`,
   },
   {
     id: "a1p10",
@@ -338,31 +345,31 @@ I ironed my ___ this morning.|trousers`,
     subtitle: "Talking about the sky",
     kind: "cloze",
     note: "Basic weather vocabulary and seasonal expressions.",
-    data: `It's very ___ today — take an umbrella.|rainy
-The sky is ___ and blue.|clear
-It's ___ outside, so wear a coat.|cold
-There's a strong ___ blowing today.|wind
-It ___ heavily all night.|rained
-The forecast says it will ___ tomorrow.|snow
-Summer is the ___ season of the year.|hottest
-In autumn, the leaves turn ___.|brown
-It's very ___ today — over thirty degrees.|hot
-The ___ is out, so let's go to the beach.|sun
-There was a loud ___ during the storm.|thunder
-It's ___ this morning — I can barely see.|foggy
-Winter in this city is very ___.|harsh
-The temperature dropped ___ overnight.|suddenly
-Spring brings warmer ___ and flowers.|weather
-It's ___ outside — the ground is icy.|freezing
-A ___ crossed the sky before the rain.|cloud
-We had a picnic on a ___ day.|sunny
-The ___ made it hard to drive.|fog
-The sky turned dark before the ___ began.|storm
-It's too ___ to go swimming today.|windy
-The ___ melted quickly in the sun.|ice
-Autumn is also called ___ in American English.|fall
-It's a ___ day, perfect for a walk.|mild
-Bring a jacket — it's ___ this evening.|chilly`,
+    data: `It's very ___ today — take an umbrella.|rainy|with a lot of rain
+The sky is ___ and blue.|clear|with no clouds
+It's ___ outside, so wear a coat.|cold|low in temperature
+There's a strong ___ blowing today.|wind|air that moves fast
+It ___ heavily all night.|rained|water fell from the sky
+The forecast says it will ___ tomorrow.|snow|soft white ice that falls from the sky
+Summer is the ___ season of the year.|hottest|more hot than all the others
+In autumn, the leaves turn ___.|brown|the colour of wood or mud
+It's very ___ today — over thirty degrees.|hot|very warm
+The ___ is out, so let's go to the beach.|sun|the big star that gives us light
+There was a loud ___ during the storm.|thunder|the loud noise in a storm|We heard thunder during the storm.
+It's ___ this morning — I can barely see.|foggy|with thick cloud near the ground
+Winter in this city is very ___.|harsh|very cold and difficult to bear
+The temperature dropped ___ overnight.|suddenly|very quickly, without warning
+Spring brings warmer ___ and flowers.|weather|the rain, wind and sun outside
+It's ___ outside — the ground is icy.|freezing|very, very cold
+A ___ crossed the sky before the rain.|cloud|a white or grey shape in the sky
+We had a picnic on a ___ day.|sunny|bright with sun
+The ___ made it hard to drive.|fog|thick cloud near the ground
+The sky turned dark before the ___ began.|storm|very bad weather with wind and rain
+It's too ___ to go swimming today.|windy|with a lot of wind
+The ___ melted quickly in the sun.|ice|frozen water
+Autumn is also called ___ in American English.|fall|American word for autumn
+It's a ___ day, perfect for a walk.|mild|not too hot and not too cold
+Bring a jacket — it's ___ this evening.|chilly|a little cold`,
   },
   {
     id: "a1p11",
@@ -370,31 +377,31 @@ Bring a jacket — it's ___ this evening.|chilly`,
     subtitle: "Prices and quantities",
     kind: "cloze",
     note: "Everyday number and money vocabulary.",
-    data: `This shirt costs ___ dollars.|twenty
-I keep a jar of one-pound ___ on the shelf.|coins
-I'd like to ___ some money from the machine.|withdraw
-The bill comes to ___ euros.|fifteen
-Could you ___ this twenty-pound note for smaller ones?|change
-I need to ___ some money for the trip.|save
-She ___ ten dollars on the gift.|spent
-He asked for a ___ on the price.|discount
-This costs ___ than I expected.|more
-Do you have ___ change for a ten?|exact
-The total is ___ pounds and fifty pence.|three
-I paid by ___, not cash.|card
-Could I get a ___ for this purchase?|receipt
-The price includes ___.|tax
-She counted the ___ carefully.|money
-I only have a few ___ left.|notes
-He borrowed ___ dollars from his brother.|fifty
-The shop only accepts ___ payments.|contactless
-We split the bill ___.|equally
-I forgot my ___ at home.|wallet
-The item is on ___ this week.|sale
-She saved ___ money for college.|enough
-The price went ___ last month.|up
-He paid the ___ in full.|amount
-I need to check my bank ___.|balance`,
+    data: `This shirt costs ___ dollars.|twenty|the number 20
+I keep a jar of one-pound ___ on the shelf.|coins|small round pieces of metal money|I keep some coins in a jar.
+I'd like to ___ some money from the machine.|withdraw|to take money out of a bank
+The bill comes to ___ euros.|fifteen|the number 15
+Could you ___ this twenty-pound note for smaller ones?|change|to swap money for other money
+I need to ___ some money for the trip.|save|to keep money for later
+She ___ ten dollars on the gift.|spent|paid money for something
+He asked for a ___ on the price.|discount|a lower price
+This costs ___ than I expected.|more|a bigger amount
+Do you have ___ change for a ten?|exact|just right, not more or less
+The total is ___ pounds and fifty pence.|three|the number 3
+I paid by ___, not cash.|card|a plastic way to pay
+Could I get a ___ for this purchase?|receipt|a paper that shows you paid
+The price includes ___.|tax|money you pay to the government
+She counted the ___ carefully.|money|coins and notes you use to buy things
+I only have a few ___ left.|notes|paper money
+He borrowed ___ dollars from his brother.|fifty|the number 50
+The shop only accepts ___ payments.|contactless|paying by touching your card
+We split the bill ___.|equally|in the same amount for everyone
+I forgot my ___ at home.|wallet|a small case for money and cards
+The item is on ___ this week.|sale|a time when shops lower prices
+She saved ___ money for college.|enough|as much as you need
+The price went ___ last month.|up|to a higher level
+He paid the ___ in full.|amount|how much of something there is
+I need to check my bank ___.|balance|the money you have in the bank`,
   },
   {
     id: "a1p12",
@@ -403,31 +410,31 @@ I need to check my bank ___.|balance`,
     kind: "pair",
     prompt: 'Someone who "%s" is a…',
     note: "Common job titles matched to their main duty.",
-    data: `teaches students|teacher
-treats sick people|doctor
-cooks food in a restaurant|chef
-flies a plane|pilot
-fixes cars|mechanic
-delivers letters|postman
-puts out fires|firefighter
-defends the law|lawyer
-builds houses|builder
-cuts hair|hairdresser
-serves food in a restaurant|waiter
-designs buildings|architect
-grows crops|farmer
-sells goods in a shop|shopkeeper
-catches criminals|police officer
-writes news stories|journalist
-looks after teeth|dentist
-drives a taxi|taxi driver
-takes care of patients|nurse
-paints houses|painter
-manages a company|manager
-repairs pipes|plumber
-programs computers|programmer
-cleans buildings|cleaner
-delivers babies|midwife`,
+    data: `teaches students|teacher|a person who helps students learn|My teacher is very kind.
+treats sick people|doctor|a person who helps sick people|The doctor gave me some medicine.
+cooks food in a restaurant|chef|a person who cooks in a restaurant|The chef makes great soup.
+flies a plane|pilot|a person who flies a plane|The pilot spoke to the passengers.
+fixes cars|mechanic|a person who fixes cars|The mechanic fixed our car.
+delivers letters|postman|a person who brings letters to homes|The postman comes at nine.
+puts out fires|firefighter|a person who puts out fires|The firefighter climbed the ladder.
+defends the law|lawyer|a person who works with the law|My aunt is a lawyer.
+builds houses|builder|a person who makes houses|The builder is building a new house.
+cuts hair|hairdresser|a person who cuts your hair|I go to the hairdresser every month.
+serves food in a restaurant|waiter|a man who brings food to tables|The waiter brought our drinks.
+designs buildings|architect|a person who plans new buildings|The architect drew a plan for the school.
+grows crops|farmer|a person who grows food on a farm|The farmer has fifty cows.
+sells goods in a shop|shopkeeper|a person who runs a small shop|The shopkeeper opens at nine.
+catches criminals|police officer|a person who stops crime|The police officer helped us.
+writes news stories|journalist|a person who writes the news|The journalist wrote a story about our town.
+looks after teeth|dentist|a person who looks after your teeth|I go to the dentist twice a year.
+drives a taxi|taxi driver|a person who drives people in a taxi|The taxi driver took us to the hotel.
+takes care of patients|nurse|a person who helps sick people in hospital|The nurse took my temperature.
+paints houses|painter|a person who paints walls or pictures|The painter painted our kitchen blue.
+manages a company|manager|a person in charge of a team|The manager has a meeting at ten.
+repairs pipes|plumber|a person who fixes water pipes|The plumber fixed the sink.
+programs computers|programmer|a person who writes computer programs|My brother is a programmer.
+cleans buildings|cleaner|a person who cleans rooms and buildings|The cleaner comes every morning.
+delivers babies|midwife|a person who helps mothers have babies|The midwife helped the baby arrive.`,
   },
   {
     id: "a1p13",
@@ -436,31 +443,31 @@ delivers babies|midwife`,
     kind: "pair",
     prompt: 'An animal that "%s" is a…',
     note: "Common animals, from pets to farm and wild species.",
-    data: `barks and wags its tail|dog
-says meow|cat
-gives us milk|cow
-lays eggs and clucks|hen
-hops and has long ears|rabbit
-is the king of the jungle|lion
-has a long trunk|elephant
-is very tall with a long neck|giraffe
-lives in water and has fins|fish
-can fly and has feathers|bird
-is slow and carries a shell|turtle
-says quack|duck
-is pink and says oink|pig
-has stripes like a cat|tiger
-climbs trees and eats bananas|monkey
-is black and white and eats bamboo|panda
-hops on strong back legs|kangaroo
-is a large sea animal with tusks and whiskers|walrus
-lives in a hive and makes honey|bee
-spins a web|spider
-is a fast desert animal with a hump|camel
-swims and is the largest animal|whale
-is a small garden creature that leaves a slimy trail|snail
-barks like a dog but is wild|fox
-flies at night and sleeps upside down|bat`,
+    data: `barks and wags its tail|dog|a pet that barks|My dog likes to run.
+says meow|cat|a small pet that says meow|The cat sleeps on my bed.
+gives us milk|cow|a farm animal that gives milk|The cow eats grass all day.
+lays eggs and clucks|hen|a female bird that lays eggs|The hen laid three eggs.
+hops and has long ears|rabbit|a small animal with long ears|The rabbit eats a carrot.
+is the king of the jungle|lion|a big wild cat; the king of animals|The lion sleeps in the shade.
+has a long trunk|elephant|a very big animal with a long nose|An elephant drinks with its trunk.
+is very tall with a long neck|giraffe|a very tall animal with a long neck|The giraffe eats leaves from trees.
+lives in water and has fins|fish|an animal that lives in water|He caught a big fish.
+can fly and has feathers|bird|an animal with wings and feathers|A bird sings in the tree.
+is slow and carries a shell|turtle|a slow animal with a hard shell|The turtle walks very slowly.
+says quack|duck|a water bird that says quack|The duck swims on the pond.
+is pink and says oink|pig|a pink farm animal|The pig is playing in the mud.
+has stripes like a cat|tiger|a big wild cat with stripes|The tiger lives in the forest.
+climbs trees and eats bananas|monkey|an animal that climbs trees|The monkey eats a banana.
+is black and white and eats bamboo|panda|a black and white bear|The panda eats bamboo all day.
+hops on strong back legs|kangaroo|an Australian animal that hops|The kangaroo jumps very high.
+is a large sea animal with tusks and whiskers|walrus|a big sea animal with long teeth|The walrus lies on the ice.
+lives in a hive and makes honey|bee|a small flying insect that makes honey|A bee sat on the flower.
+spins a web|spider|a small animal with eight legs|The spider made a web.
+is a fast desert animal with a hump|camel|an animal with humps that lives in deserts|The camel walked across the desert.
+swims and is the largest animal|whale|a very big animal living in the sea|The whale is bigger than a bus.
+is a small garden creature that leaves a slimy trail|snail|a small animal with a shell|The snail moves very slowly.
+barks like a dog but is wild|fox|a wild animal like a small dog|The fox ran into the forest.
+flies at night and sleeps upside down|bat|a small animal that flies at night|A bat flew out of the cave.`,
   },
   {
     id: "a1p14",
@@ -468,31 +475,31 @@ flies at night and sleeps upside down|bat`,
     subtitle: "Everyday time expressions",
     kind: "cloze",
     note: "Days of the week, months, and simple time phrases.",
-    data: `The first day of the school week is ___.|Monday
-The last day of the weekend is ___.|Sunday
-Christmas is in the month of ___.|December
-The shortest month of the year is ___.|February
-We eat lunch in the ___.|afternoon
-We usually sleep at ___.|night
-There are seven days in a ___.|week
-There are twelve ___ in a year.|months
-My birthday is in the month of ___.|July
-The clock shows what ___ it is.|time
-I wake up early in the ___.|morning
-The first month of the year is ___.|January
-Halloween is celebrated in ___.|October
-We go to work on weekday ___, not weekends.|mornings
-A year has three hundred and sixty-five ___.|days
-The day after Friday is ___.|Saturday
-Summer holidays often start in ___.|June
-The day before Wednesday is ___.|Tuesday
-New Year's Eve is on the last day of the ___.|year
-There are sixty minutes in an ___.|hour
-There are sixty seconds in a ___.|minute
-The middle day of the week is ___.|Wednesday
-Twelve o'clock in the middle of the day is called ___.|noon
-We often relax on the ___.|weekend
-The day after Thursday is ___.|Friday`,
+    data: `The first day of the school week is ___.|Monday|the first day of the school week
+The last day of the weekend is ___.|Sunday|the day after Saturday
+Christmas is in the month of ___.|December|the last month of the year
+The shortest month of the year is ___.|February|the second month of the year
+We eat lunch in the ___.|afternoon|the time between noon and evening
+We usually sleep at ___.|night|the dark time when we sleep
+There are seven days in a ___.|week|a period of seven days
+There are twelve ___ in a year.|months|periods of about thirty days
+My birthday is in the month of ___.|July|a summer month, after June
+The clock shows what ___ it is.|time|what a clock shows
+I wake up early in the ___.|morning|the first part of the day
+The first month of the year is ___.|January|the first month of the year
+Halloween is celebrated in ___.|October|the tenth month of the year
+We go to work on weekday ___, not weekends.|mornings|the early parts of days
+A year has three hundred and sixty-five ___.|days|periods of twenty-four hours
+The day after Friday is ___.|Saturday|the day before Sunday
+Summer holidays often start in ___.|June|the month after May
+The day before Wednesday is ___.|Tuesday|the day after Monday
+New Year's Eve is on the last day of the ___.|year|a period of twelve months|A year has twelve months.
+There are sixty minutes in an ___.|hour|a period of sixty minutes
+There are sixty seconds in a ___.|minute|a period of sixty seconds
+The middle day of the week is ___.|Wednesday|the day after Tuesday
+Twelve o'clock in the middle of the day is called ___.|noon|twelve o'clock in the day|We eat lunch at noon.
+We often relax on the ___.|weekend|Saturday and Sunday
+The day after Thursday is ___.|Friday|the day before Saturday`,
   },
   {
     id: "a1p15",
@@ -501,31 +508,31 @@ The day after Thursday is ___.|Friday`,
     kind: "pair",
     prompt: 'Something that "%s" is…',
     note: "Basic shapes and size adjectives.",
-    data: `has three sides|triangle
-has four equal sides|square
-is perfectly round|circle
-has four sides, two longer than the others|rectangle
-has five sides|pentagon
-has six sides|hexagon
-is shaped like an egg|oval
-has eight sides|octagon
-is very big|huge
-is very small|tiny
-is not thick|thin
-is not thin|thick
-is longer than usual|long
-is not long|short
-is very tall|towering
-is not wide|narrow
-is very wide|broad
-is not heavy|light
-is very heavy|heavy
-is a perfect cube shape|cube
-is round like a ball|sphere
-has a pointed top|cone
-is shaped like a tube|cylinder
-is medium, not big or small|average
-is bigger than expected|oversized`,
+    data: `has three sides|triangle|a shape with three sides|The road sign is a triangle.
+has four equal sides|square|a shape with four equal sides|The window is a square.
+is perfectly round|circle|a perfectly round shape|Draw a circle on the paper.
+has four sides, two longer than the others|rectangle|a shape with four sides, two long|The door is shaped like a rectangle.
+has five sides|pentagon|a shape with five sides|A pentagon has five sides.
+has six sides|hexagon|a shape with six sides|A hexagon has six sides.
+is shaped like an egg|oval|a shape like an egg|The mirror has an oval shape.
+has eight sides|octagon|a shape with eight sides|A stop sign is an octagon.
+is very big|huge|very, very big|The elephant is huge.
+is very small|tiny|very small|The ant is tiny.
+is not thick|thin|not thick|This book is thin.
+is not thin|thick|not thin|The wall is very thick.
+is longer than usual|long|measuring a lot from end to end|The river is very long.
+is not long|short|not long|She has short black hair.
+is very tall|towering|very tall and high|The towering tree touched the clouds.
+is not wide|narrow|not wide|The street is narrow.
+is very wide|broad|wide from side to side|He has broad shoulders.
+is not heavy|light|not heavy|This bag is light.
+is very heavy|heavy|weighing a lot|The suitcase is heavy.
+is a perfect cube shape|cube|a solid shape with six equal sides|Ice cubes float in my drink.
+is round like a ball|sphere|a round shape like a ball|The Earth is a sphere.
+has a pointed top|cone|a round base and a pointed top|The ice cream is in a cone.
+is shaped like a tube|cylinder|a shape like a tube|The can is a cylinder.
+is medium, not big or small|average|normal; not big or small|He is of average height.
+is bigger than expected|oversized|too big; bigger than normal|He wore an oversized coat.`,
   },
   {
     id: "a1p16",
@@ -533,31 +540,31 @@ is bigger than expected|oversized`,
     subtitle: "Everyday actions in order",
     kind: "cloze",
     note: "Simple present tense sentences describing a typical day.",
-    data: `I ___ up at seven o'clock every morning.|wake
-She ___ a shower before breakfast.|takes
-She ___ her hair before she goes out.|brushes
-We ___ breakfast together as a family.|eat
-I ___ dressed before I leave the house.|get
-She ___ to work by bus.|travels
-He ___ his email first thing at the office.|checks
-We ___ lunch at around one o'clock.|have
-I ___ home from work at six.|come
-She ___ dinner for the family.|cooks
-He ___ the dishes after dinner.|washes
-We ___ television in the evening.|watch
-I ___ a book before bed.|read
-She ___ to bed at eleven o'clock.|goes
-He ___ his phone one last time before sleeping.|glances at
-We ___ the house before we leave in the morning.|tidy
-I ___ my bag the night before.|pack
-She ___ the kids to school every day.|drives
-He ___ out three times a week.|works
-We ___ the dog every evening.|walk
-I ___ my clothes for the next day.|choose
-She ___ up early on weekdays.|gets
-He ___ home late on Fridays.|arrives
-We ___ the weekend relaxing at home.|spend
-I always ___ my alarm before I sleep.|set`,
+    data: `I ___ up at seven o'clock every morning.|wake|to stop sleeping
+She ___ a shower before breakfast.|takes|to have; used in "takes a shower"
+She ___ her hair before she goes out.|brushes|makes hair tidy with a tool
+We ___ breakfast together as a family.|eat|to put food in your mouth
+I ___ dressed before I leave the house.|get|to become; used in "get dressed"
+She ___ to work by bus.|travels|goes from one place to another
+He ___ his email first thing at the office.|checks|looks to see what is new
+We ___ lunch at around one o'clock.|have|to eat a meal
+I ___ home from work at six.|come|to move towards a place
+She ___ dinner for the family.|cooks|makes food hot to eat
+He ___ the dishes after dinner.|washes|cleans with water
+We ___ television in the evening.|watch|to look at something moving
+I ___ a book before bed.|read|to look at words and understand
+She ___ to bed at eleven o'clock.|goes|moves to a place
+He ___ his phone one last time before sleeping.|glances at|looks quickly at
+We ___ the house before we leave in the morning.|tidy|to make a place neat
+I ___ my bag the night before.|pack|to put things in a bag
+She ___ the kids to school every day.|drives|takes people by car
+He ___ out three times a week.|works|"works out" means to exercise
+We ___ the dog every evening.|walk|to take a dog outside
+I ___ my clothes for the next day.|choose|to pick one thing
+She ___ up early on weekdays.|gets|"gets up" means to leave bed
+He ___ home late on Fridays.|arrives|reaches a place
+We ___ the weekend relaxing at home.|spend|to pass time doing something
+I always ___ my alarm before I sleep.|set|to get a clock ready to ring`,
   },
   {
     id: "a1p17",
@@ -565,31 +572,31 @@ I always ___ my alarm before I sleep.|set`,
     subtitle: "School objects and language",
     kind: "cloze",
     note: "Common classroom vocabulary for beginners.",
-    data: `Open your ___ to page ten.|book
-Please write on the ___.|whiteboard
-I need a ___ to write my answer.|pen
-Can I borrow your ___ to draw a line?|ruler
-The ___ sits at the front of the class.|teacher
-Please put your hand ___ if you know the answer.|up
-We do our homework in a ___.|notebook
-The students sit at their ___.|desks
-Please ___ your books before the test.|close
-The teacher gave us a new ___ today.|worksheet
-I forgot my ___, so I can't do the maths today.|calculator
-Please ___ to the teacher carefully.|listen
-The ___ rings at the end of the lesson.|bell
-We use a ___ to erase mistakes.|rubber
-Please sit ___ and be quiet.|down
-The teacher asked us to ___ our hands.|raise
-I need to ___ my pencil, it's too short.|sharpen
-Our classroom has a big ___ on the wall.|map
-Please hand in your ___ at the end of class.|homework
-The students are reading their ___ quietly.|textbooks
-We have a test ___ Friday.|on
-Please turn to the next ___.|page
-The teacher wrote the date on the ___.|board
-I keep my pens in a ___.|pencil case
-Please be ___ during the exam.|quiet`,
+    data: `Open your ___ to page ten.|book|pages of words to read
+Please write on the ___.|whiteboard|a large smooth surface you write on
+I need a ___ to write my answer.|pen|a tool for writing with ink
+Can I borrow your ___ to draw a line?|ruler|a tool for measuring and drawing lines
+The ___ sits at the front of the class.|teacher|a person who helps students learn
+Please put your hand ___ if you know the answer.|up|towards a higher place
+We do our homework in a ___.|notebook|a book with empty pages to write in
+The students sit at their ___.|desks|tables where students sit and work
+Please ___ your books before the test.|close|to shut
+The teacher gave us a new ___ today.|worksheet|a paper with questions to answer
+I forgot my ___, so I can't do the maths today.|calculator|a small machine for maths|May I use a calculator in the test?
+Please ___ to the teacher carefully.|listen|to hear carefully
+The ___ rings at the end of the lesson.|bell|something that rings to tell the time
+We use a ___ to erase mistakes.|rubber|a tool for erasing pencil marks
+Please sit ___ and be quiet.|down|towards a lower place
+The teacher asked us to ___ our hands.|raise|to lift up
+I need to ___ my pencil, it's too short.|sharpen|to make a point on a pencil
+Our classroom has a big ___ on the wall.|map|a picture of land and places
+Please hand in your ___ at the end of class.|homework|schoolwork you do at home
+The students are reading their ___ quietly.|textbooks|school books for learning a subject
+We have a test ___ Friday.|on|used with days of the week
+Please turn to the next ___.|page|one side of a sheet in a book
+The teacher wrote the date on the ___.|board|a big flat surface you write on
+I keep my pens in a ___.|pencil case|a small bag for pens and pencils
+Please be ___ during the exam.|quiet|making no noise`,
   },
   {
     id: "a1p18",
@@ -598,31 +605,31 @@ Please be ___ during the exam.|quiet`,
     kind: "pair",
     prompt: 'Which noun goes with "%s"?',
     note: "Common adjectives matched to a noun they naturally describe.",
-    data: `sharp|knife
-soft|pillow
-hard|rock
-bright|light
-loud|noise
-quiet|library
-fast|car
-slow|turtle
-heavy|suitcase
-light|feather
-hot|fire
-cold|ice
-sweet|sugar
-sour|lemon
-tall|building
-short|pencil
-wide|road
-narrow|path
-clean|kitchen
-dirty|shoes
-full|glass
-empty|bottle
-new|phone
-old|book
-wet|towel`,
+    data: `sharp|knife|a tool for cutting|The knife is very sharp.
+soft|pillow|a soft bag for your head in bed|This pillow is soft.
+hard|rock|a hard piece of stone|The rock is hard.
+bright|light|what lets you see in the dark|The light is very bright.
+loud|noise|a sound that is loud or unwanted|The noise was too loud.
+quiet|library|a place where you borrow books|The library is quiet.
+fast|car|a vehicle with four wheels|The car is fast.
+slow|turtle|a slow animal with a hard shell|The turtle is very slow.
+heavy|suitcase|a big bag for travelling|My suitcase is heavy.
+light|feather|a light part of a bird|A feather is very light.
+hot|fire|flames that give heat and light|The fire is hot.
+cold|ice|frozen water|The ice is very cold.
+sweet|sugar|sweet white powder for food|Sugar is sweet.
+sour|lemon|a sour yellow fruit|A lemon tastes sour.
+tall|building|a place with walls and a roof|That building is very tall.
+short|pencil|a thin tool for writing|This pencil is too short.
+wide|road|a wide path for cars|The road is wide.
+narrow|path|a narrow way for walking|The path is narrow.
+clean|kitchen|the room where you cook|The kitchen is clean.
+dirty|shoes|things you wear on your feet|My shoes are dirty.
+full|glass|a container you drink from|The glass is full.
+empty|bottle|a container for water or milk|The bottle is empty.
+new|phone|a device for calling people|I have a new phone.
+old|book|pages of words in a cover|This book is very old.
+wet|towel|a cloth for drying yourself|The towel is wet.`,
   },
   {
     id: "a1p19",
@@ -630,31 +637,31 @@ wet|towel`,
     subtitle: "Shopping for groceries",
     kind: "cloze",
     note: "Everyday vocabulary for grocery shopping.",
-    data: `I need to buy some ___ for dinner tonight.|food
-Can you push the ___ while I shop?|trolley
-Put the apples in the ___.|basket
-We're out of ___, so I need to buy more bread.|bread
-Please check the ___ before you buy the milk.|date
-The ___ is at the front of the shop.|checkout
-I forgot my shopping ___ at home.|list
-This ___ is on sale this week.|item
-Could you weigh these ___ for me?|vegetables
-I paid with my ___ card.|debit
-The ___ scanned each item quickly.|cashier
-We need to buy more ___ for breakfast.|eggs
-The ___ are in aisle five.|snacks
-I always bring my own shopping ___.|bag
-Could you tell me where the ___ is?|dairy section
-This shop has a big ___ this week.|discount
-I need to buy some ___ for cooking.|oil
-The queue at the ___ was very long.|till
-Please put the frozen food in the ___.|freezer
-I always check the ___ before I buy something.|price
-We ran out of ___, so buy some soap.|soap
-The shop closes at ___ o'clock.|nine
-I need a ___ to carry all these bags.|bag for life
-Could you get some ___ for the salad?|lettuce
-The receipt shows the total ___.|amount`,
+    data: `I need to buy some ___ for dinner tonight.|food|things you eat
+Can you push the ___ while I shop?|trolley|a cart you push in a shop
+Put the apples in the ___.|basket|a small container for shopping
+We're out of ___, so I need to buy more bread.|bread|a food baked from flour|We need bread to make toast.
+Please check the ___ before you buy the milk.|date|the day, month and year
+The ___ is at the front of the shop.|checkout|the place where you pay
+I forgot my shopping ___ at home.|list|things written down one by one
+This ___ is on sale this week.|item|one thing in a group
+Could you weigh these ___ for me?|vegetables|plants you eat, like carrots
+I paid with my ___ card.|debit|a card that takes money from your bank
+The ___ scanned each item quickly.|cashier|a person who takes your money
+We need to buy more ___ for breakfast.|eggs|oval food from hens
+The ___ are in aisle five.|snacks|small food between meals
+I always bring my own shopping ___.|bag|a container to carry shopping
+Could you tell me where the ___ is?|dairy section|where a shop keeps milk and cheese
+This shop has a big ___ this week.|discount|a lower price
+I need to buy some ___ for cooking.|oil|a liquid used for cooking
+The queue at the ___ was very long.|till|the machine that holds a shop's money
+Please put the frozen food in the ___.|freezer|a very cold box for frozen food
+I always check the ___ before I buy something.|price|how much something costs
+We ran out of ___, so buy some soap.|soap|something you use to wash|I use soap to wash my hands.
+The shop closes at ___ o'clock.|nine|the number 9
+I need a ___ to carry all these bags.|bag for life|a strong bag you use many times|I bring a bag for life to the shop.
+Could you get some ___ for the salad?|lettuce|a green leaf for salads
+The receipt shows the total ___.|amount|how much there is of something`,
   },
   {
     id: "a1p20",
@@ -662,31 +669,31 @@ The receipt shows the total ___.|amount`,
     subtitle: "Getting from A to B",
     kind: "cloze",
     note: "Basic transport vocabulary for beginners.",
-    data: `I go to work by ___ every day.|bus
-The ___ leaves from platform three.|train
-We need to catch a ___ to the airport.|taxi
-I ride my ___ to school.|bike
-The ___ takes off in an hour.|plane
-Could you tell me where the ___ stop is?|coach
-I usually ___ to work, it's not far.|walk
-The ___ station is near my house.|metro
-We need to buy a ___ before we board.|ticket
-The ___ was late this morning.|tram
-I left my ___ at home, so I can't drive.|keys
-The ___ takes you across the river.|ferry
-Please fasten your ___ before we take off.|seatbelt
-The ___ is the fastest way to travel abroad.|jet
-I usually take the ___ to avoid traffic.|underground
-Our ___ leaves at six in the morning.|flight
-The ___ dropped us right outside the hotel.|cab
-I need to ___ my ticket before boarding.|show
-The road was closed, so we took a ___.|detour
-We waited at the ___ for twenty minutes.|station
-The ___ was full, so we had to stand.|carriage
-I always check the ___ before I travel.|timetable
-The car needs more ___ before the trip.|petrol
-We arrived at the ___ two hours early.|airport
-The ___ takes you underground across the city.|subway`,
+    data: `I go to work by ___ every day.|bus|a big vehicle that carries many people
+The ___ leaves from platform three.|train|a long vehicle that runs on rails
+We need to catch a ___ to the airport.|taxi|a car you pay to ride in
+I ride my ___ to school.|bike|a two-wheeled vehicle you pedal
+The ___ takes off in an hour.|plane|a vehicle that flies
+Could you tell me where the ___ stop is?|coach|a comfortable bus for long trips
+I usually ___ to work, it's not far.|walk|to travel on foot
+The ___ station is near my house.|metro|a train system in a big city
+We need to buy a ___ before we board.|ticket|a paper that lets you travel
+The ___ was late this morning.|tram|a vehicle on rails in city streets
+I left my ___ at home, so I can't drive.|keys|metal things that start a car
+The ___ takes you across the river.|ferry|a boat that carries people across water
+Please fasten your ___ before we take off.|seatbelt|a strap that keeps you safe
+The ___ is the fastest way to travel abroad.|jet|a very fast plane
+I usually take the ___ to avoid traffic.|underground|a train system below the city
+Our ___ leaves at six in the morning.|flight|a trip in a plane
+The ___ dropped us right outside the hotel.|cab|another word for taxi
+I need to ___ my ticket before boarding.|show|to let someone see
+The road was closed, so we took a ___.|detour|a longer way around a problem
+We waited at the ___ for twenty minutes.|station|a place where trains or buses stop
+The ___ was full, so we had to stand.|carriage|one section of a train
+I always check the ___ before I travel.|timetable|a list of times for buses or trains
+The car needs more ___ before the trip.|petrol|fuel for a car
+We arrived at the ___ two hours early.|airport|a place where planes arrive and leave
+The ___ takes you underground across the city.|subway|a train system under a city`,
   },
   {
     id: "a1p21",
@@ -695,31 +702,31 @@ The ___ takes you underground across the city.|subway`,
     kind: "pair",
     prompt: 'The body part "%s" is your…',
     note: "Basic body part vocabulary.",
-    data: `you see with these|eyes
-you hear with these|ears
-you smell with this|nose
-you speak with this|mouth
-you chew with these|teeth
-this is on top of your neck|head
-these help you walk|legs
-these help you hold things|hands
-you bend this in the middle of your arm|elbow
-you bend this in the middle of your leg|knee
-these are at the end of your legs|feet
-these are at the end of your hands|fingers
-this connects your head to your body|neck
-this is in the middle of your body|stomach
-these are at the end of your feet|toes
-this pumps blood around your body|heart
-you use these to breathe|lungs
-this covers your whole body|skin
-these grow on your head|hair
-this is above your eyes|eyebrow
-these are on the sides of your face|cheeks
-this is at the front of your leg, below the knee|shin
-these connect your hands to your arms|wrists
-this connects your feet to your legs|ankle
-this is the largest bone in your face|jaw`,
+    data: `you see with these|eyes|the parts of your face you see with|My eyes are brown.
+you hear with these|ears|the parts of your head you hear with|Her ears are cold.
+you smell with this|nose|the part of your face you smell with|My nose is red from the cold.
+you speak with this|mouth|the part of your face you speak with|Open your mouth wide.
+you chew with these|teeth|the hard white parts in your mouth|I brush my teeth twice a day.
+this is on top of your neck|head|the top part of your body|She has a hat on her head.
+these help you walk|legs|the long parts you walk on|My legs hurt after the run.
+these help you hold things|hands|the parts at the end of your arms|Wash your hands before eating.
+you bend this in the middle of your arm|elbow|the bend in the middle of your arm|He hurt his elbow.
+you bend this in the middle of your leg|knee|the bend in the middle of your leg|My knee hurts when I run.
+these are at the end of your legs|feet|the parts at the end of your legs|My feet are cold.
+these are at the end of your hands|fingers|the thin parts of your hand|She has long fingers.
+this connects your head to your body|neck|the part between your head and body|He wears a scarf on his neck.
+this is in the middle of your body|stomach|the part of your body where food goes|My stomach hurts.
+these are at the end of your feet|toes|the five small parts on your feet|I can touch my toes.
+this pumps blood around your body|heart|the part inside you that pumps blood|Your heart beats fast when you run.
+you use these to breathe|lungs|the parts inside you for breathing|Your lungs help you breathe.
+this covers your whole body|skin|the outside covering of your body|The sun burns my skin.
+these grow on your head|hair|the thin threads that grow on your head|She has long black hair.
+this is above your eyes|eyebrow|the line of hair above your eye|He lifted one eyebrow.
+these are on the sides of your face|cheeks|the soft sides of your face|The baby has round cheeks.
+this is at the front of your leg, below the knee|shin|the front of your leg below the knee|The ball hit my shin.
+these connect your hands to your arms|wrists|the thin parts between hand and arm|I wear a watch on my wrist.
+this connects your feet to your legs|ankle|the joint between your foot and leg|I hurt my ankle playing football.
+this is the largest bone in your face|jaw|the bone that holds your teeth|The dentist checked my jaw.`,
   },
   {
     id: "a1p22",
@@ -728,31 +735,31 @@ this is the largest bone in your face|jaw`,
     kind: "pair",
     prompt: 'This hobby involves "%s"…',
     note: "Common free-time activities.",
-    data: `reading|books
-watching|films
-listening to|music
-playing|video games
-taking|photographs
-drawing|pictures
-painting|art
-dancing|to music
-singing|songs
-collecting|stamps
-gardening|plants
-baking|cakes
-writing|stories
-traveling|new places
-camping|outdoors
-fishing|by the river
-cycling|on a bike
-running|for exercise
-swimming|in a pool
-knitting|with wool
-enjoying|board games
-following|sports on TV
-volunteering|in the community
-learning|a new language
-meditating|for relaxation`,
+    data: `reading|books|pages of writing you read|I read books before bed.
+watching|films|stories you watch on a screen|We watch films on Friday night.
+listening to|music|sounds made by singing or playing|My brother loves rock music.
+playing|video games|games you play on a screen|He plays video games after school.
+taking|photographs|pictures made with a camera|She takes photographs of flowers.
+drawing|pictures|drawings or paintings|The children draw pictures of animals.
+painting|art|paintings and drawings|My sister loves art.
+dancing|to music|following the sound of a song|They dance to music all night.
+singing|songs|words and music that people sing|We sing songs in class.
+collecting|stamps|small paper pictures for letters|He collects old stamps.
+gardening|plants|living things that grow in the ground|She grows plants on the balcony.
+baking|cakes|sweet foods baked in an oven|We bake cakes on Sundays.
+writing|stories|tales about people and events|She writes stories for children.
+traveling|new places|towns and countries you have not seen|I love visiting new places.
+camping|outdoors|outside, not in a house|We like to camp outdoors.
+fishing|by the river|next to a river|He fishes by the river.
+cycling|on a bike|sitting on a bicycle|She goes to school on a bike.
+running|for exercise|to keep your body strong|I run for exercise.
+swimming|in a pool|in water made for swimming|We swim in a pool.
+knitting|with wool|using soft thread from sheep|She knits a hat with wool.
+enjoying|board games|games played on a flat board|We play board games on rainy days.
+following|sports on TV|games you watch on television|Dad watches sports on TV.
+volunteering|in the community|with the people near your home|She helps in the community.
+learning|a new language|words and rules you have not learned|I am learning a new language.
+meditating|for relaxation|to feel calm and rested|Many people walk for relaxation.`,
   },
   {
     id: "a1p23",
@@ -885,31 +892,31 @@ const A2: Pack[] = [
     kind: "pair",
     prompt: 'Past simple of "%s":',
     note: "Irregular verbs don't take -ed.",
-    data: `go|went
-eat|ate
-buy|bought
-bring|brought
-think|thought
-teach|taught
-catch|caught
-see|saw
-take|took
-give|gave
-write|wrote
-drive|drove
-speak|spoke
-break|broke
-choose|chose
-know|knew
-grow|grew
-fly|flew
-begin|began
-drink|drank
-swim|swam
-run|ran
-sit|sat
-win|won
-leave|left`,
+    data: `go|went|the past of "go"|We went to the beach on Sunday.
+eat|ate|the past of "eat"|I ate rice for lunch.
+buy|bought|the past of "buy"|She bought a new bag.
+bring|brought|the past of "bring"|He brought his book to class.
+think|thought|the past of "think"|I thought about it all night.
+teach|taught|the past of "teach"|She taught us how to swim.
+catch|caught|the past of "catch"|He caught the ball with one hand.
+see|saw|the past of "see"|We saw a good film last night.
+take|took|the past of "take"|I took the bus to work.
+give|gave|the past of "give"|My dad gave me a watch.
+write|wrote|the past of "write"|She wrote a letter to her friend.
+drive|drove|the past of "drive"|He drove to the city.
+speak|spoke|the past of "speak"|We spoke on the phone.
+break|broke|the past of "break"|I broke a cup this morning.
+choose|chose|the past of "choose"|She chose the blue shirt.
+know|knew|the past of "know"|I knew the answer.
+grow|grew|the past of "grow"|The tree grew very tall.
+fly|flew|the past of "fly"|The bird flew over the house.
+begin|began|the past of "begin"|The lesson began at nine.
+drink|drank|the past of "drink"|He drank a glass of water.
+swim|swam|the past of "swim"|We swam in the sea.
+run|ran|the past of "run"|She ran to the station.
+sit|sat|the past of "sit"|They sat on the grass.
+win|won|the past of "win"|Our team won the match.
+leave|left|the past of "leave"|He left home at seven.`,
   },
   {
     id: "a2p2",
@@ -917,30 +924,30 @@ leave|left`,
     subtitle: "Past tenses in use",
     kind: "cloze",
     note: "Past simple for finished events; past continuous for background action.",
-    data: `I ___ to the cinema yesterday.|went
-She ___ cooking when I arrived.|was
-They ___ not come to the party.|did
-While we ___ , the phone rang.|were talking
-He ___ his keys last night.|lost
-___ you enjoy the concert?|Did
-We ___ living in Rome then.|were
-The film ___ at eight.|started
-I ___ tired, so I left.|was
-She ___ used to smoke.|didn't
-It ___ raining all morning.|was
-They ___ married in 2015.|got
+    data: `I ___ to the cinema yesterday.|went|the past of "go"
+She ___ cooking when I arrived.|was|the past of "is", used with she
+They ___ not come to the party.|did|helps make a past negative
+While we ___ , the phone rang.|were talking|shows what was happening at a time
+He ___ his keys last night.|lost|no longer had something
+___ you enjoy the concert?|Did|starts a question about the past
+We ___ living in Rome then.|were|the past of "are", used with we
+The film ___ at eight.|started|began
+I ___ tired, so I left.|was|the past of "am", used with I
+She ___ used to smoke.|didn't|short for did not|She didn't call me last year.
+It ___ raining all morning.|was|the past of "is", used with it
+They ___ married in 2015.|got|the past of "get"; became
 He ___ never late before.|was
-I ___ my homework before dinner.|finished
-The children ___ in the garden.|were playing
-We ___ hear anything.|didn't
-She ___ the door quietly.|closed
-What ___ you doing at six?|were
-The train ___ on time.|arrived
-He ___ used to walk to school.|used
-Nobody ___ what to say.|knew
-I ___ reading when she called.|was
-They ___ a great time.|had
-The lights ___ out suddenly.|went
+I ___ my homework before dinner.|finished|came to the end of
+The children ___ in the garden.|were playing|shows what was happening in the past|The children were playing in the garden.
+We ___ hear anything.|didn't|short for did not
+She ___ the door quietly.|closed|the past of "close"; shut
+What ___ you doing at six?|were|the past of "are", used with you
+The train ___ on time.|arrived|reached a place
+He ___ used to walk to school.|used|"used to" talks about past habits
+Nobody ___ what to say.|knew|the past of "know"
+I ___ reading when she called.|was|the past of "am", used with I
+They ___ a great time.|had|the past of "have"
+The lights ___ out suddenly.|went|stopped working, as in "went out"
 She ___ born in Lisbon.|was`,
   },
   {
@@ -950,31 +957,31 @@ She ___ born in Lisbon.|was`,
     kind: "pair",
     prompt: 'Comparative of "%s":',
     note: 'Short adjectives add -er; long ones take "more".',
-    data: `big|bigger
-hot|hotter
-happy|happier
-easy|easier
-good|better
-bad|worse
-far|further
-expensive|more expensive
-beautiful|more beautiful
-thin|thinner
-early|earlier
-busy|busier
-safe|safer
-large|larger
-simple|simpler
-careful|more careful
-tired|more tired
-funny|funnier
-heavy|heavier
-modern|more modern
-narrow|narrower
-polite|more polite
-quiet|quieter
-strange|stranger
-useful|more useful`,
+    data: `big|bigger|larger in size|My room is bigger than yours.
+hot|hotter|with a higher temperature|Today is hotter than yesterday.
+happy|happier|feeling more joy|She looks happier today.
+easy|easier|less difficult|This test is easier than that one.
+good|better|of a higher quality|This pizza is better than that one.
+bad|worse|not as good|The weather is worse today.
+far|further|at a greater distance|The park is further than the shop.
+expensive|more expensive|costing more money|This phone is more expensive than that one.
+beautiful|more beautiful|nicer to look at|The garden is more beautiful in spring.
+thin|thinner|less thick|A pencil is thinner than a pen.
+early|earlier|before the usual time|I wake up earlier on Mondays.
+busy|busier|with more things to do|The shop is busier on Saturdays.
+safe|safer|less dangerous|This street is safer at night.
+large|larger|bigger in size|Their house is larger than ours.
+simple|simpler|easier to understand|This plan is simpler than the old one.
+careful|more careful|taking more care|Be more careful on the stairs.
+tired|more tired|needing more rest|I am more tired than you today.
+funny|funnier|making you laugh more|This film is funnier than the last one.
+heavy|heavier|weighing more|The red box is heavier than the blue one.
+modern|more modern|newer in style|This phone looks more modern than mine.
+narrow|narrower|less wide|The road is narrower here.
+polite|more polite|showing better manners|He is more polite than his brother.
+quiet|quieter|making less noise|The street is quieter at night.
+strange|stranger|more unusual or odd|That story is stranger than the first one.
+useful|more useful|helping more|A map is more useful than a watch here.`,
   },
   {
     id: "a2p4",
@@ -982,31 +989,31 @@ useful|more useful`,
     subtitle: "Shopping and travel",
     kind: "cloze",
     note: "Fixed travel and shopping phrases.",
-    data: `Can I ___ this on?|try
-I'd like to ___ a room.|book
-Could I have the ___ , please?|bill
-How much ___ this cost?|does
-Do you ___ by card?|take
-Where do I ___ my luggage?|check in
-The train ___ from platform 4.|departs
-I'd like a ___ ticket, please.|return
-Is this seat ___ ?|taken
-Can you ___ me the way to the museum?|show
-I'm just ___ , thanks.|looking
-Do you have this in a bigger ___ ?|size
-I'd like to ___ this jacket.|return
-What time is ___ out?|check
-Excuse me, is there a ___ near here?|cash machine
-The flight has been ___ .|delayed
-Could you ___ that down for me?|write
-I'd like to ___ some money.|change
-Are you ___ in the queue?|next
-Can I get a ___ to the airport?|taxi
-This shirt doesn't ___ me.|fit
-We're ___ of stock.|out
-I'll ___ it, thanks.|take
-Where can I ___ the bus?|catch
-The hotel ___ breakfast.|includes`,
+    data: `Can I ___ this on?|try|to test clothes by wearing them
+I'd like to ___ a room.|book|to reserve a room or seat
+Could I have the ___ , please?|bill|the paper that shows what you owe
+How much ___ this cost?|does|helps make a question with "it"
+Do you ___ by card?|take|to accept; used for payments|Do you take credit cards?
+Where do I ___ my luggage?|check in|to register when you arrive
+The train ___ from platform 4.|departs|leaves, as a train or plane does
+I'd like a ___ ticket, please.|return|a ticket for going and coming back
+Is this seat ___ ?|taken|used by someone else; not free
+Can you ___ me the way to the museum?|show|to guide someone with your hand or words
+I'm just ___ , thanks.|looking|just browsing, not buying yet
+Do you have this in a bigger ___ ?|size|how big a piece of clothing is
+I'd like to ___ this jacket.|return|to take something back to a shop
+What time is ___ out?|check|"check out" means to leave a hotel
+Excuse me, is there a ___ near here?|cash machine|a machine that gives you money
+The flight has been ___ .|delayed|late; not on time
+Could you ___ that down for me?|write|to put words on paper
+I'd like to ___ some money.|change|to swap money for another kind
+Are you ___ in the queue?|next|coming right after this one
+Can I get a ___ to the airport?|taxi|a car you pay to ride in
+This shirt doesn't ___ me.|fit|to be the right size
+We're ___ of stock.|out|used in "out of stock"; none left
+I'll ___ it, thanks.|take|to choose to buy
+Where can I ___ the bus?|catch|to get on a bus or train
+The price ___ breakfast.|includes|has something as one of its parts|The price includes breakfast.`,
   },
   {
     id: "a2p5",
@@ -1014,31 +1021,31 @@ The hotel ___ breakfast.|includes`,
     subtitle: "Quantifiers",
     kind: "cloze",
     note: "Countable nouns take many/few; uncountable nouns take much/little.",
-    data: `How ___ sugar do you want?|much
-How ___ people came?|many
+    data: `How ___ sugar do you want?|much|a large amount of something
+How ___ people came?|many|a large number of things
 There isn't ___ milk left.|much
-I have a ___ questions.|few
-She has ___ money.|little
-There are ___ chairs here.|enough
-We need ___ more bread.|some
-Are there ___ tickets left?|any
-He drinks too ___ coffee.|much
-Only a ___ of us knew.|few
-I don't have ___ time.|much
-There's ___ of space.|plenty
-___ of the students passed.|Most
-She ate the ___ cake.|whole
-Would you like ___ tea?|some
-I bought ___ apples.|several
-There's hardly ___ juice.|any
-We have ___ homework tonight.|lots of
-He owns ___ books.|many
-Add a ___ of salt.|pinch
-I need ___ information.|more
-There were ___ few chairs.|too
-Both ___ them agreed.|of
+I have a ___ questions.|few|a small number; some
+She has ___ money.|little|not much
+There are ___ chairs here.|enough|as much as you need
+We need ___ more bread.|some|an amount; used in statements
+Are there ___ tickets left?|any|used in questions and negative sentences
+He drinks too ___ coffee.|much|too big an amount
+Only a ___ of us knew.|few|not many
+I don't have ___ time.|much|a big amount; used in negatives
+There's ___ of space.|plenty|more than enough
+___ of the students passed.|Most|almost all
+She ate the ___ cake.|whole|all of something; complete
+Would you like ___ tea?|some|used in offers and questions
+I bought ___ apples.|several|more than two but not many
+There's hardly ___ juice.|any|used in questions and with not or hardly|Do you have any juice?
+We have ___ homework tonight.|lots of|a large number or amount
+He owns ___ books.|many|a large number of things
+Add a ___ of salt.|pinch|a small amount you take with two fingers
+I need ___ information.|more|a greater amount
+There were ___ few chairs.|too|more than is good
+Both ___ them agreed.|of|used after "both" and before "them"
 Neither ___ us was ready.|of
-She has ___ friends here.|no`,
+She has ___ friends here.|no|not any`,
   },
   {
     id: "a2p6",
@@ -1046,30 +1053,30 @@ She has ___ friends here.|no`,
     subtitle: "Will, going to, present continuous",
     kind: "cloze",
     note: '"Will" for decisions now, "going to" for plans, present continuous for arrangements.',
-    data: `I think it ___ rain.|will
-We ___ going to move house.|are
-She ___ meeting Tom at six.|is
+    data: `I think it ___ rain.|will|talks about the future; makes a promise
+We ___ going to move house.|are|"are going to" talks about plans
+She ___ meeting Tom at six.|is|used for plans already arranged
 ___ you help me, please?|Will
-I'm ___ to study medicine.|going
-The train ___ at ten tomorrow.|leaves
-They ___ probably be late.|will
-Look at those clouds — it's ___ to storm.|going
+I'm ___ to study medicine.|going|"going to" talks about plans
+The train ___ at ten tomorrow.|leaves|used for fixed timetables
+They ___ probably be late.|will|shows a guess about the future|They will probably be late.
+Look at those clouds — it's ___ to storm.|going|talks about what will happen soon
 I ___ have the soup, please.|will
-What ___ you doing tonight?|are
-He ___ be twenty next month.|will
-We're ___ dinner at eight.|having
-I promise I ___ tell anyone.|won't
-She's ___ to look for a new job.|going
-The film ___ at nine.|starts
-___ we take a taxi?|Shall
-By June I ___ have finished.|will
-I'm not ___ to argue.|going
+What ___ you doing tonight?|are|used in a question about plans
+He ___ be twenty next month.|will|shows a fact about the future|He will be twenty next month.
+We're ___ dinner at eight.|having|used for plans already arranged
+I promise I ___ tell anyone.|won't|short for will not
+She's ___ to look for a new job.|going|"going to" talks about plans
+The film ___ at nine.|starts|begins at a set time
+___ we take a taxi?|Shall|used to suggest something to friends
+I ___ send it tomorrow, I promise.|will|shows a promise or a sure plan|I will send it tomorrow.
+I'm not ___ to argue.|going|used in "not going to" for plans
 Perhaps they ___ come later.|will
-He's ___ his exam on Friday.|taking
-It ___ be easy, I'm afraid.|won't
-We ___ going to need help.|are
-I ___ call you when I arrive.|will
-She ___ flying to Rome tomorrow.|is
+He's ___ his exam on Friday.|taking|used for plans already arranged
+It ___ be easy, I'm afraid.|won't|short for will not
+We ___ going to need help.|are|used with "we" in "are going to"
+I ___ call you when I arrive.|will|talks about a future action
+She ___ flying to Rome tomorrow.|is|used for a plan already made
 Nobody ___ notice.|will`,
   },
   {
@@ -1078,31 +1085,31 @@ Nobody ___ notice.|will`,
     subtitle: "Rooms and furniture",
     kind: "cloze",
     note: "Everyday vocabulary for describing where you live.",
-    data: `We cook dinner in the ___.|kitchen
-I keep my clothes in the ___.|wardrobe
-She's watching TV in the ___.|living room
-He's brushing his teeth in the ___.|bathroom
-Put the plates in the ___.|cupboard
-We sleep in the ___.|bedroom
-There's a nice garden behind the ___.|house
-I left my keys on the ___.|table
-She sat down on the ___ to relax.|sofa
-Hang your coat on the ___.|hook
-We eat breakfast in the ___.|dining room
-He's fixing a shelf in the ___.|garage
-The washing machine is in the ___.|laundry room
-Open the ___ to let some air in.|window
-Please close the ___ when you leave.|door
-We keep the car in the ___.|driveway
-The stairs lead up to the ___.|attic
-She's watering the plants in the ___.|garden
-He's cleaning the ___ before guests arrive.|hallway
-The bed has a soft ___.|mattress
-Turn off the ___ before you sleep.|light
-We're renting a small ___ downtown.|flat
-The ___ needs painting.|ceiling
-I store old boxes in the ___.|basement
-Please wipe your feet on the ___.|mat`,
+    data: `We cook dinner in the ___.|kitchen|the room where you cook
+I keep my clothes in the ___.|wardrobe|a tall cupboard for clothes
+She's watching TV in the ___.|living room|the room for relaxing and TV
+He's brushing his teeth in the ___.|bathroom|the room for washing
+Put the plates in the ___.|cupboard|a closed space for plates and food
+We sleep in the ___.|bedroom|the room where you sleep
+There's a nice garden behind the ___.|house|a building where people live
+I left my keys on the ___.|table|furniture with a flat top
+She sat down on the ___ to relax.|sofa|a long soft seat for several people
+Hang your coat on the ___.|hook|a curved piece for hanging things
+We eat breakfast in the ___.|dining room|the room where you eat meals
+He's fixing a shelf in the ___.|garage|a building or room for a car
+The washing machine is in the ___.|laundry room|the room for washing clothes
+Open the ___ to let some air in.|window|an opening in a wall with glass
+Please close the ___ when you leave.|door|what you open to enter a room
+We keep the car in the ___.|driveway|the path where you park at home
+The stairs lead up to the ___.|attic|the room under the roof
+She's watering the plants in the ___.|garden|a place outside with plants
+He's cleaning the ___ before guests arrive.|hallway|a narrow room between other rooms
+The bed has a soft ___.|mattress|the soft part of a bed
+Turn off the ___ before you sleep.|light|a lamp that lets you see
+We're renting a small ___ downtown.|flat|a home on one floor of a building
+The ___ needs painting.|ceiling|the top inside surface of a room
+I store old boxes in the ___.|basement|the room below the ground floor
+Please wipe your feet on the ___.|mat|a small rug for the floor`,
   },
   {
     id: "a2p8",
@@ -1111,31 +1118,31 @@ Please wipe your feet on the ___.|mat`,
     kind: "pair",
     prompt: 'Which sport or hobby uses "%s"?',
     note: "Match the equipment or place to the activity.",
-    data: `a racket|tennis
-a ball and hoop|basketball
-a board and wheels|skateboarding
-a net and ball|volleyball
-a pool|swimming
-a track|running
-a helmet and bike|cycling
-a bat and ball|cricket
-gloves and a ring|boxing
-skis and snow|skiing
-a rod and hook|fishing
-a needle and thread|sewing
-a canvas and brush|painting
-a camera|photography
-clay and a wheel|pottery
-a deck of cards|card games
-a chessboard|chess
-a guitar|music
-a needle and yarn|knitting
-a court and net|badminton
-a climbing wall|climbing
-a yoga mat|yoga
-a set of clubs|golf
-a rowing boat|rowing
-a garden and seeds|gardening`,
+    data: `a racket|tennis|a game played with rackets and a ball|I play tennis on Saturdays.
+a ball and hoop|basketball|a sport with a ball and a hoop|We play basketball at school.
+a board and wheels|skateboarding|riding a board with wheels|He loves skateboarding in the park.
+a net and ball|volleyball|a team game over a high net|We play volleyball on the beach.
+a pool|swimming|moving through water with your body|Swimming is good exercise.
+a track|running|moving fast on foot|Running helps me stay healthy.
+a helmet and bike|cycling|riding a bike|Cycling to work saves money.
+a bat and ball|cricket|a team game with a bat and ball|They watch cricket on TV.
+gloves and a ring|boxing|a sport with gloves in a ring|He trains for boxing every day.
+skis and snow|skiing|sliding down snow on long boards|We go skiing in winter.
+a rod and hook|fishing|trying to catch animals in water|My grandfather loves fishing.
+a needle and thread|sewing|joining cloth with needle and thread|She is good at sewing.
+a canvas and brush|painting|making pictures with colours|Painting makes her feel calm.
+a camera|photography|taking pictures with a camera|He studies photography at school.
+clay and a wheel|pottery|making pots and bowls from clay|We made a bowl in pottery class.
+a deck of cards|card games|games played with a deck of cards|We play card games at night.
+a chessboard|chess|a board game for two players|He plays chess with his grandfather.
+a guitar|music|playing or singing songs|She plays the guitar and loves music.
+a needle and yarn|knitting|making clothes from yarn with needles|Knitting keeps her hands busy.
+a court and net|badminton|a sport played with rackets and a net|We play badminton in the gym.
+a climbing wall|climbing|going up a wall or mountain|Climbing is hard but fun.
+a yoga mat|yoga|slow exercise for body and mind|I do yoga every morning.
+a set of clubs|golf|a sport with clubs and a small ball|My uncle plays golf on Sundays.
+a rowing boat|rowing|moving a boat with oars|Rowing is hard on the arms.
+a garden and seeds|gardening|growing flowers and vegetables|Gardening is her favourite hobby.`,
   },
   {
     id: "a2p9",
@@ -1143,31 +1150,31 @@ a garden and seeds|gardening`,
     subtitle: "Illness and doctor visits",
     kind: "cloze",
     note: "Basic health vocabulary for describing how you feel.",
-    data: `I have a bad ___ and can't stop coughing.|cold
-She's got a ___ — take some painkillers.|headache
-My ___ hurts after running.|leg
-He broke his ___ playing football.|arm
-I feel ___ — I need to sit down.|dizzy
-She has a ___ — please be quiet.|migraine
-My ___ is sore from shouting.|throat
-He's got a high ___.|temperature
-I twisted my ___ on the stairs.|ankle
-She's allergic to ___.|nuts
-The doctor gave me some ___.|medicine
-I need to make a ___ appointment.|dentist
-My ___ hurts when I chew.|tooth
-He's been ___ since Monday.|sick
-She fainted because she felt ___.|faint
-I cut my ___ while cooking.|finger
-The nurse checked my ___.|pulse
-He needs to rest his ___ leg.|injured
-I have an ___ stomach.|upset
-She's recovering from a ___ .|fever
-My back ___ after lifting the box.|hurts
-He's got a nasty ___ on his knee.|bruise
-I should see a doctor about my ___.|cough
-She sprained her ___ at the gym.|wrist
-The pharmacist recommended this ___ for allergies.|spray`,
+    data: `I have a bad ___ and can't stop coughing.|cold|a common illness with a runny nose
+She's got a ___ — take some painkillers.|headache|a pain in your head|I have a headache, so I will rest.
+My ___ hurts after running.|leg|the long body part you walk on
+He broke his ___ playing football.|arm|the body part between shoulder and hand
+I feel ___ — I need to sit down.|dizzy|feeling that the room is moving
+She has a ___ — please be quiet.|migraine|a very bad headache
+My ___ is sore from shouting.|throat|the passage at the back of your mouth
+He's got a high ___.|temperature|how hot your body is
+I twisted my ___ on the stairs.|ankle|the joint between foot and leg
+She's allergic to ___.|nuts|hard-shelled seeds you eat
+The doctor gave me some ___.|medicine|something you take to get better
+I need to make a ___ appointment.|dentist|a doctor for your teeth
+My ___ hurts when I chew.|tooth|a hard white part in your mouth
+He's been ___ since Monday.|sick|ill; not well
+She fainted because she felt ___.|faint|weak and about to fall down
+I cut my ___ while cooking.|finger|one thin part of your hand
+The nurse checked my ___.|pulse|the beat of your heart
+He needs to rest his ___ leg.|injured|hurt in an accident
+I have an ___ stomach.|upset|not well, as in an upset stomach
+She's recovering from a ___ .|fever|a high body temperature when ill
+My back ___ after lifting the box.|hurts|feels pain
+He's got a nasty ___ on his knee.|bruise|a dark mark on skin after a hit
+I should see a doctor about my ___.|cough|a sudden noise from your throat
+She sprained her ___ at the gym.|wrist|the joint between your hand and arm
+The pharmacist recommended this ___ for allergies.|spray|liquid that comes out in a fine mist`,
   },
   {
     id: "a2p10",
@@ -1176,31 +1183,31 @@ The pharmacist recommended this ___ for allergies.|spray`,
     kind: "pair",
     prompt: 'Superlative of "%s":',
     note: 'Short adjectives take -est; long ones take "most".',
-    data: `big|biggest
-hot|hottest
-happy|happiest
-easy|easiest
-good|best
-bad|worst
-far|furthest
-expensive|most expensive
-beautiful|most beautiful
-thin|thinnest
-early|earliest
-busy|busiest
-safe|safest
-large|largest
-simple|simplest
-careful|most careful
-tired|most tired
-funny|funniest
-heavy|heaviest
-modern|most modern
-narrow|narrowest
-polite|most polite
-quiet|quietest
-strange|strangest
-useful|most useful`,
+    data: `big|biggest|larger than all the others|This is the biggest room in the house.
+hot|hottest|with the highest temperature|July is the hottest month here.
+happy|happiest|feeling the most joy|It was the happiest day of my life.
+easy|easiest|the least difficult|This is the easiest question.
+good|best|better than all the others|She is the best player on the team.
+bad|worst|worse than all the others|That was the worst film I saw.
+far|furthest|at the greatest distance|Our house is the furthest from school.
+expensive|most expensive|costing more than all the others|That is the most expensive watch here.
+beautiful|most beautiful|the nicest to look at|She wore the most beautiful dress.
+thin|thinnest|the least thick|This is the thinnest book here.
+early|earliest|before all the others|The earliest train leaves at five.
+busy|busiest|with the most things to do|Friday is the busiest day at work.
+safe|safest|the least dangerous|This is the safest road in town.
+large|largest|the biggest in size|Russia is the largest country in the world.
+simple|simplest|the easiest to understand|This is the simplest game to learn.
+careful|most careful|taking the most care|He is the most careful driver here.
+tired|most tired|needing the most rest|I am the most tired today.
+funny|funniest|making you laugh the most|He is the funniest boy in class.
+heavy|heaviest|weighing the most|This is the heaviest box.
+modern|most modern|the newest in style|It is the most modern school in town.
+narrow|narrowest|the least wide|This is the narrowest street in the city.
+polite|most polite|with the best manners|She is the most polite student.
+quiet|quietest|making the least noise|The library is the quietest place here.
+strange|strangest|the most unusual|That is the strangest story I know.
+useful|most useful|helping the most|A phone is the most useful thing I own.`,
   },
   {
     id: "a2p11",
@@ -1208,64 +1215,65 @@ useful|most useful`,
     subtitle: "Ordering and dining out",
     kind: "cloze",
     note: "Common phrases for eating out.",
-    data: `Could I see the ___, please?|menu
-I'd like to ___ a table for two.|book
-Are you ready to ___?|order
-I'll ___ the chicken, please.|have
-Could we have the ___ when you're ready?|bill
-Is service ___ in the price?|included
-Do you have any ___ dishes for people who don't eat meat?|vegetarian
-I'm allergic to ___, so no peanuts please.|nuts
-Could I get some tap ___ as well?|water
-The ___ recommended the fish today.|waiter
-We're just ___ a table for now, not ready to order.|looking
-Could you bring some more ___, please?|bread
-I'd like my steak ___, not too well done.|medium
-Is there a ___ menu for the children?|kids
-Can I pay by ___ card?|credit
-We'd like to sit by the ___, please.|window
-This soup is ___ hot, be careful.|very
-Could we get some extra ___ for the fries?|ketchup
-The ___ was excellent tonight, please thank the chef.|meal
-I'll have the same ___ as my friend.|dish
-Do you take ___ or only cash?|cards
-Could you box this up, we'd like a ___ bag?|doggy
-The restaurant was fully ___, so we waited outside.|booked
-Please leave a ___ for the staff if service was good.|tip
-Enjoy your ___!|dinner`,
+    data: `Could I see the ___, please?|menu|a list of food at a restaurant
+I'd like to ___ a table for two.|book|to reserve a table in advance
+Are you ready to ___?|order|to ask for food and drink
+I'll ___ the chicken, please.|have|to choose food; used in "I'll have"
+Could we have the ___ when you're ready?|bill|the paper that shows what you owe
+Is service ___ in the price?|included|counted as part of the price
+Do you have any ___ dishes for people who don't eat meat?|vegetarian|not eating meat|Do you have any vegetarian dishes?
+I'm allergic to ___, so no peanuts please.|nuts|hard-shelled seeds you eat
+Could I get some tap ___ as well?|water|a clear drink with no colour
+The ___ recommended the fish today.|waiter|a man who brings food to tables
+We're just ___ a table for now, not ready to order.|looking|reading or checking|We're still looking at the menu.
+Could you bring some more ___, please?|bread|food baked from flour
+I'd like my steak ___, not too well done.|medium|cooked not too little, not too much
+Is there a ___ menu for the children?|kids|children; young people
+Can I pay by ___ card?|credit|money you borrow now and pay back later
+We'd like to sit by the ___, please.|window|an opening in a wall with glass
+This soup is ___ hot, be careful.|very|extremely; to a high degree
+Could we get some extra ___ for the fries?|ketchup|a red sauce made from tomatoes
+The ___ was excellent tonight, please thank the chef.|meal|the food you eat at one time
+I'll have the same ___ as my friend.|dish|food cooked and served in one way
+Do you take ___ or only cash?|cards|plastic things used for paying
+Could you box this up, we'd like a ___ bag?|doggy|used in "doggy bag" for leftover food
+The restaurant was fully ___, so we waited outside.|booked|reserved ahead of time
+Please leave a ___ for the staff if service was good.|tip|extra money for good service|Leave a tip if the service was good.
+Enjoy your ___!|dinner|the main meal in the evening`,
   },
   {
     id: "a2p12",
     title: "Adverbs of Frequency",
     subtitle: "How often things happen",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'How often does "%s" happen?',
     note: "Frequency adverbs matched to how often they mean.",
-    data: `always|every single time, without exception
-usually|the great majority of the time
-normally|as a rule, under typical conditions
-generally|in most cases you'll find
-frequently|on many separate occasions
-often|quite a lot, many times
-regularly|at fixed, repeated intervals
-sometimes|on certain occasions but not most
-occasionally|now and then, but not often
-periodically|at intervals, coming and going
-now and then|every so often, casually
-once in a while|not very often, infrequently
-from time to time|at scattered, irregular moments
-seldom|only rarely, not very often
-rarely|very infrequently indeed
-hardly ever|almost never at all
-scarcely ever|barely ever, close to never
-barely ever|almost not at all
-infrequently|not often, with gaps between
-never|not on any occasion, ever
-constantly|without stopping, all the time
-continually|again and again over time
-repeatedly|one time after another
-routinely|as part of a fixed routine
-habitually|out of a settled habit`,
+    data: `always|every single time, without exception|every time, without exception|I always brush my teeth at night.
+usually|the great majority of the time|most of the time|I usually walk to work.
+normally|as a rule, under typical conditions|in most normal situations|We normally eat dinner at seven.
+generally|in most cases you'll find|in most cases|It is generally quiet here at night.
+frequently|on many separate occasions|very often; many times|He frequently visits his grandmother.
+often|quite a lot, many times|many times; not rarely|She often calls her mother.
+regularly|at fixed, repeated intervals|again and again, at fixed times|I regularly go to the gym.
+sometimes|on certain occasions but not most|not every time, but on some days|Sometimes we eat out on Fridays.
+occasionally|now and then, but not often|now and then; not often|We occasionally go to the cinema.
+periodically|at intervals, coming and going|from time to time, at intervals|I check my email periodically.
+now and then|every so often, casually|sometimes, but not often|I call my old friend now and then.
+once in a while|not very often, infrequently|not often; a few times a year|We eat out once in a while.
+from time to time|at scattered, irregular moments|sometimes; not on a fixed day|He visits us from time to time.
+seldom|only rarely, not very often|not often; only a few times|She seldom eats sweets.
+rarely|very infrequently indeed|almost never; not often|He rarely watches television.
+hardly ever|almost never at all|almost never|They hardly ever eat meat.
+scarcely ever|barely ever, close to never|almost never|I scarcely ever see him now.
+barely ever|almost not at all|almost never|He barely ever sleeps late.
+infrequently|not often, with gaps between|not often; with long gaps|Buses run infrequently on Sundays.
+never|not on any occasion, ever|not at any time|I never eat fish.
+constantly|without stopping, all the time|all the time; without stopping|The baby cries constantly at night.
+continually|again and again over time|again and again over a long time|The phone rings continually all day.
+repeatedly|one time after another|many times, one after another|He asked me the same question repeatedly.
+routinely|as part of a fixed routine|as a normal, regular habit|She routinely checks her email each morning.
+habitually|out of a settled habit|by habit, without thinking|He habitually bites his nails.`,
   },
   {
     id: "a2p13",
@@ -1273,31 +1281,31 @@ habitually|out of a settled habit`,
     subtitle: "Finding your way around",
     kind: "cloze",
     note: "Everyday vocabulary for giving and following directions.",
-    data: `Go ___ at the traffic lights.|straight
-Turn ___ at the next corner.|left
-Turn ___ at the bank.|right
-The supermarket is ___ from the bakery.|opposite
-The park is ___ to the school.|next
-Walk ___ two blocks and you'll see it.|for
-The bank is ___ the post office and the cafe.|between
-Cross the ___ carefully.|road
-The museum is just ___ the corner.|around
-Keep walking ___ the river.|along
-The station is at the ___ of the street.|end
-Go ___ the bridge to reach the old town.|over
-The hotel is ___ the city centre.|near
-Take the first ___ on your left.|turning
-The library is ___ the town hall.|behind
-Go ___ the stairs to the first floor.|up
-The car park is ___ the shopping centre.|under
-Follow the signs to reach the ___.|exit
-The pharmacy is ___ the corner from here.|round
-It's about a five-minute ___ from here.|walk
-The bus stop is ___ the church.|outside
-Go ___ this road until you reach the roundabout.|down
-The café is ___ the corner of Main Street.|on
-The nearest ATM is ___ the entrance.|inside
-You can't miss it, it's ___ the town square.|in`,
+    data: `Go ___ at the traffic lights.|straight|without turning
+Turn ___ at the next corner.|left|the opposite of right
+Turn ___ at the bank.|right|the opposite of left
+The supermarket is ___ from the bakery.|opposite|across from something
+The park is ___ to the school.|next|beside; used in "next to"
+Walk ___ two blocks and you'll see it.|for|used with how long or far you go
+The bank is ___ the post office and the cafe.|between|in the middle of two things
+Cross the ___ carefully.|road|a hard path for cars
+The museum is just ___ the corner.|around|past; used in "around the corner"
+Keep walking ___ the river.|along|following the length of
+The station is at the ___ of the street.|end|the last part of something
+Go ___ the bridge to reach the old town.|over|across the top of something
+The hotel is ___ the city centre.|near|not far from
+Take the first ___ on your left.|turning|a road that leaves another road
+The library is ___ the town hall.|behind|at the back of
+Go ___ the stairs to the first floor.|up|towards a higher place
+The car park is ___ the shopping centre.|under|in a lower place than
+Follow the signs to reach the ___.|exit|the way out
+The pharmacy is ___ the corner from here.|round|British way to say "around"
+It's about a five-minute ___ from here.|walk|a short trip on foot
+The bus stop is ___ the church.|outside|not inside a building
+Go ___ this road until you reach the roundabout.|down|along or to a lower place
+The café is ___ the corner of Main Street.|on|at the point where two streets meet|Turn left, the bank is on the corner.
+The nearest ATM is ___ the entrance.|inside|in the inner part of
+You can't miss it, it's ___ the town square.|in|inside a place or area`,
   },
   {
     id: "a2p14",
@@ -1305,31 +1313,31 @@ You can't miss it, it's ___ the town square.|in`,
     subtitle: "Invitations and arrangements",
     kind: "cloze",
     note: "Everyday phrases for arranging to meet and making plans.",
-    data: `Would you like to ___ out for dinner tonight?|go
-I'm ___ to a party on Saturday, do you want to come?|going
-Are you ___ this weekend?|free
-Let's ___ up at the cinema at seven.|meet
-I'd love to, but I already have ___.|plans
-Could we ___ the meeting to next week?|postpone
-I'm afraid I can't ___, I have other plans.|make it
-Shall we ___ a date for the trip?|fix
-Let's ___ it a rain check and go another time.|call
-I need to ___ my schedule before I confirm.|check
-Can you ___ me know by Friday?|let
-We're ___ to have a picnic on Sunday.|planning
-I'll ___ you up at eight o'clock.|pick
-Let's ___ for coffee sometime next week.|arrange
-I'm really ___ forward to seeing you.|looking
-Could you ___ me an invite for the party?|forward
-We should ___ this again sometime.|do
-I'll ___ you a text to confirm the time.|write
-Let's ___ it for Thursday instead.|keep
-I'm not sure I can ___ that day, I'll let you know.|manage
-Can we ___ the time to later in the day?|change
-I'd rather we ___ it for another day.|leave
-Let's ___ on a place to meet.|agree
-I'll ___ the tickets in advance.|book
-We're all ___ to meet at six sharp.|set`,
+    data: `Would you like to ___ out for dinner tonight?|go|to leave home for fun; "go out"
+I'm ___ to a party on Saturday, do you want to come?|going|moving to a place; attending|I'm going to a party on Saturday.
+Are you ___ this weekend?|free|not busy
+Let's ___ up at the cinema at seven.|meet|to come together with someone
+I'd love to, but I already have ___.|plans|things you have arranged to do
+Could we ___ the meeting to next week?|postpone|to move to a later time
+I'm afraid I can't ___, I have other plans.|make it|to be able to come
+Shall we ___ a date for the trip?|fix|to decide a date or time
+Let's ___ it a rain check and go another time.|call|to name something; used in "call it"
+I need to ___ my schedule before I confirm.|check|to look at something to be sure
+Can you ___ me know by Friday?|let|to allow; used in "let me know"
+We're ___ to have a picnic on Sunday.|planning|getting ready to do something
+I'll ___ you up at eight o'clock.|pick|"pick up" means to collect someone
+Let's ___ for coffee sometime next week.|arrange|to plan and organise something
+I'm really ___ forward to seeing you.|looking|used in "looking forward to"
+Could you ___ me an invite for the party?|forward|to send a message on to someone
+We should ___ this again sometime.|do|to carry out an activity
+I'll ___ you a text to confirm the time.|write|to put words in a message
+Let's ___ it for Thursday instead.|keep|to save a time for something
+I'm not sure I can ___ that day, I'll let you know.|manage|to be able to do something|I can't manage that day, sorry.
+Can we ___ the time to later in the day?|change|to make something different
+I'd rather we ___ it for another day.|leave|to put something aside for later
+Let's ___ on a place to meet.|agree|to say yes to the same idea
+I'll ___ the tickets in advance.|book|to reserve ahead of time
+We're all ___ to meet at six sharp.|set|ready; used in "all set"`,
   },
   {
     id: "a2p15",
@@ -1337,31 +1345,31 @@ We're all ___ to meet at six sharp.|set`,
     subtitle: "Everyday errands",
     kind: "cloze",
     note: "A2-level vocabulary for post office and banking errands.",
-    data: `I'd like to send this ___ to Spain, please.|parcel
-Could I have a ___ for this letter?|stamp
-I need to ___ some money into my account.|deposit
-Could I ___ some cash from the machine?|withdraw
-I'd like to open a new bank ___.|account
-The parcel should arrive within three working ___.|days
-Could you weigh this ___ for me?|package
-I need to ___ this form before I send it.|fill in
-The ___ machine is outside the bank.|ATM
-Could I get a ___ for this transaction?|receipt
-I'd like to send this by ___ post.|airmail
-My card was ___ by the machine.|declined
-I need to ___ my PIN number.|change
-The queue at the ___ was very long today.|post office
-Could you check my account ___, please?|balance
-I'd like to ___ a cheque, please.|cash
-The letter needs more ___ to be sent abroad.|stamps
-I forgot my ___ number for the account.|PIN
-Could I transfer money to another ___?|bank
-The bank ___ closes at five o'clock.|branch
-I need to ___ my bank card, it's expired.|renew
-Could you tell me the ___ to send this parcel?|cost
-I'd like to set up a standing ___.|order
-The clerk asked me to ___ the form.|sign
-I need to collect a ___ from the post office.|delivery`,
+    data: `I'd like to send this ___ to Spain, please.|parcel|a package sent by post
+Could I have a ___ for this letter?|stamp|a small paper label for letters
+I need to ___ some money into my account.|deposit|to put money into a bank
+Could I ___ some cash from the machine?|withdraw|to take money out of a bank
+I'd like to open a new bank ___.|account|a place at a bank to keep money
+The parcel should arrive within three working ___.|days|periods of twenty-four hours
+Could you weigh this ___ for me?|package|a wrapped box for sending
+I need to ___ this form before I send it.|fill in|to write answers on a form|Please fill in this form first.
+The ___ is outside the bank.|ATM|a machine that gives you cash
+Could I get a ___ for this transaction?|receipt|a paper that shows you paid
+I'd like to send this by ___ post.|airmail|post sent by plane
+My card was ___ by the machine.|declined|not accepted
+I need to ___ my PIN.|change|to replace with a new one
+The queue at the ___ was very long today.|post office|where you send letters and parcels
+Could you check my account ___, please?|balance|the money in your account
+I'd like to ___ a cheque, please.|cash|to swap a cheque for money
+The letter needs more ___ to be sent abroad.|stamps|small paper labels for letters
+I forgot my ___ for the account.|PIN|a secret number for your bank card
+Could I transfer money to another ___?|bank|a place that keeps people's money
+The bank ___ closes at five o'clock.|branch|one office of a bank
+I need to ___ my bank card, it's expired.|renew|to get a new copy
+Could you tell me the ___ to send this parcel?|cost|the price of something
+I'd like to set up a standing ___.|order|a regular payment your bank makes for you|I set up a standing order for my rent.
+The clerk asked me to ___ the form.|sign|to write your name on
+I need to collect a ___ from the post office.|delivery|something brought to your home`,
   },
   {
     id: "a2p16",
@@ -1369,31 +1377,31 @@ I need to collect a ___ from the post office.|delivery`,
     subtitle: "Describing where you live",
     kind: "cloze",
     note: "A2-level vocabulary for describing a local area.",
-    data: `My ___ is very quiet and friendly.|neighbourhood
-There's a small ___ at the end of my street.|park
-The ___ next door always says hello.|neighbour
-We have a good ___ near our house.|school
-There's a busy ___ close to where I live.|road
-My area has lots of ___ shops.|local
-The ___ centre is a ten-minute walk away.|shopping
-I live in a ___ area, not the city.|residential
-There's a nice ___ where I walk my dog.|field
-The bus ___ is right outside my house.|stop
-My street is very ___ at night.|quiet
-We have a great ___ where I can buy fresh food.|market
-The ___ station is a short walk from home.|train
-There's a lovely ___ near my flat.|café
-My neighbourhood is close to the city ___.|centre
-The area has lots of green ___.|space
-There's a friendly ___ atmosphere here.|community
-The ___ near my house has great restaurants.|area
-We live in a ___ that's popular with families.|suburb
-The streets here are very ___ and safe.|clean
-My building is close to the ___ stop.|bus
-There's a good ___ centre nearby for sports.|leisure
-The area gets quite ___ during rush hour.|busy
-My neighbourhood has changed a lot over the ___.|years
-I really like living in this part of ___.|town`,
+    data: `My ___ is very quiet and friendly.|neighbourhood|the area around your home
+There's a small ___ at the end of my street.|park|a green public place with trees
+The ___ next door always says hello.|neighbour|a person who lives next to you
+We have a good ___ near our house.|school|a place where children learn
+There's a busy ___ close to where I live.|road|a hard path for cars
+My area has lots of ___ shops.|local|near your home
+The ___ centre is a ten-minute walk away.|shopping|buying things; used in "shopping centre"
+I live in a ___ area, not the city.|residential|with houses, not offices or shops
+There's a nice ___ where I walk my dog.|field|a large open area of grass
+The bus ___ is right outside my house.|stop|a place where buses pick up people
+My street is very ___ at night.|quiet|with little noise
+We have a great ___ where I can buy fresh food.|market|a place where people sell food outside|I buy fresh food at the market.
+The ___ station is a short walk from home.|train|a vehicle on rails; used in "train station"
+There's a lovely ___ near my flat.|café|a small place for coffee and snacks
+My neighbourhood is close to the city ___.|centre|the middle part of a place
+The area has lots of green ___.|space|an open area
+There's a friendly ___ atmosphere here.|community|the people living in one place
+The ___ near my house has great restaurants.|area|a part of a town
+We live in a ___ that's popular with families.|suburb|a quiet area outside the city centre
+The streets here are very ___ and safe.|clean|free from dirt
+My building is close to the ___ stop.|bus|a big vehicle that carries many people
+There's a good ___ centre nearby for sports.|leisure|free time; used in "leisure centre"
+The area gets quite ___ during rush hour.|busy|full of people and traffic
+My neighbourhood has changed a lot over the ___.|years|periods of twelve months
+I really like living in this part of ___.|town|a place smaller than a city`,
   },
   {
     id: "a2p17",
@@ -1401,31 +1409,31 @@ I really like living in this part of ___.|town`,
     subtitle: "Where things are",
     kind: "cloze",
     note: "A2-level prepositions describing location.",
-    data: `The cat is sitting ___ the table.|under
-The book is ___ the shelf.|on
-She is standing ___ the door.|behind
-The keys are ___ the drawer.|in
-The park is ___ the school and the shop.|between
-He is sitting ___ to his sister.|next
-The picture is hanging ___ the wall.|against
-The dog is running ___ the garden.|around
-The shop is right ___ the corner.|round
-She parked the car ___ the building.|outside
-The ball rolled ___ the stairs.|down
-The plane flew ___ the clouds.|above
-The cat hid ___ the sofa cushions.|beneath
-The children are playing ___ the swings.|by
-The bridge goes ___ the river.|over
-The bank is ___ from the café.|opposite
-He walked ___ the room and sat down.|into
-The lamp is ___ the desk.|beside
-She placed the vase ___ the window.|near
-The tunnel goes ___ the mountain.|through
-The cinema is ___ the shopping centre.|inside
-He stood ___ the crowd, watching.|among
-The car is parked ___ the garage.|alongside
-The plane flew ___ the city.|past
-The path leads ___ the forest.|towards`,
+    data: `The cat is sitting ___ the table.|under|in a lower place than
+The book is ___ the shelf.|on|touching the top of
+She is standing ___ the door.|behind|at the back of
+The keys are ___ the drawer.|in|inside a room or place
+The park is ___ the school and the shop.|between|in the middle of two things
+He is sitting ___ to his sister.|next|beside; used in "next to"
+The picture is hanging ___ the wall.|against|touching and leaning on something|The ladder is leaning against the wall.
+The dog is running ___ the garden.|around|moving in a circle or on all sides
+The shop is right ___ the corner.|round|another word for "around"
+She parked the car ___ the building.|outside|not inside
+The ball rolled ___ the stairs.|down|from a high place to a low place
+The plane flew ___ the clouds.|above|higher than
+The cat hid ___ the sofa cushions.|beneath|under or below
+The children are playing ___ the swings.|by|close to the side of
+The bridge goes ___ the river.|over|above and across
+The bank is ___ from the café.|opposite|across from
+He walked ___ the room and sat down.|into|moving to the inside of
+The lamp is ___ the desk.|beside|at the side of
+She placed the vase ___ the window.|near|not far from
+The tunnel goes ___ the mountain.|through|from one end to the other
+The cinema is ___ the shopping centre.|inside|in the inner part of
+He stood ___ the crowd, watching.|among|in the middle of a group
+The car is parked ___ the garage.|alongside|next to and in line with
+The plane flew ___ the city.|past|going by something
+The path leads ___ the forest.|towards|in the direction of`,
   },
   {
     id: "a2p18",
@@ -1433,31 +1441,31 @@ The path leads ___ the forest.|towards`,
     subtitle: "Actions in progress in the past",
     kind: "cloze",
     note: "A2-level past continuous tense practice.",
-    data: `I was ___ TV when the phone rang.|watching
-They were ___ football when it started to rain.|playing
-She was ___ dinner when I arrived home.|cooking
-We were ___ when the teacher walked in.|talking
-He was ___ when the alarm went off.|sleeping
-I was ___ a book when you called me.|reading
-They were ___ to work when the accident happened.|driving
-She was ___ when her friend visited.|studying
-We were ___ in the park when it began to snow.|walking
-He was ___ when the power went out.|working
-I was ___ for the bus when it started to rain.|waiting
-They were ___ dinner when the doorbell rang.|having
-She was ___ to music when I knocked.|listening
-We were ___ when we bumped into an old friend.|shopping
-He was ___ when he twisted his ankle.|jogging
-I was ___ an email when the computer crashed.|writing
-They were ___ when the storm began.|swimming
-She was ___ when the microphone stopped working.|singing
-We were ___ when the tent collapsed.|camping
-He was ___ the fence when it started to rain.|painting
-I was ___ when the alarm woke me up.|dreaming
-They were ___ when their mother walked in.|arguing
-She was ___ when she slipped and fell.|dancing
-We were ___ when the lights suddenly went out.|chatting
-He was ___ his bike when he saw the accident.|riding`,
+    data: `I was ___ TV when the phone rang.|watching|looking at something moving
+They were ___ football when it started to rain.|playing|taking part in a game
+She was ___ dinner when I arrived home.|cooking|making food hot to eat
+We were ___ when the teacher walked in.|talking|speaking with someone
+He was ___ when the alarm went off.|sleeping|resting with your eyes closed
+I was ___ a book when you called me.|reading|looking at words and understanding
+They were ___ to work when the accident happened.|driving|controlling a car
+She was ___ when her friend visited.|studying|learning about a subject
+We were ___ in the park when it began to snow.|walking|going on foot|We were walking in the park.
+He was ___ when the power went out.|working|doing a job
+I was ___ for the bus when it started to rain.|waiting|staying until something comes|I was waiting for the bus in the rain.
+They were ___ dinner when the doorbell rang.|having|eating; used in "having dinner"
+She was ___ to music when I knocked.|listening|paying attention to a sound
+We were ___ when we bumped into an old friend.|shopping|buying things in shops
+He was ___ when he twisted his ankle.|jogging|running slowly for exercise
+I was ___ an email when the computer crashed.|writing|putting words on paper or a screen
+They were ___ when the storm began.|swimming|moving through water
+She was ___ when the microphone stopped working.|singing|making music with your voice
+We were ___ when the tent collapsed.|camping|sleeping outside in a tent
+He was ___ the fence when it started to rain.|painting|covering a surface with colour
+I was ___ when the alarm woke me up.|dreaming|seeing pictures in your sleep
+They were ___ when their mother walked in.|arguing|talking angrily with someone
+She was ___ when she slipped and fell.|dancing|moving to music
+We were ___ when the lights suddenly went out.|chatting|talking in a friendly way
+He was ___ his bike when he saw the accident.|riding|travelling on a bike or horse`,
   },
   {
     id: "a2p19",
@@ -1465,28 +1473,28 @@ He was ___ his bike when he saw the accident.|riding`,
     subtitle: "Can, could, may",
     kind: "cloze",
     note: "A2-level modal verbs for ability and permission.",
-    data: `I ___ swim very well when I was younger.|could
-___ I open the window, please?|may
-She ___ speak three languages fluently.|can
+    data: `I ___ swim very well when I was younger.|could|the past of "can"; was able to
+___ I open the window, please?|may|used to ask permission politely
+She ___ speak three languages fluently.|can|is able to
 ___ you help me carry this bag?|could
 We ___ leave early if we finish the work.|can
-___ I use your phone for a moment?|may
-He ___ ride a bike when he was five.|could
-You ___ park here, it's not allowed.|can't
+___ I use your phone for a moment?|may|used to ask permission politely
+He ___ ride a bike when he was five.|could|the past of "can"
+You ___ park here, it's not allowed.|can't|short for cannot
 ___ I ask you a question?|may
 They ___ not attend the meeting yesterday.|could
-She ___ drive, but she doesn't have a car.|can
-___ you pass me the salt, please?|could
+She ___ drive, but she doesn't have a car.|can|is able to
+___ you pass me the salt, please?|could|used to ask politely
 We ___ not enter without a ticket.|can
 He ___ not swim before he took lessons.|could
-___ I sit here, or is this seat taken?|may
-I ___ not hear you, could you speak louder?|can
-She ___ not come to the party last week.|could
+___ I sit here, or is this seat taken?|may|used to ask permission politely
+I ___ not hear you, could you speak louder?|can|is able to|I can hear the music from here.
+She ___ not come to the party last week.|could|the past of "can"
 ___ we borrow your umbrella, please?|could
 He ___ lift very heavy weights at the gym.|can
-___ I leave the room for a moment?|may
-They ___ not afford the tickets last year.|could
-We ___ finish the project by Friday.|can
+___ I leave the room for a moment?|may|used to ask permission politely
+They ___ not afford the tickets last year.|could|the past of "can"
+We ___ finish the project by Friday.|can|is able to
 ___ you show me the way to the station?|could
 She ___ not attend school due to illness.|could
 I ___ help you with your homework if you want.|can`,
@@ -1497,31 +1505,31 @@ I ___ help you with your homework if you want.|can`,
     subtitle: "Equal comparisons",
     kind: "cloze",
     note: "A2-level equal comparison structures.",
-    data: `This bag is as ___ as that one.|heavy
-She is as ___ as her sister.|tall
-The test was as ___ as I expected.|difficult
-His car is as ___ as mine.|fast
-This soup is as ___ as the last one.|spicy
-The film was as ___ as the book.|good
-He runs as ___ as a professional sprinter.|quick
-This hotel is as ___ as the other one.|expensive
-Her English is as ___ as her brother's.|fluent
-The weather today is as ___ as yesterday.|cold
-This restaurant is as ___ as the one downtown.|popular
-The exam was not as ___ as I thought.|hard
-This coffee is as ___ as the one at home.|strong
-The journey was as ___ as we expected.|long
-His new phone is as ___ as the old one.|reliable
-This road is as ___ as the motorway.|busy
-The party was as ___ as last year's.|fun
-Her cooking is as ___ as a professional chef's.|delicious
-The city is as ___ as the countryside.|peaceful
-This jacket is as ___ as the other colour.|warm
-My flat is as ___ as yours.|small
-The lesson was as ___ as the last one.|interesting
-This wine is as ___ as the other bottle.|sweet
-Her plan is as ___ as mine.|simple
-The bridge is as ___ as the old one.|sturdy`,
+    data: `This bag is as ___ as that one.|heavy|weighing a lot
+She is as ___ as her sister.|tall|high from bottom to top
+The test was as ___ as I expected.|difficult|not easy
+His car is as ___ as mine.|fast|moving quickly
+This soup is as ___ as the last one.|spicy|with a strong, hot taste
+The film was as ___ as the book.|good|of high quality
+He runs as ___ as a professional sprinter.|quick|done in a short time|She is as quick as her brother.
+This hotel is as ___ as the other one.|expensive|costing a lot
+Her English is as ___ as her brother's.|fluent|able to speak easily
+The weather today is as ___ as yesterday.|cold|low in temperature
+This restaurant is as ___ as the one downtown.|popular|liked by many people
+The exam was not as ___ as I thought.|hard|difficult to do
+This coffee is as ___ as the one at home.|strong|with a lot of flavour or power
+The journey was as ___ as we expected.|long|taking a lot of time
+His new phone is as ___ as the old one.|reliable|able to be trusted
+This road is as ___ as the motorway.|busy|full of cars or people
+The party was as ___ as last year's.|fun|a lot of enjoyment
+Her cooking is as ___ as a professional chef's.|delicious|tasting very good
+The city is as ___ as the countryside.|peaceful|calm and quiet
+This jacket is as ___ as the other colour.|warm|not cold; pleasantly hot
+My flat is as ___ as yours.|small|little in size
+The lesson was as ___ as the last one.|interesting|not boring
+This wine is as ___ as the other bottle.|sweet|tasting of sugar|This tea is as sweet as that juice.
+Her plan is as ___ as mine.|simple|easy to understand
+The bridge is as ___ as the old one.|sturdy|strong and not easy to break`,
   },
   {
     id: "a2p21",
@@ -4053,7 +4061,16 @@ function packQuestions(pack: Pack): Question[] {
     .filter(Boolean)
     .map((l) => l.split("|").map((p) => p.trim()));
   const pool = lines.map((l) => l[1]!);
-  return lines.map(([left, right], i) => {
+  return lines.map(([left, right, meaning, example], i) => {
+    // Optional third and fourth fields: an authored word-card gloss and example
+    // sentence for this line's answer. They never change the question, its
+    // options or its id, so adding them cannot move a saved answer. Only the
+    // mc/fill questions below carry them (the card is derived from those).
+    const card = {
+      ...(pack.termFromLeft && pack.kind === "pair" ? { term: left } : {}),
+      ...(meaning ? { meaning } : {}),
+      ...(example ? { example } : {}),
+    };
     const answer = right!;
     const seed = `${pack.id}-${i}`;
     // Returned before any distractor work: a speaking question has no choices
@@ -4138,6 +4155,7 @@ function packQuestions(pack: Pack): Question[] {
         choices,
         answer: at,
         explanation,
+        ...card,
       };
     }
     return {
@@ -4147,6 +4165,7 @@ function packQuestions(pack: Pack): Question[] {
       bank: [answer, ...distractors].sort((a, b) => hash(a + seed) - hash(b + seed)),
       answer,
       explanation,
+      ...card,
     };
   });
 }

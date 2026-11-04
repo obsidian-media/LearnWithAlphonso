@@ -1,9 +1,28 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { collectCourseIds, diffIds, packLineStats } from "./id-parity";
+import { collectCourseIds, diffIds, isMalformedPackLine, packLineStats } from "./id-parity";
 import type { Course } from "@/data/courses";
 import { ROMANCE_PACK_SPECS, buildRomancePack } from "@/data/generative/romance-packs";
+
+describe("isMalformedPackLine", () => {
+  it("accepts two fields, and a third and fourth only where four are allowed", () => {
+    expect(isMalformedPackLine("a|b", 2)).toBe(false);
+    expect(isMalformedPackLine("a|b|meaning|example", 4)).toBe(false);
+    expect(isMalformedPackLine("a|b|meaning", 4)).toBe(false);
+    expect(isMalformedPackLine("a|b|meaning", 2)).toBe(true);
+    expect(isMalformedPackLine("a", 4)).toBe(true);
+    expect(isMalformedPackLine("a|b|c|d|e", 4)).toBe(true);
+  });
+  it("rejects an example without a meaning, or a stray empty third field", () => {
+    expect(isMalformedPackLine("a|b||an example", 4)).toBe(true);
+    expect(isMalformedPackLine("a|b| |an example", 4)).toBe(true);
+    expect(isMalformedPackLine("a|b|", 4)).toBe(true);
+  });
+  it("lets an empty example fall back to the cloze sentence", () => {
+    expect(isMalformedPackLine("a|b|meaning|", 4)).toBe(false);
+  });
+});
 
 describe("diffIds", () => {
   it("reports no drift for identical id sets", () => {

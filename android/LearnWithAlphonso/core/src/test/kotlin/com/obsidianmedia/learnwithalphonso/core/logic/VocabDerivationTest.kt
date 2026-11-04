@@ -24,7 +24,59 @@ class VocabDerivationTest {
             items.map { it.term },
         )
         assertEquals("Nice to meet you.", items[1].example)
-        assertEquals("", items[0].example) // a quiz stem is not a sentence
+        // "Good morning." is a quiz stem with no blank, so its example comes from the authored field.
+        assertEquals("Good morning, class. Please sit down.", items[0].example)
+        assertEquals("a polite greeting used before noon", items[0].meaning)
+    }
+
+    @Test
+    fun `an authored meaning and example are used, and a missing example keeps the cloze sentence`() {
+        val lesson = Lesson(
+            "l", "t", "s",
+            listOf(
+                Question.MultipleChoice(
+                    "a", "Plural of \"child\": ___", listOf("children", "childs"), 0, "e",
+                    meaning = "more than one child", example = "The children play outside.",
+                ),
+                Question.FillInBlank(
+                    "b", "I ___ to the store.", listOf("go", "went"), "went", "e",
+                    meaning = " moved to a place in the past ",
+                ),
+            ),
+        )
+        val items = deriveVocab(lesson, emptyMap())
+        assertEquals(VocabItem("children", "more than one child", "The children play outside.", null), items[0])
+        assertEquals(VocabItem("went", "moved to a place in the past", "I went to the store.", null), items[1])
+    }
+
+    @Test
+    fun `an authored term replaces the answer as the card word, and an empty one makes no card`() {
+        val lesson = Lesson(
+            "l", "t", "s",
+            listOf(
+                Question.MultipleChoice(
+                    "a", "How often does \"always\" happen?", listOf("every time", "never"), 0, "e",
+                    meaning = "every time, without exception", example = "I always brush my teeth.",
+                    term = "always",
+                ),
+                Question.MultipleChoice(
+                    "b", "Which is the present simple?", listOf("I ate.", "I eat."), 1, "e",
+                    term = "",
+                ),
+            ),
+        )
+        val items = deriveVocab(lesson, emptyMap())
+        assertEquals(listOf(VocabItem("always", "every time, without exception", "I always brush my teeth.", null)), items)
+    }
+
+    @Test
+    fun `every bundled English A1 card has a meaning and an example`() {
+        val a1 = store.bundle(Course.ENGLISH).units.filter { it.level == "A1" }.flatMap { it.lessons }
+        assertTrue(a1.isNotEmpty())
+        for (lesson in a1) for (item in deriveVocab(lesson, store.vocabImages)) {
+            assertTrue(item.meaning.isNotEmpty(), "${lesson.id} ${item.term} has no meaning")
+            assertTrue(item.example.isNotEmpty(), "${lesson.id} ${item.term} has no example")
+        }
     }
 
     @Test

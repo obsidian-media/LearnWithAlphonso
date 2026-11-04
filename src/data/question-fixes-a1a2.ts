@@ -2552,7 +2552,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   },
   "a2p15l2/a2p15q8": {
     why: "options replaced with same-kind wrong options",
-    prompt: "The ___ machine is outside the bank. (it gives out cash)",
+    prompt: "The ___ is outside the bank. (it gives out cash)",
     wrong: ["vending", "washing", "ticket"],
     allow: ["vending", "washing", "ticket"],
   },
@@ -2607,7 +2607,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a2p15l4/a2p15q17": {
     why: '"forgot my order number" is also correct; the clue says the four digits for my card',
     context: "the sentence already rules out the other options",
-    prompt: "I forgot my ___ number for the account. (the four digits for my card)",
+    prompt: "I forgot my ___ for the account. (the four digits for my card)",
     wrong: ["branch", "order", "balance"],
   },
   "a2p15l4/a2p15q18": {
@@ -3752,7 +3752,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   },
   "a2p4l5/a2p4q24": {
     why: "options replaced with same-kind wrong options",
-    prompt: "The hotel ___ breakfast. (it is part of the room price)",
+    prompt: "The price ___ breakfast. (it is part of what you pay)",
     wrong: ["include", "including", "to include"],
     allow: ["include", "including", "to include"],
   },
@@ -3858,7 +3858,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   },
   "a2p6l4/a2p6q16": {
     why: "will/might/may/could all fit without the function; the clue says which",
-    prompt: "By June I ___ have finished. (certain)",
+    prompt: "I ___ send it tomorrow, I promise. (certain)",
     wrong: ["might", "may", "could"],
   },
   "a2p6l4/a2p6q17": {

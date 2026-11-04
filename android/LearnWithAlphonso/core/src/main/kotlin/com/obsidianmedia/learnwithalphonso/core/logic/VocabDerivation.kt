@@ -7,7 +7,8 @@ import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
 /**
  * Port of VocabDerivation.swift / src/data/vocab.ts: vocabulary is derived
  * from a lesson's own questions rather than shipped as separate content.
- * `meaning` is always "": a quiz explanation is not a gloss of the word.
+ * `meaning` is the authored gloss on the question ("" if none): a quiz explanation is not a gloss of
+ * the word. `example` is the authored sentence, falling back to the filled cloze sentence.
  */
 data class VocabItem(val term: String, val meaning: String, val example: String, val image: VocabImageRef?)
 
@@ -51,16 +52,31 @@ private fun exampleOf(question: Question): String {
     return sentence.replaceFirstChar { it.uppercaseChar() }
 }
 
+/** The authored (meaning, example) on a question, trimmed; empty strings when none. */
+private fun authored(question: Question): Pair<String, String> = when (question) {
+    is Question.MultipleChoice -> (question.meaning ?: "").trim() to (question.example ?: "").trim()
+    is Question.FillInBlank -> (question.meaning ?: "").trim() to (question.example ?: "").trim()
+    else -> "" to ""
+}
+
+/** The card's word: the authored `term` when the pack sets one, else the answer. "" means no card. */
+private fun termOf(question: Question): String = when (question) {
+    is Question.MultipleChoice -> question.term ?: answerOf(question)
+    is Question.FillInBlank -> question.term ?: answerOf(question)
+    else -> answerOf(question)
+}
+
 /** Dedupes by term, case-insensitively, in question order. `images` is keyed by the lowercased term. */
 fun deriveVocab(lesson: Lesson, images: Map<String, VocabImageRef>): List<VocabItem> {
     val seen = HashSet<String>()
     val items = ArrayList<VocabItem>()
     for (question in lesson.questions) {
-        val term = answerOf(question).trim()
+        val term = termOf(question).trim()
         if (term.isEmpty()) continue
         val key = term.lowercase()
         if (!seen.add(key)) continue
-        items.add(VocabItem(term, "", exampleOf(question), images[key]))
+        val (meaning, example) = authored(question)
+        items.add(VocabItem(term, meaning, example.ifEmpty { exampleOf(question) }, images[key]))
     }
     return items
 }
