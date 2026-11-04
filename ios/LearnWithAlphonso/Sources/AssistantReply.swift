@@ -19,7 +19,8 @@ struct AssistantReply: View {
     @Binding var savingWord: SaveWordRequest?
 
     var body: some View {
-        TappableText(text: turn.content, color: color, course: course.wireCode) {
+        // Hector replies are wholly in the language being practised.
+        TappableText(text: turn.content, color: color, course: course.wireCode, mode: .allWords) {
             savingWord = $0
         }
         .reportableAIMessage(
