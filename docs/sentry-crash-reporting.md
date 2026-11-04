@@ -5,12 +5,12 @@ PostHog product analytics is a separate, later piece of work.
 
 ## What each platform does
 
-| | Where | On when | DSN |
-| --- | --- | --- | --- |
-| Web client | `src/lib/sentry-client.ts` (started from `getRouter` in `src/router.tsx`; fed by `reportError` in `src/lib/error-reporting.ts`) | production browser build | `src/lib/sentry-config.ts` |
-| Web server | `src/lib/sentry-server.ts`, called from `src/start.ts` and `src/server.ts` | `NODE_ENV=production` | same |
-| iOS | `ios/LearnWithAlphonso/Sources/CrashReporting.swift`, first line of the app's `init` | Release builds (`#if DEBUG` returns) | in that file |
-| Android | `android/.../CrashReporting.kt`, from `AlphonsoApplication.onCreate` | non-debug builds | in that file |
+|            | Where                                                                                                                           | On when                              | DSN                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------- |
+| Web client | `src/lib/sentry-client.ts` (started from `getRouter` in `src/router.tsx`; fed by `reportError` in `src/lib/error-reporting.ts`) | production browser build             | `src/lib/sentry-config.ts` |
+| Web server | `src/lib/sentry-server.ts`, called from `src/start.ts` and `src/server.ts`                                                      | `NODE_ENV=production`                | same                       |
+| iOS        | `ios/LearnWithAlphonso/Sources/CrashReporting.swift`, first line of the app's `init`                                            | Release builds (`#if DEBUG` returns) | in that file               |
+| Android    | `android/.../CrashReporting.kt`, from `AlphonsoApplication.onCreate`                                                            | non-debug builds                     | in that file               |
 
 The DSNs are the public client DSNs (they can only submit events), so they are committed. Never commit an auth token.
 `VITE_SENTRY_DSN` / `SENTRY_DSN` can override the web DSN; empty or non-production means off.
@@ -42,7 +42,7 @@ Documented, not wired, because they need `SENTRY_AUTH_TOKEN`:
 - Web source maps: add `@sentry/vite-plugin` to `vite.config.ts` (`org: obsidian-media`, `project: learnwithalphonso-web`,
   `authToken: process.env.SENTRY_AUTH_TOKEN`, `sourcemaps.filesToDeleteAfterUpload`) and set `build.sourcemap: "hidden"`.
 - iOS dSYMs: a step in `.github/workflows/ios-release.yml` after archive, `sentry-cli debug-files upload --org obsidian-media
-  --project learnwithalphonso-ios <path to .xcarchive/dSYMs>`.
+--project learnwithalphonso-ios <path to .xcarchive/dSYMs>`.
 - Android mapping file: the `io.sentry.android.gradle` plugin, or `sentry-cli upload-proguard` with
   `app/build/outputs/mapping/release/mapping.txt`, in `android-release.yml`.
 
