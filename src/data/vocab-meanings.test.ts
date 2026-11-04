@@ -12,10 +12,11 @@ import type { Level } from "./levels";
  * then holds it there. Never remove a level, and never loosen a rule to let a card
  * through: fix the card.
  */
-const GATED_LEVELS: Level[] = ["A1", "A2"];
+const GATED_LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1"];
 
 const MAX_MEANING_WORDS = 8;
-const MAX_EXAMPLE_WORDS = 10;
+/** A1 to B1 examples stay short; B2 and C1 sentences need a few more words to sound natural. */
+const maxExampleWords = (level: Level) => (level === "B2" || level === "C1" ? 12 : 10);
 
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
 const tokens = (s: string) => s.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g) ?? [];
@@ -76,7 +77,10 @@ function repeatsTerm(meaning: string, term: string): boolean {
 const LABEL = /\b(?:talks? about|is an? (?:indirect|polite|formal|informal)|refers? to)\b/i;
 
 /** Everything wrong with one card, as short reasons ("" list = clean). */
-function cardProblems(card: { term: string; meaning: string; example: string }): string[] {
+function cardProblems(
+  card: { term: string; meaning: string; example: string },
+  level: Level = "A1",
+): string[] {
   const out: string[] = [];
   const { term, meaning, example } = card;
   if (!meaning.trim()) out.push("empty meaning");
@@ -87,7 +91,8 @@ function cardProblems(card: { term: string; meaning: string; example: string }):
   }
   if (!example.trim()) out.push("empty example");
   else {
-    if (words(example).length > MAX_EXAMPLE_WORDS) out.push("example over 10 words");
+    if (words(example).length > maxExampleWords(level))
+      out.push(`example over ${maxExampleWords(level)} words`);
     if (!mentionsTerm(example, term)) out.push("example lacks the word");
     if (LABEL.test(example)) out.push("example is a label, not a sentence");
   }
@@ -125,6 +130,13 @@ describe("cardProblems (the gate's own rules)", () => {
     expect(
       cardProblems({ ...ok, example: "I run and run and run and run and run and run." }),
     ).toContain("example over 10 words"));
+  it("allows 12 words in a B2 or C1 example but only 10 below", () => {
+    const twelve = "I run every single morning before work and then I rest here.";
+    expect(words(twelve).length).toBe(12);
+    expect(cardProblems({ ...ok, example: twelve }, "B1")).toContain("example over 10 words");
+    expect(cardProblems({ ...ok, example: twelve }, "B2")).toEqual([]);
+    expect(cardProblems({ ...ok, example: twelve }, "C1")).toEqual([]);
+  });
   it("flags an example without the word, but accepts an inflected form", () => {
     expect(cardProblems({ ...ok, example: "I walk every morning." })).toContain(
       "example lacks the word",
@@ -185,13 +197,115 @@ describe("cardProblems (the gate's own rules)", () => {
   });
 });
 
+/**
+ * Phrasal verbs and fixed phrases. A card whose blank sits inside one of these must
+ * teach the whole phrase (an authored \`term\`), never a bare "work" or "effect" with
+ * the phrase's meaning under it.
+ */
+const PHRASES: RegExp[] = [
+  /\b(?:work|works|worked|working) out\b/,
+  /\b(?:warm|warms|warmed|warming) up\b/,
+  /\b(?:cool|cools|cooled|cooling) down\b/,
+  /\b(?:sum|sums|summed|summing) up\b/,
+  /\b(?:turn|turns|turned|turning) (?:off|down|up|to)\b/,
+  /\b(?:take|takes|took|taking) (?:out|place|off|over)\b/,
+  /\blevel(?:s|led|ed|ling|ing)? off\b/,
+  /\b(?:fall|falls|fell|falling) (?:into|through)\b/,
+  /\b(?:point|points|pointed|pointing) out\b/,
+  /\b(?:break|breaks|broke|breaking) (?:in|down|up)\b/,
+  /\b(?:come|comes|came|coming) (?:into|down to)\b/,
+  /\b(?:boil|boils|boiled|boiling) down\b/,
+  /\b(?:stand|stands|stood|standing) up\b/,
+  /\b(?:follow|follows|followed|following) up\b/,
+  /\b(?:reach|reaches|reached|reaching) out\b/,
+  /\bin touch\b/,
+  /\bkind of\b/,
+  /\bbear in mind\b/,
+  /\bin effect\b/,
+  /\bin light of\b/,
+  /\bin spite of\b/,
+  /\bon the other hand\b/,
+  /\bin other words\b/,
+  /\bbroadly speaking\b/,
+  /\blet me know\b/,
+  /\bused to\b/,
+  /\bdue to\b/,
+  /\bpressed on\b/,
+  /\bbrings? us back\b/,
+  /\b(?:look|looks|looked|looking) forward to\b/,
+  /\bstanding order\b/,
+  /\bsubject to\b/,
+  /\b(?:turn|turns|turned) on\b/,
+  /\b(?:hear|hears|heard|hearing) from\b/,
+  /\b(?:make|makes|made|making) (?:a )?decisions?\b/,
+];
+
+/** The phrase (if any) that the answer sits inside, when the question has no authored term. */
+function barePhrase(q: {
+  type: string;
+  prompt: string;
+  term?: string;
+  answer?: unknown;
+  choices?: string[];
+}): string | null {
+  if ((q.type !== "mc" && q.type !== "fill") || q.term !== undefined) return null;
+  const answer = q.type === "fill" ? String(q.answer) : (q.choices?.[q.answer as number] ?? "");
+  const at = q.prompt.indexOf("___");
+  if (at < 0 || !answer) return null;
+  const filled = q.prompt.slice(0, at) + answer + q.prompt.slice(at + 3);
+  const lower = filled.toLowerCase().replace(/[’]/g, "'");
+  const end = at + answer.length;
+  for (const re of PHRASES) {
+    const m = new RegExp(re.source, "g");
+    let hit: RegExpExecArray | null;
+    while ((hit = m.exec(lower))) {
+      const overlaps = hit.index < end && hit.index + hit[0].length > at;
+      const inside = hit.index >= at && hit.index + hit[0].length <= end;
+      if (overlaps && !inside) return hit[0];
+    }
+  }
+  return null;
+}
+
+describe("barePhrase (the phrase-term rule's own behaviour)", () => {
+  const fill = (prompt: string, answer: string) => ({ type: "fill", prompt, answer });
+  it("flags a blank inside a phrasal verb or fixed phrase", () => {
+    expect(barePhrase(fill("I ___ out at the gym.", "work"))).toBe("work out");
+    expect(barePhrase(fill("It is in ___ a ban.", "effect"))).toBe("in effect");
+    expect(barePhrase(fill("Kindly ___ me know.", "let"))).toBe("let me know");
+    expect(barePhrase(fill("She ___ to be shy.", "used"))).toBe("used to");
+    expect(barePhrase(fill("I ___ forward to it.", "look"))).toBe("look forward to");
+    expect(barePhrase(fill("Please ___ a decision.", "make"))).toBe("make a decision");
+    expect(barePhrase(fill("A standing ___ pays rent.", "order"))).toBe("standing order");
+  });
+  it("accepts an authored term, or a blank outside any phrase", () => {
+    expect(barePhrase({ ...fill("I ___ out at the gym.", "work"), term: "work out" })).toBeNull();
+    expect(barePhrase(fill("The ___ is on the table.", "book"))).toBeNull();
+    expect(barePhrase(fill("I work ___ the factory.", "in"))).toBeNull();
+  });
+});
+
+describe("a card inside a phrase teaches the whole phrase", () => {
+  for (const level of GATED_LEVELS) {
+    it("every " + level + " card in a phrasal verb or fixed phrase has a phrase term", () => {
+      const bad = getCourse("en")
+        .curriculum.filter((u) => u.level === level)
+        .flatMap((u) => u.lessons.flatMap((l) => l.questions.map((q) => ({ l, q }))))
+        .map(({ l, q }) => ({ id: l.id + "/" + q.id, phrase: barePhrase(q as never) }))
+        .filter((x) => x.phrase)
+        .map((x) => x.id + " (" + x.phrase + ")");
+      expect(bad).toEqual([]);
+    });
+  }
+});
+
 describe("English word cards have an authored meaning and example", () => {
   for (const level of GATED_LEVELS) {
     it(`every ${level} card is clean`, () => {
       const all = cards(level);
       expect(all.length).toBeGreaterThan(0);
       const bad = all
-        .map((c) => ({ c, p: cardProblems(c) }))
+        .map((c) => ({ c, p: cardProblems(c, level) }))
         .filter((x) => x.p.length > 0)
         .map((x) => `${x.c.lesson} "${x.c.term}": ${x.p.join(", ")}`);
       expect(bad).toEqual([]);
