@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import { QUESTION_FIXES } from "./question-fixes";
 import { REVIEWED_PHRASES } from "./reviewed-phrases";
-import { checkDistractors, hasClue, inferSlot, type QuestionShape } from "./slot-types";
+import {
+  BLANKET_CONTEXT,
+  checkDistractors,
+  hasClue,
+  inferSlot,
+  type QuestionShape,
+} from "./slot-types";
 
 /**
  * The gate for docs/distractor-policy.md. Two parts:
@@ -238,11 +244,11 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 283, clue: 433 };
+  const PINNED_SPLIT = { picture: 45, context: 118, clue: 453 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
-  const POS_MISMATCH_BUDGET = 20;
-  const WEAK_CONTEXT_BUDGET = 219;
-  const NEEDS_CLUE_BUDGET = 198;
+  const POS_MISMATCH_BUDGET = 18;
+  const WEAK_CONTEXT_BUDGET = 146;
+  const NEEDS_CLUE_BUDGET = 143;
   const UNCLASSIFIED_BUDGET = 0;
 
   it("does not add topic-word options of another part of speech", () => {
@@ -273,8 +279,12 @@ describe("the A1/A2 English bank", () => {
     const count = (f: (s: QuestionShape) => boolean) =>
       topic.filter(({ it }) => f(it.shape)).length;
     const picture = count((s) => !!s.hasImage);
-    const context = count((s) => !s.hasImage && !!s.context);
-    const clue = count((s) => !s.hasImage && !s.context && hasClue(s.prompt));
+    const context = count(
+      (s) => !s.hasImage && !!s.context && s.context !== BLANKET_CONTEXT && s.contextUses === 1,
+    );
+    const clue = count(
+      (s) => !s.hasImage && (!s.context || s.context === BLANKET_CONTEXT) && hasClue(s.prompt),
+    );
     expect({ picture, context, clue }).toEqual(PINNED_SPLIT);
   });
 });

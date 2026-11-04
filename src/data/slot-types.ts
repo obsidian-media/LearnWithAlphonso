@@ -271,6 +271,8 @@ export function checkDistractors(q: QuestionShape): Issue[] {
     }
   }
   if (slot === "category" && !clue && !real) issues.push({ kind: "needs-clue" });
-  if (q.context && !real) issues.push({ kind: "weak-context" });
+  // A leftover context on a question that now has a photo or a specific clue is harmless.
+  if (q.context && !real && !(q.hasImage || clueIsSpecific(q.prompt)))
+    issues.push({ kind: "weak-context" });
   return issues;
 }
