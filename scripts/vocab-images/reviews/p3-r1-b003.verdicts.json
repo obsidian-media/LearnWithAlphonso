@@ -1,0 +1,113 @@
+{
+  "batch": "p3-r1-b003",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r1-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "house": {
+      "verdict": "approve",
+      "alt": "A white modern house with large windows sits below a rocky hillside behind a stone wall and shrubs.",
+      "peopleVisible": false
+    },
+    "ice": {
+      "verdict": "approve",
+      "alt": "Clear ice cubes fill a tall drinking glass against a pale background.",
+      "peopleVisible": false
+    },
+    "journalist": {
+      "verdict": "approve",
+      "alt": "A reporter in a red jacket speaks into a microphone while a camera operator films her.",
+      "peopleVisible": true
+    },
+    "knee": {
+      "verdict": "approve",
+      "alt": "Six bare knees of seated people line up side by side on a wooden floor.",
+      "peopleVisible": true
+    },
+    "knife": {
+      "verdict": "approve",
+      "alt": "A large chef's knife lies on a wooden board with sliced tomato and cucumber.",
+      "peopleVisible": false
+    },
+    "knives": {
+      "verdict": "approve",
+      "alt": "Three kitchen knives lie in a row on a white cutting board beside a red pepper and garlic.",
+      "peopleVisible": true
+    },
+    "lawyer": {
+      "verdict": "approve",
+      "alt": "A woman in a black robe and white bands sits at a desk before a scales of justice emblem.",
+      "peopleVisible": true
+    },
+    "leg": {
+      "verdict": "approve",
+      "alt": "Two bent bare legs face each other against a plain grey background.",
+      "peopleVisible": true
+    },
+    "legs": {
+      "verdict": "approve",
+      "alt": "A person's legs in black trousers and white trainers walk along a path covered in autumn leaves.",
+      "peopleVisible": true
+    },
+    "litter": {
+      "verdict": "approve",
+      "alt": "Torn cardboard boxes, paper and other rubbish lie scattered across dry grass.",
+      "peopleVisible": false
+    },
+    "medicine": {
+      "verdict": "approve",
+      "alt": "A blister pack holds rows of round pink tablets.",
+      "peopleVisible": false
+    },
+    "nap": {
+      "verdict": "approve",
+      "alt": "A person lies asleep on a grey sofa under a soft teal blanket.",
+      "peopleVisible": true
+    },
+    "nose": {
+      "verdict": "approve",
+      "alt": "A close view of a small dog's black nose and whiskers resting on a soft blanket.",
+      "peopleVisible": false
+    },
+    "nuts": {
+      "verdict": "approve",
+      "alt": "A black bowl is filled with mixed almonds, cashews and hazelnuts.",
+      "peopleVisible": false
+    },
+    "painting": {
+      "verdict": "approve",
+      "alt": "Paint colours sit on a wooden palette beside a jar of brush water and a blank canvas.",
+      "peopleVisible": false
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "jam": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "marble": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "neck": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "oil": {
+      "verdict": "reject",
+      "reasons": [
+        "stereotype-demeaning-poverty-distress"
+      ]
+    }
+  }
+}

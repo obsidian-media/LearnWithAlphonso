@@ -1,0 +1,136 @@
+{
+  "batch": "p3-r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r3-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "heatwave": {
+      "verdict": "approve",
+      "alt": "A huge white sun glows in an orange sky above a hazy city skyline.",
+      "peopleVisible": false
+    },
+    "jam": {
+      "verdict": "approve",
+      "alt": "Hands press brown paper over a jar of orange marmalade next to a net bag of oranges.",
+      "peopleVisible": true
+    },
+    "stomach": {
+      "verdict": "approve",
+      "alt": "A man rests both hands on his bare stomach, with a skull tattoo on his side.",
+      "peopleVisible": true
+    },
+    "tooth": {
+      "verdict": "approve",
+      "alt": "A hand brushes a model set of teeth with a white toothbrush.",
+      "peopleVisible": true
+    },
+    "actress": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "boxing": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "earthquake": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "marble": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "postman": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "shuttle": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "stamp": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "stamps": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

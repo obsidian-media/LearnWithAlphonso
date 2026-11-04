@@ -1,0 +1,114 @@
+{
+  "batch": "p3-r2-b002",
+  "pass": "first",
+  "reviewer": "agent:p3-p3-r2-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "park": {
+      "verdict": "approve",
+      "alt": "An aerial view of a city park with winding paths, wide lawns, a playground and a car park.",
+      "peopleVisible": false
+    },
+    "photography": {
+      "verdict": "approve",
+      "alt": "A photographer in a dark jacket holds one camera and carries another on a strap.",
+      "peopleVisible": true
+    },
+    "plumber": {
+      "verdict": "approve",
+      "alt": "A worker in a yellow hard hat and high-visibility vest holds a large pipe wrench.",
+      "peopleVisible": true
+    },
+    "police officer": {
+      "verdict": "approve",
+      "alt": "Six police officers in dark uniforms and high-visibility vests stand on a city pavement.",
+      "peopleVisible": true
+    },
+    "rain": {
+      "verdict": "approve",
+      "alt": "People shelter under umbrellas on a rainy street seen through a window in black and white.",
+      "peopleVisible": true
+    },
+    "recycling": {
+      "verdict": "approve",
+      "alt": "Piles of flattened cardboard and bins sit under a sign that says recycling only.",
+      "peopleVisible": false
+    },
+    "teeth": {
+      "verdict": "approve",
+      "alt": "A black and white close view of a woman's smile showing her white teeth.",
+      "peopleVisible": true
+    },
+    "tornado": {
+      "verdict": "approve",
+      "alt": "A grey tornado funnel touches down on green farmland under a dark sky with lightning.",
+      "peopleVisible": false
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "postman": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "shuttle": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "stamp": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "stamps": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "stomach": {
+      "verdict": "reject",
+      "reasons": [
+        "nudity-or-suggestive"
+      ]
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tooth": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}
