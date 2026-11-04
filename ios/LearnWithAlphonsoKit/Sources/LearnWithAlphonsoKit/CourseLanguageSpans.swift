@@ -17,6 +17,11 @@ public enum CourseLanguageSpans {
     public struct Piece: Equatable, Sendable {
         public let text: String
         public let isCourseLanguage: Bool
+
+        public init(text: String, isCourseLanguage: Bool) {
+            self.text = text
+            self.isCourseLanguage = isCourseLanguage
+        }
     }
 
     private static let answerInCourseLanguage = [

@@ -31,7 +31,8 @@ export const TappableText = memo(function TappableText({
   wholeCourseLanguage?: boolean;
 }) {
   const open = useSaveWord();
-  if (!open || !(wholeCourseLanguage ? isCourse(course) : savesWholeText(course))) return <>{text}</>;
+  if (!open || !(wholeCourseLanguage ? isCourse(course) : savesWholeText(course)))
+    return <>{text}</>;
 
   return (
     <>
