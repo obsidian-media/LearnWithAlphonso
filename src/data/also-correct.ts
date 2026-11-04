@@ -267,6 +267,26 @@ function tenseCue(prompt: string): "past" | "present" | "none" {
   return "none";
 }
 
+const VAGUE_CLUES =
+  /^(look at it|see it|use it|do it|it is|a thing|an item|this one|that one|the answer)$/i;
+
+/** The text of a bracketed clue at the end of the prompt, if there is one. */
+export function bracketClue(prompt: string): string | null {
+  const m = /\(([^)]{4,})\)\s*$/.exec(prompt);
+  return m ? m[1]!.trim() : null;
+}
+
+/**
+ * A bracket alone does not count: the clue must be specific, at least two words and 8
+ * characters, and not one of the vague stock phrases. Whether it truly rules the other
+ * options out is a review judgement (docs/distractor-policy.md); this only stops the
+ * empty ones ("(look at it)").
+ */
+export function clueIsSpecific(prompt: string): boolean {
+  const c = bracketClue(prompt);
+  return !!c && c.length >= 8 && c.split(/\s+/).length >= 2 && !VAGUE_CLUES.test(c);
+}
+
 /**
  * Why `candidate` would make a correct sentence in the blank of `prompt` (whose
  * intended answer is `answer`), or null if it is genuinely wrong there.
@@ -310,7 +330,7 @@ export function alsoCorrectReason(
     (g) => g.includes(baseOf(a)) && g.includes(baseOf(c)) && !(conditional && g.includes("would")),
   );
   // A bracketed clue ("(asking for permission)") already picks the one that fits.
-  const hasClue = /\([^)]{4,}\)\s*$/.test(prompt);
+  const hasClue = clueIsSpecific(prompt);
   // The result clause of a conditional takes a weaker modal as well as will/would.
   if (
     !hasClue &&

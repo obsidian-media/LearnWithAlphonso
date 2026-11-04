@@ -59,8 +59,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["hot", "sunny", "clear"],
   },
   "a1p10l3/a1p10q13": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: 'the other words of the pack were nouns; the wrong options are adverbs a learner might pick, ruled out by "all at once"',
     context: "the sentence already rules out the other options",
+    prompt: "The temperature dropped ___ overnight. (it happened all at once)",
+    wrong: ["slowly", "gradually", "softly"],
+    allow: ["slowly", "gradually", "softly"],
   },
   "a1p10l3/a1p10q14": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -364,8 +367,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["eat", "watch", "pack"],
   },
   "a1p16l2/a1p16q7": {
-    why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
-    wrong: ["has", "having", "haves"],
+    why: '"We had lunch" is also correct; the options are now agreement and form errors',
+    wrong: ["has", "having", "hasn't"],
   },
   "a1p16l2/a1p16q8": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -413,8 +416,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a1p16l4/a1p16q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"We watch the dog" is also correct; the clue says what we do with it',
     context: "the sentence already rules out the other options",
+    prompt: "We ___ the dog every evening. (for exercise, on a lead)",
+    wrong: ["watch", "feed", "groom"],
+    allow: ["watch", "feed", "groom"],
   },
   "a1p16l5/a1p16q20": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -437,8 +443,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a1p17l1/a1p17q0": {
-    why: "topic word: the photo shows the answer, so no other option fits",
+    why: '"on" is a preposition; the options are now classroom nouns',
     imageKey: "book",
+    wrong: ["rubber", "ruler", "bell"],
   },
   "a1p17l1/a1p17q1": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -502,8 +509,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a1p17l4/a1p17q15": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: "sharpen/close/up were unrelated; rise/rose/raised are the real raise-rise confusion",
+    wrong: ["rise", "rose", "raised"],
+    allow: ["rise", "rose", "raised"],
   },
   "a1p17l4/a1p17q16": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -596,9 +604,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a1p19l1/a1p19q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
+    why: '"till" is not a noun-for-noun option here',
     context: "the sentence already rules out the other options",
-    wrong: ["trolley", "debit", "till"],
+    wrong: ["trolley", "debit", "food"],
   },
   "a1p19l2/a1p19q5": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -640,8 +648,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "bag",
   },
   "a1p19l3/a1p19q14": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"checkout" is also a place you ask about; the clue picks the dairy section',
+    prompt: "Could you tell me where the ___ is? (milk, butter and cheese are kept there)",
   },
   "a1p19l4/a1p19q15": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -711,10 +719,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "other words' plurals are too easy to rule out; a learner's real error is the regularised or mis-spelt plural",
     wrong: ["tooths", "teeths", "toothes"],
   },
-  "a1p1l2/a1p1q6": {
-    why: "other words' plurals are too easy to rule out; a learner's real error is the regularised or mis-spelt plural",
-    wrong: ["mouses", "mices", "meese"],
-  },
+  "a1p1l2/a1p1q6": { why: '"meese" is not a plausible error', wrong: ["mouses", "mices", "mouse"] },
   "a1p1l2/a1p1q7": {
     why: "other words' plurals are too easy to rule out; a learner's real error is the regularised or mis-spelt plural",
     wrong: ["gooses", "geeses", "gooss"],
@@ -901,8 +906,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["stamps", "on a bike", "in a pool"],
   },
   "a1p22l1/a1p22q1": {
-    why: '"watching video games/plants" are also correct',
-    wrong: ["on a bike", "with wool", "in a pool"],
+    why: '"watching in a pool / on a bike" are also sentences; the options are now things that cannot be watched',
+    wrong: ["books", "songs", "cakes"],
   },
   "a1p22l1/a1p22q2": {
     why: '"listening to sports on TV" is also correct',
@@ -945,8 +950,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["books", "stamps", "with wool"],
   },
   "a1p22l4/a1p22q16": {
-    why: '"cycling outdoors" is also correct',
-    wrong: ["to music", "with wool", "stamps"],
+    why: '"cycling to music / by the river" are also sentences',
+    wrong: ["in a pool", "with wool", "for relaxation"],
   },
   "a1p22l4/a1p22q18": {
     why: '"swimming for exercise" is also correct',
@@ -1052,9 +1057,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["open", "opening", "do open"],
   },
   "a1p2l5/a1p2q21": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "fly / flies is an irregular -y spelling, so the forms share only two letters",
     slot: "inflection",
     wrong: ["flies", "flying", "is fly"],
+    allow: ["flies", "flying", "is fly"],
   },
   "a1p2l5/a1p2q22": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -1116,9 +1122,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["on", "under", "behind"],
   },
   "a1p4l3/a1p4q13": {
-    why: "several pool members fit without a clue; the bracketed clue picks one",
+    why: '"in front of" is not in the fixed-phrase pool',
     prompt: "She sits ___ me in class. (right next to me)",
-    wrong: ["behind", "opposite", "in front of"],
+    wrong: ["behind", "opposite", "near"],
   },
   "a1p4l3/a1p4q14": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -1140,6 +1146,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "Come ___ the room. (enter it)",
     wrong: ["onto", "across", "past"],
   },
+  "a1p4l4/a1p4q18": { why: '"into" is not an option for "by train"', wrong: ["with", "at", "for"] },
   "a1p4l4/a1p4q19": {
     why: "the wrong options were filler from outside the slot's pool",
     wrong: ["on", "in"],
@@ -1329,16 +1336,17 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["trousers", "sock", "hat"],
   },
   "a1p9l1/a1p9q1": {
-    why: "topic word: the photo shows the answer, so no other option fits",
-    imageKey: "jacket",
+    why: "the photo shows a tan jacket, not a black one",
+    prompt: "He always wears a black ___. (a top with sleeves that zips up)",
   },
   "a1p9l1/a1p9q2": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
     prompt: "I need new ___ for winter. (for snow and rain)",
   },
   "a1p9l1/a1p9q3": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: '"sleeves" is a part of a garment, not a garment',
     prompt: "Put on your ___ before you go out. (a warm layer over your clothes)",
+    wrong: ["sunglasses", "hat", "scarf"],
   },
   "a1p9l1/a1p9q4": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1375,8 +1383,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "These shoes have a broken ___. (you tie it)",
   },
   "a1p9l3/a1p9q12": {
-    why: "topic word: the photo shows the answer, so no other option fits",
-    imageKey: "sweater",
+    why: "the photo shows a cream sweater, not a green one",
+    prompt: "I like your green ___. (a knitted top you pull over your head)",
   },
   "a1p9l3/a1p9q13": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1565,8 +1573,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a2p11l2/a2p11q8": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"window / medium / bill" cannot follow "tap"',
     context: "the sentence already rules out the other options",
+    prompt: "Could I get some tap ___ as well? (you drink it)",
+    wrong: ["ketchup", "bread", "dish"],
   },
   "a2p11l2/a2p11q9": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -1618,8 +1628,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["cards", "ketchup", "credit"],
   },
   "a2p11l5/a2p11q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"vegetarian / dinner / kids" were not things a shop takes; these are things a learner might say, and only cards fit "or only cash"',
     context: "the sentence already rules out the other options",
+    wrong: ["coupons", "menus", "orders"],
+    allow: ["coupons", "menus", "orders"],
   },
   "a2p11l5/a2p11q21": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -1809,12 +1821,13 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["next", "near", "behind"],
   },
   "a2p13l1/a2p13q4": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: '"down" is not an option for "next to"',
     prompt: "The park is ___ to the school. (right beside it)",
+    wrong: ["near", "behind", "far"],
   },
   "a2p13l2/a2p13q5": {
-    why: "the wrong options were filler from outside the slot's pool",
-    wrong: ["on", "around", "to"],
+    why: '"around" is not an option for "Walk for two blocks"',
+    wrong: ["on", "to", "from"],
   },
   "a2p13l2/a2p13q6": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -1879,8 +1892,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["over", "through", "into"],
   },
   "a2p13l4/a2p13q19": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"drive" is also a correct five-minute journey; the clue says on foot',
     context: "the sentence already rules out the other options",
+    prompt: "It's about a five-minute ___ from here. (you go on foot)",
+    wrong: ["drive", "ride", "flight"],
+    allow: ["drive", "ride", "flight"],
   },
   "a2p13l5/a2p13q20": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2064,8 +2080,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a2p15l3/a2p15q11": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"cash" is not a verb; the options are now verbs of the same pack',
     context: "the sentence already rules out the other options",
+    wrong: ["withdraw", "deposit", "fill in"],
   },
   "a2p15l3/a2p15q12": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -2178,12 +2195,15 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "My street is very ___ at night. (there is almost no noise)",
   },
   "a2p16l3/a2p16q11": {
-    why: "topic word: the photo shows the answer, so no other option fits",
+    why: '"clean" is an adjective; the options are now places',
     imageKey: "market",
+    wrong: ["park", "school", "field"],
   },
   "a2p16l3/a2p16q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"bus station" is also a station; the clue says trains',
     context: "the sentence already rules out the other options",
+    prompt: "The ___ station is a short walk from home. (trains arrive there)",
+    wrong: ["bus", "leisure", "community"],
   },
   "a2p16l3/a2p16q13": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2213,8 +2233,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "We live in a ___ that's popular with families. (a quiet area outside the city)",
   },
   "a2p16l4/a2p16q19": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
+    why: '"stop / neighbour / community" were nouns for an adjective slot',
     prompt: "The streets here are very ___ and safe. (no rubbish)",
+    wrong: ["busy", "residential", "local"],
   },
   "a2p16l5/a2p16q20": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2258,8 +2279,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["behind", "above", "opposite"],
   },
   "a2p17l2/a2p17q5": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"inside / down" are not options for "next to"',
     context: "the sentence already rules out the other options",
+    wrong: ["near", "behind", "far"],
   },
   "a2p17l2/a2p17q6": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2376,9 +2398,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["read", "readed", "reads"],
   },
   "a2p18l2/a2p18q6": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["drive", "drove", "drives"],
+    allow: ["drive", "drove", "drives"],
   },
   "a2p18l2/a2p18q7": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -2420,19 +2443,22 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["jog", "jogged", "jogs"],
   },
   "a2p18l4/a2p18q15": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["write", "wrote", "writes"],
+    allow: ["write", "wrote", "writes"],
   },
   "a2p18l4/a2p18q16": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["swim", "swam", "swims"],
+    allow: ["swim", "swam", "swims"],
   },
   "a2p18l4/a2p18q17": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["sing", "sang", "sings"],
+    allow: ["sing", "sang", "sings"],
   },
   "a2p18l4/a2p18q18": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -2465,9 +2491,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["chat", "chatted", "chats"],
   },
   "a2p18l5/a2p18q24": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["ride", "rode", "rides"],
+    allow: ["ride", "rode", "rides"],
   },
   "a2p19l1/a2p19q0": {
     why: "past cue present: the present modals are wrong, and 'ought'/'used' were out of the pool",
@@ -2679,8 +2706,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "His car is as ___ as mine. (they go at the same speed)",
   },
   "a2p20l1/a2p20q4": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"as quick / small" were weak options; the clue picks the one that burns',
     context: "the sentence already rules out the other options",
+    prompt: "This soup is as ___ as the last one. (it burns your tongue)",
+    wrong: ["sweet", "cold", "hard"],
   },
   "a2p20l2/a2p20q5": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -2849,9 +2878,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["arrive", "arrives", "arriving"],
   },
   "a2p2l4/a2p2q19": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["use", "uses", "using"],
+    allow: ["use", "uses", "using"],
   },
   "a2p2l5/a2p2q20": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -2893,8 +2923,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["easyer", "more easy", "easiest"],
   },
   "a2p3l1/a2p3q4": {
-    why: 'other adjectives\' comparatives are too easy to rule out; "more + short adjective" and -er errors are the real mistakes',
-    wrong: ["gooder", "more good", "well"],
+    why: '"well" is an adverb, not a comparative',
+    wrong: ["more good", "gooder", "best"],
   },
   "a2p3l2/a2p3q5": {
     why: 'other adjectives\' comparatives are too easy to rule out; "more + short adjective" and -er errors are the real mistakes',
@@ -3051,8 +3081,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a2p4l4/a2p4q18": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"check / out / change" are not options for a place in the queue',
     context: "the sentence already rules out the other options",
+    wrong: ["behind", "near", "far"],
   },
   "a2p4l4/a2p4q19": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -3064,8 +3095,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
   },
   "a2p4l5/a2p4q21": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"write / includes / departs" are verbs; the options are particles',
     context: "the sentence already rules out the other options",
+    wrong: ["off", "away", "back"],
   },
   "a2p4l5/a2p4q22": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -3123,9 +3155,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["go", "gone"],
   },
   "a2p6l2/a2p6q5": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["leave", "leaving", "left"],
+    allow: ["leave", "leaving", "left"],
   },
   "a2p6l2/a2p6q6": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3191,9 +3224,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["might", "may", "could"],
   },
   "a2p6l4/a2p6q19": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "irregular forms of one verb share only their first letters",
     slot: "inflection",
     wrong: ["take", "takes", "took"],
+    allow: ["take", "takes", "took"],
   },
   "a2p6l5/a2p6q20": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3390,8 +3424,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     imageKey: "dentist",
   },
   "a2p9l3/a2p9q12": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
+    why: '"My headache hurts" is also a sentence; the clue puts the pain in the mouth',
     context: "the sentence already rules out the other options",
+    prompt: "My ___ hurts when I chew. (the pain is inside your mouth)",
+    wrong: ["fever", "dentist", "headache"],
   },
   "a2p9l3/a2p9q13": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -3404,8 +3440,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["nuts", "injured", "wrist"],
   },
   "a2p9l4/a2p9q15": {
-    why: "topic word: the photo shows the answer, so no other option fits",
+    why: '"headache / fever / ankle": "I cut my ankle" is also correct; the options are now things that cannot be cut',
     imageKey: "finger",
+    wrong: ["fever", "cough", "bruise"],
   },
   "a2p9l4/a2p9q16": {
     why: "topic word reviewed: the sentence's own context excludes the other options; wrong options kept inside the topic",
@@ -3428,8 +3465,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["throat", "arm", "ankle"],
   },
   "a2p9l5/a2p9q20": {
-    why: "topic word reviewed: the sentence's own context excludes the other options",
-    context: "the sentence already rules out the other options",
+    why: '"My back hurt after lifting the box" is a correct past; the wrong options are now bad forms of hurt',
+    wrong: ["hurting", "hurted", "is hurts"],
+    allow: ["hurting", "hurted", "is hurts"],
   },
   "a2p9l5/a2p9q21": {
     why: "topic word reviewed: the sentence's own context excludes the other options",
@@ -3483,6 +3521,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["answers", "answering", "am answer"],
   },
   "u2l2/q2": { why: '"She worked in a bank" is correct', wrong: ["work", "working", "is work"] },
+  "u2l2/q4": {
+    why: '"We had a meeting" is also correct; the options are now agreement and form errors',
+    wrong: ["has", "having", "hasn't"],
+  },
   "u2l3/q1": {
     why: '"I enjoyed playing guitar" is correct',
     wrong: ["enjoys", "enjoying", "am enjoy"],

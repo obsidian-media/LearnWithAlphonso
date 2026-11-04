@@ -19,6 +19,8 @@ export type QuestionFix = {
   wrong?: string[];
   /** Reviewed slot type, when it cannot be inferred (for example the irregular past went / go / goed). */
   slot?: "inflection";
+  /** Wrong options reviewed as sound although they are outside the slot's pool (the reason is in `why`). */
+  allow?: string[];
   /** Photo key in VOCAB_IMAGES that shows the answer; multiple choice only. */
   imageKey?: string;
   /**

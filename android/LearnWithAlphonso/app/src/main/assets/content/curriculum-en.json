@@ -665,7 +665,7 @@
                 "have",
                 "has",
                 "having",
-                "haves"
+                "hasn't"
               ],
               "answer": "have",
               "explanation": "Plural subject + base form."
@@ -2580,7 +2580,7 @@
                 "mice",
                 "mouses",
                 "mices",
-                "meese"
+                "mouse"
               ],
               "answer": "mice",
               "explanation": "mouse → mice. Irregular and spelling-change plurals must be memorised."
@@ -3783,7 +3783,7 @@
                 "behind",
                 "opposite",
                 "beside",
-                "in front of"
+                "near"
               ],
               "answer": 2,
               "explanation": "\"beside\" is correct here. Use in for months/years, on for days/dates, at for clock times."
@@ -3852,9 +3852,9 @@
               "type": "fill",
               "prompt": "We travel ___ train.",
               "bank": [
-                "into",
-                "on",
+                "with",
                 "at",
+                "for",
                 "by"
               ],
               "answer": "by",
@@ -5454,7 +5454,7 @@
             {
               "id": "a1p9q1",
               "type": "mc",
-              "prompt": "He always wears a black ___.",
+              "prompt": "He always wears a black ___. (a top with sleeves that zips up)",
               "choices": [
                 "shorts",
                 "lace",
@@ -5462,8 +5462,7 @@
                 "dress"
               ],
               "answer": 2,
-              "explanation": "\"jacket\" is correct here. Common clothing vocabulary with colour adjectives.",
-              "imageKey": "jacket"
+              "explanation": "\"jacket\" is correct here. Common clothing vocabulary with colour adjectives."
             },
             {
               "id": "a1p9q2",
@@ -5486,7 +5485,7 @@
                 "coat",
                 "sunglasses",
                 "hat",
-                "sleeves"
+                "scarf"
               ],
               "answer": 0,
               "explanation": "\"coat\" is correct here. Common clothing vocabulary with colour adjectives."
@@ -5615,7 +5614,7 @@
             {
               "id": "a1p9q12",
               "type": "mc",
-              "prompt": "I like your green ___.",
+              "prompt": "I like your green ___. (a knitted top you pull over your head)",
               "choices": [
                 "sweater",
                 "jeans",
@@ -5623,8 +5622,7 @@
                 "blouse"
               ],
               "answer": 0,
-              "explanation": "\"sweater\" is correct here. Common clothing vocabulary with colour adjectives.",
-              "imageKey": "sweater"
+              "explanation": "\"sweater\" is correct here. Common clothing vocabulary with colour adjectives."
             },
             {
               "id": "a1p9q13",
@@ -6001,12 +5999,12 @@
             {
               "id": "a1p10q13",
               "type": "fill",
-              "prompt": "The temperature dropped ___ overnight.",
+              "prompt": "The temperature dropped ___ overnight. (it happened all at once)",
               "bank": [
-                "snow",
+                "slowly",
                 "suddenly",
-                "fall",
-                "clear"
+                "gradually",
+                "softly"
               ],
               "answer": "suddenly",
               "explanation": "\"suddenly\" is correct here. Basic weather vocabulary and seasonal expressions."
@@ -8137,7 +8135,7 @@
                 "has",
                 "having",
                 "have",
-                "haves"
+                "hasn't"
               ],
               "answer": 2,
               "explanation": "\"have\" is correct here. Simple present tense sentences describing a typical day."
@@ -8302,12 +8300,12 @@
             {
               "id": "a1p16q19",
               "type": "fill",
-              "prompt": "We ___ the dog every evening.",
+              "prompt": "We ___ the dog every evening. (for exercise, on a lead)",
               "bank": [
                 "walk",
                 "watch",
-                "get",
-                "arrives"
+                "feed",
+                "groom"
               ],
               "answer": "walk",
               "explanation": "\"walk\" is correct here. Simple present tense sentences describing a typical day."
@@ -8407,8 +8405,8 @@
               "choices": [
                 "book",
                 "rubber",
-                "on",
-                "ruler"
+                "ruler",
+                "bell"
               ],
               "answer": 0,
               "explanation": "\"book\" is correct here. Common classroom vocabulary for beginners.",
@@ -8624,10 +8622,10 @@
               "type": "mc",
               "prompt": "The teacher asked us to ___ our hands.",
               "choices": [
-                "sharpen",
-                "close",
+                "rise",
+                "rose",
                 "raise",
-                "up"
+                "raised"
               ],
               "answer": 2,
               "explanation": "\"raise\" is correct here. Common classroom vocabulary for beginners."
@@ -9204,7 +9202,7 @@
                 "trolley",
                 "debit",
                 "date",
-                "till"
+                "food"
               ],
               "answer": 2,
               "explanation": "\"date\" is correct here. Everyday vocabulary for grocery shopping."
@@ -9346,7 +9344,7 @@
             {
               "id": "a1p19q14",
               "type": "fill",
-              "prompt": "Could you tell me where the ___ is?",
+              "prompt": "Could you tell me where the ___ is? (milk, butter and cheese are kept there)",
               "bank": [
                 "soap",
                 "checkout",
@@ -10278,10 +10276,10 @@
               "type": "fill",
               "prompt": "This hobby involves \"watching\"… ___",
               "bank": [
-                "on a bike",
+                "books",
                 "films",
-                "with wool",
-                "in a pool"
+                "songs",
+                "cakes"
               ],
               "answer": "films",
               "explanation": "watching → films. Common free-time activities."
@@ -10494,9 +10492,9 @@
               "type": "fill",
               "prompt": "This hobby involves \"cycling\"… ___",
               "bank": [
-                "to music",
+                "in a pool",
                 "with wool",
-                "stamps",
+                "for relaxation",
                 "on a bike"
               ],
               "answer": "on a bike",
@@ -12356,10 +12354,10 @@
               "type": "mc",
               "prompt": "Comparative of \"good\":",
               "choices": [
-                "gooder",
                 "more good",
+                "gooder",
                 "better",
-                "well"
+                "best"
               ],
               "answer": 2,
               "explanation": "good → better. Short adjectives add -er; long ones take \"more\"."
@@ -12930,9 +12928,9 @@
               "prompt": "Are you ___ in the queue?",
               "choices": [
                 "next",
-                "check",
-                "out",
-                "change"
+                "behind",
+                "near",
+                "far"
               ],
               "answer": 0,
               "explanation": "\"next\" is correct here. Fixed travel and shopping phrases."
@@ -12976,9 +12974,9 @@
               "prompt": "We're ___ of stock.",
               "choices": [
                 "out",
-                "write",
-                "includes",
-                "departs"
+                "off",
+                "away",
+                "back"
               ],
               "answer": 0,
               "explanation": "\"out\" is correct here. Fixed travel and shopping phrases."
@@ -14691,7 +14689,7 @@
             {
               "id": "a2p9q12",
               "type": "fill",
-              "prompt": "My ___ hurts when I chew.",
+              "prompt": "My ___ hurts when I chew. (the pain is inside your mouth)",
               "bank": [
                 "tooth",
                 "fever",
@@ -14739,10 +14737,10 @@
               "type": "mc",
               "prompt": "I cut my ___ while cooking.",
               "choices": [
-                "headache",
                 "fever",
+                "cough",
                 "finger",
-                "ankle"
+                "bruise"
               ],
               "answer": 2,
               "explanation": "\"finger\" is correct here. Basic health vocabulary for describing how you feel.",
@@ -14812,10 +14810,10 @@
               "type": "mc",
               "prompt": "My back ___ after lifting the box.",
               "choices": [
-                "cough",
-                "faint",
+                "hurting",
+                "hurted",
                 "hurts",
-                "dizzy"
+                "is hurts"
               ],
               "answer": 2,
               "explanation": "\"hurts\" is correct here. Basic health vocabulary for describing how you feel."
@@ -15371,11 +15369,11 @@
             {
               "id": "a2p11q8",
               "type": "fill",
-              "prompt": "Could I get some tap ___ as well?",
+              "prompt": "Could I get some tap ___ as well? (you drink it)",
               "bank": [
-                "window",
-                "medium",
-                "bill",
+                "ketchup",
+                "bread",
+                "dish",
                 "water"
               ],
               "answer": "water",
@@ -15550,10 +15548,10 @@
               "type": "fill",
               "prompt": "Do you take ___ or only cash?",
               "bank": [
-                "vegetarian",
+                "coupons",
                 "cards",
-                "dinner",
-                "kids"
+                "menus",
+                "orders"
               ],
               "answer": "cards",
               "explanation": "\"cards\" is correct here. Common phrases for eating out."
@@ -16052,9 +16050,9 @@
               "type": "fill",
               "prompt": "The park is ___ to the school. (right beside it)",
               "bank": [
-                "down",
+                "near",
                 "behind",
-                "opposite",
+                "far",
                 "next"
               ],
               "answer": "next",
@@ -16074,8 +16072,8 @@
               "choices": [
                 "for",
                 "on",
-                "around",
-                "to"
+                "to",
+                "from"
               ],
               "answer": 0,
               "explanation": "\"for\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16266,12 +16264,12 @@
             {
               "id": "a2p13q19",
               "type": "fill",
-              "prompt": "It's about a five-minute ___ from here.",
+              "prompt": "It's about a five-minute ___ from here. (you go on foot)",
               "bank": [
                 "walk",
-                "inside",
-                "up",
-                "for"
+                "drive",
+                "ride",
+                "flight"
               ],
               "answer": "walk",
               "explanation": "\"walk\" is correct here. Everyday vocabulary for giving and following directions."
@@ -16896,9 +16894,9 @@
               "type": "fill",
               "prompt": "My card was ___ by the machine.",
               "bank": [
-                "cash",
-                "declined",
                 "withdraw",
+                "declined",
+                "deposit",
                 "fill in"
               ],
               "answer": "declined",
@@ -17266,7 +17264,7 @@
               "prompt": "We have a great ___ where I can buy fresh food.",
               "choices": [
                 "park",
-                "clean",
+                "school",
                 "market",
                 "field"
               ],
@@ -17277,11 +17275,11 @@
             {
               "id": "a2p16q12",
               "type": "fill",
-              "prompt": "The ___ station is a short walk from home.",
+              "prompt": "The ___ station is a short walk from home. (trains arrive there)",
               "bank": [
-                "market",
-                "road",
-                "space",
+                "bus",
+                "leisure",
+                "community",
                 "train"
               ],
               "answer": "train",
@@ -17377,10 +17375,10 @@
               "type": "mc",
               "prompt": "The streets here are very ___ and safe. (no rubbish)",
               "choices": [
-                "stop",
-                "neighbour",
+                "busy",
+                "residential",
                 "clean",
-                "community"
+                "local"
               ],
               "answer": 2,
               "explanation": "\"clean\" is correct here. A2-level vocabulary for describing a local area."
@@ -17551,9 +17549,9 @@
               "prompt": "He is sitting ___ to his sister.",
               "choices": [
                 "next",
-                "inside",
+                "near",
                 "behind",
-                "down"
+                "far"
               ],
               "answer": 0,
               "explanation": "\"next\" is correct here. A2-level prepositions describing location."
@@ -18635,12 +18633,12 @@
             {
               "id": "a2p20q4",
               "type": "fill",
-              "prompt": "This soup is as ___ as the last one.",
+              "prompt": "This soup is as ___ as the last one. (it burns your tongue)",
               "bank": [
-                "quick",
-                "difficult",
+                "sweet",
+                "cold",
                 "spicy",
-                "small"
+                "hard"
               ],
               "answer": "spicy",
               "explanation": "\"spicy\" is correct here. A2-level equal comparison structures."

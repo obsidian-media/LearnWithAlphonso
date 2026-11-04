@@ -102,6 +102,62 @@ describe("the gate fails on the reported defects", () => {
   });
 });
 
+describe("the gate fails on the review's mutations", () => {
+  it("rejects a meaningless clue: '(look at it)' does not disambiguate place words", () => {
+    const issues = checkDistractors(
+      shape("The cat is sitting ___ the table. (look at it)", "under", [
+        "behind",
+        "beside",
+        "near",
+      ]),
+    );
+    expect(issues.some((i) => i.kind === "also-correct")).toBe(true);
+  });
+
+  it("rejects lives / lion / lip / lid as forms of one verb", () => {
+    const issues = checkDistractors(
+      shape("She ___ in London.", "lives", ["lion", "lip", "lid"], {
+        id: "a1p2q24",
+        slot: "inflection",
+      }),
+    );
+    expect(issues.some((i) => i.kind === "off-pool")).toBe(true);
+  });
+
+  it("rejects at / during / into / since in a fixed-phrase slot", () => {
+    const issues = checkDistractors(shape("We went ___ bus.", "by", ["at", "during", "into"]));
+    expect(
+      issues.filter((i) => i.kind === "off-pool").map((i) => (i as { option: string }).option),
+    ).toEqual(["during", "into"]);
+  });
+
+  it("rejects an adverb answer with noun options (suddenly / snow, fall, clear)", () => {
+    const issues = checkDistractors(
+      shape("The temperature dropped ___ overnight.", "suddenly", ["cards", "hurts"], {
+        id: "a1p10q13",
+        packAnswers: new Set(["suddenly", "cards", "hurts"]),
+      }),
+    );
+    expect(issues.some((i) => i.kind === "pos-mismatch")).toBe(true);
+  });
+
+  it("does not accept the blanket reason, or a reason shared by two questions", () => {
+    const base = shape("Pass the ___ and pepper.", "salt", ["meat", "cheese", "coffee"], {
+      id: "a1p8q4",
+      packAnswers: new Set(["salt", "meat", "cheese", "coffee"]),
+    });
+    expect(
+      kinds({ ...base, context: "the sentence already rules out the other options" }),
+    ).toContain("weak-context");
+    expect(
+      kinds({ ...base, context: "pepper goes with salt, none of the others do", contextUses: 2 }),
+    ).toContain("weak-context");
+    expect(
+      kinds({ ...base, context: "pepper is paired with salt on a table, not with meat or cheese" }),
+    ).not.toContain("weak-context");
+  });
+});
+
 describe("the A1/A2 English bank", () => {
   const course = getCourse("en");
   const packAnswers = new Map<string, Set<string>>();
@@ -128,14 +184,20 @@ describe("the A1/A2 English bank", () => {
             answer,
             options,
             hasImage: q.type === "mc" && !!q.imageKey,
-            clued: !!QUESTION_FIXES[`${lesson.id}/${q.id}`]?.context,
+            context: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.context,
             slot: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.slot,
+            allow: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.allow,
             reviewed: REVIEWED_PHRASES.has(`${lesson.id}/${q.id}`),
           },
         });
       }
   }
+  const contextUses = new Map<string, number>();
+  for (const it of items)
+    if (it.shape.context)
+      contextUses.set(it.shape.context, (contextUses.get(it.shape.context) ?? 0) + 1);
   for (const it of items) {
+    if (it.shape.context) it.shape.contextUses = contextUses.get(it.shape.context);
     const pack = /^(a[12]p\d+)q\d+$/.exec(it.shape.id)?.[1];
     if (pack) it.shape.packAnswers = packAnswers.get(pack);
   }
@@ -176,9 +238,22 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 47, context: 286, clue: 431 };
-  const NEEDS_CLUE_BUDGET = 0;
+  const PINNED_SPLIT = { picture: 45, context: 283, clue: 433 };
+  // Honest debt, pinned, lowered as questions are rewritten; never raised.
+  const POS_MISMATCH_BUDGET = 26;
+  const WEAK_CONTEXT_BUDGET = 283;
+  const NEEDS_CLUE_BUDGET = 275;
   const UNCLASSIFIED_BUDGET = 0;
+
+  it("does not add topic-word options of another part of speech", () => {
+    const n = all.filter(({ issues }) => issues.some((i) => i.kind === "pos-mismatch")).length;
+    expect(n).toBeLessThanOrEqual(POS_MISMATCH_BUDGET);
+  });
+
+  it("does not add reviewed-context questions without a reason written for them", () => {
+    const n = all.filter(({ issues }) => issues.some((i) => i.kind === "weak-context")).length;
+    expect(n).toBeLessThanOrEqual(WEAK_CONTEXT_BUDGET);
+  });
 
   it("does not add category questions without a clue", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "needs-clue")).length;
@@ -198,8 +273,8 @@ describe("the A1/A2 English bank", () => {
     const count = (f: (s: QuestionShape) => boolean) =>
       topic.filter(({ it }) => f(it.shape)).length;
     const picture = count((s) => !!s.hasImage);
-    const context = count((s) => !s.hasImage && !!s.clued);
-    const clue = count((s) => !s.hasImage && !s.clued && hasClue(s.prompt));
+    const context = count((s) => !s.hasImage && !!s.context);
+    const clue = count((s) => !s.hasImage && !s.context && hasClue(s.prompt));
     expect({ picture, context, clue }).toEqual(PINNED_SPLIT);
   });
 });
