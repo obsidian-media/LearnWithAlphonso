@@ -4,6 +4,8 @@ import io.sentry.Breadcrumb
 import io.sentry.Hint
 import io.sentry.SentryEvent
 import io.sentry.android.core.SentryAndroidOptions
+import io.sentry.protocol.App
+import io.sentry.protocol.Device
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryException
 import io.sentry.protocol.User
@@ -76,5 +78,30 @@ class CrashReportingTest {
     fun `scrubText leaves ordinary error text alone`() {
         val text = "NullPointerException: Attempt to invoke virtual method on LessonScreen"
         assertEquals(text, CrashReporting.scrubText(text))
+    }
+
+    @Test
+    fun `beforeSend removes the install id, device name and app hash`() {
+        val event = SentryEvent().apply {
+            contexts.setDevice(Device().apply { id = "install-1234"; name = "Maria's Pixel" })
+            contexts.setApp(App().apply { deviceAppHash = "a1b2c3d4" })
+            serverName = "maria-pixel"
+        }
+        val sent = configured().beforeSend!!.execute(event, Hint())!!
+        assertNull(sent.contexts.device?.id)
+        assertNull(sent.contexts.device?.name)
+        assertNull(sent.contexts.app?.deviceAppHash)
+        assertNull(sent.serverName)
+    }
+
+    @Test
+    fun `scrubText redacts URL parameters, secret keys and account ids`() {
+        val id = "1b4c2e74-9d6a-4c96-a0e5-77e816a6e4f2"
+        val text = CrashReporting.scrubText(
+            "GET https://x.supabase.co/rest/v1/t?user_id=eq.$id&access_token=abc123 key sb_secret_AbCdEf1234567890 sk_live_AbCdEf123456",
+        )
+        assertFalse(text, text.contains(id))
+        assertFalse(text, text.contains("abc123"))
+        assertFalse(text, text.contains("AbCdEf"))
     }
 }

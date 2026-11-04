@@ -6,7 +6,8 @@ import { contentSecurityPolicy } from "./security-policy";
 
 const init = vi.fn();
 const captureException = vi.fn();
-vi.mock("@sentry/react", () => ({ init, captureException }));
+const breadcrumbsIntegration = vi.fn((o: unknown) => ({ name: "Breadcrumbs", options: o }));
+vi.mock("@sentry/react", () => ({ init, captureException, breadcrumbsIntegration }));
 
 beforeEach(() => {
   vi.resetModules();
@@ -25,11 +26,20 @@ describe("sentryDsnFor", () => {
       sentryDsnFor({ production: false, override: "https://k@o1.ingest.sentry.io/1" }),
     ).toBeUndefined();
   });
+  it("is off on Vercel Preview and Development even in a production build", () => {
+    for (const vercelEnv of ["preview", "development", "", undefined]) {
+      expect(sentryDsnFor({ production: true, vercelEnv })).toBeUndefined();
+    }
+  });
   it("uses the committed public web DSN in production, or an override", () => {
-    expect(sentryDsnFor({ production: true })).toBe(SENTRY_WEB_DSN);
-    expect(sentryDsnFor({ production: true, override: "https://k@o1.ingest.sentry.io/1" })).toBe(
-      "https://k@o1.ingest.sentry.io/1",
-    );
+    expect(sentryDsnFor({ production: true, vercelEnv: "production" })).toBe(SENTRY_WEB_DSN);
+    expect(
+      sentryDsnFor({
+        production: true,
+        vercelEnv: "production",
+        override: "https://k@o1.ingest.sentry.io/1",
+      }),
+    ).toBe("https://k@o1.ingest.sentry.io/1");
   });
 });
 
@@ -42,6 +52,7 @@ describe("browser Sentry init", () => {
 
   it("in production: no PII, no tracing, no replay, scrubbing hooks wired", async () => {
     vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_VERCEL_ENV", "production");
     const { initSentryClient } = await import("./sentry-client");
     expect(initSentryClient()).toBe(true);
     const options = init.mock.calls[0][0];
@@ -50,7 +61,10 @@ describe("browser Sentry init", () => {
     expect(options.tracesSampleRate).toBe(0);
     expect(options.replaysSessionSampleRate).toBeUndefined();
     expect(options.replaysOnErrorSampleRate).toBeUndefined();
-    expect(options.integrations).toBeUndefined();
+    // fetch/xhr breadcrumbs carry Supabase URLs (user_id=eq.<uuid>), so they are switched off.
+    expect(options.integrations).toHaveLength(1);
+    expect(options.integrations[0].name).toBe("Breadcrumbs");
+    expect(breadcrumbsIntegration).toHaveBeenCalledWith({ fetch: false, xhr: false });
     const event = options.beforeSend({ message: "x a@b.com", user: { email: "a@b.com" } });
     expect(JSON.stringify(event)).not.toContain("a@b.com");
     expect(options.beforeBreadcrumb({ category: "console" })).toBeNull();
@@ -58,6 +72,7 @@ describe("browser Sentry init", () => {
 
   it("reportError reaches Sentry only after init", async () => {
     vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_VERCEL_ENV", "production");
     const { reportError } = await import("./error-reporting");
     const { initSentryClient } = await import("./sentry-client");
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -77,8 +92,18 @@ describe("server reporter", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("sends nothing on a Vercel Preview deploy", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "preview");
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
+    const { reportServerError } = await import("./sentry-server");
+    await reportServerError(new Error("boom"));
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("in production posts a scrubbed envelope to the ingest host", async () => {
     vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "production");
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
     const { reportServerError } = await import("./sentry-server");
     await reportServerError(new Error("failed for maria@example.com"), { route: "/api/chat" });
@@ -95,6 +120,14 @@ describe("CSP", () => {
     const policy = contentSecurityPolicy("n", "https://p.supabase.co");
     const connect = policy.split("; ").find((d) => d.startsWith("connect-src"))!;
     expect(connect).toContain(SENTRY_INGEST_ORIGIN);
-    expect(policy.split("; ").filter((d) => d.includes("sentry.io"))).toEqual([connect]);
+    const sentryHost = new URL(SENTRY_INGEST_ORIGIN).hostname;
+    const mentionsSentry = policy
+      .split("; ")
+      .filter((directive) =>
+        directive
+          .split(" ")
+          .some((token) => URL.canParse(token) && new URL(token).hostname === sentryHost),
+      );
+    expect(mentionsSentry).toEqual([connect]);
   });
 });

@@ -19,10 +19,18 @@ const BEARER = /\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]{8,}/gi;
 // Supabase key formats and common secret prefixes (sb_secret_, sk_live_, ...).
 const SECRET_KEY =
   /\b(?:sb_secret|sb_publishable|sk_live|sk_test|rk_live|pk_live)_[A-Za-z0-9_-]{8,}/g;
+// Account ids: Supabase filters look like user_id=eq.<uuid>; a uuid is never needed to read a report.
+const UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+const URL_KEYS = /^(url|from|to|query_string|query)$/i;
 const SENSITIVE_PARAM =
   /([?&#;])(access_token|refresh_token|id_token|token|token_hash|code|apikey|api_key|key|email|password|secret|otp|session|state)=([^&#\s]*)/gi;
 
 const SENSITIVE_KEY = /authorization|cookie|token|secret|password|apikey|api_key|set-cookie/i;
+
+/** Drops the query string and fragment of a URL or path; they hold ids, tokens and filters. */
+export function stripQuery(value: string): string {
+  return value.replace(/[?#].*$/s, "");
+}
 
 export function scrubString(value: string): string {
   return value
@@ -30,6 +38,7 @@ export function scrubString(value: string): string {
     .replace(JWT, REDACTED)
     .replace(BEARER, (_m, scheme: string) => `${scheme} ${REDACTED}`)
     .replace(SECRET_KEY, REDACTED)
+    .replace(UUID, "[id]")
     .replace(EMAIL, "[email]");
 }
 
@@ -41,7 +50,9 @@ export function scrubValue<T>(value: T, depth = 0): T {
   if (Array.isArray(value)) return value.map((v) => scrubValue(v, depth + 1)) as T;
   const out: Record<string, unknown> = {};
   for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
-    out[key] = SENSITIVE_KEY.test(key) && v != null ? REDACTED : scrubValue(v, depth + 1);
+    if (SENSITIVE_KEY.test(key) && v != null) out[key] = REDACTED;
+    else if (URL_KEYS.test(key) && typeof v === "string") out[key] = scrubString(stripQuery(v));
+    else out[key] = scrubValue(v, depth + 1);
   }
   return out as T;
 }
@@ -60,6 +71,7 @@ export function scrubEvent<E extends object>(event: E): E {
   const scrubbed = scrubValue(event) as unknown as SentryLikeEvent;
   // No identity at all: Sentry would otherwise attach an IP and any user the app set.
   delete scrubbed.user;
+  if (scrubbed.request) delete scrubbed.request.query_string;
   if (scrubbed.request) {
     delete scrubbed.request.cookies;
     delete scrubbed.request.data; // request bodies can hold answers, transcripts, credentials

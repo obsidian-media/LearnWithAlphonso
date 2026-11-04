@@ -44,6 +44,16 @@ enum CrashReporting {
     /// Removes identity and secrets from an outgoing event.
     static func scrub(_ event: Event) -> Event {
         event.user = nil
+        // Stable per-install identifiers would make a report linkable to one device, and so to a person.
+        event.serverName = nil
+        if var app = event.context?["app"] {
+            app["device_app_hash"] = nil
+            event.context?["app"] = app
+        }
+        if var device = event.context?["device"] {
+            for key in ["id", "name", "device_unique_identifier"] { device[key] = nil }
+            event.context?["device"] = device
+        }
         event.exceptions?.forEach { $0.value = $0.value.map(scrubText) }
         if let message = event.message {
             event.message = SentryMessage(formatted: scrubText(message.formatted))
@@ -51,7 +61,16 @@ enum CrashReporting {
         return event
     }
 
+    /// Sensitive URL query and fragment parameters: the value goes, the name stays (template $1$2=[redacted]).
+    private static let sensitiveParameter = try! NSRegularExpression(
+        pattern: "(?i)([?&#;])(access_token|refresh_token|id_token|token|token_hash|code|apikey|api_key|key|email|password|secret|otp|session|state)=[^&#\\s]*"
+    )
+
     private static let patterns: [NSRegularExpression] = [
+        // Secret key formats.
+        try! NSRegularExpression(pattern: "(sb_secret|sb_publishable|sk_live|sk_test|rk_live|pk_live)_[A-Za-z0-9_-]{8,}"),
+        // Account ids: Supabase filters look like user_id=eq.<uuid>.
+        try! NSRegularExpression(pattern: "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"),
         // JWTs (Supabase access and refresh tokens): header.payload.signature, header and payload start "eyJ".
         try! NSRegularExpression(pattern: "eyJ[A-Za-z0-9_-]{5,}\\.eyJ[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}"),
         try! NSRegularExpression(pattern: "(?i)bearer\\s+[A-Za-z0-9._~+/=-]{8,}"),
@@ -60,7 +79,12 @@ enum CrashReporting {
 
     /// Replaces every email address and token in `text` with `[redacted]`.
     static func scrubText(_ text: String) -> String {
-        patterns.reduce(text) { partial, regex in
+        let withoutParameters = sensitiveParameter.stringByReplacingMatches(
+            in: text,
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: "$1$2=[redacted]"
+        )
+        return patterns.reduce(withoutParameters) { partial, regex in
             regex.stringByReplacingMatches(
                 in: partial,
                 range: NSRange(partial.startIndex..., in: partial),

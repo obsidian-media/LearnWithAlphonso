@@ -51,6 +51,44 @@ describe("scrubString", () => {
   });
 });
 
+const USER_ID = "1b4c2e74-9d6a-4c96-a0e5-77e816a6e4f2";
+
+describe("account ids and query strings", () => {
+  it("redacts a Supabase user_id filter in a fetch URL", () => {
+    const out = scrubString(
+      `https://qhcjpfbxfcltjbiuknyt.supabase.co/rest/v1/progress?select=*&user_id=eq.${USER_ID}`,
+    );
+    expect(out).not.toContain(USER_ID);
+    expect(out).toContain("/rest/v1/progress");
+  });
+
+  it("redacts any bare UUID in text", () => {
+    expect(scrubString(`row ${USER_ID} failed`)).not.toContain(USER_ID);
+    expect(scrubString(`row ${USER_ID.toUpperCase()} failed`)).not.toContain(USER_ID.toUpperCase());
+  });
+
+  it("strips the query string from breadcrumb, request and navigation URLs", () => {
+    const out = scrubEvent({
+      request: {
+        url: `https://learn.alphonsoecosystem.app/lesson?uid=abc&x=${USER_ID}`,
+        query_string: "uid=abc",
+      },
+      breadcrumbs: [
+        {
+          category: "fetch",
+          data: { url: `https://x.supabase.co/rest/v1/t?user_id=eq.${USER_ID}` },
+        },
+        { category: "navigation", data: { from: "/a?private=1", to: "/b?private=2#frag" } },
+      ],
+    });
+    const text = JSON.stringify(out);
+    expect(text).not.toContain(USER_ID);
+    expect(text).not.toContain("private=");
+    expect(text).not.toContain("uid=abc");
+    expect(text).toContain("/lesson");
+  });
+});
+
 describe("scrubValue", () => {
   it("scrubs nested strings and drops values under secret-looking keys", () => {
     const out = scrubValue({

@@ -45,7 +45,10 @@ export default defineConfig(async ({ command, mode }) => {
   }
 
   const config: UserConfig = {
-    define: envDefine,
+    define: {
+      ...envDefine,
+      "import.meta.env.VITE_VERCEL_ENV": JSON.stringify(process.env.VERCEL_ENV ?? ""),
+    },
     css: { transformer: "lightningcss" },
     resolve: {
       alias: { "@": `${process.cwd()}/src` },

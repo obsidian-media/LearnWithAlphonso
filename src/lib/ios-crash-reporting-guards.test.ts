@@ -39,9 +39,10 @@ describe("iOS Sentry start-up", () => {
 });
 
 describe("iOS Sentry privacy settings", () => {
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const off = (setting: string) =>
     expect(crash, `${setting} must be explicitly off`).toMatch(
-      new RegExp(`options\\.${setting.replace(/\./g, "\\.")}\\s*=\\s*(false|0)\\b`),
+      new RegExp(`options\\.${escapeRegExp(setting)}\\s*=\\s*(false|0)\\b`),
     );
 
   it("sends no default PII", () => off("sendDefaultPii"));
@@ -91,5 +92,20 @@ describe("iOS Sentry package pin", () => {
   it("is not linked into the widget", () => {
     const widget = yml.slice(yml.indexOf("LearnWithAlphonsoWidget:\n    type:"));
     expect(widget).not.toContain("package: Sentry");
+  });
+});
+
+describe("iOS Sentry stable identifiers and URL/key scrubbing", () => {
+  it("removes the per-install app hash and device identifiers from the event contexts", () => {
+    expect(crash).toMatch(/"device_app_hash"/);
+    expect(crash).toMatch(/"device_unique_identifier"/);
+    expect(crash).toMatch(/event\.serverName\s*=\s*nil/);
+    expect(crash).toMatch(/event\.context/);
+  });
+
+  it("scrubs sensitive URL parameters, secret key formats and UUIDs like the web does", () => {
+    expect(crash).toMatch(/access_token\|refresh_token/);
+    expect(crash).toMatch(/sb_secret\|sb_publishable\|sk_live/);
+    expect(crash).toMatch(/\[0-9a-fA-F\]\{8\}-/); // UUID
   });
 });

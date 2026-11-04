@@ -16,11 +16,16 @@ export const SENTRY_INGEST_ORIGIN = new URL(SENTRY_WEB_DSN).origin;
 export const SENTRY_TRACES_SAMPLE_RATE = 0;
 
 /**
- * Reporting is on only in a production build with a DSN. Tests, local dev and
- * preview builds without NODE_ENV=production never send.
+ * Reporting is on only in a production build deployed to Vercel production
+ * (VERCEL_ENV=production), with a DSN. Tests, local dev and Vercel Preview
+ * deploys (which are also production builds) never send.
  */
-export function sentryDsnFor(opts: { production: boolean; override?: string }): string | undefined {
-  if (!opts.production) return undefined;
+export function sentryDsnFor(opts: {
+  production: boolean;
+  vercelEnv?: string;
+  override?: string;
+}): string | undefined {
+  if (!opts.production || opts.vercelEnv !== "production") return undefined;
   const dsn = opts.override?.trim() || SENTRY_WEB_DSN;
   return dsn || undefined;
 }

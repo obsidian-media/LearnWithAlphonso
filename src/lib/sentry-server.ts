@@ -52,6 +52,7 @@ export async function reportServerError(
 ): Promise<void> {
   const dsn = sentryDsnFor({
     production: process.env.NODE_ENV === "production",
+    vercelEnv: process.env.VERCEL_ENV,
     override: process.env.SENTRY_DSN,
   });
   if (!dsn) return;

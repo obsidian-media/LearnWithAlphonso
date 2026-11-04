@@ -16,6 +16,7 @@ export function initSentryClient(): boolean {
   if (typeof window === "undefined") return false;
   const dsn = sentryDsnFor({
     production: Boolean(import.meta.env.PROD),
+    vercelEnv: import.meta.env.VITE_VERCEL_ENV as string | undefined,
     override: import.meta.env.VITE_SENTRY_DSN as string | undefined,
   });
   if (!dsn) return false;
@@ -24,6 +25,8 @@ export function initSentryClient(): boolean {
     environment: "production",
     sendDefaultPii: false,
     tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
+    // fetch/xhr breadcrumbs record Supabase URLs (user_id=eq.<uuid>): off, not just scrubbed.
+    integrations: [Sentry.breadcrumbsIntegration({ fetch: false, xhr: false })],
     beforeSend: (event) => scrubEvent(event),
     beforeBreadcrumb: (breadcrumb) => scrubBreadcrumb(breadcrumb),
   });

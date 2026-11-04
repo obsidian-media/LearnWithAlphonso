@@ -47,6 +47,11 @@ object CrashReporting {
 
     fun scrub(event: SentryEvent): SentryEvent {
         event.user = null
+        // Stable per-install identifiers would make a report linkable to one device, and so to a person.
+        event.serverName = null
+        event.contexts.device?.id = null
+        event.contexts.device?.name = null
+        event.contexts.app?.deviceAppHash = null
         event.exceptions?.forEach { exception -> exception.value = exception.value?.let(::scrubText) }
         event.message?.let { message -> message.formatted = message.formatted?.let(::scrubText) }
         return event
@@ -58,7 +63,16 @@ object CrashReporting {
         return crumb
     }
 
+    /** Sensitive URL query and fragment parameters: the value goes, the name stays. */
+    private val sensitiveParameter = Regex(
+        "(?i)([?&#;])(access_token|refresh_token|id_token|token|token_hash|code|apikey|api_key|key|email|password|secret|otp|session|state)=[^&#\\s]*",
+    )
+
     private val patterns = listOf(
+        // Secret key formats.
+        Regex("(sb_secret|sb_publishable|sk_live|sk_test|rk_live|pk_live)_[A-Za-z0-9_-]{8,}"),
+        // Account ids: Supabase filters look like user_id=eq.<uuid>.
+        Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"),
         // JWTs (Supabase access and refresh tokens): header.payload.signature, header and payload start "eyJ".
         Regex("eyJ[A-Za-z0-9_-]{5,}\\.eyJ[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}"),
         Regex("(?i)bearer\\s+[A-Za-z0-9._~+/=-]{8,}"),
@@ -66,5 +80,8 @@ object CrashReporting {
     )
 
     /** Replaces every email address and token in [text] with `[redacted]`. */
-    fun scrubText(text: String): String = patterns.fold(text) { acc, regex -> regex.replace(acc, "[redacted]") }
+    fun scrubText(text: String): String =
+        patterns.fold(sensitiveParameter.replace(text, "$1$2=[redacted]")) { acc, regex ->
+            regex.replace(acc, "[redacted]")
+        }
 }

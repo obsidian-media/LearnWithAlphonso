@@ -29,8 +29,7 @@ The DSNs are the public client DSNs (they can only submit events), so they are c
 
 ## Owner steps (not done by the agent)
 
-1. Sentry project settings, each of the three projects: turn on Security and Privacy, Data Scrubber and Prevent Storing of
-   IP Addresses; keep Replay off.
+1. (Done by the owner) In each of the three Sentry projects: Data Scrubber and Prevent Storing of IP Addresses on; Replay off.
 2. Create an organization auth token (scopes `project:releases`, `org:read`, `project:write`) and store it as the GitHub
    secret `SENTRY_AUTH_TOKEN`. Then enable the disabled upload steps below.
 3. App Store Connect App Privacy and Play data safety answers: see the PR that added this file.
@@ -47,3 +46,9 @@ Documented, not wired, because they need `SENTRY_AUTH_TOKEN`:
   `app/build/outputs/mapping/release/mapping.txt`, in `android-release.yml`.
 
 Until then web, iOS and Android stack traces are symbol-less; the reports still carry the error, device and app version.
+
+## Environments and identifiers
+
+- Web reports only from Vercel production (`VERCEL_ENV=production`, exposed to the client as `VITE_VERCEL_ENV` in `vite.config.ts`); Preview deploys are production builds but stay silent.
+- fetch and XHR breadcrumbs are off (Supabase URLs carry `user_id=eq.<uuid>`); query strings and UUIDs are stripped as well.
+- Mobile reports drop the install id, device name and app hash (`device_app_hash`), so a report is not linkable to one device.
