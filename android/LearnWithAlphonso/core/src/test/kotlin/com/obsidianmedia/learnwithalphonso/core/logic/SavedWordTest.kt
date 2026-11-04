@@ -30,11 +30,14 @@ class SavedWordTest {
     }
 
     @Test
-    fun `only the English course offers saving in lesson text`() {
+    fun `English, French and Spanish offer saving in lesson text, and only English offers every word`() {
         assertTrue(SavedWordPolicy.allowsSaving("en"))
-        assertFalse(SavedWordPolicy.allowsSaving("fr"))
-        assertFalse(SavedWordPolicy.allowsSaving("es"))
+        assertTrue(SavedWordPolicy.allowsSaving("fr"))
+        assertTrue(SavedWordPolicy.allowsSaving("es"))
         assertFalse(SavedWordPolicy.allowsSaving(""))
+        assertTrue(SavedWordPolicy.savesWholeText("en"))
+        assertFalse(SavedWordPolicy.savesWholeText("fr"))
+        assertFalse(SavedWordPolicy.savesWholeText("es"))
     }
 
     @Test

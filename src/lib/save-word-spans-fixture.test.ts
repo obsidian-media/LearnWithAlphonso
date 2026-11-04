@@ -11,6 +11,10 @@ const iosFile = path.resolve(
   import.meta.dirname,
   "../../ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures/save-word-spans.fixtures.json",
 );
+const androidFile = path.resolve(
+  import.meta.dirname,
+  "../../android/LearnWithAlphonso/core/src/test/resources/save-word-spans.fixtures.json",
+);
 const STALE = "Run `bun scripts/export-save-word-fixtures.ts` and commit the result.";
 
 describe("shared save-word spans fixture", () => {
@@ -20,6 +24,10 @@ describe("shared save-word spans fixture", () => {
 
   it("the iOS copy is byte-for-byte the web file", () => {
     expect(fs.readFileSync(iosFile, "utf8"), STALE).toBe(fs.readFileSync(webFile, "utf8"));
+  });
+
+  it("the Android copy is byte-for-byte the web file", () => {
+    expect(fs.readFileSync(androidFile, "utf8"), STALE).toBe(fs.readFileSync(webFile, "utf8"));
   });
 
   const fixture = JSON.parse(fs.readFileSync(webFile, "utf8")) as SaveWordSpansFixture;

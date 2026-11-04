@@ -40,6 +40,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
@@ -96,7 +97,7 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
                 val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
                 // The partner speaks the course's language, so every word of a reply is a word of the course.
                 if (!isUser && saveWord != null) {
-                    TappableText(turn.content, course, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
+                    TappableText(turn.content, course, SaveWordMode.AllWords, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
                 } else {
                     Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink)
                 }

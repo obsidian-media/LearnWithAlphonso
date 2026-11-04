@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
@@ -337,7 +338,7 @@ fun PodcastMiniBar(container: AppContainer) {
                         if (course != null && saveWord != null) SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
                         paragraphs.forEach { paragraph ->
                             // A transcript is in the language of its episode's root folder (PodcastLibrary.courseOf).
-                            if (course != null && saveWord != null) TappableText(paragraph, course, saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            if (course != null && saveWord != null) TappableText(paragraph, course, SaveWordMode.AllWords, saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                             else Text(paragraph, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
                         }
                     }
