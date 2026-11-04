@@ -1,24 +1,27 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// Learn screen row: streak freezes owned, XP balance, and "Buy a freeze". Same RPC as web and Android
-/// (`buy_streak_freeze_with_xp`); the numbers and copy live in the Kit's StreakFreezeShop. The cached progress is
-/// only updated after the server confirms the purchase, never optimistically.
+/// Learn screen row: streak freezes owned, the ACTIVE course's XP, and "Buy a freeze". Same RPC as web and Android
+/// (`buy_streak_freeze_with_xp`, charged to one course); the numbers and copy live in the Kit's StreakFreezeShop.
+///
+/// The XP shown and checked is read for `course` (`fetchStreakFreezeStatus`), not taken from the header cache, which
+/// holds whichever course was updated last. The cache is only given the freeze count after the server confirms.
 struct StreakFreezeRow: View {
-    let progress: LessonCompletionProgress
+    /// The account-wide freeze count from the cache, shown until the server status loads.
+    let cachedFreezes: Int
     let course: Course
     let session: Session
     let isOnline: Bool
-    /// Called with the server-confirmed progress so the caller can cache it.
-    let onBought: (LessonCompletionProgress) -> Void
+    /// Called with the server-confirmed freeze count so the caller can cache it.
+    let onFreezesChanged: (Int) -> Void
 
     @State private var buying = false
     @State private var notice: String?
-    @State private var confirmed: LessonCompletionProgress?
+    @State private var status: StreakFreezeStatus?
 
-    private var shown: LessonCompletionProgress { confirmed ?? progress }
+    private var freezes: Int { status?.streakFreezes ?? cachedFreezes }
     private var disabledReason: String? {
-        StreakFreezeShop.disabledReason(isOnline: isOnline, xp: shown.xp, buying: buying)
+        StreakFreezeShop.disabledReason(isOnline: isOnline, xp: status?.xp, buying: buying)
     }
 
     var body: some View {
@@ -39,17 +42,27 @@ struct StreakFreezeRow: View {
                     .font(AlphonsoFont.sans(13, weight: .medium))
                     .foregroundStyle(AlphonsoColor.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.updatesFrequently)
             }
         }
         .padding(.horizontal, AlphonsoSpacing.md)
         .padding(.vertical, AlphonsoSpacing.sm)
-        .onChange(of: progress) { _, _ in confirmed = nil }
+        // Another course has another balance: forget the old one at once, then read the new one.
+        .task(id: "\(course.wireCode)-\(isOnline)") {
+            status = nil
+            notice = nil
+            guard isOnline, let client = await client() else { return }
+            if let loaded = try? await client.fetchStreakFreezeStatus(course: course.wireCode) {
+                status = loaded
+                if loaded.streakFreezes != cachedFreezes { onFreezesChanged(loaded.streakFreezes) }
+            }
+        }
     }
 
     private var summary: some View {
-        Label {
-            Text("\(StreakFreezeShop.ownedText(shown.streakFreezes)) \u{00B7} \(shown.xp) XP")
+        let text = status.map { "\(StreakFreezeShop.ownedText($0.streakFreezes)) \u{00B7} \($0.xp) XP" }
+            ?? StreakFreezeShop.ownedText(freezes)
+        return Label {
+            Text(text)
                 .font(AlphonsoFont.sans(14, weight: .medium))
                 .foregroundStyle(AlphonsoColor.ink)
                 .fixedSize(horizontal: false, vertical: true)
@@ -57,11 +70,14 @@ struct StreakFreezeRow: View {
             Image(systemName: "snowflake").foregroundStyle(AlphonsoColor.moss)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(StreakFreezeShop.accessibilityLabel(freezes: shown.streakFreezes, xp: shown.xp))
+        .accessibilityLabel(StreakFreezeShop.accessibilityLabel(freezes: freezes, xp: status?.xp))
     }
 
     private var buyButton: some View {
         Button {
+            // Set before the Task starts: two quick taps would otherwise both pass the check and charge twice.
+            guard !buying else { return }
+            buying = true
             Task { await buy() }
         } label: {
             if buying { ProgressView() } else { Text(StreakFreezeShop.buyTitle).fixedSize(horizontal: false, vertical: true) }
@@ -71,26 +87,38 @@ struct StreakFreezeRow: View {
         .accessibilityHint(disabledReason ?? "Spends \(StreakFreezeShop.xpCost) XP")
     }
 
+    private func client() async -> ProgressSyncClient? {
+        guard let token = await session.freshAccessToken() else { return nil }
+        return ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
+    }
+
+    /// Shows a message and says it aloud: every path ends with one VoiceOver announcement.
+    private func say(_ message: String) {
+        notice = message
+        UIAccessibility.post(notification: .announcement, argument: message)
+    }
+
     private func buy() async {
-        buying = true
         notice = nil
         defer { buying = false }
-        guard let token = await session.freshAccessToken() else {
-            notice = Copy.connectionFailure
+        guard let client = await client() else {
+            say(Copy.connectionFailure)
             return
         }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
+        let before = freezes
         do {
             let result = try await client.buyStreakFreezeWithXp(course: course.wireCode)
-            notice = StreakFreezeShop.message(for: result)
-            if StreakFreezeShop.isSuccess(result) {
-                let updated = StreakFreezeShop.progress(after: result, from: shown)
-                confirmed = updated
-                onBought(updated)
-            }
-            UIAccessibility.post(notification: .announcement, argument: notice)
+            if let current = status { status = StreakFreezeShop.status(after: result, from: current) }
+            if StreakFreezeShop.isSuccess(result), let confirmed = status { onFreezesChanged(confirmed.streakFreezes) }
+            say(StreakFreezeShop.message(for: result))
         } catch {
-            notice = Copy.connectionFailure
+            // No answer: the purchase may still have committed. Re-read the server rather than invite a second tap.
+            let reread = try? await client.fetchStreakFreezeStatus(course: course.wireCode)
+            if let reread {
+                status = reread
+                onFreezesChanged(reread.streakFreezes)
+            }
+            say(StreakFreezeShop.recoveryMessage(before: before, after: reread))
         }
     }
 }

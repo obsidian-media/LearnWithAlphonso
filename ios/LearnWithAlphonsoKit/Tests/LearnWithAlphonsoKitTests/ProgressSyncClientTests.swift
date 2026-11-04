@@ -437,12 +437,41 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/buy_streak_freeze_with_xp"))
     }
 
-    func testBuyStreakFreezeWithXpSurfacesAnInsufficientXpRejection() async throws {
+    func testBuyStreakFreezeWithXpSurfacesAnInsufficientXpRejectionWithTheBalance() async throws {
         let client = makeClient { request in
-            self.jsonResponse(for: request.url!, body: [["ok": false, "streak_freezes": 2]])
+            self.jsonResponse(for: request.url!, body: [["ok": false, "reason": "insufficient-xp", "streak_freezes": 2, "xp": 40]])
         }
         let result = try await client.buyStreakFreezeWithXp(course: "en")
-        XCTAssertEqual(result, .insufficientXp(streakFreezes: 2))
+        XCTAssertEqual(result, .insufficientXp(streakFreezes: 2, xp: 40))
+    }
+
+    func testBuyStreakFreezeWithXpTreatsUnauthenticatedAsSignedOutNotAsNoXp() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "reason": "unauthenticated"]])
+        }
+        let result = try await client.buyStreakFreezeWithXp(course: "en")
+        XCTAssertEqual(result, .signedOut)
+    }
+
+    func testFetchStreakFreezeStatusReadsTheRequestedCoursesXpAndTheAccountFreezes() async throws {
+        let seen = TestCapture<[URLRequest]>([])
+        let client = makeClient { request in
+            seen.value.append(request)
+            if request.url!.path.hasSuffix("/language_progress") {
+                return self.jsonResponse(for: request.url!, body: [["xp": 130]])
+            }
+            return self.jsonResponse(for: request.url!, body: [["streak_freezes": 3]])
+        }
+        let status = try await client.fetchStreakFreezeStatus(course: "es")
+        XCTAssertEqual(status, StreakFreezeStatus(xp: 130, streakFreezes: 3))
+        let language = try XCTUnwrap(seen.value.first { $0.url!.path.hasSuffix("/language_progress") })
+        XCTAssertTrue(language.url!.absoluteString.contains("language=eq.es"))
+    }
+
+    func testFetchStreakFreezeStatusDefaultsToZeroWithoutRows() async throws {
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [[String: Any]]()) }
+        let status = try await client.fetchStreakFreezeStatus(course: "fr")
+        XCTAssertEqual(status, StreakFreezeStatus(xp: 0, streakFreezes: 0))
     }
 
     // MARK: - duels (V3 package 2)

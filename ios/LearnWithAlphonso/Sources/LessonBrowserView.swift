@@ -147,9 +147,15 @@ struct LessonBrowserView: View {
                     .listRowBackground(Color.clear)
 
                 if let progress = syncQueueStore.lastKnownProgress() {
+                    // Only the freeze count goes back into the shared cache: its XP is whichever course updated last.
                     StreakFreezeRow(
-                        progress: progress, course: course, session: session, isOnline: networkMonitor.isConnected,
-                        onBought: { syncQueueStore.updateLastKnownProgress($0) }
+                        cachedFreezes: progress.streakFreezes, course: course, session: session,
+                        isOnline: networkMonitor.isConnected,
+                        onFreezesChanged: { freezes in
+                            // Read the cache again now: the render-time copy may be older than a sync that landed since.
+                            guard let latest = syncQueueStore.lastKnownProgress() else { return }
+                            syncQueueStore.updateLastKnownProgress(StreakFreezeShop.cachedProgress(freezes: freezes, from: latest))
+                        }
                     )
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)

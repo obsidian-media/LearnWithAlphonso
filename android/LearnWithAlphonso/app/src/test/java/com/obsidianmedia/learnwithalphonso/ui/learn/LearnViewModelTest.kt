@@ -103,7 +103,7 @@ class LearnViewModelTest {
         val v = LearnViewModel(testContent, server().progressClient, MemorySyncStore())
         v.initialLoad.join()
         v.buyStreakFreeze().join()
-        assertEquals("Not enough XP. A streak freeze costs 50 XP.", v.state.value.notice)
+        assertEquals("Not enough XP. A streak freeze costs 75 XP.", v.state.value.notice)
     }
 
     @Test
