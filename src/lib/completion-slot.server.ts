@@ -6,7 +6,12 @@ import { HOURLY_COMPLETION_LIMIT } from "./anti-farming";
  */
 export async function consumeCompletionSlot(userId: string, atIso: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin.rpc("consume_lesson_completion_slot", {
+  // Not in the generated types until they are regenerated against a database that has the migration.
+  const rpc = supabaseAdmin.rpc.bind(supabaseAdmin) as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  const { data, error } = await rpc("consume_lesson_completion_slot", {
     _user_id: userId,
     _at: atIso,
     _limit: HOURLY_COMPLETION_LIMIT,
