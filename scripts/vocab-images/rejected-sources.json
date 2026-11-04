@@ -108,6 +108,12 @@
       "off-term"
     ]
   },
+  "pexels:1467562": {
+    "key": "beat",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:14797864": {
     "key": "farmacia",
     "reasons": [
@@ -153,6 +159,12 @@
   },
   "pexels:15861615": {
     "key": "earthquake",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15921368": {
+    "key": "subway",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -261,6 +273,12 @@
       "stereotype-demeaning-poverty-distress"
     ]
   },
+  "pexels:19314213": {
+    "key": "hurricane",
+    "reasons": [
+      "violence-weapons-disaster-injury"
+    ]
+  },
   "pexels:19406560": {
     "key": "boxing",
     "reasons": [
@@ -269,6 +287,18 @@
   },
   "pexels:19487945": {
     "key": "firefighter",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:1968742": {
+    "key": "riding",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:20196376": {
+    "key": "fast",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -339,6 +369,12 @@
     "key": "living room",
     "reasons": [
       "politics-protest-religion",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:28636776": {
+    "key": "heavy",
+    "reasons": [
       "brand-logo-or-foreign-text"
     ]
   },
@@ -458,8 +494,20 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:33497885": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:33626369": {
     "key": "librería",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:33782468": {
+    "key": "post office",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -549,6 +597,12 @@
     "reasons": [
       "nudity-or-suggestive",
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:36556567": {
+    "key": "shuttle",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:36595111": {
@@ -733,6 +787,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:4468088": {
+    "key": "boredom",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:47261": {
     "key": "phone",
     "reasons": [
@@ -744,6 +804,12 @@
     "reasons": [
       "nudity-or-suggestive",
       "off-term"
+    ]
+  },
+  "pexels:4744752": {
+    "key": "post office",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:4744769": {
@@ -762,6 +828,12 @@
     "key": "oil",
     "reasons": [
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:4922356": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:4971916": {
@@ -807,6 +879,12 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:5750886": {
+    "key": "boxing",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:5807683": {
     "key": "cycling",
     "reasons": [
@@ -815,6 +893,12 @@
   },
   "pexels:5834939": {
     "key": "cab",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:5858025": {
+    "key": "empty",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -851,6 +935,12 @@
       "stereotype-demeaning-poverty-distress"
     ]
   },
+  "pexels:6837644": {
+    "key": "very tired",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:7019805": {
     "key": "battery",
     "reasons": [
@@ -867,6 +957,12 @@
     "key": "cena",
     "reasons": [
       "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:7235804": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:724994": {
@@ -892,6 +988,12 @@
     "reasons": [
       "nudity-or-suggestive",
       "off-term"
+    ]
+  },
+  "pexels:753619": {
+    "key": "hurricane",
+    "reasons": [
+      "violence-weapons-disaster-injury"
     ]
   },
   "pexels:7714736": {
@@ -955,6 +1057,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:8410835": {
+    "key": "nervousness",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:8552652": {
     "key": "shuttle",
     "reasons": [
@@ -983,6 +1091,18 @@
   },
   "pexels:9139274": {
     "key": "ferry",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:914930": {
+    "key": "shopping",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:9545914": {
+    "key": "exercise",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]

@@ -1,0 +1,92 @@
+{
+  "batch": "p4-r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p4-r3b1",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "bank": {
+      "verdict": "approve",
+      "alt": "A bank lobby with a counter and a white cash machine beside a potted plant.",
+      "peopleVisible": false
+    },
+    "brushes": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "frustrated": {
+      "verdict": "approve",
+      "alt": "A bearded man grips his head with both hands and grimaces in frustration in front of a brick wall.",
+      "peopleVisible": true
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "listen": {
+      "verdict": "approve",
+      "alt": "A young woman in a dark coat listens to music with her hands on her headphones and her eyes closed.",
+      "peopleVisible": true
+    },
+    "listening": {
+      "verdict": "approve",
+      "alt": "A young woman in a dark coat listens to music with her hands on her headphones and her eyes closed.",
+      "peopleVisible": true
+    },
+    "nervousness": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "riding": {
+      "verdict": "approve",
+      "alt": "A man in a blazer rides a black bicycle with turquoise wheels along a paved path.",
+      "peopleVisible": true
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "subway": {
+      "verdict": "approve",
+      "alt": "A silver subway train speeds past a platform with a yellow safety edge, blurred by motion.",
+      "peopleVisible": false
+    }
+  }
+}
