@@ -4,26 +4,15 @@
  * leaderboards reward people who keep playing).
  *
  * Constants, from production read-only on 2026-11-04 (60 completions, 6 users):
- *  - Between two consecutive lessons of one user, the shortest real gap was 136 s (27 s per question, p10 171 s,
- *    32.7 s per question). That gap includes time between lessons, so it overstates lesson length, but the floor
- *    below is still about 70x under it. Gaps under 1 s in the table are seeded/QA rows, not people.
  *  - The busiest real rolling hour held 7 completions (p99 6.4). 60 is about 8x that.
  *
- * Keep MIN_SECONDS_PER_QUESTION and HOURLY_COMPLETION_LIMIT equal to src/lib/anti-farming.ts (a test compares them).
+ * There is deliberately NO per-question speed floor. A client that has no session token yet (an offline queue item, a
+ * re-mint after the 3 h expiry, a failed token fetch at open) mints one and completes at once, so the session's age
+ * says nothing about how long the lesson took, and a script can mint tokens ahead and wait anyway.
+ *
+ * Keep HOURLY_COMPLETION_LIMIT equal to src/lib/anti-farming.ts (a test compares them).
  */
-export const MIN_SECONDS_PER_QUESTION = 0.4;
 export const HOURLY_COMPLETION_LIMIT = 60;
-
-/** True when the server-issued session is younger than the fastest possible answering of `questionCount` questions. */
-export function completedTooFast(
-  sessionIssuedAtMs: number,
-  nowMs: number,
-  questionCount: number,
-): boolean {
-  if (!Number.isFinite(sessionIssuedAtMs) || !Number.isFinite(nowMs) || questionCount < 1)
-    return false;
-  return nowMs - sessionIssuedAtMs < MIN_SECONDS_PER_QUESTION * 1000 * questionCount;
-}
 
 /**
  * The instant a completion counts toward the hourly limit: its claimed time clamped into [session issued, now] (the

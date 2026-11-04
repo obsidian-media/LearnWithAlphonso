@@ -50,16 +50,12 @@ final class LessonCompletionErrorTests: XCTestCase {
         XCTAssertEqual(LessonCompletionError.classify(status: 403, code: "Invalid or expired lesson session"), .rejected(code: nil))
     }
 
-    func testMachineSpeedRefusalsAskTheLearnerToSlowDownAndAreNeverQueued() {
-        for code in ["too-fast", "rate-limited"] {
-            let e = LessonCompletionError.classify(ProgressSyncError.server(status: 429, message: code))
-            XCTAssertEqual(e, .rejected(code: code))
-            XCTAssertFalse(e.shouldQueue)
-            XCTAssertEqual(e.userMessage, "Slow down a little and try again.")
-            XCTAssertNil(e.supportLine)
-        }
-        // Any other 429 is still transient server trouble: queued and retried.
-        XCTAssertEqual(LessonCompletionError.classify(status: 429, code: nil), .server(status: 429))
+    func testHourlyCeilingIsQueuedWithASavedMessageNeverRejected() {
+        let e = LessonCompletionError.classify(ProgressSyncError.server(status: 429, message: "rate-limited"))
+        XCTAssertEqual(e, .server(status: 429))
+        XCTAssertTrue(e.shouldQueue)
+        XCTAssertEqual(e.userMessage, "Saved. It will sync soon.")
+        XCTAssertNotEqual(LessonCompletionError.server(status: 503).userMessage, e.userMessage)
     }
 
     func testOutOfHeartsIsRejectedWithItsCode() {

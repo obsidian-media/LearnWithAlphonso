@@ -17,10 +17,25 @@ export async function consumeCompletionSlot(userId: string, atIso: string): Prom
     _limit: HOURLY_COMPLETION_LIMIT,
   });
   if (error) {
-    console.log(
-      JSON.stringify({ event: "completion_slot_unavailable", fn: "completeLessonRemote" }),
+    // FAIL OPEN, logged under a stable event name so an alert can be attached to it.
+    console.error(
+      JSON.stringify({
+        event: "completion_slot_unavailable",
+        fn: "completeLessonRemote",
+        message: error.message,
+      }),
     );
     return true;
   }
   return data !== false;
+}
+
+/** Gives back a slot taken for a completion that then failed to save. Best effort. */
+export async function releaseCompletionSlot(userId: string, atIso: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const rpc = supabaseAdmin.rpc.bind(supabaseAdmin) as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<unknown>;
+  await rpc("release_lesson_completion_slot", { _user_id: userId, _at: atIso });
 }

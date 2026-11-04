@@ -63,14 +63,3 @@ export function verifyLessonSessionToken(token: string, expected: LessonSessionC
 
   return true;
 }
-
-/** The server-issued time (ms) of a token that passes `verifyLessonSessionToken`, else null. */
-export function lessonSessionIssuedAt(token: string, expected: LessonSessionClaim): number | null {
-  if (!verifyLessonSessionToken(token, expected)) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(token.split(".")[0]!, "base64url").toString("utf8"));
-    return typeof payload.iat === "number" ? payload.iat : null;
-  } catch {
-    return null;
-  }
-}

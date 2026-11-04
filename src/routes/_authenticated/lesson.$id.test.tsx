@@ -685,8 +685,8 @@ describe("Lesson page", () => {
     expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
   });
 
-  it("asks for calm, not an error, when the server refuses a machine-speed completion", async () => {
-    completeLessonRemote.mockRejectedValue(new Error("too-fast"));
+  it("asks for calm, not an error, when the server refuses a completion over the hourly ceiling", async () => {
+    completeLessonRemote.mockRejectedValue(new Error("rate-limited"));
     const user = userEvent.setup();
     renderPage();
     await skipToQuiz(user);

@@ -49,6 +49,14 @@ class SyncReliabilityTest {
         assertEquals(LessonCompletionError.Server(429), LessonCompletionError.classify(429, null))
         assertEquals(LessonCompletionError.Server(503), LessonCompletionError.classify(503, null))
         assertEquals(LessonCompletionError.Rejected("lesson-version-mismatch"), LessonCompletionError.classify(409, "lesson-version-mismatch"))
+        // The hourly ceiling answers 429 "rate-limited": queued and retried (never dead-lettered), with a saved message.
+        val limited = LessonCompletionError.classify(429, "rate-limited")
+        assertEquals(LessonCompletionError.Server(429), limited)
+        assertEquals(true, limited.shouldQueue)
+        assertEquals("Saved. It will sync soon.", limited.userMessage)
+        assertEquals(LessonCompletionError.Server(429), LessonCompletionError.classify(429, null))
+        assertEquals(LessonCompletionError.Server(503), LessonCompletionError.classify(503, null))
+        assertEquals(LessonCompletionError.Rejected("lesson-version-mismatch"), LessonCompletionError.classify(409, "lesson-version-mismatch"))
         // Machine-speed refusals ask the learner to slow down and are never queued; any other 429 stays transient.
         listOf("too-fast", "rate-limited").forEach { code ->
             val e = LessonCompletionError.classify(429, code)

@@ -61,8 +61,27 @@ describe("consume_lesson_completion_slot (real Postgres)", () => {
   it("a replay of the same dense burst at machine pace IS refused", async () => {
     // 90 lessons all claimed within the same minute is not a human offline session.
     let refused = 0;
-    for (let i = 0; i < 90; i++) if (!(await slot(U1, NOW - i * 500))) refused++;
+    for (let i = 0; i < 90; i++) if (!(await slot(U1, NOW + i * 500))) refused++;
     expect(refused).toBe(30);
+  });
+
+  it("counts a true rolling hour: rows up to and including the instant, not an hour ahead of it", async () => {
+    for (let i = 0; i < 60; i++) await slot(U1, NOW + i * 1000);
+    // A replay dated 30 minutes BEFORE all of them sees none of them (they happened later), so it is allowed.
+    expect(await slot(U1, NOW - 30 * 60_000)).toBe(true);
+    // Exactly an hour after the first: the first has just left the window, so one more fits.
+    expect(await slot(U1, NOW + 60 * 60_000)).toBe(true);
+  });
+
+  it("release gives back exactly one slot", async () => {
+    for (let i = 0; i < 60; i++) await slot(U1, NOW + i * 1000);
+    expect(await slot(U1, NOW + 61_000)).toBe(false);
+    await db.query("SELECT public.release_lesson_completion_slot($1::uuid, $2::timestamptz)", [
+      U1,
+      new Date(NOW + 5000).toISOString(),
+    ]);
+    expect(await slot(U1, NOW + 62_000)).toBe(true);
+    expect(await slot(U1, NOW + 63_000)).toBe(false);
   });
 
   it("is service-role only", async () => {

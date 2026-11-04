@@ -1,12 +1,7 @@
 // Drives the real complete-lesson handler with fake dependencies: no network, no database, no secrets.
 // Run: deno test supabase/functions/complete-lesson/handler.test.ts
 import { assert, assertEquals } from "jsr:@std/assert@1";
-import {
-  completedTooFast,
-  completionInstantMs,
-  HOURLY_COMPLETION_LIMIT,
-  MIN_SECONDS_PER_QUESTION,
-} from "./anti-farming.ts";
+import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   type CompleteLessonDeps,
@@ -22,6 +17,7 @@ class FakeDb {
   tables: Record<string, Row[]> = {};
   failReads = new Set<string>();
   rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
+  recordCompletions = true;
   upserts: { table: string; rows: Row[] }[] = [];
   rpcResult: { data: unknown; error: unknown } = {
     data: { status: "applied" },
@@ -37,6 +33,7 @@ class FakeDb {
     // Like the real apply_lesson_completion: an applied save writes the completion row the later reads see.
     if (
       name === "apply_lesson_completion" &&
+      this.recordCompletions &&
       (this.rpcResult.data as Row | null)?.status === "applied"
     ) {
       const next = args._next as Row;
@@ -173,6 +170,8 @@ function setup(
     /** Max completions the fake guard allows within an hour of one another; default is unlimited. */
     slotLimit?: number;
     slotError?: boolean;
+    /** Each call is a different lesson: the fake does not remember completions, so none is an XP-less replay. */
+    fresh?: boolean;
   } = {},
 ) {
   const db = new FakeDb();
@@ -187,6 +186,7 @@ function setup(
     category: "lessons",
     threshold: 1,
   }];
+  db.recordCompletions = !opts.fresh;
   const pushes: string[] = [];
   const tokenClaims: Row[] = [];
   const consentReads: string[] = [];
@@ -218,6 +218,11 @@ function setup(
       if (near >= (opts.slotLimit ?? Infinity)) return Promise.resolve(false);
       slots.push(at);
       return Promise.resolve(true);
+    },
+    releaseCompletionSlot: (_admin, _userId, atIso) => {
+      const i = slots.indexOf(Date.parse(atIso));
+      if (i >= 0) slots.splice(i, 1);
+      return Promise.resolve();
     },
     now: () => opts.now ?? NOW,
   };
@@ -318,33 +323,45 @@ Deno.test(
   },
 );
 
-Deno.test(
-  "a completion faster than any human could answer is refused: 429 too-fast, nothing written",
-  async () => {
-    // 2 questions need at least 0.8 s since the session was issued; this one arrives after 0.5 s.
-    const { db, handler, slots } = setup({ sessionAgeMs: 500 });
-    const res = await handler(post(body(["a", "d"])));
-    assertEquals(res.status, 429);
-    assertEquals(await res.json(), { error: "too-fast" });
-    assertEquals(db.rpcCalls.length, 0);
-    assertEquals(slots.length, 0);
-  },
-);
+Deno.test("a completion right after its session was minted is accepted (offline queue and 3 h re-mint do exactly this)", async () => {
+  // LessonCompletionService mints a token and completes immediately when a queued lesson has none, so the session is
+  // ~100 ms old. A per-question speed floor would refuse every such lesson and the client would lose it.
+  const { db, handler } = setup({ sessionAgeMs: 100 });
+  const res = await handler(post(body(["a", "d"])));
+  assertEquals(res.status, 200);
+  assertEquals(db.rpcCalls.length, 1);
+  const queued = setup({ sessionAgeMs: 100 });
+  const replay = await queued.handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:59:00.000Z" }));
+  assertEquals(replay.status, 200);
+});
 
-Deno.test(
-  "a quick but possible completion is accepted (the floor is machine speed, not a minimum time)",
-  async () => {
-    const { db, handler } = setup({ sessionAgeMs: 900 });
-    const res = await handler(post(body(["a", "d"])));
-    assertEquals(res.status, 200);
-    assertEquals(db.rpcCalls.length, 1);
-  },
-);
+Deno.test("an already-recorded completion replayed (no XP gain) uses no slot", async () => {
+  const { db, handler, slots } = setup({ slotLimit: 1 });
+  db.tables.lesson_completions = [{ user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 }];
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(slots.length, 0);
+});
+
+Deno.test("a save that then fails gives its slot back, so the client's retry is not double counted", async () => {
+  const { db, handler, slots } = setup({ slotLimit: 1 });
+  db.rpcResult = { data: { status: "conflict" }, error: null };
+  assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+  assertEquals(slots.length, 0);
+  db.rpcResult = { data: { status: "applied" }, error: null };
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(slots.length, 1);
+});
+
+Deno.test("a guard that cannot run fails open: the lesson still saves", async () => {
+  const { handler } = setup({ slotError: true });
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+});
 
 Deno.test(
   "over the hourly ceiling is refused: 429 rate-limited, no XP and no streak change",
   async () => {
-    const { db, handler } = setup({ slotLimit: 2 });
+    const { db, handler } = setup({ slotLimit: 2, fresh: true });
     assertEquals((await handler(post(body(["a", "d"])))).status, 200);
     assertEquals((await handler(post(body(["a", "d"])))).status, 200);
     const before = db.rpcCalls.length;
@@ -361,7 +378,7 @@ Deno.test(
     // Ceiling of 2 per hour. Three lessons played 2 h apart sync in one burst after reconnecting: all fine.
     const now = new Date("2026-10-18T12:00:00Z");
     const day = 24 * 3_600_000;
-    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 2 * day });
+    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 2 * day, fresh: true });
     for (const hoursAgo of [30, 28, 26]) {
       const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
       assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
@@ -379,7 +396,7 @@ Deno.test(
   async () => {
     // Session issued 10 min ago; a claimed time days earlier counts at the session start, so a script gains nothing.
     const now = new Date("2026-10-18T12:00:00Z");
-    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 10 * 60_000 });
+    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 10 * 60_000, fresh: true });
     const completedAt = "2026-10-01T00:00:00.000Z";
     assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
     assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
@@ -701,17 +718,8 @@ Deno.test("only friends actually passed get an overtake push", async () => {
   assertEquals(pushes, ["passed"]);
 });
 
-Deno.test("the floor is 0.4 s per question of the server-issued session", () => {
-  assertEquals(MIN_SECONDS_PER_QUESTION, 0.4);
+Deno.test("the hourly ceiling is 60", () => {
   assertEquals(HOURLY_COMPLETION_LIMIT, 60);
-  assertEquals(completedTooFast(0, 2_999, 8), true); // 8 questions need 3.2 s
-  assertEquals(completedTooFast(0, 3_200, 8), false);
-  assertEquals(completedTooFast(0, 30_000, 8), false);
-});
-
-Deno.test("an unreadable issue time or an empty lesson never refuses", () => {
-  assertEquals(completedTooFast(Number.NaN, 10, 8), false);
-  assertEquals(completedTooFast(0, 10, 0), false);
 });
 
 Deno.test("completionInstantMs clamps a claim into [session start, now]", () => {

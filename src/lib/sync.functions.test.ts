@@ -50,7 +50,8 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 
 // The rolling-hour ceiling lives in the database (consume_lesson_completion_slot); here it allows by default.
 const consumeCompletionSlot = vi.fn(async (_userId: string, _atIso: string) => true);
-vi.mock("./completion-slot.server", () => ({ consumeCompletionSlot }));
+const releaseCompletionSlot = vi.fn(async (_userId: string, _atIso: string) => {});
+vi.mock("./completion-slot.server", () => ({ consumeCompletionSlot, releaseCompletionSlot }));
 
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
 const hasAiConsent = vi.fn(async () => true);
@@ -90,6 +91,7 @@ beforeEach(() => {
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
   consumeCompletionSlot.mockClear();
+  releaseCompletionSlot.mockClear();
   consumeCompletionSlot.mockResolvedValue(true);
   adminRpc.mockReset();
   adminRpc.mockImplementation(async (name?: string) =>
@@ -297,9 +299,18 @@ describe("startLessonSession", () => {
   });
 });
 
-describe("completeLessonRemote machine-speed guards", () => {
+describe("completeLessonRemote hourly ceiling", () => {
   const answers = () =>
-    Array.from({ length: 8 }, (_, i) => ({ questionId: `q${i + 1}`, answer: "x" }));
+    Object.entries({
+      q1: "Good morning.",
+      q2: "meet",
+      q3: "I am fine, thanks.",
+      q4: "Good",
+      q5: "Good night.",
+      q6: "Hey!",
+      q7: "later",
+      q8: "You're welcome.",
+    }).map(([questionId, answer]) => ({ questionId, answer }));
   const call = (token: string) =>
     completeLessonRemote({
       context: ctx(createSupabaseMock()),
@@ -312,11 +323,19 @@ describe("completeLessonRemote machine-speed guards", () => {
       },
     });
 
-  it("refuses a completion that arrives faster than 0.4 s per question, writing nothing", async () => {
+  it("accepts a completion the instant its session was minted (offline queue and 3 h re-mint do exactly this)", async () => {
     const token = issueTokenNow({ userId: USER_ID, lessonId: LESSON_ID, course: "en" });
-    await expect(call(token)).rejects.toThrow("too-fast");
-    expect(adminRpc).not.toHaveBeenCalled();
-    expect(consumeCompletionSlot).not.toHaveBeenCalled();
+    await expect(call(token)).resolves.toBeDefined();
+    expect(adminRpc).toHaveBeenCalledWith("apply_lesson_completion", expect.anything());
+  });
+
+  it("gives the slot back when the save then fails, so the client's retry is not double counted", async () => {
+    adminRpc.mockImplementation(async () => ({ data: null, error: { message: "boom" } }));
+    await expect(
+      call(issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course: "en" })),
+    ).rejects.toThrow("Could not save lesson completion");
+    expect(consumeCompletionSlot).toHaveBeenCalledTimes(1);
+    expect(releaseCompletionSlot).toHaveBeenCalledTimes(1);
   });
 
   it("refuses over the hourly ceiling with rate-limited, writing nothing", async () => {

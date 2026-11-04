@@ -15,7 +15,7 @@ REVOKE ALL ON public.lesson_completion_hits FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.lesson_completion_hits TO service_role;
 
 -- True when the completion may proceed (and records it); false when this user already has _limit completions within an
--- hour of _at. Serialised per user so two concurrent requests cannot both squeeze under the limit.
+-- hour up to and including _at (a true rolling hour). Serialised per user so two concurrent requests cannot both squeeze under the limit.
 CREATE FUNCTION public.consume_lesson_completion_slot(_user_id uuid, _at timestamptz, _limit integer DEFAULT 60)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -31,7 +31,7 @@ BEGIN
   PERFORM pg_advisory_xact_lock(hashtextextended('lesson_completion_hits:' || _user_id::text, 0));
 
   SELECT count(*) INTO n FROM public.lesson_completion_hits h
-  WHERE h.user_id = _user_id AND h.at > _at - interval '1 hour' AND h.at < _at + interval '1 hour';
+  WHERE h.user_id = _user_id AND h.at > _at - interval '1 hour' AND h.at <= _at;
   IF n >= _limit THEN
     RETURN false;
   END IF;
@@ -45,5 +45,22 @@ $$;
 REVOKE ALL ON FUNCTION public.consume_lesson_completion_slot(uuid, timestamptz, integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_lesson_completion_slot(uuid, timestamptz, integer) TO service_role;
 
--- Rollback: DROP FUNCTION public.consume_lesson_completion_slot(uuid, timestamptz, integer);
+-- Gives back one slot taken for a completion that then failed to save.
+CREATE FUNCTION public.release_lesson_completion_slot(_user_id uuid, _at timestamptz)
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  DELETE FROM public.lesson_completion_hits h
+  WHERE h.ctid = (
+    SELECT x.ctid FROM public.lesson_completion_hits x
+    WHERE x.user_id = _user_id AND x.at = _at LIMIT 1
+  );
+$$;
+REVOKE ALL ON FUNCTION public.release_lesson_completion_slot(uuid, timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.release_lesson_completion_slot(uuid, timestamptz) TO service_role;
+
+-- Rollback: DROP FUNCTION public.release_lesson_completion_slot(uuid, timestamptz);
+--           DROP FUNCTION public.consume_lesson_completion_slot(uuid, timestamptz, integer);
 --           DROP TABLE public.lesson_completion_hits;

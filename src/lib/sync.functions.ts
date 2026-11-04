@@ -1,4 +1,3 @@
-import { completedTooFast } from "./anti-farming";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
@@ -271,21 +270,6 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       throw new Error("Invalid or expired lesson session");
     }
 
-    // Machine-speed guards only (anti-farming.ts): no minimum lesson time, no daily XP cap. Refused before any grading
-    // or write, so a refusal changes neither XP nor streak. The Edge Function applies the same two rules.
-    {
-      const { lessonSessionIssuedAt } = await import("./lesson-session.server");
-      const issuedAt = lessonSessionIssuedAt(sessionToken, { userId, lessonId, course });
-      const nowMs = Date.now();
-      if (issuedAt !== null && completedTooFast(issuedAt, nowMs, found.lesson.questions.length)) {
-        throw new Error("too-fast");
-      }
-      const { consumeCompletionSlot } = await import("./completion-slot.server");
-      if (!(await consumeCompletionSlot(userId, new Date(nowMs).toISOString()))) {
-        throw new Error("rate-limited");
-      }
-    }
-
     // The actual re-grade: never trust which questions the client says it
     // missed, derive it from the real answer key. Sequential, not
     // Promise.all -- a lesson has at most a handful of "translate"
@@ -335,6 +319,10 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // account (a lost heart, a quest reward, a second device) between the read and the write makes the snapshot
     // stale; the transaction refuses it and this runs again from a fresh read, so the lesson is never dropped.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Hourly ceiling (anti-farming.ts): taken once per completion, only when it pays XP (an already-recorded replay is a
+    // no-op), refused before any write, and given back if the save then fails so the client's retry is not double counted.
+    let slotHeld = false;
+    const slotAtIso = new Date().toISOString();
     const applyOnce = async () => {
       // Batch every read this handler needs that doesn't depend on another
       // read's result -- was 3+ sequential round trips, now 1.
@@ -465,6 +453,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       // One service-role-only database transaction serializes core completion
       // writes and rejects stale snapshots. A caller can retry after rereading
       // without losing XP or reporting a partial success.
+      if (xpGain > 0 && !slotHeld) {
+        const { consumeCompletionSlot } = await import("./completion-slot.server");
+        if (!(await consumeCompletionSlot(userId, slotAtIso))) throw new Error("rate-limited");
+        slotHeld = true;
+      }
       const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
         "apply_lesson_completion",
         {
@@ -519,9 +512,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         leagueTier,
       };
     };
-    let applied = await applyOnce();
-    for (let retry = 0; !applied && retry < COMPLETION_CONFLICT_RETRIES; retry++) {
+    let applied: Awaited<ReturnType<typeof applyOnce>> = null;
+    try {
       applied = await applyOnce();
+      for (let retry = 0; !applied && retry < COMPLETION_CONFLICT_RETRIES; retry++) {
+        applied = await applyOnce();
+      }
+    } finally {
+      if (slotHeld && !applied) {
+        const { releaseCompletionSlot } = await import("./completion-slot.server");
+        await releaseCompletionSlot(userId, slotAtIso);
+      }
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
     const {
