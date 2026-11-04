@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "2 November 2026"; // same date on all four legal pages
+const UPDATED = "4 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -57,6 +57,7 @@ function Privacy() {
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
             "Where you came from: if you chose Accept all in the cookie banner and arrived through a link that carries campaign tags (utm_source, utm_medium, utm_campaign), those tags and the time you arrived, saved once when you create your account. For this we do not store your IP address, device, browser or the page you came from.",
             "Technical data: request logs and error reports needed to keep the service running and secure, including IP address, device or browser type, and the time and address of each request.",
+            "Crash and error reports: if the app or website crashes or hits an unexpected error, a report is sent to Sentry with the technical details of the fault (the error message, a stack trace, the app version, your device model and operating system or browser, and the page or screen). Reports are not linked to your account, carry no email address, name or sign-in token (we remove them before sending), and include no screenshots or screen recordings. The iPhone and Android apps send them from released builds only.",
           ]}
         />
       </Section>
@@ -121,7 +122,8 @@ function Privacy() {
         />
         <p>
           We do not sell your data, we do not share it with data brokers, and we do not use it for
-          advertising. There are no advertising, analytics or crash-reporting SDKs in our apps.
+          advertising. There are no advertising or analytics SDKs in our apps. The only diagnostics
+          SDK is Sentry’s crash reporter, described above.
         </p>
       </Section>
 
@@ -175,6 +177,7 @@ function Privacy() {
             "Anthropic (Claude), reached through OpenRouter: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, and finds practice items in your conversation mistakes. It receives only the text needed for each task. Anthropic does not use it to train its models and deletes it within 30 days, or keeps it longer only when it is flagged for breaking Anthropic's usage policy.",
             "RevenueCat: manages subscription status, so Alphonso Pro works on every device you sign in on. It receives an account identifier and purchase and renewal information from Apple, Google or Stripe, not your payment details. For a subscription bought on our website it also runs the checkout page.",
             "Stripe: processes card payments for subscriptions bought on our website. It receives your card details and billing email directly; we never see or store your card number.",
+            "Sentry: receives the crash and error reports described above, so we can find and fix faults. It stores the technical details of the fault for 90 days, not your account details, and does not use them for advertising.",
             "Apple: Sign in with Apple if you choose it, App Store billing for Alphonso Pro, and the Apple Push Notification service for notifications on iPhone.",
             "Google: Sign in with Google if you choose it and, on Android, Google Play billing and Firebase Cloud Messaging for notifications.",
             "Neon: hosts the database behind the launch email list on our marketing website. It stores the email address you enter there and when you entered it.",

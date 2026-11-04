@@ -25,6 +25,8 @@ struct LearnWithAlphonsoApp: App {
     private let sessionLifecycle: SessionLifecycle
 
     init() {
+        // First, so a crash during the rest of startup is captured. Release builds only (see CrashReporting).
+        CrashReporting.start()
         // ContentStore reads JSON bundled at build time (see that type's
         // doc comment) -- a failure here means the bundled resources are
         // missing, a build configuration problem, not a runtime one. Still
