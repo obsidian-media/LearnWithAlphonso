@@ -1,0 +1,133 @@
+{
+  "batch": "p7-r2-b002",
+  "pass": "first",
+  "reviewer": "agent:p7-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "le match": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le pourboire": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le rangement": {
+      "verdict": "approve",
+      "alt": "An empty white walk-in closet with shelves, drawers and cubbies.",
+      "peopleVisible": false
+    },
+    "le reportage": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le rugby": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le réalisateur": {
+      "verdict": "approve",
+      "alt": "A woman crouches behind a camera on a tripod, looking through the viewfinder.",
+      "peopleVisible": true
+    },
+    "leo": {
+      "verdict": "approve",
+      "alt": "A woman lies on a leather sofa reading a book.",
+      "peopleVisible": true
+    },
+    "leyendo": {
+      "verdict": "approve",
+      "alt": "A man in a white sweater reads a book outdoors in a park.",
+      "peopleVisible": true
+    },
+    "música": {
+      "verdict": "approve",
+      "alt": "A hand plays the keys of a piano keyboard, in black and white.",
+      "peopleVisible": true
+    },
+    "ordenar": {
+      "verdict": "approve",
+      "alt": "Neatly folded clothes and shoes are arranged on tidy shelves, in black and white.",
+      "peopleVisible": false
+    },
+    "orgulloso": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "ouvrir": {
+      "verdict": "approve",
+      "alt": "A woman in a yellow jacket unlocks a wooden door with a key.",
+      "peopleVisible": true
+    },
+    "paciente": {
+      "verdict": "approve",
+      "alt": "A woman lies in a hospital bed while a doctor holds an x-ray beside her.",
+      "peopleVisible": true
+    },
+    "pagar": {
+      "verdict": "approve",
+      "alt": "One hand passes a banknote to another across a counter.",
+      "peopleVisible": true
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "payer": {
+      "verdict": "approve",
+      "alt": "One hand passes a banknote to another across a counter.",
+      "peopleVisible": true
+    },
+    "película": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "precio": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "reportaje": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "subir": {
+      "verdict": "approve",
+      "alt": "A person's legs climb a wide flight of stone steps.",
+      "peopleVisible": true
+    },
+    "traduire": {
+      "verdict": "approve",
+      "alt": "Hands turn the pages of a thick open dictionary on a wooden table.",
+      "peopleVisible": true
+    },
+    "trier": {
+      "verdict": "approve",
+      "alt": "Three wheeled bins, one grey, one blue and one green, stand in a row at the curb.",
+      "peopleVisible": false
+    },
+    "étudier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "batch": "p7-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p7-2nd-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "acheter": {
+      "verdict": "approve",
+      "alt": "A hand picks a small orange tomato from a pile at a market stall, a shopping bag on the wrist.",
+      "peopleVisible": true
+    },
+    "agrandir": {
+      "verdict": "approve",
+      "alt": "A hand holds a magnifying glass over autumn leaves beside a pair of glasses.",
+      "peopleVisible": true
+    },
+    "almorzar": {
+      "verdict": "approve",
+      "alt": "Several people eat plates of salad and drinks together at a restaurant table.",
+      "peopleVisible": true
+    },
+    "amigo": {
+      "verdict": "approve",
+      "alt": "Two women laugh together over takeaway coffees on an outdoor bench.",
+      "peopleVisible": true
+    },
+    "anestesia": {
+      "verdict": "approve",
+      "alt": "A clear anesthesia mask rests on a medical machine while surgeons in blue gowns work in the background.",
+      "peopleVisible": true
+    },
+    "aniversario": {
+      "verdict": "approve",
+      "alt": "An elderly couple clink champagne glasses in a toast.",
+      "peopleVisible": true
+    },
+    "attendre": {
+      "verdict": "approve",
+      "alt": "A man waits alone at a lit bus shelter on a quiet street at night.",
+      "peopleVisible": true
+    },
+    "bailando": {
+      "verdict": "approve",
+      "alt": "A couple dances in a bright room while musicians play behind them.",
+      "peopleVisible": true
+    },
+    "bebo": {
+      "verdict": "approve",
+      "alt": "A woman in a black top lifts a clear water bottle to drink outdoors.",
+      "peopleVisible": true
+    },
+    "boleto": {
+      "verdict": "approve",
+      "alt": "A hand feeds a small paper ticket into a turnstile reader.",
+      "peopleVisible": true
+    },
+    "cajero": {
+      "verdict": "approve",
+      "alt": "A cashier's hand holds a card payment terminal over a red basket of groceries at a checkout counter.",
+      "peopleVisible": true
+    },
+    "camina": {
+      "verdict": "approve",
+      "alt": "A person with a shoulder bag walks away along a gravel path beside a river and tall grass.",
+      "peopleVisible": true
+    },
+    "cantando": {
+      "verdict": "approve",
+      "alt": "A woman sings with her head tilted back into a microphone on a dark stage.",
+      "peopleVisible": true
+    },
+    "cargar": {
+      "verdict": "approve",
+      "alt": "A man and a woman carry a large cardboard box down a staircase.",
+      "peopleVisible": true
+    },
+    "cliente": {
+      "verdict": "approve",
+      "alt": "A customer hands a bank card to a cashier over a checkout counter.",
+      "peopleVisible": true
+    },
+    "comiendo": {
+      "verdict": "approve",
+      "alt": "A hand holds chopsticks over a white bowl of noodles on a table.",
+      "peopleVisible": true
+    },
+    "compartir": {
+      "verdict": "approve",
+      "alt": "Two young men share a bowl of food at a table.",
+      "peopleVisible": true
+    },
+    "comprar": {
+      "verdict": "approve",
+      "alt": "A hand picks a small orange tomato from a pile at a market stall, a shopping bag on the wrist.",
+      "peopleVisible": true
+    },
+    "construyendo": {
+      "verdict": "approve",
+      "alt": "Two workers build a red brick wall on the upper floor of a building under construction.",
+      "peopleVisible": true
+    },
+    "corriendo": {
+      "verdict": "approve",
+      "alt": "A man in black runs along a path in a city park.",
+      "peopleVisible": true
+    },
+    "decorar": {
+      "verdict": "approve",
+      "alt": "Hands hang red baubles on a lit Christmas tree.",
+      "peopleVisible": true
+    },
+    "duermo": {
+      "verdict": "approve",
+      "alt": "A woman sleeps on her side on a white pillow with her hand tucked under her cheek.",
+      "peopleVisible": true
+    },
+    "durmiendo": {
+      "verdict": "approve",
+      "alt": "A man sleeps on a sofa with his head on a cushion, in black and white.",
+      "peopleVisible": true
+    },
+    "effrayé": {
+      "verdict": "approve",
+      "alt": "A close-up of a man with wide, frightened eyes and a hand over his mouth.",
+      "peopleVisible": true
+    },
+    "escucha": {
+      "verdict": "approve",
+      "alt": "A laughing woman presses white headphones to her ears outdoors in the sun.",
+      "peopleVisible": true
+    },
+    "estación": {
+      "verdict": "approve",
+      "alt": "A train station platform with a train on each side and a person walking between them.",
+      "peopleVisible": true
+    },
+    "estudiando": {
+      "verdict": "approve",
+      "alt": "A man in a blue shirt writes notes on a pad next to an open laptop at a desk.",
+      "peopleVisible": true
+    },
+    "estudiar": {
+      "verdict": "approve",
+      "alt": "A woman with glasses reaches for a stack of books at a library desk.",
+      "peopleVisible": true
+    },
+    "fauna": {
+      "verdict": "approve",
+      "alt": "Two antelopes graze on a green lawn in front of a thatched shelter.",
+      "peopleVisible": false
+    },
+    "fotografía": {
+      "verdict": "approve",
+      "alt": "A man in a beret takes a photo with a film camera across a cafe table.",
+      "peopleVisible": true
+    },
+    "frustré": {
+      "verdict": "approve",
+      "alt": "A man sits at a desk with his head in his hand in front of a laptop showing charts.",
+      "peopleVisible": true
+    },
+    "ingrediente": {
+      "verdict": "approve",
+      "alt": "A baker's floury hands crack an egg into a well of flour, with eggs, tomatoes and spaghetti nearby.",
+      "peopleVisible": true
+    },
+    "installer": {
+      "verdict": "approve",
+      "alt": "A bearded man hangs a wire pendant lamp from a white ceiling.",
+      "peopleVisible": true
+    },
+    "juez": {
+      "verdict": "approve",
+      "alt": "A judge in a black robe with a chain of office sits at a wooden desk, face out of frame.",
+      "peopleVisible": true
+    },
+    "l'enseignant": {
+      "verdict": "approve",
+      "alt": "A lecturer in a black jumper stands and talks to students seated at tiered desks in a lecture hall.",
+      "peopleVisible": true
+    },
+    "l'entraîneur": {
+      "verdict": "approve",
+      "alt": "A coach blows a whistle while directing play on a football pitch.",
+      "peopleVisible": true
+    },
+    "l'hydratation": {
+      "verdict": "approve",
+      "alt": "Two runners in numbered bibs run on a road while one drinks from a bottle.",
+      "peopleVisible": true
+    },
+    "l'interview": {
+      "verdict": "approve",
+      "alt": "A man in a suit is interviewed by two people holding microphones.",
+      "peopleVisible": true
+    },
+    "l'épaule": {
+      "verdict": "approve",
+      "alt": "A hand rests on the bare shoulder of a person in a dark sleeveless top.",
+      "peopleVisible": true
+    },
+    "la colle": {
+      "verdict": "approve",
+      "alt": "A child's hand rubs a purple glue stick over a paper craft.",
+      "peopleVisible": true
+    }
+  }
+}

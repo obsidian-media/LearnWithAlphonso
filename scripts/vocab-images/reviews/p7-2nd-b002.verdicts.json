@@ -1,0 +1,210 @@
+{
+  "batch": "p7-2nd-b002",
+  "pass": "second",
+  "reviewer": "agent:p7-2nd-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "la course": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la forme physique": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands among dumbbells and weight racks in a bright gym.",
+      "peopleVisible": true
+    },
+    "la pause": {
+      "verdict": "approve",
+      "alt": "Four older friends sit at an outdoor table with cups of coffee and fresh vegetables.",
+      "peopleVisible": true
+    },
+    "la recherche": {
+      "verdict": "approve",
+      "alt": "A scientist in a protective suit, mask and hair net sits at a microscope in a lab.",
+      "peopleVisible": true
+    },
+    "la signature": {
+      "verdict": "approve",
+      "alt": "A hand signs a document with a fountain pen.",
+      "peopleVisible": true
+    },
+    "la télécommande": {
+      "verdict": "approve",
+      "alt": "A hand points a white remote control at a television.",
+      "peopleVisible": true
+    },
+    "lavo": {
+      "verdict": "approve",
+      "alt": "Soapy hands are rubbed together under a running tap.",
+      "peopleVisible": true
+    },
+    "le chauffeur": {
+      "verdict": "approve",
+      "alt": "A chauffeur in a grey suit opens the door of a black car for a woman on the phone.",
+      "peopleVisible": true
+    },
+    "le client": {
+      "verdict": "approve",
+      "alt": "A customer hands a bank card to a cashier over a checkout counter.",
+      "peopleVisible": true
+    },
+    "le collègue": {
+      "verdict": "approve",
+      "alt": "Colleagues talk around a table with a laptop in a bright office.",
+      "peopleVisible": true
+    },
+    "le colocataire": {
+      "verdict": "approve",
+      "alt": "A woman reads on a yellow sofa while another woman stands in the kitchen of a shared flat.",
+      "peopleVisible": true
+    },
+    "le compositeur": {
+      "verdict": "approve",
+      "alt": "A man writes notes on sheet music beside a keyboard and laptop in a small room.",
+      "peopleVisible": true
+    },
+    "le coude": {
+      "verdict": "approve",
+      "alt": "A woman in a black T-shirt rests one hand on her bent elbow.",
+      "peopleVisible": true
+    },
+    "le cours": {
+      "verdict": "approve",
+      "alt": "A large lecture hall full of students seated in tiered rows facing two projection screens.",
+      "peopleVisible": true
+    },
+    "le dos": {
+      "verdict": "approve",
+      "alt": "A man flexes his arms with his bare muscular back to the camera, in black and white.",
+      "peopleVisible": true
+    },
+    "le dossier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le jeu vidéo": {
+      "verdict": "approve",
+      "alt": "A hand holds a black game controller next to a white one on a white background.",
+      "peopleVisible": true
+    },
+    "le juge": {
+      "verdict": "approve",
+      "alt": "A judge in a black robe with a chain of office sits at a wooden desk, face out of frame.",
+      "peopleVisible": true
+    },
+    "le passager": {
+      "verdict": "approve",
+      "alt": "Passengers sit in rows of seats in an airplane cabin, seen from behind.",
+      "peopleVisible": true
+    },
+    "le plat principal": {
+      "verdict": "approve",
+      "alt": "A waiter's hand serves two white plates of meat with green beans and sauce.",
+      "peopleVisible": true
+    },
+    "le public": {
+      "verdict": "approve",
+      "alt": "A large crowd faces a brightly lit concert stage at night.",
+      "peopleVisible": true
+    },
+    "le réalisateur": {
+      "verdict": "approve",
+      "alt": "A woman crouches behind a camera on a tripod, looking through the viewfinder.",
+      "peopleVisible": true
+    },
+    "le réseau": {
+      "verdict": "approve",
+      "alt": "Blue network cables plugged into a network switch.",
+      "peopleVisible": false
+    },
+    "leo": {
+      "verdict": "approve",
+      "alt": "A woman lies on a leather sofa reading a book.",
+      "peopleVisible": true
+    },
+    "leyendo": {
+      "verdict": "approve",
+      "alt": "A man in a white sweater reads a book outdoors in a park.",
+      "peopleVisible": true
+    },
+    "livraison": {
+      "verdict": "approve",
+      "alt": "A courier hands a cardboard parcel to a customer.",
+      "peopleVisible": true
+    },
+    "llamar": {
+      "verdict": "approve",
+      "alt": "A smiling man talks on a mobile phone on a city street.",
+      "peopleVisible": true
+    },
+    "manger": {
+      "verdict": "approve",
+      "alt": "A man in round sunglasses bites into a burger.",
+      "peopleVisible": true
+    },
+    "marinar": {
+      "verdict": "approve",
+      "alt": "A gloved hand mixes pieces of meat in a red marinade in a steel bowl.",
+      "peopleVisible": true
+    },
+    "música": {
+      "verdict": "approve",
+      "alt": "A hand plays the keys of a piano keyboard, in black and white.",
+      "peopleVisible": true
+    },
+    "nacimiento": {
+      "verdict": "approve",
+      "alt": "A newborn baby's tiny hand grips an adult's finger.",
+      "peopleVisible": true
+    },
+    "nariz": {
+      "verdict": "approve",
+      "alt": "A close-up of a man's nose and mouth in soft light.",
+      "peopleVisible": true
+    },
+    "ouvrir": {
+      "verdict": "approve",
+      "alt": "A woman in a yellow jacket unlocks a wooden door with a key.",
+      "peopleVisible": true
+    },
+    "paciente": {
+      "verdict": "approve",
+      "alt": "A woman lies in a hospital bed while a doctor holds an x-ray beside her.",
+      "peopleVisible": true
+    },
+    "pagar": {
+      "verdict": "approve",
+      "alt": "One hand passes a banknote to another across a counter.",
+      "peopleVisible": true
+    },
+    "payer": {
+      "verdict": "approve",
+      "alt": "One hand passes a banknote to another across a counter.",
+      "peopleVisible": true
+    },
+    "piqûre": {
+      "verdict": "approve",
+      "alt": "A nurse in gloves gives an injection into a patient's upper arm.",
+      "peopleVisible": true
+    },
+    "repos": {
+      "verdict": "approve",
+      "alt": "A man lies resting in a hammock between palm trees.",
+      "peopleVisible": true
+    },
+    "retrato": {
+      "verdict": "approve",
+      "alt": "An elderly man in a flat cap and scarf poses beside an old wooden box camera.",
+      "peopleVisible": true
+    },
+    "réviser": {
+      "verdict": "approve",
+      "alt": "A student with glasses writes notes in a notebook at a wooden desk.",
+      "peopleVisible": true
+    }
+  }
+}

@@ -11,6 +11,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:10464787": {
+    "key": "reportaje",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:10482146": {
     "key": "agua",
     "reasons": [
@@ -55,10 +61,22 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:11292444": {
+    "key": "envoyer",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:11358072": {
     "key": "cashier",
     "reasons": [
       "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:11472185": {
+    "key": "música",
+    "reasons": [
       "brand-logo-or-foreign-text"
     ]
   },
@@ -93,6 +111,12 @@
       "politics-protest-religion"
     ]
   },
+  "pexels:12357501": {
+    "key": "le soldat",
+    "reasons": [
+      "violence-weapons-disaster-injury"
+    ]
+  },
   "pexels:12717154": {
     "key": "bagages",
     "reasons": [
@@ -106,6 +130,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:1294364": {
+    "key": "le conducteur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:12975963": {
     "key": "camisa",
     "reasons": [
@@ -115,6 +145,12 @@
   },
   "pexels:13179883": {
     "key": "basketball",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:13418602": {
+    "key": "boleto",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -260,6 +296,12 @@
       "owner-objection"
     ]
   },
+  "pexels:16420237": {
+    "key": "étudier",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:16510209": {
     "key": "glass",
     "reasons": [
@@ -267,10 +309,22 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:16532437": {
+    "key": "distributeur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:16552851": {
     "key": "plumber",
     "reasons": [
       "nudity-or-suggestive"
+    ]
+  },
+  "pexels:16566938": {
+    "key": "le rugby",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:16760546": {
@@ -352,6 +406,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:18811648": {
+    "key": "le match",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:19242075": {
     "key": "calle",
     "reasons": [
@@ -378,6 +438,12 @@
   },
   "pexels:19406560": {
     "key": "boxing",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:19477337": {
+    "key": "le conducteur",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -424,8 +490,20 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:226612": {
+    "key": "traduire",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:22763683": {
     "key": "computadora",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:261621": {
+    "key": "le contrat",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -441,6 +519,18 @@
     "reasons": [
       "brand-logo-or-foreign-text",
       "off-term"
+    ]
+  },
+  "pexels:26795596": {
+    "key": "le bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:26807015": {
+    "key": "le bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:26919330": {
@@ -461,6 +551,12 @@
       "owner-objection"
     ]
   },
+  "pexels:27312375": {
+    "key": "precio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:27429847": {
     "key": "durazno",
     "reasons": [
@@ -470,6 +566,12 @@
   },
   "pexels:27596262": {
     "key": "ferry",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:27609295": {
+    "key": "buzón",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -499,6 +601,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:29285870": {
+    "key": "la presse",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:29659894": {
     "key": "escuela",
     "reasons": [
@@ -507,6 +615,12 @@
   },
   "pexels:29731398": {
     "key": "metro",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:29840320": {
+    "key": "la course",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -578,6 +692,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:32109086": {
+    "key": "le match",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:32176062": {
     "key": "passport",
     "reasons": [
@@ -586,6 +706,12 @@
   },
   "pexels:32229751": {
     "key": "la banque",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:32263775": {
+    "key": "reportaje",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -688,6 +814,12 @@
       "off-term"
     ]
   },
+  "pexels:34628701": {
+    "key": "vendre",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:34680656": {
     "key": "hurricane",
     "reasons": [
@@ -744,6 +876,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:36016234": {
+    "key": "asiento",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:36019668": {
     "key": "dancing",
     "reasons": [
@@ -755,6 +893,12 @@
     "key": "bank",
     "reasons": [
       "owner-objection"
+    ]
+  },
+  "pexels:3641367": {
+    "key": "le rugby",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:36556567": {
@@ -794,6 +938,12 @@
     "reasons": [
       "alcohol-tobacco-drugs-gambling",
       "off-term"
+    ]
+  },
+  "pexels:3693017": {
+    "key": "aduana",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:36965694": {
@@ -846,6 +996,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:37847918": {
+    "key": "aduana",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:3790639": {
     "key": "coins",
     "reasons": [
@@ -877,6 +1033,12 @@
       "alcohol-tobacco-drugs-gambling"
     ]
   },
+  "pexels:38127942": {
+    "key": "fuente",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:38169158": {
     "key": "gare",
     "reasons": [
@@ -897,6 +1059,12 @@
   },
   "pexels:38575782": {
     "key": "abuelo",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:3866816": {
+    "key": "la presse",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -931,6 +1099,12 @@
     "key": "elbow",
     "reasons": [
       "nudity-or-suggestive"
+    ]
+  },
+  "pexels:3945317": {
+    "key": "película",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:39704273": {
@@ -1037,6 +1211,12 @@
       "stereotype-demeaning-poverty-distress"
     ]
   },
+  "pexels:4921882": {
+    "key": "distributeur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:4922356": {
     "key": "passport",
     "reasons": [
@@ -1045,6 +1225,12 @@
   },
   "pexels:4968634": {
     "key": "pay",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4968635": {
+    "key": "payer",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1154,11 +1340,29 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:6232443": {
+    "key": "installer",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:6333743": {
     "key": "cajón",
     "reasons": [
       "brand-logo-or-foreign-text",
       "off-term"
+    ]
+  },
+  "pexels:6441571": {
+    "key": "precio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:6591523": {
+    "key": "le dos",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:6642981": {
@@ -1179,14 +1383,32 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:6769821": {
+    "key": "funeral",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:6837644": {
     "key": "very tired",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:7010140": {
+    "key": "pasaporte",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:7019805": {
     "key": "battery",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:714899": {
+    "key": "decorar",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1201,6 +1423,12 @@
     "key": "cena",
     "reasons": [
       "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:7234386": {
+    "key": "película",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:7235804": {
@@ -1227,11 +1455,23 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:7414018": {
+    "key": "le dossier",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:7434645": {
     "key": "actress",
     "reasons": [
       "nudity-or-suggestive",
       "off-term"
+    ]
+  },
+  "pexels:7468082": {
+    "key": "fier",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:7513100": {
@@ -1244,6 +1484,12 @@
     "key": "hurricane",
     "reasons": [
       "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:7681493": {
+    "key": "le dossier",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:7714736": {
@@ -1283,6 +1529,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:7880086": {
+    "key": "subir",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:7887636": {
     "key": "video games",
     "reasons": [
@@ -1297,6 +1549,12 @@
   },
   "pexels:8019509": {
     "key": "buzón",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8061980": {
+    "key": "pasaporte",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1333,6 +1591,12 @@
   },
   "pexels:8410835": {
     "key": "nervousness",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8541349": {
+    "key": "comprar",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1473,6 +1737,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:1433327": {
+    "key": "película",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:1497298": {
     "key": "police officer",
     "reasons": [
@@ -1501,6 +1771,12 @@
   },
   "pixabay:1574278": {
     "key": "taxi",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1614223": {
+    "key": "le dossier",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1988,6 +2264,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:4103334": {
+    "key": "le bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:4163403": {
     "key": "pen",
     "reasons": [
@@ -2357,6 +2639,12 @@
     "key": "librería",
     "reasons": [
       "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:78193": {
+    "key": "le rugby",
+    "reasons": [
       "brand-logo-or-foreign-text"
     ]
   },
