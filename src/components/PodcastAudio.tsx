@@ -28,6 +28,7 @@ export function PodcastAudio() {
   const episode = usePodcastPlayer((state) => state.episode);
   const isPlaying = usePodcastPlayer((state) => state.isPlaying);
   const retryToken = usePodcastPlayer((state) => state.retryToken);
+  const seekRequest = usePodcastPlayer((state) => state.seekRequest);
   const setPlaying = usePodcastPlayer((state) => state.setPlaying);
   const setElapsed = usePodcastPlayer((state) => state.setElapsed);
   const setFailed = usePodcastPlayer((state) => state.setFailed);
@@ -84,6 +85,15 @@ export function PodcastAudio() {
       audio.pause();
     }
   }, [isPlaying, episodeId, retryToken, setFailed]);
+
+  // The scrubber's seeks. Keyed on the token, so the same target twice is two requests; a seek is not a
+  // listen, so lastTickRef is cleared and the next tick does not count the jump as listening time.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !seekRequest) return;
+    audio.currentTime = seekRequest.seconds;
+    lastTickRef.current = null;
+  }, [seekRequest]);
 
   // A play session that ends by navigating away, closing the tab, or
   // simply stopping is still a play session. Without this, the only

@@ -30,7 +30,8 @@ describe("the verdict panel after Check", () => {
       "private func settleTranslationVerdict",
     );
     expect(quiz).toContain("AnswerVerdictPanel(");
-    expect(quiz).toContain("correct: lastAnswerCorrect");
+    // The panel is handed the settled verdict, as its `correct:` argument, not merely mentioned near it.
+    expect(quiz).toMatch(/AnswerVerdictPanel\(\s*correct: lastAnswerCorrect,/);
     expect(quiz).toContain("AnswerVerdict.correctAnswer(for: currentQuestion)");
     // The old plain Continue button is gone: the panel carries it, with the same Continue / Finish wording.
     expect(quiz).toContain('"Continue" : "Finish"');
@@ -38,8 +39,11 @@ describe("the verdict panel after Check", () => {
       /\}\s*\n\s*\.buttonStyle\(\.alphonsoPrimary\)\s*\n\s*\}\s*\n\s*\}\s*\n\s*\.padding\(\)/,
     );
     const verdict = between(lesson, "private var lastAnswerCorrect: Bool", "\n    }\n");
-    expect(verdict).toContain("translationVerdict");
-    expect(verdict).toContain("isAnswerCorrect(currentQuestion");
+    // Order is the property: a translation's own grade is returned first, and only then the picked-answer check.
+    // Swapping them (or dropping the early return) makes a graded translation fall through to isAnswerCorrect.
+    expect(verdict).toMatch(
+      /if case \.translate = currentQuestion, let translationVerdict \{\s*return translationVerdict\.correct\s*\}\s*return isAnswerCorrect\(currentQuestion/,
+    );
   });
 
   it("review shows it too, keeping its own wording", () => {

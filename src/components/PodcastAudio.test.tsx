@@ -86,6 +86,20 @@ describe("PodcastAudio", () => {
     expect(usePodcastPlayer.getState().elapsedSeconds).toBe(42);
   });
 
+  it("moves the media element when the scrubber asks to seek", () => {
+    usePodcastPlayer.getState().play(episode);
+    render(<PodcastAudio />);
+    const audio = screen.getByTestId("podcast-audio") as HTMLAudioElement;
+    act(() => usePodcastPlayer.getState().seek(120));
+    expect(audio.currentTime).toBe(120);
+    // Seeking again to the same second is still a request.
+    act(() => {
+      audio.currentTime = 130;
+      usePodcastPlayer.getState().seek(120);
+    });
+    expect(audio.currentTime).toBe(120);
+  });
+
   it("clears isPlaying when the episode ends, so the bar stops claiming it is playing", () => {
     usePodcastPlayer.getState().play(episode);
     render(<PodcastAudio />);

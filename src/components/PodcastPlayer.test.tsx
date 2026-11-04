@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { PodcastPlayer } from "./PodcastPlayer";
@@ -53,7 +53,8 @@ describe("PodcastPlayer (mini-bar)", () => {
     usePodcastPlayer.getState().play(episode);
     usePodcastPlayer.getState().setElapsed(65);
     render(<PodcastPlayer />);
-    expect(screen.getByText("1:05 / 5:00")).toBeInTheDocument();
+    expect(screen.getByText("1:05")).toBeInTheDocument();
+    expect(screen.getByText("-3:55")).toBeInTheDocument();
   });
 
   it("exposes a labelled play/pause control", async () => {
@@ -91,5 +92,68 @@ describe("PodcastPlayer (mini-bar)", () => {
     render(<PodcastPlayer />);
     await userEvent.click(screen.getByRole("button", { name: /close player/i }));
     expect(usePodcastPlayer.getState().episode).toBeNull();
+  });
+});
+
+describe("PodcastPlayer scrubber", () => {
+  const load = (elapsed = 65) => {
+    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setElapsed(elapsed);
+    render(<PodcastPlayer />);
+    return screen.getByRole("slider", { name: "Seek" });
+  };
+
+  it("is a labelled slider spanning the episode, at the current position", () => {
+    const slider = load();
+    expect(slider).toHaveAttribute("min", "0");
+    expect(slider).toHaveAttribute("max", "300");
+    expect(slider).toHaveValue("65");
+    expect(slider).toHaveAttribute("aria-valuetext", "1:05 of 5:00");
+  });
+
+  it("shows elapsed on the left and time remaining on the right", () => {
+    load(65);
+    expect(screen.getByText("1:05")).toBeInTheDocument();
+    expect(screen.getByText("-3:55")).toBeInTheDocument();
+  });
+
+  it("dragging asks the audio element to seek, and the readout follows at once", () => {
+    const slider = load(0);
+    fireEvent.change(slider, { target: { value: "120" } });
+    expect(usePodcastPlayer.getState().seekRequest?.seconds).toBe(120);
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(120);
+    expect(screen.getByText("2:00")).toBeInTheDocument();
+    expect(screen.getByText("-3:00")).toBeInTheDocument();
+  });
+
+  it("arrow keys step 5 seconds, Page keys 30, clamped to the episode", async () => {
+    const user = userEvent.setup();
+    const slider = load(10);
+    slider.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(15);
+    await user.keyboard("{ArrowLeft}{ArrowLeft}{ArrowLeft}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(0);
+    await user.keyboard("{PageUp}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(30);
+    await user.keyboard("{End}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(300);
+    await user.keyboard("{ArrowRight}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(300);
+    await user.keyboard("{Home}");
+    expect(usePodcastPlayer.getState().elapsedSeconds).toBe(0);
+  });
+
+  it("has a visible focus ring and no motion for people who asked for none", () => {
+    const slider = load();
+    expect(slider.className).toContain("focus-visible:ring-2");
+    expect(slider.className).toContain("motion-reduce:transition-none");
+  });
+
+  it("is hidden while playback has failed, where there is nothing to seek", () => {
+    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setFailed(true);
+    render(<PodcastPlayer />);
+    expect(screen.queryByRole("slider")).not.toBeInTheDocument();
   });
 });

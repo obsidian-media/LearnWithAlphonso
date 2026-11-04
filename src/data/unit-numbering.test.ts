@@ -34,8 +34,13 @@ describe("unit numbering", () => {
   it.each([
     "ios/LearnWithAlphonso/Resources/curriculum-en.json",
     "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Resources/curriculum-en.json",
+    "android/LearnWithAlphonso/app/src/main/assets/content/curriculum-en.json",
+    "android/LearnWithAlphonso/app/src/main/assets/content/curriculum-fr.json",
+    "android/LearnWithAlphonso/app/src/main/assets/content/curriculum-es.json",
   ])("the shipped %s numbers each level 1..n", (path) => {
     const bundle = JSON.parse(readFileSync(path, "utf8"));
-    expectSequential(bundle.units ?? bundle);
+    const units = bundle.units ?? bundle;
+    expect(Array.isArray(units) && units.length > 0, `no units in ${path}`).toBe(true);
+    expectSequential(units);
   });
 });
