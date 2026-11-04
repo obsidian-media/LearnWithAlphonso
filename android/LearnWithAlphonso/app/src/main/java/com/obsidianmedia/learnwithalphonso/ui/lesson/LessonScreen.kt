@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,7 +38,13 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
+import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPermission
+import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptPolicy
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,11 +93,21 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
     val finished = state.phase as? LessonPhase.Finished
     LaunchedEffect(finished?.result?.progress?.lastActiveDate, finished != null) {
         if (finished != null) {
-            // The one priming moment for notification permission (LessonPlayerView.swift), then reschedule today's streak reminder.
-            container.notificationPermission.requestIfUndetermined()
+            // Reschedule today's streak reminder. Never asks for permission here: a cold dialog over the first
+            // celebration gets permanent refusals. The ask lives behind the reminder card's "Remind me".
             container.reminders.onLessonFinished(finished.result.progress.lastActiveDate)
         }
     }
+    var showReminderCard by remember { mutableStateOf(false) }
+    LaunchedEffect(finished != null) {
+        if (finished == null) return@LaunchedEffect
+        val permission = container.notificationPermission.status()
+        val cheap = permission == ReminderPermission.UNDETERMINED && container.reminderPromptStore.load().dismissals < ReminderPromptPolicy.MAX_DISMISSALS
+        if (!cheap) return@LaunchedEffect
+        val completed = runCatching { container.progressClient.fetchCompletedLessonIds(course.code) }.getOrDefault(emptyList()).toSet().size
+        showReminderCard = ReminderPromptPolicy.shouldShowCard(completed, permission, container.reminderPromptStore.load(), System.currentTimeMillis())
+    }
+    val scope = rememberCoroutineScope()
 
     SaveWordHost(container) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
@@ -107,7 +126,23 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             LessonPhase.Overview -> OverviewScreen(state.lesson, vm.vocab, state.total, onStart = vm::begin)
             LessonPhase.Vocab -> VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
             LessonPhase.Quiz -> QuizBody(vm, state, course, container)
-            is LessonPhase.Finished -> FinishScreen(phase, state.correctCount, state.total, container, state.lesson.id, course, onNext = if (vm.nextLessonId != null) vm::continueToNextLesson else null)
+            is LessonPhase.Finished -> FinishScreen(
+                phase, state.correctCount, state.total, container, state.lesson.id, course, onNext = if (vm.nextLessonId != null) vm::continueToNextLesson else null,
+                showReminderCard = showReminderCard,
+                onRemindMe = {
+                    showReminderCard = false
+                    scope.launch {
+                        if (container.notificationPermission.requestIfUndetermined()) {
+                            container.reminders.onLessonFinished(phase.result.progress.lastActiveDate)
+                            container.pushRegistrar.registerIfAuthorized()
+                        }
+                    }
+                },
+                onNotNow = {
+                    container.reminderPromptStore.recordNotNow(System.currentTimeMillis())
+                    showReminderCard = false
+                },
+            )
             is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.message, phase.pending.optimisticXpEstimate, state.correctCount, state.total)
             is LessonPhase.SaveFailed -> Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
                 Text(phase.message, style = MaterialTheme.typography.titleMedium, color = palette.ink, textAlign = TextAlign.Center)
@@ -205,7 +240,7 @@ private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, 
 }
 
 @Composable
-private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, container: AppContainer, lessonId: String, course: Course, onNext: (() -> Unit)?) {
+private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, container: AppContainer, lessonId: String, course: Course, onNext: (() -> Unit)?, showReminderCard: Boolean, onRemindMe: () -> Unit, onNotNow: () -> Unit) {
     val palette = AlphonsoColor.palette
     val result = phase.result
     val unlocked = result.newlyUnlocked.mapNotNull { id -> container.content.achievements.firstOrNull { it.id == id } }
@@ -229,6 +264,18 @@ private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, 
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.xl)).background(palette.parchment).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(a.title, style = MaterialTheme.typography.titleSmall, color = palette.ink)
                     Text(a.description, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                }
+            }
+        }
+        if (showReminderCard) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.xl)).background(palette.parchment).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(ReminderPromptCopy.TITLE, style = MaterialTheme.typography.titleSmall, color = palette.ink)
+                Text(ReminderPromptCopy.BODY, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                Button(onClick = onRemindMe, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), colors = ButtonDefaults.buttonColors(containerColor = palette.moss)) {
+                    Text(ReminderPromptCopy.ACCEPT, fontWeight = FontWeight.Medium)
+                }
+                TextButton(onClick = onNotNow, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(ReminderPromptCopy.DECLINE, color = palette.inkSoft)
                 }
             }
         }
