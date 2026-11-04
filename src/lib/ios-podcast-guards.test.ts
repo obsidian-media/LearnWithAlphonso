@@ -314,4 +314,35 @@ describe("iOS podcast quiz guards", () => {
     const ci = fs.readFileSync(path.join(ROOT, ".github/workflows/ci.yml"), "utf8");
     expect(ci).toMatch(/supabase functions deploy complete-podcast-quiz\s*$/m);
   });
+
+  it("a quiz row button appears only on episodes the server says have a quiz", () => {
+    const list = source("Sources/ListenView.swift");
+    expect(list).toMatch(/client\.fetchQuizEpisodeIDs\(episodeIDs: episodes\.map\(\\.id\)\)/);
+    expect(list).toMatch(
+      /if quizEpisodeIDs\.contains\(episode\.id\) \{\s*PodcastQuizRowButton\(episode: episode, session: session\)/,
+    );
+    // A failed read is no buttons, never a failed listing.
+    expect(list).toContain("(try? await client.fetchQuizEpisodeIDs(");
+  });
+
+  it("an unreadable question row fails loudly instead of being dropped", () => {
+    const fetch = functionBody(
+      kit(),
+      "public func fetchQuiz(episodeID: String) async throws -> PodcastQuizOffer? {",
+    );
+    expect(fetch).toContain("throw PodcastClientError.invalidPayload");
+    expect(fetch).not.toMatch(/\.compactMap\s*\{[^}]*answer_index/);
+    expect(fetch).toMatch(/\.rows\(from: data\)\.map \{ row in/);
+  });
+
+  it("Try again is offered only for failures that retrying can fix, and a saved result refreshes the best label", () => {
+    const text = sheet();
+    expect(text).toMatch(/if error\.isRetryable \{\s*Button\("Try again"\)/);
+    expect(text).toContain("onSaved?(result)");
+    expect(bar()).toMatch(
+      /best: PodcastQuizBest\(correct: result\.bestCorrect, xp: result\.bestXP\)/,
+    );
+    const retry = functionBody(kit(), "public mutating func retry() {");
+    expect(retry).toContain("error.isRetryable");
+  });
 });

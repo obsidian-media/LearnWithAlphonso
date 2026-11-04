@@ -288,6 +288,8 @@ private struct PodcastFolderListing: View {
     @State private var episodes: [PodcastEpisode] = []
     @State private var isLoadingEpisodes = false
     @State private var loadFailed = false
+    /// Episodes in this folder that have a quiz; each gets a "Take the quiz" button under its row.
+    @State private var quizEpisodeIDs: Set<String> = []
 
     private var children: [PodcastFolder] {
         PodcastTree.children(of: folder?.id, in: folders)
@@ -331,32 +333,38 @@ private struct PodcastFolderListing: View {
             if !episodes.isEmpty {
                 Section {
                     ForEach(episodes) { episode in
-                        HStack(spacing: AlphonsoSpacing.sm) {
-                            Button {
-                                player.play(
-                                    episode,
-                                    localURL: downloads.localURL(episodeID: episode.id),
-                                    queue: episodes,
-                                    isOnline: networkMonitor.isConnected
-                                )
-                                downloads.markPlayed(episodeID: episode.id)
-                            } label: {
-                                ListenGlassRow(
-                                    title: episode.title,
-                                    subtitle: subtitle(for: player.resumed(episode)),
-                                    emoji: "🎧",
-                                    accent: player.resumed(episode).positionSeconds > 0
-                                        ? AlphonsoColor.ember
-                                        : AlphonsoColor.moss
+                        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                            HStack(spacing: AlphonsoSpacing.sm) {
+                                Button {
+                                    player.play(
+                                        episode,
+                                        localURL: downloads.localURL(episodeID: episode.id),
+                                        queue: episodes,
+                                        isOnline: networkMonitor.isConnected
+                                    )
+                                    downloads.markPlayed(episodeID: episode.id)
+                                } label: {
+                                    ListenGlassRow(
+                                        title: episode.title,
+                                        subtitle: subtitle(for: player.resumed(episode)),
+                                        emoji: "🎧",
+                                        accent: player.resumed(episode).positionSeconds > 0
+                                            ? AlphonsoColor.ember
+                                            : AlphonsoColor.moss
+                                    )
+                                }
+                                .buttonStyle(.plain)
+
+                                PodcastDownloadButton(
+                                    episode: episode,
+                                    downloads: downloads,
+                                    player: player
                                 )
                             }
-                            .buttonStyle(.plain)
-
-                            PodcastDownloadButton(
-                                episode: episode,
-                                downloads: downloads,
-                                player: player
-                            )
+                            if quizEpisodeIDs.contains(episode.id) {
+                                PodcastQuizRowButton(episode: episode, session: session)
+                                    .padding(.leading, AlphonsoSpacing.sm)
+                            }
                         }
                         .listRowSeparator(.hidden)
                     }
@@ -406,6 +414,8 @@ private struct PodcastFolderListing: View {
         do {
             episodes = try await client.fetchEpisodes(folderID: folder.id)
             onEpisodesLoaded(episodes)
+            // Which of them have a quiz. A failed read just means no buttons; it never fails the listing.
+            quizEpisodeIDs = (try? await client.fetchQuizEpisodeIDs(episodeIDs: episodes.map(\.id))) ?? []
         } catch {
             if !Task.isCancelled { loadFailed = true }
         }

@@ -88,6 +88,15 @@ public enum PodcastQuizError: Error, Equatable, Sendable {
     case unauthorized
     case offline
     case server
+
+    /// Whether sending the same answers again can help. A missing quiz or malformed answers will not fix themselves, so
+    /// offering "Try again" for them would be an endless loop.
+    public var isRetryable: Bool {
+        switch self {
+        case .rateLimited, .offline, .server: return true
+        case .notFound, .invalidAnswers, .unauthorized: return false
+        }
+    }
 }
 
 /// The learner's pass through one quiz. A value type with no I/O, so every rule is testable without a screen.
@@ -151,7 +160,7 @@ public struct PodcastQuizRun: Equatable, Sendable {
 
     /// Resend the same answers after a failure.
     public mutating func retry() {
-        guard case .error = phase else { return }
+        guard case let .error(error) = phase, error.isRetryable else { return }
         phase = .submitting
     }
 }
@@ -171,7 +180,8 @@ public enum PodcastQuizCopy {
         case .offline: return "We couldn't save your answers. Check your connection and try again."
         case .notFound: return "This quiz isn't available right now."
         case .unauthorized: return "Please sign in again to save your answers."
-        case .invalidAnswers, .server: return "We couldn't save your answers. Please try again."
+        case .invalidAnswers: return "Something went wrong with your answers. Leave the quiz and open it again."
+        case .server: return "We couldn't save your answers. Please try again."
         }
     }
 
@@ -194,12 +204,14 @@ extension PodcastClient {
         )
         let (data, response) = try await requester(questionsRequest)
         try Self.requireSuccess(response: response)
-        let questions: [PodcastQuizQuestion] = try Self.rows(from: data).compactMap { row in
+        // A row the app cannot read is an error, not something to drop: a quiz with a hole in it would be rejected by the
+        // server as a wrong number of answers, or worse, look complete while missing a question.
+        let questions: [PodcastQuizQuestion] = try Self.rows(from: data).map { row in
             guard let id = row["id"] as? String,
                   let prompt = row["prompt"] as? String,
                   let choices = row["choices"] as? [String],
                   let answerIndex = row["answer_index"] as? Int,
-                  choices.indices.contains(answerIndex) else { return nil }
+                  choices.indices.contains(answerIndex) else { throw PodcastClientError.invalidPayload }
             return PodcastQuizQuestion(id: id, prompt: prompt, choices: choices, answerIndex: answerIndex)
         }
         guard !questions.isEmpty else { return nil }
@@ -217,6 +229,20 @@ extension PodcastClient {
             best = PodcastQuizBest(correct: correct, xp: xp)
         }
         return PodcastQuizOffer(questions: questions, best: best)
+    }
+
+    /// Which of these episodes have a quiz the learner can open, for the "Take the quiz" button on an episode row.
+    /// One request for the lot; nothing is sent for an empty list.
+    public func fetchQuizEpisodeIDs(episodeIDs: [String]) async throws -> Set<String> {
+        guard !episodeIDs.isEmpty else { return [] }
+        let request = request(
+            path: "rest/v1/podcast_quiz_questions",
+            query: "select=episode_id&episode_id=in.(\(episodeIDs.joined(separator: ",")))",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+        return Set(try Self.rows(from: data).compactMap { $0["episode_id"] as? String })
     }
 
     /// Sends the learner's chosen answers and the time they finished to the complete-podcast-quiz Edge Function

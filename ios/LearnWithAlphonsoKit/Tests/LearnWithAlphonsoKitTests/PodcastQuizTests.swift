@@ -166,21 +166,71 @@ final class PodcastQuizTests: XCTestCase {
         XCTAssertNil(offer?.best)
     }
 
-    func testAMalformedQuestionRowIsSkippedNotTrusted() async throws {
-        let client = makeClient { [supabaseURL] _ in
-            self.jsonResponse(for: supabaseURL, body: [
-                ["id": "q1", "prompt": "One?", "choices": ["a", "b"], "answer_index": 5],
-                ["id": "q2", "prompt": "Two?", "choices": ["a", "b"], "answer_index": 1],
-            ])
+    func testAMalformedQuestionRowFailsLoudlyInsteadOfShrinkingTheQuiz() async {
+        // A quiz with a hole in it would be graded as complete by the server and rejected as 400; better to say so now.
+        let rows: [[[String: Any]]] = [
+            [["id": "q1", "prompt": "One?", "choices": ["a", "b"], "answer_index": 5],
+             ["id": "q2", "prompt": "Two?", "choices": ["a", "b"], "answer_index": 1]],
+            [["id": "q1", "prompt": "One?", "choices": ["a", 2], "answer_index": 0]],
+            [["prompt": "One?", "choices": ["a", "b"], "answer_index": 0]],
+        ]
+        for body in rows {
+            let client = makeClient { [supabaseURL] _ in self.jsonResponse(for: supabaseURL, body: body) }
+            do {
+                _ = try await client.fetchQuiz(episodeID: episodeID)
+                XCTFail("expected a throw for \(body)")
+            } catch {
+                XCTAssertEqual(error as? PodcastClientError, .invalidPayload)
+            }
         }
-        let offer = try await client.fetchQuiz(episodeID: episodeID)
-        XCTAssertEqual(offer?.questions.map(\.id), ["q2"])
     }
 
     func testFetchQuizSurfacesAFailedQuestionRead() async {
         let client = makeClient { [supabaseURL] _ in self.jsonResponse(for: supabaseURL, body: [String: Any](), status: 500) }
         do {
             _ = try await client.fetchQuiz(episodeID: episodeID)
+            XCTFail("expected a throw")
+        } catch {
+            XCTAssertEqual(error as? PodcastClientError, .server(status: 500))
+        }
+    }
+
+    // MARK: - Which episodes have a quiz
+
+    func testFetchQuizEpisodeIDsAsksOnceAndReturnsEachEpisodeOnce() async throws {
+        let box = RequestBox()
+        let client = makeClient { [supabaseURL] request in
+            await box.record(request)
+            return self.jsonResponse(for: supabaseURL, body: [
+                ["episode_id": "e1"], ["episode_id": "e1"], ["episode_id": "e3"],
+            ])
+        }
+        let ids = try await client.fetchQuizEpisodeIDs(episodeIDs: ["e1", "e2", "e3"])
+        XCTAssertEqual(ids, ["e1", "e3"])
+        let requests = await box.requests
+        XCTAssertEqual(requests.count, 1)
+        let url = requests[0].url!.absoluteString
+        XCTAssertTrue(url.contains("podcast_quiz_questions"))
+        XCTAssertTrue(url.contains("select=episode_id"))
+        XCTAssertTrue(url.contains("episode_id=in.(e1,e2,e3)"))
+    }
+
+    func testNoEpisodesMeansNoRequest() async throws {
+        let box = RequestBox()
+        let client = makeClient { [supabaseURL] request in
+            await box.record(request)
+            return self.jsonResponse(for: supabaseURL, body: [[String: Any]]())
+        }
+        let ids = try await client.fetchQuizEpisodeIDs(episodeIDs: [])
+        XCTAssertTrue(ids.isEmpty)
+        let count = await box.requests.count
+        XCTAssertEqual(count, 0)
+    }
+
+    func testAFailedReadOfWhichEpisodesHaveAQuizIsAnError() async {
+        let client = makeClient { [supabaseURL] _ in self.jsonResponse(for: supabaseURL, body: [String: Any](), status: 500) }
+        do {
+            _ = try await client.fetchQuizEpisodeIDs(episodeIDs: ["e1"])
             XCTFail("expected a throw")
         } catch {
             XCTAssertEqual(error as? PodcastClientError, .server(status: 500))
@@ -270,6 +320,30 @@ final class PodcastQuizTests: XCTestCase {
     }
 
     // MARK: - Copy
+
+    func testOnlyFailuresThatRetryingCanFixOfferTryAgain() {
+        XCTAssertTrue(PodcastQuizError.rateLimited.isRetryable)
+        XCTAssertTrue(PodcastQuizError.offline.isRetryable)
+        XCTAssertTrue(PodcastQuizError.server.isRetryable)
+        XCTAssertFalse(PodcastQuizError.notFound.isRetryable)
+        XCTAssertFalse(PodcastQuizError.invalidAnswers.isRetryable)
+        XCTAssertFalse(PodcastQuizError.unauthorized.isRetryable)
+    }
+
+    func testARetryOfANonRetryableFailureDoesNothing() {
+        var run = answeredAll([1, 0])
+        run.failed(.notFound)
+        run.retry()
+        XCTAssertEqual(run.phase, .error(.notFound))
+    }
+
+    func testEachRefusalHasItsOwnCopy() {
+        let all: [PodcastQuizError] = [.rateLimited, .offline, .notFound, .invalidAnswers, .unauthorized, .server]
+        let messages = all.map { PodcastQuizCopy.message(for: $0) }
+        XCTAssertEqual(Set(messages).count, messages.count, "every error should say something different")
+        XCTAssertTrue(PodcastQuizCopy.message(for: .notFound).contains("isn't available"))
+        XCTAssertTrue(PodcastQuizCopy.message(for: .invalidAnswers).contains("open it again"))
+    }
 
     func testCopyForEachFailureIsCalmAndSpecific() {
         XCTAssertEqual(PodcastQuizCopy.message(for: .rateLimited), "Slow down a little and try again.")

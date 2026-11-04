@@ -14,12 +14,21 @@ struct PodcastQuizSheet: View {
     /// When the learner finished the last question; sent so the server credits the right activity day.
     @State private var finishedAt = Date()
     let best: PodcastQuizBest?
+    /// Called with the server's result once saved, so the caller can refresh its "best" label.
+    let onSaved: ((PodcastQuizResult) -> Void)?
 
-    init(title: String, episodeID: String, offer: PodcastQuizOffer, session: Session) {
+    init(
+        title: String,
+        episodeID: String,
+        offer: PodcastQuizOffer,
+        session: Session,
+        onSaved: ((PodcastQuizResult) -> Void)? = nil
+    ) {
         self.title = title
         self.episodeID = episodeID
         self.session = session
         self.best = offer.best
+        self.onSaved = onSaved
         _run = State(initialValue: PodcastQuizRun(questions: offer.questions))
     }
 
@@ -141,13 +150,16 @@ struct PodcastQuizSheet: View {
                 .font(AlphonsoFont.sans(15))
                 .foregroundStyle(AlphonsoColor.destructive)
                 .accessibilityAddTraits(.isStaticText)
-            Button("Try again") {
-                run.retry()
-                submit()
+            // Only when sending the same answers again can help; a missing quiz or malformed answers cannot.
+            if error.isRetryable {
+                Button("Try again") {
+                    run.retry()
+                    submit()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AlphonsoColor.moss)
+                .frame(minHeight: 44)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(AlphonsoColor.moss)
-            .frame(minHeight: 44)
         }
     }
 
@@ -192,11 +204,70 @@ struct PodcastQuizSheet: View {
             do {
                 let result = try await client.submitQuiz(episodeID: episodeID, answers: answers, completedAt: finished)
                 run.saved(result)
+                onSaved?(result)
             } catch let error as PodcastQuizError {
                 run.failed(error)
             } catch {
                 run.failed(.server)
             }
+        }
+    }
+}
+
+/// "Take the quiz" under an episode's row, for an episode that has one: a replay, or a first try for a learner who
+/// listened on another device, without listening again. The quiz is read when the button is pressed.
+struct PodcastQuizRowButton: View {
+    let episode: PodcastEpisode
+    let session: Session
+
+    @State private var offer: PodcastQuizOffer?
+    @State private var isLoading = false
+    @State private var unavailable = false
+    @State private var showQuiz = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Button {
+                Task { await open() }
+            } label: {
+                Text(isLoading ? "Loading quiz…" : "Take the quiz")
+                    .font(AlphonsoFont.sans(13, weight: .semiBold))
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .tint(AlphonsoColor.moss)
+            .disabled(isLoading)
+            .accessibilityLabel("Take the quiz: \(episode.title)")
+            if unavailable {
+                Text(PodcastQuizCopy.message(for: .notFound))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.destructive)
+            }
+        }
+        .sheet(isPresented: $showQuiz) {
+            if let offer {
+                PodcastQuizSheet(title: episode.title, episodeID: episode.id, offer: offer, session: session) { result in
+                    // Reopening shows the better best without another read.
+                    self.offer = PodcastQuizOffer(
+                        questions: offer.questions,
+                        best: PodcastQuizBest(correct: result.bestCorrect, xp: result.bestXP)
+                    )
+                }
+            }
+        }
+    }
+
+    private func open() async {
+        unavailable = false
+        if offer != nil { showQuiz = true; return }
+        guard let client = makePodcastClient(session: session) else { unavailable = true; return }
+        isLoading = true
+        defer { isLoading = false }
+        if let found = try? await client.fetchQuiz(episodeID: episode.id) {
+            offer = found
+            showQuiz = true
+        } else {
+            unavailable = true
         }
     }
 }

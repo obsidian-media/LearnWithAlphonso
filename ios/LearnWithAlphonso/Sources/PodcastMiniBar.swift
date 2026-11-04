@@ -194,7 +194,13 @@ struct PodcastMiniBar: View {
             }
             .sheet(isPresented: $showQuiz) {
                 if let offer = quizOffer {
-                    PodcastQuizSheet(title: episode.title, episodeID: episode.id, offer: offer, session: session)
+                    PodcastQuizSheet(title: episode.title, episodeID: episode.id, offer: offer, session: session) { result in
+                        // The offer's "best" label follows a better run without another read.
+                        quizOffer = PodcastQuizOffer(
+                            questions: offer.questions,
+                            best: PodcastQuizBest(correct: result.bestCorrect, xp: result.bestXP)
+                        )
+                    }
                 }
             }
             // The quiz is read when an episode finishes, keyed on the episode and on finishing, so playing again
