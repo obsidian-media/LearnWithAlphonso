@@ -44,7 +44,7 @@ enum CrashReporting {
     /// Removes identity and secrets from an outgoing event.
     static func scrub(_ event: Event) -> Event {
         event.user = nil
-        event.exceptions?.forEach { $0.value = scrubText($0.value) }
+        event.exceptions?.forEach { $0.value = $0.value.map(scrubText) }
         if let message = event.message {
             event.message = SentryMessage(formatted: scrubText(message.formatted))
         }
