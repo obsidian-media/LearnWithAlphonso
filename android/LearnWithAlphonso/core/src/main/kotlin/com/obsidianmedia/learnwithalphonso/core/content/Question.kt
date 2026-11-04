@@ -31,6 +31,8 @@ sealed interface Question {
         /** Authored word-card gloss / example sentence (curriculum.ts `meaning`/`example`). */
         val meaning: String? = null,
         val example: String? = null,
+        /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
+        val term: String? = null,
     ) : Question
 
     @Serializable
@@ -43,6 +45,8 @@ sealed interface Question {
         /** Authored word-card gloss / example sentence (curriculum.ts `meaning`/`example`). */
         val meaning: String? = null,
         val example: String? = null,
+        /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
+        val term: String? = null,
     ) : Question
 
     @Serializable

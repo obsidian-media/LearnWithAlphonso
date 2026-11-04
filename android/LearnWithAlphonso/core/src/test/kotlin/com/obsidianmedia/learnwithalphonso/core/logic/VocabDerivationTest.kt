@@ -50,6 +50,26 @@ class VocabDerivationTest {
     }
 
     @Test
+    fun `an authored term replaces the answer as the card word, and an empty one makes no card`() {
+        val lesson = Lesson(
+            "l", "t", "s",
+            listOf(
+                Question.MultipleChoice(
+                    "a", "How often does \"always\" happen?", listOf("every time", "never"), 0, "e",
+                    meaning = "every time, without exception", example = "I always brush my teeth.",
+                    term = "always",
+                ),
+                Question.MultipleChoice(
+                    "b", "Which is the present simple?", listOf("I ate.", "I eat."), 1, "e",
+                    term = "",
+                ),
+            ),
+        )
+        val items = deriveVocab(lesson, emptyMap())
+        assertEquals(listOf(VocabItem("always", "every time, without exception", "I always brush my teeth.", null)), items)
+    }
+
+    @Test
     fun `every bundled English A1 card has a meaning and an example`() {
         val a1 = store.bundle(Course.ENGLISH).units.filter { it.level == "A1" }.flatMap { it.lessons }
         assertTrue(a1.isNotEmpty())

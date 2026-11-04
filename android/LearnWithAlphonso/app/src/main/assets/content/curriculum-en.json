@@ -598,8 +598,7 @@
               ],
               "answer": 1,
               "explanation": "Present simple describes routines.",
-              "meaning": "tells what you do every day",
-              "example": "I eat breakfast at seven every day."
+              "term": ""
             },
             {
               "id": "q4",
@@ -613,7 +612,7 @@
               ],
               "answer": "brushes",
               "explanation": "Verbs ending in -sh add -es.",
-              "meaning": "cleans with a brush"
+              "meaning": "cleans teeth or tidies hair"
             },
             {
               "id": "q5",
@@ -656,8 +655,7 @@
               ],
               "answer": 0,
               "explanation": "Present-simple questions use \"do/does\".",
-              "meaning": "a question about a habit",
-              "example": "Do you drink coffee in the morning?"
+              "term": ""
             },
             {
               "id": "q8",
@@ -736,7 +734,7 @@
               ],
               "answer": "have",
               "explanation": "Plural subject + base form.",
-              "meaning": "to hold, as in \"have a meeting\""
+              "meaning": "to hold or take part in an event"
             },
             {
               "id": "q5",
@@ -1142,7 +1140,7 @@
               ],
               "answer": "mind",
               "explanation": "\"Would you mind + -ing?\" is very polite.",
-              "meaning": "a polite word in \"Would you mind\""
+              "meaning": "to be bothered by something"
             },
             {
               "id": "q7",
@@ -1221,8 +1219,9 @@
               ],
               "answer": 1,
               "explanation": "Servers ask this in cafés.",
-              "meaning": "asks whether you eat here or leave",
-              "example": "He asked if you'll eat in or take away."
+              "term": "For here or to go?",
+              "meaning": "asks if you eat here or take away",
+              "example": "\"For here or to go?\" \"To go, please.\""
             },
             {
               "id": "q4",
@@ -1599,8 +1598,7 @@
               ],
               "answer": 1,
               "explanation": "After \"didn't\" use the base verb.",
-              "meaning": "says someone did not go",
-              "example": "She didn't go to school today."
+              "term": ""
             },
             {
               "id": "q4",
@@ -1736,8 +1734,9 @@
               ],
               "answer": 1,
               "explanation": "\"I used to swim\" = past habit, no longer true.",
+              "term": "used to",
               "meaning": "something you did often before",
-              "example": "Used to talks about a past habit."
+              "example": "I used to swim every day."
             }
           ]
         }
@@ -1889,8 +1888,9 @@
               ],
               "answer": 1,
               "explanation": "Indirect questions sound more polite.",
-              "meaning": "a soft way of asking for information",
-              "example": "That is an indirect polite question."
+              "term": "Could you tell me…?",
+              "meaning": "a polite way to ask for information",
+              "example": "Could you tell me where gate 12 is?"
             },
             {
               "id": "q4",
@@ -2925,7 +2925,7 @@
               ],
               "answer": "boxes",
               "explanation": "box → boxes. Irregular and spelling-change plurals must be memorised.",
-              "meaning": "containers with four sides",
+              "meaning": "containers for storing or carrying things",
               "example": "The boxes are under the bed."
             },
             {
@@ -3022,7 +3022,7 @@
               ],
               "answer": 2,
               "explanation": "sheep → sheep. Irregular and spelling-change plurals must be memorised.",
-              "meaning": "more than one sheep; farm animals with wool",
+              "meaning": "woolly farm animals; one word for many",
               "example": "The sheep eat grass on the hill."
             },
             {
@@ -3037,7 +3037,7 @@
               ],
               "answer": "fish",
               "explanation": "fish → fish. Irregular and spelling-change plurals must be memorised.",
-              "meaning": "more than one fish; animals that swim",
+              "meaning": "water animals; the same for one or many",
               "example": "Fish live in the sea."
             },
             {
@@ -3140,7 +3140,7 @@
               ],
               "answer": "goes",
               "explanation": "\"goes\" is correct here. Match the verb form to the subject.",
-              "meaning": "go, used with he, she or it"
+              "meaning": "moves or travels; used with he or she"
             },
             {
               "id": "a1p2q4",
@@ -3203,7 +3203,7 @@
               ],
               "answer": "drinks",
               "explanation": "\"drinks\" is correct here. Match the verb form to the subject.",
-              "meaning": "takes a drink into the mouth"
+              "meaning": "takes liquid into the mouth"
             },
             {
               "id": "a1p2q8",
@@ -4192,7 +4192,8 @@
               ],
               "answer": 0,
               "explanation": "\"at\" is correct here. Use in for months/years, on for days/dates, at for clock times.",
-              "meaning": "used with night-time hours like midnight"
+              "meaning": "used before a clock time",
+              "example": "The class starts at nine."
             }
           ]
         },
@@ -4328,7 +4329,7 @@
               ],
               "answer": "do",
               "explanation": "homework → do. English fixes certain verbs to certain nouns.",
-              "meaning": "to complete; used in \"do homework\"",
+              "meaning": "to carry out a task or activity",
               "example": "I do my homework after school."
             },
             {
@@ -4356,7 +4357,7 @@
               ],
               "answer": "make",
               "explanation": "a mistake → make. English fixes certain verbs to certain nouns.",
-              "meaning": "to do something; used in \"make a mistake\"",
+              "meaning": "to create or cause something",
               "example": "Everyone can make a mistake."
             }
           ]
@@ -4423,7 +4424,7 @@
               ],
               "answer": "ask",
               "explanation": "a question → ask. English fixes certain verbs to certain nouns.",
-              "meaning": "to put a question to someone",
+              "meaning": "to say something to get an answer",
               "example": "May I ask a question?"
             },
             {
@@ -4505,7 +4506,7 @@
               ],
               "answer": "brush",
               "explanation": "your teeth → brush. English fixes certain verbs to certain nouns.",
-              "meaning": "to clean with a brush",
+              "meaning": "to clean or tidy teeth or hair",
               "example": "Brush your teeth twice a day."
             },
             {
@@ -6200,7 +6201,7 @@
               ],
               "answer": 2,
               "explanation": "\"shorts\" is correct here. Common clothing vocabulary with colour adjectives.",
-              "meaning": "short trousers for warm days"
+              "meaning": "trousers that end above the knee"
             },
             {
               "id": "a1p9q19",
@@ -8795,7 +8796,7 @@
               ],
               "answer": "brushes",
               "explanation": "\"brushes\" is correct here. Simple present tense sentences describing a typical day.",
-              "meaning": "cleans with a brush"
+              "meaning": "makes hair tidy with a tool"
             },
             {
               "id": "a1p16q3",
@@ -9176,7 +9177,7 @@
               ],
               "answer": "whiteboard",
               "explanation": "\"whiteboard\" is correct here. Common classroom vocabulary for beginners.",
-              "meaning": "a white board you write on"
+              "meaning": "a large smooth surface you write on"
             },
             {
               "id": "a1p17q2",
@@ -13938,7 +13939,7 @@
               ],
               "answer": 0,
               "explanation": "\"looking\" is correct here. Fixed travel and shopping phrases.",
-              "meaning": "only looking, not buying yet"
+              "meaning": "just browsing, not buying yet"
             },
             {
               "id": "a2p4q11",
@@ -14140,7 +14141,7 @@
             {
               "id": "a2p4q24",
               "type": "fill",
-              "prompt": "The hotel ___ breakfast. (it is part of the room price)",
+              "prompt": "The price ___ breakfast. (it is part of what you pay)",
               "bank": [
                 "includes",
                 "include",
@@ -14149,7 +14150,8 @@
               ],
               "answer": "includes",
               "explanation": "\"includes\" is correct here. Fixed travel and shopping phrases.",
-              "meaning": "has as a part"
+              "meaning": "has something as one of its parts",
+              "example": "The price includes breakfast."
             }
           ]
         }
@@ -14422,7 +14424,8 @@
               ],
               "answer": "any",
               "explanation": "\"any\" is correct here. Countable nouns take many/few; uncountable nouns take much/little.",
-              "meaning": "almost none, after \"hardly\""
+              "meaning": "used in questions and with not or hardly",
+              "example": "Do you have any juice?"
             },
             {
               "id": "a2p5q17",
@@ -14659,7 +14662,8 @@
               ],
               "answer": "will",
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements.",
-              "meaning": "shows what you think will happen"
+              "meaning": "shows a guess about the future",
+              "example": "They will probably be late."
             },
             {
               "id": "a2p6q7",
@@ -14719,7 +14723,8 @@
               ],
               "answer": 2,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements.",
-              "meaning": "says what will be true later"
+              "meaning": "shows a fact about the future",
+              "example": "He will be twenty next month."
             },
             {
               "id": "a2p6q11",
@@ -14801,7 +14806,7 @@
             {
               "id": "a2p6q16",
               "type": "mc",
-              "prompt": "By June I ___ have finished. (certain)",
+              "prompt": "I ___ send it tomorrow, I promise. (certain)",
               "choices": [
                 "will",
                 "might",
@@ -14810,7 +14815,8 @@
               ],
               "answer": 0,
               "explanation": "\"will\" is correct here. \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements.",
-              "meaning": "talks about what will happen"
+              "meaning": "shows a promise or a sure plan",
+              "example": "I will send it tomorrow."
             },
             {
               "id": "a2p6q17",
@@ -15522,7 +15528,7 @@
               ],
               "answer": 0,
               "explanation": "a rod and hook → fishing. Match the equipment or place to the activity.",
-              "meaning": "trying to catch fish",
+              "meaning": "trying to catch animals in water",
               "example": "My grandfather loves fishing."
             },
             {
@@ -15552,7 +15558,7 @@
               ],
               "answer": 2,
               "explanation": "a canvas and brush → painting. Match the equipment or place to the activity.",
-              "meaning": "making pictures with paint",
+              "meaning": "making pictures with colours",
               "example": "Painting makes her feel calm."
             },
             {
@@ -16805,7 +16811,7 @@
               ],
               "answer": 2,
               "explanation": "\"credit\" is correct here. Common phrases for eating out.",
-              "meaning": "used in \"credit card\" to pay later"
+              "meaning": "money you borrow now and pay back later"
             }
           ]
         },
@@ -16990,8 +16996,9 @@
               ],
               "answer": 0,
               "explanation": "always → every single time, without exception. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"always\"",
-              "example": "She was late every single time, without exception."
+              "term": "always",
+              "meaning": "every time, without exception",
+              "example": "I always brush my teeth at night."
             },
             {
               "id": "a2p12q1",
@@ -17005,8 +17012,9 @@
               ],
               "answer": "the great majority of the time",
               "explanation": "usually → the great majority of the time. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"usually\"",
-              "example": "Buses come on time the great majority of the time."
+              "term": "usually",
+              "meaning": "most of the time",
+              "example": "I usually walk to work."
             },
             {
               "id": "a2p12q2",
@@ -17020,8 +17028,9 @@
               ],
               "answer": 2,
               "explanation": "normally → as a rule, under typical conditions. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"normally\"",
-              "example": "As a rule, under typical conditions, I walk to work."
+              "term": "normally",
+              "meaning": "in most normal situations",
+              "example": "We normally eat dinner at seven."
             },
             {
               "id": "a2p12q3",
@@ -17035,8 +17044,9 @@
               ],
               "answer": "in most cases you'll find",
               "explanation": "generally → in most cases you'll find. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"generally\"",
-              "example": "In most cases you'll find the shop open."
+              "term": "generally",
+              "meaning": "in most cases",
+              "example": "It is generally quiet here at night."
             },
             {
               "id": "a2p12q4",
@@ -17050,8 +17060,9 @@
               ],
               "answer": 0,
               "explanation": "frequently → on many separate occasions. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"frequently\"",
-              "example": "He called on many separate occasions."
+              "term": "frequently",
+              "meaning": "very often; many times",
+              "example": "He frequently visits his grandmother."
             }
           ]
         },
@@ -17072,8 +17083,9 @@
               ],
               "answer": "quite a lot, many times",
               "explanation": "often → quite a lot, many times. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"often\"",
-              "example": "She calls quite a lot, many times a week."
+              "term": "often",
+              "meaning": "many times; not rarely",
+              "example": "She often calls her mother."
             },
             {
               "id": "a2p12q6",
@@ -17087,8 +17099,9 @@
               ],
               "answer": 2,
               "explanation": "regularly → at fixed, repeated intervals. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"regularly\"",
-              "example": "The bus comes at fixed, repeated intervals."
+              "term": "regularly",
+              "meaning": "again and again, at fixed times",
+              "example": "I regularly go to the gym."
             },
             {
               "id": "a2p12q7",
@@ -17102,8 +17115,9 @@
               ],
               "answer": "on certain occasions but not most",
               "explanation": "sometimes → on certain occasions but not most. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"sometimes\"",
-              "example": "He cooks dinner on certain occasions but not most."
+              "term": "sometimes",
+              "meaning": "not every time, but on some days",
+              "example": "Sometimes we eat out on Fridays."
             },
             {
               "id": "a2p12q8",
@@ -17117,8 +17131,9 @@
               ],
               "answer": 0,
               "explanation": "occasionally → now and then, but not often. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"occasionally\"",
-              "example": "We eat out now and then, but not often."
+              "term": "occasionally",
+              "meaning": "now and then; not often",
+              "example": "We occasionally go to the cinema."
             },
             {
               "id": "a2p12q9",
@@ -17132,8 +17147,9 @@
               ],
               "answer": "at intervals, coming and going",
               "explanation": "periodically → at intervals, coming and going. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"periodically\"",
-              "example": "The rain fell at intervals, coming and going."
+              "term": "periodically",
+              "meaning": "from time to time, at intervals",
+              "example": "I check my email periodically."
             }
           ]
         },
@@ -17154,8 +17170,9 @@
               ],
               "answer": "every so often, casually",
               "explanation": "now and then → every so often, casually. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"now and then\"",
-              "example": "He calls every so often, casually."
+              "term": "now and then",
+              "meaning": "sometimes, but not often",
+              "example": "I call my old friend now and then."
             },
             {
               "id": "a2p12q11",
@@ -17169,8 +17186,9 @@
               ],
               "answer": 2,
               "explanation": "once in a while → not very often, infrequently. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"once in a while\"",
-              "example": "I see him not very often, infrequently."
+              "term": "once in a while",
+              "meaning": "not often; a few times a year",
+              "example": "We eat out once in a while."
             },
             {
               "id": "a2p12q12",
@@ -17184,8 +17202,9 @@
               ],
               "answer": "at scattered, irregular moments",
               "explanation": "from time to time → at scattered, irregular moments. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"from time to time\"",
-              "example": "It rains at scattered, irregular moments."
+              "term": "from time to time",
+              "meaning": "sometimes; not on a fixed day",
+              "example": "He visits us from time to time."
             },
             {
               "id": "a2p12q13",
@@ -17199,8 +17218,9 @@
               ],
               "answer": 0,
               "explanation": "seldom → only rarely, not very often. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"seldom\"",
-              "example": "She visits only rarely, not very often."
+              "term": "seldom",
+              "meaning": "not often; only a few times",
+              "example": "She seldom eats sweets."
             },
             {
               "id": "a2p12q14",
@@ -17214,8 +17234,9 @@
               ],
               "answer": "very infrequently indeed",
               "explanation": "rarely → very infrequently indeed. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"rarely\"",
-              "example": "He eats sweets very infrequently indeed."
+              "term": "rarely",
+              "meaning": "almost never; not often",
+              "example": "He rarely watches television."
             }
           ]
         },
@@ -17236,8 +17257,9 @@
               ],
               "answer": 2,
               "explanation": "hardly ever → almost never at all. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"hardly ever\"",
-              "example": "They eat meat almost never at all."
+              "term": "hardly ever",
+              "meaning": "almost never",
+              "example": "They hardly ever eat meat."
             },
             {
               "id": "a2p12q16",
@@ -17251,8 +17273,9 @@
               ],
               "answer": "barely ever, close to never",
               "explanation": "scarcely ever → barely ever, close to never. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"scarcely ever\"",
-              "example": "I see him barely ever, close to never."
+              "term": "scarcely ever",
+              "meaning": "almost never",
+              "example": "I scarcely ever see him now."
             },
             {
               "id": "a2p12q17",
@@ -17266,8 +17289,9 @@
               ],
               "answer": 0,
               "explanation": "barely ever → almost not at all. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"barely ever\"",
-              "example": "He sleeps almost not at all."
+              "term": "barely ever",
+              "meaning": "almost never",
+              "example": "He barely ever sleeps late."
             },
             {
               "id": "a2p12q18",
@@ -17281,8 +17305,9 @@
               ],
               "answer": "not often, with gaps between",
               "explanation": "infrequently → not often, with gaps between. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"infrequently\"",
-              "example": "Buses come not often, with gaps between."
+              "term": "infrequently",
+              "meaning": "not often; with long gaps",
+              "example": "Buses run infrequently on Sundays."
             },
             {
               "id": "a2p12q19",
@@ -17296,8 +17321,9 @@
               ],
               "answer": 2,
               "explanation": "never → not on any occasion, ever. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"never\"",
-              "example": "Not on any occasion, ever, did he lie."
+              "term": "never",
+              "meaning": "not at any time",
+              "example": "I never eat fish."
             }
           ]
         },
@@ -17318,8 +17344,9 @@
               ],
               "answer": 2,
               "explanation": "constantly → without stopping, all the time. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"constantly\"",
-              "example": "The baby cried without stopping, all the time."
+              "term": "constantly",
+              "meaning": "all the time; without stopping",
+              "example": "The baby cries constantly at night."
             },
             {
               "id": "a2p12q21",
@@ -17333,8 +17360,9 @@
               ],
               "answer": "again and again over time",
               "explanation": "continually → again and again over time. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"continually\"",
-              "example": "The phone rang again and again over time."
+              "term": "continually",
+              "meaning": "again and again over a long time",
+              "example": "The phone rings continually all day."
             },
             {
               "id": "a2p12q22",
@@ -17348,8 +17376,9 @@
               ],
               "answer": 0,
               "explanation": "repeatedly → one time after another. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"repeatedly\"",
-              "example": "He failed one time after another."
+              "term": "repeatedly",
+              "meaning": "many times, one after another",
+              "example": "He asked me the same question repeatedly."
             },
             {
               "id": "a2p12q23",
@@ -17363,8 +17392,9 @@
               ],
               "answer": "as part of a fixed routine",
               "explanation": "routinely → as part of a fixed routine. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"routinely\"",
-              "example": "She checks her email as part of a fixed routine."
+              "term": "routinely",
+              "meaning": "as a normal, regular habit",
+              "example": "She routinely checks her email each morning."
             },
             {
               "id": "a2p12q24",
@@ -17378,8 +17408,9 @@
               ],
               "answer": 2,
               "explanation": "habitually → out of a settled habit. Frequency adverbs matched to how often they mean.",
-              "meaning": "means the same as \"habitually\"",
-              "example": "He bites his nails out of a settled habit."
+              "term": "habitually",
+              "meaning": "by habit, without thinking",
+              "example": "He habitually bites his nails."
             }
           ]
         }
@@ -17745,7 +17776,8 @@
               ],
               "answer": "on",
               "explanation": "\"on\" is correct here. Everyday vocabulary for giving and following directions.",
-              "meaning": "touching; used in \"on the corner\""
+              "meaning": "at the point where two streets meet",
+              "example": "Turn left, the bank is on the corner."
             },
             {
               "id": "a2p13q23",
@@ -18310,7 +18342,7 @@
             {
               "id": "a2p15q8",
               "type": "fill",
-              "prompt": "The ___ machine is outside the bank. (it gives out cash)",
+              "prompt": "The ___ is outside the bank. (it gives out cash)",
               "bank": [
                 "ATM",
                 "vending",
@@ -18374,7 +18406,7 @@
             {
               "id": "a2p15q12",
               "type": "mc",
-              "prompt": "I need to ___ my PIN number.",
+              "prompt": "I need to ___ my PIN.",
               "choices": [
                 "change",
                 "parcel",
@@ -18451,7 +18483,7 @@
             {
               "id": "a2p15q17",
               "type": "fill",
-              "prompt": "I forgot my ___ number for the account. (the four digits for my card)",
+              "prompt": "I forgot my ___ for the account. (the four digits for my card)",
               "bank": [
                 "PIN",
                 "branch",
@@ -18537,7 +18569,8 @@
               ],
               "answer": "order",
               "explanation": "\"order\" is correct here. A2-level vocabulary for post office and banking errands.",
-              "meaning": "a bank instruction to pay regularly"
+              "meaning": "a regular payment your bank makes for you",
+              "example": "I set up a standing order for my rent."
             },
             {
               "id": "a2p15q23",
@@ -19675,7 +19708,7 @@
               ],
               "answer": 0,
               "explanation": "\"painting\" is correct here. A2-level past continuous tense practice.",
-              "meaning": "covering a surface with paint"
+              "meaning": "covering a surface with colour"
             }
           ]
         },

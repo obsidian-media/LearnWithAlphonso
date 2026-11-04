@@ -73,6 +73,17 @@ private func answerOf(_ question: Question) -> String {
     }
 }
 
+/// The card's word: the authored `term` when the pack sets one (a pack whose answer is
+/// the definition, like a2p12), else the answer. "" means the question makes no card.
+/// Mirrors the web's `termOf` in src/data/vocab.ts.
+private func termOf(_ question: Question) -> String {
+    switch question {
+    case .multipleChoice(let q): return q.term ?? answerOf(question)
+    case .fillInBlank(let q): return q.term ?? answerOf(question)
+    default: return answerOf(question)
+    }
+}
+
 /// Quiz instructions and pair-drill stems: filling their blank gives a label, not a
 /// sentence. Mirrors the web's `STEM` in src/data/vocab.ts.
 private let stemPattern = try! NSRegularExpression(
@@ -133,7 +144,7 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
     var seen: Set<String> = []
     var items: [VocabItem] = []
     for question in lesson.questions {
-        let term = answerOf(question).trimmingCharacters(in: .whitespaces)
+        let term = termOf(question).trimmingCharacters(in: .whitespaces)
         guard !term.isEmpty else { continue }
         let key = term.lowercased()
         guard !seen.contains(key) else { continue }

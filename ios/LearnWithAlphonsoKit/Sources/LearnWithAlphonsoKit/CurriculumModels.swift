@@ -32,11 +32,14 @@ public enum Question: Decodable, Sendable {
         /// (curriculum.ts `meaning`/`example`), nil when none is authored.
         public let meaning: String?
         public let example: String?
+        /// The word the vocab card teaches when it is not the answer text
+        /// (curriculum.ts `term`); "" means this question makes no card.
+        public let term: String?
 
         public init(
             id: String, prompt: String, choices: [String], answer: Int, explanation: String,
             imageKey: String? = nil, audioText: String? = nil,
-            meaning: String? = nil, example: String? = nil
+            meaning: String? = nil, example: String? = nil, term: String? = nil
         ) {
             self.id = id
             self.prompt = prompt
@@ -47,6 +50,7 @@ public enum Question: Decodable, Sendable {
             self.audioText = audioText
             self.meaning = meaning
             self.example = example
+            self.term = term
         }
     }
 
@@ -116,10 +120,13 @@ public enum Question: Decodable, Sendable {
         /// (curriculum.ts `meaning`/`example`), nil when none is authored.
         public let meaning: String?
         public let example: String?
+        /// The word the vocab card teaches when it is not the answer text
+        /// (curriculum.ts `term`); "" means this question makes no card.
+        public let term: String?
 
         public init(
             id: String, prompt: String, bank: [String], answer: String, explanation: String,
-            meaning: String? = nil, example: String? = nil
+            meaning: String? = nil, example: String? = nil, term: String? = nil
         ) {
             self.id = id
             self.prompt = prompt
@@ -128,6 +135,7 @@ public enum Question: Decodable, Sendable {
             self.explanation = explanation
             self.meaning = meaning
             self.example = example
+            self.term = term
         }
     }
 

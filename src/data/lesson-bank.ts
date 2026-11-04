@@ -36,6 +36,11 @@ type Pack = {
    * every wording the list misses costs an AI call to accept.
    */
   kind: "pair" | "cloze" | "listening" | "speak" | "translate";
+  /**
+   * Pair packs whose answer (right side) is a definition: the word-card term is the
+   * left side instead, carried on each question as `term`. Moves no ids, options or answers.
+   */
+  termFromLeft?: boolean;
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -64,14 +69,14 @@ shelf|shelves|flat boards on a wall for books|The shelves are full of books.
 city|cities|big places where many people live|London and Paris are big cities.
 baby|babies|very young children|The babies sleep all day.
 party|parties|times when friends meet to have fun|There are two parties this weekend.
-box|boxes|containers with four sides|The boxes are under the bed.
+box|boxes|containers for storing or carrying things|The boxes are under the bed.
 watch|watches|small clocks you wear on your wrist|Her watches are on the shelf.
 bus|buses|big vehicles that carry many people|Two buses stop here every hour.
 dish|dishes|plates and bowls for food|Please wash the dishes after dinner.
 potato|potatoes|round brown vegetables that grow under the ground|We cook potatoes for dinner.
 photo|photos|pictures made with a camera|Look at my holiday photos.
-sheep|sheep|more than one sheep; farm animals with wool|The sheep eat grass on the hill.
-fish|fish|more than one fish; animals that swim|Fish live in the sea.
+sheep|sheep|woolly farm animals; one word for many|The sheep eat grass on the hill.
+fish|fish|water animals; the same for one or many|Fish live in the sea.
 half|halves|two equal parts of one thing|Cut the apple into two halves.
 life|lives|the time that people are alive|Doctors work to save lives.`,
   },
@@ -84,11 +89,11 @@ life|lives|the time that people are alive|Doctors work to save lives.`,
     data: `I ___ a student.|am|the verb be, used with I
 She ___ my sister.|is|the verb be, used with he or she
 They ___ at home.|are|the verb be, used with they or we
-He ___ to work by bus.|goes|go, used with he, she or it
+He ___ to work by bus.|goes|moves or travels; used with he or she
 We ___ English every day.|study|to learn about something
 It ___ cold today.|is|the verb be; tells about the weather
 My parents ___ teachers.|are|be, used with more than one person
-She ___ coffee in the morning.|drinks|takes a drink into the mouth
+She ___ coffee in the morning.|drinks|takes liquid into the mouth
 I ___ like spicy food.|don't|short for do not; makes a negative
 He ___ not live here.|does|helps make a negative with he or she
 ___ you from Spain?|Are|starts a question with you
@@ -165,7 +170,7 @@ Walk ___ the bridge.|across|from one side to the other
 The dog is ___ the door.|behind|at the back of something
 Come ___ the room.|into|moving to the inside of a place
 We travel ___ train.|by|shows how you travel
-The party is ___ midnight.|at|used with night-time hours like midnight
+The party is ___ midnight.|at|used before a clock time|The class starts at nine.
 I study ___ the morning.|in|used with parts of the day
 The cafe is ___ the station.|opposite|facing something on the other side
 He is ___ holiday.|on|used in the phrase "on holiday"
@@ -181,18 +186,18 @@ She waited ___ the rain.|in`,
     note: "English fixes certain verbs to certain nouns.",
     data: `a shower|take|to have; used in "take a shower"|I take a shower every morning.
 breakfast|have|to eat; used in "have breakfast"|We have breakfast at eight.
-homework|do|to complete; used in "do homework"|I do my homework after school.
+homework|do|to carry out a task or activity|I do my homework after school.
 a photo|take
-a mistake|make|to do something; used in "make a mistake"|Everyone can make a mistake.
+a mistake|make|to create or cause something|Everyone can make a mistake.
 the bus|catch|to get on a bus or train|I catch the bus at seven.
 music|listen to|to hear something carefully|I listen to music on the bus.
 TV|watch|to look at something moving|We watch TV after dinner.
-a question|ask|to put a question to someone|May I ask a question?
+a question|ask|to say something to get an answer|May I ask a question?
 money|spend|to pay money for things|He likes to spend money on games.
 friends|make|to start a friendship with people|She makes friends very easily.
 a bike|ride|to sit on a bike and move|I ride my bike to school.
 the dishes|wash|to clean with water|I wash the dishes after dinner.
-your teeth|brush|to clean with a brush|Brush your teeth twice a day.
+your teeth|brush|to clean or tidy teeth or hair|Brush your teeth twice a day.
 a nap|take|to have; used in "take a nap"|I take a nap after lunch.
 a decision|make|used with "decision"; means to choose|You must make a decision today.
 the shopping|do|used with "the shopping"; to buy things|I do the shopping on Saturdays.
@@ -326,7 +331,7 @@ He always carries a leather ___.|bag|a container you carry things in
 Take your ___ — it might rain.|umbrella|something that keeps the rain off you
 She wore a yellow ___ to the party.|hat|a covering for your head
 He loosened his ___ after a long day.|tie|a long cloth worn around the neck
-I need to buy new ___ for the gym.|shorts|short trousers for warm days
+I need to buy new ___ for the gym.|shorts|trousers that end above the knee
 She wore a white ___ under her jacket.|blouse|a light shirt for women
 He put on his ___ before the run.|trainers|soft shoes for sport
 These ___ don't match my shoes.|socks|soft coverings for your feet
@@ -537,7 +542,7 @@ is bigger than expected|oversized|too big; bigger than normal|He wore an oversiz
     note: "Simple present tense sentences describing a typical day.",
     data: `I ___ up at seven o'clock every morning.|wake|to stop sleeping
 She ___ a shower before breakfast.|takes|to have; used in "takes a shower"
-She ___ her hair before she goes out.|brushes|cleans with a brush
+She ___ her hair before she goes out.|brushes|makes hair tidy with a tool
 We ___ breakfast together as a family.|eat|to put food in your mouth
 I ___ dressed before I leave the house.|get|to become; used in "get dressed"
 She ___ to work by bus.|travels|goes from one place to another
@@ -568,7 +573,7 @@ I always ___ my alarm before I sleep.|set|to get a clock ready to ring`,
     kind: "cloze",
     note: "Common classroom vocabulary for beginners.",
     data: `Open your ___ to page ten.|book|pages of words to read
-Please write on the ___.|whiteboard|a white board you write on
+Please write on the ___.|whiteboard|a large smooth surface you write on
 I need a ___ to write my answer.|pen|a tool for writing with ink
 Can I borrow your ___ to draw a line?|ruler|a tool for measuring and drawing lines
 The ___ sits at the front of the class.|teacher|a person who helps students learn
@@ -994,7 +999,7 @@ The train ___ from platform 4.|departs|leaves, as a train or plane does
 I'd like a ___ ticket, please.|return|a ticket for going and coming back
 Is this seat ___ ?|taken|used by someone else; not free
 Can you ___ me the way to the museum?|show|to guide someone with your hand or words
-I'm just ___ , thanks.|looking|only looking, not buying yet
+I'm just ___ , thanks.|looking|just browsing, not buying yet
 Do you have this in a bigger ___ ?|size|how big a piece of clothing is
 I'd like to ___ this jacket.|return|to take something back to a shop
 What time is ___ out?|check|"check out" means to leave a hotel
@@ -1008,7 +1013,7 @@ This shirt doesn't ___ me.|fit|to be the right size
 We're ___ of stock.|out|used in "out of stock"; none left
 I'll ___ it, thanks.|take|to choose to buy
 Where can I ___ the bus?|catch|to get on a bus or train
-The hotel ___ breakfast.|includes|has as a part`,
+The price ___ breakfast.|includes|has something as one of its parts|The price includes breakfast.`,
   },
   {
     id: "a2p5",
@@ -1032,7 +1037,7 @@ ___ of the students passed.|Most|almost all
 She ate the ___ cake.|whole|all of something; complete
 Would you like ___ tea?|some|used in offers and questions
 I bought ___ apples.|several|more than two but not many
-There's hardly ___ juice.|any|almost none, after "hardly"
+There's hardly ___ juice.|any|used in questions and with not or hardly|Do you have any juice?
 We have ___ homework tonight.|lots of|a large number or amount
 He owns ___ books.|many|a large number of things
 Add a ___ of salt.|pinch|a small amount you take with two fingers
@@ -1054,17 +1059,17 @@ She ___ meeting Tom at six.|is|used for plans already arranged
 ___ you help me, please?|Will
 I'm ___ to study medicine.|going|"going to" talks about plans
 The train ___ at ten tomorrow.|leaves|used for fixed timetables
-They ___ probably be late.|will|shows what you think will happen
+They ___ probably be late.|will|shows a guess about the future|They will probably be late.
 Look at those clouds — it's ___ to storm.|going|talks about what will happen soon
 I ___ have the soup, please.|will
 What ___ you doing tonight?|are|used in a question about plans
-He ___ be twenty next month.|will|says what will be true later
+He ___ be twenty next month.|will|shows a fact about the future|He will be twenty next month.
 We're ___ dinner at eight.|having|used for plans already arranged
 I promise I ___ tell anyone.|won't|short for will not
 She's ___ to look for a new job.|going|"going to" talks about plans
 The film ___ at nine.|starts|begins at a set time
 ___ we take a taxi?|Shall|used to suggest something to friends
-By June I ___ have finished.|will|talks about what will happen
+I ___ send it tomorrow, I promise.|will|shows a promise or a sure plan|I will send it tomorrow.
 I'm not ___ to argue.|going|used in "not going to" for plans
 Perhaps they ___ come later.|will
 He's ___ his exam on Friday.|taking|used for plans already arranged
@@ -1123,9 +1128,9 @@ a helmet and bike|cycling|riding a bike|Cycling to work saves money.
 a bat and ball|cricket|a team game with a bat and ball|They watch cricket on TV.
 gloves and a ring|boxing|a sport with gloves in a ring|He trains for boxing every day.
 skis and snow|skiing|sliding down snow on long boards|We go skiing in winter.
-a rod and hook|fishing|trying to catch fish|My grandfather loves fishing.
+a rod and hook|fishing|trying to catch animals in water|My grandfather loves fishing.
 a needle and thread|sewing|joining cloth with needle and thread|She is good at sewing.
-a canvas and brush|painting|making pictures with paint|Painting makes her feel calm.
+a canvas and brush|painting|making pictures with colours|Painting makes her feel calm.
 a camera|photography|taking pictures with a camera|He studies photography at school.
 clay and a wheel|pottery|making pots and bowls from clay|We made a bowl in pottery class.
 a deck of cards|card games|games played with a deck of cards|We play card games at night.
@@ -1224,7 +1229,7 @@ We're just ___ a table for now, not ready to order.|looking|reading or checking|
 Could you bring some more ___, please?|bread|food baked from flour
 I'd like my steak ___, not too well done.|medium|cooked not too little, not too much
 Is there a ___ menu for the children?|kids|children; young people
-Can I pay by ___ card?|credit|used in "credit card" to pay later
+Can I pay by ___ card?|credit|money you borrow now and pay back later
 We'd like to sit by the ___, please.|window|an opening in a wall with glass
 This soup is ___ hot, be careful.|very|extremely; to a high degree
 Could we get some extra ___ for the fries?|ketchup|a red sauce made from tomatoes
@@ -1241,33 +1246,34 @@ Enjoy your ___!|dinner|the main meal in the evening`,
     title: "Adverbs of Frequency",
     subtitle: "How often things happen",
     kind: "pair",
+    termFromLeft: true,
     prompt: 'How often does "%s" happen?',
     note: "Frequency adverbs matched to how often they mean.",
-    data: `always|every single time, without exception|means the same as "always"|She was late every single time, without exception.
-usually|the great majority of the time|means the same as "usually"|Buses come on time the great majority of the time.
-normally|as a rule, under typical conditions|means the same as "normally"|As a rule, under typical conditions, I walk to work.
-generally|in most cases you'll find|means the same as "generally"|In most cases you'll find the shop open.
-frequently|on many separate occasions|means the same as "frequently"|He called on many separate occasions.
-often|quite a lot, many times|means the same as "often"|She calls quite a lot, many times a week.
-regularly|at fixed, repeated intervals|means the same as "regularly"|The bus comes at fixed, repeated intervals.
-sometimes|on certain occasions but not most|means the same as "sometimes"|He cooks dinner on certain occasions but not most.
-occasionally|now and then, but not often|means the same as "occasionally"|We eat out now and then, but not often.
-periodically|at intervals, coming and going|means the same as "periodically"|The rain fell at intervals, coming and going.
-now and then|every so often, casually|means the same as "now and then"|He calls every so often, casually.
-once in a while|not very often, infrequently|means the same as "once in a while"|I see him not very often, infrequently.
-from time to time|at scattered, irregular moments|means the same as "from time to time"|It rains at scattered, irregular moments.
-seldom|only rarely, not very often|means the same as "seldom"|She visits only rarely, not very often.
-rarely|very infrequently indeed|means the same as "rarely"|He eats sweets very infrequently indeed.
-hardly ever|almost never at all|means the same as "hardly ever"|They eat meat almost never at all.
-scarcely ever|barely ever, close to never|means the same as "scarcely ever"|I see him barely ever, close to never.
-barely ever|almost not at all|means the same as "barely ever"|He sleeps almost not at all.
-infrequently|not often, with gaps between|means the same as "infrequently"|Buses come not often, with gaps between.
-never|not on any occasion, ever|means the same as "never"|Not on any occasion, ever, did he lie.
-constantly|without stopping, all the time|means the same as "constantly"|The baby cried without stopping, all the time.
-continually|again and again over time|means the same as "continually"|The phone rang again and again over time.
-repeatedly|one time after another|means the same as "repeatedly"|He failed one time after another.
-routinely|as part of a fixed routine|means the same as "routinely"|She checks her email as part of a fixed routine.
-habitually|out of a settled habit|means the same as "habitually"|He bites his nails out of a settled habit.`,
+    data: `always|every single time, without exception|every time, without exception|I always brush my teeth at night.
+usually|the great majority of the time|most of the time|I usually walk to work.
+normally|as a rule, under typical conditions|in most normal situations|We normally eat dinner at seven.
+generally|in most cases you'll find|in most cases|It is generally quiet here at night.
+frequently|on many separate occasions|very often; many times|He frequently visits his grandmother.
+often|quite a lot, many times|many times; not rarely|She often calls her mother.
+regularly|at fixed, repeated intervals|again and again, at fixed times|I regularly go to the gym.
+sometimes|on certain occasions but not most|not every time, but on some days|Sometimes we eat out on Fridays.
+occasionally|now and then, but not often|now and then; not often|We occasionally go to the cinema.
+periodically|at intervals, coming and going|from time to time, at intervals|I check my email periodically.
+now and then|every so often, casually|sometimes, but not often|I call my old friend now and then.
+once in a while|not very often, infrequently|not often; a few times a year|We eat out once in a while.
+from time to time|at scattered, irregular moments|sometimes; not on a fixed day|He visits us from time to time.
+seldom|only rarely, not very often|not often; only a few times|She seldom eats sweets.
+rarely|very infrequently indeed|almost never; not often|He rarely watches television.
+hardly ever|almost never at all|almost never|They hardly ever eat meat.
+scarcely ever|barely ever, close to never|almost never|I scarcely ever see him now.
+barely ever|almost not at all|almost never|He barely ever sleeps late.
+infrequently|not often, with gaps between|not often; with long gaps|Buses run infrequently on Sundays.
+never|not on any occasion, ever|not at any time|I never eat fish.
+constantly|without stopping, all the time|all the time; without stopping|The baby cries constantly at night.
+continually|again and again over time|again and again over a long time|The phone rings continually all day.
+repeatedly|one time after another|many times, one after another|He asked me the same question repeatedly.
+routinely|as part of a fixed routine|as a normal, regular habit|She routinely checks her email each morning.
+habitually|out of a settled habit|by habit, without thinking|He habitually bites his nails.`,
   },
   {
     id: "a2p13",
@@ -1297,7 +1303,7 @@ The pharmacy is ___ the corner from here.|round|British way to say "around"
 It's about a five-minute ___ from here.|walk|a short trip on foot
 The bus stop is ___ the church.|outside|not inside a building
 Go ___ this road until you reach the roundabout.|down|along or to a lower place
-The café is ___ the corner of Main Street.|on|touching; used in "on the corner"
+The café is ___ the corner of Main Street.|on|at the point where two streets meet|Turn left, the bank is on the corner.
 The nearest ATM is ___ the entrance.|inside|in the inner part of
 You can't miss it, it's ___ the town square.|in|inside a place or area`,
   },
@@ -1347,21 +1353,21 @@ I'd like to open a new bank ___.|account|a place at a bank to keep money
 The parcel should arrive within three working ___.|days|periods of twenty-four hours
 Could you weigh this ___ for me?|package|a wrapped box for sending
 I need to ___ this form before I send it.|fill in|to write answers on a form|Please fill in this form first.
-The ___ machine is outside the bank.|ATM|a machine that gives you cash
+The ___ is outside the bank.|ATM|a machine that gives you cash
 Could I get a ___ for this transaction?|receipt|a paper that shows you paid
 I'd like to send this by ___ post.|airmail|post sent by plane
 My card was ___ by the machine.|declined|not accepted
-I need to ___ my PIN number.|change|to replace with a new one
+I need to ___ my PIN.|change|to replace with a new one
 The queue at the ___ was very long today.|post office|where you send letters and parcels
 Could you check my account ___, please?|balance|the money in your account
 I'd like to ___ a cheque, please.|cash|to swap a cheque for money
 The letter needs more ___ to be sent abroad.|stamps|small paper labels for letters
-I forgot my ___ number for the account.|PIN|a secret number for your bank card
+I forgot my ___ for the account.|PIN|a secret number for your bank card
 Could I transfer money to another ___?|bank|a place that keeps people's money
 The bank ___ closes at five o'clock.|branch|one office of a bank
 I need to ___ my bank card, it's expired.|renew|to get a new copy
 Could you tell me the ___ to send this parcel?|cost|the price of something
-I'd like to set up a standing ___.|order|a bank instruction to pay regularly
+I'd like to set up a standing ___.|order|a regular payment your bank makes for you|I set up a standing order for my rent.
 The clerk asked me to ___ the form.|sign|to write your name on
 I need to collect a ___ from the post office.|delivery|something brought to your home`,
   },
@@ -1454,7 +1460,7 @@ I was ___ an email when the computer crashed.|writing|putting words on paper or 
 They were ___ when the storm began.|swimming|moving through water
 She was ___ when the microphone stopped working.|singing|making music with your voice
 We were ___ when the tent collapsed.|camping|sleeping outside in a tent
-He was ___ the fence when it started to rain.|painting|covering a surface with paint
+He was ___ the fence when it started to rain.|painting|covering a surface with colour
 I was ___ when the alarm woke me up.|dreaming|seeing pictures in your sleep
 They were ___ when their mother walked in.|arguing|talking angrily with someone
 She was ___ when she slipped and fell.|dancing|moving to music
@@ -4061,6 +4067,7 @@ function packQuestions(pack: Pack): Question[] {
     // options or its id, so adding them cannot move a saved answer. Only the
     // mc/fill questions below carry them (the card is derived from those).
     const card = {
+      ...(pack.termFromLeft && pack.kind === "pair" ? { term: left } : {}),
       ...(meaning ? { meaning } : {}),
       ...(example ? { example } : {}),
     };

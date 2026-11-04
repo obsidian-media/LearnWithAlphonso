@@ -183,6 +183,23 @@ describe("deriveVocab", () => {
     expect(items[1]).toMatchObject({ meaning: "to have a drink", example: "I drink coffee." });
   });
 
+  it("uses an authored term instead of the answer, and an empty term makes no card", () => {
+    const adverb: Question = {
+      ...mc,
+      id: "t1",
+      prompt: 'How often does "always" happen?',
+      choices: ["every time", "never"],
+      answer: 0,
+      term: "always",
+      meaning: "every time, without exception",
+      example: "I always brush my teeth.",
+    };
+    const label: Question = { ...mc, id: "t2", term: "" };
+    const items = deriveVocab({ ...lesson, questions: [adverb, label] });
+    expect(items.map((i) => i.term)).toEqual(["always"]);
+    expect(items[0]).toMatchObject({ meaning: "every time, without exception" });
+  });
+
   it("skips questions whose answer is blank", () => {
     const blankLesson: Lesson = {
       id: "l2",

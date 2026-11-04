@@ -86,7 +86,7 @@ existing pipeline; this audit does not plan it.
 
 ## Status of plan item 1 (2026-11-04)
 
-Done for English A1 (638 cards) and A2 (504 cards): optional `meaning` and `example` are the 3rd and 4th `|` fields of pair/cloze pack lines (and fields on the hand-written A1/A2 questions), bundled to iOS and Android through the existing exports, and held by `src/data/vocab-meanings.test.ts`. Two known weak spots, both pack-shape problems that a card text cannot fix without moving ids: `a2p12` ("How often does X happen?") makes the _definition_ the card term, so its 25 cards read "term = a phrase, meaning = means the same as X"; and a few cloze questions have English that is itself doubtful (see the PR body). B1 to C1 are not started.
+Done for English A1 (638 cards) and A2 (504 cards): optional `meaning` and `example` are the 3rd and 4th `|` fields of pair/cloze pack lines (and fields on the hand-written A1/A2 questions), bundled to iOS and Android through the existing exports, and held by `src/data/vocab-meanings.test.ts`. Review of the first version found about 13% defective cards; the second pass fixed them. `a2p12` ("How often does X happen?") has its definition as the answer, so the pack sets `termFromLeft` and each question carries an optional `term` (the adverb) that web, iOS and Android use as the card word, with no id, option or answer moved; an empty `term` makes a question produce no card (used for three grammar-sample sentences). The gate now matches short words whole ("on" is not in "London"), rejects a meaning that defines the word with itself, rejects an example that describes the word instead of using it, and `isMalformedPackLine` rejects an example without a meaning. B1 to C1 are not started.
 
 ## Plan (not done here)
 

@@ -12,6 +12,11 @@ export type Question =
       choices: string[];
       answer: number;
       explanation: string;
+      /**
+       * The word the vocab card teaches, when it is not the answer text (a pack whose answer is the
+       * definition, like a2p12). Absent: the answer. Empty: this question makes no card.
+       */
+      term?: string;
       /** Authored word-card gloss for the answer (at most 8 words, simple English). Optional; the vocab card hides an empty one. */
       meaning?: string;
       /** Authored example sentence for the answer; when absent the card falls back to the filled cloze sentence. */
@@ -86,6 +91,11 @@ export type Question =
       bank: string[];
       answer: string;
       explanation: string;
+      /**
+       * The word the vocab card teaches, when it is not the answer text (a pack whose answer is the
+       * definition, like a2p12). Absent: the answer. Empty: this question makes no card.
+       */
+      term?: string;
       /** Authored word-card gloss for the answer (at most 8 words, simple English). Optional; the vocab card hides an empty one. */
       meaning?: string;
       /** Authored example sentence for the answer; when absent the card falls back to the filled cloze sentence. */
@@ -537,8 +547,7 @@ const foundationUnits: Unit[] = [
             choices: ["I ate breakfast.", "I eat breakfast.", "I am eating.", "I will eat."],
             answer: 1,
             explanation: "Present simple describes routines.",
-            meaning: "tells what you do every day",
-            example: "I eat breakfast at seven every day.",
+            term: "",
           },
           {
             id: "q4",
@@ -547,7 +556,7 @@ const foundationUnits: Unit[] = [
             bank: ["brushes", "brush", "brushed", "brushing"],
             answer: "brushes",
             explanation: "Verbs ending in -sh add -es.",
-            meaning: "cleans with a brush",
+            meaning: "cleans teeth or tidies hair",
           },
           {
             id: "q5",
@@ -580,8 +589,7 @@ const foundationUnits: Unit[] = [
             ],
             answer: 0,
             explanation: 'Present-simple questions use "do/does".',
-            meaning: "a question about a habit",
-            example: "Do you drink coffee in the morning?",
+            term: "",
           },
           {
             id: "q8",
@@ -635,7 +643,7 @@ const foundationUnits: Unit[] = [
             bank: ["have", "has", "having", "haves"],
             answer: "have",
             explanation: "Plural subject + base form.",
-            meaning: 'to hold, as in "have a meeting"',
+            meaning: "to hold or take part in an event",
           },
           {
             id: "q5",
@@ -916,7 +924,7 @@ const foundationUnits: Unit[] = [
             bank: ["mind", "want", "like", "care"],
             answer: "mind",
             explanation: '"Would you mind + -ing?" is very polite.',
-            meaning: 'a polite word in "Would you mind"',
+            meaning: "to be bothered by something",
           },
           {
             id: "q7",
@@ -975,8 +983,9 @@ const foundationUnits: Unit[] = [
             choices: ["Where you live", "If you'll eat in or take away", "Your name", "Your order"],
             answer: 1,
             explanation: "Servers ask this in cafés.",
-            meaning: "asks whether you eat here or leave",
-            example: "He asked if you'll eat in or take away.",
+            term: "For here or to go?",
+            meaning: "asks if you eat here or take away",
+            example: '"For here or to go?" "To go, please."',
           },
           {
             id: "q4",

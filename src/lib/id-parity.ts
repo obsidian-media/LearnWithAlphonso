@@ -50,6 +50,19 @@ export function diffIds(baseline: string[], current: string[]) {
   };
 }
 
+/**
+ * Is this pack line the wrong shape? `maxFields` is 2, or 4 for English pair and
+ * cloze packs. A third field (the word-card meaning) may not be empty: an example
+ * with no meaning, or a stray "|", used to parse silently into a card with a
+ * blank gloss. An empty fourth field is fine (the card falls back to the cloze
+ * sentence).
+ */
+export function isMalformedPackLine(line: string, maxFields: number): boolean {
+  const fields = line.split("|");
+  if (fields.length < 2 || fields.length > maxFields) return true;
+  return fields.length > 2 && fields[2]!.trim() === "";
+}
+
 export function packLineStats(
   course: Course = "en",
 ): Record<string, { lines: number; malformed: string[] }> {
@@ -63,10 +76,7 @@ export function packLineStats(
     // authored word-card meaning and example (lesson-bank.ts reads them; the French
     // and Spanish engine would silently ignore them, so they stay at two there).
     const maxFields = course === "en" && (pack.kind === "pair" || pack.kind === "cloze") ? 4 : 2;
-    const malformed = lines.filter((l) => {
-      const n = l.split("|").length;
-      return n < 2 || n > maxFields;
-    });
+    const malformed = lines.filter((l) => isMalformedPackLine(l, maxFields));
     out[pack.id] = { lines: lines.length, malformed };
   }
   return out;

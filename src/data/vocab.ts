@@ -25,6 +25,11 @@ function answerOf(q: Question): string {
   return "";
 }
 
+/** The card's word: the authored `term` when the pack sets one, else the answer. "" means no card. */
+function termOf(q: Question): string {
+  return (q.type === "mc" || q.type === "fill" ? q.term : undefined) ?? answerOf(q);
+}
+
 /** Quiz instructions and pair-drill stems: filling their blank gives a label, not a sentence. */
 const STEM =
   /^(choose|which|select|complete|fill|plural of|opposite of|past (simple )?of|female form|male form|comparative|superlative|what is|what does|match)\b/i;
@@ -87,7 +92,7 @@ export function deriveVocabWithContext(lesson: Lesson): (VocabItem & { context: 
   const seen = new Set<string>();
   const items: (VocabItem & { context: string })[] = [];
   for (const q of lesson.questions) {
-    const term = answerOf(q).trim();
+    const term = termOf(q).trim();
     if (!term) continue;
     const key = titleCaseKey(term);
     if (seen.has(key)) continue;

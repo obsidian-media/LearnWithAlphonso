@@ -169,6 +169,22 @@ final class VocabDerivationTests: XCTestCase {
             [VocabItem(term: "went", meaning: "moved to a place in the past", example: "I went to the store.", image: nil)])
     }
 
+    func testAnAuthoredTermReplacesTheAnswerAndAnEmptyOneMakesNoCard() {
+        let lesson = Lesson(id: "a2p12l1", title: "t", subtitle: "s", questions: [
+            .multipleChoice(Question.MultipleChoice(
+                id: "q1", prompt: "How often does \"always\" happen?", choices: ["every time", "never"], answer: 0,
+                explanation: "x", meaning: "every time, without exception",
+                example: "I always brush my teeth.", term: "always")),
+            .multipleChoice(Question.MultipleChoice(
+                id: "q2", prompt: "Which is the present simple?", choices: ["I ate.", "I eat."], answer: 1,
+                explanation: "x", term: "")),
+        ])
+
+        XCTAssertEqual(
+            deriveVocab(lesson: lesson, images: [:]),
+            [VocabItem(term: "always", meaning: "every time, without exception", example: "I always brush my teeth.", image: nil)])
+    }
+
     func testTheBundledEnglishA1CardsAllHaveAMeaning() throws {
         let store = try ContentStore()
         let a1 = store.english.units.filter { $0.level == "A1" }.flatMap { $0.lessons }
