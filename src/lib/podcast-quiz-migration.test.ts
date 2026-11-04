@@ -66,6 +66,10 @@ describe("podcast quiz (real Postgres)", () => {
       CREATE TABLE public.language_progress (
         user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, language text NOT NULL,
         xp integer NOT NULL DEFAULT 0, league_tier text NOT NULL DEFAULT 'bronze', PRIMARY KEY (user_id, language));
+      CREATE TABLE public.user_progress (
+        user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, streak integer NOT NULL DEFAULT 0,
+        longest_streak integer NOT NULL DEFAULT 0, last_active_date date, hearts integer NOT NULL DEFAULT 5,
+        hearts_refill_at timestamptz, streak_freezes integer NOT NULL DEFAULT 0, updated_at timestamptz NOT NULL DEFAULT now());
       CREATE TABLE public.activity_days (
         user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL,
         xp_earned integer NOT NULL DEFAULT 0, PRIMARY KEY (user_id, day));
@@ -98,10 +102,17 @@ describe("podcast quiz (real Postgres)", () => {
       choiceIndex: i < wrong ? (qq.answerIndex + 1) % qq.choices.length : qq.answerIndex,
     }));
   };
-  async function submit(user: string, slug: string, answers: unknown, limit = 60, at = AT) {
+  async function submit(
+    user: string,
+    slug: string,
+    answers: unknown,
+    limit = 60,
+    at = AT,
+    completedAt: string | null = null,
+  ) {
     const r = await db.query<{ r: Record<string, unknown> }>(
-      "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,$3::jsonb,$4::timestamptz,$5::date,$6::integer) AS r",
-      [user, E[slug], JSON.stringify(answers), at, DAY, limit],
+      "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,$3::jsonb,$4::timestamptz,$5::timestamptz,$6::integer) AS r",
+      [user, E[slug], JSON.stringify(answers), at, completedAt, limit],
     );
     return r.rows[0]!.r;
   }
@@ -239,8 +250,8 @@ describe("podcast quiz (real Postgres)", () => {
     for (const answers of bad) {
       const r = await db
         .query<{ r: Record<string, unknown> }>(
-          "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,$3::jsonb,$4::timestamptz,$5::date,60) AS r",
-          [U1, E[COFFEE], JSON.stringify(answers), AT, DAY],
+          "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,$3::jsonb,$4::timestamptz,NULL,60) AS r",
+          [U1, E[COFFEE], JSON.stringify(answers), AT],
         )
         .catch(() => ({ rows: [{ r: { status: "raised" } }] }));
       expect(["invalid", "raised"]).toContain(r.rows[0]!.r.status);
@@ -274,10 +285,155 @@ describe("podcast quiz (real Postgres)", () => {
       [f.rows[0]!.id],
     );
     const r = await db.query<{ r: Record<string, unknown> }>(
-      "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,'[]'::jsonb,$3::timestamptz,$4::date,60) AS r",
-      [U1, e.rows[0]!.id, AT, DAY],
+      "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,'[]'::jsonb,$3::timestamptz,NULL,60) AS r",
+      [U1, e.rows[0]!.id, AT],
     );
     expect(r.rows[0]!.r).toEqual({ status: "not-found" });
+  });
+
+  describe("day and streak (mirrors a lesson completion)", () => {
+    const progress = async (user: string) =>
+      (
+        await db.query<{
+          streak: number;
+          longest_streak: number;
+          last_active_date: string | null;
+          streak_freezes: number;
+          hearts: number;
+        }>(
+          "SELECT streak, longest_streak, to_char(last_active_date,'YYYY-MM-DD') last_active_date, streak_freezes, hearts FROM public.user_progress WHERE user_id=$1",
+          [user],
+        )
+      ).rows[0];
+    const days = async (user: string) =>
+      (
+        await db.query<{ day: string; xp_earned: number }>(
+          "SELECT to_char(day,'YYYY-MM-DD') AS day, xp_earned FROM public.activity_days WHERE user_id=$1 ORDER BY day",
+          [user],
+        )
+      ).rows;
+    const seed = (user: string, last: string, streak: number, freezes = 0, longest = streak) =>
+      db.query(
+        "INSERT INTO public.user_progress (user_id, streak, longest_streak, last_active_date, streak_freezes) VALUES ($1,$2,$3,$4,$5)",
+        [user, streak, longest, last, freezes],
+      );
+    const q = (slug: string) => answersFor(slug, 0);
+
+    it("a first quiz starts the streak at 1 on today's activity day", async () => {
+      await submit(U1, COFFEE, q(COFFEE));
+      expect(await progress(U1)).toMatchObject({
+        streak: 1,
+        longest_streak: 1,
+        last_active_date: "2026-11-04",
+      });
+      expect(await days(U1)).toEqual([{ day: "2026-11-04", xp_earned: 70 }]);
+    });
+
+    it("extends yesterday's streak by one, and keeps the longest", async () => {
+      await seed(U1, "2026-11-03", 4, 0, 9);
+      await submit(U1, COFFEE, q(COFFEE));
+      expect(await progress(U1)).toMatchObject({
+        streak: 5,
+        longest_streak: 9,
+        last_active_date: "2026-11-04",
+      });
+    });
+
+    it("a second quiz the same day does not add another streak day", async () => {
+      await submit(U1, COFFEE, q(COFFEE));
+      await submit(U1, "au-cafe", q("au-cafe"));
+      expect((await progress(U1))?.streak).toBe(1);
+      expect(await days(U1)).toEqual([{ day: "2026-11-04", xp_earned: 130 }]);
+    });
+
+    it("a replay that pays 0 XP still counts for the streak, as a lesson replay does", async () => {
+      await seed(U1, "2026-11-03", 4);
+      await submit(U1, COFFEE, q(COFFEE), 60, "2026-11-03T12:00:00Z"); // banked yesterday
+      await db.query("UPDATE public.user_progress SET streak=4, last_active_date='2026-11-03'");
+      const replay = await submit(U1, COFFEE, q(COFFEE)); // nothing to pay today
+      expect(replay).toMatchObject({ status: "applied", xpGain: 0 });
+      expect(await progress(U1)).toMatchObject({ streak: 5, last_active_date: "2026-11-04" });
+      expect(await hits()).toBe(1); // and still no hourly slot for it
+    });
+
+    it("a missed day resets the streak, unless a freeze covers exactly one", async () => {
+      await seed(U1, "2026-11-02", 6, 1);
+      await submit(U1, COFFEE, q(COFFEE));
+      expect(await progress(U1)).toMatchObject({ streak: 7, streak_freezes: 0 });
+      await seed(U2, "2026-10-30", 6, 3);
+      await submit(U2, COFFEE, q(COFFEE));
+      expect(await progress(U2)).toMatchObject({ streak: 1, streak_freezes: 3 });
+    });
+
+    it("every 10th streak day earns a freeze and every 7th refills the hearts", async () => {
+      await seed(U1, "2026-11-03", 9);
+      await db.query("UPDATE public.user_progress SET hearts = 1 WHERE user_id=$1", [U1]);
+      await submit(U1, COFFEE, q(COFFEE));
+      expect(await progress(U1)).toMatchObject({ streak: 10, streak_freezes: 1, hearts: 1 });
+      await seed(U2, "2026-11-03", 6);
+      await db.query("UPDATE public.user_progress SET hearts = 1 WHERE user_id=$1", [U2]);
+      await submit(U2, COFFEE, q(COFFEE));
+      expect(await progress(U2)).toMatchObject({ streak: 7, hearts: 5 });
+    });
+
+    it("a user ahead of UTC (+14) is credited the UTC day of the moment they finished, not their local date", async () => {
+      // 01:30 on 5 Nov in Kiritimati is 11:30 on 4 Nov UTC.
+      await submit(U1, COFFEE, q(COFFEE), 60, AT, "2026-11-05T01:30:00+14:00");
+      expect((await progress(U1))?.last_active_date).toBe("2026-11-04");
+      expect(await days(U1)).toEqual([{ day: "2026-11-04", xp_earned: 70 }]);
+    });
+
+    it("a user behind UTC (-8) finishing at 9pm local is credited the UTC day, so the streak continues from UTC yesterday", async () => {
+      await seed(U1, "2026-11-04", 3);
+      // 9pm on 4 Nov in Los Angeles is 05:00 on 5 Nov UTC.
+      await submit(U1, COFFEE, q(COFFEE), 60, "2026-11-05T05:00:30Z", "2026-11-04T21:00:00-08:00");
+      expect(await progress(U1)).toMatchObject({ streak: 4, last_active_date: "2026-11-05" });
+    });
+
+    it("a claimed time more than 3 hours old is clamped, so a stale device cannot back-date the day", async () => {
+      await submit(U1, COFFEE, q(COFFEE), 60, "2026-11-05T01:00:00Z", "2026-11-03T20:00:00Z");
+      expect((await progress(U1))?.last_active_date).toBe("2026-11-04"); // 22:00Z on the 4th, not the 3rd
+    });
+
+    it("a claimed time in the future is clamped to now", async () => {
+      await submit(U1, COFFEE, q(COFFEE), 60, AT, "2026-11-09T00:00:00Z");
+      expect((await progress(U1))?.last_active_date).toBe("2026-11-04");
+    });
+
+    it("never moves the activity marker backwards", async () => {
+      await seed(U1, "2026-11-10", 5);
+      await submit(U1, COFFEE, q(COFFEE));
+      expect(await progress(U1)).toMatchObject({ last_active_date: "2026-11-10", streak: 5 });
+      expect(await days(U1)).toEqual([{ day: "2026-11-10", xp_earned: 70 }]);
+    });
+
+    it("counts the hourly slot at the clamped instant, as lessons do", async () => {
+      await submit(U1, COFFEE, q(COFFEE), 60, AT, "2026-11-04T10:00:00Z");
+      const r = await db.query<{ at: string }>(
+        "SELECT at::text FROM public.lesson_completion_hits",
+      );
+      expect(new Date(r.rows[0]!.at).toISOString()).toBe("2026-11-04T10:00:00.000Z");
+    });
+
+    it("a refused submission (rate limit) changes neither XP, streak nor day", async () => {
+      await submit(U1, COFFEE, q(COFFEE), 1);
+      await db.query("DELETE FROM public.user_progress");
+      await db.query("DELETE FROM public.activity_days");
+      const refused = await submit(U1, "au-cafe", q("au-cafe"), 1);
+      expect(refused).toEqual({ status: "rate-limited" });
+      expect(await progress(U1)).toBeUndefined();
+      expect(await days(U1)).toEqual([]);
+    });
+  });
+
+  it("serialises on the user's row: the lock line is in the function (PGlite is single-connection and cannot race)", () => {
+    // Removing this lets a quiz and a lesson finishing together both compute XP and streak from the same stale state.
+    // It is the same lock apply_lesson_completion takes.
+    const body = quizSql.slice(quizSql.indexOf("CREATE FUNCTION public.submit_podcast_quiz"));
+    expect(body).toMatch(/PERFORM 1 FROM auth\.users WHERE id = _user_id FOR NO KEY UPDATE;/);
+    // And the rows it then reads and writes are locked too.
+    expect(body).toMatch(/FROM public\.podcast_quiz_awards[\s\S]*?FOR UPDATE;/);
+    expect(body).toMatch(/FROM public\.user_progress WHERE user_id = _user_id FOR UPDATE;/);
   });
 
   it("deleting the account removes its awards (ON DELETE CASCADE)", async () => {
@@ -327,7 +483,7 @@ describe("podcast quiz (real Postgres)", () => {
       }
       expect(
         await has(
-          `SELECT has_function_privilege('${role}','public.submit_podcast_quiz(uuid,uuid,jsonb,timestamptz,date,integer)','EXECUTE') ok`,
+          `SELECT has_function_privilege('${role}','public.submit_podcast_quiz(uuid,uuid,jsonb,timestamptz,timestamptz,integer)','EXECUTE') ok`,
         ),
       ).toBe(false);
     }
@@ -351,7 +507,7 @@ describe("podcast quiz (real Postgres)", () => {
     ).toBe(true);
     expect(
       await has(
-        `SELECT has_function_privilege('service_role','public.submit_podcast_quiz(uuid,uuid,jsonb,timestamptz,date,integer)','EXECUTE') ok`,
+        `SELECT has_function_privilege('service_role','public.submit_podcast_quiz(uuid,uuid,jsonb,timestamptz,timestamptz,integer)','EXECUTE') ok`,
       ),
     ).toBe(true);
   });

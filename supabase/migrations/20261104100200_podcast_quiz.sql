@@ -54,6 +54,13 @@ CREATE POLICY "podcast_quiz_awards_select_own" ON public.podcast_quiz_awards
 
 -- Grades a submission against the stored key and pays the improvement, all in one transaction.
 --   _answers: [{"questionId": "q1", "choiceIndex": 2}, ...], exactly one entry per question.
+--   _at: the server's now. _completed_at: the instant the client says the quiz was finished (optional). Like a lesson's
+--   completedAt it is clamped into [_at - 3 hours, _at] (the 3 hours is a lesson session's lifetime) and its UTC date is
+--   the activity day, never earlier than the learner's last_active_date, so a fast or slow device clock cannot move
+--   the streak backwards or into the future. The hourly slot is counted at that same instant.
+--
+-- A submission counts for the streak and the day's activity exactly as a lesson completion does (apply_lesson_completion
+-- plus progress-math.ts computeStreakUpdate and the 7-day streak heart refill), including a replay that pays 0 XP.
 -- Returns {status: 'not-found' | 'invalid' | 'rate-limited' | 'applied', ...}. 'applied' carries correct, total,
 -- xpGain, bestCorrect, bestXp and missedQuestionIds. A refusal changes nothing.
 --
@@ -65,7 +72,7 @@ CREATE FUNCTION public.submit_podcast_quiz(
   _episode_id uuid,
   _answers jsonb,
   _at timestamptz,
-  _today date,
+  _completed_at timestamptz DEFAULT NULL,
   _limit integer DEFAULT 60
 ) RETURNS jsonb
 LANGUAGE plpgsql
@@ -82,8 +89,16 @@ DECLARE
   _best_correct integer;
   _best_xp integer;
   _gain integer;
+  _claimed timestamptz;
+  _today date;
+  _p public.user_progress%ROWTYPE;
+  _had_p boolean;
+  _streak integer;
+  _old_streak integer;
+  _freezes integer;
+  _diff integer;
 BEGIN
-  IF _user_id IS NULL OR _episode_id IS NULL OR _at IS NULL OR _today IS NULL
+  IF _user_id IS NULL OR _episode_id IS NULL OR _at IS NULL OR _limit IS NULL OR _limit < 1
      OR jsonb_typeof(_answers) IS DISTINCT FROM 'array' THEN
     RAISE EXCEPTION 'invalid podcast quiz submission';
   END IF;
@@ -133,8 +148,11 @@ BEGIN
   _best_xp := _best_correct * 10;
   _gain := greatest(0, _best_xp - coalesce(_prev_xp, 0));
 
+  -- The activity instant, clamped like a lesson's completedAt, and its UTC day.
+  _claimed := least(greatest(coalesce(_completed_at, _at), _at - interval '3 hours'), _at);
+
   IF _gain > 0 THEN
-    IF NOT public.consume_lesson_completion_slot(_user_id, _at, _limit) THEN
+    IF NOT public.consume_lesson_completion_slot(_user_id, _claimed, _limit) THEN
       RETURN jsonb_build_object('status', 'rate-limited');
     END IF;
 
@@ -148,17 +166,61 @@ BEGIN
     INSERT INTO public.language_progress (user_id, language, xp)
     VALUES (_user_id, _course, _gain)
     ON CONFLICT (user_id, language) DO UPDATE SET xp = public.language_progress.xp + EXCLUDED.xp;
-
-    INSERT INTO public.activity_days (user_id, day, xp_earned)
-    VALUES (_user_id, _today, _gain)
-    ON CONFLICT (user_id, day) DO UPDATE SET xp_earned = public.activity_days.xp_earned + EXCLUDED.xp_earned;
   END IF;
+
+  -- Streak and day, for a replay that pays nothing as much as for one that does (lessons do the same).
+  SELECT * INTO _p FROM public.user_progress WHERE user_id = _user_id FOR UPDATE;
+  _had_p := FOUND;
+  _today := (_claimed AT TIME ZONE 'UTC')::date;
+  IF _had_p AND _p.last_active_date IS NOT NULL AND _p.last_active_date > _today THEN
+    _today := _p.last_active_date; -- a late-arriving or skewed time never moves the marker backwards
+  END IF;
+
+  -- Mirrors computeStreakUpdate (progress-math.ts).
+  _old_streak := CASE WHEN _had_p THEN _p.streak ELSE 0 END;
+  _streak := _old_streak;
+  _freezes := CASE WHEN _had_p THEN _p.streak_freezes ELSE 0 END;
+  IF NOT _had_p OR _p.last_active_date IS NULL THEN
+    _streak := 1;
+  ELSIF _p.last_active_date = _today THEN
+    NULL; -- same day, no change
+  ELSE
+    _diff := _today - _p.last_active_date;
+    IF _diff = 1 THEN
+      _streak := _p.streak + 1;
+    ELSIF _diff = 2 AND _freezes > 0 THEN
+      _streak := _p.streak + 1;
+      _freezes := _freezes - 1;
+    ELSE
+      _streak := 1;
+    END IF;
+  END IF;
+  IF _streak > _old_streak AND _streak % 10 = 0 THEN
+    _freezes := _freezes + 1;
+  END IF;
+
+  INSERT INTO public.user_progress (user_id, streak, longest_streak, last_active_date, streak_freezes)
+  VALUES (_user_id, _streak, _streak, _today, _freezes)
+  ON CONFLICT (user_id) DO UPDATE SET
+    streak = EXCLUDED.streak,
+    longest_streak = greatest(public.user_progress.longest_streak, EXCLUDED.streak),
+    last_active_date = EXCLUDED.last_active_date,
+    streak_freezes = EXCLUDED.streak_freezes;
+  -- A new 7-day streak milestone refills the hearts, as it does for a lesson.
+  IF _streak > _old_streak AND _streak % 7 = 0 THEN
+    UPDATE public.user_progress SET hearts = 5, hearts_refill_at = NULL WHERE user_id = _user_id;
+  END IF;
+
+  INSERT INTO public.activity_days (user_id, day, xp_earned)
+  VALUES (_user_id, _today, _gain)
+  ON CONFLICT (user_id, day) DO UPDATE SET xp_earned = public.activity_days.xp_earned + EXCLUDED.xp_earned;
 
   RETURN jsonb_build_object(
     'status', 'applied',
     'correct', _correct,
     'total', _total,
     'xpGain', _gain,
+    'streak', _streak,
     'bestCorrect', _best_correct,
     'bestXp', _best_xp,
     'missedQuestionIds', _missed
@@ -166,10 +228,10 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, date, integer)
+REVOKE ALL ON FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, timestamptz, integer)
   FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, date, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, timestamptz, integer) TO service_role;
 
--- Rollback: DROP FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, date, integer);
+-- Rollback: DROP FUNCTION public.submit_podcast_quiz(uuid, uuid, jsonb, timestamptz, timestamptz, integer);
 --           DROP TABLE public.podcast_quiz_awards;
 --           DROP TABLE public.podcast_quiz_questions;

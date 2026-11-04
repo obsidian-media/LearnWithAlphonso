@@ -8,6 +8,8 @@ export type PodcastQuizResult = {
   correct: number;
   total: number;
   xpGain: number;
+  /** The learner's streak after this quiz (a quiz counts for the streak like a lesson). */
+  streak: number;
   bestCorrect: number;
   bestXp: number;
   missedQuestionIds: string[];
@@ -24,6 +26,7 @@ const submitSchema = z.object({
     )
     .min(1)
     .max(10),
+  completedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 /**
@@ -48,7 +51,7 @@ export const completePodcastQuiz = createServerFn({ method: "POST" })
       _episode_id: data.episodeId,
       _answers: data.answers,
       _at: now.toISOString(),
-      _today: now.toISOString().slice(0, 10),
+      _completed_at: data.completedAt ?? null,
       _limit: HOURLY_COMPLETION_LIMIT,
     });
     // Not fail-open like the lesson ceiling: the ceiling and the payout are one transaction, so an error means

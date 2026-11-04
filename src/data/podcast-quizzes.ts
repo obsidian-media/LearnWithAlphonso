@@ -58,13 +58,13 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Which three size words does the host teach?",
-      ["Small, medium, large", "Short, tall, grande", "Little, big, huge"],
+      ["Small, medium, large", "Small, regular, extra large", "Regular, large, extra large"],
       0,
       "Small. Medium. Large.",
     ),
     q(
-      'What does the word "without" mean?',
-      ["More", "Also", "No"],
+      'What does the host say about the word "without"?',
+      ["It means extra", "It means small", "It means no"],
       2,
       'The word "without" means no.',
     ),
@@ -172,20 +172,20 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "Which kind of spending tends to create more lasting satisfaction?",
       ["Spending on things", "Spending on experiences", "Spending it as soon as it arrives"],
       1,
-      "Spending on experiences tends to create more lasting satisfaction than spending on things.",
+      "Spending on experiences tends to create more lasting satisfaction",
     ),
     q(
       "What does the host say consistently outperforms spending the same money on a possession?",
-      ["Buying a bigger house", "Paying off every debt", "Buying back your own time"],
+      ["A bigger house", "Paying off every debt", "Paying to get your time back"],
       2,
-      "consistently outperforms spending the same money on a possession.",
+      "And spending money to buy back your own time — paying someone to do a task you dread, so you get an evening back — consistently outperforms spending the same money on a possession.",
     ),
     q(
       'According to the host, which question is better than "does money make you happy"?',
       [
         "What is this money actually buying me?",
-        "How can I earn ten times more?",
-        "Who earns more than I do?",
+        "How can I earn more than my colleagues?",
+        "Why do I never have enough?",
       ],
       0,
       '"what is this money actually buying me?"',
@@ -213,7 +213,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       [
         "Doing two things at exactly the same time",
         "Switching rapidly, and each switch has a cost",
-        "Resting between tasks",
+        "Keeping both tasks in memory equally",
       ],
       1,
       "It's switching between them, rapidly, and each switch has a cost.",
@@ -221,8 +221,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Why is the fight for your attention not a fair one?",
       [
-        "Phones are cheaper than they used to be",
-        "Apps are only used for work",
+        "Notifications are switched off by default",
+        "Most apps are built to help you rest",
         "Every app competes for your attention, and teams work to keep you looking",
       ],
       2,
@@ -270,7 +270,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Which second explanation does the host say may be even more relevant?",
-      ["Days becoming shorter", "Having more things to do", "Memory"],
+      ["Sleeping less as we age", "Having more things to do", "Memory"],
       2,
       "another explanation that may be even more relevant: memory.",
     ),
@@ -304,7 +304,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "How can five minutes in a dentist's waiting room feel?",
-      ["Very short", "Incredibly long", "Exactly normal"],
+      ["Very short", "Incredibly long", "Slightly longer than usual"],
       1,
       "Five minutes can feel incredibly long.",
     ),
@@ -358,7 +358,11 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What happens once you stop treating mistakes as threats to your identity?",
-      ["You argue more", "You stop learning", "You become easier to teach and you learn faster"],
+      [
+        "You argue more",
+        "You learn more slowly",
+        "You become easier to teach and you learn faster",
+      ],
       2,
       "you become easier to teach, and you learn faster.",
     ),
@@ -378,7 +382,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "According to researchers, procrastination is mainly about managing what?",
       ["Time", "A feeling", "A habit"],
       1,
-      "Procrastination isn't primarily about managing time. It's about managing a feeling.",
+      "It's about managing a feeling.",
     ),
     q(
       "What is present bias?",
@@ -468,7 +472,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
         "Content that triggers a small emotional reaction",
       ],
       2,
-      "tends to keep people looking longer than content that doesn't.",
+      'content that triggers a small emotional reaction, admiration, envy, a flicker of "why not me," tends to keep people looking longer than content that doesn\'t.',
     ),
     q(
       "Why does the feed lack comparisons that make us feel better?",
@@ -482,7 +486,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What can you actually choose, according to the host?",
-      ["The weather", "Your comparison group", "The platform's rules"],
+      ["Who follows you", "Your comparison group", "The order of your feed"],
       1,
       "you can, in fact, choose your comparison group",
     ),
@@ -490,7 +494,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "What does the host suggest doing with a small envious pull?",
       ["Unfollow everyone", "Compare yourself even harder", "Notice it and name it"],
       2,
-      "that small envious pull, and naming it",
+      "Noticing the reaction in the moment, that small envious pull, and naming it instead of absorbing it silently.",
     ),
   ]),
   quiz("en", "mind-fools-you", "why-we-trust-our-gut-v2", [
@@ -586,7 +590,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "Is attachment style fixed?",
       ["Yes, it never changes", "No, it can shift through new experience", "Only with a therapist"],
       1,
-      "attachment style isn't fixed.",
+      "attachment style isn't fixed. It's a pattern that formed through experience, which means it can shift through new experience too",
     ),
     q(
       "Which quiet question does the host suggest asking?",
@@ -641,7 +645,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "« Voilà » se dit quand vous donnez l'argent.",
     ),
     q(
-      "Quelle phrase veut dire qu'on ne veut pas de sucre ?",
+      "Quelle est la quatrième phrase que l'on apprend ?",
       ["« Avec du lait »", "« Un petit café »", "« Sans sucre »"],
       2,
       "Quatrième phrase. « Sans sucre. »",
@@ -758,7 +762,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "En la conversación, ¿qué pide el cliente?",
-      ["Un café grande sin azúcar", "Un té con leche", "Un café pequeño con leche"],
+      ["Un café grande sin azúcar", "Un café pequeño sin leche", "Un café pequeño con leche"],
       2,
       "Quisiera un café pequeño con leche, por favor.",
     ),
@@ -775,7 +779,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       '"Aquí tiene" se dice cuando entregas el dinero.',
     ),
     q(
-      "¿Qué frase significa que no quieres azúcar?",
+      "¿Cuál es la cuarta frase que se practica?",
       ['"Con leche"', '"Un café pequeño"', '"Sin azúcar"'],
       2,
       'Cuarta frase. "Sin azúcar."',

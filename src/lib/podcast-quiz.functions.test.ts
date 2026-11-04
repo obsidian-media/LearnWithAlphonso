@@ -42,14 +42,7 @@ describe("completePodcastQuiz", () => {
     expect(args._user_id).toBe("user-1");
     expect(args._answers).toEqual(answers);
     expect(args._limit).toBe(60);
-    expect(Object.keys(args).sort()).toEqual([
-      "_answers",
-      "_at",
-      "_episode_id",
-      "_limit",
-      "_today",
-      "_user_id",
-    ]);
+    expect(Object.keys(args).sort()).toEqual(["_answers","_at","_completed_at","_episode_id","_limit","_user_id"]);
   });
 
   it.each([
@@ -59,6 +52,14 @@ describe("completePodcastQuiz", () => {
   ])("turns the database's %s into the stable code %s", async (status, code) => {
     adminRpc.mockResolvedValue({ data: { status }, error: null });
     await expect(call()).rejects.toThrow(code);
+  });
+
+  it("passes the client's finish time through for the database to clamp", async () => {
+    adminRpc.mockResolvedValue({ data: { status: "applied" }, error: null });
+    await call({ episodeId: EP, answers, completedAt: "2026-11-05T01:30:00+14:00" });
+    expect(adminRpc.mock.calls[0]![1]._completed_at).toBe("2026-11-05T01:30:00+14:00");
+    expect(adminRpc.mock.calls[0]![1]).not.toHaveProperty("_today");
+    await expect(call({ episodeId: EP, answers, completedAt: "yesterday" })).rejects.toThrow();
   });
 
   it("a database error is a retryable failure, not a success", async () => {

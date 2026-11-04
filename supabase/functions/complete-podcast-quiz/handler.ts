@@ -18,6 +18,8 @@ const bodySchema = z.object({
     .array(z.object({ questionId: z.string().regex(/^q[0-9]{1,2}$/), choiceIndex: z.number().int().min(0).max(3) }))
     .min(1)
     .max(10),
+  // When the client says it finished. The database clamps it into [now - 3 hours, now], like a lesson's completedAt.
+  completedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export type CompletePodcastQuizDeps = {
@@ -74,7 +76,7 @@ export function createCompletePodcastQuizHandler(deps: CompletePodcastQuizDeps):
       _episode_id: body.episodeId,
       _answers: body.answers,
       _at: now.toISOString(),
-      _today: now.toISOString().slice(0, 10),
+      _completed_at: body.completedAt ?? null,
       _limit: HOURLY_COMPLETION_LIMIT,
     });
     // Not fail-open like the lesson ceiling: the ceiling and the payout are one transaction, so an error here means

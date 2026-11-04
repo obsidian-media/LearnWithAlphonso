@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isGrounded, support } from "./podcast-quiz-grounding";
 import { PODCAST_QUIZZES, type PodcastQuiz } from "./podcast-quizzes";
 
 /** The 16 episodes live on 2026-11-04: 10 English, 3 French, 3 Spanish. */
@@ -25,8 +26,6 @@ const LIVE: [PodcastQuiz["course"], string, string][] = [
 export function norm(s: string): string {
   return s.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").trim();
 }
-
-const words = (s: string) => norm(s).match(/[\p{L}\p{N}]{4,}/gu) ?? [];
 
 describe("podcast quiz data", () => {
   it("covers exactly the 16 live episodes, once each", () => {
@@ -82,36 +81,40 @@ describe("podcast quiz data", () => {
 });
 
 describe("podcast quiz grounding (against the checked-in transcript excerpts)", () => {
-  it("every question carries a real excerpt that mentions what the question or its right answer is about", () => {
-    for (const quiz of PODCAST_QUIZZES) {
-      for (const question of quiz.questions) {
-        const id = `${quiz.slug}/${question.id}`;
-        expect(question.evidence.trim().length, id).toBeGreaterThanOrEqual(15);
-        const excerpt = new Set(words(question.evidence));
-        const about = [
-          ...words(question.prompt),
-          ...words(question.choices[question.answerIndex]!),
-        ];
-        // The sentence that settles the answer must mention something the question or the right answer says.
-        expect(
-          about.some((w) => excerpt.has(w)),
-          `${id}: excerpt shares no content word with the question or its right answer`,
-        ).toBe(true);
-      }
+  const all = PODCAST_QUIZZES.flatMap((quiz) =>
+    quiz.questions.map((question) => ({ quiz, question })),
+  );
+
+  it("every question carries a real excerpt", () => {
+    for (const { quiz, question } of all) {
+      expect(question.evidence.trim().length, `${quiz.slug}/${question.id}`).toBeGreaterThanOrEqual(
+        15,
+      );
     }
   });
 
-  it("the excerpt does not also support a wrong answer better than the right one", () => {
-    for (const quiz of PODCAST_QUIZZES) {
-      for (const question of quiz.questions) {
-        const excerpt = new Set(words(question.evidence));
-        const hits = (c: string) => words(c).filter((w) => excerpt.has(w)).length;
-        const right = hits(question.choices[question.answerIndex]!);
-        question.choices.forEach((c, i) => {
-          if (i === question.answerIndex) return;
-          expect(hits(c), `${quiz.slug}/${question.id} choice ${i}`).toBeLessThanOrEqual(right);
-        });
-      }
+  it("the excerpt supports the right answer strictly better than any wrong one", () => {
+    for (const { quiz, question } of all) {
+      const scores = question.choices.map((_, i) => support(question, i).toFixed(2)).join(" / ");
+      expect(
+        isGrounded(question),
+        `${quiz.slug}/${question.id}: ${scores} (right is #${question.answerIndex})`,
+      ).toBe(true);
     }
+  });
+
+  it("an answer-key swap to ANY wrong choice is caught (0 survivors)", () => {
+    const survivors: string[] = [];
+    let swaps = 0;
+    for (const { quiz, question } of all) {
+      question.choices.forEach((_, i) => {
+        if (i === question.answerIndex) return;
+        swaps++;
+        if (isGrounded({ ...question, answerIndex: i }))
+          survivors.push(`${quiz.slug}/${question.id}->#${i}`);
+      });
+    }
+    expect(swaps).toBeGreaterThan(200);
+    expect(survivors).toEqual([]);
   });
 });
