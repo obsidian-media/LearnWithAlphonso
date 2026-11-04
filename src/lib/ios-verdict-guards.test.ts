@@ -99,7 +99,9 @@ describe("chunky answer tiles and word chips", () => {
     );
     expect(tile).not.toContain("AlphonsoColor.destructive");
     // The badge stays distinguishable from the right answer's by shape in every theme, never by colour alone.
-    expect(tile).toContain('Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)');
+    expect(tile).toContain(
+      'Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)',
+    );
     // And the colour split itself still guarantees a non-moss wrong colour where ember == moss.
     const theme = read("DesignSystem/AlphonsoTheme.swift");
     expect(theme).toContain("case .studioInk, .manuscript: return false");
