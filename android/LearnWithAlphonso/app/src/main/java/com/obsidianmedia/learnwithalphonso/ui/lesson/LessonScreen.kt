@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,7 +44,6 @@ import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPermission
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptPolicy
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
@@ -132,6 +134,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                     scope.launch {
                         if (container.notificationPermission.requestIfUndetermined()) {
                             container.reminders.onLessonFinished(phase.result.progress.lastActiveDate)
+                            container.pushRegistrar.registerIfAuthorized()
                         }
                     }
                 },
@@ -264,9 +267,11 @@ private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, 
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.xl)).background(palette.parchment).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(ReminderPromptCopy.TITLE, style = MaterialTheme.typography.titleSmall, color = palette.ink)
                 Text(ReminderPromptCopy.BODY, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AlphonsoSecondaryButton(ReminderPromptCopy.DECLINE, onClick = onNotNow, fullWidth = false)
-                    AlphonsoPrimaryButton(ReminderPromptCopy.ACCEPT, onClick = onRemindMe, fullWidth = false)
+                Button(onClick = onRemindMe, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), colors = ButtonDefaults.buttonColors(containerColor = palette.moss)) {
+                    Text(ReminderPromptCopy.ACCEPT, fontWeight = FontWeight.Medium)
+                }
+                TextButton(onClick = onNotNow, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(ReminderPromptCopy.DECLINE, color = palette.inkSoft)
                 }
             }
         }

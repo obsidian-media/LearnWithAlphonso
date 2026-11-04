@@ -161,6 +161,7 @@ struct LessonPlayerView: View {
         checked = false
         isSubmitting = false
         result = nil
+        showReminderCard = false
         isLeaguePromotion = false
         queuedOffline = nil
         completionFailure = nil
@@ -556,10 +557,11 @@ struct LessonPlayerView: View {
             result = completion
             syncQueueStore.updateLastKnownProgress(completion.progress)
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
-            await decideReminderCard()
             if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
+            // After the haptic and off the finish path: a slow network must not delay either.
+            Task { await decideReminderCard() }
         case let .failure(error):
             // Queue what waiting can fix, and a finish refused at 0 hearts (sync defers it until a refill). A
             // rejected attempt is never queued (it would sit in the queue forever), and is never "offline".
@@ -601,6 +603,8 @@ struct LessonPlayerView: View {
     /// Decides whether the finish screen offers the reminder card: from the 2nd completed lesson, only while
     /// the permission is still undetermined, at most twice and 3 days apart (`ReminderPromptPolicy`).
     private func decideReminderCard() async {
+        showReminderCard = false
+        let decidingFor = lesson.id
         let status = await notificationScheduler.currentAuthorizationStatus()
         let permission: ReminderPermission = switch status {
         case .notDetermined: .notDetermined
@@ -612,8 +616,14 @@ struct LessonPlayerView: View {
               let token = await session.freshAccessToken() else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
         let completed = Set((try? await client.fetchCompletedLessonIds(course: course.wireCode)) ?? []).count
-        showReminderCard = ReminderPromptPolicy.shouldShowCard(
+        // The learner may have tapped Continue while the fetch ran; never show a stale lesson's card.
+        guard lesson.id == decidingFor, result != nil else { return }
+        let show = ReminderPromptPolicy.shouldShowCard(
             completedLessons: completed, permission: permission, state: ReminderPromptStore().load(), now: Date())
+        withAnimation(UIAccessibility.isReduceMotionEnabled ? .linear(duration: 0.15) : .spring(duration: 0.35)) {
+            showReminderCard = show
+        }
+        if show { AccessibilityNotification.Announcement(ReminderPromptCopy.title).post() }
     }
 
     /// "Remind me": the only place the system permission dialog is requested.
@@ -1265,18 +1275,28 @@ private struct FinishView: View {
                             Text(ReminderPromptCopy.title)
                                 .font(AlphonsoFont.sans(15, weight: .semiBold))
                                 .foregroundStyle(AlphonsoColor.ink)
+                                .accessibilityAddTraits(.isHeader)
                             Text(ReminderPromptCopy.body)
                                 .font(AlphonsoFont.sans(13))
                                 .foregroundStyle(AlphonsoColor.inkSoft)
                                 .multilineTextAlignment(.center)
-                            HStack(spacing: AlphonsoSpacing.sm) {
-                                Button(ReminderPromptCopy.decline, action: onNotNow)
-                                    .buttonStyle(.alphonsoSecondary)
-                                Button(ReminderPromptCopy.accept, action: onRemindMe)
-                                    .buttonStyle(.alphonsoPrimary)
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: AlphonsoSpacing.sm) {
+                                    Button(ReminderPromptCopy.decline, action: onNotNow)
+                                        .buttonStyle(.alphonsoSecondary)
+                                    Button(ReminderPromptCopy.accept, action: onRemindMe)
+                                        .buttonStyle(.alphonsoPrimary)
+                                }
+                                VStack(spacing: AlphonsoSpacing.sm) {
+                                    Button(ReminderPromptCopy.accept, action: onRemindMe)
+                                        .buttonStyle(.alphonsoPrimary)
+                                    Button(ReminderPromptCopy.decline, action: onNotNow)
+                                        .buttonStyle(.alphonsoSecondary)
+                                }
                             }
                         }
                         .padding(.top, 8)
+                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
                     }
 
                     if let onPractiseWithHector {
