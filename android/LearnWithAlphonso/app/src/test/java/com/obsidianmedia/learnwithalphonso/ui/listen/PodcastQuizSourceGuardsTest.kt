@@ -83,7 +83,9 @@ class PodcastQuizSourceGuardsTest {
         val src = read(ui)
         assertTrue(src.contains("right -> \"✓ \${PodcastQuizCopy.CORRECT_LABEL}\""))
         assertTrue(src.contains("wrong -> \"✕ \${PodcastQuizCopy.WRONG_LABEL}\""))
-        assertTrue(src.contains("stateDescription = verdict.drop(2)"))
+        // Announced once (the merged visible text), as a radio option.
+        assertFalse(src.contains("stateDescription"))
+        assertTrue(src.contains("role = Role.RadioButton"))
     }
 
     @Test
@@ -92,6 +94,14 @@ class PodcastQuizSourceGuardsTest {
         assertTrue(listenSrc.contains("PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)"))
         assertTrue(listenSrc.contains("hasQuiz = episode.id in state.quizEpisodeIds"))
         assertTrue(listenSrc.contains("if (hasQuiz) PodcastQuizRowButton(container, episode)"))
+    }
+
+    @Test
+    fun `an open quiz sheet does not depend on the player staying finished`() {
+        val src = read(ui)
+        val offerRow = src.substring(src.indexOf("fun PodcastQuizOfferRow("))
+        assertTrue(offerRow.contains("var sheet by remember { mutableStateOf<OpenQuiz?>(null) }"))
+        assertFalse("no early return before the sheet", offerRow.contains("?: return"))
     }
 
     @Test

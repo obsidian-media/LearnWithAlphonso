@@ -60,6 +60,7 @@ class PodcastClientQuizTest {
         assertEquals(PodcastQuizError.RATE_LIMITED, submitError(HttpStatusCode.TooManyRequests, """{"error":"rate-limited"}"""))
         assertEquals(PodcastQuizError.NOT_FOUND, submitError(HttpStatusCode.NotFound))
         assertEquals(PodcastQuizError.INVALID_ANSWERS, submitError(HttpStatusCode.BadRequest))
+        assertEquals(PodcastQuizError.UNAUTHORIZED, submitError(HttpStatusCode.Unauthorized))
         assertEquals(PodcastQuizError.UNAUTHORIZED, submitError(HttpStatusCode.Forbidden))
         assertEquals(PodcastQuizError.SERVER, submitError(HttpStatusCode.InternalServerError))
         assertEquals(PodcastQuizError.SERVER, submitError(HttpStatusCode.BadGateway))
@@ -133,11 +134,23 @@ class PodcastClientQuizTest {
 
     @Test
     fun `quiz episode ids come from one request and none is sent for an empty list`() = runTest {
-        val fake = FakeSupabase { json("""[{"episode_id":"e1"},{"episode_id":"e3"},{"episode_id":"e1"}]""") }
+        val fake = FakeSupabase { req -> if (req.query["offset"] == "0") json("""[{"episode_id":"e1"},{"episode_id":"e3"},{"episode_id":"e1"}]""") else json("[]") }
         val c = client(fake)
         assertEquals(setOf("e1", "e3"), c.fetchQuizEpisodeIds(listOf("e1", "e2", "e3")))
-        assertEquals("in.(e1,e2,e3)", fake.seen.single().query["episode_id"])
+        assertEquals("in.(e1,e2,e3)", fake.seen[0].query["episode_id"])
         assertTrue(c.fetchQuizEpisodeIds(emptyList()).isEmpty())
-        assertEquals(1, fake.seen.size)
+        assertEquals(2, fake.seen.size, "a page, then an empty page; nothing sent for an empty list")
+    }
+
+    @Test
+    fun `quiz episode ids page past a server cap instead of dropping episodes`() = runTest {
+        // The server returns at most 2 rows per page, as a max-rows cap would.
+        val all = listOf("e1", "e1", "e2", "e2", "e3")
+        val fake = FakeSupabase { req ->
+            val off = req.query["offset"]!!.toInt()
+            json(all.drop(off).take(2).joinToString(",", "[", "]") { """{"episode_id":"$it"}""" })
+        }
+        assertEquals(setOf("e1", "e2", "e3"), client(fake).fetchQuizEpisodeIds(listOf("e1", "e2", "e3")))
+        assertEquals(listOf("0", "2", "4", "5"), fake.seen.map { it.query["offset"] })
     }
 }

@@ -1,7 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.listen
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,9 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
@@ -124,12 +123,9 @@ private fun QuestionView(
         Surface(
             shape = RoundedCornerShape(12.dp), color = palette.surface,
             border = BorderStroke(if (picked || right || wrong) 2.dp else 1.dp, border),
+            // One announcement: the visible verdict text below is merged into the option, so no separate state description.
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                .clickable(enabled = !checked) { onSelect(index) }
-                .semantics(mergeDescendants = true) {
-                    selected = picked
-                    if (verdict != null) stateDescription = verdict.drop(2)
-                },
+                .selectable(selected = picked, enabled = !checked, role = Role.RadioButton) { onSelect(index) },
         ) {
             Column(Modifier.padding(14.dp)) {
                 Text(text, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
@@ -224,25 +220,29 @@ fun PodcastQuizRowButton(container: AppContainer, episode: PodcastEpisode) {
 fun PodcastQuizOfferRow(container: AppContainer, episode: PodcastEpisode, finished: Boolean) {
     val palette = AlphonsoColor.palette
     var offer by remember(episode.id, finished) { mutableStateOf<PodcastQuizOffer?>(null) }
-    var show by remember(episode.id, finished) { mutableStateOf(false) }
+    // The open sheet is held apart from the offer and the finished state: once open it stays open until the learner closes it,
+    // even if the player leaves Finished (a replay, the next episode) while they answer.
+    var sheet by remember { mutableStateOf<OpenQuiz?>(null) }
     LaunchedEffect(episode.id, finished) {
         // No offer is the quiet failure: the episode is unaffected by a quiz that cannot be read.
         offer = if (finished) runCatching { container.podcastClient.fetchQuiz(episode.id) }.getOrNull() else null
     }
-    val current = offer ?: return
-    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    val current = offer
+    if (current != null) Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Column(Modifier.weight(1f)) {
             Text(PodcastQuizCopy.OFFER_TITLE, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.ink)
             Text(PodcastQuizCopy.offerDetail(current.questions.size, current.best), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
         }
-        Button(onClick = { show = true }, colors = ButtonDefaults.buttonColors(containerColor = palette.moss, contentColor = palette.onPrimary), modifier = Modifier.heightIn(min = 48.dp)) { Text(PodcastQuizCopy.TAKE_THE_QUIZ) }
+        Button(onClick = { sheet = OpenQuiz(episode.id, episode.title, current) }, colors = ButtonDefaults.buttonColors(containerColor = palette.moss, contentColor = palette.onPrimary), modifier = Modifier.heightIn(min = 48.dp)) { Text(PodcastQuizCopy.TAKE_THE_QUIZ) }
     }
-    if (show) {
+    sheet?.let { open ->
         PodcastQuizSheet(
-            container, episode.title, episode.id, current,
+            container, open.title, open.episodeId, open.offer,
             // The offer's "best" label follows a better run without another read.
-            onSaved = { r -> offer = PodcastQuizOffer(current.questions, PodcastQuizBest(r.bestCorrect, r.bestXp)) },
-            onDismiss = { show = false },
+            onSaved = { r -> if (open.episodeId == episode.id) offer = PodcastQuizOffer(open.offer.questions, PodcastQuizBest(r.bestCorrect, r.bestXp)) },
+            onDismiss = { sheet = null },
         )
     }
 }
+
+private data class OpenQuiz(val episodeId: String, val title: String, val offer: PodcastQuizOffer)

@@ -199,8 +199,22 @@ class PodcastClient(
     /** Which of these episodes have a quiz the learner can open, for the "Take the quiz" button. One request; none for an empty list. */
     suspend fun fetchQuizEpisodeIds(episodeIds: List<String>): Set<String> {
         if (episodeIds.isEmpty()) return emptySet()
-        return rows(http.rest(HttpMethod.Get, "podcast_quiz_questions", mapOf("select" to "episode_id", "episode_id" to "in.(${episodeIds.joinToString(",")})")))
-            .mapNotNull { it.str("episode_id") }.toSet()
+        // One row per question, so many rows per episode: page until an empty page so a server max-rows cap cannot drop episodes.
+        val found = HashSet<String>()
+        var offset = 0
+        var pages = 0
+        while (true) {
+            if (++pages > MAX_PUBLISHED_INDEX_PAGES) throw PodcastClientError.InvalidPayload()
+            val page = rows(
+                http.rest(
+                    HttpMethod.Get, "podcast_quiz_questions",
+                    mapOf("select" to "episode_id", "episode_id" to "in.(${episodeIds.joinToString(",")})", "order" to "episode_id.asc,id.asc", "limit" to PUBLISHED_INDEX_PAGE_SIZE.toString(), "offset" to offset.toString()),
+                ),
+            )
+            if (page.isEmpty()) return found
+            page.forEach { row -> row.str("episode_id")?.let { found.add(it) } }
+            offset += page.size
+        }
     }
 
     /**
