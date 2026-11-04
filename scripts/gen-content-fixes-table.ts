@@ -19,7 +19,7 @@ const show = (q: Question) => {
   const wrong = (q.type === "mc" ? q.choices : q.bank).filter((o) => o !== answer);
   return `${q.prompt} **${answer}** / ${wrong.join(", ")}`;
 };
-const esc = (s: string) => s.replaceAll("|", "\|");
+const esc = (s: string) => s.replaceAll("|", "&#124;");
 const rows = Object.keys(QUESTION_FIXES)
   .sort()
   .map(
