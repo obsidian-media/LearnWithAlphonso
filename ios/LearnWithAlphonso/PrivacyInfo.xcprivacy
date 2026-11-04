@@ -11,7 +11,7 @@
 	     pins this list, checks each type still has code behind it, and fails if
 	     code starts collecting an undeclared category. All types: linked to the
 	     account (every row is keyed to the Supabase user id), never used for
-	     tracking (no ad or analytics SDK), app functionality only. Other Data
+	     tracking (no ad or analytics SDK), app functionality only (Product Interaction also analytics and personalization). Other Data
 	     Types covers the 13+ self-declaration for stranger buddy matching and the
 	     AI consent record. -->
 	<key>NSPrivacyCollectedDataTypes</key>
@@ -99,6 +99,7 @@
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+				<string>NSPrivacyCollectedDataTypePurposeProductPersonalization</string>
 			</array>
 		</dict>
 		<dict>

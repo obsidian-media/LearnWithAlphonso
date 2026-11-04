@@ -87,14 +87,14 @@ struct AnswerChoiceButton: View {
 
     private var fill: Color {
         if checked && isCorrectChoice { return AlphonsoColor.moss.opacity(0.22) }
-        if checked && isPicked { return AlphonsoColor.destructive.opacity(0.18) }
+        if checked && isPicked { return AlphonsoColor.wrongAnswer.opacity(0.18) }
         if isPicked { return AlphonsoColor.moss.opacity(0.14) }
         return AlphonsoColor.parchment
     }
 
     private var edge: Color {
         if checked && isCorrectChoice { return AlphonsoColor.moss }
-        if checked && isPicked { return AlphonsoColor.destructive }
+        if checked && isPicked { return AlphonsoColor.wrongAnswer }
         if isPicked { return AlphonsoColor.moss }
         return AlphonsoColor.hairline
     }
@@ -110,7 +110,7 @@ struct AnswerChoiceButton: View {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
                         .accessibilityHidden(true)
                 } else if checked && isPicked {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.wrongAnswer)
                         .accessibilityHidden(true)
                 }
             }
