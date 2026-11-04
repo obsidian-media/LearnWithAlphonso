@@ -243,3 +243,10 @@ Use a QA account with AI allowed. The server writes a real review item each time
 - [ ] Long-press over a word (not between words) in a Hector, Practice or Campaign reply: the "Report this response" menu opens, and releasing does not also open the save sheet. A quick tap on the same word opens the save sheet and not the menu. Scrolling the list with a finger that starts on a word does neither.
 - [ ] A slow lookup (say 20 to 40 seconds on a poor connection): "Looking it up..." keeps waiting and the word is saved, instead of failing after about 10 seconds.
 - [ ] Rotate the phone while "Looking it up..." shows: the sheet comes back at the Save button (the lookup was cancelled); saving again gives "Already saved" if the first one landed.
+
+## Podcast quiz (#381, nothing here has been run on a device)
+
+- [ ] Finish an episode that has a quiz (16 episodes do): the player offers the quiz; an episode row with a quiz shows a quiz button; an episode without one offers nothing.
+- [ ] Answer every question: the score and XP shown are the server's (10 XP per correct answer, at most 70 an episode). Replay with a better score: only the improvement is paid. Replay with the same score: 0 XP.
+- [ ] Airplane mode while submitting: a retryable error with Try again, and nothing is paid twice after reconnecting.
+- [ ] TalkBack: right and wrong are announced in words, not colour alone; the options read as a group.

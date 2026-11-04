@@ -52,8 +52,8 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   episodes (110 in all), 10 XP per correct answer, best-score replay, graded on
   the server in one transaction (`submit_podcast_quiz`, Edge Function
   `complete-podcast-quiz`), sharing the lesson hourly ceiling, day and streak
-  rules. The web player offers it when an episode ends; iOS has the same quiz
-  (#376); Android has none yet (in progress). SRS wiring is not built. On iOS, episodes can be **downloaded for offline listening**
+  rules. The web player offers it when an episode ends; iOS and Android have the same quiz
+  (#376, #381). SRS wiring is not built. On iOS, episodes can be **downloaded for offline listening**
   (Phase 3): downloads are explicit, nothing is ever deleted without you
   asking, and offline the downloaded set is listed flat rather than as the
   folder tree. The iOS player saves your position from the very first listen,
@@ -399,7 +399,7 @@ are owner-gated (`android/LearnWithAlphonso/OWNER-SETUP.md`). Since
 2026-10-17 it has the newer iOS work too (AI consent screen, public-name step,
 hearts gate, report an AI reply, French and Spanish conversations, offline-sync
 and podcast-player reliability, save any word including French and Spanish
-lessons, the notification card after the second lesson, Sentry), none of it run on a device yet; it has no podcast quiz screen
+lessons, the notification card after the second lesson, Sentry, the podcast quiz), none of it run on a device yet
 (`android/LearnWithAlphonso/DEVICE-CHECKLIST.md`). Build with the Gradle
 wrapper (`android/LearnWithAlphonso/TOOLING.md`); CI is
 `.github/workflows/android-ci.yml`. See `android/LearnWithAlphonso/README.md`.

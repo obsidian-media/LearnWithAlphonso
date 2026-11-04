@@ -1,6 +1,6 @@
 # Podcast Phase 2b — comprehension questions, XP and SRS
 
-> Status (2026-11-04): partly built, differently from this spec. Transcripts (Phase 2a, #125) shipped. Comprehension questions and XP shipped as a podcast quiz instead: authored questions for 16 episodes (110), 10 XP per correct answer, best-score replay, the `submit_podcast_quiz` transaction and the `complete-podcast-quiz` Edge Function (#374), the web UI (#375) and the iOS UI (#376); Android has none yet (in progress). SRS wiring is not built. See ARCHITECTURE.md "Podcast quiz".
+> Status (2026-11-04): partly built, differently from this spec. Transcripts (Phase 2a, #125) shipped. Comprehension questions and XP shipped as a podcast quiz instead: authored questions for 16 episodes (110), 10 XP per correct answer, best-score replay, the `submit_podcast_quiz` transaction and the `complete-podcast-quiz` Edge Function (#374), the web UI (#375) and the iOS UI (#376); Android (#381). SRS wiring is not built. See ARCHITECTURE.md "Podcast quiz".
 
 **Status:** spec, awaiting review. Nothing built.
 
