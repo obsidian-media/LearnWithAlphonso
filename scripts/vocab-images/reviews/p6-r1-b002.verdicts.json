@@ -1,0 +1,167 @@
+{
+  "batch": "p6-r1-b002",
+  "pass": "first",
+  "reviewer": "agent:p6-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "clínica": {
+      "verdict": "approve",
+      "alt": "A bright treatment room with a lime green reclining chair and glass cabinets of supplies.",
+      "peopleVisible": false
+    },
+    "coche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "colis": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "comisaría": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "conduire": {
+      "verdict": "approve",
+      "alt": "A woman grips the steering wheel and looks ahead while driving a car.",
+      "peopleVisible": true
+    },
+    "confundido": {
+      "verdict": "approve",
+      "alt": "A man in a white t-shirt shrugs with both palms up and a puzzled look on his face.",
+      "peopleVisible": true
+    },
+    "construire": {
+      "verdict": "approve",
+      "alt": "A worker in a mask stands next to a cement mixer at a building site.",
+      "peopleVisible": true
+    },
+    "consultorio": {
+      "verdict": "approve",
+      "alt": "A doctor in a white coat sits at a desk and talks with a patient in a bright office.",
+      "peopleVisible": true
+    },
+    "contaminación": {
+      "verdict": "approve",
+      "alt": "A tall factory chimney sends dark smoke into an orange sky above a city skyline.",
+      "peopleVisible": false
+    },
+    "conversar": {
+      "verdict": "approve",
+      "alt": "A man and a woman sit in two armchairs and talk to each other against a blue wall.",
+      "peopleVisible": true
+    },
+    "coton": {
+      "verdict": "approve",
+      "alt": "A field of cotton plants covered in white cotton bolls.",
+      "peopleVisible": false
+    },
+    "couper": {
+      "verdict": "approve",
+      "alt": "A person in a striped shirt chops green herbs with a knife on a wooden board.",
+      "peopleVisible": true
+    },
+    "cucharadita": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cuello": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cuelo": {
+      "verdict": "approve",
+      "alt": "A cook lifts pasta out of a pot with tongs while another person holds a strainer.",
+      "peopleVisible": true
+    },
+    "danser": {
+      "verdict": "approve",
+      "alt": "A dancing couple's feet in black high heels and dress shoes on a polished floor.",
+      "peopleVisible": true
+    },
+    "descansar": {
+      "verdict": "approve",
+      "alt": "A woman in black lies back on a white sofa with her arm behind her head, resting.",
+      "peopleVisible": true
+    },
+    "diente": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "dinero": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "dormir": {
+      "verdict": "approve",
+      "alt": "A couple sleeps side by side in a white bed with a tiled headboard.",
+      "peopleVisible": true
+    },
+    "déménager": {
+      "verdict": "approve",
+      "alt": "A person kneels and unpacks a cardboard box on a concrete floor.",
+      "peopleVisible": true
+    },
+    "dépoussiérer": {
+      "verdict": "approve",
+      "alt": "A person with a feather duster dusts a table with framed photographs.",
+      "peopleVisible": true
+    },
+    "détendu": {
+      "verdict": "approve",
+      "alt": "A young man rests on a grey sofa with his eyes closed and his head back.",
+      "peopleVisible": true
+    },
+    "déçu": {
+      "verdict": "approve",
+      "alt": "A man in a red t-shirt holds his hand against his forehead with a disappointed look.",
+      "peopleVisible": true
+    },
+    "efectivo": {
+      "verdict": "approve",
+      "alt": "A fan of twenty dollar bills lies on a dark surface.",
+      "peopleVisible": false
+    },
+    "effrayé": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "elección": {
+      "verdict": "approve",
+      "alt": "A hand drops a folded ballot paper into a plastic ballot box.",
+      "peopleVisible": true
+    },
+    "embarazo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "emocionado": {
+      "verdict": "approve",
+      "alt": "A man in a mustard sweater raises both fists and shouts with excitement.",
+      "peopleVisible": true
+    },
+    "en colère": {
+      "verdict": "approve",
+      "alt": "A woman with long hair and folded arms glares at the camera with an angry frown.",
+      "peopleVisible": true
+    }
+  }
+}

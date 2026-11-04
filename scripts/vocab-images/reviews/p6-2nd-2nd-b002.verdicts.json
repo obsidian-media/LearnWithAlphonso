@@ -1,0 +1,210 @@
+{
+  "batch": "p6-2nd-2nd-b002",
+  "pass": "second",
+  "reviewer": "agent:p6-2nd-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "enamorado": {
+      "verdict": "approve",
+      "alt": "A couple kisses in a grassy field while the man dips the woman, with a turquoise car behind them.",
+      "peopleVisible": true
+    },
+    "enfermo": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "ennuyé": {
+      "verdict": "approve",
+      "alt": "A man in a green hoodie slumps on a brown leather sofa with a hand against his head, looking bored.",
+      "peopleVisible": true
+    },
+    "enojado": {
+      "verdict": "approve",
+      "alt": "A woman with long hair and folded arms glares at the camera with an angry frown.",
+      "peopleVisible": true
+    },
+    "espalda": {
+      "verdict": "approve",
+      "alt": "A man in front of a grey wall holds his hands behind his neck, seen from behind with his bare back showing.",
+      "peopleVisible": true
+    },
+    "exprimo": {
+      "verdict": "approve",
+      "alt": "A hand with a tattooed arm squeezes half a lemon against a pink background.",
+      "peopleVisible": true
+    },
+    "farmacia": {
+      "verdict": "approve",
+      "alt": "A pharmacist in a white coat takes a box of medicine from a shelf in a pharmacy.",
+      "peopleVisible": true
+    },
+    "fatigué": {
+      "verdict": "approve",
+      "alt": "A man in a dark shirt covers his mouth with his hand as he yawns with his eyes closed.",
+      "peopleVisible": true
+    },
+    "fiebre": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "fier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fièvre": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "fregar": {
+      "verdict": "approve",
+      "alt": "A woman in an apron washes plates at a kitchen sink under running water.",
+      "peopleVisible": true
+    },
+    "frustré": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fútbol": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "graduación": {
+      "verdict": "approve",
+      "alt": "Black and red graduation caps with tassels lie on a white surface.",
+      "peopleVisible": false
+    },
+    "hacer clic": {
+      "verdict": "approve",
+      "alt": "A hand with red nails rests on a wireless computer mouse next to a laptop.",
+      "peopleVisible": true
+    },
+    "hombro": {
+      "verdict": "approve",
+      "alt": "A woman's bare shoulder with long brown hair falling beside it.",
+      "peopleVisible": true
+    },
+    "imprimer": {
+      "verdict": "approve",
+      "alt": "A woman places paper into a printer at a desk with a cup of coffee.",
+      "peopleVisible": true
+    },
+    "inquiet": {
+      "verdict": "approve",
+      "alt": "A woman with curly hair holds a tissue to her mouth and looks worried.",
+      "peopleVisible": true
+    },
+    "l'agriculteur": {
+      "verdict": "approve",
+      "alt": "A farmer in a straw hat leans on a red tractor and looks at the camera.",
+      "peopleVisible": true
+    },
+    "l'artiste": {
+      "verdict": "approve",
+      "alt": "A painter works on a large canvas laid on a table in a bright studio with paintings behind him.",
+      "peopleVisible": true
+    },
+    "l'escalade": {
+      "verdict": "approve",
+      "alt": "A climber in a helmet scales a rock face with a view of mountains behind.",
+      "peopleVisible": true
+    },
+    "l'ingénieur": {
+      "verdict": "approve",
+      "alt": "A smiling man in an orange hard hat sits at a desk with a highlighter pen.",
+      "peopleVisible": true
+    },
+    "l'inondation": {
+      "verdict": "approve",
+      "alt": "A cyclist rides through a flooded street in front of a yellow wall.",
+      "peopleVisible": true
+    },
+    "l'écrivain": {
+      "verdict": "approve",
+      "alt": "A man types on an old typewriter at a wooden desk with a lamp and a mug.",
+      "peopleVisible": true
+    },
+    "l'élection": {
+      "verdict": "approve",
+      "alt": "A hand drops a folded ballot paper into a plastic ballot box.",
+      "peopleVisible": true
+    },
+    "la banque": {
+      "verdict": "approve",
+      "alt": "The grand stone facade of a bank building with columns and a tiled roof.",
+      "peopleVisible": false
+    },
+    "la boxe": {
+      "verdict": "approve",
+      "alt": "A boxer in a brown glove throws a punch toward a person in a white t-shirt.",
+      "peopleVisible": true
+    },
+    "la calculatrice": {
+      "verdict": "approve",
+      "alt": "A hand presses the keys of a black calculator lying on paper plans.",
+      "peopleVisible": true
+    },
+    "la circulation": {
+      "verdict": "approve",
+      "alt": "A busy road full of cars, taxis, motorbikes and buses stuck in traffic.",
+      "peopleVisible": true
+    },
+    "la danse": {
+      "verdict": "approve",
+      "alt": "A dancer in a purple top does a high leg extension in a bright empty studio.",
+      "peopleVisible": true
+    },
+    "la galerie": {
+      "verdict": "approve",
+      "alt": "Two visitors sit on a bench and look at framed paintings in an art gallery, in black and white.",
+      "peopleVisible": true
+    },
+    "la grand-mère": {
+      "verdict": "approve",
+      "alt": "An older woman with glasses smiles and leans close to a baby sitting in a wooden chair.",
+      "peopleVisible": true
+    },
+    "la gymnastique": {
+      "verdict": "approve",
+      "alt": "A gymnast in a red top hangs from rings in a bright gym.",
+      "peopleVisible": true
+    },
+    "la jambe": {
+      "verdict": "approve",
+      "alt": "Two bare legs bent at the knee against a plain grey background.",
+      "peopleVisible": true
+    },
+    "la jupe": {
+      "verdict": "approve",
+      "alt": "A person in a black sweater and a long beige skirt stands in a grassy field holding a small yellow flower.",
+      "peopleVisible": true
+    },
+    "la moto": {
+      "verdict": "approve",
+      "alt": "A rider in a helmet speeds along a country road on a motorcycle.",
+      "peopleVisible": true
+    },
+    "la méditation": {
+      "verdict": "approve",
+      "alt": "A person in black sits cross-legged and rests a hand on a knee while meditating.",
+      "peopleVisible": true
+    },
+    "la natation": {
+      "verdict": "approve",
+      "alt": "A woman swims in a bright blue pool, seen from above.",
+      "peopleVisible": true
+    },
+    "la photographie": {
+      "verdict": "approve",
+      "alt": "A man in a suit holds a camera with a long lens by its strap.",
+      "peopleVisible": true
+    }
+  }
+}

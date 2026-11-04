@@ -1,0 +1,172 @@
+{
+  "batch": "p6-r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p6-r2-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "almorzar": {
+      "verdict": "approve",
+      "alt": "Three people sit at a restaurant table with plates of food and talk over lunch.",
+      "peopleVisible": true
+    },
+    "asustado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "autobús": {
+      "verdict": "approve",
+      "alt": "A city bus drives down a hazy street at sunset.",
+      "peopleVisible": false
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "brazo": {
+      "verdict": "approve",
+      "alt": "A man in a red tank top flexes his raised arm against a blue sky.",
+      "peopleVisible": true
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "cabeza": {
+      "verdict": "approve",
+      "alt": "A woman's head in profile against a dark background.",
+      "peopleVisible": true
+    },
+    "caja fuerte": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cajero automático": {
+      "verdict": "approve",
+      "alt": "A woman in a blue puffer coat uses a cash machine set into a bright blue wall.",
+      "peopleVisible": true
+    },
+    "cara": {
+      "verdict": "approve",
+      "alt": "A black and white close-up of a woman's face in profile with an earring.",
+      "peopleVisible": true
+    },
+    "coche": {
+      "verdict": "approve",
+      "alt": "A red car stands parked on a sunny cobbled street.",
+      "peopleVisible": false
+    },
+    "colis": {
+      "verdict": "approve",
+      "alt": "Three cardboard parcels stand next to a hand truck outside a grey building.",
+      "peopleVisible": false
+    },
+    "comisaría": {
+      "verdict": "approve",
+      "alt": "A police car is parked in front of a traditional wooden police station.",
+      "peopleVisible": false
+    },
+    "cucharadita": {
+      "verdict": "approve",
+      "alt": "A small spoon lies in a jar of honey on a woven mat.",
+      "peopleVisible": false
+    },
+    "cuello": {
+      "verdict": "approve",
+      "alt": "The neck and collar of a woman in a white shirt wearing a thin gold necklace.",
+      "peopleVisible": true
+    },
+    "diente": {
+      "verdict": "approve",
+      "alt": "A model of three teeth with a dental implant stands on a dentist's desk.",
+      "peopleVisible": false
+    },
+    "dinero": {
+      "verdict": "approve",
+      "alt": "Euro coins and a banknote lie on gravel next to a grey metal cash box with a key.",
+      "peopleVisible": false
+    },
+    "effrayé": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "minor visible"
+    },
+    "embarazo": {
+      "verdict": "approve",
+      "alt": "A pregnant woman in a teal dress holds her belly while a partner puts an arm around her.",
+      "peopleVisible": true
+    },
+    "espalda": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "farmacia": {
+      "verdict": "approve",
+      "alt": "A pharmacist in a white coat takes a box of medicine from a shelf in a pharmacy.",
+      "peopleVisible": true
+    },
+    "fiebre": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fièvre": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fútbol": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "hombro": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "juez": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'argent": {
+      "verdict": "approve",
+      "alt": "Euro coins and a banknote lie on gravel next to a grey metal cash box with a key.",
+      "peopleVisible": false
+    },
+    "l'enseignant": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}

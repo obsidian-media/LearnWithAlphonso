@@ -1,0 +1,103 @@
+{
+  "batch": "p6-r1-b009",
+  "pass": "first",
+  "reviewer": "agent:p6-b009",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "sobras": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "sorprendido": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "suburbio": {
+      "verdict": "approve",
+      "alt": "A long row of white and blue terraced houses under a blue sky.",
+      "peopleVisible": false
+    },
+    "surpris": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tender": {
+      "verdict": "approve",
+      "alt": "Three light dresses hang from a clothes line with pegs in the sunshine.",
+      "peopleVisible": false
+    },
+    "tos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "tribunal": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "trier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "turista": {
+      "verdict": "approve",
+      "alt": "A man in a woolly hat and glasses reads a street map on a busy city street.",
+      "peopleVisible": true
+    },
+    "unto": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "vacuna": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "vehículo": {
+      "verdict": "approve",
+      "alt": "A black sports car stands on snow under a cloudy sky.",
+      "peopleVisible": false
+    },
+    "viajar": {
+      "verdict": "approve",
+      "alt": "A traveler with a backpack and a hood holds out a thumb on an empty road.",
+      "peopleVisible": true
+    },
+    "vierto": {
+      "verdict": "approve",
+      "alt": "Water pours into a glass with a splash.",
+      "peopleVisible": false
+    },
+    "voto": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "voyager": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "écouter": {
+      "verdict": "approve",
+      "alt": "A woman lies on a pink background listening to music through white headphones.",
+      "peopleVisible": true
+    }
+  }
+}
