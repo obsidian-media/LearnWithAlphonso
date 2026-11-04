@@ -21,6 +21,14 @@ type PodcastPlayerState = {
   failed: boolean;
   /** Bumped by retry() so the audio element re-runs its load/play effect. */
   retryToken: number;
+  /**
+   * The scrubber's latest request. `token` changes on every call so seeking twice to the same second still
+   * reaches the audio element, which applies it to currentTime (PodcastAudio.tsx).
+   */
+  seekRequest: { seconds: number; token: number } | null;
+  /** The media element's own length, once it reports a usable one; the stored duration can disagree with the file. */
+  mediaDuration: number | null;
+  setMediaDuration: (seconds: number) => void;
   play: (episode: PodcastEpisode) => void;
   toggle: () => void;
   /** Mirrors the media element's own play/pause state back into the UI. */
@@ -28,6 +36,8 @@ type PodcastPlayerState = {
   setElapsed: (seconds: number) => void;
   setFailed: (failed: boolean) => void;
   retry: () => void;
+  /** Jump to a position; clamped to the episode, and the readout updates at once. */
+  seek: (seconds: number) => void;
   close: () => void;
 };
 
@@ -37,12 +47,18 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   elapsedSeconds: 0,
   failed: false,
   retryToken: 0,
+  seekRequest: null,
+  mediaDuration: null,
+  setMediaDuration: (seconds) =>
+    set({ mediaDuration: Number.isFinite(seconds) && seconds > 0 ? seconds : null }),
   play: (episode) =>
     set({
       episode,
       isPlaying: true,
       elapsedSeconds: episode.positionSeconds ?? 0,
       failed: false,
+      seekRequest: null,
+      mediaDuration: null,
     }),
   toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
   setPlaying: (isPlaying) => set({ isPlaying }),
@@ -50,7 +66,26 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   setFailed: (failed) => set({ failed }),
   retry: () =>
     set((state) => ({ failed: false, isPlaying: true, retryToken: state.retryToken + 1 })),
-  close: () => set({ episode: null, isPlaying: false, elapsedSeconds: 0, failed: false }),
+  seek: (seconds) =>
+    set((state) => {
+      if (!state.episode) return {};
+      const length = state.mediaDuration ?? state.episode.durationSeconds;
+      const max = length > 0 ? length : seconds;
+      const clamped = Math.min(Math.max(Number.isFinite(seconds) ? seconds : 0, 0), max);
+      return {
+        elapsedSeconds: clamped,
+        seekRequest: { seconds: clamped, token: (state.seekRequest?.token ?? 0) + 1 },
+      };
+    }),
+  close: () =>
+    set({
+      episode: null,
+      isPlaying: false,
+      elapsedSeconds: 0,
+      failed: false,
+      seekRequest: null,
+      mediaDuration: null,
+    }),
 }));
 
 /** m:ss, the format the episode list and the player both render. */

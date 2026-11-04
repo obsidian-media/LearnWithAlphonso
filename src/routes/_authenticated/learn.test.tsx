@@ -157,8 +157,9 @@ describe("Learn page", () => {
     for (const label of [/^Up next/, /^Continue$/]) {
       const el = within(link).getByText(label);
       expect(el.className).toContain("bg-surface");
-      expect(el.className).toContain("text-ink");
-      expect(el.className).not.toMatch(/opacity-|text-ember/);
+      // classList, not a substring: "text-ink-soft" contains "text-ink" and is the faded colour this forbids.
+      expect(el.classList.contains("text-ink")).toBe(true);
+      expect(el.className).not.toMatch(/opacity-|text-ember|text-ink-soft/);
     }
   });
 
