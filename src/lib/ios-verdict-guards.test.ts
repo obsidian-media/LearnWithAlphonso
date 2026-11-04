@@ -101,3 +101,26 @@ describe("chunky answer tiles and word chips", () => {
     expect(bar).toContain("LinearGradient(");
   });
 });
+
+describe("words to learn, one card at a time", () => {
+  const vocab = between(lesson, "private struct VocabScreen: View", "struct VocabImageView: View");
+
+  it("pages through the words, with the Kit's button wording", () => {
+    expect(vocab).toContain(".tabViewStyle(.page(indexDisplayMode: .never))");
+    expect(vocab).toContain("VocabDeck.buttonTitle(index: page, count: items.count)");
+    expect(vocab).toContain('"Word \\(page + 1) of \\(items.count)"');
+    expect(vocab).toContain('"Skip to practice"');
+  });
+
+  it("the largest text sizes keep the scrolling list", () => {
+    expect(vocab).toContain("dynamicTypeSize.isAccessibilitySize");
+    expect(vocab).toContain("wordList");
+  });
+
+  it("Alphonso peeks over the card, decorative", () => {
+    expect(vocab).toContain('Image("Alphonso-encouraging")');
+    expect(from(vocab, 'Image("Alphonso-encouraging")').slice(0, 300)).toContain(
+      ".accessibilityHidden(true)",
+    );
+  });
+});

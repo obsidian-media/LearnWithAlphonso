@@ -16,6 +16,7 @@ import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { AnswerVerdictPanel } from "../../components/AnswerVerdictPanel";
 import { WordChip } from "../../components/WordChip";
 import { correctAnswerText } from "../../lib/answer-verdict";
+import { deckButtonTitle } from "../../lib/vocab-deck";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
@@ -660,6 +661,17 @@ function VocabScreen({
   onStart: () => void;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  if (!isStudioInk) {
+    return (
+      <VocabDeckScreen
+        items={items}
+        title={title}
+        subtitle={subtitle}
+        course={course}
+        onStart={onStart}
+      />
+    );
+  }
   return (
     <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
@@ -669,75 +681,162 @@ function VocabScreen({
       <p className="mt-1.5 text-sm text-ink-soft/80">
         {items.length} word{items.length === 1 ? "" : "s"} to learn before you practise.
       </p>
-
-      <div className={isStudioInk ? "mt-6 divide-y divide-hairline" : "mt-6 space-y-2.5"}>
-        {items.map((v, i) =>
-          isStudioInk ? (
-            <motion.div
-              key={`${v.term}-${i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="py-3.5"
-            >
-              {v.image && (
-                <VocabImage url={v.image.url} alt={v.image.alt} className="mb-3 h-32 w-full" />
-              )}
-              <div className="flex items-center gap-2">
-                <p className="font-display text-base font-semibold text-ink">{v.term}</p>
-                <button
-                  type="button"
-                  onClick={() => speak(v.term, localeForCourse(course))}
-                  aria-label={`Play pronunciation for ${v.term}`}
-                  className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
-                >
-                  🔊
-                </button>
-              </div>
-              <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-              <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
-                {v.example}
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`${v.term}-${i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden rounded-2xl border border-hairline bg-surface"
-            >
-              {v.image && (
-                <VocabImage url={v.image.url} alt={v.image.alt} className="h-32 w-full" />
-              )}
-              <div className="px-4 py-3.5">
-                <div className="flex items-center gap-2">
-                  <p className="font-display text-base font-semibold text-ink">{v.term}</p>
-                  <button
-                    type="button"
-                    onClick={() => speak(v.term, localeForCourse(course))}
-                    aria-label={`Play pronunciation for ${v.term}`}
-                    className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
-                  >
-                    🔊
-                  </button>
-                </div>
-                <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-                <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
-                  {v.example}
-                </p>
-              </div>
-            </motion.div>
-          ),
-        )}
+      <div className="mt-6 divide-y divide-hairline">
+        {items.map((v, i) => (
+          <motion.div
+            key={`${v.term}-${i}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="py-3.5"
+          >
+            {v.image && (
+              <VocabImage url={v.image.url} alt={v.image.alt} className="mb-3 h-32 w-full" />
+            )}
+            <div className="flex items-center gap-2">
+              <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+              <button
+                type="button"
+                onClick={() => speak(v.term, localeForCourse(course))}
+                aria-label={`Play pronunciation for ${v.term}`}
+                className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
+              >
+                🔊
+              </button>
+            </div>
+            <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
+            <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
+              {v.example}
+            </p>
+          </motion.div>
+        ))}
       </div>
-
       <div className="mt-auto pt-6">
         <button
           onClick={onStart}
           className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
         >
           Start practice
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Words to learn, one big card at a time: the picture, the word, its sound, the meaning and an example, with
+ * Alphonso peeking over the corner. "Next word" moves on and the last card starts practice; Skip goes straight to
+ * it. The arrow keys move between cards. Reduced motion swaps the slide for a fade.
+ */
+function VocabDeckScreen({
+  items,
+  title,
+  subtitle,
+  course,
+  onStart,
+}: {
+  items: VocabItem[];
+  title: string;
+  subtitle: string;
+  course: Course;
+  onStart: () => void;
+}) {
+  const reduceMotion = usePrefersReducedMotion();
+  const [index, setIndex] = useState(0);
+  const count = items.length;
+  const v = items[Math.min(index, count - 1)];
+  const last = index >= count - 1;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") setIndex((i) => Math.min(i + 1, count - 1));
+      if (e.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [count]);
+
+  return (
+    <div className="flex flex-1 flex-col px-5 pb-6 pt-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
+            Vocabulary · {subtitle}
+          </p>
+          <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
+          <p className="tnum mt-1 text-sm text-ink-soft/80">
+            Word {index + 1} of {count}
+          </p>
+        </div>
+        {count > 1 && (
+          <button
+            type="button"
+            onClick={onStart}
+            className="min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-ink-soft hover:text-ink"
+          >
+            Skip to practice
+          </button>
+        )}
+      </div>
+
+      <div className="relative mt-6 flex flex-1 flex-col">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={index}
+            data-vocab-card
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="relative overflow-hidden rounded-[28px] border-2 border-hairline bg-parchment shadow-[0_6px_0_0_var(--color-hairline)]"
+          >
+            <img
+              src="/mascots/alphonso-encouraging.png"
+              alt=""
+              width={72}
+              height={72}
+              decoding="async"
+              className="pointer-events-none absolute -right-2 -top-1 z-10 size-[72px] object-contain"
+            />
+            {v.image && <VocabImage url={v.image.url} alt={v.image.alt} className="h-44 w-full" />}
+            <div className="px-5 pb-5 pt-4">
+              <div className="flex items-center gap-3 pr-14">
+                <p className="font-display text-[34px] font-bold leading-tight text-ink">
+                  {v.term}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => speak(v.term, localeForCourse(course))}
+                  aria-label={`Play pronunciation for ${v.term}`}
+                  className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-hairline bg-surface text-lg text-ink transition hover:border-ink/30"
+                >
+                  🔊
+                </button>
+              </div>
+              <p className="mt-1 text-base text-ink-soft">{v.meaning}</p>
+              <p className="mt-3 rounded-2xl bg-surface px-4 py-3 text-[15px] italic text-ink-soft">
+                {v.example}
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <div aria-hidden="true" className="mt-4 flex justify-center gap-1.5">
+          {items.map((it, i) => (
+            <span
+              key={`${it.term}-${i}`}
+              className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-moss" : "w-2 bg-hairline"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-auto pt-6">
+        <button
+          onClick={() => (last ? onStart() : setIndex((i) => i + 1))}
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-moss px-6 py-3 font-display text-base font-bold tracking-wide text-surface shadow-[0_4px_0_0_var(--color-edge-moss)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
+        >
+          {deckButtonTitle(index, count)}
         </button>
       </div>
     </div>

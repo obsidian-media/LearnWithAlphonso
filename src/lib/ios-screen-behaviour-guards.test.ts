@@ -135,7 +135,7 @@ describe("Largest accessibility text", () => {
       /isAccessibilitySize[\s\S]*ScrollView \{ quizColumn \}/,
     );
     expect(between(player, "private struct VocabScreen", /\n\/\/\/ The one way/)).toMatch(
-      /isAccessibilitySize[\s\S]*ScrollView \{ content \}/,
+      /isAccessibilitySize[\s\S]*ScrollView \{ listContent \}/,
     );
   });
 

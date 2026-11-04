@@ -93,7 +93,7 @@ function renderPage(consentApi = fakeConsentApi()) {
 
 async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
-  await user.click(await screen.findByRole("button", { name: "Start practice" }));
+  await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
 }
 
 beforeEach(() => {
@@ -420,12 +420,59 @@ describe("Lesson page", () => {
     expect(screen.getByText("8 questions")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Begin lesson" }));
-    expect(await screen.findByText("8 words to learn before you practise.")).toBeInTheDocument();
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
     expect(screen.getByText("Good morning.")).toBeInTheDocument(); // a derived vocab term
 
-    await user.click(screen.getByRole("button", { name: "Start practice" }));
+    await user.click(screen.getByRole("button", { name: "Skip to practice" }));
     expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
     expect(screen.getByText("1/8")).toBeInTheDocument();
+  });
+
+  it("words to learn come one card at a time: Next word moves on, the last card starts practice", async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+    expect(container.querySelectorAll("[data-vocab-card]")).toHaveLength(1);
+    expect(screen.getByText("Good morning.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next word" }));
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+    // The first card slides out, then only the second is on screen.
+    await waitFor(() => expect(screen.queryByText("Good morning.")).not.toBeInTheDocument());
+    expect(container.querySelectorAll("[data-vocab-card]")).toHaveLength(1);
+
+    for (let i = 2; i < 8; i++) await user.click(screen.getByRole("button", { name: "Next word" }));
+    expect(await screen.findByText("Word 8 of 8")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Next word" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Start practice" }));
+    expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
+  });
+
+  it("the arrow keys move through the words too", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowRight}");
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowLeft}");
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+  });
+
+  it("Studio Ink keeps the full word list", async () => {
+    const { useTheme } = await import("../../lib/theme");
+    useTheme.setState({ theme: "studio-ink" });
+    try {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+      expect(await screen.findByText("8 words to learn before you practise.")).toBeInTheDocument();
+      expect(screen.queryByText("Word 1 of 8")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Start practice" })).toBeInTheDocument();
+    } finally {
+      useTheme.setState({ theme: "meadow" });
+    }
   });
 
   it("grades a correct answer, shows feedback, and advances on Continue", async () => {

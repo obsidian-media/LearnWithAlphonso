@@ -889,16 +889,141 @@ private struct VocabScreen: View {
     let course: Course
     let onStart: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var page = 0
 
     var body: some View {
         if dynamicTypeSize.isAccessibilitySize {
-            ScrollView { content }
+            // At the largest text sizes a fixed card would clip its words, so the screen stays one scrolling list.
+            ScrollView { listContent }
         } else {
-            content
+            deck
         }
     }
 
-    private var content: some View {
+    /// Words to learn, one big card at a time: the picture, the word, its sound, the meaning and an example, with
+    /// Alphonso peeking over the corner. "Next word" moves on and the last card starts practice; Skip goes straight
+    /// to it. Swiping also moves between cards.
+    private var deck: some View {
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Vocabulary · \(lesson.subtitle)".uppercased())
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                    Text(lesson.title)
+                        .font(AlphonsoFont.display(24, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("Word \(page + 1) of \(items.count)")
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .monospacedDigit()
+                }
+                Spacer(minLength: 0)
+                if items.count > 1 {
+                    Button("Skip to practice", action: onStart)
+                        .font(AlphonsoFont.sans(14, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                }
+            }
+
+            TabView(selection: $page) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    wordCard(item)
+                        .padding(.horizontal, 2)
+                        .padding(.top, 14)
+                        .padding(.bottom, 8)
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: page)
+
+            HStack(spacing: 6) {
+                ForEach(items.indices, id: \.self) { index in
+                    Capsule()
+                        .fill(index == page ? AlphonsoColor.moss : AlphonsoColor.hairline)
+                        .frame(width: index == page ? 20 : 8, height: 8)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+
+            Button(VocabDeck.buttonTitle(index: page, count: items.count)) {
+                if page < items.count - 1 {
+                    page += 1
+                } else {
+                    onStart()
+                }
+            }
+            .buttonStyle(.alphonsoPrimary)
+        }
+        .padding()
+        .background(AlphonsoColor.surface)
+    }
+
+    private func wordCard(_ item: VocabItem) -> some View {
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+            if let image = item.image {
+                VocabImageView(image: image, cardHeight: 180)
+            }
+            HStack(spacing: AlphonsoSpacing.sm) {
+                Text(item.term)
+                    .font(AlphonsoFont.display(34, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(2)
+                Button {
+                    speak(item.term, course: course)
+                } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.body)
+                        .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
+                        .background(AlphonsoColor.surface, in: Circle())
+                        .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(AlphonsoColor.ink)
+                .accessibilityLabel("Play pronunciation for \(item.term)")
+            }
+            .padding(.trailing, 56)
+            Text(item.meaning)
+                .font(AlphonsoFont.sans(16))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            Text(item.example)
+                .font(AlphonsoFont.sans(15).italic())
+                .foregroundStyle(AlphonsoColor.inkSoft)
+                .padding(.horizontal, AlphonsoSpacing.md)
+                .padding(.vertical, AlphonsoSpacing.sm + 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            Spacer(minLength: 0)
+        }
+        .padding(AlphonsoSpacing.md + 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AlphonsoColor.hairline)
+                .offset(y: 6)
+        )
+        .overlay(alignment: .topTrailing) {
+            // Decorative: Alphonso peeks over the card's corner.
+            Image("Alphonso-encouraging")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .offset(x: 6, y: -14)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    /// The scrolling list, kept for the largest text sizes.
+    private var listContent: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             Text("Vocabulary · \(lesson.subtitle)".uppercased())
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
@@ -910,16 +1035,8 @@ private struct VocabScreen: View {
             Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practise.")
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-
-            if dynamicTypeSize.isAccessibilitySize {
-                // At the largest text sizes the pinned title and button leave the list a sliver, so the whole
-                // screen scrolls as one instead.
-                wordList
-                startButton
-            } else {
-                ScrollView { wordList }
-                startButton
-            }
+            wordList
+            startButton
         }
         .padding()
         .background(AlphonsoColor.surface)

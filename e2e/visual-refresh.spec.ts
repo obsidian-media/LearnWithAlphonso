@@ -166,7 +166,7 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
 async function playLessonToTheEnd(page: import("@playwright/test").Page) {
   await page.goto(`/lesson/${LESSON.id}`);
   await page.getByRole("button", { name: "Begin lesson" }).click();
-  await page.getByRole("button", { name: "Start practice" }).click();
+  await page.getByRole("button", { name: "Skip to practice" }).click();
   for (let step = 0; step < 40; step++) {
     if ((await page.locator('[data-stage="complete"]').count()) > 0) return;
     const gotIt = page.getByRole("button", { name: "Got it" });
