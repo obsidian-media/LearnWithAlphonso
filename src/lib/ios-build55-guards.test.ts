@@ -43,8 +43,13 @@ describe("1. the word card looks good without a photo", () => {
   });
 
   it("Skip sits on the counter row, not beside the title", () => {
-    const counter = from(vocab, 'Text("Word \\(page + 1) of \\(items.count)")').slice(0, 700);
-    expect(counter).toContain('"Skip to practice"');
+    // The counter opens its own row (an HStack right above it), and Skip is inside that row.
+    const at = vocab.indexOf('Text("Word \\(page + 1) of \\(items.count)")');
+    expect(at).toBeGreaterThan(-1);
+    const row = vocab.lastIndexOf("HStack {", at);
+    expect(row).toBeGreaterThan(-1);
+    expect(at - row).toBeLessThan(120);
+    expect(vocab.slice(row, at + 700)).toContain('"Skip to practice"');
     const title = between(vocab, "Text(lesson.title)", 'Text("Word \\(page + 1)');
     expect(title).not.toContain("Skip to practice");
   });
@@ -58,18 +63,38 @@ describe("2. lesson complete shows the rewards above the pinned button", () => {
   });
 });
 
-describe("3. the wrong-answer panel is coral, not alarm red", () => {
-  it("uses the ember tint and the ember button", () => {
-    const body = between(
-      panel,
-      "struct AnswerVerdictPanel: View",
-      "struct AnswerChoiceButton: View",
+describe("3. the wrong-answer panel is softer, and never the colour of a right answer", () => {
+  const theme = read("DesignSystem/AlphonsoTheme.swift");
+  const body = between(panel, "struct AnswerVerdictPanel: View", "struct AnswerChoiceButton: View");
+
+  it("tints with the theme's wrong-answer colour and titles in ink (ember text missed 3:1 on light themes)", () => {
+    expect(body).toMatch(/correct \? AlphonsoColor\.moss : AlphonsoColor\.wrongAnswer/);
+    expect(body).toContain(".foregroundStyle(correct ? tint : AlphonsoColor.ink)");
+    expect(body).toContain(
+      "AlphonsoColor.wrongAnswerUsesEmber ? AlphonsoPrimaryButtonStyle.alphonsoEmber",
     );
-    expect(body).toMatch(/correct \? AlphonsoColor\.moss : AlphonsoColor\.ember/);
-    expect(body).toContain(".alphonsoEmber");
-    expect(body).not.toContain("AlphonsoColor.destructive");
-    expect(body).not.toContain("Color(red:");
   });
+
+  // Studio Ink and Manuscript draw ember and moss in one colour, so ember there would make wrong look right.
+  const hexOf = (block: string, token: string) => {
+    const m = block.match(new RegExp(`\\b${token}: Color\\(hex: (0x[0-9A-F_]+)\\)`));
+    expect(m, `${token} in palette`).not.toBeNull();
+    return m![1];
+  };
+  const usesEmber = from(theme, "static var wrongAnswerUsesEmber: Bool").slice(0, 400);
+
+  it.each(["meadow", "studioInk", "manuscript", "canopy"])(
+    "%s: the wrong-answer colour differs from moss",
+    (id) => {
+      const block = from(theme, `.${id}: AlphonsoPalette(`).slice(0, 1800);
+      const emberIsMoss = hexOf(block, "moss") === hexOf(block, "ember");
+      const listedAsEmber = new RegExp(`case [^:]*\\.${id}\\b[^:]*:\\s*return true`).test(
+        usesEmber,
+      );
+      if (emberIsMoss) expect(listedAsEmber, `${id} must use destructive`).toBe(false);
+      else expect(listedAsEmber, `${id} should use its coral ember`).toBe(true);
+    },
+  );
 });
 
 describe("4. word chips keep their bottom edge", () => {

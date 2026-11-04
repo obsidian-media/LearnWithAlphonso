@@ -406,6 +406,15 @@ public enum AlphonsoColor {
     public static var ember: Color { AlphonsoThemeManager.shared.palette.ember }
     public static var emberSoft: Color { AlphonsoThemeManager.shared.palette.emberSoft }
     public static var destructive: Color { AlphonsoThemeManager.shared.palette.destructive }
+    /// A wrong answer uses the theme's coral (ember), except where a theme draws ember and moss in one colour
+    /// (Studio Ink, Manuscript): there it is the destructive red, so a wrong answer never looks like a right one.
+    public static var wrongAnswerUsesEmber: Bool {
+        switch AlphonsoThemeManager.shared.themeID {
+        case .meadow, .canopy: return true
+        case .studioInk, .manuscript: return false
+        }
+    }
+    public static var wrongAnswer: Color { wrongAnswerUsesEmber ? ember : destructive }
     public static var hairline: Color { AlphonsoThemeManager.shared.palette.hairline }
     public static var onPrimary: Color { AlphonsoThemeManager.shared.palette.onPrimary }
     public static var onAccent: Color { AlphonsoThemeManager.shared.palette.onAccent }
