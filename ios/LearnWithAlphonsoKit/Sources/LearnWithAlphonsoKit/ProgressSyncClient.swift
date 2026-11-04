@@ -46,7 +46,20 @@ public struct WeaknessTrendEntry: Sendable, Equatable {
 /// V3 package 2 -- mirrors sync.functions.ts's BuyStreakFreezeResult.
 public enum BuyStreakFreezeResult: Sendable, Equatable {
     case ok(streakFreezes: Int, xp: Int)
-    case insufficientXp(streakFreezes: Int?)
+    /// `xp` is the balance of the course the purchase was for, so the caller can show the real shortfall.
+    case insufficientXp(streakFreezes: Int?, xp: Int?)
+    case signedOut
+}
+
+/// What the streak-freeze row needs for ONE course: that course's XP (the purchase is charged against it) and the
+/// account-wide freeze count.
+public struct StreakFreezeStatus: Sendable, Equatable {
+    public let xp: Int
+    public let streakFreezes: Int
+    public init(xp: Int, streakFreezes: Int) {
+        self.xp = xp
+        self.streakFreezes = streakFreezes
+    }
 }
 
 /// V3 package 2 -- one row of `get_my_duels` (supabase/migrations/
@@ -860,9 +873,31 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         if !ok {
-            return .insufficientXp(streakFreezes: row["streak_freezes"] as? Int)
+            if (row["reason"] as? String) == "unauthenticated" { return .signedOut }
+            return .insufficientXp(streakFreezes: row["streak_freezes"] as? Int, xp: row["xp"] as? Int)
         }
         return .ok(streakFreezes: row["streak_freezes"] as? Int ?? 0, xp: row["xp"] as? Int ?? 0)
+    }
+
+    /// XP of `course` and the account's freeze count. `fetchProgress()` returns the most recently updated course's
+    /// row, which is not necessarily the course a purchase is charged to, so the shop reads this instead.
+    public func fetchStreakFreezeStatus(course: String) async throws -> StreakFreezeStatus {
+        var languageRequest = restRequest(path: "language_progress", query: [
+            URLQueryItem(name: "select", value: "xp"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+            URLQueryItem(name: "limit", value: "1"),
+        ])
+        languageRequest.httpMethod = "GET"
+        let (languageData, languageResponse) = try await requester(languageRequest)
+        try Self.requireSuccess(data: languageData, response: languageResponse)
+        let xp = ((try? JSONSerialization.jsonObject(with: languageData) as? [[String: Any]])?.first?["xp"] as? Int) ?? 0
+
+        var userRequest = restRequest(path: "user_progress", query: [URLQueryItem(name: "select", value: "streak_freezes")])
+        userRequest.httpMethod = "GET"
+        let (userData, userResponse) = try await requester(userRequest)
+        try Self.requireSuccess(data: userData, response: userResponse)
+        let freezes = ((try? JSONSerialization.jsonObject(with: userData) as? [[String: Any]])?.first?["streak_freezes"] as? Int) ?? 0
+        return StreakFreezeStatus(xp: xp, streakFreezes: freezes)
     }
 
     /// Spends the fixed heart price in XP of `course` for one heart, through the same RPC as the web. Used by the

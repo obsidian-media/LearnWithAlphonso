@@ -55,6 +55,9 @@ data class LearnUiState(
 }
 
 /** Port of LessonBrowserView.swift's state plus the weekly challenges card and the streak-freeze purchase. */
+/** What `buy_streak_freeze_with_xp` charges (the server decides; web's XP_STREAK_FREEZE_COST is the same). Display only. */
+const val STREAK_FREEZE_XP_COST = 75
+
 class LearnViewModel(
     private val content: ContentStore,
     private val client: ProgressSyncClient,
@@ -117,7 +120,7 @@ class LearnViewModel(
         }
     }
 
-    /** Spends 50 XP on a streak freeze, same RPC the web app calls. */
+    /** Spends [STREAK_FREEZE_XP_COST] XP on a streak freeze, same RPC the web app calls. */
     fun buyStreakFreeze(): Job {
         val course = _state.value.course
         return viewModelScope.launch {
@@ -127,7 +130,7 @@ class LearnViewModel(
                     syncStore.lastKnownProgress()?.let { p -> syncStore.updateLastKnownProgress(p.copy(streakFreezes = r.streakFreezes, xp = r.xp)) }
                     _state.update { it.copy(notice = "Streak freeze bought. You have ${r.streakFreezes}.") }
                 }
-                is BuyStreakFreezeResult.InsufficientXp -> _state.update { it.copy(notice = "Not enough XP. A streak freeze costs 50 XP.") }
+                is BuyStreakFreezeResult.InsufficientXp -> _state.update { it.copy(notice = "Not enough XP. A streak freeze costs $STREAK_FREEZE_XP_COST XP.") }
             }
         }
     }
