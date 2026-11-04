@@ -4156,4 +4156,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options from the particle group; the preposition over has no near rival there",
     wrong: ["onto", "past", "from"],
   },
+  "c1p20l4/c1p20q17": {
+    why: 'the sentence read "worth to note"; worth takes an -ing form',
+    prompt: "It is ___ noting the limitations of this approach.",
+  },
+  "c1p20l5/c1p20q23": {
+    why: 'the sentence read "Consistent with with"; the blank follows the adjective, so the word before it is dropped',
+    prompt: "Consistent ___ prior research, the findings confirm the theory.",
+  },
 };

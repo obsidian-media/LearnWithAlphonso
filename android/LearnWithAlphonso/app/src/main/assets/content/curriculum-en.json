@@ -45365,7 +45365,7 @@
             {
               "id": "c1p20q17",
               "type": "mc",
-              "prompt": "It is ___ to note the limitations of this approach.",
+              "prompt": "It is ___ noting the limitations of this approach.",
               "choices": [
                 "worth",
                 "onward",
@@ -45450,7 +45450,7 @@
             {
               "id": "c1p20q23",
               "type": "fill",
-              "prompt": "Consistent ___ with prior research, the findings confirm the theory.",
+              "prompt": "Consistent ___ prior research, the findings confirm the theory.",
               "bank": [
                 "with",
                 "into",

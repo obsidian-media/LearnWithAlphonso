@@ -415,7 +415,8 @@ function lemmaOf(word: string): string {
   };
   let y = strip(w, /(ied|ies)$/, "y");
   if (y === w) y = strip(w, /(ing|ed|es|s)$/);
-  return y.replace(/(.)$/, "$1");
+  // A doubled final consonant (stopp -> stop) comes from the -ing / -ed spelling.
+  return y.length > 1 && y.at(-1) === y.at(-2) ? y.slice(0, -1) : y;
 }
 function pastKind(word: string): "past" | "ing" | "present" | "other" {
   const w = word.toLowerCase().trim();
