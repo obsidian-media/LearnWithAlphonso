@@ -146,6 +146,16 @@ struct LessonBrowserView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
+                if let progress = syncQueueStore.lastKnownProgress() {
+                    StreakFreezeRow(
+                        progress: progress, course: course, session: session, isOnline: networkMonitor.isConnected,
+                        onBought: { syncQueueStore.updateLastKnownProgress($0) }
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+
                 // One loud card for the next lesson in this band, with the unit's lessons as a short path.
                 if let next = nextLesson {
                     // The unit as a winding path over the garden, Alphonso beside the current node.
