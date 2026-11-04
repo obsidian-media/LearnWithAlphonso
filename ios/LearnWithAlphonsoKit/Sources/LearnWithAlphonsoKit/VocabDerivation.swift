@@ -2,7 +2,8 @@ import Foundation
 
 /// Direct port of src/data/vocab.ts's `deriveVocab` -- vocabulary isn't
 /// separate content, it's derived from a lesson's own questions (the
-/// answer + a model sentence; `meaning` is always "" until real glosses are authored), so no new bundled JSON is
+/// answer + the authored `meaning`/`example` on the question, falling back to the
+/// filled cloze sentence), so no new bundled JSON is
 /// needed for the term/meaning/example fields: the existing
 /// curriculum-en.json/curriculum-fr.json already carry everything those
 /// need. `image` is the one field that does need separate bundled data --
@@ -111,6 +112,18 @@ private func exampleOf(_ question: Question) -> String {
     return sentence.prefix(1).uppercased() + sentence.dropFirst()
 }
 
+/// The authored `meaning`/`example` on a question, trimmed, "" when none.
+private func authored(_ question: Question) -> (meaning: String, example: String) {
+    let pair: (String?, String?)
+    switch question {
+    case .multipleChoice(let q): pair = (q.meaning, q.example)
+    case .fillInBlank(let q): pair = (q.meaning, q.example)
+    default: pair = (nil, nil)
+    }
+    let ws = CharacterSet.whitespacesAndNewlines
+    return ((pair.0 ?? "").trimmingCharacters(in: ws), (pair.1 ?? "").trimmingCharacters(in: ws))
+}
+
 /// Builds the vocabulary module for a lesson from its own questions,
 /// deduping by term (case-insensitive) in question order. `images` is
 /// keyed the same way (`term.lowercased()`, matching the web's
@@ -125,7 +138,11 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
         let key = term.lowercased()
         guard !seen.contains(key) else { continue }
         seen.insert(key)
-        items.append(VocabItem(term: term, meaning: "", example: exampleOf(question), image: images[key]))
+        let card = authored(question)
+        items.append(VocabItem(
+            term: term, meaning: card.meaning,
+            example: card.example.isEmpty ? exampleOf(question) : card.example,
+            image: images[key]))
     }
     return items
 }

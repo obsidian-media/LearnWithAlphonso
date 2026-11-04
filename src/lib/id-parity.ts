@@ -24,7 +24,10 @@ import type { Course } from "@/data/courses";
  * (spec 2026-09-24-french-content-audit-design.md 2.2) -- both are
  * structurally `{id, data}[]`, which is all packLineStats() needs.
  */
-const PACKS_BY_COURSE: Record<Course, Record<string, { id: string; data: string }[]>> = {
+const PACKS_BY_COURSE: Record<
+  Course,
+  Record<string, { id: string; kind?: string; data: string }[]>
+> = {
   en: BANK,
   fr: BANK_FR,
   es: BANK_ES,
@@ -56,7 +59,14 @@ export function packLineStats(
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);
-    const malformed = lines.filter((l) => l.split("|").length !== 2);
+    // Two fields everywhere. English pair and cloze lines may carry two more: the
+    // authored word-card meaning and example (lesson-bank.ts reads them; the French
+    // and Spanish engine would silently ignore them, so they stay at two there).
+    const maxFields = course === "en" && (pack.kind === "pair" || pack.kind === "cloze") ? 4 : 2;
+    const malformed = lines.filter((l) => {
+      const n = l.split("|").length;
+      return n < 2 || n > maxFields;
+    });
     out[pack.id] = { lines: lines.length, malformed };
   }
   return out;

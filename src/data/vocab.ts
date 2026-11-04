@@ -56,6 +56,11 @@ function exampleOf(q: Question): string {
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
+/** An authored card field on the question, if any. Only mc/fill questions carry them. */
+function authored(q: Question, field: "meaning" | "example"): string {
+  return (q.type === "mc" || q.type === "fill" ? q[field] : undefined)?.trim() ?? "";
+}
+
 function titleCaseKey(s: string) {
   return s.trim().toLowerCase();
 }
@@ -63,10 +68,11 @@ function titleCaseKey(s: string) {
 /**
  * Builds the vocabulary module for any lesson from its own questions.
  *
- * `meaning` is always "" today. The questions carry an explanation of why the
+ * `meaning` is the authored gloss on the question (pack line field 3), "" when
+ * none is authored yet. The quiz explanation is never used for it: it says why the
  * answer was right ("'am' is correct here. Match the verb form to the subject."),
- * never a gloss of the word, and printing that under the word as its meaning was
- * wrong. A real meaning needs authored data (see docs/content-audit-2026-11.md).
+ * not what the word means. `example` is the authored sentence (pack line field 4),
+ * falling back to the filled cloze sentence (see docs/content-audit-2026-11.md).
  */
 export function deriveVocab(lesson: Lesson): VocabItem[] {
   return deriveVocabWithContext(lesson).map(({ context: _context, ...item }) => item);
@@ -88,8 +94,8 @@ export function deriveVocabWithContext(lesson: Lesson): (VocabItem & { context: 
     seen.add(key);
     items.push({
       term,
-      meaning: "",
-      example: exampleOf(q),
+      meaning: authored(q, "meaning"),
+      example: authored(q, "example") || exampleOf(q),
       image: VOCAB_IMAGES[key],
       context: q.explanation,
     });

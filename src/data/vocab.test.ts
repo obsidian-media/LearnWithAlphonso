@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
-import { deriveVocab, vocabForLesson } from "./vocab";
+import { deriveVocab, deriveVocabWithContext, vocabForLesson } from "./vocab";
 import type { Lesson, Question } from "./curriculum";
 
 const mc: Question = {
@@ -156,12 +156,31 @@ describe("deriveVocab", () => {
     const bad: string[] = [];
     for (const unit of course.curriculum)
       for (const l of unit.lessons)
-        for (const item of deriveVocab(l)) {
+        for (const item of deriveVocabWithContext(l)) {
           if (item.example.includes("___") || item.example.includes("→"))
             bad.push(`${l.id} ${item.term}: ${item.example}`);
-          if (item.meaning !== "") bad.push(`${l.id} ${item.term}: meaning ${item.meaning}`);
+          // A meaning is now authored (see vocab-meanings.test.ts); what must never come
+          // back is the quiz explanation standing in for it.
+          if (
+            item.meaning !== "" &&
+            (item.meaning === item.context || /is correct here/i.test(item.meaning))
+          )
+            bad.push(`${l.id} ${item.term}: meaning ${item.meaning}`);
         }
     expect(bad).toEqual([]);
+  });
+
+  it("uses the authored meaning and example, and falls back to the cloze sentence without one", () => {
+    const authored: Question = {
+      ...mc,
+      id: "a1",
+      meaning: "  the verb be, for she ",
+      example: "She is kind.",
+    };
+    const meaningOnly: Question = { ...fill, id: "a2", meaning: "to have a drink" };
+    const items = deriveVocab({ ...lesson, questions: [authored, meaningOnly] });
+    expect(items[0]).toMatchObject({ meaning: "the verb be, for she", example: "She is kind." });
+    expect(items[1]).toMatchObject({ meaning: "to have a drink", example: "I drink coffee." });
   });
 
   it("skips questions whose answer is blank", () => {
