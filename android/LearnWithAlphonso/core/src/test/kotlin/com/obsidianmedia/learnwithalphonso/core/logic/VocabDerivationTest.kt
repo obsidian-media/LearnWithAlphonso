@@ -24,7 +24,7 @@ class VocabDerivationTest {
             items.map { it.term },
         )
         assertEquals("Nice to meet you.", items[1].example)
-        assertEquals("Which is a formal greeting? → Good morning.", items[0].example)
+        assertEquals("", items[0].example) // a quiz stem is not a sentence
     }
 
     @Test
@@ -39,7 +39,7 @@ class VocabDerivationTest {
         )
         val items = deriveVocab(lesson, emptyMap())
         assertEquals(listOf("Good"), items.map { it.term })
-        assertEquals("e1", items[0].meaning)
+        assertEquals("", items[0].meaning) // the quiz explanation is never the meaning
     }
 
     @Test
@@ -57,18 +57,38 @@ class VocabDerivationTest {
     }
 
     @Test
-    fun `fill example appends the answer when the prompt has no blank and mc strips a trailing colon`() {
+    fun `only a cloze sentence gives an example and no card shows the quiz explanation`() {
         val lesson = Lesson(
             "l", "t", "s",
             listOf(
                 Question.FillInBlank("a", "Say hello", listOf("hi"), "hi", "e"),
                 Question.MultipleChoice("b", "Choose the farewell: ", listOf("Bye", "Hi"), 0, "e"),
+                Question.MultipleChoice("c", "She ___ happy.", listOf("is", "am"), 0, "e"),
+                Question.MultipleChoice("d", "Plural of \"baby\": ___", listOf("babies", "x"), 0, "e"),
             ),
         )
         val items = deriveVocab(lesson, mapOf("bye" to VocabImageRef("u", "alt", "c")))
-        assertEquals("Say hello hi", items[0].example)
-        assertEquals("Choose the farewell → Bye", items[1].example)
+        assertEquals("", items[0].example)
+        assertEquals("", items[1].example)
+        assertEquals("She is happy.", items[2].example)
+        assertEquals("", items[3].example)
+        assertEquals(listOf("", "", "", ""), items.map { it.meaning })
         assertEquals("u", items[1].image?.url)
         assertNull(items[0].image)
+    }
+
+    @Test
+    fun `tidies the sentence - no space before punctuation, capital first letter, no bracket hint`() {
+        fun example(prompt: String, answer: String): String =
+            deriveVocab(
+                Lesson("l", "t", "s", listOf(Question.MultipleChoice("q", prompt, listOf(answer, "x", "y"), 0, "e"))),
+                emptyMap(),
+            )[0].example
+        assertEquals("Is this seat taken?", example("Is this seat ___ ?", "taken"))
+        assertEquals("While we were talking, the phone rang.", example("While we ___ , the phone rang.", "were talking"))
+        assertEquals("May I open the window, please?", example("___ I open the window, please?", "may"))
+        assertEquals("Je bois de l'eau.", example("Je ___ (boire) de l'eau.", "bois"))
+        assertEquals("It's half past six.", example("It's ___ past six. (30 min)", "half"))
+        assertEquals("Excusez-moi, où est la gare ? Et vous?", example("Excusez-moi, où est la gare ? Et ___ ?", "vous"))
     }
 }

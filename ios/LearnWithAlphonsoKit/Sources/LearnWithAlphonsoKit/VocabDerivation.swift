@@ -2,7 +2,7 @@ import Foundation
 
 /// Direct port of src/data/vocab.ts's `deriveVocab` -- vocabulary isn't
 /// separate content, it's derived from a lesson's own questions (the
-/// answer + explanation + a model sentence), so no new bundled JSON is
+/// answer + a model sentence; `meaning` is always "" until real glosses are authored), so no new bundled JSON is
 /// needed for the term/meaning/example fields: the existing
 /// curriculum-en.json/curriculum-fr.json already carry everything those
 /// need. `image` is the one field that does need separate bundled data --
@@ -72,32 +72,43 @@ private func answerOf(_ question: Question) -> String {
     }
 }
 
-/// Mirrors the web's `prompt.replace(/[:：]\s*$/, "")` -- strip trailing
-/// whitespace, then a trailing ':' or full-width '：' if present.
-private func stripTrailingColon(_ prompt: String) -> String {
-    var result = prompt
-    while let last = result.last, last.isWhitespace {
-        result.removeLast()
-    }
-    if result.last == ":" || result.last == "：" {
-        result.removeLast()
-    }
-    return result
-}
+/// Quiz instructions and pair-drill stems: filling their blank gives a label, not a
+/// sentence. Mirrors the web's `STEM` in src/data/vocab.ts.
+private let stemPattern = try! NSRegularExpression(
+    pattern: "^(choose|which|select|complete|fill|plural of|opposite of|past (simple )?of|female form|male form|comparative|superlative|what is|what does|match)\\b",
+    options: [.caseInsensitive]
+)
 
+/// A model sentence for the card, or "" when there is none to show. Mirrors the
+/// web's `exampleOf`: only a cloze sentence with the answer put back in the blank
+/// counts ("She ___ happy." -> "She is happy."). A pair-drill stem or an
+/// instruction is not a sentence, and the old "prompt -> answer" example was the
+/// quiz text, not an example.
 private func exampleOf(_ question: Question) -> String {
     let answer = answerOf(question)
+    let prompt: String
     switch question {
-    case .fillInBlank(let q):
-        let filled = q.prompt.replacingOccurrences(of: "___", with: answer)
-        return filled == q.prompt ? "\(q.prompt) \(answer)" : filled
-    case .multipleChoice(let q):
-        return "\(stripTrailingColon(q.prompt)) \u{2192} \(answer)"
+    case .fillInBlank(let q): prompt = q.prompt
+    case .multipleChoice(let q): prompt = q.prompt
     case .reorder, .listening, .speak, .translate:
         // Unreachable in practice -- deriveVocab skips all five via
         // answerOf's empty term.
         return ""
     }
+    guard let blank = prompt.range(of: "___"), !answer.isEmpty else { return "" }
+    let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    let whole = NSRange(trimmed.startIndex..., in: trimmed)
+    if stemPattern.firstMatch(in: trimmed, options: [], range: whole) != nil { return "" }
+    let before = prompt[..<blank.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+    if let last = before.last, ":?…\"“".contains(last) { return "" }
+    // Tidy the join, same steps as the web: drop every bracket hint after the blank,
+    // drop the space the data leaves between the blank and its punctuation
+    // ("taken ?"), and capitalise the first letter.
+    var after = String(prompt[blank.upperBound...])
+    after = after.replacingOccurrences(of: "\\s*\\([^)]*\\)", with: "", options: .regularExpression)
+    after = after.replacingOccurrences(of: "^\\s+(?=[?!.,;:])", with: "", options: .regularExpression)
+    let sentence = String(prompt[..<blank.lowerBound]) + answer + after
+    return sentence.prefix(1).uppercased() + sentence.dropFirst()
 }
 
 /// Builds the vocabulary module for a lesson from its own questions,
@@ -114,16 +125,7 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
         let key = term.lowercased()
         guard !seen.contains(key) else { continue }
         seen.insert(key)
-        let explanation: String
-        switch question {
-        case .multipleChoice(let q): explanation = q.explanation
-        case .fillInBlank(let q): explanation = q.explanation
-        case .reorder(let q): explanation = q.explanation
-        case .listening(let q): explanation = q.explanation
-        case .speak(let q): explanation = q.explanation
-        case .translate(let q): explanation = q.explanation
-        }
-        items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question), image: images[key]))
+        items.append(VocabItem(term: term, meaning: "", example: exampleOf(question), image: images[key]))
     }
     return items
 }

@@ -5,6 +5,7 @@ import {
   orderDistractorCandidates,
   packAnswerPos,
 } from "@/lib/distractor-affinity";
+import { alsoCorrectReason, clearlyWrongFor, isTwinSpelling, slotClassOf } from "./also-correct";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -1160,7 +1161,7 @@ She fainted because she felt ___.|faint
 I cut my ___ while cooking.|finger
 The nurse checked my ___.|pulse
 He needs to rest his ___ leg.|injured
-I have a ___ stomach.|upset
+I have an ___ stomach.|upset
 She's recovering from a ___ .|fever
 My back ___ after lifting the box.|hurts
 He's got a nasty ___ on his knee.|bruise
@@ -1778,7 +1779,7 @@ I've lived here ___ 2010.|since`,
     kind: "pair",
     prompt: 'Which word completes "%s"?',
     note: "Collocations make speech sound natural.",
-    data: `make a ___ (job application)|application
+    data: `make an ___ (job application)|application
 take ___ (accept blame)|responsibility
 meet a ___ (finish on time)|deadline
 attend a ___|meeting
@@ -3968,9 +3969,12 @@ function pickDistractors(
   // provides while preferring wrong answers that are at least grammatically
   // possible in the blank -- a cloze pack's pool mixes word classes, so an
   // unordered walk offered nouns for verb slots ("I need to ___ some money"
-  // -> "money"). The affinity pass reorders and never drops, so the count
-  // below is unchanged and `useMc`'s `distractors.length < 3` branch cannot
-  // flip a question between fill and mc.
+  // -> "money"). The affinity pass itself reorders and never drops. The
+  // also-correct filter further down DOES change the count: it can drop a
+  // candidate and top the list back up to three with clearly wrong forms, so a
+  // question that used to have fewer than three wrong answers (and was always
+  // multiple choice) can now have three and render as fill. That is intended;
+  // the answer text and the question id are unchanged either way.
   const walk: string[] = [];
   for (let i = 0; i < others.length; i++) {
     const cand = others[(start + i * 7) % others.length];
@@ -3991,13 +3995,53 @@ function pickDistractors(
   // rationale. Same fix applied to both, found via an automated
   // content-consistency scan (2026-09-22).
   const seen = new Set<string>([answer.toLowerCase()]);
+  // A distractor that also makes a correct sentence marks a right answer wrong
+  // ("They ___ at home." with "study"), so it is skipped; clearly wrong forms
+  // for the slot fill any gap. Only cloze prompts have a blank to test.
+  const hasBlank = prompt?.includes("___") === true;
+  const skipped: string[] = [];
   for (let i = 0; out.length < 3 && i < ordered.length; i++) {
     const cand = ordered[i];
     const key = cand?.toLowerCase();
     if (cand && key && !seen.has(key)) {
+      if (isTwinSpelling(cand, answer) || out.some((o) => isTwinSpelling(o, cand))) continue;
+      if (hasBlank && alsoCorrectReason(prompt!, answer, cand)) {
+        skipped.push(cand);
+        continue;
+      }
       out.push(cand);
       seen.add(key);
     }
+  }
+  if (hasBlank && out.length < 3) {
+    for (const cand of clearlyWrongFor(prompt!, answer)) {
+      const key = cand.toLowerCase();
+      if (out.length >= 3) break;
+      if (!seen.has(key)) {
+        out.push(cand);
+        seen.add(key);
+      }
+    }
+  }
+  // A modal or be/do/have answer must keep a second option of its own class, or
+  // it is the only modal on screen and gives itself away. Swap the last pick for
+  // a clearly wrong form of the same class.
+  const slot = hasBlank ? slotClassOf(answer) : null;
+  if (slot && !out.some((o) => slotClassOf(o) === slot)) {
+    const same = clearlyWrongFor(prompt!, answer).find(
+      (w) => slotClassOf(w) === slot && !seen.has(w.toLowerCase()),
+    );
+    if (same) {
+      if (out.length >= 3) out.pop();
+      out.push(same);
+      seen.add(same.toLowerCase());
+    }
+  }
+  // Last resort, so a question keeps three wrong answers: the guard test names
+  // any flagged one that remains.
+  for (const cand of skipped) {
+    if (out.length >= 3) break;
+    out.push(cand);
   }
   return out;
 }

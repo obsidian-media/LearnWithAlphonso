@@ -46,9 +46,122 @@ describe("deriveVocab", () => {
     expect(items[1].example).toBe("I drink coffee.");
   });
 
-  it("formats mc questions as prompt -> answer", () => {
+  it("fills the blank for a cloze multiple-choice question too", () => {
     const items = deriveVocab(lesson);
-    expect(items[0].example).toBe("She ___ happy. → is");
+    expect(items[0].example).toBe("She is happy.");
+  });
+
+  it("never shows the quiz explanation as the meaning", () => {
+    // The data carries no gloss for a word, only the explanation of why it was the
+    // right answer ("'am' is correct here. Match the verb form to the subject."),
+    // which is not what a word means. Nothing is better than that.
+    const items = deriveVocab(lesson);
+    for (const item of items) {
+      expect(item.meaning).toBe("");
+      expect(item.meaning).not.toBe("third person singular");
+    }
+  });
+
+  it("shows no example when the prompt is a quiz stem rather than a sentence", () => {
+    const stems = [
+      'Plural of "baby": ___',
+      'Which verb goes with "homework"? ___',
+      'Opposite of "hot":',
+      "Choose the correct word:",
+    ];
+    for (const prompt of stems) {
+      const q: Question = {
+        id: "s",
+        type: "mc",
+        prompt,
+        choices: ["babies", "x", "y"],
+        answer: 0,
+        explanation: "e",
+      };
+      const [item] = deriveVocab({ id: "s", title: "", subtitle: "", questions: [q] });
+      expect(item.example, prompt).toBe("");
+    }
+  });
+
+  it("tidies the sentence: no space before punctuation, capital first letter, no bracket hint", () => {
+    const one = (prompt: string, answer: string) => {
+      const q: Question = {
+        id: "t",
+        type: "mc",
+        prompt,
+        choices: [answer, "x", "y"],
+        answer: 0,
+        explanation: "e",
+      };
+      return deriveVocab({ id: "t", title: "", subtitle: "", questions: [q] })[0].example;
+    };
+    expect(one("Is this seat ___ ?", "taken")).toBe("Is this seat taken?");
+    expect(one("While we ___ , the phone rang.", "were talking")).toBe(
+      "While we were talking, the phone rang.",
+    );
+    expect(one("___ I open the window, please?", "may")).toBe("May I open the window, please?");
+    expect(one("Je ___ (boire) de l'eau.", "bois")).toBe("Je bois de l'eau.");
+    expect(one("Yo ___ (hablar) español.", "hablo")).toBe("Yo hablo español.");
+    expect(one("It's ___ past six. (30 min)", "half")).toBe("It's half past six.");
+    // French puts a space before ? and ! on purpose; only the join with the answer is tidied.
+    expect(one("Excusez-moi, où est la gare ? Et ___ ?", "vous")).toBe(
+      "Excusez-moi, où est la gare ? Et vous?",
+    );
+  });
+
+  it("has no spaced punctuation, lowercase start or bracket hint in any real example", () => {
+    const bad: string[] = [];
+    for (const lang of ["en", "fr", "es"] as const)
+      for (const unit of getCourse(lang).curriculum)
+        for (const l of unit.lessons)
+          for (const item of deriveVocab(l)) {
+            const e = item.example;
+            if (!e) continue;
+            if (/\s[,.;:]/.test(e) || (lang === "en" && /\s[?!]/.test(e)))
+              bad.push(`${lang} spaced: ${e}`);
+            if (/^\p{Ll}/u.test(e)) bad.push(`${lang} lowercase: ${e}`);
+            if (/\([^)]*\)/.test(e)) bad.push(`${lang} hint: ${e}`);
+          }
+    expect(bad).toEqual([]);
+  });
+
+  it("uses the right a/an before the answer in every English question and example", () => {
+    // Vowel letters that start a consonant sound (a university, a one-way ticket) and
+    // consonant letters that start a vowel sound (an hour) are listed, not guessed.
+    const consonantSound = /^(uni|use|usu|one|once|eu|ubiq)/i;
+    const vowelSound = /^(hour|honest|honour|heir)/i;
+    const wrongArticle = (article: string, word: string) => {
+      const vowel = /^[aeiou]/i.test(word) ? !consonantSound.test(word) : vowelSound.test(word);
+      return article.toLowerCase() === "a" ? vowel : !vowel;
+    };
+    const bad: string[] = [];
+    for (const unit of getCourse("en").curriculum)
+      for (const l of unit.lessons) {
+        for (const q of l.questions) {
+          if ((q.type !== "mc" && q.type !== "fill") || !q.prompt.includes("___")) continue;
+          const answer = q.type === "mc" ? q.choices[q.answer]! : q.answer;
+          const m = /\b(a|an) ___/i.exec(q.prompt);
+          if (m && wrongArticle(m[1]!, answer)) bad.push(`${q.id}: "${q.prompt}" -> ${answer}`);
+        }
+        for (const item of deriveVocab(l)) {
+          for (const m of item.example.matchAll(/\b(a|an) (\p{L}+)/giu))
+            if (wrongArticle(m[1]!, m[2]!)) bad.push(`example "${item.example}"`);
+        }
+      }
+    expect(bad).toEqual([]);
+  });
+
+  it("never leaks quiz text into any derived card in the real English course", () => {
+    const course = getCourse("en");
+    const bad: string[] = [];
+    for (const unit of course.curriculum)
+      for (const l of unit.lessons)
+        for (const item of deriveVocab(l)) {
+          if (item.example.includes("___") || item.example.includes("→"))
+            bad.push(`${l.id} ${item.term}: ${item.example}`);
+          if (item.meaning !== "") bad.push(`${l.id} ${item.term}: meaning ${item.meaning}`);
+        }
+    expect(bad).toEqual([]);
   });
 
   it("skips questions whose answer is blank", () => {

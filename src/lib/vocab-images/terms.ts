@@ -1,5 +1,5 @@
 import { COURSES, getCourse } from "../../data/courses";
-import { deriveVocab } from "../../data/vocab";
+import { deriveVocabWithContext } from "../../data/vocab";
 import {
   IMAGEABILITY_DATA,
   classifyImageability,
@@ -25,8 +25,8 @@ export function vocabTermIndex(): TermIndex {
   for (const { id } of COURSES) {
     for (const unit of getCourse(id).curriculum) {
       for (const lesson of unit.lessons) {
-        for (const item of deriveVocab(lesson))
-          add(item.term.trim().toLowerCase(), id, item.meaning);
+        for (const item of deriveVocabWithContext(lesson))
+          add(item.term.trim().toLowerCase(), id, item.context);
         for (const q of lesson.questions) {
           if (q.type === "mc" && q.imageKey)
             add(q.imageKey.trim().toLowerCase(), id, q.explanation);

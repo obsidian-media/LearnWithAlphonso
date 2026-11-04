@@ -10,34 +10,68 @@ final class VocabDerivationTests: XCTestCase {
         .fillInBlank(Question.FillInBlank(id: id, prompt: prompt, bank: bank, answer: answer, explanation: explanation))
     }
 
-    func testDerivesATermMeaningAndArrowExampleFromAMultipleChoiceQuestion() {
+    // Mirrors src/data/vocab.test.ts. The quiz explanation is never a word's meaning,
+    // and a quiz stem is never an example sentence.
+
+    func testAClozeMultipleChoiceQuestionGivesAFilledSentenceAndNoMeaning() {
         let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
-            mc(id: "q1", prompt: "Choose the correct word:", choices: ["cat", "dog"], answer: 0, explanation: "A small pet."),
+            mc(id: "q1", prompt: "She ___ happy.", choices: ["is", "am"], answer: 0, explanation: "'is' is correct here. Match the verb form to the subject."),
         ])
 
         let vocab = deriveVocab(lesson: lesson, images: [:])
 
-        XCTAssertEqual(vocab, [VocabItem(term: "cat", meaning: "A small pet.", example: "Choose the correct word \u{2192} cat", image: nil)])
+        XCTAssertEqual(vocab, [VocabItem(term: "is", meaning: "", example: "She is happy.", image: nil)])
     }
 
-    func testDerivesAFilledInSentenceFromAFillInBlankQuestion() {
+    func testAFillInBlankQuestionGivesAFilledSentenceAndNoMeaning() {
         let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
             fill(id: "q1", prompt: "I ___ to the store.", bank: ["go", "went"], answer: "went", explanation: "Past tense."),
         ])
 
         let vocab = deriveVocab(lesson: lesson, images: [:])
 
-        XCTAssertEqual(vocab, [VocabItem(term: "went", meaning: "Past tense.", example: "I went to the store.", image: nil)])
+        XCTAssertEqual(vocab, [VocabItem(term: "went", meaning: "", example: "I went to the store.", image: nil)])
     }
 
-    func testFallsBackToAppendingTheAnswerWhenThePromptHasNoBlank() {
+    func testAQuizStemGivesNoExample() {
+        let stems = [
+            "Plural of \"baby\": ___",
+            "Which verb goes with \"homework\"? ___",
+            "Opposite of \"hot\":",
+            "Choose the correct word:",
+            "Which word completes \"attend a ___\"?",
+        ]
+        for prompt in stems {
+            let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
+                mc(id: "q1", prompt: prompt, choices: ["babies", "x"], answer: 0, explanation: "e"),
+            ])
+            XCTAssertEqual(deriveVocab(lesson: lesson, images: [:]).first?.example, "", prompt)
+        }
+    }
+
+    // Mirrors "tidies the sentence" in src/data/vocab.test.ts.
+    func testTidiesTheSentence() {
+        func example(_ prompt: String, _ answer: String) -> String? {
+            let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
+                mc(id: "q1", prompt: prompt, choices: [answer, "x", "y"], answer: 0, explanation: "e"),
+            ])
+            return deriveVocab(lesson: lesson, images: [:]).first?.example
+        }
+        XCTAssertEqual(example("Is this seat ___ ?", "taken"), "Is this seat taken?")
+        XCTAssertEqual(example("While we ___ , the phone rang.", "were talking"), "While we were talking, the phone rang.")
+        XCTAssertEqual(example("___ I open the window, please?", "may"), "May I open the window, please?")
+        XCTAssertEqual(example("Je ___ (boire) de l'eau.", "bois"), "Je bois de l'eau.")
+        XCTAssertEqual(example("It's ___ past six. (30 min)", "half"), "It's half past six.")
+        // French keeps its own space before ? elsewhere; only the join is tidied.
+        XCTAssertEqual(example("Excusez-moi, où est la gare ? Et ___ ?", "vous"), "Excusez-moi, où est la gare ? Et vous?")
+    }
+
+    func testAPromptWithNoBlankGivesNoExample() {
         let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
             fill(id: "q1", prompt: "Translate hello", bank: [], answer: "hola", explanation: "Greeting."),
         ])
 
-        let vocab = deriveVocab(lesson: lesson, images: [:])
-
-        XCTAssertEqual(vocab.first?.example, "Translate hello hola")
+        XCTAssertEqual(deriveVocab(lesson: lesson, images: [:]).first?.example, "")
     }
 
     func testDedupesByCaseInsensitiveTermKeepingTheFirstOccurrence() {
@@ -49,7 +83,7 @@ final class VocabDerivationTests: XCTestCase {
         let vocab = deriveVocab(lesson: lesson, images: [:])
 
         XCTAssertEqual(vocab.count, 1)
-        XCTAssertEqual(vocab.first?.meaning, "first")
+        XCTAssertEqual(vocab.first?.meaning, "")
     }
 
     func testSkipsAQuestionWithAnEmptyAnswer() {
