@@ -74,12 +74,12 @@
             {
               "id": "q5",
               "type": "mc",
-              "prompt": "Choose the correct farewell for the night.",
+              "prompt": "Choose the correct farewell for the night. (said to someone going to bed)",
               "choices": [
                 "Good night.",
                 "Good morning.",
-                "Good hello.",
-                "Good time."
+                "Good afternoon.",
+                "Good luck."
               ],
               "answer": 0,
               "explanation": "\"Good night\" is used when parting in the evening or before sleep.",
@@ -698,7 +698,7 @@
             {
               "id": "q2",
               "type": "fill",
-              "prompt": "She ___ in a bank.",
+              "prompt": "She ___ in a bank every day.",
               "bank": [
                 "works",
                 "work",
@@ -756,7 +756,7 @@
             {
               "id": "q6",
               "type": "fill",
-              "prompt": "The report is ___ Friday.",
+              "prompt": "The report is ___ Friday. (the deadline)",
               "bank": [
                 "due",
                 "do",
@@ -806,7 +806,7 @@
             {
               "id": "q1",
               "type": "fill",
-              "prompt": "I ___ playing guitar.",
+              "prompt": "I ___ playing guitar every weekend.",
               "bank": [
                 "enjoy",
                 "enjoys",
@@ -972,7 +972,7 @@
             {
               "id": "q4",
               "type": "fill",
-              "prompt": "He ___ a book before sleeping.",
+              "prompt": "He ___ a book every night before sleeping.",
               "bank": [
                 "reads",
                 "reading",
@@ -1080,7 +1080,7 @@
                 "Could",
                 "Must",
                 "Shall",
-                "Might"
+                "Ought"
               ],
               "answer": "Could",
               "explanation": "\"Could you…?\" is polite.",
@@ -1866,7 +1866,7 @@
             {
               "id": "q2",
               "type": "fill",
-              "prompt": "I'd like to ___ in my luggage.",
+              "prompt": "I'd like to ___ in my luggage. (hand it over at the airport desk)",
               "bank": [
                 "check",
                 "take",
@@ -1895,7 +1895,7 @@
             {
               "id": "q4",
               "type": "fill",
-              "prompt": "The train ___ from platform 3.",
+              "prompt": "The train ___ from platform 3 every morning.",
               "bank": [
                 "departs",
                 "departure",
@@ -2534,8 +2534,8 @@
               "bank": [
                 "water",
                 "air",
-                "ground",
-                "weight"
+                "sand",
+                "oil"
               ],
               "answer": "water",
               "explanation": "\"Hold water\" = be logically sound."
@@ -2618,9 +2618,9 @@
               "prompt": "The study was conducted ___ a six-month period.",
               "bank": [
                 "over",
-                "in during",
                 "at",
-                "by"
+                "by",
+                "on"
               ],
               "answer": "over",
               "explanation": "\"Over a period\" expresses duration."
@@ -3131,7 +3131,7 @@
             {
               "id": "a1p2q3",
               "type": "fill",
-              "prompt": "He ___ to work by bus.",
+              "prompt": "He ___ to work by bus every day.",
               "bank": [
                 "go",
                 "going",
@@ -3375,7 +3375,7 @@
             {
               "id": "a1p2q19",
               "type": "mc",
-              "prompt": "He ___ up at six.",
+              "prompt": "He ___ up at six every day.",
               "choices": [
                 "get",
                 "getting",
@@ -3396,7 +3396,7 @@
             {
               "id": "a1p2q20",
               "type": "mc",
-              "prompt": "The shop ___ at nine.",
+              "prompt": "The shop ___ at nine every day.",
               "choices": [
                 "open",
                 "opening",
@@ -3452,7 +3452,7 @@
             {
               "id": "a1p2q24",
               "type": "mc",
-              "prompt": "She ___ in London.",
+              "prompt": "She ___ in London now.",
               "choices": [
                 "live",
                 "living",
@@ -5528,9 +5528,9 @@
               "type": "fill",
               "prompt": "Can I have some ___ with my tea? (white, to make it creamy)",
               "bank": [
-                "meat",
-                "salt",
-                "cheese",
+                "lemon",
+                "honey",
+                "lime",
                 "milk"
               ],
               "answer": "milk",
@@ -5557,10 +5557,10 @@
               "type": "fill",
               "prompt": "She ordered a bowl of ___ soup. (the soup is red)",
               "bank": [
-                "peanuts",
+                "pea",
                 "tomato",
-                "check",
-                "milk"
+                "mushroom",
+                "carrot"
               ],
               "answer": "tomato",
               "explanation": "\"tomato\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5593,10 +5593,10 @@
               "type": "fill",
               "prompt": "I'll have a slice of ___ bread. (the colour of wholemeal)",
               "bank": [
-                "black",
+                "green",
                 "brown",
-                "still",
-                "rare"
+                "blue",
+                "purple"
               ],
               "answer": "brown",
               "explanation": "\"brown\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5608,9 +5608,9 @@
               "prompt": "Would you like some ___ on your salad? (oil and vinegar)",
               "choices": [
                 "dressing",
-                "peanuts",
-                "check",
-                "butter"
+                "jam",
+                "cream",
+                "honey"
               ],
               "answer": 0,
               "explanation": "\"dressing\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5622,9 +5622,9 @@
               "prompt": "He always has ___ for dessert. (a sweet treat with candles on it)",
               "bank": [
                 "cake",
-                "sugar",
-                "salt",
-                "bill"
+                "soup",
+                "rice",
+                "salad"
               ],
               "answer": "cake",
               "explanation": "\"cake\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5650,10 +5650,10 @@
               "type": "fill",
               "prompt": "I'm allergic to ___. (the small nuts in a packet)",
               "bank": [
-                "steak",
+                "cherries",
                 "peanuts",
-                "lemon",
-                "bacon"
+                "carrots",
+                "olives"
               ],
               "answer": "peanuts",
               "explanation": "\"peanuts\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5672,9 +5672,9 @@
               "prompt": "She drinks ___ juice every morning. (squeezed from a citrus fruit)",
               "bank": [
                 "orange",
-                "still",
-                "rare",
-                "black"
+                "apple",
+                "carrot",
+                "tomato"
               ],
               "answer": "orange",
               "explanation": "\"orange\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5700,10 +5700,10 @@
               "type": "fill",
               "prompt": "Could you pass the ___ for my tea? (to make it sweet)",
               "bank": [
-                "bill",
-                "cheese",
+                "salt",
+                "pepper",
                 "sugar",
-                "salt"
+                "flour"
               ],
               "answer": "sugar",
               "explanation": "\"sugar\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5714,10 +5714,10 @@
               "type": "mc",
               "prompt": "Let's order a ___ of pizza to share. (one triangle of the whole)",
               "choices": [
-                "coffee",
-                "meat",
+                "box",
+                "bottle",
                 "slice",
-                "cake"
+                "bowl"
               ],
               "answer": 2,
               "explanation": "\"slice\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5729,9 +5729,9 @@
               "prompt": "He spread some ___ on his toast. (sweet and made from fruit)",
               "bank": [
                 "jam",
-                "meat",
-                "tomato",
-                "coffee"
+                "cheese",
+                "ham",
+                "mustard"
               ],
               "answer": "jam",
               "explanation": "\"jam\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5750,9 +5750,9 @@
               "prompt": "I prefer ___ tea to green tea. (with no milk)",
               "choices": [
                 "black",
-                "still",
-                "rare",
-                "orange"
+                "white",
+                "milky",
+                "creamy"
               ],
               "answer": 0,
               "explanation": "\"black\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5765,8 +5765,8 @@
               "bank": [
                 "check",
                 "menu",
-                "milk",
-                "black"
+                "tip",
+                "order"
               ],
               "answer": "check",
               "explanation": "\"check\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5792,10 +5792,10 @@
               "type": "fill",
               "prompt": "She's a vegetarian, so no ___ for her. (she doesn't eat animals)",
               "bank": [
-                "bill",
-                "jam",
+                "salad",
+                "rice",
                 "meat",
-                "cake"
+                "bread"
               ],
               "answer": "meat",
               "explanation": "\"meat\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5843,10 +5843,10 @@
               "type": "fill",
               "prompt": "He always orders his steak ___. (barely cooked inside)",
               "bank": [
-                "check",
+                "well done",
                 "rare",
-                "orange",
-                "still"
+                "medium",
+                "burnt"
               ],
               "answer": "rare",
               "explanation": "\"rare\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5857,10 +5857,10 @@
               "type": "mc",
               "prompt": "Could we split the ___ between us? (at the end of the meal)",
               "choices": [
-                "sugar",
-                "butter",
+                "menu",
+                "soup",
                 "bill",
-                "bread"
+                "table"
               ],
               "answer": 2,
               "explanation": "\"bill\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5871,9 +5871,9 @@
               "type": "fill",
               "prompt": "This cake is made with real ___. (yellow, from cream)",
               "bank": [
-                "meat",
                 "cheese",
-                "milk",
+                "pepper",
+                "ice",
                 "butter"
               ],
               "answer": "butter",
@@ -5886,9 +5886,9 @@
               "prompt": "Would you like ___ or sparkling water? (without bubbles)",
               "choices": [
                 "still",
-                "check",
-                "orange",
-                "rare"
+                "warm",
+                "salty",
+                "dry"
               ],
               "answer": 0,
               "explanation": "\"still\" is correct here. High-frequency food vocabulary used in daily conversation.",
@@ -5929,10 +5929,10 @@
               "type": "mc",
               "prompt": "He always wears a black ___. (a top with sleeves that zips up)",
               "choices": [
-                "shorts",
-                "lace",
+                "scarf",
+                "hat",
                 "jacket",
-                "dress"
+                "belt"
               ],
               "answer": 2,
               "explanation": "\"jacket\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -5943,10 +5943,10 @@
               "type": "fill",
               "prompt": "I need new ___ for winter. (for snow and rain)",
               "bank": [
-                "sweater",
+                "sandals",
                 "boots",
-                "ribbon",
-                "shirt"
+                "slippers",
+                "trainers"
               ],
               "answer": "boots",
               "explanation": "\"boots\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -5971,10 +5971,10 @@
               "type": "fill",
               "prompt": "These ___ are too tight. (blue, made of denim)",
               "bank": [
-                "lace",
+                "socks",
                 "jeans",
-                "shorts",
-                "coat"
+                "gloves",
+                "boots"
               ],
               "answer": "jeans",
               "explanation": "\"jeans\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6036,9 +6036,9 @@
               "prompt": "It's cold — wear a ___. (around your neck)",
               "bank": [
                 "scarf",
-                "hat",
-                "shirt",
-                "sleeves"
+                "belt",
+                "gloves",
+                "socks"
               ],
               "answer": "scarf",
               "explanation": "\"scarf\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6087,9 +6087,9 @@
               "prompt": "These shoes have a broken ___. (you tie it)",
               "bank": [
                 "lace",
-                "trainers",
-                "boots",
-                "sunglasses"
+                "zip",
+                "button",
+                "pocket"
               ],
               "answer": "lace",
               "explanation": "\"lace\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6101,9 +6101,9 @@
               "prompt": "I like your green ___. (a knitted top you pull over your head)",
               "choices": [
                 "sweater",
-                "jeans",
-                "lace",
-                "blouse"
+                "jacket",
+                "scarf",
+                "tie"
               ],
               "answer": 0,
               "explanation": "\"sweater\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6115,9 +6115,9 @@
               "prompt": "She wears a ___ on her wrist. (it tells the time)",
               "bank": [
                 "watch",
-                "dress",
-                "sock",
-                "shorts"
+                "bracelet",
+                "belt",
+                "glove"
               ],
               "answer": "watch",
               "explanation": "\"watch\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6180,9 +6180,9 @@
               "prompt": "He loosened his ___ after a long day. (it hangs from his collar)",
               "bank": [
                 "tie",
-                "watch",
-                "coat",
-                "socks"
+                "belt",
+                "scarf",
+                "bag"
               ],
               "answer": "tie",
               "explanation": "\"tie\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6193,10 +6193,10 @@
               "type": "mc",
               "prompt": "I need to buy new ___ for the gym. (short, for hot weather)",
               "choices": [
-                "shirt",
-                "sleeves",
+                "jumper",
+                "coat",
                 "shorts",
-                "sweater"
+                "boots"
               ],
               "answer": 2,
               "explanation": "\"shorts\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6208,9 +6208,9 @@
               "prompt": "She wore a white ___ under her jacket. (a smart top)",
               "bank": [
                 "blouse",
-                "lace",
-                "scarf",
-                "shorts"
+                "skirt",
+                "trousers",
+                "belt"
               ],
               "answer": "blouse",
               "explanation": "\"blouse\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6272,9 +6272,9 @@
               "prompt": "He rolled up his ___. (the parts that cover his arms)",
               "choices": [
                 "sleeves",
-                "scarf",
-                "umbrella",
-                "ribbon"
+                "pockets",
+                "buttons",
+                "legs"
               ],
               "answer": 0,
               "explanation": "\"sleeves\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6285,10 +6285,10 @@
               "type": "fill",
               "prompt": "I ironed my ___ this morning. (two legs, worn with a belt)",
               "bank": [
-                "suit",
+                "skirt",
                 "trousers",
-                "coat",
-                "tie"
+                "dress",
+                "jacket"
               ],
               "answer": "trousers",
               "explanation": "\"trousers\" is correct here. Common clothing vocabulary with colour adjectives.",
@@ -6313,12 +6313,12 @@
             {
               "id": "a1p10q0",
               "type": "fill",
-              "prompt": "It's very ___ today — take an umbrella.",
+              "prompt": "It's very ___ today — take an umbrella. (water falls from the sky)",
               "bank": [
-                "freezing",
+                "sunny",
                 "rainy",
-                "clear",
-                "hot"
+                "foggy",
+                "dry"
               ],
               "answer": "rainy",
               "explanation": "\"rainy\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6355,11 +6355,11 @@
             {
               "id": "a1p10q3",
               "type": "mc",
-              "prompt": "There's a strong ___ blowing today.",
+              "prompt": "There's a strong ___ blowing today. (moving air)",
               "choices": [
                 "wind",
-                "sun",
-                "cloud",
+                "sunshine",
+                "fog",
                 "thunder"
               ],
               "answer": 0,
@@ -6369,11 +6369,11 @@
             {
               "id": "a1p10q4",
               "type": "fill",
-              "prompt": "It ___ heavily all night.",
+              "prompt": "It ___ heavily all night yesterday.",
               "bank": [
-                "snow",
-                "clear",
-                "fall",
+                "rain",
+                "raining",
+                "will rain",
                 "rained"
               ],
               "answer": "rained",
@@ -6390,12 +6390,12 @@
             {
               "id": "a1p10q5",
               "type": "mc",
-              "prompt": "The forecast says it will ___ tomorrow.",
+              "prompt": "The forecast says it will ___ tomorrow. (white flakes fall)",
               "choices": [
-                "fall",
-                "freezing",
+                "snowed",
+                "snowing",
                 "snow",
-                "rained"
+                "snows"
               ],
               "answer": 2,
               "explanation": "\"snow\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6418,12 +6418,12 @@
             {
               "id": "a1p10q7",
               "type": "mc",
-              "prompt": "In autumn, the leaves turn ___.",
+              "prompt": "In autumn, the leaves turn ___. (a colour like soil)",
               "choices": [
                 "brown",
-                "harsh",
-                "clear",
-                "mild"
+                "cold",
+                "wet",
+                "windy"
               ],
               "answer": 0,
               "explanation": "\"brown\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6434,10 +6434,10 @@
               "type": "fill",
               "prompt": "It's very ___ today — over thirty degrees.",
               "bank": [
-                "snow",
-                "clear",
+                "freezing",
+                "chilly",
                 "hot",
-                "mild"
+                "snowy"
               ],
               "answer": "hot",
               "explanation": "\"hot\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6446,12 +6446,12 @@
             {
               "id": "a1p10q9",
               "type": "mc",
-              "prompt": "The ___ is out, so let's go to the beach.",
+              "prompt": "The ___ is out, so let's go to the beach. (it shines and warms us)",
               "choices": [
-                "storm",
-                "fall",
+                "rain",
+                "snow",
                 "sun",
-                "clear"
+                "fog"
               ],
               "answer": 2,
               "explanation": "\"sun\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6607,7 +6607,7 @@
                 "snow",
                 "storm",
                 "fog",
-                "clear"
+                "sunshine"
               ],
               "answer": "storm",
               "explanation": "\"storm\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6625,9 +6625,9 @@
               "type": "fill",
               "prompt": "It's too ___ to go swimming today. (the waves and trees were moving a lot)",
               "bank": [
-                "chilly",
                 "sunny",
-                "hottest",
+                "foggy",
+                "snowy",
                 "windy"
               ],
               "answer": "windy",
@@ -6637,12 +6637,12 @@
             {
               "id": "a1p10q21",
               "type": "mc",
-              "prompt": "The ___ melted quickly in the sun.",
+              "prompt": "The ___ melted quickly in the sun. (frozen water)",
               "choices": [
-                "weather",
-                "thunder",
+                "rain",
+                "wind",
                 "ice",
-                "fall"
+                "thunder"
               ],
               "answer": 2,
               "explanation": "\"ice\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6670,7 +6670,7 @@
                 "mild",
                 "hot",
                 "freezing",
-                "fall"
+                "stormy"
               ],
               "answer": 0,
               "explanation": "\"mild\" is correct here. Basic weather vocabulary and seasonal expressions.",
@@ -6711,8 +6711,8 @@
               "type": "mc",
               "prompt": "This shirt costs ___ dollars. (the number 20)",
               "choices": [
+                "thirty",
                 "fifty",
-                "up",
                 "twenty",
                 "fifteen"
               ],
@@ -6754,10 +6754,10 @@
               "type": "fill",
               "prompt": "The bill comes to ___ euros. (the number 15)",
               "bank": [
-                "three",
-                "change",
+                "thirteen",
+                "fifty",
                 "fifteen",
-                "fifty"
+                "five"
               ],
               "answer": "fifteen",
               "explanation": "\"fifteen\" is correct here. Everyday number and money vocabulary.",
@@ -6815,11 +6815,11 @@
             {
               "id": "a1p11q7",
               "type": "fill",
-              "prompt": "He asked for a ___ on the price.",
+              "prompt": "He asked for a ___ on the price. (a lower price for him)",
               "bank": [
-                "change",
-                "up",
+                "refund",
                 "receipt",
+                "change",
                 "discount"
               ],
               "answer": "discount",
@@ -6867,9 +6867,9 @@
               "prompt": "The total is ___ pounds and fifty pence. (the sum 3.50)",
               "bank": [
                 "three",
-                "fifteen",
-                "twenty",
-                "up"
+                "thirteen",
+                "thirty",
+                "five"
               ],
               "answer": "three",
               "explanation": "\"three\" is correct here. Everyday number and money vocabulary.",
@@ -6895,9 +6895,9 @@
               "prompt": "Could I get a ___ for this purchase? (proof that I paid)",
               "bank": [
                 "receipt",
-                "card",
-                "more",
-                "wallet"
+                "refund",
+                "discount",
+                "balance"
               ],
               "answer": "receipt",
               "explanation": "\"receipt\" is correct here. Everyday number and money vocabulary.",
@@ -7019,12 +7019,12 @@
             {
               "id": "a1p11q20",
               "type": "mc",
-              "prompt": "The item is on ___ this week.",
+              "prompt": "The item is on ___ this week. (it costs less than usual)",
               "choices": [
                 "sale",
                 "receipt",
-                "wallet",
-                "balance"
+                "balance",
+                "change"
               ],
               "answer": 0,
               "explanation": "\"sale\" is correct here. Everyday number and money vocabulary.",
@@ -7946,9 +7946,9 @@
               "prompt": "The first day of the school week is ___.",
               "bank": [
                 "Monday",
-                "days",
-                "Wednesday",
-                "afternoon"
+                "Tuesday",
+                "Friday",
+                "Saturday"
               ],
               "answer": "Monday",
               "explanation": "\"Monday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -7959,10 +7959,10 @@
               "type": "mc",
               "prompt": "The last day of the weekend is ___.",
               "choices": [
-                "morning",
-                "February",
+                "Monday",
+                "Friday",
                 "Sunday",
-                "Tuesday"
+                "Wednesday"
               ],
               "answer": 2,
               "explanation": "\"Sunday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -7973,10 +7973,10 @@
               "type": "fill",
               "prompt": "Christmas is in the month of ___.",
               "bank": [
-                "weekend",
-                "week",
+                "November",
+                "June",
                 "December",
-                "June"
+                "January"
               ],
               "answer": "December",
               "explanation": "\"December\" is correct here. Days of the week, months, and simple time phrases.",
@@ -7988,9 +7988,9 @@
               "prompt": "The shortest month of the year is ___.",
               "choices": [
                 "February",
-                "night",
-                "October",
-                "hour"
+                "January",
+                "March",
+                "April"
               ],
               "answer": 0,
               "explanation": "\"February\" is correct here. Days of the week, months, and simple time phrases.",
@@ -7999,11 +7999,11 @@
             {
               "id": "a1p14q4",
               "type": "fill",
-              "prompt": "We eat lunch in the ___.",
+              "prompt": "We eat lunch in the ___. (around one o'clock)",
               "bank": [
-                "year",
-                "Monday",
-                "July",
+                "morning",
+                "evening",
+                "night",
                 "afternoon"
               ],
               "answer": "afternoon",
@@ -8025,7 +8025,7 @@
                 "noon",
                 "afternoon",
                 "night",
-                "Wednesday"
+                "dawn"
               ],
               "answer": 2,
               "explanation": "\"night\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8036,10 +8036,10 @@
               "type": "fill",
               "prompt": "There are seven days in a ___.",
               "bank": [
-                "morning",
-                "minute",
+                "month",
+                "year",
                 "week",
-                "December"
+                "weekend"
               ],
               "answer": "week",
               "explanation": "\"week\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8051,9 +8051,9 @@
               "prompt": "There are twelve ___ in a year.",
               "choices": [
                 "months",
-                "June",
-                "weekend",
-                "night"
+                "weeks",
+                "days",
+                "hours"
               ],
               "answer": 0,
               "explanation": "\"months\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8076,12 +8076,12 @@
             {
               "id": "a1p14q9",
               "type": "mc",
-              "prompt": "The clock shows what ___ it is.",
+              "prompt": "The clock shows what ___ it is. (hours and minutes)",
               "choices": [
-                "year",
-                "January",
+                "day",
+                "month",
                 "time",
-                "Monday"
+                "year"
               ],
               "answer": 2,
               "explanation": "\"time\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8097,12 +8097,12 @@
             {
               "id": "a1p14q10",
               "type": "mc",
-              "prompt": "I wake up early in the ___.",
+              "prompt": "I wake up early in the ___. (when the sun comes up)",
               "choices": [
-                "year",
-                "January",
+                "evening",
+                "afternoon",
                 "morning",
-                "Monday"
+                "night"
               ],
               "answer": 2,
               "explanation": "\"morning\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8113,10 +8113,10 @@
               "type": "fill",
               "prompt": "The first month of the year is ___.",
               "bank": [
-                "days",
-                "week",
+                "December",
+                "February",
                 "January",
-                "Friday"
+                "March"
               ],
               "answer": "January",
               "explanation": "\"January\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8139,11 +8139,11 @@
             {
               "id": "a1p14q13",
               "type": "fill",
-              "prompt": "We go to work on weekday ___, not weekends.",
+              "prompt": "We go to work on weekday ___, not weekends. (when the sun comes up)",
               "bank": [
-                "noon",
-                "January",
-                "year",
+                "afternoons",
+                "evenings",
+                "nights",
                 "mornings"
               ],
               "answer": "mornings",
@@ -8155,10 +8155,10 @@
               "type": "mc",
               "prompt": "A year has three hundred and sixty-five ___.",
               "choices": [
-                "noon",
-                "Saturday",
+                "weeks",
+                "months",
                 "days",
-                "afternoon"
+                "hours"
               ],
               "answer": 2,
               "explanation": "\"days\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8177,9 +8177,9 @@
               "prompt": "The day after Friday is ___.",
               "bank": [
                 "Saturday",
-                "year",
-                "February",
-                "morning"
+                "Sunday",
+                "Thursday",
+                "Monday"
               ],
               "answer": "Saturday",
               "explanation": "\"Saturday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8204,10 +8204,10 @@
               "type": "fill",
               "prompt": "The day before Wednesday is ___.",
               "bank": [
-                "Sunday",
-                "Saturday",
+                "Monday",
+                "Thursday",
                 "Tuesday",
-                "July"
+                "Friday"
               ],
               "answer": "Tuesday",
               "explanation": "\"Tuesday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8218,10 +8218,10 @@
               "type": "mc",
               "prompt": "New Year's Eve is on the last day of the ___.",
               "choices": [
-                "June",
-                "December",
+                "week",
+                "day",
                 "year",
-                "Friday"
+                "hour"
               ],
               "answer": 2,
               "explanation": "\"year\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8231,12 +8231,12 @@
             {
               "id": "a1p14q19",
               "type": "fill",
-              "prompt": "There are sixty minutes in an ___.",
+              "prompt": "There are sixty minutes in one ___.",
               "bank": [
                 "hour",
-                "Saturday",
-                "night",
-                "weekend"
+                "day",
+                "week",
+                "month"
               ],
               "answer": "hour",
               "explanation": "\"hour\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8254,10 +8254,10 @@
               "type": "fill",
               "prompt": "There are sixty seconds in a ___.",
               "bank": [
-                "morning",
-                "February",
+                "hour",
+                "day",
                 "minute",
-                "Tuesday"
+                "week"
               ],
               "answer": "minute",
               "explanation": "\"minute\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8268,10 +8268,10 @@
               "type": "mc",
               "prompt": "The middle day of the week is ___.",
               "choices": [
-                "noon",
-                "days",
+                "Tuesday",
+                "Thursday",
                 "Wednesday",
-                "afternoon"
+                "Friday"
               ],
               "answer": 2,
               "explanation": "\"Wednesday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8282,10 +8282,10 @@
               "type": "fill",
               "prompt": "Twelve o'clock in the middle of the day is called ___.",
               "bank": [
-                "Sunday",
+                "midnight",
                 "noon",
-                "Saturday",
-                "July"
+                "evening",
+                "dawn"
               ],
               "answer": "noon",
               "explanation": "\"noon\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8295,12 +8295,12 @@
             {
               "id": "a1p14q23",
               "type": "mc",
-              "prompt": "We often relax on the ___.",
+              "prompt": "We often relax on the ___. (Saturday and Sunday)",
               "choices": [
                 "weekend",
-                "October",
-                "hour",
-                "December"
+                "week",
+                "month",
+                "year"
               ],
               "answer": 0,
               "explanation": "\"weekend\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8312,9 +8312,9 @@
               "prompt": "The day after Thursday is ___.",
               "bank": [
                 "Friday",
-                "mornings",
-                "week",
-                "weekend"
+                "Wednesday",
+                "Saturday",
+                "Monday"
               ],
               "answer": "Friday",
               "explanation": "\"Friday\" is correct here. Days of the week, months, and simple time phrases.",
@@ -8758,11 +8758,11 @@
             {
               "id": "a1p16q0",
               "type": "fill",
-              "prompt": "I ___ up at seven o'clock every morning.",
+              "prompt": "I ___ up at seven o'clock every morning. (stop sleeping)",
               "bank": [
-                "eat",
-                "washes",
-                "choose",
+                "put",
+                "hold",
+                "bring",
                 "wake"
               ],
               "answer": "wake",
@@ -8772,12 +8772,12 @@
             {
               "id": "a1p16q1",
               "type": "mc",
-              "prompt": "She ___ a shower before breakfast.",
+              "prompt": "She ___ a shower before breakfast. (washes under running water)",
               "choices": [
                 "takes",
-                "cooks",
-                "pack",
-                "spend"
+                "does",
+                "makes",
+                "puts"
               ],
               "answer": 0,
               "explanation": "\"takes\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8786,12 +8786,12 @@
             {
               "id": "a1p16q2",
               "type": "fill",
-              "prompt": "She ___ her hair before she goes out.",
+              "prompt": "She ___ her hair every morning before she goes out.",
               "bank": [
                 "brushes",
-                "wake",
-                "works",
-                "come"
+                "brush",
+                "brushing",
+                "to brush"
               ],
               "answer": "brushes",
               "explanation": "\"brushes\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8800,7 +8800,7 @@
             {
               "id": "a1p16q3",
               "type": "mc",
-              "prompt": "We ___ breakfast together as a family.",
+              "prompt": "We ___ breakfast together every morning as a family.",
               "choices": [
                 "eats",
                 "eating",
@@ -8814,12 +8814,12 @@
             {
               "id": "a1p16q4",
               "type": "fill",
-              "prompt": "I ___ dressed before I leave the house.",
+              "prompt": "I ___ dressed before I leave the house. (put my clothes on)",
               "bank": [
                 "get",
-                "checks",
-                "spend",
-                "pack"
+                "do",
+                "make",
+                "put"
               ],
               "answer": "get",
               "explanation": "\"get\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8835,12 +8835,12 @@
             {
               "id": "a1p16q5",
               "type": "mc",
-              "prompt": "She ___ to work by bus.",
+              "prompt": "She ___ to work by bus every day.",
               "choices": [
                 "travels",
-                "get",
-                "read",
-                "walk"
+                "travel",
+                "travelling",
+                "to travel"
               ],
               "answer": 0,
               "explanation": "\"travels\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8877,12 +8877,12 @@
             {
               "id": "a1p16q8",
               "type": "fill",
-              "prompt": "I ___ home from work at six.",
+              "prompt": "I ___ home from work at six every day.",
               "bank": [
-                "eat",
-                "watch",
+                "comes",
+                "coming",
                 "come",
-                "works"
+                "to come"
               ],
               "answer": "come",
               "explanation": "\"come\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8891,12 +8891,12 @@
             {
               "id": "a1p16q9",
               "type": "mc",
-              "prompt": "She ___ dinner for the family.",
+              "prompt": "She ___ dinner for the family every evening.",
               "choices": [
                 "cooks",
-                "drives",
-                "set",
-                "checks"
+                "cook",
+                "cooking",
+                "to cook"
               ],
               "answer": 0,
               "explanation": "\"cooks\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8926,12 +8926,12 @@
             {
               "id": "a1p16q11",
               "type": "fill",
-              "prompt": "We ___ television in the evening.",
+              "prompt": "We ___ television every evening.",
               "bank": [
                 "watch",
-                "goes",
-                "travels",
-                "choose"
+                "watches",
+                "watching",
+                "to watch"
               ],
               "answer": "watch",
               "explanation": "\"watch\" is correct here. Simple present tense sentences describing a typical day.",
@@ -8954,12 +8954,12 @@
             {
               "id": "a1p16q13",
               "type": "fill",
-              "prompt": "She ___ to bed at eleven o'clock.",
+              "prompt": "She ___ to bed at eleven o'clock every night.",
               "bank": [
-                "have",
+                "go",
                 "goes",
-                "tidy",
-                "arrives"
+                "going",
+                "to go"
               ],
               "answer": "goes",
               "explanation": "\"goes\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9003,12 +9003,12 @@
             {
               "id": "a1p16q16",
               "type": "mc",
-              "prompt": "I ___ my bag the night before.",
+              "prompt": "I ___ my bag the night before every trip.",
               "choices": [
-                "travels",
-                "spend",
+                "packs",
+                "packing",
                 "pack",
-                "read"
+                "to pack"
               ],
               "answer": 2,
               "explanation": "\"pack\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9034,9 +9034,9 @@
               "prompt": "He ___ out three times a week.",
               "choices": [
                 "works",
-                "come",
-                "tidy",
-                "spend"
+                "work",
+                "working",
+                "to work"
               ],
               "answer": 0,
               "explanation": "\"works\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9066,12 +9066,12 @@
             {
               "id": "a1p16q20",
               "type": "fill",
-              "prompt": "I ___ my clothes for the next day.",
+              "prompt": "I ___ my clothes for the next day every evening.",
               "bank": [
-                "watch",
+                "chooses",
                 "choose",
-                "takes",
-                "works"
+                "choosing",
+                "to choose"
               ],
               "answer": "choose",
               "explanation": "\"choose\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9083,9 +9083,9 @@
               "prompt": "She ___ up early on weekdays.",
               "choices": [
                 "gets",
-                "wake",
-                "have",
-                "arrives"
+                "get",
+                "getting",
+                "to get"
               ],
               "answer": 0,
               "explanation": "\"gets\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9096,9 +9096,9 @@
               "type": "fill",
               "prompt": "He ___ home late on Fridays.",
               "bank": [
-                "pack",
-                "set",
-                "cooks",
+                "arrive",
+                "arriving",
+                "to arrive",
                 "arrives"
               ],
               "answer": "arrives",
@@ -9108,12 +9108,12 @@
             {
               "id": "a1p16q23",
               "type": "mc",
-              "prompt": "We ___ the weekend relaxing at home.",
+              "prompt": "We ___ the weekend relaxing at home every week.",
               "choices": [
-                "travels",
-                "arrives",
+                "spends",
+                "spending",
                 "spend",
-                "read"
+                "to spend"
               ],
               "answer": 2,
               "explanation": "\"spend\" is correct here. Simple present tense sentences describing a typical day.",
@@ -9210,12 +9210,12 @@
             {
               "id": "a1p17q4",
               "type": "mc",
-              "prompt": "The ___ sits at the front of the class.",
+              "prompt": "The ___ sits at the front of the class. (the adult who teaches us)",
               "choices": [
                 "teacher",
-                "worksheet",
-                "pencil case",
-                "notebook"
+                "student",
+                "classmate",
+                "pupil"
               ],
               "answer": 0,
               "explanation": "\"teacher\" is correct here. Common classroom vocabulary for beginners.",
@@ -9262,10 +9262,10 @@
               "type": "fill",
               "prompt": "The students sit at their ___.",
               "bank": [
-                "whiteboard",
+                "bells",
                 "desks",
-                "worksheet",
-                "pencil case"
+                "maps",
+                "rulers"
               ],
               "answer": "desks",
               "explanation": "\"desks\" is correct here. Common classroom vocabulary for beginners.",
@@ -9340,9 +9340,9 @@
               "type": "fill",
               "prompt": "The ___ rings at the end of the lesson.",
               "bank": [
-                "worksheet",
-                "map",
-                "notebook",
+                "book",
+                "ruler",
+                "desk",
                 "bell"
               ],
               "answer": "bell",
@@ -9355,9 +9355,9 @@
               "prompt": "We use a ___ to erase mistakes.",
               "choices": [
                 "rubber",
-                "page",
                 "ruler",
-                "calculator"
+                "glue",
+                "bell"
               ],
               "answer": 0,
               "explanation": "\"rubber\" is correct here. Common classroom vocabulary for beginners.",
@@ -9510,10 +9510,10 @@
               "type": "fill",
               "prompt": "I keep my pens in a ___.",
               "bank": [
-                "page",
-                "teacher",
+                "map",
+                "bell",
                 "pencil case",
-                "homework"
+                "rubber"
               ],
               "answer": "pencil case",
               "explanation": "\"pencil case\" is correct here. Common classroom vocabulary for beginners.",
@@ -9985,12 +9985,12 @@
             {
               "id": "a1p19q1",
               "type": "fill",
-              "prompt": "Can you push the ___ while I shop?",
+              "prompt": "Can you push the ___ while I shop? (the wheeled cart)",
               "bank": [
                 "trolley",
-                "basket",
-                "price",
-                "snacks"
+                "receipt",
+                "list",
+                "card"
               ],
               "answer": "trolley",
               "explanation": "\"trolley\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10016,10 +10016,10 @@
               "type": "fill",
               "prompt": "We're out of ___, so there's nothing to make toast with.",
               "bank": [
-                "amount",
-                "cashier",
+                "soap",
+                "rice",
                 "bread",
-                "item"
+                "tea"
               ],
               "answer": "bread",
               "explanation": "\"bread\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10064,12 +10064,12 @@
             {
               "id": "a1p19q6",
               "type": "mc",
-              "prompt": "I forgot my shopping ___ at home.",
+              "prompt": "I forgot my shopping ___ at home. (what I wrote the things I need on)",
               "choices": [
                 "list",
-                "amount",
-                "item",
-                "dairy section"
+                "queue",
+                "weekend",
+                "debit"
               ],
               "answer": 0,
               "explanation": "\"list\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10107,12 +10107,12 @@
             {
               "id": "a1p19q9",
               "type": "fill",
-              "prompt": "I paid with my ___ card.",
+              "prompt": "I paid with my ___ card. (money comes straight from my bank account)",
               "bank": [
                 "debit",
-                "checkout",
-                "bag",
-                "soap"
+                "credit",
+                "gift",
+                "loyalty"
               ],
               "answer": "debit",
               "explanation": "\"debit\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10128,12 +10128,12 @@
             {
               "id": "a1p19q10",
               "type": "fill",
-              "prompt": "The ___ scanned each item quickly.",
+              "prompt": "The ___ scanned each item quickly. (the person at the till)",
               "bank": [
-                "debit",
-                "amount",
+                "driver",
+                "farmer",
                 "cashier",
-                "list"
+                "teacher"
               ],
               "answer": "cashier",
               "explanation": "\"cashier\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10188,9 +10188,9 @@
               "type": "fill",
               "prompt": "Could you tell me where the ___ is? (milk, butter and cheese are kept there)",
               "bank": [
-                "soap",
+                "bakery",
+                "freezer",
                 "checkout",
-                "snacks",
                 "dairy section"
               ],
               "answer": "dairy section",
@@ -10207,12 +10207,12 @@
             {
               "id": "a1p19q15",
               "type": "mc",
-              "prompt": "This shop has a big ___ this week.",
+              "prompt": "This shop has a big ___ this week. (prices are lower)",
               "choices": [
                 "discount",
-                "amount",
-                "list",
-                "bag"
+                "receipt",
+                "trolley",
+                "basket"
               ],
               "answer": 0,
               "explanation": "\"discount\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10235,12 +10235,12 @@
             {
               "id": "a1p19q17",
               "type": "mc",
-              "prompt": "The queue at the ___ was very long.",
+              "prompt": "The queue at the ___ was very long. (where you pay at the shop)",
               "choices": [
-                "trolley",
-                "price",
+                "bakery",
+                "entrance",
                 "till",
-                "vegetables"
+                "car park"
               ],
               "answer": 2,
               "explanation": "\"till\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -10389,10 +10389,10 @@
               "type": "fill",
               "prompt": "The ___ leaves from platform three.",
               "bank": [
-                "station",
+                "ticket",
                 "train",
-                "taxi",
-                "seatbelt"
+                "seat",
+                "driver"
               ],
               "answer": "train",
               "explanation": "\"train\" is correct here. Basic transport vocabulary for beginners.",
@@ -10466,12 +10466,12 @@
             {
               "id": "a1p20q6",
               "type": "mc",
-              "prompt": "I usually ___ to work, it's not far.",
+              "prompt": "I usually ___ to work, it's not far. (go on foot)",
               "choices": [
                 "walk",
-                "show",
-                "subway",
-                "metro"
+                "walks",
+                "walking",
+                "to walk"
               ],
               "answer": 0,
               "explanation": "\"walk\" is correct here. Basic transport vocabulary for beginners.",
@@ -10532,9 +10532,9 @@
               "type": "fill",
               "prompt": "I left my ___ at home, so I can't drive.",
               "bank": [
-                "walk",
-                "subway",
-                "tram",
+                "bike",
+                "ticket",
+                "map",
                 "keys"
               ],
               "answer": "keys",
@@ -10559,11 +10559,11 @@
             {
               "id": "a1p20q12",
               "type": "fill",
-              "prompt": "Please fasten your ___ before we take off.",
+              "prompt": "Please fasten your ___ before we take off. (the strap across your lap)",
               "bank": [
-                "train",
-                "station",
-                "ferry",
+                "passport",
+                "ticket",
+                "taxi",
                 "seatbelt"
               ],
               "answer": "seatbelt",
@@ -10665,12 +10665,12 @@
             {
               "id": "a1p20q19",
               "type": "mc",
-              "prompt": "We waited at the ___ for twenty minutes.",
+              "prompt": "We waited at the ___ for twenty minutes. (where trains stop)",
               "choices": [
                 "station",
-                "plane",
-                "ferry",
-                "detour"
+                "airport",
+                "harbour",
+                "garage"
               ],
               "answer": 0,
               "explanation": "\"station\" is correct here. Basic transport vocabulary for beginners.",
@@ -10714,12 +10714,12 @@
             {
               "id": "a1p20q22",
               "type": "mc",
-              "prompt": "The car needs more ___ before the trip.",
+              "prompt": "The car needs more ___ before the trip. (fuel for most cars)",
               "choices": [
-                "tram",
-                "taxi",
+                "tickets",
+                "rain",
                 "petrol",
-                "cab"
+                "bread"
               ],
               "answer": 2,
               "explanation": "\"petrol\" is correct here. Basic transport vocabulary for beginners.",
@@ -10728,12 +10728,12 @@
             {
               "id": "a1p20q23",
               "type": "fill",
-              "prompt": "We arrived at the ___ two hours early.",
+              "prompt": "We arrived at the ___ two hours early. (to catch a flight)",
               "bank": [
-                "bike",
+                "station",
                 "airport",
-                "jet",
-                "carriage"
+                "harbour",
+                "garage"
               ],
               "answer": "airport",
               "explanation": "\"airport\" is correct here. Basic transport vocabulary for beginners.",
@@ -13066,7 +13066,7 @@
             {
               "id": "a2p2q7",
               "type": "mc",
-              "prompt": "The film ___ at eight.",
+              "prompt": "The film ___ at eight yesterday.",
               "choices": [
                 "started",
                 "start",
@@ -13157,7 +13157,7 @@
             {
               "id": "a2p2q13",
               "type": "fill",
-              "prompt": "I ___ my homework before dinner.",
+              "prompt": "I ___ my homework before dinner yesterday.",
               "bank": [
                 "finish",
                 "finishes",
@@ -13774,12 +13774,12 @@
             {
               "id": "a2p4q0",
               "type": "fill",
-              "prompt": "Can I ___ this on?",
+              "prompt": "Can I ___ this on? (in a shop, to see if it fits)",
               "bank": [
-                "take",
+                "trying",
                 "try",
-                "check in",
-                "return"
+                "tried",
+                "tries"
               ],
               "answer": "try",
               "explanation": "\"try\" is correct here. Fixed travel and shopping phrases.",
@@ -13830,12 +13830,12 @@
             {
               "id": "a2p4q4",
               "type": "fill",
-              "prompt": "Do you ___ by card?",
+              "prompt": "Do you ___ by card? (accept payment)",
               "bank": [
-                "change",
-                "looking",
+                "taking",
+                "took",
                 "take",
-                "return"
+                "takes"
               ],
               "answer": "take",
               "explanation": "\"take\" is correct here. Fixed travel and shopping phrases.",
@@ -13866,11 +13866,11 @@
             {
               "id": "a2p4q6",
               "type": "fill",
-              "prompt": "The train ___ from platform 4.",
+              "prompt": "The train ___ from platform 4 at nine every day.",
               "bank": [
-                "taken",
-                "does",
-                "try",
+                "depart",
+                "departing",
+                "departure",
                 "departs"
               ],
               "answer": "departs",
@@ -13880,12 +13880,12 @@
             {
               "id": "a2p4q7",
               "type": "mc",
-              "prompt": "I'd like a ___ ticket, please.",
+              "prompt": "I'd like a ___ ticket, please. (a trip there and back)",
               "choices": [
-                "bill",
-                "fit",
+                "single",
+                "student",
                 "return",
-                "looking"
+                "child"
               ],
               "answer": 2,
               "explanation": "\"return\" is correct here. Fixed travel and shopping phrases.",
@@ -13894,11 +13894,11 @@
             {
               "id": "a2p4q8",
               "type": "fill",
-              "prompt": "Is this seat ___ ?",
+              "prompt": "Is this seat ___ ? (someone is sitting there)",
               "bank": [
-                "out",
-                "does",
-                "try",
+                "free",
+                "empty",
+                "open",
                 "taken"
               ],
               "answer": "taken",
@@ -13911,9 +13911,9 @@
               "prompt": "Can you ___ me the way to the museum?",
               "choices": [
                 "show",
-                "try",
-                "return",
-                "delayed"
+                "shows",
+                "showing",
+                "showed"
               ],
               "answer": 0,
               "explanation": "\"show\" is correct here. Fixed travel and shopping phrases.",
@@ -13929,12 +13929,12 @@
             {
               "id": "a2p4q10",
               "type": "mc",
-              "prompt": "I'm just ___ , thanks.",
+              "prompt": "I'm just ___ , thanks. (browsing in a shop)",
               "choices": [
                 "looking",
-                "try",
-                "return",
-                "delayed"
+                "look",
+                "looked",
+                "looks"
               ],
               "answer": 0,
               "explanation": "\"looking\" is correct here. Fixed travel and shopping phrases.",
@@ -13971,11 +13971,11 @@
             {
               "id": "a2p4q13",
               "type": "fill",
-              "prompt": "What time is ___ out?",
+              "prompt": "What time is ___ out? (leaving the hotel)",
               "bank": [
-                "catch",
-                "check in",
-                "write",
+                "take",
+                "set",
+                "hand",
                 "check"
               ],
               "answer": "check",
@@ -14009,10 +14009,10 @@
               "type": "fill",
               "prompt": "The flight has been ___ .",
               "bank": [
-                "return",
+                "delay",
                 "delayed",
-                "take",
-                "try"
+                "delaying",
+                "delays"
               ],
               "answer": "delayed",
               "explanation": "\"delayed\" is correct here. Fixed travel and shopping phrases.",
@@ -14023,10 +14023,10 @@
               "type": "mc",
               "prompt": "Could you ___ that down for me?",
               "choices": [
-                "check",
-                "departs",
+                "wrote",
+                "writing",
                 "write",
-                "out"
+                "writes"
               ],
               "answer": 2,
               "explanation": "\"write\" is correct here. Fixed travel and shopping phrases.",
@@ -14035,12 +14035,12 @@
             {
               "id": "a2p4q17",
               "type": "fill",
-              "prompt": "I'd like to ___ some money.",
+              "prompt": "I'd like to ___ some money. (swap it into another currency)",
               "bank": [
                 "change",
-                "bill",
-                "fit",
-                "show"
+                "changing",
+                "changed",
+                "changes"
               ],
               "answer": "change",
               "explanation": "\"change\" is correct here. Fixed travel and shopping phrases.",
@@ -14084,11 +14084,11 @@
             {
               "id": "a2p4q20",
               "type": "fill",
-              "prompt": "This shirt doesn't ___ me.",
+              "prompt": "This shirt doesn't ___ me. (it's too small)",
               "bank": [
-                "does",
-                "change",
-                "looking",
+                "fits",
+                "fitting",
+                "fitted",
                 "fit"
               ],
               "answer": "fit",
@@ -14140,12 +14140,12 @@
             {
               "id": "a2p4q24",
               "type": "fill",
-              "prompt": "The hotel ___ breakfast.",
+              "prompt": "The hotel ___ breakfast. (it is part of the room price)",
               "bank": [
                 "includes",
-                "departs",
-                "check",
-                "catch"
+                "include",
+                "including",
+                "to include"
               ],
               "answer": "includes",
               "explanation": "\"includes\" is correct here. Fixed travel and shopping phrases.",
@@ -14455,12 +14455,12 @@
             {
               "id": "a2p5q19",
               "type": "mc",
-              "prompt": "Add a ___ of salt.",
+              "prompt": "Add a ___ of salt. (a very small amount between two fingers)",
               "choices": [
-                "lots of",
-                "much",
+                "spoon",
+                "cup",
                 "pinch",
-                "plenty"
+                "bag"
               ],
               "answer": 2,
               "explanation": "\"pinch\" is correct here. Countable nouns take many/few; uncountable nouns take much/little.",
@@ -16079,7 +16079,7 @@
             {
               "id": "a2p9q20",
               "type": "mc",
-              "prompt": "My back ___ after lifting the box.",
+              "prompt": "My back always ___ after lifting the box.",
               "choices": [
                 "hurting",
                 "hurted",
@@ -16584,12 +16584,12 @@
             {
               "id": "a2p11q0",
               "type": "fill",
-              "prompt": "Could I see the ___, please?",
+              "prompt": "Could I see the ___, please? (the list of dishes)",
               "bank": [
-                "vegetarian",
+                "bill",
                 "tip",
                 "menu",
-                "kids"
+                "table"
               ],
               "answer": "menu",
               "explanation": "\"menu\" is correct here. Common phrases for eating out.",
@@ -16612,11 +16612,11 @@
             {
               "id": "a2p11q2",
               "type": "fill",
-              "prompt": "Are you ready to ___?",
+              "prompt": "Are you ready to ___? (tell the waiter what you want)",
               "bank": [
-                "doggy",
-                "credit",
-                "bill",
+                "pay",
+                "sit",
+                "leave",
                 "order"
               ],
               "answer": "order",
@@ -16663,10 +16663,10 @@
               "type": "mc",
               "prompt": "Is service ___ in the price?",
               "choices": [
-                "booked",
-                "have",
+                "include",
+                "including",
                 "included",
-                "book"
+                "includes"
               ],
               "answer": 2,
               "explanation": "\"included\" is correct here. Common phrases for eating out.",
@@ -16796,12 +16796,12 @@
             {
               "id": "a2p11q14",
               "type": "mc",
-              "prompt": "Can I pay by ___ card?",
+              "prompt": "Can I pay by ___ card? (you pay the bank later)",
               "choices": [
-                "bill",
-                "window",
+                "debit",
+                "gift",
                 "credit",
-                "bread"
+                "loyalty"
               ],
               "answer": 2,
               "explanation": "\"credit\" is correct here. Common phrases for eating out.",
@@ -16845,12 +16845,12 @@
             {
               "id": "a2p11q17",
               "type": "fill",
-              "prompt": "Could we get some extra ___ for the fries?",
+              "prompt": "Could we get some extra ___ for the fries? (a red sauce)",
               "bank": [
                 "ketchup",
-                "meal",
-                "menu",
-                "credit"
+                "mustard",
+                "mayonnaise",
+                "vinegar"
               ],
               "answer": "ketchup",
               "explanation": "\"ketchup\" is correct here. Common phrases for eating out.",
@@ -16908,12 +16908,12 @@
             {
               "id": "a2p11q21",
               "type": "mc",
-              "prompt": "Could you box this up, we'd like a ___ bag?",
+              "prompt": "Could you box this up, we'd like a ___ bag? (the nickname for a bag of leftovers)",
               "choices": [
-                "menu",
-                "ketchup",
+                "gift",
+                "party",
                 "doggy",
-                "credit"
+                "kitchen"
               ],
               "answer": 2,
               "explanation": "\"doggy\" is correct here. Common phrases for eating out.",
@@ -16936,12 +16936,12 @@
             {
               "id": "a2p11q23",
               "type": "mc",
-              "prompt": "Please leave a ___ for the staff if service was good.",
+              "prompt": "Please leave a ___ for the staff if service was good. (extra money)",
               "choices": [
                 "tip",
-                "water",
-                "window",
-                "medium"
+                "discount",
+                "deposit",
+                "receipt"
               ],
               "answer": 0,
               "explanation": "\"tip\" is correct here. Common phrases for eating out.",
@@ -17402,9 +17402,9 @@
               "type": "fill",
               "prompt": "Go ___ at the traffic lights. (don't turn)",
               "bank": [
-                "round",
-                "near",
-                "up",
+                "left",
+                "right",
+                "back",
                 "straight"
               ],
               "answer": "straight",
@@ -17417,9 +17417,9 @@
               "prompt": "Turn ___ at the next corner. (the opposite of right)",
               "choices": [
                 "left",
-                "walk",
-                "right",
-                "turning"
+                "straight",
+                "up",
+                "forward"
               ],
               "answer": 0,
               "explanation": "\"left\" is correct here. Everyday vocabulary for giving and following directions.",
@@ -17431,9 +17431,9 @@
               "prompt": "Turn ___ at the bank. (the direction of your writing hand for most people)",
               "bank": [
                 "right",
-                "end",
-                "opposite",
-                "outside"
+                "left",
+                "straight",
+                "back"
               ],
               "answer": "right",
               "explanation": "\"right\" is correct here. Everyday vocabulary for giving and following directions.",
@@ -17505,12 +17505,12 @@
             {
               "id": "a2p13q7",
               "type": "mc",
-              "prompt": "Cross the ___ carefully.",
+              "prompt": "Cross the ___ carefully. (where cars drive)",
               "choices": [
-                "end",
-                "right",
+                "pavement",
+                "garden",
                 "road",
-                "exit"
+                "park"
               ],
               "answer": 2,
               "explanation": "\"road\" is correct here. Everyday vocabulary for giving and following directions.",
@@ -17796,10 +17796,10 @@
               "type": "mc",
               "prompt": "Would you like to ___ out for dinner tonight?",
               "choices": [
-                "agree",
-                "forward",
+                "going",
+                "goes",
                 "go",
-                "postpone"
+                "went"
               ],
               "answer": 2,
               "explanation": "\"go\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17810,10 +17810,10 @@
               "type": "fill",
               "prompt": "I'm ___ to a party on Saturday, do you want to come?",
               "bank": [
-                "make it",
+                "go",
                 "going",
-                "book",
-                "check"
+                "went",
+                "goes"
               ],
               "answer": "going",
               "explanation": "\"going\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17826,9 +17826,9 @@
               "prompt": "Are you ___ this weekend?",
               "choices": [
                 "free",
-                "set",
-                "check",
-                "book"
+                "freed",
+                "freely",
+                "freeing"
               ],
               "answer": 0,
               "explanation": "\"free\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17853,10 +17853,10 @@
               "type": "mc",
               "prompt": "I'd love to, but I already have ___.",
               "choices": [
-                "book",
-                "check",
+                "plan",
+                "planning",
                 "plans",
-                "change"
+                "planned"
               ],
               "answer": 2,
               "explanation": "\"plans\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17874,10 +17874,10 @@
               "type": "fill",
               "prompt": "Could we ___ the meeting to next week?",
               "bank": [
-                "pick",
+                "postponing",
                 "postpone",
-                "agree",
-                "manage"
+                "postponed",
+                "postpones"
               ],
               "answer": "postpone",
               "explanation": "\"postpone\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17916,10 +17916,10 @@
               "type": "mc",
               "prompt": "Let's ___ it a rain check and go another time.",
               "choices": [
-                "looking",
-                "make it",
+                "calling",
+                "called",
                 "call",
-                "leave"
+                "calls"
               ],
               "answer": 2,
               "explanation": "\"call\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17951,9 +17951,9 @@
               "type": "fill",
               "prompt": "Can you ___ me know by Friday?",
               "bank": [
-                "manage",
-                "pick",
-                "going",
+                "letting",
+                "lets",
+                "left",
                 "let"
               ],
               "answer": "let",
@@ -17966,9 +17966,9 @@
               "prompt": "We're ___ to have a picnic on Sunday.",
               "choices": [
                 "planning",
-                "go",
-                "fix",
-                "forward"
+                "plan",
+                "planned",
+                "plans"
               ],
               "answer": 0,
               "explanation": "\"planning\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -17993,10 +17993,10 @@
               "type": "mc",
               "prompt": "Let's ___ for coffee sometime next week.",
               "choices": [
-                "postpone",
-                "book",
+                "arranging",
+                "arranged",
                 "arrange",
-                "pick"
+                "arranges"
               ],
               "answer": 2,
               "explanation": "\"arrange\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -18007,10 +18007,10 @@
               "type": "fill",
               "prompt": "I'm really ___ forward to seeing you.",
               "bank": [
-                "write",
+                "look",
                 "looking",
-                "set",
-                "check"
+                "looked",
+                "looks"
               ],
               "answer": "looking",
               "explanation": "\"looking\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -18056,10 +18056,10 @@
               "type": "mc",
               "prompt": "I'll ___ you a text to confirm the time.",
               "choices": [
-                "postpone",
-                "book",
+                "wrote",
+                "writing",
                 "write",
-                "pick"
+                "writes"
               ],
               "answer": 2,
               "explanation": "\"write\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -18107,9 +18107,9 @@
               "prompt": "Can we ___ the time to later in the day?",
               "choices": [
                 "change",
-                "call",
-                "forward",
-                "book"
+                "changing",
+                "changed",
+                "changes"
               ],
               "answer": 0,
               "explanation": "\"change\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -18134,10 +18134,10 @@
               "type": "mc",
               "prompt": "Let's ___ on a place to meet.",
               "choices": [
-                "write",
-                "let",
+                "agreeing",
+                "agreed",
                 "agree",
-                "go"
+                "agrees"
               ],
               "answer": 2,
               "explanation": "\"agree\" is correct here. Everyday phrases for arranging to meet and making plans.",
@@ -18204,12 +18204,12 @@
             {
               "id": "a2p15q1",
               "type": "mc",
-              "prompt": "Could I have a ___ for this letter?",
+              "prompt": "Could I have a ___ for this letter? (it is stuck on the envelope)",
               "choices": [
                 "parcel",
-                "bank",
+                "queue",
                 "stamp",
-                "ATM"
+                "form"
               ],
               "answer": 2,
               "explanation": "\"stamp\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18221,9 +18221,9 @@
               "prompt": "I need to ___ some money into my account.",
               "bank": [
                 "deposit",
-                "cash",
-                "declined",
-                "fill in"
+                "deposits",
+                "depositing",
+                "deposited"
               ],
               "answer": "deposit",
               "explanation": "\"deposit\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18235,9 +18235,9 @@
               "prompt": "Could I ___ some cash from the machine?",
               "choices": [
                 "withdraw",
-                "renew",
-                "deposit",
-                "fill in"
+                "withdrew",
+                "withdrawing",
+                "withdraws"
               ],
               "answer": 0,
               "explanation": "\"withdraw\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18269,10 +18269,10 @@
               "type": "mc",
               "prompt": "The parcel should arrive within three working ___.",
               "choices": [
-                "account",
-                "order",
+                "day",
+                "weekends",
                 "days",
-                "change"
+                "Mondays"
               ],
               "answer": 2,
               "explanation": "\"days\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18298,9 +18298,9 @@
               "prompt": "I need to ___ this form before I send it.",
               "choices": [
                 "fill in",
-                "withdraw",
-                "declined",
-                "cash"
+                "filling in",
+                "filled in",
+                "fills in"
               ],
               "answer": 0,
               "explanation": "\"fill in\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18310,12 +18310,12 @@
             {
               "id": "a2p15q8",
               "type": "fill",
-              "prompt": "The ___ machine is outside the bank.",
+              "prompt": "The ___ machine is outside the bank. (it gives out cash)",
               "bank": [
                 "ATM",
-                "airmail",
-                "post office",
-                "days"
+                "vending",
+                "washing",
+                "ticket"
               ],
               "answer": "ATM",
               "explanation": "\"ATM\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18402,12 +18402,12 @@
             {
               "id": "a2p15q14",
               "type": "mc",
-              "prompt": "Could you check my account ___, please?",
+              "prompt": "Could you check my account ___, please? (how much money is in it)",
               "choices": [
-                "stamp",
-                "branch",
+                "number",
+                "holder",
                 "balance",
-                "ATM"
+                "manager"
               ],
               "answer": 2,
               "explanation": "\"balance\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18479,12 +18479,12 @@
             {
               "id": "a2p15q19",
               "type": "fill",
-              "prompt": "The bank ___ closes at five o'clock.",
+              "prompt": "The bank ___ closes at five o'clock. (the local office)",
               "bank": [
-                "PIN",
+                "account",
                 "branch",
-                "parcel",
-                "balance"
+                "card",
+                "loan"
               ],
               "answer": "branch",
               "explanation": "\"branch\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18514,12 +18514,12 @@
             {
               "id": "a2p15q21",
               "type": "mc",
-              "prompt": "Could you tell me the ___ to send this parcel?",
+              "prompt": "Could you tell me the ___ to send this parcel? (how much I must pay)",
               "choices": [
-                "stamp",
-                "bank",
+                "weight",
+                "colour",
                 "cost",
-                "ATM"
+                "number"
               ],
               "answer": 2,
               "explanation": "\"cost\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18528,12 +18528,12 @@
             {
               "id": "a2p15q22",
               "type": "fill",
-              "prompt": "I'd like to set up a standing ___.",
+              "prompt": "I'd like to set up a standing ___. (a regular automatic payment)",
               "bank": [
-                "fill in",
-                "balance",
+                "account",
+                "card",
                 "order",
-                "cost"
+                "queue"
               ],
               "answer": "order",
               "explanation": "\"order\" is correct here. A2-level vocabulary for post office and banking errands.",
@@ -18616,10 +18616,10 @@
               "type": "mc",
               "prompt": "The ___ next door always says hello. (a person who lives beside you)",
               "choices": [
-                "leisure",
-                "centre",
+                "customer",
+                "passenger",
                 "neighbour",
-                "road"
+                "tourist"
               ],
               "answer": 2,
               "explanation": "\"neighbour\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18721,9 +18721,9 @@
               "type": "fill",
               "prompt": "The bus ___ is right outside my house. (where the bus waits for people)",
               "bank": [
-                "field",
-                "park",
-                "community",
+                "driver",
+                "ticket",
+                "seat",
                 "stop"
               ],
               "answer": "stop",
@@ -18743,9 +18743,9 @@
               "prompt": "My street is very ___ at night. (there is almost no noise)",
               "bank": [
                 "quiet",
-                "café",
-                "shopping",
-                "local"
+                "busy",
+                "noisy",
+                "crowded"
               ],
               "answer": "quiet",
               "explanation": "\"quiet\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18821,10 +18821,10 @@
               "type": "mc",
               "prompt": "The area has lots of green ___. (parks and open land)",
               "choices": [
-                "train",
-                "years",
+                "light",
+                "paint",
                 "space",
-                "bus"
+                "tea"
               ],
               "answer": 2,
               "explanation": "\"space\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18835,9 +18835,9 @@
               "type": "fill",
               "prompt": "There's a friendly ___ atmosphere here. (neighbours know each other)",
               "bank": [
-                "park",
-                "market",
-                "clean",
+                "traffic",
+                "parking",
+                "tax",
                 "community"
               ],
               "answer": "community",
@@ -18864,9 +18864,9 @@
               "prompt": "We live in a ___ that's popular with families. (a quiet area outside the city)",
               "bank": [
                 "suburb",
-                "leisure",
-                "café",
-                "school"
+                "factory",
+                "airport",
+                "station"
               ],
               "answer": "suburb",
               "explanation": "\"suburb\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18912,9 +18912,9 @@
               "type": "fill",
               "prompt": "There's a good ___ centre nearby for sports. (a place for exercise)",
               "bank": [
-                "community",
-                "town",
-                "stop",
+                "shopping",
+                "garden",
+                "police",
                 "leisure"
               ],
               "answer": "leisure",
@@ -18927,9 +18927,9 @@
               "prompt": "The area gets quite ___ during rush hour. (full of cars and people)",
               "choices": [
                 "busy",
-                "residential",
-                "local",
-                "clean"
+                "empty",
+                "quiet",
+                "silent"
               ],
               "answer": 0,
               "explanation": "\"busy\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18940,10 +18940,10 @@
               "type": "fill",
               "prompt": "My neighbourhood has changed a lot over the ___. (a long period of time)",
               "bank": [
-                "park",
-                "market",
+                "morning",
+                "hour",
                 "years",
-                "suburb"
+                "minute"
               ],
               "answer": "years",
               "explanation": "\"years\" is correct here. A2-level vocabulary for describing a local area.",
@@ -18954,10 +18954,10 @@
               "type": "mc",
               "prompt": "I really like living in this part of ___. (the city or the village)",
               "choices": [
-                "park",
-                "suburb",
+                "kitchen",
+                "garden",
                 "town",
-                "field"
+                "school"
               ],
               "answer": 2,
               "explanation": "\"town\" is correct here. A2-level vocabulary for describing a local area.",
@@ -20159,10 +20159,10 @@
               "type": "fill",
               "prompt": "This bag is as ___ as that one. (they weigh the same)",
               "bank": [
-                "popular",
-                "sturdy",
+                "tall",
+                "wide",
                 "heavy",
-                "delicious"
+                "loud"
               ],
               "answer": "heavy",
               "explanation": "\"heavy\" is correct here. A2-level equal comparison structures.",
@@ -20173,10 +20173,10 @@
               "type": "mc",
               "prompt": "She is as ___ as her sister. (the same height)",
               "choices": [
-                "quick",
-                "simple",
+                "old",
+                "wide",
                 "tall",
-                "small"
+                "heavy"
               ],
               "answer": 2,
               "explanation": "\"tall\" is correct here. A2-level equal comparison structures.",
@@ -20202,9 +20202,9 @@
               "prompt": "His car is as ___ as mine. (they go at the same speed)",
               "choices": [
                 "fast",
-                "heavy",
-                "fluent",
-                "busy"
+                "big",
+                "loud",
+                "old"
               ],
               "answer": 0,
               "explanation": "\"fast\" is correct here. A2-level equal comparison structures.",
@@ -20234,12 +20234,12 @@
             {
               "id": "a2p20q5",
               "type": "mc",
-              "prompt": "The film was as ___ as the book.",
+              "prompt": "The film was as ___ as the book. (equally enjoyable)",
               "choices": [
-                "tall",
-                "warm",
+                "expensive",
+                "heavy",
                 "good",
-                "cold"
+                "wide"
               ],
               "answer": 2,
               "explanation": "\"good\" is correct here. A2-level equal comparison structures.",
@@ -20248,12 +20248,12 @@
             {
               "id": "a2p20q6",
               "type": "fill",
-              "prompt": "He runs as ___ as a professional sprinter.",
+              "prompt": "He runs as ___ as a professional sprinter. (very fast)",
               "bank": [
-                "fluent",
-                "sweet",
+                "heavy",
+                "tall",
                 "quick",
-                "busy"
+                "loud"
               ],
               "answer": "quick",
               "explanation": "\"quick\" is correct here. A2-level equal comparison structures.",
@@ -20266,9 +20266,9 @@
               "prompt": "This hotel is as ___ as the other one. (it costs the same)",
               "choices": [
                 "expensive",
-                "interesting",
-                "fast",
-                "hard"
+                "big",
+                "old",
+                "noisy"
               ],
               "answer": 0,
               "explanation": "\"expensive\" is correct here. A2-level equal comparison structures.",
@@ -20277,12 +20277,12 @@
             {
               "id": "a2p20q8",
               "type": "fill",
-              "prompt": "Her English is as ___ as her brother's.",
+              "prompt": "Her English is as ___ as her brother's. (speaks smoothly)",
               "bank": [
                 "fluent",
-                "fun",
+                "heavy",
                 "tall",
-                "cold"
+                "sweet"
               ],
               "answer": "fluent",
               "explanation": "\"fluent\" is correct here. A2-level equal comparison structures.",
@@ -20291,12 +20291,12 @@
             {
               "id": "a2p20q9",
               "type": "mc",
-              "prompt": "The weather today is as ___ as yesterday.",
+              "prompt": "The weather today is as ___ as yesterday. (it is freezing)",
               "choices": [
-                "sweet",
-                "busy",
+                "hot",
+                "warm",
                 "cold",
-                "spicy"
+                "mild"
               ],
               "answer": 2,
               "explanation": "\"cold\" is correct here. A2-level equal comparison structures.",
@@ -20314,10 +20314,10 @@
               "type": "mc",
               "prompt": "This restaurant is as ___ as the one downtown. (it has as many customers)",
               "choices": [
-                "sweet",
-                "busy",
+                "quiet",
+                "tiny",
                 "popular",
-                "spicy"
+                "silent"
               ],
               "answer": 2,
               "explanation": "\"popular\" is correct here. A2-level equal comparison structures.",
@@ -20326,12 +20326,12 @@
             {
               "id": "a2p20q11",
               "type": "fill",
-              "prompt": "The exam was not as ___ as I thought.",
+              "prompt": "The exam was not as ___ as I thought. (difficult)",
               "bank": [
-                "fast",
+                "easy",
                 "hard",
-                "popular",
-                "peaceful"
+                "short",
+                "long"
               ],
               "answer": "hard",
               "explanation": "\"hard\" is correct here. A2-level equal comparison structures.",
@@ -20343,9 +20343,9 @@
               "prompt": "This coffee is as ___ as the one at home. (it wakes you up just as much)",
               "choices": [
                 "strong",
-                "small",
-                "difficult",
-                "cold"
+                "weak",
+                "cold",
+                "small"
               ],
               "answer": 0,
               "explanation": "\"strong\" is correct here. A2-level equal comparison structures.",
@@ -20356,9 +20356,9 @@
               "type": "fill",
               "prompt": "The journey was as ___ as we expected. (it took the same time)",
               "bank": [
-                "fluent",
-                "warm",
-                "tall",
+                "heavy",
+                "loud",
+                "wide",
                 "long"
               ],
               "answer": "long",
@@ -20370,10 +20370,10 @@
               "type": "mc",
               "prompt": "His new phone is as ___ as the old one. (it never breaks down)",
               "choices": [
-                "peaceful",
-                "popular",
+                "heavy",
+                "cheap",
                 "reliable",
-                "heavy"
+                "noisy"
               ],
               "answer": 2,
               "explanation": "\"reliable\" is correct here. A2-level equal comparison structures.",
@@ -20391,10 +20391,10 @@
               "type": "fill",
               "prompt": "This road is as ___ as the motorway. (the same amount of traffic)",
               "bank": [
-                "sturdy",
+                "quiet",
                 "busy",
-                "interesting",
-                "quick"
+                "empty",
+                "clean"
               ],
               "answer": "busy",
               "explanation": "\"busy\" is correct here. A2-level equal comparison structures.",
@@ -20406,9 +20406,9 @@
               "prompt": "The party was as ___ as last year's. (everyone enjoyed it as much)",
               "choices": [
                 "fun",
-                "fluent",
-                "busy",
-                "simple"
+                "boring",
+                "cold",
+                "quiet"
               ],
               "answer": 0,
               "explanation": "\"fun\" is correct here. A2-level equal comparison structures.",
@@ -20420,9 +20420,9 @@
               "prompt": "Her cooking is as ___ as a professional chef's. (it tastes just as good)",
               "bank": [
                 "delicious",
-                "sweet",
-                "hard",
-                "spicy"
+                "terrible",
+                "awful",
+                "bland"
               ],
               "answer": "delicious",
               "explanation": "\"delicious\" is correct here. A2-level equal comparison structures.",
@@ -20433,10 +20433,10 @@
               "type": "mc",
               "prompt": "The city is as ___ as the countryside. (just as quiet and calm)",
               "choices": [
-                "good",
-                "simple",
+                "noisy",
+                "crowded",
                 "peaceful",
-                "strong"
+                "busy"
               ],
               "answer": 2,
               "explanation": "\"peaceful\" is correct here. A2-level equal comparison structures.",
@@ -20445,12 +20445,12 @@
             {
               "id": "a2p20q19",
               "type": "fill",
-              "prompt": "This jacket is as ___ as the other colour.",
+              "prompt": "This jacket is as ___ as the other colour. (it keeps you cosy)",
               "bank": [
                 "warm",
-                "hard",
-                "tall",
-                "peaceful"
+                "light",
+                "heavy",
+                "expensive"
               ],
               "answer": "warm",
               "explanation": "\"warm\" is correct here. A2-level equal comparison structures.",
@@ -20469,9 +20469,9 @@
               "prompt": "My flat is as ___ as yours. (the same size, tiny)",
               "bank": [
                 "small",
-                "sweet",
-                "expensive",
-                "reliable"
+                "large",
+                "huge",
+                "big"
               ],
               "answer": "small",
               "explanation": "\"small\" is correct here. A2-level equal comparison structures.",
@@ -20482,10 +20482,10 @@
               "type": "mc",
               "prompt": "The lesson was as ___ as the last one. (it kept me awake just as much)",
               "choices": [
-                "tall",
-                "peaceful",
+                "boring",
+                "long",
                 "interesting",
-                "fluent"
+                "short"
               ],
               "answer": 2,
               "explanation": "\"interesting\" is correct here. A2-level equal comparison structures.",
@@ -20496,10 +20496,10 @@
               "type": "fill",
               "prompt": "This wine is as ___ as the other bottle. (the same amount of sugar)",
               "bank": [
-                "good",
-                "strong",
+                "bitter",
+                "salty",
                 "sweet",
-                "warm"
+                "sour"
               ],
               "answer": "sweet",
               "explanation": "\"sweet\" is correct here. A2-level equal comparison structures.",
@@ -20512,9 +20512,9 @@
               "prompt": "Her plan is as ___ as mine. (just as easy to follow)",
               "choices": [
                 "simple",
-                "fun",
-                "sturdy",
-                "quick"
+                "complicated",
+                "difficult",
+                "confusing"
               ],
               "answer": 0,
               "explanation": "\"simple\" is correct here. A2-level equal comparison structures.",
@@ -20525,10 +20525,10 @@
               "type": "fill",
               "prompt": "The bridge is as ___ as the old one. (it won't break)",
               "bank": [
-                "peaceful",
-                "hard",
+                "fragile",
+                "weak",
                 "sturdy",
-                "tall"
+                "flimsy"
               ],
               "answer": "sturdy",
               "explanation": "\"sturdy\" is correct here. A2-level equal comparison structures.",

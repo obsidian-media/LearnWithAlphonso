@@ -1,0 +1,158 @@
+{
+  "batch": "p5-r1-b002",
+  "pass": "first",
+  "reviewer": "agent:p5-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "package": {
+      "verdict": "approve",
+      "alt": "A cardboard box and two paper mailing envelopes rest on a stone doorstep.",
+      "peopleVisible": false
+    },
+    "passport": {
+      "verdict": "approve",
+      "alt": "A blue passport lies on a white surface with a red boarding pass tucked behind it.",
+      "peopleVisible": false
+    },
+    "pay": {
+      "verdict": "approve",
+      "alt": "A hand holds a bank card to a pink card machine while another hand reaches for it at a counter.",
+      "peopleVisible": true
+    },
+    "pentagon": {
+      "verdict": "approve",
+      "alt": "Five-sided frames of light form a repeating geometric pattern in a dark glass ceiling seen from below.",
+      "peopleVisible": false
+    },
+    "photographs": {
+      "verdict": "approve",
+      "alt": "Three printed photographs hang from a string with small pegs.",
+      "peopleVisible": false
+    },
+    "pinch": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "plants": {
+      "verdict": "approve",
+      "alt": "Succulent plants grow in rows of small red and pink pots.",
+      "peopleVisible": false
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "pulse": {
+      "verdict": "approve",
+      "alt": "A health worker in gloves holds a patient's wrist to feel the pulse.",
+      "peopleVisible": true
+    },
+    "raining": {
+      "verdict": "approve",
+      "alt": "Raindrops make ripples on wet road markings during a rainy day.",
+      "peopleVisible": false
+    },
+    "reception": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "rectangle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "simmer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "skin": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "speak": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "spray": {
+      "verdict": "approve",
+      "alt": "A yellow and red spray bottle trigger and nozzle in close-up.",
+      "peopleVisible": false
+    },
+    "square": {
+      "verdict": "approve",
+      "alt": "A single red square sits in the middle of a plain black background.",
+      "peopleVisible": false
+    },
+    "sunny": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "temperature": {
+      "verdict": "approve",
+      "alt": "A glass thermometer and a digital thermometer lie on a blue background.",
+      "peopleVisible": false
+    },
+    "throw": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "till": {
+      "verdict": "approve",
+      "alt": "An old pale blue cash register stands on a wooden counter next to a coffee cup.",
+      "peopleVisible": false
+    },
+    "travels": {
+      "verdict": "approve",
+      "alt": "A traveller pulls a suitcase through a sunlit airport terminal with other passengers behind.",
+      "peopleVisible": true
+    },
+    "vote": {
+      "verdict": "approve",
+      "alt": "A hand drops a paper ballot into a clear ballot box.",
+      "peopleVisible": true
+    },
+    "wait": {
+      "verdict": "approve",
+      "alt": "Adults sit in a row on a bench waiting at a bus stop on a sunny day.",
+      "peopleVisible": true
+    },
+    "wake": {
+      "verdict": "approve",
+      "alt": "A woman stretches her arms above her head as she wakes up in a bed with white sheets.",
+      "peopleVisible": true
+    },
+    "washes": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "water": {
+      "verdict": "approve",
+      "alt": "Three glasses of different sizes filled with water stand on a pale blue background.",
+      "peopleVisible": false
+    },
+    "with wool": {
+      "verdict": "approve",
+      "alt": "A ball of bright yellow wool yarn on a white background.",
+      "peopleVisible": false
+    }
+  }
+}

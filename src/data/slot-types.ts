@@ -174,6 +174,7 @@ export type Issue =
   | { kind: "also-correct"; option: string; reason: string }
   | { kind: "needs-clue" }
   | { kind: "tense-unanchored" }
+  | { kind: "options-not-replaced" }
   | { kind: "weak-context" }
   | { kind: "unclassified" };
 
@@ -193,6 +194,8 @@ export type QuestionShape = {
   slot?: SlotType;
   /** Answers of the question's whole pack, for `category` slots. */
   packAnswers?: Set<string>;
+  /** True when a reviewed fix replaced the wrong options; false when it only added a clue or reason. */
+  wrongReplaced?: boolean;
   /** A hand-authored phrase question that was read and judged sound (see reviewed-phrases.ts). */
   reviewed?: boolean;
   /** How many questions carry exactly this context reason (computed by the sweep). */
@@ -216,6 +219,10 @@ const POS_FIX: Record<string, Record<string, string>> = {
   a2p11: nouns("nuts,bread,milk,eggs"),
   a2p15: nouns("stamp"),
   a2p16: { ...nouns("centre,park,stop,market"), local: "Adjective" },
+  a1p8: { orange: "Noun" },
+  a2p13: Object.fromEntries(
+    "left,right,straight,back,up,forward".split(",").map((w) => [w, "Adverb"]),
+  ),
   a2p17: {
     above: "Preposition",
     beside: "Preposition",
@@ -227,11 +234,68 @@ const POS_FIX: Record<string, Record<string, string>> = {
   a2p20: { long: "Adjective", fluent: "Adjective", warm: "Adjective", tall: "Adjective" },
 };
 
+/** The time pack mixes days, months, parts of the day and units; a wrong option must be the answer's own kind. */
+const TIME_KIND: Record<string, string> = Object.fromEntries([
+  ...["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((w) => [
+    w,
+    "day-name",
+  ]),
+  ...[
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+  ].map((w) => [w, "month-name"]),
+  ...[
+    "morning",
+    "mornings",
+    "afternoon",
+    "afternoons",
+    "evening",
+    "evenings",
+    "night",
+    "nights",
+    "noon",
+    "midnight",
+    "dawn",
+    "lunchtime",
+  ].map((w) => [w, "part-of-day"]),
+  ...[
+    "second",
+    "minute",
+    "hour",
+    "day",
+    "days",
+    "week",
+    "weeks",
+    "weekend",
+    "month",
+    "months",
+    "year",
+    "years",
+    "hours",
+    "minutes",
+    "time",
+  ].map((w) => [w, "unit"]),
+]);
+
 const posOf = (packId: string | undefined, word: string): string | undefined =>
   (packId ? POS_FIX[packId]?.[word] : undefined) ??
   (packId ? PACK_ANSWER_POS[packId]?.[word] : undefined) ??
   ANSWER_POS[word] ??
   ANSWER_POS[word.toLowerCase()];
+
+/** A reason that only says the other options are wrong ("cannot ...", "is not a place") explains nothing. */
+export const NEGATIVE_REASON =
+  /\bcannot\b|\bcan't\b|\bis not a\b|\bare not\b|\bis not\b|\bneeds? another\b|\bdo(es)? not (fit|make sense|exist)\b|nonsense/i;
 
 /** A context reason counts only if it is written for this question: unique and not the stamp. */
 function contextIsReal(q: QuestionShape): boolean {
@@ -239,13 +303,14 @@ function contextIsReal(q: QuestionShape): boolean {
     !!q.context &&
     q.context !== BLANKET_CONTEXT &&
     q.context.length >= 25 &&
+    !NEGATIVE_REASON.test(q.context) &&
     (q.contextUses ?? 1) === 1
   );
 }
 
 /** Words that fix the tense of the sentence they are in. */
 export const TIME_ANCHOR =
-  /\b(yesterday|last (night|week|year|month|summer|weekend|\w*day)|\w+ ago|tomorrow|tonight|next (week|year|month|summer|weekend|\w*day)|right now|at the moment|every (day|week|year|morning|evening|night|month|summer|weekend|\w*day)|always|usually|often|never|sometimes|already|yet|since|for (\w+ )?(years|hours|days|minutes|weeks|months)|used to|in (19|20)\d\d|at \d|o.clock|by the time|just|this (morning|week|year|evening|afternoon)|when (he|she|i|we|they|it) (was|were|had)|\d\d?\s?(am|pm)|on (mon|tues|wednes|thurs|fri|satur|sun)day)s?\b|"[a-z]+"/i;
+  /\b(yesterday|last (night|week|year|month|summer|weekend|\w*day)|\w+ ago|tomorrow|tonight|next (week|year|month|summer|weekend|\w*day)|right now|at the moment|every \w+|\bnow\b|always|usually|often|never|sometimes|already|yet|since|for (\w+ )?(years|hours|days|minutes|weeks|months)|used to|in (19|20)\d\d|at \d|o.clock|by the time|just|this (morning|week|year|evening|afternoon)|when (he|she|i|we|they|it) (was|were|had)|\d\d?\s?(am|pm)|on (mon|tues|wednes|thurs|fri|satur|sun)day)s?\b|"[a-z]+"|\b(to|will|would|can|could|shall|should|must|might|may|let's|do|does|did)\s+(\w+\s+)?___|(n't|'ll|'m|'re|'s|'ve|'d)\s+(\w+\s+)?___|\b(am|is|are|was|were|been|being|have|has|had|having)\s+(\w+\s+)?___|\b(weekdays?|weekends?|mornings|evenings|nights|twice a|\w+ times a|a (day|week|month|year)|in the (morning|evening|afternoon)|in (winter|summer|spring|autumn)|all day|at night)\b/i;
 
 /** Everything wrong with a question's options under docs/distractor-policy.md. */
 export function checkDistractors(q: QuestionShape): Issue[] {
@@ -288,6 +353,12 @@ export function checkDistractors(q: QuestionShape): Issue[] {
     else if (slot === "fixed-prep") inPool = group?.has(n) ?? false;
     else inPool = POOLS[slot].has(n);
     if (!inPool && !allow.has(n)) issues.push({ kind: "off-pool", option: w, slot });
+    if (slot === "category" && pack === "a1p14") {
+      const ak = TIME_KIND[norm(q.answer)];
+      const wk = TIME_KIND[n];
+      if (ak && wk && ak !== wk)
+        issues.push({ kind: "pos-mismatch", option: w, answerPos: ak, optionPos: wk });
+    }
     if (slot === "category" && inPool) {
       // Same kind of word: a noun slot takes nouns, an adverb slot takes adverbs.
       const ap = posOf(pack, q.answer);
@@ -307,6 +378,14 @@ export function checkDistractors(q: QuestionShape): Issue[] {
     }
   }
   if (slot === "category" && !clue && !real) issues.push({ kind: "needs-clue" });
+  // A clue or reason only disambiguates; the old pack-neighbour options must also have been replaced.
+  if (
+    slot === "category" &&
+    q.wrongReplaced === false &&
+    !q.hasImage &&
+    (real || clueIsSpecific(q.prompt))
+  )
+    issues.push({ kind: "options-not-replaced" });
   // Every option of an inflection slot is a form of one verb, so another tense of it can also fit
   // unless the sentence fixes the time (or a photo, a specific clue or a real reason does).
   if (
