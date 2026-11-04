@@ -52,8 +52,8 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   episodes (110 in all), 10 XP per correct answer, best-score replay, graded on
   the server in one transaction (`submit_podcast_quiz`, Edge Function
   `complete-podcast-quiz`), sharing the lesson hourly ceiling, day and streak
-  rules. The web player offers it when an episode ends; the iOS screen is PR
-  #376 and Android has none yet. SRS wiring is not built. On iOS, episodes can be **downloaded for offline listening**
+  rules. The web player offers it when an episode ends; iOS has the same quiz
+  (#376); Android has none yet (in progress). SRS wiring is not built. On iOS, episodes can be **downloaded for offline listening**
   (Phase 3): downloads are explicit, nothing is ever deleted without you
   asking, and offline the downloaded set is listed flat rather than as the
   folder tree. The iOS player saves your position from the very first listen,
