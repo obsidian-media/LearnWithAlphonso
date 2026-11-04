@@ -604,6 +604,9 @@ struct AlphonsoTipCard: View {
     /// explanation plain text. Opt-in on purpose: only a caller that knows the
     /// text is wholly in the course's language (see `SavedWordPolicy`) passes it.
     var saveCourse: String? = nil
+    /// With `saveCourse`: the course-language strings that are tappable (French and Spanish), or nil
+    /// for text wholly in the course's language (English).
+    var courseSpans: [String]? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.saveWordHandler) private var saveWordHandler
@@ -615,10 +618,12 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                     .tracking(0.3)
                     .foregroundStyle(AlphonsoColor.ember)
-                if let saveCourse, let saveWordHandler {
+                if let saveCourse, let saveWordHandler,
+                    SavedWordPolicy.savesWholeText(inCourse: saveCourse) || courseSpans != nil
+                {
                     TappableText(
                         text: explanation, color: AlphonsoColor.ink, course: saveCourse,
-                        onSave: saveWordHandler
+                        onSave: saveWordHandler, courseSpans: courseSpans
                     )
                     .font(AlphonsoFont.sans(14))
                 } else {
@@ -711,12 +716,20 @@ struct ExplanationView: View {
         correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
     }
 
-    /// The course to file a tapped word under, or nil when this course's text is
-    /// not wholly in its own language (`SavedWordPolicy`) -- then the explanation
-    /// stays plain text rather than offering to save English words under French.
+    /// What this explanation offers for saving (`SavedWordPolicy`): every word in the English course, only
+    /// the course-language text the question proves in French and Spanish, nothing otherwise.
+    private var scope: SavedWordPolicy.Scope {
+        SavedWordPolicy.scope(for: question, explanation: explanation, inCourse: course.translationCourseCode)
+    }
+
+    /// The course to file a tapped word under, or nil when nothing here may be saved.
     private var saveCourse: String? {
-        let code = course.translationCourseCode
-        return SavedWordPolicy.allowsSaving(inCourse: code) ? code : nil
+        scope == .none ? nil : course.translationCourseCode
+    }
+
+    private var courseSpans: [String]? {
+        if case .spans(let spans) = scope { return spans }
+        return nil
     }
 
     var body: some View {
@@ -739,7 +752,7 @@ struct ExplanationView: View {
                     // it right," which VoiceOver has no equivalent of.
                     .accessibilityLabel("Correct. \(explanation)")
             } else {
-                AlphonsoTipCard(explanation: explanation, saveCourse: saveCourse)
+                AlphonsoTipCard(explanation: explanation, saveCourse: saveCourse, courseSpans: courseSpans)
             }
         }
         // Proactively announced, not just readable-if-you-swipe-to-it --
@@ -761,7 +774,7 @@ struct ExplanationView: View {
         if let saveCourse, let saveWordHandler {
             TappableText(
                 text: explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
-                onSave: saveWordHandler
+                onSave: saveWordHandler, courseSpans: courseSpans
             )
             .font(AlphonsoFont.sans(13))
         } else {
