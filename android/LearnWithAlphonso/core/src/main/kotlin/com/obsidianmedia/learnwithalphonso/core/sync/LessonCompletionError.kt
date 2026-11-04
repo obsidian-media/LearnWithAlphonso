@@ -55,7 +55,9 @@ sealed class LessonCompletionError : Exception() {
         get() = when (this) {
             Offline -> "Saved. It will sync when you're back online."
             Timeout -> "The server took too long to answer. Your lesson is saved and will sync automatically."
-            is Server -> "Our server had a problem. Your lesson is saved and will sync automatically."
+            // complete-lesson's hourly ceiling ("rate-limited") answers 429; it clears within the hour and a transient item is
+            // retried with backoff, never dead-lettered, so the lesson syncs by itself.
+            is Server -> if (status == 429) "Saved. It will sync soon." else "Our server had a problem. Your lesson is saved and will sync automatically."
             Unauthorized -> "You've been signed out, so this lesson couldn't be saved. Sign in to keep learning."
             is Rejected -> when (code) {
                 "lesson-version-mismatch" -> "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."

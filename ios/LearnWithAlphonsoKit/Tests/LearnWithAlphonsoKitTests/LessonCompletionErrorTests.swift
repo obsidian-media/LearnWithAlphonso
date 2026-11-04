@@ -50,6 +50,14 @@ final class LessonCompletionErrorTests: XCTestCase {
         XCTAssertEqual(LessonCompletionError.classify(status: 403, code: "Invalid or expired lesson session"), .rejected(code: nil))
     }
 
+    func testHourlyCeilingIsQueuedWithASavedMessageNeverRejected() {
+        let e = LessonCompletionError.classify(ProgressSyncError.server(status: 429, message: "rate-limited"))
+        XCTAssertEqual(e, .server(status: 429))
+        XCTAssertTrue(e.shouldQueue)
+        XCTAssertEqual(e.userMessage, "Saved. It will sync soon.")
+        XCTAssertNotEqual(LessonCompletionError.server(status: 503).userMessage, e.userMessage)
+    }
+
     func testOutOfHeartsIsRejectedWithItsCode() {
         XCTAssertEqual(LessonCompletionError.classify(ProgressSyncError.outOfHearts(refillAt: nil)), .rejected(code: "out-of-hearts"))
     }

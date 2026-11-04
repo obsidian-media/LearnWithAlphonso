@@ -13,10 +13,9 @@ export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define" | "hecto
  */
 export const DAILY_LIMITS: Record<QuotaKind, number> = {
   chat: 60,
-  // Temporarily raised from 60 -- active debugging of the still-unsolved
-  // "Empty or missing audio" bug needs many real retries in a row. See
-  // the migration's own comment for the revert note.
-  stt: 300,
+  // 300 was a temporary debugging allowance; the owner set 120 on 2026-11-04
+  // (20261104100000_stt_daily_limit_120.sql).
+  stt: 120,
   tts: 80,
   // Its own budget rather than a share of `chat`'s: translation grading is
   // only reached by submissions the curated answer list already rejected, so
