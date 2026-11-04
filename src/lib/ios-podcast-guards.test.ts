@@ -242,3 +242,107 @@ describe("iOS podcast guards", () => {
     expect(save.match(/saveGate\.accepts\(epoch\)/g)?.length).toBe(5);
   });
 });
+
+describe("iOS podcast quiz guards", () => {
+  const kit = () => source("Sources/LearnWithAlphonsoKit/PodcastQuiz.swift");
+  const sheet = () => source("Sources/PodcastQuizSheet.swift");
+  const bar = () => source("Sources/PodcastMiniBar.swift");
+
+  it("the quiz is offered only after the episode finished, and only when the server has one", () => {
+    const text = bar();
+    expect(text).toMatch(/if player\.machine\.phase == \.finished, let offer = quizOffer/);
+    const load = functionBody(text, "private func loadQuizOffer(episode: PodcastEpisode) async {");
+    // Not finished: any held offer is dropped, and nothing is fetched.
+    expect(load).toMatch(
+      /guard player\.machine\.phase == \.finished, let client = makePodcastClient\(session: session\) else \{\s*quizOffer = nil/,
+    );
+    expect(load).toContain("client.fetchQuiz(episodeID: episode.id)");
+    // Re-keyed on finishing, so playing again clears a stale offer.
+    expect(text).toMatch(
+      /\.task\(id: QuizOfferRequest\(episodeID: episode\.id, isFinished: player\.machine\.phase == \.finished\)\)/,
+    );
+  });
+
+  it("the sheet steps through the Kit's run and shows the server's result, never its own marking", () => {
+    const text = sheet();
+    expect(text).toContain("PodcastQuizRun(questions: offer.questions)");
+    expect(text).toContain("run.saved(result)");
+    // The score on screen is the result the server returned.
+    expect(text).toContain('Text("\\(result.correct) of \\(result.total) correct")');
+    expect(text).toContain("PodcastQuizCopy.xpLine(for: result)");
+    // No local scoring: nothing compares a choice with the key to count a score or XP.
+    expect(text).not.toMatch(/score|xpGain\s*[+=]|\* 10/);
+  });
+
+  it("sends the chosen answers and the finish time to the Edge Function, in an unstructured task", () => {
+    const text = sheet();
+    const submit = functionBody(text, "private func submit() {");
+    expect(submit).toContain(
+      "client.submitQuiz(episodeID: episodeID, answers: answers, completedAt: finished)",
+    );
+    // An unstructured task: leaving the sheet must not cancel a request that may already have been applied.
+    expect(submit).toContain("Task { @MainActor in");
+    expect(text).not.toMatch(/\.task\(id: run\.phase\)/);
+    // The finish time is taken when the last answer is given, not when a retry is tapped.
+    expect(text).toMatch(/if run\.phase == \.submitting \{ finishedAt = Date\(\); submit\(\) \}/);
+  });
+
+  it("the client posts answers and completedAt to complete-podcast-quiz and nothing else", () => {
+    const text = kit();
+    const submit = functionBody(text, "public func submitQuiz(");
+    expect(submit).toContain("functions/v1/complete-podcast-quiz");
+    const payload = submit.slice(submit.indexOf("let payload"), submit.indexOf("request.httpBody"));
+    const keys = [...payload.matchAll(/"(\w+)":/g)].map((m) => m[1]);
+    expect(keys).toEqual(["episodeId", "answers", "questionId", "choiceIndex", "completedAt"]);
+    // A 2xx the app cannot read is an error, never a score.
+    expect(submit).toContain('object["status"] as? String == "applied"');
+    expect(submit).toContain("throw PodcastQuizError.server");
+  });
+
+  it("the Kit never decides a score: the run only stores what the server returned", () => {
+    const run = functionBody(kit(), "public mutating func saved(_ result: PodcastQuizResult) {");
+    expect(run).toContain("self.result = result");
+    // 10 XP per correct answer is stated in copy only; the arithmetic lives in submit_podcast_quiz.
+    const arithmetic = kit().replace(/"[^"\n]*"/g, '""');
+    expect(arithmetic).not.toMatch(/\* 10|\bcorrect\s*\+=|answerIndex\s*==/);
+  });
+
+  it("the function the client calls exists and is deployed", () => {
+    expect(
+      fs.existsSync(path.join(ROOT, "supabase/functions/complete-podcast-quiz/index.ts")),
+    ).toBe(true);
+    const ci = fs.readFileSync(path.join(ROOT, ".github/workflows/ci.yml"), "utf8");
+    expect(ci).toMatch(/supabase functions deploy complete-podcast-quiz\s*$/m);
+  });
+
+  it("a quiz row button appears only on episodes the server says have a quiz", () => {
+    const list = source("Sources/ListenView.swift");
+    expect(list).toMatch(/client\.fetchQuizEpisodeIDs\(episodeIDs: episodes\.map\(\\.id\)\)/);
+    expect(list).toMatch(
+      /if quizEpisodeIDs\.contains\(episode\.id\) \{\s*PodcastQuizRowButton\(episode: episode, session: session\)/,
+    );
+    // A failed read is no buttons, never a failed listing.
+    expect(list).toContain("(try? await client.fetchQuizEpisodeIDs(");
+  });
+
+  it("an unreadable question row fails loudly instead of being dropped", () => {
+    const fetch = functionBody(
+      kit(),
+      "public func fetchQuiz(episodeID: String) async throws -> PodcastQuizOffer? {",
+    );
+    expect(fetch).toContain("throw PodcastClientError.invalidPayload");
+    expect(fetch).not.toMatch(/\.compactMap\s*\{[^}]*answer_index/);
+    expect(fetch).toMatch(/\.rows\(from: data\)\.map \{ row in/);
+  });
+
+  it("Try again is offered only for failures that retrying can fix, and a saved result refreshes the best label", () => {
+    const text = sheet();
+    expect(text).toMatch(/if error\.isRetryable \{\s*Button\("Try again"\)/);
+    expect(text).toContain("onSaved?(result)");
+    expect(bar()).toMatch(
+      /best: PodcastQuizBest\(correct: result\.bestCorrect, xp: result\.bestXP\)/,
+    );
+    const retry = functionBody(kit(), "public mutating func retry() {");
+    expect(retry).toContain("error.isRetryable");
+  });
+});

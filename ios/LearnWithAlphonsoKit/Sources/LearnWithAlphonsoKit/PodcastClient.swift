@@ -52,7 +52,7 @@ public final class PodcastClient: Sendable {
 
     // MARK: - Requests
 
-    private func request(path: String, query: String? = nil, method: String) -> URLRequest {
+    func request(path: String, query: String? = nil, method: String) -> URLRequest {
         var components = URLComponents(
             url: supabaseURL.appendingPathComponent(path),
             resolvingAgainstBaseURL: false
@@ -66,7 +66,7 @@ public final class PodcastClient: Sendable {
         return request
     }
 
-    private static func requireSuccess(response: URLResponse) throws {
+    static func requireSuccess(response: URLResponse) throws {
         guard let http = response as? HTTPURLResponse else { throw PodcastClientError.badResponse }
         if http.statusCode == 401 || http.statusCode == 403 { throw PodcastClientError.unauthorized }
         guard (200..<300).contains(http.statusCode) else {
@@ -74,7 +74,7 @@ public final class PodcastClient: Sendable {
         }
     }
 
-    private static func rows(from data: Data) throws -> [[String: Any]] {
+    static func rows(from data: Data) throws -> [[String: Any]] {
         guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
             throw PodcastClientError.invalidPayload
         }

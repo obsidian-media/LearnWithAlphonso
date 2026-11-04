@@ -46,6 +46,9 @@ struct PodcastMiniBar: View {
     @State private var isLoadingTranscript = false
     /// Nil until the folders are read; the active course stands in, never a fixed one.
     @State private var transcriptCourse: String?
+    /// The episode's quiz, offered once it has played to its end (and only if it has one the learner can see).
+    @State private var quizOffer: PodcastQuizOffer?
+    @State private var showQuiz = false
 
     var body: some View {
         if let episode = player.episode {
@@ -75,6 +78,9 @@ struct PodcastMiniBar: View {
                     .padding(.horizontal, AlphonsoSpacing.md)
                     .padding(.top, AlphonsoSpacing.sm)
                     .accessibilityElement(children: .combine)
+                }
+                if player.machine.phase == .finished, let offer = quizOffer {
+                    quizOfferRow(offer: offer)
                 }
                 if episode.durationSeconds > 0 {
                     Slider(
@@ -186,6 +192,22 @@ struct PodcastMiniBar: View {
                     session: session
                 )
             }
+            .sheet(isPresented: $showQuiz) {
+                if let offer = quizOffer {
+                    PodcastQuizSheet(title: episode.title, episodeID: episode.id, offer: offer, session: session) { result in
+                        // The offer's "best" label follows a better run without another read.
+                        quizOffer = PodcastQuizOffer(
+                            questions: offer.questions,
+                            best: PodcastQuizBest(correct: result.bestCorrect, xp: result.bestXP)
+                        )
+                    }
+                }
+            }
+            // The quiz is read when an episode finishes, keyed on the episode and on finishing, so playing again
+            // (or another episode) clears the offer instead of leaving a stale one.
+            .task(id: QuizOfferRequest(episodeID: episode.id, isFinished: player.machine.phase == .finished)) {
+                await loadQuizOffer(episode: episode)
+            }
             // Fetched when the sheet opens, keyed on the episode so switching
             // episodes while the sheet is open reloads rather than showing
             // the previous one's text.
@@ -201,6 +223,45 @@ struct PodcastMiniBar: View {
     private struct TranscriptRequest: Equatable {
         let episodeID: String
         let isOpen: Bool
+    }
+
+    private struct QuizOfferRequest: Equatable {
+        let episodeID: String
+        let isFinished: Bool
+    }
+
+    private func loadQuizOffer(episode: PodcastEpisode) async {
+        guard player.machine.phase == .finished, let client = makePodcastClient(session: session) else {
+            quizOffer = nil
+            showQuiz = false
+            return
+        }
+        // No offer is the quiet failure: the episode itself is unaffected by a quiz that cannot be read.
+        let offer = try? await client.fetchQuiz(episodeID: episode.id)
+        guard !Task.isCancelled else { return }
+        quizOffer = offer
+    }
+
+    private func quizOfferRow(offer: PodcastQuizOffer) -> some View {
+        HStack(spacing: AlphonsoSpacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(PodcastQuizCopy.offerTitle)
+                    .font(AlphonsoFont.sans(14, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(PodcastQuizCopy.offerDetail(questionCount: offer.questions.count, best: offer.best))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+            Spacer(minLength: 0)
+            Button("Take the quiz") { showQuiz = true }
+                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                .buttonStyle(.borderedProminent)
+                .tint(AlphonsoColor.moss)
+                .frame(minHeight: 44)
+        }
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.top, AlphonsoSpacing.sm)
+        .accessibilityElement(children: .contain)
     }
 
     private func loadTranscript(episode: PodcastEpisode) async {
