@@ -319,6 +319,10 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // account (a lost heart, a quest reward, a second device) between the read and the write makes the snapshot
     // stale; the transaction refuses it and this runs again from a fresh read, so the lesson is never dropped.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Hourly ceiling (anti-farming.ts): taken once per completion, only when it pays XP (an already-recorded replay is a
+    // no-op), refused before any write, and given back if the save then fails so the client's retry is not double counted.
+    let slotHeld = false;
+    const slotAtIso = new Date().toISOString();
     const applyOnce = async () => {
       // Batch every read this handler needs that doesn't depend on another
       // read's result -- was 3+ sequential round trips, now 1.
@@ -449,6 +453,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       // One service-role-only database transaction serializes core completion
       // writes and rejects stale snapshots. A caller can retry after rereading
       // without losing XP or reporting a partial success.
+      if (xpGain > 0 && !slotHeld) {
+        const { consumeCompletionSlot } = await import("./completion-slot.server");
+        if (!(await consumeCompletionSlot(userId, slotAtIso))) throw new Error("rate-limited");
+        slotHeld = true;
+      }
       const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
         "apply_lesson_completion",
         {
@@ -503,9 +512,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         leagueTier,
       };
     };
-    let applied = await applyOnce();
-    for (let retry = 0; !applied && retry < COMPLETION_CONFLICT_RETRIES; retry++) {
+    let applied: Awaited<ReturnType<typeof applyOnce>> = null;
+    try {
       applied = await applyOnce();
+      for (let retry = 0; !applied && retry < COMPLETION_CONFLICT_RETRIES; retry++) {
+        applied = await applyOnce();
+      }
+    } finally {
+      if (slotHeld && !applied) {
+        const { releaseCompletionSlot } = await import("./completion-slot.server");
+        await releaseCompletionSlot(userId, slotAtIso);
+      }
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
     const {

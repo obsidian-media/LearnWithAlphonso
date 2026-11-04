@@ -76,6 +76,10 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
             return Copy.savedOffline
         case .timeout:
             return "The server took too long to answer. Your lesson is saved and will sync automatically."
+        // complete-lesson's hourly ceiling ("rate-limited") answers 429. The ceiling clears within the hour, and a
+        // transient item is retried with backoff and never dead-lettered, so the lesson syncs by itself.
+        case .server(status: 429):
+            return "Saved. It will sync soon."
         case .server:
             return "Our server had a problem. Your lesson is saved and will sync automatically."
         case .unauthorized:

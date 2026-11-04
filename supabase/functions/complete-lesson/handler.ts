@@ -26,6 +26,7 @@ import {
 } from "./progress-math.ts";
 import { lessonSessionIssuedAt, verifyLessonSessionToken } from "./lesson-session.ts";
 import { verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
+import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
   gainHearts,
@@ -85,8 +86,33 @@ export type CompleteLessonDeps = {
   verifySessionToken: typeof verifyLessonSessionToken;
   sessionIssuedAt: typeof lessonSessionIssuedAt;
   sendPush: typeof sendPushToUser;
+  /** Records one completion against the user's rolling-hour limit. false = over the limit. Errors fail open. */
+  consumeCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<boolean>;
+  /** Gives back a slot taken for a completion that then failed to save, so the client's retry is not double counted. */
+  releaseCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<void>;
   now: () => Date;
 };
+
+async function consumeCompletionSlot(admin: SupabaseClient, userId: string, atIso: string): Promise<boolean> {
+  const { data, error } = await admin.rpc("consume_lesson_completion_slot", {
+    _user_id: userId,
+    _at: atIso,
+    _limit: HOURLY_COMPLETION_LIMIT,
+  });
+  if (error) {
+    // FAIL OPEN: never block a real lesson because the guard could not run (e.g. code deployed ahead of its
+    // migration). Logged under a stable event name so an alert can be attached to it.
+    console.error(
+      JSON.stringify({ event: "completion_slot_unavailable", fn: "complete-lesson", message: error.message }),
+    );
+    return true;
+  }
+  return data !== false;
+}
+
+async function releaseCompletionSlot(admin: SupabaseClient, userId: string, atIso: string): Promise<void> {
+  await admin.rpc("release_lesson_completion_slot", { _user_id: userId, _at: atIso });
+}
 
 export function liveDeps(): CompleteLessonDeps {
   return {
@@ -100,6 +126,8 @@ export function liveDeps(): CompleteLessonDeps {
     verifySessionToken: verifyLessonSessionToken,
     sessionIssuedAt: lessonSessionIssuedAt,
     sendPush: sendPushToUser,
+    consumeCompletionSlot,
+    releaseCompletionSlot,
     now: () => new Date(),
   };
 }
@@ -211,9 +239,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course })) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
-  const sessionIssuedAt = completedAt
-    ? deps.sessionIssuedAt(sessionToken, { userId, lessonId, course })
-    : null;
+  const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course });
   const trustedCompletionDay = completedAt && sessionIssuedAt !== null
     ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
     : null;
@@ -378,6 +404,17 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     });
   }
 
+  // Hourly ceiling (anti-farming.ts), counted only for a completion that pays XP: an already-recorded lesson replayed
+  // (a retry after a lost response, a queued duplicate) is a no-op and uses no slot. Refused before any write, so a
+  // refusal changes neither XP nor streak. Counted at the clamped completion instant, so an offline queue replayed
+  // after reconnecting is spread over the hours it was played.
+  const slotAtIso = new Date(completionInstantMs(completedAt, sessionIssuedAt, now.getTime())).toISOString();
+  const slotTaken = xpGain > 0;
+  if (slotTaken && !(await deps.consumeCompletionSlot(admin, userId, slotAtIso))) {
+    console.log(JSON.stringify({ event: "completion_refused", fn: "complete-lesson", reason: "rate-limited" }));
+    return jsonResponse({ error: "rate-limited" }, 429);
+  }
+
   const { data: transition, error: transitionError } = await admin.rpc("apply_lesson_completion", {
     _user_id: userId,
     _course: course,
@@ -410,6 +447,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     _activity_events: activityEvents,
   });
   if (transitionError || !transition || transition.status !== "applied") {
+    if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
     return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
   }
 

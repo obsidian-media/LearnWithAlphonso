@@ -118,6 +118,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.revenuecat.purchases)
+    // Crash reporting (CrashReporting.kt): release builds only, scrubbed, no replay or screenshots.
+    implementation(libs.sentry.android)
     // Lint: Activity Result APIs need Fragment >= 1.3.0; the transitive default is 1.1.0.
     implementation(libs.androidx.fragment)
 

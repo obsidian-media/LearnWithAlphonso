@@ -3,8 +3,9 @@
 Derived from the App Store declaration in `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy`
 and the App Store privacy-label answers (the code is the source of truth;
 those answers were written from it).
-The Android app talks to the same backend and adds nothing: no analytics,
-advertising or crash SDK; Firebase is used for Cloud Messaging only.
+The Android app talks to the same backend and adds one SDK: Sentry crash
+reporting (release builds only, scrubbed, no replay or screenshots; see
+`CrashReporting.kt`). No analytics or advertising SDK; Firebase is used for Cloud Messaging only.
 
 ## Overview questions
 
@@ -17,7 +18,7 @@ advertising or crash SDK; Firebase is used for Cloud Messaging only.
 
 ## Data types
 
-Every row is Collected, Required (the app cannot function without it), not used for advertising, and Linked to the account; there is no anonymous mode.
+Every row is Collected, Required (the app cannot function without it), not used for advertising, and Linked to the account; there is no anonymous mode. The two App info and performance rows (Sentry crash logs and diagnostics) are the exception: they carry no account id, so they are not linked to it.
 
 | Play category | Data type | Collected | Shared | Purpose | Ephemeral | Source of truth |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -29,11 +30,13 @@ Every row is Collected, Required (the app cannot function without it), not used 
 | App activity | App interactions | Yes | No | App functionality, personalisation | No | Lesson completions, XP, streaks, reviews, podcast positions and play events, duels, leaderboards |
 | App activity | Other user-generated content | Yes | No | App functionality | No | Display name, avatar seed, team names |
 | Financial info | Purchase history | Yes | Yes (RevenueCat) | App functionality | No | Pro subscription state through RevenueCat and Google Play Billing |
+| App info and performance | Crash logs | Yes | No (Sentry is a service provider acting on our behalf, not a third party we share with) | App functionality | No | Sentry, release builds only: stack trace, app version, device model and OS version; emails, tokens and user identity are removed before sending (`CrashReportingTest`) |
+| App info and performance | Diagnostics | Yes | No | App functionality | No | The same Sentry report (memory, device state at the time of a crash); no tracing or performance sampling |
 | Device or other IDs | Device or other IDs | Yes | No | App functionality | No | The FCM push token in `device_tokens`; a per-install UUID for the tutor service's rate limiting (never a hardware id) |
 
 ## Not collected (answer No)
 
-Location, contacts, calendar, photos and videos, files and documents, health and fitness, web browsing history, installed apps, SMS or call logs, financial account details (Google handles payment), crash logs and diagnostics (no crash SDK), advertising ID (never read).
+Location, contacts, calendar, photos and videos, files and documents, health and fitness, web browsing history, installed apps, SMS or call logs, financial account details (Google handles payment), advertising ID (never read).
 
 ## Security practices
 
