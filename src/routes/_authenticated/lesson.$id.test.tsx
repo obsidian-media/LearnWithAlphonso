@@ -449,6 +449,28 @@ describe("Lesson page", () => {
     expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
   });
 
+  it("a word with no photo gets a coloured band with the word, and Skip sits on the counter row", async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    const counter = await screen.findByText("Word 1 of 8");
+    // "Good morning." has no photo: the band carries the word, in the first tile tone.
+    const band = container.querySelector("[data-word-band]");
+    expect(band).not.toBeNull();
+    expect(band).toHaveTextContent("Good morning.");
+    expect(band?.className).toContain("bg-tile-coral-bg");
+    expect(container.querySelector("[data-vocab-card] img[src*='vocab']")).toBeNull();
+    expect(counter.parentElement).toContainElement(
+      screen.getByRole("button", { name: "Skip to practice" }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next word" }));
+    await screen.findByText("Word 2 of 8");
+    await waitFor(() =>
+      expect(container.querySelector("[data-word-band]")?.className).toContain("bg-tile-sky-bg"),
+    );
+  });
+
   it("the arrow keys move through the words too", async () => {
     const user = userEvent.setup();
     renderPage();
