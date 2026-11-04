@@ -2244,23 +2244,20 @@ deploy`, both easy to forget (this bit a real session that added several
   backend/account, so this project and its pausing behavior no longer
   affect Hector at all; do not chase this as a cause if Hector breaks
   today.
-- **Offline-first (iOS) has two known, deliberately-unsolved edge cases**
-  (the queue itself was reworked on 2026-10-08, see "Offline queue and lesson
-  saves (iOS)")
-  (see `docs/v2-kickoffs/01-offline-first.md` for the full design):
-  concurrent-device review grading, and streak continuity across an
-  offline gap. If a queued-offline review grade is replayed against
-  `grade-review` after the same item was already graded on another
-  device (online) in the meantime, it applies on top of stale SM-2 state
-  — single-device usage (the overwhelming common case, since there's only
-  ever one local queue) has no such issue. Separately, `complete-lesson`
-  derives the completion date from the sync's _execution_ time, not when
-  the lesson was actually played offline — a lesson played on day N but
-  synced on day N+1 records as completed on day N+1, which can break a
-  streak the user was relying on that lesson to keep alive. Neither is
-  solved by heavier machinery (vector clocks, a client-submitted-date
-  trust exception) preemptively; revisit only if real usage shows either
-  is a frequent complaint.
+- **Offline-first (iOS): the two former rough edges are handled server-side.**
+  Concurrent-device review grading: a queued grade carries the due date and
+  `last_reviewed_at` the learner saw (`expectedDueOn`, `expectedLastReviewedAt`);
+  `grade-review` answers `superseded: true` when the live row has moved on, and
+  `apply_review_grade` re-checks the same snapshot under a row lock (`conflict`).
+  Only a client that omits the snapshot (old builds) still applies on top of
+  stale SM-2 state. Streak continuity across an offline gap: `complete-lesson`
+  accepts `completedAt` and credits the UTC day it falls on, clamped into
+  [server-issued session start, now] (`offline-completion-date.ts`), and a
+  dated replay never moves `last_active_date` backwards (pinned in
+  `handler.test.ts`). Still unsolved by design: a backdated lesson cannot repair
+  a streak that was already reset by a later online day. Client side (queue
+  must send the snapshot fields and `completedAt`) is tracked in the iOS and
+  Android code, not here.
 - **Vercel's GitHub integration lost this repo across the org transfer,
   then was reconnected and fully confirmed the same day (2026-09-20)**
   — (personal account → `obsidian-media`, transfer done to fix a GitHub
