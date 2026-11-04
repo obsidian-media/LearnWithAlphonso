@@ -1072,9 +1072,10 @@ private struct FinishView: View {
     @State private var celebrated = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// The stage is never taller than 52% of the screen: on a short phone it narrows (same framing) instead of
-    /// pushing the rewards and Continue below the fold.
-    private static var stageMaxHeight: CGFloat { UIScreen.main.bounds.height * 0.52 }
+    @Environment(\.dismiss) private var dismiss
+
+    /// Clear space over the clip before the card starts, so Alphonso is seen first.
+    private static var clipWindow: CGFloat { UIScreen.main.bounds.height * 0.46 }
 
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
@@ -1083,7 +1084,7 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
-                // The title sits on glass, above the stage window.
+                // The title sits on glass, over the clip.
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
@@ -1091,27 +1092,17 @@ private struct FinishView: View {
                     .padding(.vertical, AlphonsoSpacing.sm)
                     .alphonsoGlass(radius: AlphonsoRadius.xl)
 
-                // The whole celebration is one looping clip: the stage, confetti cannons, streamers, sweeping spotlights
-                // and Alphonso cheering. It sits in a 10:13 window framed on him (he fills 23-91% of the clip's height;
-                // the window shows the clip from its top 20% to 94%), the same framing as the web. Under Reduce Motion
-                // the clip's first frame stands still.
-                // On a short screen (iPhone SE) the window narrows to at most 52% of the screen's height, so the
-                // rewards and Continue stay in view without changing the framing.
-                ClipBackdrop(clip: .complete, verticalAnchor: 0.76)
-                    .aspectRatio(10.0 / 13.0, contentMode: .fit)
-                    .frame(maxWidth: Self.stageMaxHeight * 10 / 13)
-                    .background(AlphonsoColor.ink)
-                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-                    .alphonsoLift()
-                    .springEntrance()
-                    .accessibilityElement(children: .ignore)
+                // Clear space: the clip behind shows Alphonso here, before the card.
+                Color.clear
+                    .frame(height: Self.clipWindow)
+                    .accessibilityElement()
                     .accessibilityLabel("Alphonso celebrating on the stage")
                     .accessibilityAddTraits(.isImage)
 
                 VStack(spacing: AlphonsoSpacing.md) {
                     Text(LessonFinishCopy.headline(correct: correct, total: total))
                         .font(AlphonsoFont.display(24, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.moss)
+                        .foregroundStyle(AlphonsoColor.ink)
                         .multilineTextAlignment(.center)
                     HStack(spacing: 10) {
                         ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
@@ -1142,11 +1133,6 @@ private struct FinishView: View {
                         .padding(.top, 8)
                     }
 
-                    if let onContinueToNextLesson {
-                        Button("Continue to next lesson", action: onContinueToNextLesson)
-                            .buttonStyle(.alphonsoEmber)
-                            .padding(.top, 4)
-                    }
                     if let onPractiseWithHector {
                         Button("Practise with Hector", action: onPractiseWithHector)
                             .buttonStyle(.alphonsoSecondary)
@@ -1157,10 +1143,40 @@ private struct FinishView: View {
                 .padding(AlphonsoSpacing.md)
                 .frame(maxWidth: .infinity)
                 .alphonsoGlass()
+                .springEntrance()
             }
             .padding()
         }
-        .background(AlphonsoColor.surface)
+        .scrollContentBackground(.hidden)
+        // The whole celebration is one looping clip (the stage, confetti cannons, streamers, sweeping spotlights and
+        // Alphonso cheering), filling the screen behind the card with Alphonso in the top half. A fade into the
+        // surface at the bottom keeps the card's text readable. Under Reduce Motion the clip's first frame stands
+        // still. Decorative here: the clear window above carries its label.
+        .background {
+            ZStack(alignment: .bottom) {
+                ClipBackdrop(clip: .complete, verticalAnchor: 0.2)
+                    .ignoresSafeArea()
+                LinearGradient(colors: [.clear, AlphonsoColor.surface.opacity(0.92)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: UIScreen.main.bounds.height * 0.55)
+                    .ignoresSafeArea(edges: .bottom)
+            }
+            .background(AlphonsoColor.ink)
+            .accessibilityHidden(true)
+        }
+        // Pinned above the tab bar: the way on never scrolls out of view, even on an iPhone SE.
+        .safeAreaInset(edge: .bottom) {
+            Group {
+                if let onContinueToNextLesson {
+                    Button("Continue to next lesson", action: onContinueToNextLesson)
+                } else {
+                    Button("Back to Learn") { dismiss() }
+                }
+            }
+            .buttonStyle(.alphonsoEmber)
+            .padding(.horizontal)
+            .padding(.vertical, AlphonsoSpacing.sm)
+            .background(.ultraThinMaterial)
+        }
         .sensoryFeedback(.success, trigger: celebrated)
         .onAppear {
             showPromotionOverlay = isLeaguePromotion

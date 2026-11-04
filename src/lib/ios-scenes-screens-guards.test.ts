@@ -34,8 +34,8 @@ describe("Lesson complete: celebration clip, count-up, haptic", () => {
     expect(finish).not.toContain("Figure-alphonso-proud");
     // The 180 pt sticker tile is gone from the finish screen.
     expect(finish).not.toContain("MascotTile(moment: .lessonComplete");
-    // The spring entrance stays on the stage.
-    expect(finish).toMatch(/ClipBackdrop\(clip: \.complete[\s\S]{0,600}\.springEntrance\(\)/);
+    // The clip fills the screen behind the card now; the spring entrance moved to the card over it.
+    expect(finish).toMatch(/\.alphonsoGlass\(\)\s*\n\s*\.springEntrance\(\)/);
   });
 
   it("text sits on a glass card, not straight on the stage", () => {
@@ -47,8 +47,9 @@ describe("Lesson complete: celebration clip, count-up, haptic", () => {
   });
 
   it("the three buttons and the practice section behave and read exactly as before", () => {
+    // Continue (or Back to Learn at the end of a band) is pinned in the bottom inset, in the ember style.
     expect(finish).toMatch(
-      /Button\("Continue to next lesson", action: onContinueToNextLesson\)\s*\n\s*\.buttonStyle\(\.alphonsoEmber\)/,
+      /Button\("Continue to next lesson", action: onContinueToNextLesson\)[\s\S]{0,160}\.buttonStyle\(\.alphonsoEmber\)/,
     );
     expect(finish).toMatch(
       /Button\("Practise with Hector", action: onPractiseWithHector\)\s*\n\s*\.buttonStyle\(\.alphonsoSecondary\)/,

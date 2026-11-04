@@ -118,11 +118,24 @@ describe("Lesson complete plays the celebration clip", () => {
     "private struct GeneratedPracticeSection",
   );
 
-  it("the stage is the complete clip, framed on Alphonso like the web (10:13 window at 50% 76%)", () => {
-    expect(finish).toContain("ClipBackdrop(clip: .complete");
-    expect(finish).toContain("verticalAnchor: 0.76");
-    expect(finish).toContain(".aspectRatio(10.0 / 13.0, contentMode: .fit)");
-    expect(finish).toContain(".springEntrance()");
+  it("the complete clip fills the whole screen behind the card, Alphonso in the top half", () => {
+    const stage = from(finish, "ClipBackdrop(clip: .complete").slice(0, 400);
+    expect(stage).toContain("verticalAnchor: 0.2");
+    expect(stage).toContain(".ignoresSafeArea()");
+    expect(finish).not.toContain(".aspectRatio(10.0 / 13.0");
+    expect(finish).not.toContain("stageMaxHeight");
+  });
+
+  it("the primary button is pinned above the tab bar, so it never scrolls out of view", () => {
+    const inset = from(finish, ".safeAreaInset(edge: .bottom)").slice(0, 600);
+    expect(inset).toContain('"Continue to next lesson"');
+    expect(inset).toContain('"Back to Learn"');
+  });
+
+  it("the headline is ink, not moss, so it reads over the dark glass", () => {
+    const headline = from(finish, "Text(LessonFinishCopy.headline").slice(0, 250);
+    expect(headline).toContain("AlphonsoColor.ink");
+    expect(headline).not.toContain("AlphonsoColor.moss");
   });
 
   it("the still stage, the cut-out Alphonso and the code confetti are gone", () => {
@@ -212,13 +225,5 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
     expect(sceneFile).toMatch(/pinOpacity: Double \{[^}]*held[^}]*60/s);
     // The scroll distance is tracked under Reduce Motion too (the fade is not motion; only parallax is gated).
     expect(between(body, ".onChange(of: rawOffset)", "}")).not.toContain("reduceMotion");
-  });
-
-  it("on a short screen the lesson-complete stage narrows instead of pushing the rewards below the fold", () => {
-    const file = read("LessonPlayerView.swift");
-    expect(from(file, "ClipBackdrop(clip: .complete").slice(0, 300)).toContain(
-      ".frame(maxWidth: Self.stageMaxHeight * 10 / 13)",
-    );
-    expect(file).toMatch(/static var stageMaxHeight: CGFloat \{[^}]*\* 0\.52 \}/);
   });
 });

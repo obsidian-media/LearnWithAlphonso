@@ -385,7 +385,8 @@ function LessonPage() {
 
   return (
     <LessonFrame>
-      <div className="px-5 pt-5">
+      {/* Above the lesson-complete clip, which is fixed behind the column. */}
+      <div className="relative z-10 px-5 pt-5">
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
           <button
             onClick={() => navigate({ to: "/learn" })}
@@ -843,143 +844,155 @@ export function FinishScreen({
   const reduceMotion = usePrefersReducedMotion();
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   return (
-    <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
+    <div className="relative flex flex-1 flex-col items-center text-center">
       {/* The whole celebration is one clip: the stage, confetti cannons, streamers, sweeping spotlights and
-          Alphonso cheering. Under Reduce Motion its first frame stands still. The window is framed on Alphonso
-          (he fills 23-91% of the clip's height). */}
+          Alphonso cheering. It fills the screen behind the rewards (fixed to the app column, like the Hector page),
+          framed so Alphonso stands in the top half; the rewards sit on glass over its lower part. Under Reduce
+          Motion its first frame stands still. */}
       <div
         data-stage="complete"
         role="img"
         aria-label="Alphonso celebrating on the stage"
-        className="relative -mx-6 -mt-6 mb-5 aspect-[10/13] w-[min(calc(100%+3rem),calc(52svh*10/13))] self-center overflow-hidden rounded-b-[2.5rem] bg-ink shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
+        className="pointer-events-none fixed inset-y-0 left-1/2 z-0 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-ink"
       >
         <LoopingClip
           clip="complete"
-          className="absolute inset-0 h-full w-full object-cover object-[50%_76%]"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_20%]"
         />
+        <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-b from-transparent to-surface/90" />
       </div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
-        Lesson complete
-      </p>
-      <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
-      <p className="mt-1 text-sm font-semibold text-moss">Nice work, lesson complete!</p>
-      <div className="mt-4 flex justify-center gap-2.5">
-        {chips.map((c, i) => (
-          <motion.div
-            key={c.kind}
-            aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
-            role="group"
-            initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.6 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 320, damping: 16, delay: 0.45 + i * 0.15 }}
-            className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
-          >
-            <span aria-hidden="true" className="text-xs font-semibold">
-              {CHIP_TITLE[c.kind]}
-            </span>
-            <Icon3D emoji={c.emoji} size={28} />
-            <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
-              <CountUp value={c.value} animate={!reduceMotion} />
-            </span>
-          </motion.div>
-        ))}
-      </div>
-      <p className="tnum mt-2 text-xs text-ink-soft">
-        {correct}/{total} correct
-      </p>
-      {heartsBonus && (
-        <p className="mt-2 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
-          <HeartIcon className="size-3.5" />
-          {heartsBonus === "streak"
-            ? "Streak milestone: hearts fully refilled"
-            : "Perfect lesson: +1 heart"}
+      {/* Clear space over the clip, so Alphonso is seen before the card. */}
+      <div aria-hidden="true" className="h-[46svh] shrink-0" />
+      <div className="relative z-10 mx-4 flex w-[calc(100%-2rem)] flex-col items-center rounded-[2rem] border border-white/10 bg-surface/75 px-5 pb-6 pt-5 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
+          Lesson complete
         </p>
-      )}
-
-      {missedQs.length > 0 && (
-        <div
-          className={
-            isStudioInk
-              ? "mt-6 w-full divide-y divide-hairline text-left"
-              : "mt-6 w-full space-y-2 text-left"
-          }
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-            Review · {missedQs.length} to practise again
-          </p>
-          {missedQs.map(({ q, yours }, i) => (
-            <div
-              key={`${q.id}-${i}`}
-              className={
-                isStudioInk ? "py-3" : "rounded-2xl border border-hairline bg-parchment px-4 py-3"
-              }
+        <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
+        <p className="mt-1 text-sm font-semibold text-ink">Nice work, lesson complete!</p>
+        <div className="mt-4 flex justify-center gap-2.5">
+          {chips.map((c, i) => (
+            <motion.div
+              key={c.kind}
+              aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
+              role="group"
+              initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.6 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 320, damping: 16, delay: 0.45 + i * 0.15 }}
+              className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
             >
-              <p className="text-sm font-medium text-ink">{q.prompt}</p>
-              <p className="mt-1 text-xs text-ink-soft/80">
-                You said <span className="line-through">{yours}</span> ·{" "}
-                <span className="font-semibold text-moss">
-                  {q.type === "mc"
-                    ? q.choices[q.answer]
-                    : q.type === "translate"
-                      ? // One of several accepted wordings, so it is shown as
-                        // an example rather than as "the" answer.
-                        q.acceptableAnswers[0]
-                      : q.answer}
-                </span>
-              </p>
-            </div>
+              <span aria-hidden="true" className="text-xs font-semibold">
+                {CHIP_TITLE[c.kind]}
+              </span>
+              <Icon3D emoji={c.emoji} size={28} />
+              <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
+                <CountUp value={c.value} animate={!reduceMotion} />
+              </span>
+            </motion.div>
           ))}
         </div>
-      )}
+        <p className="tnum mt-2 text-xs text-ink-soft">
+          {correct}/{total} correct
+        </p>
+        {heartsBonus && (
+          <p className="mt-2 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
+            <HeartIcon className="size-3.5" />
+            {heartsBonus === "streak"
+              ? "Streak milestone: hearts fully refilled"
+              : "Perfect lesson: +1 heart"}
+          </p>
+        )}
 
-      <AnimatePresence>
-        {unlocked.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+        {missedQs.length > 0 && (
+          <div
             className={
-              isStudioInk ? "mt-6 w-full divide-y divide-hairline" : "mt-6 w-full space-y-2"
+              isStudioInk
+                ? "mt-6 w-full divide-y divide-hairline text-left"
+                : "mt-6 w-full space-y-2 text-left"
             }
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              Achievements unlocked
+              Review · {missedQs.length} to practise again
             </p>
-            {unlocked.map((id) => {
-              const a = ACHIEVEMENTS_BY_ID[id];
-              if (!a) return null;
-              return (
-                <div
-                  key={id}
-                  className={
-                    isStudioInk
-                      ? "flex items-center gap-3 py-2 text-left"
-                      : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
-                  }
-                >
-                  <span className="grid size-8 place-items-center rounded-full bg-ember text-ink-on-ember text-xs">
-                    ★
+            {missedQs.map(({ q, yours }, i) => (
+              <div
+                key={`${q.id}-${i}`}
+                className={
+                  isStudioInk ? "py-3" : "rounded-2xl border border-hairline bg-parchment px-4 py-3"
+                }
+              >
+                <p className="text-sm font-medium text-ink">{q.prompt}</p>
+                <p className="mt-1 text-xs text-ink-soft/80">
+                  You said <span className="line-through">{yours}</span> ·{" "}
+                  <span className="font-semibold text-moss">
+                    {q.type === "mc"
+                      ? q.choices[q.answer]
+                      : q.type === "translate"
+                        ? // One of several accepted wordings, so it is shown as
+                          // an example rather than as "the" answer.
+                          q.acceptableAnswers[0]
+                        : q.answer}
                   </span>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{a.title}</p>
-                    <p className="text-[11px] text-ink-soft">{a.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </motion.div>
+                </p>
+              </div>
+            ))}
+          </div>
         )}
-      </AnimatePresence>
 
-      <GeneratedPracticeSection lessonId={lessonId} course={course} />
+        <AnimatePresence>
+          {unlocked.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={
+                isStudioInk ? "mt-6 w-full divide-y divide-hairline" : "mt-6 w-full space-y-2"
+              }
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+                Achievements unlocked
+              </p>
+              {unlocked.map((id) => {
+                const a = ACHIEVEMENTS_BY_ID[id];
+                if (!a) return null;
+                return (
+                  <div
+                    key={id}
+                    className={
+                      isStudioInk
+                        ? "flex items-center gap-3 py-2 text-left"
+                        : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
+                    }
+                  >
+                    <span className="grid size-8 place-items-center rounded-full bg-ember text-ink-on-ember text-xs">
+                      ★
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{a.title}</p>
+                      <p className="text-[11px] text-ink-soft">{a.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      <Link
-        to="/learn"
-        className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-ember px-6 py-3 font-display text-base font-bold tracking-wide text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
+        <GeneratedPracticeSection lessonId={lessonId} course={course} />
+        <div className="mt-3 w-full">
+          <PractiseWithHector />
+        </div>
+      </div>
+
+      {/* Pinned to the bottom of the screen: the way on is never scrolled out of view. */}
+      <div
+        data-finish-footer
+        className="sticky bottom-0 z-10 mt-4 w-full bg-gradient-to-t from-surface via-surface/90 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6"
       >
-        Back to path
-      </Link>
-      <div className="mt-3 w-full">
-        <PractiseWithHector />
+        <Link
+          to="/learn"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-ember px-6 py-3 font-display text-base font-bold tracking-wide text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
+        >
+          Back to path
+        </Link>
       </div>
     </div>
   );

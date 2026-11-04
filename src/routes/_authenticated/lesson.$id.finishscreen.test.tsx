@@ -247,11 +247,26 @@ describe("FinishScreen celebration", () => {
     expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
 
-  it("on a short screen the stage narrows instead of pushing the rewards below the fold", () => {
+  it("the clip fills the whole screen behind the rewards, and Back to path is always on screen", () => {
     setReducedMotion(false);
     renderFinish();
     const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
-    // Width follows the smaller of the column and 52% of the screen height (at the stage's 10:13 shape).
-    expect(stage.className).toContain("w-[min(calc(100%+3rem),calc(52svh*10/13))]");
+    // Full-bleed behind the column (like the Hector page), not a boxed 10:13 window.
+    expect(stage.className).toContain("fixed");
+    expect(stage.className).toContain("inset-y-0");
+    expect(stage.className).not.toContain("aspect-[10/13]");
+    // The button sits in a footer pinned to the bottom of the screen, so it never scrolls out of view.
+    const footer = screen
+      .getByRole("link", { name: "Back to path" })
+      .closest("[data-finish-footer]")!;
+    expect(footer.className).toContain("sticky");
+    expect(footer.className).toContain("bottom-0");
+  });
+
+  it("the headline reads in ink, not moss, so it stays legible over the clip", () => {
+    setReducedMotion(false);
+    renderFinish();
+    expect(screen.getByText("Nice work, lesson complete!").className).toContain("text-ink");
+    expect(screen.getByText("Nice work, lesson complete!").className).not.toContain("text-moss");
   });
 });
