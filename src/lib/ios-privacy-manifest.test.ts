@@ -112,6 +112,8 @@ const EXPECTED_COLLECTED: Record<string, RegExp> = {
   // The servers log how long each stage of an AI request took and short failure details, with no account id.
   NSPrivacyCollectedDataTypePerformanceData: /api\/chat/,
   NSPrivacyCollectedDataTypeOtherDiagnosticData: /api\/chat/,
+  // Sentry crash reports from release builds (CrashReporting.swift): scrubbed, not linked to the account.
+  NSPrivacyCollectedDataTypeCrashData: /SentrySDK\.start/,
 };
 
 /** Categories the app must not touch while they are undeclared. */
@@ -196,6 +198,7 @@ describe("app privacy manifest: collected data types (match the App Store Connec
   const NOT_LINKED = [
     "NSPrivacyCollectedDataTypePerformanceData",
     "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+    "NSPrivacyCollectedDataTypeCrashData",
   ];
 
   /**

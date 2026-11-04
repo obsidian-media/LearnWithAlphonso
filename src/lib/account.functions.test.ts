@@ -457,6 +457,10 @@ describe("GDPR export table coverage", () => {
     // the App Review demo account out of stranger matching. It has no client policy and holds nothing the learner
     // typed or did; it goes with the account through ON DELETE CASCADE.
     "buddy_pool_exclusions",
+    // lesson_completion_hits (20261104100100) is a server-only anti-farming counter: (user_id, timestamp) rows that
+    // duplicate lesson_completions.completed_at, which IS exported. No client grant; pruned after 2 days and removed
+    // with the account through ON DELETE CASCADE.
+    "lesson_completion_hits",
     // blocked_users (supabase/migrations/20260928020000_block_and_report.sql):
     // the `blocker` half is genuinely this account's own data and RLS
     // does let the caller read it back, but the generic USER_ID_EXPORT_TABLES

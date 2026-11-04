@@ -685,6 +685,23 @@ describe("Lesson page", () => {
     expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
   });
 
+  it("asks for calm, not an error, when the server refuses a completion over the hourly ceiling", async () => {
+    completeLessonRemote.mockRejectedValue(new Error("rate-limited"));
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
+      await user.click(screen.getByRole("button", { name: label }));
+    }
+
+    expect(await screen.findByText("Slow down a little and try again.")).toBeInTheDocument();
+    expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+  });
+
   it("navigates to /learn when the close button is clicked", async () => {
     const user = userEvent.setup();
     renderPage();

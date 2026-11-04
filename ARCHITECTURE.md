@@ -1996,7 +1996,9 @@ Added 2026-10-12 (#283-#290, #295-#298). `docs/operations.md` is the runbook.
   the weakness-detection, account-deletion and Apple paths (#287, #298), so
   server diagnostics are not linked to an account; the iOS privacy manifest
   declares them as Performance Data and Other Diagnostic Data, not linked
-  (#297). The web fonts are bundled from `@fontsource` and served from the
+  (#297). Crash and error reports go to Sentry from release builds only (iOS
+  adds Crash Data to the manifest, same not-linked answers); see
+  `docs/sentry-crash-reporting.md`. The web fonts are bundled from `@fontsource` and served from the
   site, so no visitor request goes to a font CDN (#288, guarded by
   `e2e/fonts.spec.ts`).
 - **Data export** reads every page, includes the account email on the native

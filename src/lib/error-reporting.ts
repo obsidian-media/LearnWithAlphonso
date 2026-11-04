@@ -1,3 +1,5 @@
+import { captureClientError } from "./sentry-client";
+
 type ErrorReportOptions = {
   mechanism?: "manual" | "onerror" | "unhandledrejection" | "react_error_boundary";
   handled?: boolean;
@@ -5,9 +7,9 @@ type ErrorReportOptions = {
 };
 
 /**
- * Client-side error sink. Currently logs to the console; swap the body for
- * Sentry (or whatever's chosen) when one is wired up — this is the single
- * call site (see src/routes/__root.tsx) that would need to change.
+ * Client-side error sink: logs to the console and forwards to Sentry when
+ * Sentry is running (production browser builds only; see sentry-client.ts).
+ * Events are scrubbed of emails and tokens before they leave the browser.
  */
 export function reportError(
   error: unknown,
@@ -15,10 +17,9 @@ export function reportError(
   options: ErrorReportOptions = {},
 ) {
   if (typeof window === "undefined") return;
-  console.error("[error-report]", error, {
-    route: window.location.pathname,
-    mechanism: options.mechanism ?? "manual",
-    severity: options.severity ?? "error",
-    ...context,
-  });
+  const route = window.location.pathname;
+  const mechanism = options.mechanism ?? "manual";
+  const severity = options.severity ?? "error";
+  console.error("[error-report]", error, { route, mechanism, severity, ...context });
+  captureClientError(error, { route, ...context }, { mechanism }, severity);
 }

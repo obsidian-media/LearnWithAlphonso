@@ -3,6 +3,7 @@ import { createRouter } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { routeTree } from "./routeTree.gen";
+import { initSentryClient } from "./lib/sentry-client";
 import { readCspNonce } from "./lib/security-policy";
 
 const getRouterNonce = createIsomorphicFn()
@@ -20,6 +21,7 @@ const getRouterNonce = createIsomorphicFn()
   );
 
 export const getRouter = () => {
+  initSentryClient(); // no-op on the server and outside production
   const queryClient = new QueryClient();
   const nonce = getRouterNonce();
 

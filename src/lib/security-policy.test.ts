@@ -45,7 +45,7 @@ describe("security policy", () => {
       policy.split("; ").find((directive) => directive.startsWith("script-src")),
     ).not.toContain("unsafe-inline");
     expect(policy).toContain(
-      "connect-src 'self' https://project.supabase.co wss://project.supabase.co",
+      "connect-src 'self' https://project.supabase.co wss://project.supabase.co https://o4511662373273600.ingest.us.sentry.io",
     );
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("frame-ancestors 'none'");
