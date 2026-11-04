@@ -22,9 +22,17 @@ vi.mock("@tanstack/react-start", () => ({
 const adminRpc = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: adminRpc } }));
 
-const { completePodcastQuiz } = (await import("./podcast-quiz.functions")) as unknown as {
-  completePodcastQuiz: (o: { data: unknown; context: unknown }) => Promise<Record<string, unknown>>;
-};
+const { completePodcastQuiz, fetchPodcastQuiz } =
+  (await import("./podcast-quiz.functions")) as unknown as {
+    completePodcastQuiz: (o: {
+      data: unknown;
+      context: unknown;
+    }) => Promise<Record<string, unknown>>;
+    fetchPodcastQuiz: (o: {
+      data: unknown;
+      context: unknown;
+    }) => Promise<Record<string, unknown> | null>;
+  };
 const EP = "11111111-1111-4111-8111-111111111111";
 const answers = [{ questionId: "q1", choiceIndex: 1 }];
 const call = (data: unknown = { episodeId: EP, answers }) =>
@@ -84,5 +92,77 @@ describe("completePodcastQuiz", () => {
       await expect(call(bad)).rejects.toThrow();
     }
     expect(adminRpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("fetchPodcastQuiz", () => {
+  type Result = { data: unknown; error: { message: string } | null };
+  function client(tables: Record<string, Result>) {
+    const calls: { table: string; eqs: [string, string][] }[] = [];
+    return {
+      calls,
+      supabase: {
+        from(table: string) {
+          const call = { table, eqs: [] as [string, string][] };
+          calls.push(call);
+          const q: Record<string, unknown> = {
+            select: () => q,
+            eq: (c: string, v: string) => (call.eqs.push([c, v]), q),
+            order: () => Promise.resolve(tables[table]),
+            maybeSingle: () => Promise.resolve(tables[table]),
+          };
+          return q;
+        },
+      },
+    };
+  }
+  const rows = [
+    { id: "q1", prompt: "One?", choices: ["a", "b"], answer_index: 1 },
+    { id: "q2", prompt: "Two?", choices: ["a", "b"], answer_index: 0 },
+  ];
+  const get = (c: ReturnType<typeof client>) =>
+    fetchPodcastQuiz({
+      data: { episodeId: EP },
+      context: { supabase: c.supabase, userId: "user-1" },
+    });
+
+  it("returns the questions in order, with the learner's best", async () => {
+    const c = client({
+      podcast_quiz_questions: { data: rows, error: null },
+      podcast_quiz_awards: { data: { best_correct: 5, best_xp: 50 }, error: null },
+    });
+    expect(await get(c)).toEqual({
+      questions: [
+        { id: "q1", prompt: "One?", choices: ["a", "b"], answerIndex: 1 },
+        { id: "q2", prompt: "Two?", choices: ["a", "b"], answerIndex: 0 },
+      ],
+      best: { correct: 5, xp: 50 },
+    });
+    const awards = c.calls.find((x) => x.table === "podcast_quiz_awards")!;
+    expect(awards.eqs).toContainEqual(["user_id", "user-1"]);
+  });
+
+  it("offers nothing for an episode with no quiz (or one the learner cannot see)", async () => {
+    const c = client({
+      podcast_quiz_questions: { data: [], error: null },
+      podcast_quiz_awards: { data: null, error: null },
+    });
+    expect(await get(c)).toBeNull();
+  });
+
+  it("a failed best-score read still offers the quiz", async () => {
+    const c = client({
+      podcast_quiz_questions: { data: rows, error: null },
+      podcast_quiz_awards: { data: null, error: { message: "x" } },
+    });
+    expect((await get(c))?.best).toBeNull();
+  });
+
+  it("a failed question read is an error, not an empty quiz", async () => {
+    const c = client({
+      podcast_quiz_questions: { data: null, error: { message: "boom" } },
+      podcast_quiz_awards: { data: null, error: null },
+    });
+    await expect(get(c)).rejects.toThrow("boom");
   });
 });

@@ -63,3 +63,72 @@ export const completePodcastQuiz = createServerFn({ method: "POST" })
     if (result.status === "rate-limited") throw new Error("rate-limited");
     throw new Error("Could not save the quiz; retry");
   });
+
+export type PodcastQuizQuestion = {
+  id: string;
+  prompt: string;
+  choices: string[];
+  answerIndex: number;
+};
+
+export type PodcastQuizOffer = {
+  questions: PodcastQuizQuestion[];
+  /** The learner's banked best for this episode, if any. */
+  best: { correct: number; xp: number } | null;
+};
+
+type LooseQuery = {
+  select: (cols: string) => LooseQuery;
+  eq: (col: string, val: string) => LooseQuery;
+  order: (col: string) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+  maybeSingle: () => Promise<{
+    data: Record<string, unknown> | null;
+    error: { message: string } | null;
+  }>;
+};
+
+/**
+ * An episode's quiz, as the signed-in learner may see it. Read with the learner's own client, so the database's rules
+ * decide: an unpublished episode returns nothing, exactly like its audio and transcript. An episode with no authored
+ * quiz returns null and the UI offers nothing.
+ */
+export const fetchPodcastQuiz = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<PodcastQuizOffer | null> => {
+    // Not in the generated types until they are regenerated against a database that has the migration.
+    const from = (context.supabase as unknown as { from: (t: string) => LooseQuery }).from.bind(
+      context.supabase,
+    );
+    const qs = await from("podcast_quiz_questions")
+      .select("id,prompt,choices,answer_index")
+      .eq("episode_id", data.episodeId)
+      .order("sort_order");
+    if (qs.error) throw new Error(qs.error.message);
+    const rows = (qs.data ?? []) as {
+      id: string;
+      prompt: string;
+      choices: string[];
+      answer_index: number;
+    }[];
+    if (rows.length === 0) return null;
+    const award = await from("podcast_quiz_awards")
+      .select("best_correct,best_xp")
+      .eq("user_id", context.userId)
+      .eq("episode_id", data.episodeId)
+      .maybeSingle();
+    // A failed read of the best score must not hide the quiz: it is only a label.
+    const best =
+      !award.error && award.data
+        ? { correct: Number(award.data.best_correct), xp: Number(award.data.best_xp) }
+        : null;
+    return {
+      questions: rows.map((r) => ({
+        id: r.id,
+        prompt: r.prompt,
+        choices: r.choices,
+        answerIndex: r.answer_index,
+      })),
+      best,
+    };
+  });
