@@ -219,8 +219,12 @@ export function MobileFrame({ children }: { children: ReactNode }) {
             here, in the shell, so walking from a folder into a subfolder
             re-renders the page without unmounting the player and killing
             playback. */}
-        <PodcastPlayer />
-        <BottomTabs />
+        {/* One sticky dock for both bars. Two siblings each pinned to the bottom edge pin to the SAME place on a
+            scrolled page, and the later one (the tabs) covers the player and its quiz offer. */}
+        <div data-testid="bottom-dock" className="sticky bottom-0 z-30">
+          <PodcastPlayer />
+          <BottomTabs />
+        </div>
       </div>
     </div>
   );

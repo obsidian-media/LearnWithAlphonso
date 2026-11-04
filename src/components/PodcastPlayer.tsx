@@ -4,6 +4,8 @@ import { transcriptSaveCourse } from "../lib/podcast-tree";
 import { AI_NARRATED_LABEL } from "../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../lib/podcast-player";
 import type { SavedWordCourse } from "../lib/saved-word";
+import type { PodcastQuizOffer } from "../lib/podcast-quiz.functions";
+import { PodcastQuiz } from "./PodcastQuiz";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
 /**
@@ -24,6 +26,7 @@ export function PodcastPlayer() {
   const seek = usePodcastPlayer((state) => state.seek);
   const mediaDuration = usePodcastPlayer((state) => state.mediaDuration);
   const close = usePodcastPlayer((state) => state.close);
+  const finished = usePodcastPlayer((state) => state.finished);
 
   const [showTranscript, setShowTranscript] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
@@ -31,6 +34,9 @@ export function PodcastPlayer() {
   // Null until the folders are read; the active course stands in, never a fixed one.
   const [episodeCourse, setEpisodeCourse] = useState<SavedWordCourse | null>(null);
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+
+  const [offer, setOffer] = useState<PodcastQuizOffer | null>(null);
+  const [quizOpen, setQuizOpen] = useState(false);
 
   const episodeId = episode?.id ?? null;
   const folderId = episode?.folderId ?? null;
@@ -76,6 +82,30 @@ export function PodcastPlayer() {
     };
   }, [showTranscript, episodeId, folderId, ownCourse, activeCourse]);
 
+  // The quiz is offered when an episode has played to its end, and only if it has one (and the learner can see it).
+  // Plain state and a dynamic import for the same reason as the transcript above.
+  useEffect(() => {
+    setQuizOpen(false);
+    if (!finished || !episodeId) {
+      setOffer(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { fetchPodcastQuiz } = await import("../lib/podcast-quiz.functions");
+        const found = await fetchPodcastQuiz({ data: { episodeId } });
+        if (!cancelled) setOffer(found);
+      } catch {
+        // No offer is the quiet failure: the episode itself is unaffected.
+        if (!cancelled) setOffer(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [finished, episodeId]);
+
   if (!episode) return null;
 
   return (
@@ -89,7 +119,49 @@ export function PodcastPlayer() {
           onClose={() => setShowTranscript(false)}
         />
       ) : null}
+      {quizOpen && offer ? (
+        <PodcastQuiz
+          title={episode.title}
+          episodeId={episode.id}
+          course={ownCourse ?? activeCourse}
+          questions={offer.questions}
+          best={offer.best}
+          onClose={() => setQuizOpen(false)}
+          // The offer's "best" label follows a better run without another read.
+          onSaved={(result) =>
+            setOffer((current) =>
+              current
+                ? { ...current, best: { correct: result.bestCorrect, xp: result.bestXp } }
+                : current,
+            )
+          }
+        />
+      ) : null}
       <div className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
+        {/* Inside the player bar, not a sibling: sticky siblings pinned to the same edge cover one another. */}
+        {finished && offer ? (
+          <div
+            data-testid="quiz-offer"
+            className="mx-auto flex max-w-[430px] items-center gap-3 border-b border-hairline px-5 py-3"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink">Test what you heard</p>
+              <p className="text-xs text-ink-soft/70">
+                {offer.questions.length} questions · 10 XP for each correct answer
+                {offer.best
+                  ? ` · your best: ${offer.best.correct} of ${offer.questions.length}`
+                  : ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setQuizOpen(true)}
+              className="rounded-full bg-moss px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              Take the quiz
+            </button>
+          </div>
+        ) : null}
         <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-ink">{episode.title}</p>

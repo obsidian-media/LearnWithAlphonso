@@ -30,6 +30,7 @@ export function PodcastAudio() {
   const retryToken = usePodcastPlayer((state) => state.retryToken);
   const seekRequest = usePodcastPlayer((state) => state.seekRequest);
   const setPlaying = usePodcastPlayer((state) => state.setPlaying);
+  const markFinished = usePodcastPlayer((state) => state.markFinished);
   const setElapsed = usePodcastPlayer((state) => state.setElapsed);
   const setFailed = usePodcastPlayer((state) => state.setFailed);
   const setMediaDuration = usePodcastPlayer((state) => state.setMediaDuration);
@@ -162,6 +163,7 @@ export function PodcastAudio() {
   const onEnded = () => {
     setPlaying(false);
     setElapsed(0);
+    markFinished();
     persist(episode.id, 0, true);
     flushPlayEvent(episode.id);
   };

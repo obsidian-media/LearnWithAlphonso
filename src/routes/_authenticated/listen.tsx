@@ -14,6 +14,8 @@ import {
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { Icon3D } from "../../components/Icon3D";
+import { PodcastQuizLauncher } from "../../components/PodcastQuizLauncher";
+import { fetchQuizEpisodeIds } from "../../lib/podcast-quiz.functions";
 import { MascotImage } from "../../components/MascotImage";
 import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
@@ -114,10 +116,13 @@ export function ListenFolderView({
   folders,
   episodes,
   segments,
+  quizEpisodeIds,
 }: {
   folders: PodcastFolder[];
   episodes: PodcastEpisode[];
   segments: string[];
+  /** Episodes that have a quiz; each gets a "Take the quiz" button under its row. */
+  quizEpisodeIds?: ReadonlySet<string>;
 }) {
   const play = usePodcastPlayer((state) => state.play);
 
@@ -231,6 +236,11 @@ export function ListenFolderView({
                     {formatDuration(episode.durationSeconds)}
                   </span>
                 </button>
+                {quizEpisodeIds?.has(episode.id) ? (
+                  <div className="px-3 pb-1 pt-2">
+                    <PodcastQuizLauncher episode={episode} />
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -257,6 +267,16 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
     queryFn: () => listEpisodes({ data: { folderId: current!.id } }),
     enabled: Boolean(current?.id),
   });
+
+  // Which of these episodes have a quiz. A failed read just means no buttons.
+  const episodeIds = (episodes ?? []).map((episode) => episode.id);
+  const { data: quizIds } = useQuery({
+    queryKey: ["podcast-quiz-ids", episodeIds.join(",")],
+    queryFn: () => fetchQuizEpisodeIds({ data: { episodeIds } }),
+    enabled: episodeIds.length > 0,
+    retry: false,
+  });
+  const quizEpisodeIds = new Set(quizIds ?? []);
 
   const [query, setQuery] = useState("");
   const searching = normalizeQuery(query) !== null;
@@ -302,7 +322,12 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
       {searching ? (
         <PodcastSearchResults query={query} results={searchResults ?? []} isLoading={isSearching} />
       ) : (
-        <ListenFolderView folders={folders} episodes={episodes ?? []} segments={segments} />
+        <ListenFolderView
+          folders={folders}
+          episodes={episodes ?? []}
+          segments={segments}
+          quizEpisodeIds={quizEpisodeIds}
+        />
       )}
     </div>
   );

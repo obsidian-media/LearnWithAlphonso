@@ -88,6 +88,36 @@ describe("MobileFrame / LessonFrame", () => {
     expect(screen.getByRole("navigation")).toBeInTheDocument();
   });
 
+  it("pins the player bar and the tabs together in ONE sticky dock, so neither can cover the other", async () => {
+    const { usePodcastPlayer } = await import("../lib/podcast-player");
+    usePodcastPlayer.getState().play({
+      id: "11111111-1111-4111-8111-111111111111",
+      folderId: "22222222-2222-4222-8222-222222222222",
+      slug: "s",
+      title: "An episode",
+      description: null,
+      audioUrl: "https://example.test/a.mp3",
+      durationSeconds: 60,
+      positionSeconds: 0,
+      aiNarrated: false,
+    });
+    render(
+      <MobileFrame>
+        <p>Page content</p>
+      </MobileFrame>,
+    );
+    const nav = screen.getByRole("navigation");
+    const dock = screen.getByTestId("bottom-dock");
+    expect(dock.className).toMatch(/\bsticky\b/);
+    expect(dock.className).toMatch(/\bbottom-0\b/);
+    expect(dock.contains(nav)).toBe(true);
+    expect(dock.contains(screen.getByText("An episode"))).toBe(true);
+    // Nothing else in the frame is pinned to the bottom edge to fight it.
+    const bottomPinned = document.querySelectorAll(".sticky.bottom-0");
+    for (const el of bottomPinned) expect(el === dock || dock.contains(el)).toBe(true);
+    usePodcastPlayer.getState().close();
+  });
+
   it("LessonFrame renders only its children, no chrome", () => {
     render(
       <LessonFrame>

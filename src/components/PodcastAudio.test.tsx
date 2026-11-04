@@ -128,6 +128,18 @@ describe("PodcastAudio", () => {
     expect(usePodcastPlayer.getState().isPlaying).toBe(false);
   });
 
+  it("marks the episode finished when it ends, and not when it is merely paused", () => {
+    usePodcastPlayer.getState().play(episode);
+    render(<PodcastAudio />);
+    const audio = screen.getByTestId("podcast-audio");
+
+    fireEvent.pause(audio);
+    expect(usePodcastPlayer.getState().finished).toBe(false);
+
+    fireEvent.ended(audio);
+    expect(usePodcastPlayer.getState().finished).toBe(true);
+  });
+
   it("follows the media element when playback is paused outside the app", () => {
     // An incoming call, another tab taking audio focus, or headphones
     // being unplugged all pause the element without going through our

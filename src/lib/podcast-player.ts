@@ -19,6 +19,9 @@ type PodcastPlayerState = {
   isPlaying: boolean;
   elapsedSeconds: number;
   failed: boolean;
+  /** True once the episode has played to its end; the cue to offer its quiz. Cleared by anything that starts playback again. */
+  finished: boolean;
+  markFinished: () => void;
   /** Bumped by retry() so the audio element re-runs its load/play effect. */
   retryToken: number;
   /**
@@ -46,6 +49,8 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   isPlaying: false,
   elapsedSeconds: 0,
   failed: false,
+  finished: false,
+  markFinished: () => set({ finished: true }),
   retryToken: 0,
   seekRequest: null,
   mediaDuration: null,
@@ -57,15 +62,21 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
       isPlaying: true,
       elapsedSeconds: episode.positionSeconds ?? 0,
       failed: false,
+      finished: false,
       seekRequest: null,
       mediaDuration: null,
     }),
-  toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  toggle: () => set((state) => ({ isPlaying: !state.isPlaying, finished: false })),
   setPlaying: (isPlaying) => set({ isPlaying }),
   setElapsed: (seconds) => set({ elapsedSeconds: seconds }),
   setFailed: (failed) => set({ failed }),
   retry: () =>
-    set((state) => ({ failed: false, isPlaying: true, retryToken: state.retryToken + 1 })),
+    set((state) => ({
+      failed: false,
+      finished: false,
+      isPlaying: true,
+      retryToken: state.retryToken + 1,
+    })),
   seek: (seconds) =>
     set((state) => {
       if (!state.episode) return {};
@@ -83,6 +94,7 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
       isPlaying: false,
       elapsedSeconds: 0,
       failed: false,
+      finished: false,
       seekRequest: null,
       mediaDuration: null,
     }),
