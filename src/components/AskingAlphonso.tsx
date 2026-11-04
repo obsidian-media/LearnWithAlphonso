@@ -9,8 +9,15 @@ import { MascotImage } from "./MascotImage";
 export function AskingAlphonso({ prompt }: { prompt: string }) {
   return (
     <div className="flex items-end gap-2.5">
-      <div data-ask-mascot="" className="hidden shrink-0 [@media(min-height:600px)]:block">
+      {/* Three steps by screen height: none under 600 px, a small avatar from 600, a real figure from 800. */}
+      <div
+        data-ask-mascot=""
+        className="hidden shrink-0 [@media(min-height:600px)_and_(max-height:799px)]:block"
+      >
         <MascotImage moment="questionAsk" size={56} tone="sun" radius={18} alt="" />
+      </div>
+      <div data-ask-mascot-large="" className="hidden shrink-0 [@media(min-height:800px)]:block">
+        <MascotImage moment="questionAsk" size={136} tone="sun" radius={28} alt="" />
       </div>
       <div
         data-ask-bubble=""

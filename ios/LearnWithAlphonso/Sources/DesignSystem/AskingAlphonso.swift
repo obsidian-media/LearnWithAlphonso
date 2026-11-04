@@ -10,15 +10,21 @@ struct AskingAlphonso: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// iPhone SE (667 pt) and smaller. Larger phones have room for a 56 pt portrait beside the prompt.
-    private var showsMascot: Bool {
-        !dynamicTypeSize.isAccessibilitySize && UIScreen.main.bounds.height > 667
+    /// Three steps by screen height: none on an iPhone SE (667 pt) or smaller or at accessibility text sizes, a 56 pt
+    /// avatar on a mid-size phone, and a real 128 pt figure on a tall one (844 pt and up), where the middle of the
+    /// question screen would otherwise sit empty.
+    private var mascotSize: CGFloat? {
+        guard !dynamicTypeSize.isAccessibilitySize else { return nil }
+        let height = UIScreen.main.bounds.height
+        if height > 800 { return 128 }
+        if height > 667 { return 56 }
+        return nil
     }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: AlphonsoSpacing.sm) {
-            if showsMascot {
-                MascotTile(moment: .questionAsk, size: 56, tone: .sun, radius: 18)
+            if let mascotSize {
+                MascotTile(moment: .questionAsk, size: mascotSize, tone: .sun, radius: mascotSize > 100 ? 28 : 18)
                     .accessibilityHidden(true)
             }
             speechBubble

@@ -22,12 +22,17 @@ describe("AskingAlphonso (the prompt as Alphonso's speech bubble)", () => {
 
   it("drops the portrait at accessibility text sizes and on a short phone, keeping the bubble", () => {
     expect(view).toContain("dynamicTypeSize.isAccessibilitySize");
-    expect(view).toMatch(/UIScreen\.main\.bounds\.height\s*>\s*\d{3}/);
+    expect(view).toMatch(/let height = UIScreen\.main\.bounds\.height/);
     // One flag gates the portrait; the prompt text is outside that branch so it is never hidden.
-    const gate = view.slice(view.indexOf("showsMascot"));
+    const gate = view.slice(view.indexOf("mascotSize"));
     expect(gate).toMatch(
-      /if showsMascot \{[\s\S]*?MascotTile[\s\S]*?\}\s*\n\s*(speechBubble|bubble)/,
+      /if let mascotSize \{[\s\S]*?MascotTile[\s\S]*?\}\s*\n\s*(speechBubble|bubble)/,
     );
+  });
+
+  it("is a large figure on a tall phone and a small avatar in the middle", () => {
+    expect(view).toMatch(/height > 800 \{ return 12\d \}/);
+    expect(view).toMatch(/height > 667 \{ return 56 \}/);
   });
 
   it("wraps a long prompt instead of truncating it", () => {
@@ -109,11 +114,16 @@ describe("Android: Alphonso asks the question", () => {
   });
 
   it("drops the portrait on a short screen and at large font scales, never the prompt", () => {
-    expect(asking).toMatch(/screenHeightDp\s*>\s*\d{3}/);
-    expect(asking).toMatch(/fontScale\s*<\s*1\.\d/);
+    expect(asking).toMatch(/screenHeightDp\s*<=\s*\d{3}\s*->\s*null/);
+    expect(asking).toMatch(/fontScale\s*>=\s*1\.\d/);
     expect(asking).toMatch(
-      /if \(showsMascot\) \{[\s\S]*?Image\([\s\S]*?\}\s*\n\s*Text\(\s*prompt,/,
+      /if \(mascotSize != null\) \{[\s\S]*?Image\([\s\S]*?\}\s*\n\s*Text\(\s*prompt,/,
     );
+  });
+
+  it("is a large figure on a tall screen and a small avatar in the middle", () => {
+    expect(asking).toMatch(/screenHeightDp\s*>=\s*7\d\d\s*->\s*1[2-4]\d\.dp/);
+    expect(asking).toMatch(/56\.dp/);
   });
 
   it("is static, so Reduce Motion has nothing to switch off", () => {

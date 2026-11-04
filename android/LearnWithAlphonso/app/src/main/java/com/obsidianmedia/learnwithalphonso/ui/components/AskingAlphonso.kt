@@ -32,16 +32,22 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 fun AskingAlphonso(prompt: String, modifier: Modifier = Modifier) {
     val palette = AlphonsoColor.palette
     val config = LocalConfiguration.current
-    // 640 dp and under is a compact phone in portrait; 1.3x is where "Large" text starts squeezing the bubble.
-    val showsMascot = config.screenHeightDp > 640 && config.fontScale < 1.3f
+    // Three steps: none at 640 dp and under (a compact phone) or from font scale 1.3 (where "Large" text starts squeezing
+    // the bubble), a 56 dp avatar in the middle, and a 120 dp figure from 720 dp (about a 6.1 in phone and up), where the
+    // middle of the question screen would otherwise sit empty. Only the base Alphonso image exists on Android, no poses.
+    val mascotSize = when {
+        config.fontScale >= 1.3f || config.screenHeightDp <= 640 -> null
+        config.screenHeightDp >= 720 -> 120.dp
+        else -> 56.dp
+    }
     val shape = RoundedCornerShape(AlphonsoRadius.lg)
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (showsMascot) {
+        if (mascotSize != null) {
             Image(
                 painterResource(R.drawable.mascot_alphonso),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(56.dp).clip(RoundedCornerShape(AlphonsoRadius.lg)).border(2.dp, palette.ember, RoundedCornerShape(AlphonsoRadius.lg)),
+                modifier = Modifier.size(mascotSize).clip(RoundedCornerShape(AlphonsoRadius.lg)).border(2.dp, palette.ember, RoundedCornerShape(AlphonsoRadius.lg)),
             )
         }
         Text(

@@ -35,6 +35,18 @@ describe("AskingAlphonso", () => {
     expect(cls).toContain("hidden");
   });
 
+  it("on a tall screen he is a large figure, beside the bubble, in the same pose", () => {
+    const { container } = render(<AskingAlphonso prompt="Q" />);
+    const large = container.querySelector("[data-ask-mascot-large]")!;
+    expect(large.className).toMatch(/min-height:\s*8\d\dpx/);
+    expect(large.querySelector("[data-mascot-tile]")?.getAttribute("style")).toMatch(
+      /width:\s*1[2-6]\dpx/,
+    );
+    expect(large.querySelector("img")?.getAttribute("src")).toBe(mascotArt("questionAsk").src);
+    // The middle step stops where the large one starts, so only one shows at a time.
+    expect(container.querySelector("[data-ask-mascot]")!.className).toMatch(/max-height:\s*799px/);
+  });
+
   it("does not spring in, so Reduce Motion has nothing to turn off beyond the breathing loop", () => {
     const src = readFileSync("src/components/AskingAlphonso.tsx", "utf8");
     expect(src).not.toMatch(/\benter\b/);
