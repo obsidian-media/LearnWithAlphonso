@@ -60,6 +60,7 @@ sealed class LessonCompletionError : Exception() {
             is Rejected -> when (code) {
                 "lesson-version-mismatch" -> "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
                 "out-of-hearts" -> "Saved. It will sync when your hearts refill."
+                in SLOW_DOWN_CODES -> "Slow down a little and try again."
                 else -> "We couldn't save this lesson."
             }
             InvalidPayload -> "We couldn't save this lesson."
@@ -68,7 +69,8 @@ sealed class LessonCompletionError : Exception() {
     /** The support path for failures the learner cannot fix by waiting. */
     val supportLine: String?
         get() = when (this) {
-            is Rejected, InvalidPayload -> "If this keeps happening, email $SUPPORT_ADDRESS."
+            is Rejected -> if (code in SLOW_DOWN_CODES) null else "If this keeps happening, email $SUPPORT_ADDRESS."
+            InvalidPayload -> "If this keeps happening, email $SUPPORT_ADDRESS."
             else -> null
         }
 
@@ -92,6 +94,8 @@ sealed class LessonCompletionError : Exception() {
 
     companion object {
         const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
+        /** complete-lesson's anti-farming refusals (supabase/functions/complete-lesson/anti-farming.ts). */
+        private val SLOW_DOWN_CODES = setOf("too-fast", "rate-limited")
         private val STABLE_CODE = Regex("^[a-z][a-z0-9-]*$")
 
         fun classify(error: Throwable): LessonCompletionError {
@@ -112,7 +116,10 @@ sealed class LessonCompletionError : Exception() {
         fun classify(status: Int, code: String?): LessonCompletionError = when (status) {
             401 -> Unauthorized
             408 -> Timeout
-            429, in 500..599 -> Server(status)
+            // complete-lesson refuses machine-speed completions with 429 and one of these codes: not server trouble, so
+            // neither retried nor queued; the learner is asked to slow down (LessonCompletionError.swift).
+            429 -> if (code in SLOW_DOWN_CODES) Rejected(code) else Server(status)
+            in 500..599 -> Server(status)
             else -> Rejected(stableCode(code))
         }
 

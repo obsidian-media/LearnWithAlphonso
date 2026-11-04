@@ -48,6 +48,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: supabaseAdminFrom, rpc: adminRpc },
 }));
 
+// The rolling-hour ceiling lives in the database (consume_lesson_completion_slot); here it allows by default.
+const consumeCompletionSlot = vi.fn(async (_userId: string, _atIso: string) => true);
+vi.mock("./completion-slot.server", () => ({ consumeCompletionSlot }));
+
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
 const hasAiConsent = vi.fn(async () => true);
 vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
@@ -63,7 +67,16 @@ const {
   setCefrLevel,
   savePlacementResult,
 } = asTestFns(await import("./sync.functions"));
-const { issueLessonSessionToken } = await import("./lesson-session.server");
+const { issueLessonSessionToken: issueTokenNow } = await import("./lesson-session.server");
+/** A session opened a minute ago: a real learner never finishes a lesson the instant it opens (anti-farming.ts). */
+const issueLessonSessionToken: typeof issueTokenNow = (claim) => {
+  const spy = vi.spyOn(Date, "now").mockReturnValue(Date.now() - 60_000);
+  try {
+    return issueTokenNow(claim);
+  } finally {
+    spy.mockRestore();
+  }
+};
 
 const USER_ID = "user-1";
 const LESSON_ID = "u1l1"; // real lesson: 8 questions, q1..q8
@@ -76,6 +89,8 @@ beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
+  consumeCompletionSlot.mockClear();
+  consumeCompletionSlot.mockResolvedValue(true);
   adminRpc.mockReset();
   adminRpc.mockImplementation(async (name?: string) =>
     name === "apply_lesson_completion"
@@ -279,6 +294,37 @@ describe("startLessonSession", () => {
         data: { lessonId: "nope999", course: "en" },
       }),
     ).rejects.toThrow("Lesson not found");
+  });
+});
+
+describe("completeLessonRemote machine-speed guards", () => {
+  const answers = () =>
+    Array.from({ length: 8 }, (_, i) => ({ questionId: `q${i + 1}`, answer: "x" }));
+  const call = (token: string) =>
+    completeLessonRemote({
+      context: ctx(createSupabaseMock()),
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        answers: answers(),
+        course: "en",
+        sessionToken: token,
+      },
+    });
+
+  it("refuses a completion that arrives faster than 0.4 s per question, writing nothing", async () => {
+    const token = issueTokenNow({ userId: USER_ID, lessonId: LESSON_ID, course: "en" });
+    await expect(call(token)).rejects.toThrow("too-fast");
+    expect(adminRpc).not.toHaveBeenCalled();
+    expect(consumeCompletionSlot).not.toHaveBeenCalled();
+  });
+
+  it("refuses over the hourly ceiling with rate-limited, writing nothing", async () => {
+    consumeCompletionSlot.mockResolvedValue(false);
+    await expect(
+      call(issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course: "en" })),
+    ).rejects.toThrow("rate-limited");
+    expect(adminRpc).not.toHaveBeenCalledWith("apply_lesson_completion", expect.anything());
   });
 });
 

@@ -26,6 +26,7 @@ import {
 } from "./progress-math.ts";
 import { lessonSessionIssuedAt, verifyLessonSessionToken } from "./lesson-session.ts";
 import { verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
+import { completedTooFast, completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
   gainHearts,
@@ -85,8 +86,24 @@ export type CompleteLessonDeps = {
   verifySessionToken: typeof verifyLessonSessionToken;
   sessionIssuedAt: typeof lessonSessionIssuedAt;
   sendPush: typeof sendPushToUser;
+  /** Records one completion against the user's rolling-hour limit. false = over the limit. Errors fail open. */
+  consumeCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<boolean>;
   now: () => Date;
 };
+
+async function consumeCompletionSlot(admin: SupabaseClient, userId: string, atIso: string): Promise<boolean> {
+  const { data, error } = await admin.rpc("consume_lesson_completion_slot", {
+    _user_id: userId,
+    _at: atIso,
+    _limit: HOURLY_COMPLETION_LIMIT,
+  });
+  if (error) {
+    // Never block a real lesson because the guard could not run (e.g. code deployed ahead of its migration).
+    console.log(JSON.stringify({ event: "completion_slot_unavailable", fn: "complete-lesson" }));
+    return true;
+  }
+  return data !== false;
+}
 
 export function liveDeps(): CompleteLessonDeps {
   return {
@@ -100,6 +117,7 @@ export function liveDeps(): CompleteLessonDeps {
     verifySessionToken: verifyLessonSessionToken,
     sessionIssuedAt: lessonSessionIssuedAt,
     sendPush: sendPushToUser,
+    consumeCompletionSlot,
     now: () => new Date(),
   };
 }
@@ -211,14 +229,25 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course })) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
-  const sessionIssuedAt = completedAt
-    ? deps.sessionIssuedAt(sessionToken, { userId, lessonId, course })
-    : null;
+  const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course });
   const trustedCompletionDay = completedAt && sessionIssuedAt !== null
     ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
     : null;
   // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
   // a 400 here would dead-letter a real lesson on both native clients.
+
+  // Machine-speed guards (anti-farming.ts). Both refuse with no XP and no streak change, before any grading or write,
+  // and answer 429 with a stable code the native clients turn into "slow down a little".
+  const nowMs = deps.now().getTime();
+  if (sessionIssuedAt !== null && completedTooFast(sessionIssuedAt, nowMs, lesson.questions.length)) {
+    console.log(JSON.stringify({ event: "completion_refused", fn: "complete-lesson", reason: "too-fast" }));
+    return jsonResponse({ error: "too-fast" }, 429);
+  }
+  const instantMs = completionInstantMs(completedAt, sessionIssuedAt, nowMs);
+  if (!(await deps.consumeCompletionSlot(admin, userId, new Date(instantMs).toISOString()))) {
+    console.log(JSON.stringify({ event: "completion_refused", fn: "complete-lesson", reason: "rate-limited" }));
+    return jsonResponse({ error: "rate-limited" }, 429);
+  }
 
   // The actual re-grade: never trust which questions the client says it
   // missed, derive it from the real answer key. Sequential, not

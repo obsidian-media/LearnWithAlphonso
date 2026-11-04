@@ -58,10 +58,16 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         switch status {
         case 401: return .unauthorized
         case 408: return .timeout
+        // complete-lesson refuses machine-speed completions with 429 and one of these codes. That is not server trouble,
+        // so it is neither retried nor queued: the learner is asked to slow down.
+        case 429 where Self.slowDownCodes.contains(code ?? ""): return .rejected(code: code)
         case 429, 500...599: return .server(status: status)
         default: return .rejected(code: stableCode(code))
         }
     }
+
+    /// complete-lesson's anti-farming refusals (supabase/functions/complete-lesson/anti-farming.ts).
+    static let slowDownCodes: Set<String> = ["too-fast", "rate-limited"]
 
     /// The edge functions' `{error: "<code>"}` codes are lowercase-hyphenated. Anything else (a sentence) is
     /// not a code and must never be matched or shown as one.
@@ -84,6 +90,8 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
             return "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
         case .rejected(code: "out-of-hearts"):
             return "Saved. It will sync when your hearts refill."
+        case .rejected(code: "too-fast"), .rejected(code: "rate-limited"):
+            return "Slow down a little and try again."
         case .rejected, .invalidPayload:
             return "We couldn't save this lesson."
         }
@@ -92,6 +100,7 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
     /// The support path for failures the learner cannot fix by waiting.
     public var supportLine: String? {
         switch self {
+        case .rejected(code: "too-fast"), .rejected(code: "rate-limited"): return nil
         case .rejected, .invalidPayload: break
         default: return nil
         }

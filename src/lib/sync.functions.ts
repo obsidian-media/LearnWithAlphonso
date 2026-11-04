@@ -1,3 +1,4 @@
+import { completedTooFast } from "./anti-farming";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
@@ -268,6 +269,21 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const { verifyLessonSessionToken } = await import("./lesson-session.server");
     if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
       throw new Error("Invalid or expired lesson session");
+    }
+
+    // Machine-speed guards only (anti-farming.ts): no minimum lesson time, no daily XP cap. Refused before any grading
+    // or write, so a refusal changes neither XP nor streak. The Edge Function applies the same two rules.
+    {
+      const { lessonSessionIssuedAt } = await import("./lesson-session.server");
+      const issuedAt = lessonSessionIssuedAt(sessionToken, { userId, lessonId, course });
+      const nowMs = Date.now();
+      if (issuedAt !== null && completedTooFast(issuedAt, nowMs, found.lesson.questions.length)) {
+        throw new Error("too-fast");
+      }
+      const { consumeCompletionSlot } = await import("./completion-slot.server");
+      if (!(await consumeCompletionSlot(userId, new Date(nowMs).toISOString()))) {
+        throw new Error("rate-limited");
+      }
     }
 
     // The actual re-grade: never trust which questions the client says it

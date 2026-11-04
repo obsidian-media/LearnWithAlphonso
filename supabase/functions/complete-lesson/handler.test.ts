@@ -1,6 +1,12 @@
 // Drives the real complete-lesson handler with fake dependencies: no network, no database, no secrets.
 // Run: deno test supabase/functions/complete-lesson/handler.test.ts
 import { assert, assertEquals } from "jsr:@std/assert@1";
+import {
+  completedTooFast,
+  completionInstantMs,
+  HOURLY_COMPLETION_LIMIT,
+  MIN_SECONDS_PER_QUESTION,
+} from "./anti-farming.ts";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   type CompleteLessonDeps,
@@ -164,6 +170,9 @@ function setup(
     consent?: boolean;
     now?: Date;
     sessionAgeMs?: number;
+    /** Max completions the fake guard allows within an hour of one another; default is unlimited. */
+    slotLimit?: number;
+    slotError?: boolean;
   } = {},
 ) {
   const db = new FakeDb();
@@ -181,6 +190,7 @@ function setup(
   const pushes: string[] = [];
   const tokenClaims: Row[] = [];
   const consentReads: string[] = [];
+  const slots: number[] = [];
   const deps: CompleteLessonDeps = {
     authenticate: () =>
       Promise.resolve(opts.auth ?? { userId: USER, userClient: db.client() }),
@@ -201,9 +211,18 @@ function setup(
       if (opts.pushFails) return Promise.reject(new Error("push down"));
       return Promise.resolve({ sent: 1, skipped: null });
     },
+    consumeCompletionSlot: (_admin, _userId, atIso) => {
+      const at = Date.parse(atIso);
+      if (opts.slotError) return Promise.resolve(true);
+      const near = slots.filter((t) => Math.abs(t - at) < 3_600_000).length;
+      if (near >= (opts.slotLimit ?? Infinity)) return Promise.resolve(false);
+      slots.push(at);
+      return Promise.resolve(true);
+    },
     now: () => opts.now ?? NOW,
   };
   return {
+    slots,
     db,
     pushes,
     tokenClaims,
@@ -296,6 +315,76 @@ Deno.test(
     }));
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
+  },
+);
+
+Deno.test(
+  "a completion faster than any human could answer is refused: 429 too-fast, nothing written",
+  async () => {
+    // 2 questions need at least 0.8 s since the session was issued; this one arrives after 0.5 s.
+    const { db, handler, slots } = setup({ sessionAgeMs: 500 });
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 429);
+    assertEquals(await res.json(), { error: "too-fast" });
+    assertEquals(db.rpcCalls.length, 0);
+    assertEquals(slots.length, 0);
+  },
+);
+
+Deno.test(
+  "a quick but possible completion is accepted (the floor is machine speed, not a minimum time)",
+  async () => {
+    const { db, handler } = setup({ sessionAgeMs: 900 });
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls.length, 1);
+  },
+);
+
+Deno.test(
+  "over the hourly ceiling is refused: 429 rate-limited, no XP and no streak change",
+  async () => {
+    const { db, handler } = setup({ slotLimit: 2 });
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    const before = db.rpcCalls.length;
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 429);
+    assertEquals(await res.json(), { error: "rate-limited" });
+    assertEquals(db.rpcCalls.length, before);
+  },
+);
+
+Deno.test(
+  "offline replays arriving together are counted at the time they were played, not refused",
+  async () => {
+    // Ceiling of 2 per hour. Three lessons played 2 h apart sync in one burst after reconnecting: all fine.
+    const now = new Date("2026-10-18T12:00:00Z");
+    const day = 24 * 3_600_000;
+    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 2 * day });
+    for (const hoursAgo of [30, 28, 26]) {
+      const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
+      assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
+    }
+    assertEquals(slots, [
+      now.getTime() - 30 * 3_600_000,
+      now.getTime() - 28 * 3_600_000,
+      now.getTime() - 26 * 3_600_000,
+    ]);
+  },
+);
+
+Deno.test(
+  "claiming a past completedAt cannot dodge the ceiling: the claim is clamped into the session window",
+  async () => {
+    // Session issued 10 min ago; a claimed time days earlier counts at the session start, so a script gains nothing.
+    const now = new Date("2026-10-18T12:00:00Z");
+    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 10 * 60_000 });
+    const completedAt = "2026-10-01T00:00:00.000Z";
+    assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
+    assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
+    assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 429);
+    assertEquals(slots[0], now.getTime() - 10 * 60_000);
   },
 );
 
@@ -610,4 +699,31 @@ Deno.test("only friends actually passed get an overtake push", async () => {
   ];
   await handler(post(body(["a", "d"])));
   assertEquals(pushes, ["passed"]);
+});
+
+Deno.test("the floor is 0.4 s per question of the server-issued session", () => {
+  assertEquals(MIN_SECONDS_PER_QUESTION, 0.4);
+  assertEquals(HOURLY_COMPLETION_LIMIT, 60);
+  assertEquals(completedTooFast(0, 2_999, 8), true); // 8 questions need 3.2 s
+  assertEquals(completedTooFast(0, 3_200, 8), false);
+  assertEquals(completedTooFast(0, 30_000, 8), false);
+});
+
+Deno.test("an unreadable issue time or an empty lesson never refuses", () => {
+  assertEquals(completedTooFast(Number.NaN, 10, 8), false);
+  assertEquals(completedTooFast(0, 10, 0), false);
+});
+
+Deno.test("completionInstantMs clamps a claim into [session start, now]", () => {
+  const issued = Date.parse("2026-10-17T10:00:00Z");
+  const now = Date.parse("2026-10-17T12:00:00Z");
+  assertEquals(
+    completionInstantMs("2026-10-17T11:00:00Z", issued, now),
+    Date.parse("2026-10-17T11:00:00Z"),
+  );
+  assertEquals(completionInstantMs("2026-10-01T00:00:00Z", issued, now), issued);
+  assertEquals(completionInstantMs("2026-12-01T00:00:00Z", issued, now), now);
+  assertEquals(completionInstantMs(undefined, issued, now), now);
+  assertEquals(completionInstantMs("garbage", issued, now), now);
+  assertEquals(completionInstantMs("2026-10-17T11:00:00Z", null, now), now);
 });

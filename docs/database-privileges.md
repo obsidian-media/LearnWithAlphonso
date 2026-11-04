@@ -110,3 +110,8 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 `content_reports`: `authenticated` INSERT is now column-level on `reporter, reported, reason, kind, context`
 (`20261103100000`). The table-level grant let a client set `created_at`, which the report-notify throttle counts on, and `id`.
 `profiles.active_language` was dropped (`20261103100100`): never written, never read.
+
+## Fifth step (2026-11-04)
+
+`lesson_completion_hits` (`20261104100100`): service-role only, no client privileges. It backs the rolling-hour ceiling
+in `complete-lesson` and `completeLessonRemote` (`consume_lesson_completion_slot`, service role only).

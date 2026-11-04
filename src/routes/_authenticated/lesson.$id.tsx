@@ -1,3 +1,4 @@
+import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
@@ -148,6 +149,8 @@ function LessonPage() {
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
     saved: boolean;
+    /** Set when the server refused the completion as machine-speed (anti-farming.ts); shown calmly, not as an error. */
+    notice?: string;
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
@@ -377,8 +380,14 @@ function LessonPage() {
         heartsBonus: res.heartsBonus,
         saved: true,
       });
-    } catch {
-      setDone({ xp: 0, unlocked: [], heartsBonus: null, saved: false });
+    } catch (err) {
+      setDone({
+        xp: 0,
+        unlocked: [],
+        heartsBonus: null,
+        saved: false,
+        notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined,
+      });
     }
   }
 
@@ -442,6 +451,7 @@ function LessonPage() {
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
           saved={done.saved}
+          notice={done.notice}
           lessonTitle={lesson.title}
           correct={correct}
           total={total}
@@ -957,12 +967,15 @@ export function FinishScreen({
   lessonId,
   course,
   saved = true,
+  notice,
 }: {
   xp: number;
   unlocked: string[];
   heartsBonus: "streak" | "perfect" | null;
   /** False when the completion did not reach the server: then no streak is shown, since none was confirmed. */
   saved?: boolean;
+  /** A calm line shown instead of a save failure, e.g. when the server asked the learner to slow down. */
+  notice?: string;
   lessonTitle: string;
   correct: number;
   total: number;
@@ -1000,6 +1013,11 @@ export function FinishScreen({
         </p>
         <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
         <p className="mt-1 text-sm font-semibold text-ink">Nice work, lesson complete!</p>
+        {notice ? (
+          <p role="status" className="mt-2 text-sm text-ink-soft">
+            {notice}
+          </p>
+        ) : null}
         <div className="mt-4 flex justify-center gap-2.5">
           {chips.map((c, i) => (
             <motion.div
