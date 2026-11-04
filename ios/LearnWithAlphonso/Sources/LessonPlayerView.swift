@@ -347,7 +347,11 @@ struct LessonPlayerView: View {
                     // Whitespace is not an answer.
                     .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } else {
-                Button(isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish") {
+                AnswerVerdictPanel(
+                    correct: lastAnswerCorrect,
+                    correctAnswer: AnswerVerdict.correctAnswer(for: currentQuestion),
+                    continueTitle: isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish"
+                ) {
                     if let pendingReinforcement {
                         activeReinforcement = pendingReinforcement
                         self.pendingReinforcement = nil
@@ -369,12 +373,23 @@ struct LessonPlayerView: View {
                         Task { await finish() }
                     }
                 }
-                .buttonStyle(.alphonsoPrimary)
             }
         }
+        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.85), value: checked)
         .padding()
         .background(AlphonsoColor.surface)
     }
+
+    /// The verdict the panel shows: a translation's settled grade when there is one (it may come from the AI
+    /// grader), otherwise the local match. The same rule recordAnswer scores by.
+    private var lastAnswerCorrect: Bool {
+        if case .translate = currentQuestion, let translationVerdict {
+            return translationVerdict.correct
+        }
+        return isAnswerCorrect(currentQuestion, picked: picked, course: course)
+    }
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Settles the current translation's verdict before it is scored.
     private func settleTranslationVerdict() async {
@@ -652,7 +667,7 @@ private struct QuestionCard: View {
                 }
                 Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
-                    choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -671,7 +686,7 @@ private struct QuestionCard: View {
                         HStack {
                             ForEach(q.bank, id: \.self) { word in
                                 Button(word) { picked = word }
-                                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                                    .buttonStyle(.alphonsoWordChip(picked: picked == word))
                                     .disabled(checked)
                             }
                         }
@@ -715,7 +730,7 @@ private struct QuestionCard: View {
                 Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
                     // `answer` is the choice text, not an index.
-                    choiceButton(choice, isCorrectChoice: q.answer == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -773,58 +788,12 @@ private struct QuestionCard: View {
                 ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
                     if !orderPicks.contains(i) {
                         Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                            .buttonStyle(.alphonsoWordChip(picked: false))
                             .disabled(checked)
                     }
                 }
             }
         }
-    }
-
-    private func choiceButton(_ choice: String, isCorrectChoice: Bool) -> some View {
-        Button {
-            picked = choice
-        } label: {
-            HStack {
-                Text(choice)
-                    .font(AlphonsoFont.sans(16))
-                Spacer()
-                if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
-                        .accessibilityHidden(true)
-                } else if checked && picked == choice {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
-                        .accessibilityHidden(true)
-                }
-            }
-            .padding(AlphonsoSpacing.sm + 4)
-            .background(
-                picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
-                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                    .strokeBorder(picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: picked == choice ? 1.5 : 1)
-            )
-        }
-        .disabled(checked)
-        .foregroundStyle(AlphonsoColor.ink)
-        // The checkmark/xmark above is the ONLY place correct/incorrect
-        // per-choice state lived before this -- hidden now (it duplicated
-        // whatever this label already says) but that means this label is
-        // the sole place VoiceOver can learn "which choice was right" and
-        // "was mine right," so it has to say both explicitly, not just the
-        // choice text.
-        .accessibilityLabel(choiceAccessibilityLabel(choice, isCorrectChoice: isCorrectChoice))
-        .accessibilityAddTraits(picked == choice ? .isSelected : [])
-    }
-
-    private func choiceAccessibilityLabel(_ choice: String, isCorrectChoice: Bool) -> String {
-        guard checked else { return choice }
-        if isCorrectChoice {
-            return picked == choice ? "\(choice), your answer, correct" : "\(choice), correct answer"
-        }
-        return picked == choice ? "\(choice), your answer, incorrect" : choice
     }
 }
 

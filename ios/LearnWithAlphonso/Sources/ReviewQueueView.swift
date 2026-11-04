@@ -116,6 +116,14 @@ struct ReviewQueueView: View {
 
     private var currentItem: ReviewItem { queue[idx].item }
 
+    /// The verdict the panel shows: a translation's settled grade when there is one, otherwise the local match.
+    private func verdictCorrect(_ question: Question) -> Bool {
+        if case .translate = question, let translationVerdict {
+            return translationVerdict.correct
+        }
+        return isAnswerCorrect(question, picked: picked, course: course)
+    }
+
     /// Non-nil for any index inside the queue: loadQueue keeps only items ReviewQueueResolution resolved.
     private var currentQuestion: Question? { idx < queue.count ? queue[idx].question : nil }
 
@@ -162,8 +170,14 @@ struct ReviewQueueView: View {
                             // Whitespace is not an answer.
                             .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     } else {
-                        Button("Next") { Task { await submitAndAdvance(question: question) } }
-                            .buttonStyle(.alphonsoPrimary)
+                        let correct = verdictCorrect(question)
+                        // Same wording as the web's review: the item either stays learned or comes back.
+                        AnswerVerdictPanel(
+                            correct: correct,
+                            correctAnswer: AnswerVerdict.correctAnswer(for: question),
+                            title: correct ? "Still got it." : "Back in the queue.",
+                            continueTitle: "Next"
+                        ) { Task { await submitAndAdvance(question: question) } }
                     }
                 }
                 .padding()
@@ -495,7 +509,7 @@ private struct ReviewQuestionCard: View {
                 }
                 Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
-                    choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -514,7 +528,7 @@ private struct ReviewQuestionCard: View {
                         HStack {
                             ForEach(q.bank, id: \.self) { word in
                                 Button(word) { picked = word }
-                                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                                    .buttonStyle(.alphonsoWordChip(picked: picked == word))
                                     .disabled(checked)
                             }
                         }
@@ -553,7 +567,7 @@ private struct ReviewQuestionCard: View {
                 Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
                     // `answer` is the choice text, not an index.
-                    choiceButton(choice, isCorrectChoice: q.answer == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -604,39 +618,11 @@ private struct ReviewQuestionCard: View {
                 ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
                     if !orderPicks.contains(i) {
                         Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                            .buttonStyle(.alphonsoWordChip(picked: false))
                             .disabled(checked)
                     }
                 }
             }
         }
-    }
-
-    private func choiceButton(_ choice: String, isCorrectChoice: Bool) -> some View {
-        Button {
-            picked = choice
-        } label: {
-            HStack {
-                Text(choice)
-                    .font(AlphonsoFont.sans(16))
-                Spacer()
-                if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
-                } else if checked && picked == choice {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
-                }
-            }
-            .padding(AlphonsoSpacing.sm + 4)
-            .background(
-                picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
-                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                    .strokeBorder(picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: picked == choice ? 1.5 : 1)
-            )
-        }
-        .disabled(checked)
-        .foregroundStyle(AlphonsoColor.ink)
     }
 }

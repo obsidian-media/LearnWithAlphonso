@@ -62,22 +62,41 @@ export function AnswerOption({
     );
   }
 
+  // A chunky tile with a darker bottom edge that collapses while pressed, like the app's buttons. The colours
+  // say picked / right / wrong; the edge takes the same hue so the tile reads as one solid piece.
   const boxClasses =
     state === "correct"
-      ? "border-moss bg-moss/10 text-ink"
+      ? "border-moss bg-moss/20 text-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
       : state === "incorrect"
-        ? "border-rose-400 bg-rose-50 text-ink"
+        ? "border-rose-400 bg-rose-500/15 text-ink shadow-[0_4px_0_0_rgba(190,18,60,0.55)]"
         : state === "selected"
-          ? "border-ink bg-parchment text-ink"
-          : "border-hairline bg-surface text-ink hover:border-ink/30";
+          ? "border-moss bg-moss/10 text-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
+          : "border-hairline bg-parchment text-ink shadow-[0_4px_0_0_var(--color-hairline)] hover:border-ink/30";
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`w-full rounded-2xl border px-4 py-3.5 text-left text-base transition ${boxClasses}`}
+      aria-pressed={isPicked}
+      className={`flex min-h-14 w-full items-center gap-3 rounded-[18px] border-2 px-4 py-3 text-left text-base font-medium transition-[transform,box-shadow,background-color,border-color] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none ${boxClasses}`}
     >
-      {label}
+      <span className="flex-1">{label}</span>
+      {state === "correct" && (
+        <span
+          aria-hidden="true"
+          className="grid size-6 place-items-center rounded-full bg-moss text-xs font-bold text-surface"
+        >
+          ✓
+        </span>
+      )}
+      {state === "incorrect" && (
+        <span
+          aria-hidden="true"
+          className="grid size-6 place-items-center rounded-full bg-rose-500 text-xs font-bold text-white"
+        >
+          ✕
+        </span>
+      )}
     </button>
   );
 }

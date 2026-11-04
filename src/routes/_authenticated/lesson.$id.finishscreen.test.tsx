@@ -115,8 +115,8 @@ describe("FinishScreen", () => {
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
     const rows = await screen.findAllByRole("button", { name: "same" });
     await user.click(rows[0]);
-    expect(rows[0].className).toContain("bg-parchment");
-    expect(rows[1].className).not.toContain("bg-parchment");
+    expect(rows[0]).toHaveAttribute("aria-pressed", "true");
+    expect(rows[1]).toHaveAttribute("aria-pressed", "false");
   });
 
   it("a practice 429 shows the server's own message, not a generic failure", async () => {

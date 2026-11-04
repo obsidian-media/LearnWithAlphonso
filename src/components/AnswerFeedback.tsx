@@ -3,6 +3,25 @@ import { useTheme } from "../lib/theme";
 import { SaveWordHint } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
+/** The explanation text under a verdict; its words open the save dialog when saving is allowed for the course. */
+export function AnswerExplanation({
+  explanation,
+  saveCourse,
+}: {
+  explanation: string;
+  saveCourse?: string;
+}) {
+  const savable = saveCourse !== undefined && allowsSaving(saveCourse);
+  return (
+    <>
+      <p className="mt-0.5 text-ink-soft">
+        {savable ? <TappableText text={explanation} course={saveCourse} /> : explanation}
+      </p>
+      {savable && <SaveWordHint />}
+    </>
+  );
+}
+
 /**
  * The correct/incorrect explanation shown after checking an answer.
  * Shared by the lesson player and spaced review, which rendered identical
@@ -21,15 +40,7 @@ export function AnswerFeedback({
   saveCourse?: string;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  const savable = saveCourse !== undefined && allowsSaving(saveCourse);
-  const explanationBody = (
-    <>
-      <p className="mt-0.5 text-ink-soft">
-        {savable ? <TappableText text={explanation} course={saveCourse} /> : explanation}
-      </p>
-      {savable && <SaveWordHint />}
-    </>
-  );
+  const explanationBody = <AnswerExplanation explanation={explanation} saveCourse={saveCourse} />;
 
   if (isStudioInk) {
     return (
