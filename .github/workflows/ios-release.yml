@@ -412,6 +412,7 @@ jobs:
           echo "All post-archive checks passed."
 
       - name: Upload to TestFlight (App Store Connect)
+        id: upload
         if: ${{ inputs.upload_to_testflight }}
         working-directory: ios/LearnWithAlphonso
         env:
@@ -440,3 +441,23 @@ jobs:
           name: LearnWithAlphonso-ipa
           path: ios/LearnWithAlphonso/build/export/*.ipa
           retention-days: 14
+
+      # A green run used to say nothing about whether anything reached
+      # TestFlight. This states it, and fails when an upload was requested but
+      # the upload step did not succeed. Prints no secrets.
+      - name: Summarize what this run did
+        if: always()
+        env:
+          UPLOAD_REQUESTED: ${{ inputs.upload_to_testflight }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' ios/LearnWithAlphonso/project.yml | sed 's/[^0-9]//g')
+          if [ "$UPLOAD_REQUESTED" = "true" ] && [ "$UPLOAD_OUTCOME" = "success" ]; then
+            echo "### iOS release: uploaded build ${BUILD} to TestFlight" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$UPLOAD_REQUESTED" = "true" ]; then
+            echo "### iOS release: upload requested but NOT done (upload step: ${UPLOAD_OUTCOME:-skipped})" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::upload_to_testflight was true but no upload happened (upload step: ${UPLOAD_OUTCOME:-skipped})."
+            exit 1
+          else
+            echo "### iOS release: exported only (upload_to_testflight was false, nothing sent to TestFlight)" >> "$GITHUB_STEP_SUMMARY"
+          fi
