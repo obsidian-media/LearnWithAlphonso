@@ -1,0 +1,174 @@
+{
+  "batch": "p6-r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p6-r3-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "asustado": {
+      "verdict": "approve",
+      "alt": "A frightened woman pulls back with both hands raised in front of her.",
+      "peopleVisible": true
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "caja fuerte": {
+      "verdict": "approve",
+      "alt": "A small black safe with a brass keypad and key lock stands on a wooden shelf.",
+      "peopleVisible": false
+    },
+    "effrayé": {
+      "verdict": "approve",
+      "alt": "A frightened woman pulls back with both hands raised in front of her.",
+      "peopleVisible": true
+    },
+    "espalda": {
+      "verdict": "approve",
+      "alt": "A man in front of a grey wall holds his hands behind his neck, seen from behind with his bare back showing.",
+      "peopleVisible": true
+    },
+    "fiebre": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "fier": {
+      "verdict": "approve",
+      "alt": "A smiling graduate in a black gown and cap holds up a diploma outdoors.",
+      "peopleVisible": true
+    },
+    "fièvre": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "hombro": {
+      "verdict": "approve",
+      "alt": "A woman's bare shoulder with long brown hair falling beside it.",
+      "peopleVisible": true
+    },
+    "juez": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'enseignant": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "children visible"
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "l'école": {
+      "verdict": "approve",
+      "alt": "A large white school building with a flag seen across a grassy lawn.",
+      "peopleVisible": false
+    },
+    "l'épaule": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la dent": {
+      "verdict": "approve",
+      "alt": "A pink dental model shows a set of teeth on a white background.",
+      "peopleVisible": false
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le coude": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dictionnaire": {
+      "verdict": "approve",
+      "alt": "An open old dictionary with dense columns of words lies on a wooden table next to glasses and a pocket watch.",
+      "peopleVisible": false
+    },
+    "le dos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le handball": {
+      "verdict": "approve",
+      "alt": "Players in red kits run and jump during a handball match in a sports hall.",
+      "peopleVisible": true
+    },
+    "le juge": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le réalisateur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le soldat": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le tribunal": {
+      "verdict": "approve",
+      "alt": "An empty courtroom with wooden benches, a judge's bench and a flag at the front.",
+      "peopleVisible": false
+    },
+    "le visage": {
+      "verdict": "approve",
+      "alt": "A smiling woman with dark hair looks up at the camera in a close-up of her face.",
+      "peopleVisible": true
+    },
+    "medianoche": {
+      "verdict": "approve",
+      "alt": "A round clock face with Roman numerals and both hands pointing at twelve.",
+      "peopleVisible": false
+    }
+  }
+}

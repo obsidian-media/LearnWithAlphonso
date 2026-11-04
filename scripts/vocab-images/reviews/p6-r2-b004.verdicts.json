@@ -1,0 +1,36 @@
+{
+  "batch": "p6-r2-b004",
+  "pass": "first",
+  "reviewer": "agent:p6-r2-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "trier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "unto": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "vacuna": {
+      "verdict": "approve",
+      "alt": "A hand holds a syringe next to a person's upper arm to give an injection.",
+      "peopleVisible": true
+    },
+    "voto": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "voyager": {
+      "verdict": "approve",
+      "alt": "A traveler in a red jacket with a backpack looks out over the sea from a ship's rail.",
+      "peopleVisible": true
+    }
+  }
+}

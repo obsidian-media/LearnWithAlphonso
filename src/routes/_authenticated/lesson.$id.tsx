@@ -628,6 +628,7 @@ function LessonPage() {
               correctAnswer={correctAnswerText(q)}
               explanation={q.explanation}
               saveCourse={course}
+              question={q}
               continueLabel={
                 isReinforcing || pendingReinforcement || idx < total - 1 ? "Continue" : "Finish"
               }

@@ -1,0 +1,173 @@
+{
+  "batch": "p6-r1-b006",
+  "pass": "first",
+  "reviewer": "agent:p6-b006",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "le coiffeur": {
+      "verdict": "approve",
+      "alt": "A hairdresser styles a client's hair with a hair iron in front of a mirror in a salon.",
+      "peopleVisible": true
+    },
+    "le comptable": {
+      "verdict": "approve",
+      "alt": "A man in a dark suit uses a calculator beside a laptop and papers at a desk.",
+      "peopleVisible": true
+    },
+    "le cou": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le coude": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dictionnaire": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le dos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le festival": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le football": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le handball": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le journal": {
+      "verdict": "approve",
+      "alt": "An older man in a patterned shirt sits on a red bench and reads a newspaper.",
+      "peopleVisible": true
+    },
+    "le journaliste": {
+      "verdict": "approve",
+      "alt": "A reporter in a red jacket speaks into a microphone while a camera operator films her outdoors.",
+      "peopleVisible": true
+    },
+    "le juge": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le laboratoire": {
+      "verdict": "approve",
+      "alt": "Test tubes of blue, yellow and red liquid stand in a rack in a laboratory.",
+      "peopleVisible": false
+    },
+    "le magazine": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le menton": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le piéton": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le plafond": {
+      "verdict": "approve",
+      "alt": "A carved stone vaulted ceiling with ornate round decorations, seen from below.",
+      "peopleVisible": false
+    },
+    "le plombier": {
+      "verdict": "approve",
+      "alt": "A worker in a yellow hard hat and high-visibility vest holds a large pipe wrench.",
+      "peopleVisible": true
+    },
+    "le podcast": {
+      "verdict": "approve",
+      "alt": "A studio microphone hangs from a boom arm in a bright room.",
+      "peopleVisible": false
+    },
+    "le poignet": {
+      "verdict": "approve",
+      "alt": "A black wristwatch on a person's wrist.",
+      "peopleVisible": true
+    },
+    "le policier": {
+      "verdict": "approve",
+      "alt": "A police officer in a dark blue uniform with a badge stands outdoors.",
+      "peopleVisible": true
+    },
+    "le prix": {
+      "verdict": "approve",
+      "alt": "A blank paper price tag with a string hangs against a dark blue background.",
+      "peopleVisible": false
+    },
+    "le recyclage": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le reçu": {
+      "verdict": "approve",
+      "alt": "A shop receipt and a dollar bill lie on a white table.",
+      "peopleVisible": false
+    },
+    "le roman": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le rugby": {
+      "verdict": "approve",
+      "alt": "Rugby players in red and black stripes push together in a scrum on a grass pitch.",
+      "peopleVisible": true
+    },
+    "le réalisateur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le serveur": {
+      "verdict": "approve",
+      "alt": "A waiter in a white shirt and tie carries a tray with a drink in an elegant restaurant.",
+      "peopleVisible": true
+    },
+    "le sol": {
+      "verdict": "approve",
+      "alt": "Weathered wooden floor planks stretch into the distance.",
+      "peopleVisible": false
+    },
+    "le soldat": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    }
+  }
+}

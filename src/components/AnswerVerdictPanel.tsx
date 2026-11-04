@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { verdictTitle } from "../lib/answer-verdict";
 import { useTheme } from "../lib/theme";
 import { usePrefersReducedMotion } from "../lib/use-prefers-reduced-motion";
+import type { SpanQuestion } from "../lib/course-language-spans";
 import { AnswerExplanation, AnswerFeedback } from "./AnswerFeedback";
 
 /**
@@ -16,6 +17,7 @@ export function AnswerVerdictPanel({
   correctAnswer,
   explanation,
   saveCourse,
+  question,
   continueLabel,
   onContinue,
   title: titleOverride,
@@ -26,6 +28,8 @@ export function AnswerVerdictPanel({
   correctAnswer: string;
   explanation: string;
   saveCourse?: string;
+  /** The question, so French and Spanish can find the course-language text to offer for saving. */
+  question?: SpanQuestion;
   continueLabel: string;
   onContinue: () => void;
 }) {
@@ -41,6 +45,7 @@ export function AnswerVerdictPanel({
           headline={correct ? "Nice." : "Not quite."}
           explanation={explanation}
           saveCourse={saveCourse}
+          question={question}
         />
         <div className="mt-auto pt-6">
           <button
@@ -87,7 +92,11 @@ export function AnswerVerdictPanel({
             {!correct && correctAnswer && (
               <p className="mt-0.5 text-[15px] font-semibold text-ink">Answer: {correctAnswer}</p>
             )}
-            <AnswerExplanation explanation={explanation} saveCourse={saveCourse} />
+            <AnswerExplanation
+              explanation={explanation}
+              saveCourse={saveCourse}
+              question={question}
+            />
           </div>
         </div>
         <button

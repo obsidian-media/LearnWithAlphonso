@@ -1,0 +1,209 @@
+{
+  "batch": "p6-2nd-2nd-b003",
+  "pass": "second",
+  "reviewer": "agent:p6-2nd-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "la prison": {
+      "verdict": "approve",
+      "alt": "A prisoner reads on a bed in a cell behind metal bars while another person's legs stand in front.",
+      "peopleVisible": true
+    },
+    "la rue": {
+      "verdict": "approve",
+      "alt": "A wide city street lined with tall buildings under a dramatic sky, with a few people walking.",
+      "peopleVisible": true
+    },
+    "la rénovation": {
+      "verdict": "approve",
+      "alt": "A woman paints a wall grey with a paint roller.",
+      "peopleVisible": true
+    },
+    "la serveuse": {
+      "verdict": "approve",
+      "alt": "A smiling waitress in a black apron holds a notepad in a restaurant.",
+      "peopleVisible": true
+    },
+    "la sécheresse": {
+      "verdict": "approve",
+      "alt": "Dry sun-baked earth cracked into many pieces.",
+      "peopleVisible": false
+    },
+    "la tête": {
+      "verdict": "approve",
+      "alt": "Silhouettes of a woman's head and a man's head facing each other in profile.",
+      "peopleVisible": true
+    },
+    "la veste": {
+      "verdict": "approve",
+      "alt": "A person in a beige puffer jacket with the hood up and a black backpack walks into a forest, seen from behind.",
+      "peopleVisible": true
+    },
+    "lavar": {
+      "verdict": "approve",
+      "alt": "A person in a yellow tank top bends over a stone sink and washes under a running tap.",
+      "peopleVisible": true
+    },
+    "laver": {
+      "verdict": "approve",
+      "alt": "A person in a yellow tank top bends over a stone sink and washes under a running tap.",
+      "peopleVisible": true
+    },
+    "le basketball": {
+      "verdict": "approve",
+      "alt": "Women jump for a basketball during a game in a sports hall.",
+      "peopleVisible": true
+    },
+    "le beurre": {
+      "verdict": "approve",
+      "alt": "A hand cuts slices from a block of butter on a wooden plate.",
+      "peopleVisible": true
+    },
+    "le bras": {
+      "verdict": "approve",
+      "alt": "A muscular man flexes both arms behind him, seen from behind in black and white.",
+      "peopleVisible": true
+    },
+    "le caissier": {
+      "verdict": "approve",
+      "alt": "A woman at a shop counter uses a tablet cash register while a customer holds out a hand.",
+      "peopleVisible": true
+    },
+    "le coiffeur": {
+      "verdict": "approve",
+      "alt": "A hairdresser styles a client's hair with a hair iron in front of a mirror in a salon.",
+      "peopleVisible": true
+    },
+    "le comptable": {
+      "verdict": "approve",
+      "alt": "A man in a dark suit uses a calculator beside a laptop and papers at a desk.",
+      "peopleVisible": true
+    },
+    "le cou": {
+      "verdict": "approve",
+      "alt": "A smiling woman wears a large silver necklace around her neck.",
+      "peopleVisible": true
+    },
+    "le festival": {
+      "verdict": "approve",
+      "alt": "A crowd cheers with raised hands in front of a lit stage at a music festival.",
+      "peopleVisible": true
+    },
+    "le football": {
+      "verdict": "approve",
+      "alt": "A player in black socks kicks a football on a grass pitch in front of a goal.",
+      "peopleVisible": true
+    },
+    "le handball": {
+      "verdict": "approve",
+      "alt": "Players in red kits run and jump during a handball match in a sports hall.",
+      "peopleVisible": true
+    },
+    "le journal": {
+      "verdict": "approve",
+      "alt": "An older man in a patterned shirt sits on a red bench and reads a newspaper.",
+      "peopleVisible": true
+    },
+    "le journaliste": {
+      "verdict": "approve",
+      "alt": "A reporter in a red jacket speaks into a microphone while a camera operator films her outdoors.",
+      "peopleVisible": true
+    },
+    "le menton": {
+      "verdict": "approve",
+      "alt": "A young man rests his chin on his hand and looks at the camera.",
+      "peopleVisible": true
+    },
+    "le piéton": {
+      "verdict": "approve",
+      "alt": "A blurred crowd of pedestrians crosses a zebra crossing.",
+      "peopleVisible": true
+    },
+    "le plafond": {
+      "verdict": "approve",
+      "alt": "A carved stone vaulted ceiling with ornate round decorations, seen from below.",
+      "peopleVisible": false
+    },
+    "le plombier": {
+      "verdict": "approve",
+      "alt": "A worker in a yellow hard hat and high-visibility vest holds a large pipe wrench.",
+      "peopleVisible": true
+    },
+    "le poignet": {
+      "verdict": "approve",
+      "alt": "A black wristwatch on a person's wrist.",
+      "peopleVisible": true
+    },
+    "le policier": {
+      "verdict": "approve",
+      "alt": "A police officer in a dark blue uniform with a badge stands outdoors.",
+      "peopleVisible": true
+    },
+    "le roman": {
+      "verdict": "approve",
+      "alt": "A woman sits by the sea and reads a book.",
+      "peopleVisible": true
+    },
+    "le rugby": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le serveur": {
+      "verdict": "approve",
+      "alt": "A waiter in a white shirt and tie carries a tray with a drink in an elegant restaurant.",
+      "peopleVisible": true
+    },
+    "le sommeil": {
+      "verdict": "approve",
+      "alt": "A woman sleeps peacefully on a white pillow in bed.",
+      "peopleVisible": true
+    },
+    "le taxi": {
+      "verdict": "approve",
+      "alt": "Yellow taxis drive along a New York street lined with tall buildings.",
+      "peopleVisible": true
+    },
+    "le visage": {
+      "verdict": "approve",
+      "alt": "A smiling woman with dark hair looks up at the camera in a close-up of her face.",
+      "peopleVisible": true
+    },
+    "le vote": {
+      "verdict": "approve",
+      "alt": "A hand drops a folded ballot paper into a plastic ballot box.",
+      "peopleVisible": true
+    },
+    "le yoga": {
+      "verdict": "approve",
+      "alt": "A man in white balances on his hands in a yoga pose on a mat in a bright studio.",
+      "peopleVisible": true
+    },
+    "lesión": {
+      "verdict": "approve",
+      "alt": "A runner in grey sneakers stands on grass and holds a hurting calf with both hands.",
+      "peopleVisible": true
+    },
+    "limpiar": {
+      "verdict": "approve",
+      "alt": "A woman wipes a window with a blue cloth.",
+      "peopleVisible": true
+    },
+    "livrer": {
+      "verdict": "approve",
+      "alt": "A courier in a beige jacket hands over a parcel and a clipboard to be signed.",
+      "peopleVisible": true
+    },
+    "llave": {
+      "verdict": "approve",
+      "alt": "A pile of keys of many sizes and colours.",
+      "peopleVisible": false
+    },
+    "lloviendo": {
+      "verdict": "approve",
+      "alt": "Heavy rain falls on a city street where cars drive with their lights on and a cyclist rides past.",
+      "peopleVisible": true
+    }
+  }
+}

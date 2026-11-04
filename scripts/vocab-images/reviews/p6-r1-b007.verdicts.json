@@ -1,0 +1,169 @@
+{
+  "batch": "p6-r1-b007",
+  "pass": "first",
+  "reviewer": "agent:p6-b007",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "le sommeil": {
+      "verdict": "approve",
+      "alt": "A woman sleeps peacefully on a white pillow in bed.",
+      "peopleVisible": true
+    },
+    "le taxi": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le tribunal": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le trottoir": {
+      "verdict": "approve",
+      "alt": "A concrete sidewalk runs between a lawn and a street lined with trees and houses.",
+      "peopleVisible": false
+    },
+    "le vaccin": {
+      "verdict": "approve",
+      "alt": "Five syringes with needles lie on a pale blue surface.",
+      "peopleVisible": false
+    },
+    "le visage": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le vote": {
+      "verdict": "approve",
+      "alt": "A hand drops a folded ballot paper into a plastic ballot box.",
+      "peopleVisible": true
+    },
+    "le yoga": {
+      "verdict": "approve",
+      "alt": "A man in white balances on his hands in a yoga pose on a mat in a bright studio.",
+      "peopleVisible": true
+    },
+    "les écouteurs": {
+      "verdict": "approve",
+      "alt": "Brown and black over-ear headphones lie on a white surface.",
+      "peopleVisible": false
+    },
+    "lesión": {
+      "verdict": "approve",
+      "alt": "A runner in grey sneakers stands on grass and holds a hurting calf with both hands.",
+      "peopleVisible": true
+    },
+    "lienzo": {
+      "verdict": "approve",
+      "alt": "A paint palette, a jar of paint and a blank canvas lie on a white table.",
+      "peopleVisible": false
+    },
+    "limpiar": {
+      "verdict": "approve",
+      "alt": "A woman wipes a window with a blue cloth.",
+      "peopleVisible": true
+    },
+    "livrer": {
+      "verdict": "approve",
+      "alt": "A courier in a beige jacket hands over a parcel and a clipboard to be signed.",
+      "peopleVisible": true
+    },
+    "llave": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "lloviendo": {
+      "verdict": "approve",
+      "alt": "Heavy rain falls on a city street where cars drive with their lights on and a cyclist rides past.",
+      "peopleVisible": true
+    },
+    "malade": {
+      "verdict": "approve",
+      "alt": "A hand holds a digital thermometer in front of a person lying in bed.",
+      "peopleVisible": true
+    },
+    "manger": {
+      "verdict": "approve",
+      "alt": "Two people eat from takeaway bowls of salad and noodles, seen from above.",
+      "peopleVisible": true
+    },
+    "mano": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "masa": {
+      "verdict": "approve",
+      "alt": "Floury hands knead a round of dough on a wooden work surface.",
+      "peopleVisible": true
+    },
+    "medianoche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "medicina": {
+      "verdict": "approve",
+      "alt": "Pink tablets in a silver blister pack.",
+      "peopleVisible": false
+    },
+    "microondas": {
+      "verdict": "approve",
+      "alt": "A built-in microwave sits above a built-in oven in a modern kitchen with a brick wall.",
+      "peopleVisible": false
+    },
+    "moneda": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "mudarse": {
+      "verdict": "approve",
+      "alt": "A person kneels and packs a cardboard moving box on a concrete floor.",
+      "peopleVisible": true
+    },
+    "médicament": {
+      "verdict": "approve",
+      "alt": "Pink tablets in a silver blister pack.",
+      "peopleVisible": false
+    },
+    "nariz": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "nettoyer": {
+      "verdict": "approve",
+      "alt": "A woman wipes a window with a blue cloth.",
+      "peopleVisible": true
+    },
+    "nevando": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "noche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "nublado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

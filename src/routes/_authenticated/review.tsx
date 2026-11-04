@@ -427,6 +427,7 @@ function ReviewPage() {
             correctAnswer={correctAnswerText(q)}
             explanation={q.explanation}
             saveCourse={course}
+            question={q}
             continueLabel={idx < cards.length - 1 ? "Continue" : "Finish"}
             onContinue={next}
           />

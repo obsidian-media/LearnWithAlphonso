@@ -1,0 +1,164 @@
+{
+  "batch": "p6-r1-b005",
+  "pass": "first",
+  "reviewer": "agent:p6-b005",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "la méditation": {
+      "verdict": "approve",
+      "alt": "A person in black sits cross-legged and rests a hand on a knee while meditating.",
+      "peopleVisible": true
+    },
+    "la natation": {
+      "verdict": "approve",
+      "alt": "A woman swims in a bright blue pool, seen from above.",
+      "peopleVisible": true
+    },
+    "la nuit": {
+      "verdict": "approve",
+      "alt": "A city skyline lit up at night and reflected in the water.",
+      "peopleVisible": false
+    },
+    "la photographie": {
+      "verdict": "approve",
+      "alt": "A man in a suit holds a camera with a long lens by its strap.",
+      "peopleVisible": true
+    },
+    "la prison": {
+      "verdict": "approve",
+      "alt": "A prisoner reads on a bed in a cell behind metal bars while another person's legs stand in front.",
+      "peopleVisible": true
+    },
+    "la radio": {
+      "verdict": "approve",
+      "alt": "An old-fashioned brown radio with a woven speaker and four knobs.",
+      "peopleVisible": false
+    },
+    "la robotique": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la rue": {
+      "verdict": "approve",
+      "alt": "A wide city street lined with tall buildings under a dramatic sky, with a few people walking.",
+      "peopleVisible": true
+    },
+    "la règle": {
+      "verdict": "approve",
+      "alt": "Red plastic rulers and a protractor lie on a pale green background.",
+      "peopleVisible": false
+    },
+    "la rénovation": {
+      "verdict": "approve",
+      "alt": "A woman paints a wall grey with a paint roller.",
+      "peopleVisible": true
+    },
+    "la sculpture": {
+      "verdict": "approve",
+      "alt": "A group of dark bronze statues of people and a stag stands in a park.",
+      "peopleVisible": false
+    },
+    "la serveuse": {
+      "verdict": "approve",
+      "alt": "A smiling waitress in a black apron holds a notepad in a restaurant.",
+      "peopleVisible": true
+    },
+    "la sécheresse": {
+      "verdict": "approve",
+      "alt": "Dry sun-baked earth cracked into many pieces.",
+      "peopleVisible": false
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la tête": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la veste": {
+      "verdict": "approve",
+      "alt": "A person in a beige puffer jacket with the hood up and a black backpack walks into a forest, seen from behind.",
+      "peopleVisible": true
+    },
+    "la vitamine": {
+      "verdict": "approve",
+      "alt": "Beige vitamin tablets spill out of a white bottle onto a black surface.",
+      "peopleVisible": false
+    },
+    "la voiture": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "lavar": {
+      "verdict": "approve",
+      "alt": "A person in a yellow tank top bends over a stone sink and washes under a running tap.",
+      "peopleVisible": true
+    },
+    "laver": {
+      "verdict": "approve",
+      "alt": "A person in a yellow tank top bends over a stone sink and washes under a running tap.",
+      "peopleVisible": true
+    },
+    "le basketball": {
+      "verdict": "approve",
+      "alt": "Women jump for a basketball during a game in a sports hall.",
+      "peopleVisible": true
+    },
+    "le beurre": {
+      "verdict": "approve",
+      "alt": "A hand cuts slices from a block of butter on a wooden plate.",
+      "peopleVisible": true
+    },
+    "le bras": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le café": {
+      "verdict": "approve",
+      "alt": "A cup of cappuccino with heart-shaped latte art stands on a blue saucer.",
+      "peopleVisible": false
+    },
+    "le caissier": {
+      "verdict": "approve",
+      "alt": "A woman at a shop counter uses a tablet cash register while a customer holds out a hand.",
+      "peopleVisible": true
+    },
+    "le camping": {
+      "verdict": "approve",
+      "alt": "Two lit tents glow under a starry night sky.",
+      "peopleVisible": false
+    },
+    "le chargeur": {
+      "verdict": "approve",
+      "alt": "Two phones lie on a table, each plugged into a white charging cable.",
+      "peopleVisible": false
+    },
+    "le ciel": {
+      "verdict": "approve",
+      "alt": "Dark storm clouds in the sky with bright orange light shining through a gap.",
+      "peopleVisible": false
+    },
+    "le cochon": {
+      "verdict": "approve",
+      "alt": "Three young pink and black piglets stand on grass in front of a barn.",
+      "peopleVisible": false
+    }
+  }
+}
