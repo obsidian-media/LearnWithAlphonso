@@ -130,6 +130,9 @@ struct ReviewQueueView: View {
     private var reviewBody: some View {
         Group {
             if let question = currentQuestion {
+                // The question scrolls; Check and the verdict panel are pinned below it, so a tall item plus the
+                // panel never pushes the button off a small screen.
+                ScrollView {
                 VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
                     Text("\(idx + 1)/\(queue.count) due")
                         .font(AlphonsoFont.sans(13, weight: .medium))
@@ -140,9 +143,12 @@ struct ReviewQueueView: View {
                     // LessonPlayerView's identical pattern.
                     ReviewQuestionCard(question: question, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: currentItem.lessonId, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
                         .id(currentItem.itemKey)
-
-                    Spacer()
-
+                }
+                .padding()
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .safeAreaInset(edge: .bottom) {
+                    Group {
                     if isSubmitting {
                         ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
                     } else if isCheckingTranslation {
@@ -179,8 +185,13 @@ struct ReviewQueueView: View {
                             continueTitle: "Next"
                         ) { Task { await submitAndAdvance(question: question) } }
                     }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, AlphonsoSpacing.sm)
+                    .background(AlphonsoColor.surface)
                 }
-                .padding()
+                // The verdict panel announces the verdict itself; the explanation under the item stays quiet.
+                .environment(\.verdictAnnouncedByPanel, true)
             } else {
                 // Unreachable since loadQueue resolves every item up front. Kept as a guard: .task(id:) re-fires
                 // for each index, where a bare .task fired once per view identity and left a blank screen when

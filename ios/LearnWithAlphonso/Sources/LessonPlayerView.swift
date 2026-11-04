@@ -275,20 +275,27 @@ struct LessonPlayerView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    @ViewBuilder
+    /// The question scrolls; Check and the verdict panel are pinned above the tab bar. A tall question (an image,
+    /// four tiles, Alphonso's tip) plus the panel is taller than an iPhone SE's screen, and before this the column
+    /// did not scroll, so Continue could land under the tab bar. At accessibility text sizes the same layout holds.
     private var quizBody: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            // The question column has no scrolling of its own; at the largest text sizes a long question plus the
-            // Check button would run off the screen, so the whole column scrolls there.
-            ScrollView { quizColumn }
-                .scrollDismissesKeyboard(.interactively)
-                .background(AlphonsoColor.surface)
-        } else {
-            quizColumn
+        ScrollView {
+            quizContent
         }
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            quizControls
+                .padding(.horizontal)
+                .padding(.vertical, AlphonsoSpacing.sm)
+                .background(AlphonsoColor.surface)
+        }
+        .background(AlphonsoColor.surface)
+        // The verdict panel announces the verdict itself; the explanation under the question stays quiet.
+        .environment(\.verdictAnnouncedByPanel, true)
+        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.85), value: checked)
     }
 
-    private var quizColumn: some View {
+    private var quizContent: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             AlphonsoProgressBar(progress: total == 0 ? 0 : Double(idx) / Double(total))
             Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
@@ -317,8 +324,13 @@ struct LessonPlayerView: View {
             QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
                 .id("\(isReinforcing ? "reinforce" : "main")-\(questionID(currentQuestion))")
 
-            Spacer()
+        }
+        .padding()
+    }
 
+    /// Check, or the verdict panel once checked: pinned below the scrolling question.
+    @ViewBuilder
+    private var quizControls: some View {
             if isSubmitting {
                 ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
             } else if isCheckingTranslation {
@@ -374,10 +386,6 @@ struct LessonPlayerView: View {
                     }
                 }
             }
-        }
-        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.85), value: checked)
-        .padding()
-        .background(AlphonsoColor.surface)
     }
 
     /// The verdict the panel shows: a translation's settled grade when there is one (it may come from the AI
@@ -964,10 +972,15 @@ private struct VocabScreen: View {
         .background(AlphonsoColor.surface)
     }
 
+    /// The card's picture: 180 pt, smaller on a short screen (an iPhone SE) so the words below it still fit.
+    private static var cardImageHeight: CGFloat { min(180, UIScreen.main.bounds.height * 0.2) }
+
     private func wordCard(_ item: VocabItem) -> some View {
+        // The words scroll inside the card when they still do not fit (a long example on a short screen).
+        ScrollView {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
             if let image = item.image {
-                VocabImageView(image: image, cardHeight: 180)
+                VocabImageView(image: image, cardHeight: Self.cardImageHeight)
             }
             HStack(spacing: AlphonsoSpacing.sm) {
                 Text(item.term)
@@ -999,9 +1012,11 @@ private struct VocabScreen: View {
                 .padding(.vertical, AlphonsoSpacing.sm + 2)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-            Spacer(minLength: 0)
         }
         .padding(AlphonsoSpacing.md + 4)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(AlphonsoColor.hairline, lineWidth: 2))

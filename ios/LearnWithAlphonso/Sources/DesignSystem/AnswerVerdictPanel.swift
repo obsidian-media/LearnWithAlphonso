@@ -61,11 +61,11 @@ struct AnswerVerdictPanel: View {
                 .strokeBorder(tint.opacity(0.55), lineWidth: 2)
         }
         .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-        // ExplanationView already announces Correct / Incorrect; the panel adds the answer when it was missed.
+        // The one verdict announcement (two posts in the same frame cut each other off): the screens that show this
+        // panel set `verdictAnnouncedByPanel`, so ExplanationView stays quiet under it.
         .onAppear {
-            if let answerLine {
-                UIAccessibility.post(notification: .announcement, argument: answerLine)
-            }
+            let announcement = correct ? "Correct" : (answerLine.map { "Incorrect. \($0)" } ?? "Incorrect")
+            UIAccessibility.post(notification: .announcement, argument: announcement)
         }
     }
 }
@@ -137,11 +137,14 @@ struct ChunkyTileStyle: ButtonStyle {
     let edge: Color
     var radius: CGFloat = 18
     var minHeight: CGFloat = 56
+    /// Set by a style that builds this one itself (AlphonsoWordChipStyle): its environment is not installed here.
+    var reduceMotionOverride: Bool? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
-        let pressed = configuration.isPressed && !reduceMotion
+        let still = reduceMotionOverride ?? reduceMotion
+        let pressed = configuration.isPressed && !still
         return configuration.label
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.vertical, AlphonsoSpacing.sm)
@@ -158,7 +161,7 @@ struct ChunkyTileStyle: ButtonStyle {
                     .fill(edge)
                     .offset(y: pressed ? 0 : 4)
             )
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+            .animation(still ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
             .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 }
@@ -167,16 +170,32 @@ struct ChunkyTileStyle: ButtonStyle {
 struct AlphonsoWordChipStyle: ButtonStyle {
     let picked: Bool
 
+    // Read here, where the style is installed, and handed to the tile it builds (whose own @Environment is not).
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         ChunkyTileStyle(
             fill: picked ? AlphonsoColor.moss.opacity(0.16) : AlphonsoColor.parchment,
             edge: picked ? AlphonsoColor.moss : AlphonsoColor.hairline,
-            radius: 14, minHeight: AlphonsoSpacing.minTouchTarget
+            radius: 14, minHeight: AlphonsoSpacing.minTouchTarget,
+            reduceMotionOverride: reduceMotion
         )
         .makeBody(configuration: configuration)
         .font(AlphonsoFont.sans(16, weight: .medium))
         .foregroundStyle(AlphonsoColor.ink)
         .fixedSize()
+    }
+}
+
+/// True on a screen whose AnswerVerdictPanel announces the verdict, so ExplanationView does not announce it too.
+private struct VerdictAnnouncedByPanelKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var verdictAnnouncedByPanel: Bool {
+        get { self[VerdictAnnouncedByPanelKey.self] }
+        set { self[VerdictAnnouncedByPanelKey.self] = newValue }
     }
 }
 

@@ -131,8 +131,10 @@ describe("Largest accessibility text", () => {
   });
 
   it("the lesson question column and the vocabulary screen scroll as one at accessibility sizes", () => {
-    expect(between(player, "private var quizBody", /private var quizColumn/)).toMatch(
-      /isAccessibilitySize[\s\S]*ScrollView \{ quizColumn \}/,
+    // The question always scrolls now (Check and the verdict panel are pinned below it), so it holds at
+    // accessibility sizes too.
+    expect(between(player, "private var quizBody", /private var quizContent/)).toMatch(
+      /ScrollView \{\s*quizContent/,
     );
     expect(between(player, "private struct VocabScreen", /\n\/\/\/ The one way/)).toMatch(
       /isAccessibilitySize[\s\S]*ScrollView \{ listContent \}/,

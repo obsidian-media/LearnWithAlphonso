@@ -703,6 +703,9 @@ struct ExplanationView: View {
     var correctOverride: Bool? = nil
 
     @Environment(\.saveWordHandler) private var saveWordHandler
+    /// The lesson and review set this: their verdict panel announces the verdict, and a second post in the same
+    /// frame would cut it off.
+    @Environment(\.verdictAnnouncedByPanel) private var verdictAnnouncedByPanel
 
     private var isCorrect: Bool {
         correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
@@ -746,6 +749,7 @@ struct ExplanationView: View {
         // navigating to this exact element, which "does it work without
         // looking at the screen" needs to not require.
         .onAppear {
+            guard !verdictAnnouncedByPanel else { return }
             UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
         }
     }
