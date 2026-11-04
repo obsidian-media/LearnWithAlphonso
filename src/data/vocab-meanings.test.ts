@@ -197,6 +197,100 @@ describe("cardProblems (the gate's own rules)", () => {
   });
 });
 
+/**
+ * Phrasal verbs and fixed phrases. A card whose blank sits inside one of these must
+ * teach the whole phrase (an authored \`term\`), never a bare "work" or "effect" with
+ * the phrase's meaning under it.
+ */
+const PHRASES: RegExp[] = [
+  /\b(?:work|works|worked|working) out\b/,
+  /\b(?:warm|warms|warmed|warming) up\b/,
+  /\b(?:cool|cools|cooled|cooling) down\b/,
+  /\b(?:sum|sums|summed|summing) up\b/,
+  /\b(?:turn|turns|turned|turning) (?:off|down|up|to)\b/,
+  /\b(?:take|takes|took|taking) (?:out|place|off|over)\b/,
+  /\blevel(?:s|led|ed|ling|ing)? off\b/,
+  /\b(?:fall|falls|fell|falling) (?:into|through)\b/,
+  /\b(?:point|points|pointed|pointing) out\b/,
+  /\b(?:break|breaks|broke|breaking) (?:in|down|up)\b/,
+  /\b(?:come|comes|came|coming) (?:into|down to)\b/,
+  /\b(?:boil|boils|boiled|boiling) down\b/,
+  /\b(?:stand|stands|stood|standing) up\b/,
+  /\b(?:follow|follows|followed|following) up\b/,
+  /\b(?:reach|reaches|reached|reaching) out\b/,
+  /\bin touch\b/,
+  /\bkind of\b/,
+  /\bbear in mind\b/,
+  /\bin effect\b/,
+  /\bin light of\b/,
+  /\bin spite of\b/,
+  /\bon the other hand\b/,
+  /\bin other words\b/,
+  /\bbroadly speaking\b/,
+  /\blet me know\b/,
+  /\bused to\b/,
+  /\bdue to\b/,
+  /\bpressed on\b/,
+  /\bbrings? us back\b/,
+  /\bforward to\b/,
+];
+
+/** The phrase (if any) that the answer sits inside, when the question has no authored term. */
+function barePhrase(q: {
+  type: string;
+  prompt: string;
+  term?: string;
+  answer?: unknown;
+  choices?: string[];
+}): string | null {
+  if ((q.type !== "mc" && q.type !== "fill") || q.term !== undefined) return null;
+  const answer = q.type === "fill" ? String(q.answer) : (q.choices?.[q.answer as number] ?? "");
+  const at = q.prompt.indexOf("___");
+  if (at < 0 || !answer) return null;
+  const filled = q.prompt.slice(0, at) + answer + q.prompt.slice(at + 3);
+  const lower = filled.toLowerCase().replace(/[’]/g, "'");
+  const end = at + answer.length;
+  for (const re of PHRASES) {
+    const m = new RegExp(re.source, "g");
+    let hit: RegExpExecArray | null;
+    while ((hit = m.exec(lower))) {
+      const overlaps = hit.index < end && hit.index + hit[0].length > at;
+      const inside = hit.index >= at && hit.index + hit[0].length <= end;
+      if (overlaps && !inside) return hit[0];
+    }
+  }
+  return null;
+}
+
+describe("barePhrase (the phrase-term rule's own behaviour)", () => {
+  const fill = (prompt: string, answer: string) => ({ type: "fill", prompt, answer });
+  it("flags a blank inside a phrasal verb or fixed phrase", () => {
+    expect(barePhrase(fill("I ___ out at the gym.", "work"))).toBe("work out");
+    expect(barePhrase(fill("It is in ___ a ban.", "effect"))).toBe("in effect");
+    expect(barePhrase(fill("Kindly ___ me know.", "let"))).toBe("let me know");
+    expect(barePhrase(fill("She ___ to be shy.", "used"))).toBe("used to");
+  });
+  it("accepts an authored term, or a blank outside any phrase", () => {
+    expect(barePhrase({ ...fill("I ___ out at the gym.", "work"), term: "work out" })).toBeNull();
+    expect(barePhrase(fill("The ___ is on the table.", "book"))).toBeNull();
+    expect(barePhrase(fill("I work ___ the factory.", "in"))).toBeNull();
+  });
+});
+
+describe("a card inside a phrase teaches the whole phrase", () => {
+  for (const level of GATED_LEVELS) {
+    it("every " + level + " card in a phrasal verb or fixed phrase has a phrase term", () => {
+      const bad = getCourse("en")
+        .curriculum.filter((u) => u.level === level)
+        .flatMap((u) => u.lessons.flatMap((l) => l.questions.map((q) => ({ l, q }))))
+        .map(({ l, q }) => ({ id: l.id + "/" + q.id, phrase: barePhrase(q as never) }))
+        .filter((x) => x.phrase)
+        .map((x) => x.id + " (" + x.phrase + ")");
+      expect(bad).toEqual([]);
+    });
+  }
+});
+
 describe("English word cards have an authored meaning and example", () => {
   for (const level of GATED_LEVELS) {
     it(`every ${level} card is clean`, () => {

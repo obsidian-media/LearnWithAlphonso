@@ -19,6 +19,13 @@ describe("isMalformedPackLine", () => {
     expect(isMalformedPackLine("a|b| |an example", 4)).toBe(true);
     expect(isMalformedPackLine("a|b|", 4)).toBe(true);
   });
+  it("accepts a fifth field (the card term) only up to five, and not empty", () => {
+    expect(isMalformedPackLine("a|b|meaning|example|work out", 5)).toBe(false);
+    expect(isMalformedPackLine("a|b|meaning||work out", 5)).toBe(false);
+    expect(isMalformedPackLine("a|b|meaning|example|", 5)).toBe(true);
+    expect(isMalformedPackLine("a|b|m|e|t|extra", 5)).toBe(true);
+    expect(isMalformedPackLine("a|b|meaning|example|work out", 4)).toBe(true);
+  });
   it("lets an empty example fall back to the cloze sentence", () => {
     expect(isMalformedPackLine("a|b|meaning|", 4)).toBe(false);
   });

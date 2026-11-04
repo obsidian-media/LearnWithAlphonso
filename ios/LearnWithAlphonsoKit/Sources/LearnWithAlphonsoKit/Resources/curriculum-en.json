@@ -1539,7 +1539,9 @@
               ],
               "answer": "forward",
               "explanation": "\"Look forward to\" = anticipate happily.",
-              "meaning": "used in \"look forward to\" for happy waiting"
+              "term": "look forward to",
+              "meaning": "to wait for something with pleasure",
+              "example": "I'm looking forward to it."
             }
           ]
         }
@@ -2315,6 +2317,7 @@
               ],
               "answer": "sum",
               "explanation": "\"To sum up\" introduces a summary.",
+              "term": "sum up",
               "meaning": "to give the main points at the end",
               "example": "To sum up, we agreed on three actions."
             },
@@ -2730,8 +2733,8 @@
               ],
               "answer": "over",
               "explanation": "\"Over a period\" expresses duration.",
-              "meaning": "during a stretch of time",
-              "example": "The study ran over six months."
+              "meaning": "throughout a length of time",
+              "example": "We watched it over a six-month period."
             },
             {
               "id": "q5",
@@ -4277,7 +4280,9 @@
               ],
               "answer": 2,
               "explanation": "\"into\" is correct here. Use in for months/years, on for days/dates, at for clock times.",
-              "meaning": "moving to the inside of a place"
+              "term": "come into",
+              "meaning": "to enter a place",
+              "example": "Please come into the room."
             },
             {
               "id": "a1p4q18",
@@ -9153,7 +9158,9 @@
               ],
               "answer": 0,
               "explanation": "\"works\" is correct here. Simple present tense sentences describing a typical day.",
-              "meaning": "\"works out\" means to exercise"
+              "term": "works out",
+              "meaning": "does exercise",
+              "example": "He works out at the gym daily."
             },
             {
               "id": "a1p16q19",
@@ -13371,7 +13378,9 @@
               ],
               "answer": "used",
               "explanation": "\"used\" is correct here. Past simple for finished events; past continuous for background action.",
-              "meaning": "\"used to\" talks about past habits"
+              "term": "used to",
+              "meaning": "describes a past habit",
+              "example": "He used to walk to school."
             }
           ]
         },
@@ -18102,7 +18111,9 @@
               ],
               "answer": "let",
               "explanation": "\"let\" is correct here. Everyday phrases for arranging to meet and making plans.",
-              "meaning": "to allow; used in \"let me know\""
+              "term": "let me know",
+              "meaning": "to tell me",
+              "example": "Can you let me know by Friday?"
             },
             {
               "id": "a2p14q11",
@@ -23534,7 +23545,8 @@
               ],
               "answer": "touch",
               "explanation": "keep in ___ → touch. Collocations make speech sound natural.",
-              "meaning": "contact between people who know each other",
+              "term": "keep in touch",
+              "meaning": "to stay in contact",
               "example": "Let's keep in touch."
             },
             {
@@ -24305,8 +24317,9 @@
               ],
               "answer": 0,
               "explanation": "\"check\" is correct here. Common vocabulary for booking and navigating trips.",
+              "term": "check in",
               "meaning": "to hand over bags at the airport",
-              "example": "We need to check our luggage in."
+              "example": "We need to check in our luggage early."
             },
             {
               "id": "b1p7q9",
@@ -25061,8 +25074,9 @@
               ],
               "answer": "falling",
               "explanation": "\"falling\" is correct here. Intermediate vocabulary for managing money.",
-              "meaning": "slowly getting into a bad situation",
-              "example": "He's falling into debt."
+              "term": "fall into debt",
+              "meaning": "to start owing money",
+              "example": "He is falling into debt."
             },
             {
               "id": "b1p9q4",
@@ -26160,7 +26174,8 @@
               ],
               "answer": "due",
               "explanation": "\"due\" is correct here. B1-level vocabulary for talking about education.",
-              "meaning": "expected to happen at a certain time",
+              "term": "due to",
+              "meaning": "expected to; planned to",
               "example": "He is due to graduate in July."
             }
           ]
@@ -26212,7 +26227,7 @@
               ],
               "answer": "evening",
               "explanation": "\"evening\" is correct here. B1-level vocabulary for talking about education.",
-              "meaning": "in the later part of the day",
+              "meaning": "the last part of the day",
               "example": "She takes evening classes."
             },
             {
@@ -26227,7 +26242,7 @@
               ],
               "answer": 2,
               "explanation": "\"distance\" is correct here. B1-level vocabulary for talking about education.",
-              "meaning": "from far away, without being in class",
+              "meaning": "describes study done away from class",
               "example": "He studies a distance course online."
             },
             {
@@ -26400,8 +26415,9 @@
               ],
               "answer": 2,
               "explanation": "\"levelled\" is correct here. B1-level language for describing statistics and change over time.",
-              "meaning": "stopped rising or falling",
-              "example": "Sales levelled off after a strong start."
+              "term": "level off",
+              "meaning": "to stop rising or falling",
+              "example": "Prices began to level off in May."
             },
             {
               "id": "b1p12q9",
@@ -27035,6 +27051,7 @@
               ],
               "answer": 2,
               "explanation": "\"touch\" is correct here. B1-level vocabulary for job applications and interviews.",
+              "term": "in touch",
               "meaning": "in contact",
               "example": "The recruiter will be in touch soon."
             },
@@ -27553,6 +27570,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "I used to walk to school."
             },
@@ -27581,6 +27599,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "She used to have long hair."
             },
@@ -27609,6 +27628,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "I used to live in a village."
             }
@@ -27644,6 +27664,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "She used to be afraid of the dark."
             },
@@ -27672,6 +27693,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "He used to smoke."
             },
@@ -27707,6 +27729,7 @@
               ],
               "answer": 0,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "She used to work as a teacher."
             },
@@ -27720,6 +27743,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "We used to have a dog."
             },
@@ -27748,6 +27772,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "He used to be thinner."
             },
@@ -27761,6 +27786,7 @@
               ],
               "answer": 0,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "I used to hate vegetables."
             }
@@ -27796,6 +27822,7 @@
               ],
               "answer": 0,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "She used to own a red car."
             },
@@ -27824,6 +27851,7 @@
               ],
               "answer": 0,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "I used to study French."
             },
@@ -27837,6 +27865,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "They used to travel a lot."
             }
@@ -27872,6 +27901,7 @@
               ],
               "answer": 0,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "She used to be more confident."
             },
@@ -27885,6 +27915,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "He used to play the piano."
             },
@@ -27913,6 +27944,7 @@
               ],
               "answer": 1,
               "explanation": "\"used\" is correct here. B1-level structures for talking about past habits.",
+              "term": "used to",
               "meaning": "describes a past habit or state that ended",
               "example": "They used to live next door."
             }
@@ -28691,8 +28723,9 @@
               ],
               "answer": "kind",
               "explanation": "\"kind\" is correct here. B1-level phrases for discussion and debate.",
-              "meaning": "rather; to some degree",
-              "example": "I'm kind of unsure."
+              "term": "kind of",
+              "meaning": "rather; a little",
+              "example": "I'm kind of unsure about it."
             },
             {
               "id": "b1p17q21",
@@ -28782,6 +28815,7 @@
               ],
               "answer": 0,
               "explanation": "\"work\" is correct here. B1-level vocabulary for talking about fitness and wellbeing.",
+              "term": "work out",
               "meaning": "to do physical exercise",
               "example": "I work out three times a week."
             },
@@ -28812,6 +28846,7 @@
               ],
               "answer": 2,
               "explanation": "\"warm\" is correct here. B1-level vocabulary for talking about fitness and wellbeing.",
+              "term": "warm up",
               "meaning": "to prepare your body for exercise",
               "example": "I warm up before running."
             },
@@ -28909,6 +28944,7 @@
               ],
               "answer": 0,
               "explanation": "\"cool\" is correct here. B1-level vocabulary for talking about fitness and wellbeing.",
+              "term": "cool down",
               "meaning": "to let your body relax after exercise",
               "example": "I cool down after a workout."
             },
@@ -29814,7 +29850,8 @@
               ],
               "answer": 2,
               "explanation": "\"turn\" is correct here. B1-level sequencing language for describing steps.",
-              "meaning": "to switch a machine off or on",
+              "term": "turn off",
+              "meaning": "to stop a machine or light",
               "example": "Turn off the power."
             },
             {
@@ -31314,7 +31351,8 @@
               ],
               "answer": 0,
               "explanation": "\"turned\" is correct here. Passive = be + past participle; the doer becomes optional.",
-              "meaning": "refused; rejected",
+              "term": "turn down",
+              "meaning": "to refuse an offer",
               "example": "The offer was turned down."
             },
             {
@@ -31869,7 +31907,8 @@
               ],
               "answer": "In spite",
               "explanation": "\"In spite\" is correct here. Linkers signal contrast, cause, or addition — choose by logic.",
-              "meaning": "used in the phrase before the delay",
+              "term": "in spite of",
+              "meaning": "despite",
               "example": "In spite of the delay, we arrived on time."
             }
           ]
@@ -32070,7 +32109,7 @@
               ],
               "answer": 0,
               "explanation": "\"arguably\" is correct here. Linkers signal contrast, cause, or addition — choose by logic.",
-              "meaning": "used for a claim that can be argued",
+              "meaning": "probably, though some may disagree",
               "example": "He is, arguably, the best candidate."
             },
             {
@@ -32085,6 +32124,7 @@
               ],
               "answer": "On the other",
               "explanation": "\"On the other\" is correct here. Linkers signal contrast, cause, or addition — choose by logic.",
+              "term": "on the other hand",
               "meaning": "used to introduce an opposing point",
               "example": "On the other hand, the risks are real."
             },
@@ -33545,7 +33585,8 @@
               ],
               "answer": "taking",
               "explanation": "\"taking\" is correct here. Reported speech shifts tense back and changes time and place words.",
-              "meaning": "the -ing form used after admit",
+              "term": "admitted taking",
+              "meaning": "said you did take something",
               "example": "He admitted taking the money."
             }
           ]
@@ -33612,7 +33653,8 @@
               ],
               "answer": "not",
               "explanation": "\"not\" is correct here. Reported speech shifts tense back and changes time and place words.",
-              "meaning": "used to give a negative warning",
+              "term": "warned us not to",
+              "meaning": "told us to avoid something",
               "example": "She warned us not to touch it."
             },
             {
@@ -33679,7 +33721,7 @@
               ],
               "answer": 0,
               "explanation": "\"was\" is correct here. Reported speech shifts tense back and changes time and place words.",
-              "meaning": "a past form of be in a passive",
+              "meaning": "a past form of be for a state",
               "example": "They announced that the deal was off."
             },
             {
@@ -33813,6 +33855,7 @@
               ],
               "answer": "out",
               "explanation": "\"out\" is correct here. Reported speech shifts tense back and changes time and place words.",
+              "term": "point out",
               "meaning": "to show something by talking about it",
               "example": "She pointed out the flaw in the plan."
             },
@@ -34098,7 +34141,8 @@
               ],
               "answer": "mind",
               "explanation": "bear in → mind. Natural English depends on the right partner word.",
-              "meaning": "in your thoughts; remembered",
+              "term": "bear in mind",
+              "meaning": "to remember to consider something",
               "example": "Bear in mind that it's a long trip."
             },
             {
@@ -34180,7 +34224,7 @@
               ],
               "answer": 0,
               "explanation": "express → concern. Natural English depends on the right partner word.",
-              "meaning": "to say that you are worried",
+              "meaning": "a feeling of worry about something",
               "example": "She expressed concern about safety."
             },
             {
@@ -35407,8 +35451,9 @@
               ],
               "answer": 2,
               "explanation": "\"came\" is correct here. B2-level vocabulary for meetings and negotiations.",
-              "meaning": "reached the main point",
-              "example": "It came down to price."
+              "term": "come down to",
+              "meaning": "to be decided by one main thing",
+              "example": "It may come down to price."
             },
             {
               "id": "b2p11q16",
@@ -35467,8 +35512,9 @@
               ],
               "answer": 2,
               "explanation": "\"through\" is correct here. B2-level vocabulary for meetings and negotiations.",
-              "meaning": "failed to happen",
-              "example": "The deal fell through."
+              "term": "fall through",
+              "meaning": "to fail to happen",
+              "example": "The deal could fall through."
             }
           ]
         },
@@ -35826,8 +35872,9 @@
               ],
               "answer": "in",
               "explanation": "\"in\" is correct here. B2-level vocabulary for news and crime reports.",
-              "meaning": "entered a building by force",
-              "example": "The burglar broke in through a window."
+              "term": "break in",
+              "meaning": "to enter a building by force",
+              "example": "A burglar may break in through a window."
             },
             {
               "id": "b2p12q16",
@@ -36096,7 +36143,8 @@
               ],
               "answer": 0,
               "explanation": "\"come\" is correct here. B2-level vocabulary for discussing politics and social issues.",
-              "meaning": "to begin to be in force",
+              "term": "come into effect",
+              "meaning": "to start to apply, as a law",
               "example": "The law will come into effect."
             },
             {
@@ -38251,7 +38299,7 @@
               ],
               "answer": 0,
               "explanation": "\"wouldn't\" is correct here. B2-level mixed conditional structures.",
-              "meaning": "shows the short form of would not",
+              "meaning": "the short form of would not",
               "example": "If she had left, she wouldn't be stuck."
             },
             {
@@ -38931,7 +38979,8 @@
               ],
               "answer": "had",
               "explanation": "\"had\" is correct here. B2-level wish structures.",
-              "meaning": "a helper verb for a regret",
+              "term": "if only we had",
+              "meaning": "a wish about the past that cannot change",
               "example": "If only we had booked earlier."
             },
             {
@@ -41348,7 +41397,8 @@
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. Fronted negatives and adverbials trigger question word order.",
-              "meaning": "a past form of be placed first",
+              "term": "so loud was",
+              "meaning": "an inverted pattern for strong effect",
               "example": "So loud was the music that we left."
             },
             {
@@ -41497,7 +41547,8 @@
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. Fronted negatives and adverbials trigger question word order.",
-              "meaning": "a past form of be for focus",
+              "term": "it was she who",
+              "meaning": "a sentence pattern that stresses a person",
               "example": "It was she who solved it."
             },
             {
@@ -41983,7 +42034,7 @@
               ],
               "answer": "arguably",
               "explanation": "\"arguably\" is correct here. Each connector carries a distinct logical relationship.",
-              "meaning": "used for a claim that can be argued",
+              "meaning": "probably, though some may disagree",
               "example": "The data arguably suggests a link."
             },
             {
@@ -42851,7 +42902,7 @@
               ],
               "answer": "arguably",
               "explanation": "\"arguably\" is correct here. Hedging protects claims from overstatement.",
-              "meaning": "used for a claim that can be argued",
+              "meaning": "probably, though some may disagree",
               "example": "Such readings are arguably open to dispute."
             },
             {
@@ -43061,6 +43112,7 @@
               ],
               "answer": 2,
               "explanation": "\"effect\" is correct here. Formal, legalistic register found in contracts, policies, and official notices.",
+              "term": "in effect",
               "meaning": "valid and in use",
               "example": "The agreement shall remain in effect for two years."
             },
@@ -43832,7 +43884,8 @@
               ],
               "answer": "boils",
               "explanation": "\"boils\" is correct here. C1-level vocabulary for constructing a persuasive argument.",
-              "meaning": "is simply a matter of one basic thing",
+              "term": "boil down to",
+              "meaning": "to be simply a matter of",
               "example": "It boils down to values."
             },
             {
@@ -43877,6 +43930,7 @@
               ],
               "answer": 0,
               "explanation": "\"stand\" is correct here. C1-level vocabulary for constructing a persuasive argument.",
+              "term": "stand up to",
               "meaning": "to be strong enough to bear a test",
               "example": "His claim does not stand up to scrutiny."
             }
@@ -45809,6 +45863,7 @@
               ],
               "answer": "place",
               "explanation": "\"place\" is correct here. C1-level passive and causative constructions.",
+              "term": "take place",
               "meaning": "to happen",
               "example": "The event will take place in June."
             },
@@ -45900,7 +45955,8 @@
               ],
               "answer": 2,
               "explanation": "\"to\" is correct here. C1-level phrases for formal written communication.",
-              "meaning": "links a topic with a comment",
+              "term": "with reference to",
+              "meaning": "about; concerning",
               "example": "With reference to our call, here is the report."
             },
             {
@@ -45967,6 +46023,7 @@
               ],
               "answer": 2,
               "explanation": "\"reach\" is correct here. C1-level phrases for formal written communication.",
+              "term": "reach out",
               "meaning": "to make contact with someone",
               "example": "Please feel free to reach out."
             },
@@ -46101,7 +46158,8 @@
               ],
               "answer": "let",
               "explanation": "\"let\" is correct here. C1-level phrases for formal written communication.",
-              "meaning": "to allow something to be known",
+              "term": "let me know",
+              "meaning": "to tell me",
               "example": "Kindly let me know your availability."
             },
             {
@@ -46116,6 +46174,7 @@
               ],
               "answer": 2,
               "explanation": "\"follow\" is correct here. C1-level phrases for formal written communication.",
+              "term": "follow up",
               "meaning": "to ask again about an earlier matter",
               "example": "I am writing to follow up on my email."
             },
@@ -46939,7 +46998,8 @@
               ],
               "answer": "was",
               "explanation": "\"was\" is correct here. C1-level cleft sentence structures for emphasis.",
-              "meaning": "a past form of be linking two parts",
+              "term": "what we found strange was",
+              "meaning": "a sentence pattern that stresses one thing",
               "example": "What we found strange was his silence."
             },
             {
@@ -48424,6 +48484,7 @@
               ],
               "answer": 2,
               "explanation": "\"turn\" is correct here. C1-level cohesive devices for academic writing.",
+              "term": "turn to",
               "meaning": "to move your attention to something new",
               "example": "We can now turn to the next issue."
             },
@@ -48491,6 +48552,7 @@
               ],
               "answer": 2,
               "explanation": "\"light\" is correct here. C1-level cohesive devices for academic writing.",
+              "term": "in light of",
               "meaning": "taking something into account",
               "example": "In light of the above, more research is needed."
             },
@@ -48506,6 +48568,7 @@
               ],
               "answer": "sum",
               "explanation": "\"sum\" is correct here. C1-level cohesive devices for academic writing.",
+              "term": "sum up",
               "meaning": "to give the main points at the end",
               "example": "To sum up, the study has limits."
             },
@@ -48558,6 +48621,7 @@
               ],
               "answer": "speaking",
               "explanation": "\"speaking\" is correct here. C1-level cohesive devices for academic writing.",
+              "term": "broadly speaking",
               "meaning": "in a general way",
               "example": "Broadly speaking, the findings match prior research."
             },
@@ -48640,7 +48704,8 @@
               ],
               "answer": 2,
               "explanation": "\"back\" is correct here. C1-level cohesive devices for academic writing.",
-              "meaning": "to an earlier point",
+              "term": "bring back",
+              "meaning": "to lead to an earlier point",
               "example": "This brings us back to the central argument."
             },
             {
@@ -48782,7 +48847,8 @@
               ],
               "answer": 2,
               "explanation": "\"other\" is correct here. C1-level cohesive devices for academic writing.",
-              "meaning": "different; not the same",
+              "term": "in other words",
+              "meaning": "said in a different way",
               "example": "In other words, results were not as expected."
             }
           ]

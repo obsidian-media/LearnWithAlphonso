@@ -583,6 +583,7 @@ export const advancedUnits: Unit[] = [
             bank: ["sum", "add", "put", "end"],
             answer: "sum",
             explanation: '"To sum up" introduces a summary.',
+            term: "sum up",
             meaning: "to give the main points at the end",
             example: "To sum up, we agreed on three actions.",
           },
@@ -908,8 +909,8 @@ export const advancedUnits: Unit[] = [
             bank: ["over", "in during", "at", "by"],
             answer: "over",
             explanation: '"Over a period" expresses duration.',
-            meaning: "during a stretch of time",
-            example: "The study ran over six months.",
+            meaning: "throughout a length of time",
+            example: "We watched it over a six-month period.",
           },
           {
             id: "q5",
