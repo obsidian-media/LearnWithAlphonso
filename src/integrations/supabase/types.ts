@@ -841,6 +841,21 @@ export type Database = {
         };
         Relationships: [];
       };
+      lesson_completion_hits: {
+        Row: {
+          at: string;
+          user_id: string;
+        };
+        Insert: {
+          at: string;
+          user_id: string;
+        };
+        Update: {
+          at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       lesson_completions: {
         Row: {
           completed_at: string;
@@ -2149,6 +2164,10 @@ export type Database = {
           per_minute_limit: number;
         }[];
       };
+      consume_lesson_completion_slot: {
+        Args: { _at: string; _limit?: number; _user_id: string };
+        Returns: boolean;
+      };
       contains_blocked_term: { Args: { input: string }; Returns: boolean };
       create_duel: {
         Args: { _course?: string; _opponent_id: string };
@@ -2435,6 +2454,10 @@ export type Database = {
           p_source: string;
         };
         Returns: string;
+      };
+      release_lesson_completion_slot: {
+        Args: { _at: string; _user_id: string };
+        Returns: undefined;
       };
       remove_friend: {
         Args: { _friend_id: string };
