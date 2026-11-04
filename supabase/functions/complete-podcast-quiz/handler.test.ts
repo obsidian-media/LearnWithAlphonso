@@ -31,32 +31,41 @@ const post = (body: unknown) =>
   });
 const valid = { episodeId: EPISODE, answers: [{ questionId: "q1", choiceIndex: 2 }] };
 
-Deno.test("a signed-in submission is graded by the database, as the authenticated user, with the shared ceiling", async () => {
-  const { handler, calls } = setup({ data: { status: "applied", correct: 5, xpGain: 50 }, error: null });
-  const res = await handler(post(valid));
-  assertEquals(res.status, 200);
-  assertEquals((await res.json()).xpGain, 50);
-  assertEquals(calls.length, 1);
-  assertEquals(calls[0]!.name, "submit_podcast_quiz");
-  assertEquals(calls[0]!.args._user_id, "user-1");
-  assertEquals(calls[0]!.args._limit, HOURLY_COMPLETION_LIMIT);
-  assertEquals(calls[0]!.args._completed_at, null);
-  assertEquals(calls[0]!.args._answers, valid.answers);
-});
+Deno.test(
+  "a signed-in submission is graded by the database, as the authenticated user, with the shared ceiling",
+  async () => {
+    const { handler, calls } = setup({
+      data: { status: "applied", correct: 5, xpGain: 50 },
+      error: null,
+    });
+    const res = await handler(post(valid));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 50);
+    assertEquals(calls.length, 1);
+    assertEquals(calls[0]!.name, "submit_podcast_quiz");
+    assertEquals(calls[0]!.args._user_id, "user-1");
+    assertEquals(calls[0]!.args._limit, HOURLY_COMPLETION_LIMIT);
+    assertEquals(calls[0]!.args._completed_at, null);
+    assertEquals(calls[0]!.args._answers, valid.answers);
+  },
+);
 
-Deno.test("a client-claimed score or user id is ignored: only the answers reach the database", async () => {
-  const { handler, calls } = setup({ data: { status: "applied" }, error: null });
-  await handler(post({ ...valid, correct: 7, xp: 9999, userId: "someone-else" }));
-  assertEquals(calls[0]!.args._user_id, "user-1");
-  assertEquals(Object.keys(calls[0]!.args).sort(), [
-    "_answers",
-    "_at",
-    "_completed_at",
-    "_episode_id",
-    "_limit",
-    "_user_id",
-  ]);
-});
+Deno.test(
+  "a client-claimed score or user id is ignored: only the answers reach the database",
+  async () => {
+    const { handler, calls } = setup({ data: { status: "applied" }, error: null });
+    await handler(post({ ...valid, correct: 7, xp: 9999, userId: "someone-else" }));
+    assertEquals(calls[0]!.args._user_id, "user-1");
+    assertEquals(Object.keys(calls[0]!.args).sort(), [
+      "_answers",
+      "_at",
+      "_completed_at",
+      "_episode_id",
+      "_limit",
+      "_user_id",
+    ]);
+  },
+);
 
 Deno.test("unauthenticated requests never reach the database", async () => {
   const { handler, calls } = setup({ data: { status: "applied" }, error: null }, false);
@@ -105,12 +114,15 @@ Deno.test("the quiz shares the lesson hourly ceiling value", () => {
   assertEquals(HOURLY_COMPLETION_LIMIT, LESSON_LIMIT);
 });
 
-Deno.test("the client's finish time is passed on for the database to clamp, never turned into a day here", async () => {
-  const { handler, calls } = setup({ data: { status: "applied" }, error: null });
-  await handler(post({ ...valid, completedAt: "2026-11-05T01:30:00+14:00" }));
-  assertEquals(calls[0]!.args._completed_at, "2026-11-05T01:30:00+14:00");
-  assertEquals("_today" in calls[0]!.args, false);
-});
+Deno.test(
+  "the client's finish time is passed on for the database to clamp, never turned into a day here",
+  async () => {
+    const { handler, calls } = setup({ data: { status: "applied" }, error: null });
+    await handler(post({ ...valid, completedAt: "2026-11-05T01:30:00+14:00" }));
+    assertEquals(calls[0]!.args._completed_at, "2026-11-05T01:30:00+14:00");
+    assertEquals("_today" in calls[0]!.args, false);
+  },
+);
 
 Deno.test("a malformed finish time is a 400", async () => {
   const { handler, calls } = setup({ data: { status: "applied" }, error: null });

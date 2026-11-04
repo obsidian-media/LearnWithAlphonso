@@ -15,7 +15,12 @@ export const HOURLY_COMPLETION_LIMIT = 60;
 const bodySchema = z.object({
   episodeId: z.string().uuid(),
   answers: z
-    .array(z.object({ questionId: z.string().regex(/^q[0-9]{1,2}$/), choiceIndex: z.number().int().min(0).max(3) }))
+    .array(
+      z.object({
+        questionId: z.string().regex(/^q[0-9]{1,2}$/),
+        choiceIndex: z.number().int().min(0).max(3),
+      }),
+    )
     .min(1)
     .max(10),
   // When the client says it finished. The database clamps it into [now - 3 hours, now], like a lesson's completedAt.
@@ -29,20 +34,30 @@ export type CompletePodcastQuizDeps = {
 };
 
 function jsonResponse(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 async function authenticate(req: Request): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return jsonResponse({ error: "Unauthorized: missing bearer token" }, 401);
+  if (!authHeader?.startsWith("Bearer "))
+    return jsonResponse({ error: "Unauthorized: missing bearer token" }, 401);
   const token = authHeader.slice("Bearer ".length);
-  if (!token || token.split(".").length !== 3) return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
-  const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false },
-  });
+  if (!token || token.split(".").length !== 3)
+    return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
+  const anonClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    },
+  );
   const { data, error } = await anonClient.auth.getClaims(token);
-  if (error || !data?.claims?.sub) return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
+  if (error || !data?.claims?.sub)
+    return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
   return { userId: data.claims.sub as string };
 }
 
@@ -57,7 +72,9 @@ export function liveDeps(): CompletePodcastQuizDeps {
   };
 }
 
-export function createCompletePodcastQuizHandler(deps: CompletePodcastQuizDeps): (req: Request) => Promise<Response> {
+export function createCompletePodcastQuizHandler(
+  deps: CompletePodcastQuizDeps,
+): (req: Request) => Promise<Response> {
   return async (req) => {
     if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
     const auth = await deps.authenticate(req);
@@ -88,7 +105,13 @@ export function createCompletePodcastQuizHandler(deps: CompletePodcastQuizDeps):
     if (status === "not-found") return jsonResponse({ error: "not-found" }, 404);
     if (status === "invalid") return jsonResponse({ error: "invalid-answers" }, 400);
     if (status === "rate-limited") {
-      console.log(JSON.stringify({ event: "completion_refused", fn: "complete-podcast-quiz", reason: "rate-limited" }));
+      console.log(
+        JSON.stringify({
+          event: "completion_refused",
+          fn: "complete-podcast-quiz",
+          reason: "rate-limited",
+        }),
+      );
       return jsonResponse({ error: "rate-limited" }, 429);
     }
     return jsonResponse({ error: "Could not save the quiz; retry" }, 503);

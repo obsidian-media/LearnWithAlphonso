@@ -42,7 +42,14 @@ describe("completePodcastQuiz", () => {
     expect(args._user_id).toBe("user-1");
     expect(args._answers).toEqual(answers);
     expect(args._limit).toBe(60);
-    expect(Object.keys(args).sort()).toEqual(["_answers","_at","_completed_at","_episode_id","_limit","_user_id"]);
+    expect(Object.keys(args).sort()).toEqual([
+      "_answers",
+      "_at",
+      "_completed_at",
+      "_episode_id",
+      "_limit",
+      "_user_id",
+    ]);
   });
 
   it.each([
