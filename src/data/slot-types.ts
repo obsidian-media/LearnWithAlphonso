@@ -2,6 +2,7 @@
 // wrong option belongs to its slot. The rules are written down in
 // docs/distractor-policy.md; src/data/distractor-gate.test.ts enforces them.
 
+import { PACK_EXTRA_VOCAB } from "./pack-extra-vocab";
 import { REVIEWED_PHRASES } from "./reviewed-phrases";
 import { alsoCorrectReason, bracketClue, clueIsSpecific } from "./also-correct";
 export { bracketClue, clueIsSpecific };
@@ -168,6 +169,47 @@ export const BLANKET_CONTEXT = "the sentence already rules out the other options
 /** Reviewed exceptions: question key (`lessonId/questionId`) -> options allowed outside the pool. */
 export const DISTRACTOR_ALLOW: Record<string, { options: string[]; why: string }> = {};
 
+/**
+ * Packs on one theme share a vocabulary: a wrong option for a transport question may be any
+ * transport word, whichever transport pack it comes from. Packs on no theme stand alone.
+ */
+export const THEME_PACKS: string[][] = [
+  ["a1p8", "a1p19", "a2p11"],
+  ["a1p20", "a2p4", "a2p13"],
+  ["a1p21", "a2p9"],
+  ["a1p11", "a2p15"],
+  ["a1p22", "a2p8"],
+  ["a2p16", "a2p13"],
+  ["a1p5", "a1p16"],
+];
+
+/**
+ * Same-kind words a pack's questions may use as wrong options although the pack never teaches
+ * them (the other months for a month question). Reviewed per pack, never per question.
+ */
+export const EXTRA_VOCAB: Record<string, string> = {
+  a1p14:
+    "March,April,May,August,September,November,Thursday,Wednesday,Tuesday,Monday,Friday,Saturday,Sunday,dawn,evening,midnight,lunchtime",
+  a1p10: "windy,snowy,cloudy,stormy,chilly,sunny,foggy,rainy,dry,wet,cold,warm",
+  a1p9: "belt,gloves,socks,hat,scarf,skirt,dress,jumper,coat,sandals,slippers,trainers,boots,shorts,jacket",
+};
+
+/** Per pack, every word the pack teaches plus its themed packs' words and its reviewed extras. */
+export function buildPackVocab(rawWords: Map<string, Set<string>>): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>();
+  const packs = new Set<string>([...rawWords.keys()]);
+  for (const pack of packs) {
+    const set = new Set<string>(rawWords.get(pack) ?? []);
+    for (const group of THEME_PACKS)
+      if (group.includes(pack))
+        for (const p of group) for (const w of rawWords.get(p) ?? []) set.add(w);
+    for (const w of (EXTRA_VOCAB[pack] ?? "").split(",").filter(Boolean)) set.add(w);
+    for (const w of PACK_EXTRA_VOCAB[pack] ?? []) set.add(w);
+    out.set(pack, set);
+  }
+  return out;
+}
+
 export type Issue =
   | { kind: "off-pool"; option: string; slot: SlotType }
   | { kind: "pos-mismatch"; option: string; answerPos: string; optionPos: string }
@@ -194,13 +236,15 @@ export type QuestionShape = {
   slot?: SlotType;
   /** Answers of the question's whole pack, for `category` slots. */
   packAnswers?: Set<string>;
+  /** Every word the pack itself uses (its answers and the options of its unfixed questions). */
+  packVocab?: Set<string>;
   /** True when a reviewed fix replaced the wrong options; false when it only added a clue or reason. */
   wrongReplaced?: boolean;
   /** A hand-authored phrase question that was read and judged sound (see reviewed-phrases.ts). */
   reviewed?: boolean;
   /** How many questions carry exactly this context reason (computed by the sweep). */
   contextUses?: number;
-  /** Reviewed wrong options outside the pool (QuestionFix.allow). */
+  /** Ignored by the check (kept so a fixture can show that an allow list no longer helps). */
   allow?: string[];
 };
 
@@ -211,17 +255,27 @@ export type QuestionShape = {
  */
 const nouns = (s: string) => Object.fromEntries(s.split(",").map((w) => [w.trim(), "Noun"]));
 const POS_FIX: Record<string, Record<string, string>> = {
-  a1p11: nouns("coins,notes"),
+  a1p11: { ...nouns("coins,notes,cash,tax"), later: "Adverb" },
   a1p14: nouns("time,year,January,Monday"),
   a1p19: nouns("till,trolley,price,vegetables,oil,debit"),
   a2p7: nouns("kitchen,bedroom,bathroom,house,garage,garden,flat,dining room"),
   a2p9: nouns("cold,cough,fever,headache,bruise,nuts,bread,milk,eggs"),
-  a2p11: nouns("nuts,bread,milk,eggs"),
-  a2p15: nouns("stamp"),
+  a2p11: nouns("nuts,bread,milk,eggs,deposit"),
+  a2p15: {
+    ...nouns("stamp"),
+    registered: "Adjective",
+    airmail: "Adjective",
+    surface: "Adjective",
+    "second-class": "Adjective",
+  },
   a2p16: { ...nouns("centre,park,stop,market"), local: "Adjective" },
-  a1p8: { orange: "Noun" },
+  a1p8: { orange: "Noun", medium: "Adjective" },
+  a1p16: { sleep: "Verb", "glances at": "Verb", watch: "Verb", walk: "Verb" },
   a2p13: Object.fromEntries(
-    "left,right,straight,back,up,forward".split(",").map((w) => [w, "Adverb"]),
+    "left,right,straight,back,up,forward"
+      .split(",")
+      .map((w) => [w, "Adverb"])
+      .concat("end,start,middle,side".split(",").map((w) => [w, "Noun"])),
   ),
   a2p17: {
     above: "Preposition",
@@ -230,8 +284,17 @@ const POS_FIX: Record<string, Record<string, string>> = {
     alongside: "Preposition",
     behind: "Preposition",
     inside: "Preposition",
+    towards: "Preposition",
+    into: "Preposition",
+    through: "Preposition",
   },
-  a2p20: { long: "Adjective", fluent: "Adjective", warm: "Adjective", tall: "Adjective" },
+  a2p20: {
+    long: "Adjective",
+    fluent: "Adjective",
+    warm: "Adjective",
+    tall: "Adjective",
+    light: "Adjective",
+  },
 };
 
 /** The time pack mixes days, months, parts of the day and units; a wrong option must be the answer's own kind. */
@@ -295,7 +358,7 @@ const posOf = (packId: string | undefined, word: string): string | undefined =>
 
 /** A reason that only says the other options are wrong ("cannot ...", "is not a place") explains nothing. */
 export const NEGATIVE_REASON =
-  /\bcannot\b|\bcan't\b|\bis not a\b|\bare not\b|\bis not\b|\bneeds? another\b|\bdo(es)? not (fit|make sense|exist)\b|nonsense/i;
+  /\b(cannot|can't|isn't|aren't|doesn't|don't|never|not an?|is not|are not|needs? another|do(es)? not|none of|would make (no )?sense|makes? no sense|nonsense)\b/i;
 
 /** A context reason counts only if it is written for this question: unique and not the stamp. */
 function contextIsReal(q: QuestionShape): boolean {
@@ -308,9 +371,99 @@ function contextIsReal(q: QuestionShape): boolean {
   );
 }
 
-/** Words that fix the tense of the sentence they are in. */
-export const TIME_ANCHOR =
-  /\b(yesterday|last (night|week|year|month|summer|weekend|\w*day)|\w+ ago|tomorrow|tonight|next (week|year|month|summer|weekend|\w*day)|right now|at the moment|every \w+|\bnow\b|always|usually|often|never|sometimes|already|yet|since|for (\w+ )?(years|hours|days|minutes|weeks|months)|used to|in (19|20)\d\d|at \d|o.clock|by the time|just|this (morning|week|year|evening|afternoon)|when (he|she|i|we|they|it) (was|were|had)|\d\d?\s?(am|pm)|on (mon|tues|wednes|thurs|fri|satur|sun)day)s?\b|"[a-z]+"|\b(to|will|would|can|could|shall|should|must|might|may|let's|do|does|did)\s+(\w+\s+)?___|(n't|'ll|'m|'re|'s|'ve|'d)\s+(\w+\s+)?___|\b(am|is|are|was|were|been|being|have|has|had|having)\s+(\w+\s+)?___|\b(weekdays?|weekends?|mornings|evenings|nights|twice a|\w+ times a|a (day|week|month|year)|in the (morning|evening|afternoon)|in (winter|summer|spring|autumn)|all day|at night)\b/i;
+/** Past forms that are not base + ed (base -> past). */
+const IRREG_PAST: Record<string, string> = Object.fromEntries(
+  "go:went,eat:ate,write:wrote,see:saw,buy:bought,say:said,know:knew,take:took,give:gave,come:came,get:got,have:had,make:made,do:did,drink:drank,drive:drove,run:ran,swim:swam,sing:sang,ride:rode,speak:spoke,begin:began,break:broke,bring:brought,build:built,choose:chose,fly:flew,forget:forgot,leave:left,lose:lost,meet:met,pay:paid,sell:sold,send:sent,sit:sat,sleep:slept,stand:stood,tell:told,think:thought,wear:wore,win:won,wake:woke,fall:fell,feel:felt,find:found,hold:held,keep:kept,hear:heard,hide:hid,lead:led,lend:lent,spend:spent,teach:taught,throw:threw,understand:understood,catch:caught,draw:drew,grow:grew,hang:hung,mean:meant,steal:stole,swear:swore,sweep:swept,shake:shook,ring:rang,rise:rose,shine:shone,sink:sank,drink:drank"
+    .split(",")
+    .map((p) => p.split(":") as [string, string]),
+);
+const PAST_TO_BASE: Record<string, string> = Object.fromEntries(
+  Object.entries(IRREG_PAST).map(([b, p]) => [p, b]),
+);
+
+/** Only a past time fixes the simple past: "every day" and "always" fit both tenses. */
+const PAST_ONLY =
+  /\b(yesterday|last (night|week|weekend|month|year|summer|winter|\w*day)|\w+ ago|when (i|he|she|we|they|you|it) (was|were)|in (19|20)\d\d|this morning)\b/i;
+/** Only a present time rules the simple past out. */
+const PRESENT_ONLY = /\b(right now|at the moment|these days|nowadays|currently|at present|now)\b/i;
+const FUTURE_ONLY = /\b(tomorrow|tonight|next \w+|soon)\b/i;
+/** The word before the blank fixes the form: a bare verb, an -ing form or a participle. */
+const FRAME_BASE =
+  /(\b(to|will|would|can|could|shall|should|must|might|may|let's|do|does|did)|n't|'ll|'d)\s+(\w+\s+)?___/i;
+const FRAME_BE = /(\b(am|is|are|was|were|be|been|being)|'m|'re|'s)\s+(\w+\s+)?___/i;
+/** After hate, enjoy, go ... the blank takes an -ing form, not a finite verb. */
+const FRAME_ING =
+  /\b(hate|hates|love|loves|like|likes|enjoy|enjoys|mind|stop|keep|finish|avoid|go|goes|forward to)\s+(\w+\s+)?___/i;
+/** After an article or possessive the blank is a noun, not a verb. */
+const FRAME_NOUN = /\b(the|a|an|my|your|his|her|our|their|this|that|some)\s+___/i;
+/** The question itself names the form wanted: Past simple of "go". */
+const NAMED_FORM =
+  /\b(past simple|past participle|present simple|third person|plural|-ing form|comparative|superlative)\b/i;
+/** Verbs whose past is the base form: their only -ed form is a learner error. */
+const SAME_PAST = new Set("read,put,cut,set,let,hurt,hit,cost,shut,quit,spread".split(","));
+const FRAME_HAVE = /(\b(have|has|had)|'ve)\s+(\w+\s+)?___/i;
+
+function lemmaOf(word: string): string {
+  const w = word
+    .toLowerCase()
+    .trim()
+    .replace(/^(is|are|am|was|were|be|been|have|has|had|will|to|do|does|more|most) /, "");
+  if (PAST_TO_BASE[w]) return PAST_TO_BASE[w]!;
+  const strip = (x: string, re: RegExp, to = "") => {
+    const y = x.replace(re, to);
+    return y.length >= 3 ? y : x;
+  };
+  let y = strip(w, /(ied|ies)$/, "y");
+  if (y === w) y = strip(w, /(ing|ed|es|s)$/);
+  return y.replace(/(.)$/, "$1");
+}
+function pastKind(word: string): "past" | "ing" | "present" | "other" {
+  const w = word.toLowerCase().trim();
+  if (/\s/.test(w)) return "other";
+  if (PAST_TO_BASE[w]) return "past";
+  if (/ing$/.test(w)) return "ing";
+  if (/ed$/.test(w)) return "past";
+  return "present";
+}
+/** Is `option` a real, correctly formed alternative tense of the answer's verb? */
+function validOtherTense(answer: string, option: string): "past" | "present" | null {
+  const a = answer.toLowerCase().trim();
+  const o = option.toLowerCase().trim();
+  if (/\s/.test(a) || /\s/.test(o) || a === o) return null;
+  const la = lemmaOf(a);
+  if (SAME_PAST.has(la)) return null;
+  const lo = lemmaOf(o);
+  if (la.slice(0, 3) !== lo.slice(0, 3)) return null;
+  const ka = pastKind(a);
+  const ko = pastKind(o);
+  if (ko === "past") {
+    // A real past: the irregular form, or -ed on a regular verb. goed / knowed / readed are errors.
+    const base = IRREG_PAST[la];
+    if (base ? o === base : /ed$/.test(o) && !IRREG_PAST[la]) return ka === "past" ? null : "past";
+    return null;
+  }
+  if (ko === "present" && ka === "past") {
+    // Only the base form or its -s form is a present tense of the verb (attachment is a noun).
+    const forms = [la, la + "s", la + "es", la.replace(/y$/, "ies")];
+    return forms.includes(o) ? "present" : null;
+  }
+  return null;
+}
+/** True when another tense of the answer's verb also fits and nothing in the sentence rules it out. */
+export function tenseRivalUnruledOut(prompt: string, answer: string, wrong: string[]): boolean {
+  if (NAMED_FORM.test(prompt) || FRAME_NOUN.test(prompt) || FRAME_ING.test(prompt)) return false;
+  if (FRAME_BASE.test(prompt) || FRAME_HAVE.test(prompt)) return false;
+  // After a form of be a finite verb cannot follow; only a participle can, and a sentence that goes on
+  // after the blank ("... in the price") leaves nothing for a second tense to fit.
+  if (FRAME_BE.test(prompt) && (/ing$/i.test(answer.trim()) || /___\s*[\p{L}]/u.test(prompt)))
+    return false;
+  for (const w of wrong) {
+    const rival = validOtherTense(answer, w);
+    if (rival === "past" && !(PRESENT_ONLY.test(prompt) || FUTURE_ONLY.test(prompt))) return true;
+    if (rival === "present" && !PAST_ONLY.test(prompt)) return true;
+  }
+  return false;
+}
 
 /** Everything wrong with a question's options under docs/distractor-policy.md. */
 export function checkDistractors(q: QuestionShape): Issue[] {
@@ -323,7 +476,10 @@ export function checkDistractors(q: QuestionShape): Issue[] {
     return [{ kind: "unclassified" }];
   const issues: Issue[] = [];
   const allow = new Set(
-    [...(DISTRACTOR_ALLOW[q.key]?.options ?? []), ...(q.allow ?? [])].map(norm),
+    // Only the reviewed table can allow an option outside the pool. A fix entry's own `allow` never
+    // skips the pool, same-kind or same-part-of-speech checks (it used to, which let its own
+    // replacement options through).
+    (DISTRACTOR_ALLOW[q.key]?.options ?? []).map(norm),
   );
   const pack = packOf(q.id);
   const group = slot === "fixed-prep" ? fixedGroup(q.answer) : null;
@@ -341,14 +497,24 @@ export function checkDistractors(q: QuestionShape): Issue[] {
           .replace(/^(more|most|is|are|am|was|were|do|does|did|will|to) /, "")
           .startsWith(h),
       );
-    const bad = lemma ? wrong.filter((w) => !okForm(w)) : shareLemma(wrong) ? [] : wrong;
+    const sameVerb = (w: string) => {
+      const x = lemmaOf(q.answer);
+      const y = lemmaOf(w);
+      const n = Math.min(3, x.length, y.length);
+      return x.slice(0, n) === y.slice(0, n);
+    };
+    const bad = lemma
+      ? wrong.filter((w) => !okForm(w))
+      : shareLemma(wrong)
+        ? []
+        : wrong.filter((w) => !sameVerb(w));
     for (const w of bad)
       if (!allow.has(norm(w))) issues.push({ kind: "off-pool", option: w, slot });
   }
   for (const w of wrong) {
     const n = norm(w);
     let inPool: boolean;
-    if (slot === "category") inPool = q.packAnswers?.has(w) ?? true;
+    if (slot === "category") inPool = (q.packVocab ?? q.packAnswers)?.has(w) ?? true;
     else if (slot === "inflection" || slot === "phrase") inPool = true;
     else if (slot === "fixed-prep") inPool = group?.has(n) ?? false;
     else inPool = POOLS[slot].has(n);
@@ -381,17 +547,14 @@ export function checkDistractors(q: QuestionShape): Issue[] {
   // A clue or reason only disambiguates; the old pack-neighbour options must also have been replaced.
   if (
     slot === "category" &&
-    q.wrongReplaced === false &&
+    q.wrongReplaced !== true &&
     !q.hasImage &&
     (real || clueIsSpecific(q.prompt))
   )
     issues.push({ kind: "options-not-replaced" });
   // Every option of an inflection slot is a form of one verb, so another tense of it can also fit
   // unless the sentence fixes the time (or a photo, a specific clue or a real reason does).
-  if (
-    slot === "inflection" &&
-    !(q.hasImage || clueIsSpecific(q.prompt) || real || TIME_ANCHOR.test(q.prompt))
-  )
+  if (slot === "inflection" && tenseRivalUnruledOut(q.prompt, q.answer, wrong))
     issues.push({ kind: "tense-unanchored" });
   // A leftover context on a question that now has a photo or a specific clue is harmless.
   if (q.context && !real && !(q.hasImage || clueIsSpecific(q.prompt)))

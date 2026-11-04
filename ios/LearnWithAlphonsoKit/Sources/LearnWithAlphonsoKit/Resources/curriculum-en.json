@@ -634,7 +634,7 @@
             {
               "id": "q2",
               "type": "fill",
-              "prompt": "She ___ in a bank every day.",
+              "prompt": "She ___ in a bank.",
               "bank": [
                 "works",
                 "work",
@@ -981,7 +981,7 @@
                 "Could",
                 "Must",
                 "Shall",
-                "Ought"
+                "Should"
               ],
               "answer": "Could",
               "explanation": "\"Could you…?\" is polite."
@@ -1876,8 +1876,8 @@
               "bank": [
                 "were",
                 "are",
-                "will be",
-                "been"
+                "is",
+                "be"
               ],
               "answer": "were",
               "explanation": "Second conditional uses \"were\" for hypotheticals."
@@ -1902,8 +1902,8 @@
               "bank": [
                 "would",
                 "will",
-                "am",
-                "did"
+                "shall",
+                "must"
               ],
               "answer": "would",
               "explanation": "\"Would\" + base in the result clause."
@@ -1928,8 +1928,8 @@
               "bank": [
                 "wouldn't",
                 "won't",
-                "don't",
-                "didn't"
+                "mustn't",
+                "needn't"
               ],
               "answer": "wouldn't",
               "explanation": "Third conditional: would(n't) have + past participle."
@@ -1970,8 +1970,8 @@
               "bank": [
                 "attached",
                 "attaching",
-                "attach",
-                "attachment"
+                "attachment",
+                "attachments"
               ],
               "answer": "attached",
               "explanation": "Fixed phrase: \"please find attached\"."
@@ -2438,9 +2438,9 @@
               "prompt": "The study was conducted ___ a six-month period.",
               "bank": [
                 "over",
-                "at",
-                "by",
-                "on"
+                "onto",
+                "past",
+                "from"
               ],
               "answer": "over",
               "explanation": "\"Over a period\" expresses duration."
@@ -5868,7 +5868,7 @@
             {
               "id": "a1p10q4",
               "type": "fill",
-              "prompt": "It ___ heavily all night yesterday.",
+              "prompt": "Last night, it ___ heavily.",
               "bank": [
                 "rain",
                 "raining",
@@ -5917,9 +5917,9 @@
               "prompt": "In autumn, the leaves turn ___. (a colour like soil)",
               "choices": [
                 "brown",
-                "cold",
-                "wet",
-                "windy"
+                "green",
+                "blue",
+                "purple"
               ],
               "answer": 0,
               "explanation": "\"brown\" is correct here. Basic weather vocabulary and seasonal expressions."
@@ -6371,10 +6371,10 @@
               "type": "mc",
               "prompt": "The price includes ___.",
               "choices": [
-                "receipt",
-                "total",
+                "coins",
+                "notes",
                 "tax",
-                "bill"
+                "cash"
               ],
               "answer": 2,
               "explanation": "\"tax\" is correct here. Everyday number and money vocabulary."
@@ -7833,12 +7833,12 @@
             {
               "id": "a1p15q12",
               "type": "fill",
-              "prompt": "Something that \"is longer than usual\" is… ___",
+              "prompt": "A road that goes on and on is very ___.",
               "bank": [
-                "thick",
+                "short",
                 "narrow",
                 "long",
-                "heavy"
+                "thin"
               ],
               "answer": "long",
               "explanation": "is longer than usual → long. Basic shapes and size adjectives."
@@ -8176,12 +8176,12 @@
             {
               "id": "a1p16q10",
               "type": "mc",
-              "prompt": "He ___ the dishes after dinner.",
+              "prompt": "He ___ the dishes after dinner. (uses soap and water)",
               "choices": [
                 "washes",
-                "drives",
+                "dries",
                 "sets",
-                "sleeps"
+                "puts"
               ],
               "answer": 0,
               "explanation": "\"washes\" is correct here. Simple present tense sentences describing a typical day."
@@ -8202,12 +8202,12 @@
             {
               "id": "a1p16q12",
               "type": "mc",
-              "prompt": "I ___ a book before bed.",
+              "prompt": "I ___ a book before bed. (look at the words on the page)",
               "choices": [
-                "walk",
-                "come",
+                "write",
+                "close",
                 "read",
-                "sleep"
+                "hide"
               ],
               "answer": 2,
               "explanation": "\"read\" is correct here. Simple present tense sentences describing a typical day."
@@ -8320,7 +8320,7 @@
             {
               "id": "a1p16q20",
               "type": "fill",
-              "prompt": "I ___ my clothes for the next day every evening.",
+              "prompt": "I ___ my clothes for the next day.",
               "bank": [
                 "chooses",
                 "choose",
@@ -8359,7 +8359,7 @@
             {
               "id": "a1p16q23",
               "type": "mc",
-              "prompt": "We ___ the weekend relaxing at home every week.",
+              "prompt": "We ___ the weekend relaxing at home.",
               "choices": [
                 "spends",
                 "spending",
@@ -8622,10 +8622,10 @@
               "type": "mc",
               "prompt": "The teacher asked us to ___ our hands.",
               "choices": [
-                "rise",
-                "rose",
+                "raises",
+                "raising",
                 "raise",
-                "raised"
+                "to raise"
               ],
               "answer": 2,
               "explanation": "\"raise\" is correct here. Common classroom vocabulary for beginners."
@@ -9233,9 +9233,9 @@
               "prompt": "I forgot my shopping ___ at home. (what I wrote the things I need on)",
               "choices": [
                 "list",
-                "queue",
-                "weekend",
-                "debit"
+                "bag",
+                "basket",
+                "receipt"
               ],
               "answer": 0,
               "explanation": "\"list\" is correct here. Everyday vocabulary for grocery shopping."
@@ -9436,12 +9436,12 @@
             {
               "id": "a1p19q20",
               "type": "mc",
-              "prompt": "We ran out of ___, so buy some soap.",
+              "prompt": "We ran out of ___, so I can't wash my hands. (it makes bubbles)",
               "choices": [
                 "soap",
-                "date",
+                "bread",
                 "eggs",
-                "freezer"
+                "milk"
               ],
               "answer": 0,
               "explanation": "\"soap\" is correct here. Everyday vocabulary for grocery shopping.",
@@ -9694,9 +9694,9 @@
               "type": "fill",
               "prompt": "Please fasten your ___ before we take off. (the strap across your lap)",
               "bank": [
-                "passport",
-                "ticket",
-                "taxi",
+                "coat",
+                "bag",
+                "shoes",
                 "seatbelt"
               ],
               "answer": "seatbelt",
@@ -9839,10 +9839,10 @@
               "type": "mc",
               "prompt": "The car needs more ___ before the trip. (fuel for most cars)",
               "choices": [
-                "tickets",
-                "rain",
+                "oil",
+                "air",
                 "petrol",
-                "bread"
+                "water"
               ],
               "answer": 2,
               "explanation": "\"petrol\" is correct here. Basic transport vocabulary for beginners."
@@ -9918,12 +9918,12 @@
             {
               "id": "a1p21q2",
               "type": "fill",
-              "prompt": "The body part \"you smell with this\" is your… ___",
+              "prompt": "You smell with your ___.",
               "bank": [
                 "nose",
-                "feet",
-                "mouth",
-                "cheeks"
+                "eyes",
+                "ears",
+                "hands"
               ],
               "answer": "nose",
               "explanation": "you smell with this → nose. Basic body part vocabulary."
@@ -10359,12 +10359,12 @@
             {
               "id": "a1p22q7",
               "type": "fill",
-              "prompt": "This hobby involves \"dancing\"… ___",
+              "prompt": "She loves dancing ___.",
               "bank": [
                 "to music",
-                "video games",
-                "outdoors",
-                "sports on TV"
+                "on music",
+                "for music",
+                "of music"
               ],
               "answer": "to music",
               "explanation": "dancing → to music. Common free-time activities."
@@ -12204,7 +12204,7 @@
                 "used",
                 "use",
                 "uses",
-                "using"
+                "to use"
               ],
               "answer": "used",
               "explanation": "\"used\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12685,9 +12685,9 @@
               "prompt": "I'd like to ___ a room.",
               "choices": [
                 "book",
-                "write",
-                "catch",
-                "fit"
+                "booking",
+                "booked",
+                "books"
               ],
               "answer": 0,
               "explanation": "\"book\" is correct here. Fixed travel and shopping phrases."
@@ -12780,11 +12780,11 @@
             {
               "id": "a2p4q8",
               "type": "fill",
-              "prompt": "Is this seat ___ ? (someone is sitting there)",
+              "prompt": "Is this seat ___ ?",
               "bank": [
-                "free",
-                "empty",
-                "open",
+                "take",
+                "taking",
+                "takes",
                 "taken"
               ],
               "answer": "taken",
@@ -13410,8 +13410,8 @@
               "prompt": "I promise I ___ call you tomorrow.",
               "bank": [
                 "must",
-                "ought",
-                "need",
+                "should",
+                "might",
                 "will"
               ],
               "answer": "will",
@@ -14119,12 +14119,12 @@
             {
               "id": "a2p7q24",
               "type": "mc",
-              "prompt": "Please wipe your feet on the ___.",
+              "prompt": "Please wipe your feet on the ___ by the front door.",
               "choices": [
                 "mat",
-                "laundry room",
-                "mattress",
-                "living room"
+                "bed",
+                "sofa",
+                "wardrobe"
               ],
               "answer": 0,
               "explanation": "\"mat\" is correct here. Everyday vocabulary for describing where you live.",
@@ -14808,12 +14808,12 @@
             {
               "id": "a2p9q20",
               "type": "mc",
-              "prompt": "My back always ___ after lifting the box.",
+              "prompt": "My back ___ after lifting the box.",
               "choices": [
                 "hurting",
-                "hurted",
+                "is hurts",
                 "hurts",
-                "is hurts"
+                "to hurt"
               ],
               "answer": 2,
               "explanation": "\"hurts\" is correct here. Basic health vocabulary for describing how you feel."
@@ -14862,10 +14862,10 @@
               "type": "mc",
               "prompt": "The pharmacist recommended this ___ for allergies. (you squirt it into your nose)",
               "choices": [
-                "medicine",
-                "cough",
+                "syrup",
+                "tablet",
                 "spray",
-                "bruise"
+                "plaster"
               ],
               "answer": 2,
               "explanation": "\"spray\" is correct here. Basic health vocabulary for describing how you feel."
@@ -15666,7 +15666,7 @@
             {
               "id": "a2p12q3",
               "type": "fill",
-              "prompt": "How often does \"generally\" happen? ___",
+              "prompt": "\"Generally\" means ___.",
               "bank": [
                 "almost never at all",
                 "in most cases you'll find",
@@ -16450,12 +16450,12 @@
             {
               "id": "a2p14q6",
               "type": "mc",
-              "prompt": "I'm afraid I can't ___, I have other plans.",
+              "prompt": "I'm afraid I can't ___ to your party, I have other plans.",
               "choices": [
                 "make it",
-                "let",
-                "pick",
-                "forward"
+                "do",
+                "take",
+                "have"
               ],
               "answer": 0,
               "explanation": "\"make it\" is correct here. Everyday phrases for arranging to meet and making plans."
@@ -16513,7 +16513,7 @@
               "bank": [
                 "letting",
                 "lets",
-                "left",
+                "let's",
                 "let"
               ],
               "answer": "let",
@@ -17323,10 +17323,10 @@
               "type": "mc",
               "prompt": "The area has lots of green ___. (parks and open land)",
               "choices": [
-                "light",
-                "paint",
+                "stop",
+                "centre",
                 "space",
-                "tea"
+                "road"
               ],
               "answer": 2,
               "explanation": "\"space\" is correct here. A2-level vocabulary for describing a local area."
@@ -17445,10 +17445,10 @@
             {
               "id": "a2p16q24",
               "type": "mc",
-              "prompt": "I really like living in this part of ___. (the city or the village)",
+              "prompt": "I really like living in this part of ___.",
               "choices": [
-                "kitchen",
-                "garden",
+                "street",
+                "park",
                 "town",
                 "school"
               ],
@@ -17814,12 +17814,12 @@
             {
               "id": "a2p17q24",
               "type": "fill",
-              "prompt": "The path leads ___ the forest.",
+              "prompt": "The path leads ___ the forest. (it stops before the first trees)",
               "bank": [
                 "into",
-                "down",
+                "through",
                 "towards",
-                "past"
+                "onto"
               ],
               "answer": "towards",
               "explanation": "\"towards\" is correct here. A2-level prepositions describing location."
@@ -18382,12 +18382,12 @@
             {
               "id": "a2p19q12",
               "type": "mc",
-              "prompt": "We ___ not enter without a ticket.",
+              "prompt": "We ___ not enter without a ticket. (we are unable to)",
               "choices": [
                 "can",
                 "may",
-                "could",
-                "can't"
+                "might",
+                "shall"
               ],
               "answer": 0,
               "explanation": "\"can\" is correct here. A2-level modal verbs for ability and permission."
@@ -18668,10 +18668,10 @@
               "type": "fill",
               "prompt": "He runs as ___ as a professional sprinter. (very fast)",
               "bank": [
-                "heavy",
-                "tall",
+                "slow",
+                "weak",
                 "quick",
-                "loud"
+                "tired"
               ],
               "answer": "quick",
               "explanation": "\"quick\" is correct here. A2-level equal comparison structures."
@@ -18695,9 +18695,9 @@
               "prompt": "Her English is as ___ as her brother's. (speaks smoothly)",
               "bank": [
                 "fluent",
-                "heavy",
-                "tall",
-                "sweet"
+                "poor",
+                "basic",
+                "weak"
               ],
               "answer": "fluent",
               "explanation": "\"fluent\" is correct here. A2-level equal comparison structures."

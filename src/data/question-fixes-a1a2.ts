@@ -6,7 +6,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "It's very ___ today — take an umbrella. (water falls from the sky)",
     wrong: ["sunny", "foggy", "dry"],
-    allow: ["sunny", "foggy", "dry"],
   },
   "a1p10l1/a1p10q1": {
     why: "reason refreshed to match the current options",
@@ -24,38 +23,32 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "There's a strong ___ blowing today. (moving air)",
     wrong: ["sunshine", "fog", "thunder"],
-    allow: ["sunshine", "fog", "thunder"],
   },
   "a1p10l1/a1p10q4": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "It ___ heavily all night yesterday.",
+    why: "options and wording fixed after the third review",
+    prompt: "Last night, it ___ heavily.",
     wrong: ["rain", "raining", "will rain"],
-    allow: ["rain", "raining", "will rain"],
   },
   "a1p10l2/a1p10q5": {
     why: "options replaced with same-kind wrong options",
     prompt: "The forecast says it will ___ tomorrow. (white flakes fall)",
     wrong: ["snowed", "snowing", "snows"],
-    allow: ["snowed", "snowing", "snows"],
   },
   "a1p10l2/a1p10q6": {
     why: "reason added",
     context:
       "After the, season needs a superlative; hotter is a comparative and hotest and most hot are the common mistakes.",
     wrong: ["hotter", "hotest", "most hot"],
-    allow: ["hotter", "hotest", "most hot"],
   },
   "a1p10l2/a1p10q7": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "In autumn, the leaves turn ___. (a colour like soil)",
-    wrong: ["cold", "wet", "windy"],
-    allow: ["cold", "wet", "windy"],
+    wrong: ["green", "blue", "purple"],
   },
   "a1p10l2/a1p10q8": {
     why: "reason refreshed against the replaced options",
     prompt: "It's very ___ today — over thirty degrees.",
     wrong: ["freezing", "chilly", "snowy"],
-    allow: ["freezing", "chilly", "snowy"],
     context:
       "Over thirty degrees is hot weather; freezing, chilly and snowy describe cold weather.",
   },
@@ -63,7 +56,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ is out, so let's go to the beach. (it shines and warms us)",
     wrong: ["rain", "snow", "fog"],
-    allow: ["rain", "snow", "fog"],
   },
   "a1p10l3/a1p10q10": {
     why: "reason added",
@@ -71,8 +63,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["ice", "weather", "fog"],
   },
   "a1p10l3/a1p10q11": {
-    why: "reason added",
-    context: "Barely seeing means fog; cold, sunny and clear weather do not stop you seeing.",
+    why: "reason refreshed to match the options",
+    context:
+      "Barely seeing is caused by fog, a thick low cloud; the other options describe temperature or clear skies where you see well.",
     wrong: ["cold", "sunny", "clear"],
   },
   "a1p10l3/a1p10q12": {
@@ -85,11 +78,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     prompt: "The temperature dropped ___ overnight. (it happened all at once)",
     wrong: ["slowly", "gradually", "softly"],
-    allow: ["slowly", "gradually", "softly"],
   },
   "a1p10l3/a1p10q14": {
-    why: "reason added",
-    context: "Spring brings warmer weather; warmer ice, fog or thunder makes no sense.",
+    why: "reason refreshed",
+    context:
+      "Spring brings warmer weather as the days lengthen; the other options are frozen or loud things that nobody calls warmer.",
     wrong: ["ice", "fog", "thunder"],
   },
   "a1p10l4/a1p10q15": {
@@ -117,19 +110,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "specific clue kept",
     prompt: "The sky turned dark before the ___ began. (thunder and lightning followed)",
     wrong: ["snow", "fog", "sunshine"],
-    allow: ["snow", "fog", "sunshine"],
   },
   "a1p10l5/a1p10q20": {
     why: "options replaced with same-kind wrong options",
     prompt: "It's too ___ to go swimming today. (the waves and trees were moving a lot)",
     wrong: ["sunny", "foggy", "snowy"],
-    allow: ["sunny", "foggy", "snowy"],
   },
   "a1p10l5/a1p10q21": {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ melted quickly in the sun. (frozen water)",
     wrong: ["rain", "wind", "thunder"],
-    allow: ["rain", "wind", "thunder"],
   },
   "a1p10l5/a1p10q22": {
     why: "reason refreshed to match the current options",
@@ -141,7 +131,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "It's a ___ day, perfect for a walk. (neither hot nor cold)",
     wrong: ["hot", "freezing", "stormy"],
-    allow: ["hot", "freezing", "stormy"],
   },
   "a1p10l5/a1p10q24": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -152,41 +141,35 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "This shirt costs ___ dollars. (the number 20)",
     wrong: ["thirty", "fifty", "fifteen"],
-    allow: ["thirty", "fifty", "fifteen"],
   },
   "a1p11l1/a1p11q1": {
-    why: "options were not plural nouns",
+    why: "reason refreshed to match the options",
     context:
-      "A jar of one-pound items holds coins; receipts, wallets and cards do not come in one-pound units.",
+      "A jar of one-pound coins is a saving habit; the other options are paper or plastic items that come in other amounts.",
     wrong: ["receipts", "wallets", "cards"],
-    allow: ["receipts", "wallets", "cards"],
   },
   "a1p11l1/a1p11q2": {
     why: "reason refreshed to match the current options",
     context:
       "Money comes out of a machine when you withdraw it; deposit puts money in, and save and pay name other actions.",
     wrong: ["deposit", "save", "pay"],
-    allow: ["deposit", "save", "pay"],
   },
   "a1p11l1/a1p11q3": {
     why: "options replaced with same-kind wrong options",
     prompt: "The bill comes to ___ euros. (the number 15)",
     wrong: ["thirteen", "fifty", "five"],
-    allow: ["thirteen", "fifty", "five"],
   },
   "a1p11l1/a1p11q4": {
-    why: "options were not verbs",
+    why: "reason refreshed to match the options",
     context:
-      "A note is changed for smaller ones; you do not save, withdraw or deposit a note for smaller ones.",
+      "A twenty-pound note is changed for smaller ones at a shop; the other options describe putting money in or taking it out of an account.",
     wrong: ["save", "withdraw", "deposit"],
-    allow: ["save", "withdraw", "deposit"],
   },
   "a1p11l2/a1p11q5": {
     why: '"change / withdraw some money for the trip" are also correct; the clue says put aside',
     context: "the sentence already rules out the other options",
     wrong: ["spend", "change", "withdraw"],
     prompt: "I need to ___ some money for the trip. (put it aside, not spend it)",
-    allow: ["spend", "change", "withdraw"],
   },
   "a1p11l2/a1p11q6": {
     why: '"saved ten dollars on the gift" is also correct; the clue says she paid',
@@ -198,7 +181,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "He asked for a ___ on the price. (a lower price for him)",
     wrong: ["refund", "receipt", "change"],
-    allow: ["refund", "receipt", "change"],
   },
   "a1p11l2/a1p11q8": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -210,32 +192,28 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     wrong: ["contactless", "enough", "big"],
     prompt: "Do you have ___ change for a ten? (the right coins, no more and no less)",
-    allow: ["contactless", "enough", "big"],
   },
   "a1p11l3/a1p11q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "The total is ___ pounds and fifty pence. (the sum 3.50)",
     wrong: ["thirteen", "thirty", "five"],
-    allow: ["thirteen", "thirty", "five"],
   },
   "a1p11l3/a1p11q11": {
-    why: "reason refreshed to match the current options",
+    why: "reason refreshed to match the options",
     context:
-      "Paying by card is the opposite of paying with cash; a discount, notes and a balance describe money but are never a way to pay.",
+      "Paying by card is the usual alternative to cash; the other options are parts of a price or of a purse, not ways to pay.",
     wrong: ["discount", "notes", "balance"],
   },
   "a1p11l3/a1p11q12": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could I get a ___ for this purchase? (proof that I paid)",
     wrong: ["refund", "discount", "balance"],
-    allow: ["refund", "discount", "balance"],
   },
   "a1p11l3/a1p11q13": {
-    why: '"amount / sale" are odd after includes',
+    why: "money-word options only",
     context:
       "The price includes tax; a receipt, a total and a bill are what you get after paying, not part of the price.",
-    wrong: ["receipt", "total", "bill"],
-    allow: ["receipt", "total", "bill"],
+    wrong: ["coins", "notes", "cash"],
   },
   "a1p11l3/a1p11q14": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -258,14 +236,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options were not adjectives",
     prompt: "The shop only accepts ___ payments. (you tap your card)",
     wrong: ["exact", "enough", "expensive"],
-    allow: ["exact", "enough", "expensive"],
   },
   "a1p11l4/a1p11q18": {
     why: "options were not adverbs",
     context: "the sentence already rules out the other options",
     prompt: "We split the bill ___. (everyone paid the same)",
     wrong: ["quickly", "secretly", "later"],
-    allow: ["quickly", "secretly", "later"],
   },
   "a1p11l4/a1p11q19": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -314,7 +290,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "Christmas is in the month of ___.",
     wrong: ["November", "June", "January"],
-    allow: ["November", "June", "January"],
     context:
       "Christmas Day is on 25 December; November, June and January are other months of the year.",
   },
@@ -322,14 +297,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "The shortest month of the year is ___.",
     wrong: ["January", "March", "April"],
-    allow: ["January", "March", "April"],
     context: "February has 28 or 29 days, fewer than January, March and April.",
   },
   "a1p14l1/a1p14q4": {
     why: "options replaced with same-kind wrong options",
     prompt: "We eat lunch in the ___. (around one o'clock)",
     wrong: ["morning", "evening", "night"],
-    allow: ["morning", "evening", "night"],
   },
   "a1p14l2/a1p14q5": {
     why: "time-of-day options only",
@@ -337,20 +310,17 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "People sleep at night; noon, afternoon and dawn are other parts of the day when most people are awake.",
     wrong: ["noon", "afternoon", "dawn"],
     prompt: "We usually sleep at ___.",
-    allow: ["noon", "afternoon", "dawn"],
   },
   "a1p14l2/a1p14q6": {
     why: "reason refreshed against the replaced options",
     prompt: "There are seven days in a ___.",
     wrong: ["month", "year", "weekend"],
-    allow: ["month", "year", "weekend"],
     context: "A week lasts seven days; a month, a year and a weekend are other lengths of time.",
   },
   "a1p14l2/a1p14q7": {
     why: "reason refreshed against the replaced options",
     prompt: "There are twelve ___ in a year.",
     wrong: ["weeks", "days", "hours"],
-    allow: ["weeks", "days", "hours"],
     context: "A year is made of twelve months; weeks, days and hours give 52, 365 and 8,760.",
   },
   "a1p14l2/a1p14q8": {
@@ -363,45 +333,38 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The clock shows what ___ it is. (hours and minutes)",
     wrong: ["day", "month", "year"],
-    allow: ["day", "month", "year"],
   },
   "a1p14l3/a1p14q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "I wake up early in the ___. (when the sun comes up)",
     wrong: ["evening", "afternoon", "night"],
-    allow: ["evening", "afternoon", "night"],
   },
   "a1p14l3/a1p14q11": {
     why: "reason refreshed against the replaced options",
     prompt: "The first month of the year is ___.",
     wrong: ["December", "February", "March"],
-    allow: ["December", "February", "March"],
     context: "January starts the year; December ends it, and February and March come after it.",
   },
   "a1p14l3/a1p14q12": {
     why: '"celebrated in weekend" was not a real option',
     context: "Halloween is on 31 October; July, June and November are other months.",
     wrong: ["July", "June", "November"],
-    allow: ["July", "June", "November"],
   },
   "a1p14l3/a1p14q13": {
     why: "same-kind options; clue removes the ambiguity",
     wrong: ["afternoons", "evenings", "nights"],
     prompt: "We go to work on weekday ___, not weekends. (when the sun comes up)",
-    allow: ["afternoons", "evenings", "nights"],
   },
   "a1p14l3/a1p14q14": {
     why: "reason refreshed against the replaced options",
     prompt: "A year has three hundred and sixty-five ___.",
     wrong: ["weeks", "months", "hours"],
-    allow: ["weeks", "months", "hours"],
     context: "A year has 365 days; weeks, months and hours give 52, 12 and 8,760.",
   },
   "a1p14l4/a1p14q15": {
     why: "reason refreshed against the replaced options",
     prompt: "The day after Friday is ___.",
     wrong: ["Sunday", "Thursday", "Monday"],
-    allow: ["Sunday", "Thursday", "Monday"],
     context:
       "Saturday comes right after Friday; Sunday is two days after it, and Thursday and Monday are other days.",
   },
@@ -410,13 +373,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "Summer holidays begin in June or July in Europe and North America; October, March and November belong to other seasons.",
     wrong: ["October", "March", "November"],
-    allow: ["October", "March", "November"],
   },
   "a1p14l4/a1p14q17": {
     why: "reason refreshed against the replaced options",
     prompt: "The day before Wednesday is ___.",
     wrong: ["Monday", "Thursday", "Friday"],
-    allow: ["Monday", "Thursday", "Friday"],
     context:
       "Tuesday is the day directly before Wednesday; Monday is two days before, and Thursday and Friday come after.",
   },
@@ -424,28 +385,24 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "New Year's Eve is on the last day of the ___.",
     wrong: ["week", "day", "hour"],
-    allow: ["week", "day", "hour"],
     context: "New Year's Eve closes the year; a week, a day or an hour can end on any date.",
   },
   "a1p14l4/a1p14q19": {
     why: "time-unit options only",
     prompt: "There are sixty minutes in one ___.",
     wrong: ["day", "week", "month"],
-    allow: ["day", "week", "month"],
     context: "Sixty minutes make one hour; a day, a week and a month are far longer units of time.",
   },
   "a1p14l5/a1p14q20": {
     why: "reason refreshed against the replaced options",
     prompt: "There are sixty seconds in a ___.",
     wrong: ["hour", "day", "week"],
-    allow: ["hour", "day", "week"],
     context: "Sixty seconds make one minute; an hour, a day and a week hold many more.",
   },
   "a1p14l5/a1p14q21": {
     why: "reason refreshed against the replaced options",
     prompt: "The middle day of the week is ___.",
     wrong: ["Tuesday", "Thursday", "Friday"],
-    allow: ["Tuesday", "Thursday", "Friday"],
     context:
       "Wednesday sits in the middle of Monday to Friday, with Tuesday and Thursday on either side.",
   },
@@ -453,7 +410,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "Twelve o'clock in the middle of the day is called ___.",
     wrong: ["midnight", "evening", "dawn"],
-    allow: ["midnight", "evening", "dawn"],
     context:
       "Noon is twelve o'clock in the middle of the day; midnight is twelve at night, and evening and dawn are other parts of the day.",
   },
@@ -461,7 +417,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "We often relax on the ___. (Saturday and Sunday)",
     wrong: ["week", "month", "year"],
-    allow: ["week", "month", "year"],
   },
   "a1p14l5/a1p14q24": {
     why: "reason refreshed against the replaced options",
@@ -474,6 +429,13 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "a sphere is also perfectly round",
     wrong: ["oval", "rectangle", "hexagon"],
   },
+  "a1p15l3/a1p15q12": {
+    why: "options are other size words",
+    prompt: "A road that goes on and on is very ___.",
+    context:
+      "A road that goes on and on has great length, which is the meaning of long; thick, narrow and heavy describe width and weight.",
+    wrong: ["short", "narrow", "thin"],
+  },
   "a1p15l5/a1p15q21": {
     why: "a triangle also has a pointed top",
     wrong: ["rectangle", "octagon", "circle"],
@@ -482,19 +444,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I ___ up at seven o'clock every morning. (stop sleeping)",
     wrong: ["put", "hold", "bring"],
-    allow: ["put", "hold", "bring"],
   },
   "a1p16l1/a1p16q1": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ a shower before breakfast. (washes under running water)",
     wrong: ["does", "makes", "puts"],
-    allow: ["does", "makes", "puts"],
   },
   "a1p16l1/a1p16q2": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ her hair every morning before she goes out.",
     wrong: ["brush", "brushing", "to brush"],
-    allow: ["brush", "brushing", "to brush"],
   },
   "a1p16l1/a1p16q3": {
     why: "reason refreshed against the replaced options",
@@ -506,17 +465,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I ___ dressed before I leave the house. (put my clothes on)",
     wrong: ["do", "make", "put"],
-    allow: ["do", "make", "put"],
   },
   "a1p16l2/a1p16q5": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ to work by bus every day.",
     wrong: ["travel", "travelling", "to travel"],
-    allow: ["travel", "travelling", "to travel"],
   },
   "a1p16l2/a1p16q6": {
-    why: "reason added",
-    context: "You check your email first thing; you do not eat, watch or pack it.",
+    why: "reason refreshed to match the options",
+    context:
+      "The first job in the office is checking email; the other verbs take food, television or luggage as their object.",
     wrong: ["eat", "watch", "pack"],
   },
   "a1p16l2/a1p16q7": {
@@ -527,107 +485,91 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I ___ home from work at six every day.",
     wrong: ["comes", "coming", "to come"],
-    allow: ["comes", "coming", "to come"],
   },
   "a1p16l2/a1p16q9": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ dinner for the family every evening.",
     wrong: ["cook", "cooking", "to cook"],
-    allow: ["cook", "cooking", "to cook"],
   },
   "a1p16l3/a1p16q10": {
-    why: "reason refreshed to match the current options",
-    context: "Dishes get washed after dinner; drives, sets and sleeps all need a different object.",
-    wrong: ["drives", "sets", "sleeps"],
-    allow: ["drives", "sets", "sleeps"],
+    why: "clue added; options are other dish jobs",
+    wrong: ["dries", "sets", "puts"],
+    prompt: "He ___ the dishes after dinner. (uses soap and water)",
   },
   "a1p16l3/a1p16q11": {
     why: "options replaced with same-kind wrong options",
     prompt: "We ___ television every evening.",
     wrong: ["watches", "watching", "to watch"],
-    allow: ["watches", "watching", "to watch"],
   },
   "a1p16l3/a1p16q12": {
-    why: "reason refreshed to match the current options",
-    context:
-      "A book is what you read before bed; walk, come and sleep take no book as their object.",
-    wrong: ["walk", "come", "sleep"],
-    allow: ["walk", "come", "sleep"],
+    why: "clue added; options are other things done to a book",
+    wrong: ["write", "close", "hide"],
+    prompt: "I ___ a book before bed. (look at the words on the page)",
   },
   "a1p16l3/a1p16q13": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ to bed at eleven o'clock every night.",
     wrong: ["go", "going", "to go"],
-    allow: ["go", "going", "to go"],
   },
   "a1p16l3/a1p16q14": {
     why: "reason refreshed to match the current options",
     context:
       "Glance at is a quick look at something such as a phone; watch, walk and sleep need a different kind of object or none.",
     wrong: ["watch", "walk", "sleep"],
-    allow: ["watch", "walk", "sleep"],
   },
   "a1p16l4/a1p16q15": {
-    why: "options now agree with We so only the meaning rules them out",
-    context: "You tidy a house before leaving; you do not drive, cook or sleep one.",
+    why: "reason refreshed to match the options",
+    context:
+      "A house gets tidied before leaving the morning rush; the other verbs take a vehicle, food or a person as their object.",
     wrong: ["drive", "cook", "sleep"],
-    allow: ["drive", "cook", "sleep"],
   },
   "a1p16l4/a1p16q16": {
     why: "options replaced with same-kind wrong options",
     prompt: "I ___ my bag the night before every trip.",
     wrong: ["packs", "packing", "to pack"],
-    allow: ["packs", "packing", "to pack"],
   },
   "a1p16l4/a1p16q17": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     context:
-      "She drives the kids to school; watch, pack and tidy do not agree with She or move children.",
+      "The verb drives agrees with She and takes the kids to school; the other verbs are the base form or take other objects.",
     wrong: ["watch", "pack", "tidy"],
   },
   "a1p16l4/a1p16q18": {
     why: "options replaced with same-kind wrong options",
     prompt: "He ___ out three times a week.",
     wrong: ["work", "working", "to work"],
-    allow: ["work", "working", "to work"],
   },
   "a1p16l4/a1p16q19": {
     why: '"We watch the dog" is also correct; the clue says what we do with it',
     context: "the sentence already rules out the other options",
     prompt: "We ___ the dog every evening. (for exercise, on a lead)",
     wrong: ["watch", "feed", "groom"],
-    allow: ["watch", "feed", "groom"],
   },
   "a1p16l5/a1p16q20": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "I ___ my clothes for the next day every evening.",
+    why: "options and wording fixed after the third review",
+    prompt: "I ___ my clothes for the next day.",
     wrong: ["chooses", "choosing", "to choose"],
-    allow: ["chooses", "choosing", "to choose"],
   },
   "a1p16l5/a1p16q21": {
     why: "options replaced with same-kind wrong options",
     prompt: "She ___ up early on weekdays.",
     wrong: ["get", "getting", "to get"],
-    allow: ["get", "getting", "to get"],
   },
   "a1p16l5/a1p16q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "He ___ home late on Fridays.",
     wrong: ["arrive", "arriving", "to arrive"],
-    allow: ["arrive", "arriving", "to arrive"],
   },
   "a1p16l5/a1p16q23": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "We ___ the weekend relaxing at home every week.",
+    why: "options and wording fixed after the third review",
+    prompt: "We ___ the weekend relaxing at home.",
     wrong: ["spends", "spending", "to spend"],
-    allow: ["spends", "spending", "to spend"],
   },
   "a1p16l5/a1p16q24": {
-    why: '"have my alarm" is not wrong enough; options are now other things you do near an alarm',
+    why: "reason refreshed to match the options",
     context:
-      "You set an alarm before you sleep; gets and glances at do not agree with I and hear it does not prepare it.",
+      "An alarm is set the night before; the other options use the wrong subject agreement or other verbs for alarms.",
     wrong: ["gets", "hear", "glances at"],
-    allow: ["gets", "hear", "glances at"],
   },
   "a1p17l1/a1p17q0": {
     why: '"on" is a preposition; the options are now classroom nouns',
@@ -654,7 +596,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ sits at the front of the class. (the adult who teaches us)",
     wrong: ["student", "classmate", "pupil"],
-    allow: ["student", "classmate", "pupil"],
   },
   "a1p17l2/a1p17q5": {
     why: "reason refreshed to match the current options",
@@ -669,7 +610,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "The students sit at their ___.",
     wrong: ["bells", "maps", "rulers"],
-    allow: ["bells", "maps", "rulers"],
     context:
       "Students sit at desks; bells, maps and rulers are classroom objects but nobody sits at them.",
   },
@@ -678,7 +618,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "Books are closed before a test; sharpen, erase and ring act on pencils, mistakes and bells.",
     wrong: ["sharpen", "erase", "ring"],
-    allow: ["sharpen", "erase", "ring"],
   },
   "a1p17l2/a1p17q9": {
     why: '"a new rubber" fits; the clue says a printed page of exercises',
@@ -687,8 +626,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "The teacher gave us a new ___ today. (a printed page of exercises)",
   },
   "a1p17l3/a1p17q10": {
-    why: "reason added",
-    context: "You need a calculator for maths; a bell, a map and desks do not help you add.",
+    why: "reason refreshed to match the options",
+    context:
+      "A calculator is the tool for adding in maths; the other options name a bell, a map and furniture.",
     wrong: ["bell", "map", "desks"],
   },
   "a1p17l3/a1p17q11": {
@@ -696,41 +636,37 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "Listen to the teacher is the fixed phrase; sharpen, raise and erase are followed by an object instead of to.",
     wrong: ["sharpen", "raise", "erase"],
-    allow: ["sharpen", "raise", "erase"],
   },
   "a1p17l3/a1p17q12": {
     why: "reason refreshed against the replaced options",
     prompt: "The ___ rings at the end of the lesson.",
     wrong: ["book", "ruler", "desk"],
-    allow: ["book", "ruler", "desk"],
     context: "A school bell rings to end the lesson; a book, a ruler and a desk make no sound.",
   },
   "a1p17l3/a1p17q13": {
     why: "reason refreshed against the replaced options",
     prompt: "We use a ___ to erase mistakes.",
     wrong: ["ruler", "glue", "bell"],
-    allow: ["ruler", "glue", "bell"],
     context: "A rubber rubs out pencil mistakes; a ruler measures, glue sticks and a bell rings.",
   },
   "a1p17l3/a1p17q14": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     wrong: ["out", "off", "away"],
     context:
-      "Sit down is the phrase for taking a seat; sit out, sit off and sit away do not mean that.",
+      "Sit down is the phrasal verb for taking a seat; the other particles give other meanings or none.",
   },
   "a1p17l4/a1p17q15": {
-    why: "reason added",
-    wrong: ["rise", "rose", "raised"],
-    allow: ["rise", "rose", "raised"],
+    why: "rise/rose are a different verb; options now forms of raise",
+    wrong: ["raises", "raising", "to raise"],
     context:
       "Raise takes an object like hands; rise has no object and rose and raised are the wrong forms after to.",
+    slot: "inflection",
   },
   "a1p17l4/a1p17q16": {
     why: "reason refreshed to match the current options",
     context:
       "A pencil that is too short is sharpened to a point; erase, close and ring act on other things.",
     wrong: ["erase", "close", "ring"],
-    allow: ["erase", "close", "ring"],
   },
   "a1p17l4/a1p17q17": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -740,16 +676,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed to match the current options",
     context: "Homework is handed in to the teacher; a bell, a desk and a board stay in the room.",
     wrong: ["bell", "desk", "board"],
-    allow: ["bell", "desk", "board"],
   },
   "a1p17l4/a1p17q19": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "textbooks",
   },
   "a1p17l5/a1p17q20": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     wrong: ["in", "at", "for"],
-    context: "Days of the week take on; in, at and for do not.",
+    context:
+      "Days of the week take on, as in on Friday; in, at and for go with months, times and durations.",
   },
   "a1p17l5/a1p17q21": {
     why: "reason refreshed to match the current options",
@@ -762,7 +698,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "The board at the front of the class is where the date is written; a bell, a teacher and a pencil case are things in the room.",
     wrong: ["bell", "teacher", "pencil case"],
-    allow: ["bell", "teacher", "pencil case"],
   },
   "a1p17l5/a1p17q23": {
     why: "reason refreshed against the replaced options",
@@ -774,7 +709,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "up, down and book are not adjectives",
     context: "An exam asks for silence; noisy, loud and rude are the opposite.",
     wrong: ["noisy", "loud", "rude"],
-    allow: ["noisy", "loud", "rude"],
   },
   "a1p18l2/a1p18q9": {
     why: '"light pillow/shoes/suitcase" are all correct',
@@ -811,15 +745,15 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["fire", "light", "noise"],
   },
   "a1p19l1/a1p19q0": {
-    why: "reason added",
-    context: "You buy food for dinner; you do not buy a list, a bag or a price.",
+    why: "reason refreshed to match the options",
+    context:
+      "You buy food for dinner; the other options are items or ideas that go with shopping rather than with dinner.",
     wrong: ["list", "bag", "price"],
   },
   "a1p19l1/a1p19q1": {
     why: "options replaced with same-kind wrong options",
     prompt: "Can you push the ___ while I shop? (the wheeled cart)",
     wrong: ["receipt", "list", "card"],
-    allow: ["receipt", "list", "card"],
   },
   "a1p19l1/a1p19q2": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -829,7 +763,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "We're out of ___, so there's nothing to make toast with.",
     wrong: ["soap", "rice", "tea"],
-    allow: ["soap", "rice", "tea"],
     context: "Toast is made from bread; soap, rice and tea give you nothing to toast.",
   },
   "a1p19l1/a1p19q4": {
@@ -845,10 +778,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["discount", "bag", "debit"],
   },
   "a1p19l2/a1p19q6": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "I forgot my shopping ___ at home. (what I wrote the things I need on)",
-    wrong: ["queue", "weekend", "debit"],
-    allow: ["queue", "weekend", "debit"],
+    wrong: ["bag", "basket", "receipt"],
   },
   "a1p19l2/a1p19q7": {
     why: "reason refreshed to match the current options",
@@ -864,13 +796,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I paid with my ___ card. (money comes straight from my bank account)",
     wrong: ["credit", "gift", "loyalty"],
-    allow: ["credit", "gift", "loyalty"],
   },
   "a1p19l3/a1p19q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ scanned each item quickly. (the person at the till)",
     wrong: ["driver", "farmer", "teacher"],
-    allow: ["driver", "farmer", "teacher"],
   },
   "a1p19l3/a1p19q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -890,13 +820,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "in-topic options",
     prompt: "Could you tell me where the ___ is? (milk, butter and cheese are kept there)",
     wrong: ["bakery", "freezer", "checkout"],
-    allow: ["bakery", "freezer", "checkout"],
   },
   "a1p19l4/a1p19q15": {
     why: "options replaced with same-kind wrong options",
     prompt: "This shop has a big ___ this week. (prices are lower)",
     wrong: ["receipt", "trolley", "basket"],
-    allow: ["receipt", "trolley", "basket"],
   },
   "a1p19l4/a1p19q16": {
     why: "reason refreshed to match the current options",
@@ -904,13 +832,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Oil is what you fry food in; lettuce is eaten raw, sugar sweetens food and soap is for washing.",
     prompt: "I need to buy some ___ for cooking. (you fry food in it)",
     wrong: ["lettuce", "soap", "sugar"],
-    allow: ["lettuce", "soap", "sugar"],
   },
   "a1p19l4/a1p19q17": {
     why: "options replaced with same-kind wrong options",
     prompt: "The queue at the ___ was very long. (where you pay at the shop)",
     wrong: ["bakery", "entrance", "car park"],
-    allow: ["bakery", "entrance", "car park"],
   },
   "a1p19l4/a1p19q18": {
     why: "reason refreshed to match the current options",
@@ -918,7 +844,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Frozen food is kept in the freezer; a basket, a trolley and a bag carry shopping home.",
     prompt: "Please put the frozen food in the ___. (it keeps food frozen)",
     wrong: ["basket", "trolley", "bag"],
-    allow: ["basket", "trolley", "bag"],
   },
   "a1p19l4/a1p19q19": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -926,22 +851,23 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["eggs", "freezer", "soap"],
   },
   "a1p19l5/a1p19q20": {
-    why: "topic word: the photo shows the answer, so no other option fits",
+    why: "options and wording fixed after the third review",
     imageKey: "soap",
+    prompt: "We ran out of ___, so I can't wash my hands. (it makes bubbles)",
+    wrong: ["bread", "eggs", "milk"],
   },
   "a1p19l5/a1p19q21": {
     why: "checkout, lettuce and discount are not numbers",
     context: "the sentence already rules out the other options",
     prompt: "The shop closes at ___ o'clock. (the number 9)",
     wrong: ["seven", "ten", "twelve"],
-    allow: ["seven", "ten", "twelve"],
   },
   "a1p19l5/a1p19q22": {
-    why: '"debit / oil / till" cannot carry bags',
-    context: "A bag for life carries shopping; debit, oil and till do not carry bags.",
+    why: "reason refreshed to match the options",
+    context:
+      "A bag for life is a strong reusable bag for carrying shopping; the other options are payment and cooking words.",
     wrong: ["basket", "trolley", "till"],
     prompt: "I need a ___ to carry all these bags. (a strong reusable carrier)",
-    allow: ["basket", "trolley", "till"],
   },
   "a1p19l5/a1p19q23": {
     why: "reason refreshed to match the current options",
@@ -1057,13 +983,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "By bus is the vehicle you travel on; by walk is wrong, and an airport and petrol are a place and a fuel.",
     wrong: ["walk", "airport", "petrol"],
-    allow: ["walk", "airport", "petrol"],
   },
   "a1p20l1/a1p20q1": {
     why: "reason refreshed against the replaced options",
     prompt: "The ___ leaves from platform three.",
     wrong: ["ticket", "seat", "driver"],
-    allow: ["ticket", "seat", "driver"],
     context:
       "A train leaves from a platform; a ticket, a seat and a driver go with the train or the passenger.",
   },
@@ -1087,13 +1011,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "A coach stop is where long-distance coaches pick people up; bus, tram and taxi name local transport.",
     prompt: "Could you tell me where the ___ stop is? (for long-distance buses)",
     wrong: ["bus", "tram", "taxi"],
-    allow: ["bus", "tram", "taxi"],
   },
   "a1p20l2/a1p20q6": {
     why: "options replaced with same-kind wrong options",
     prompt: "I usually ___ to work, it's not far. (go on foot)",
     wrong: ["walks", "walking", "to walk"],
-    allow: ["walks", "walking", "to walk"],
   },
   "a1p20l2/a1p20q7": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1111,22 +1033,20 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["carriage", "keys", "petrol"],
   },
   "a1p20l3/a1p20q10": {
-    why: "reason refreshed against the replaced options",
+    why: "reason refreshed to match the options",
     prompt: "I left my ___ at home, so I can't drive.",
     wrong: ["bike", "ticket", "map"],
-    allow: ["bike", "ticket", "map"],
     context:
-      "Keys start a car so you can drive; a bike, a ticket and a map do not stop you driving.",
+      "Keys start a car, so leaving them at home stops you driving; the other options are things you use on other kinds of journey.",
   },
   "a1p20l3/a1p20q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
     imageKey: "ferry",
   },
   "a1p20l3/a1p20q12": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "Please fasten your ___ before we take off. (the strap across your lap)",
-    wrong: ["passport", "ticket", "taxi"],
-    allow: ["passport", "ticket", "taxi"],
+    wrong: ["coat", "bag", "shoes"],
   },
   "a1p20l3/a1p20q13": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1139,8 +1059,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["seatbelt", "carriage", "petrol"],
   },
   "a1p20l4/a1p20q15": {
-    why: "reason added",
-    context: "A flight leaves at a set time; a walk, petrol or keys do not leave at six.",
+    why: "reason refreshed to match the options",
+    context:
+      "A flight leaves at a set time, like six in the morning; the other options are an activity, a fuel and car keys.",
     wrong: ["walk", "petrol", "keys"],
   },
   "a1p20l4/a1p20q16": {
@@ -1154,7 +1075,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context:
       "A ticket is shown before boarding; fasten is for belts, ride is for a vehicle and queue is for people.",
     wrong: ["fasten", "ride", "queue"],
-    allow: ["fasten", "ride", "queue"],
   },
   "a1p20l4/a1p20q18": {
     why: "reason refreshed to match the current options",
@@ -1166,7 +1086,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "We waited at the ___ for twenty minutes. (where trains stop)",
     wrong: ["airport", "harbour", "garage"],
-    allow: ["airport", "harbour", "garage"],
   },
   "a1p20l5/a1p20q20": {
     why: "reason refreshed to match the current options",
@@ -1181,23 +1100,27 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "I always check the ___ before I travel. (it lists when trains leave)",
   },
   "a1p20l5/a1p20q22": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "The car needs more ___ before the trip. (fuel for most cars)",
-    wrong: ["tickets", "rain", "bread"],
-    allow: ["tickets", "rain", "bread"],
+    wrong: ["oil", "air", "water"],
   },
   "a1p20l5/a1p20q23": {
     why: "options replaced with same-kind wrong options",
     prompt: "We arrived at the ___ two hours early. (to catch a flight)",
     wrong: ["station", "harbour", "garage"],
-    allow: ["station", "harbour", "garage"],
   },
   "a1p20l5/a1p20q24": {
-    why: "a ticket, a flight and petrol do not take you anywhere",
+    why: "reason refreshed to match the options",
     context:
-      "A subway runs underground across a city; a bus, a taxi and a ferry do not go underground.",
+      "A subway runs underground across a city; the other options are vehicles that travel above ground or on water.",
     wrong: ["bus", "taxi", "ferry"],
-    allow: ["bus", "taxi", "ferry"],
+  },
+  "a1p21l1/a1p21q2": {
+    why: "options are other body parts",
+    prompt: "You smell with your ___.",
+    context:
+      "The nose is the part of the face used for smelling; feet, mouth and cheeks are other body parts with other jobs.",
+    wrong: ["eyes", "ears", "hands"],
   },
   "a1p22l1/a1p22q0": {
     why: '"reading a new language" is also correct',
@@ -1226,6 +1149,13 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a1p22l2/a1p22q6": {
     why: '"painting plants" is also correct',
     wrong: ["music", "for exercise", "in a pool"],
+  },
+  "a1p22l2/a1p22q7": {
+    why: "reason added",
+    prompt: "She loves dancing ___.",
+    wrong: ["on music", "for music", "of music"],
+    context:
+      "Dancing is done to music, with the preposition to; on, for and of music are the usual learner mistakes.",
   },
   "a1p22l2/a1p22q8": {
     why: '"singing on a bike" is arguable',
@@ -1358,10 +1288,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "The shop ___ at nine every day.",
   },
   "a1p2l5/a1p2q21": {
-    why: "fly / flies is an irregular -y spelling, so the forms share only two letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["flies", "flying", "is fly"],
-    allow: ["flies", "flying", "is fly"],
   },
   "a1p2l5/a1p2q22": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -1540,7 +1469,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Can I have some ___ with my tea? (white, to make it creamy)",
     wrong: ["lemon", "honey", "lime"],
-    allow: ["lemon", "honey", "lime"],
   },
   "a1p8l1/a1p8q2": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1550,7 +1478,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "She ordered a bowl of ___ soup. (the soup is red)",
     wrong: ["pea", "mushroom", "carrot"],
-    allow: ["pea", "mushroom", "carrot"],
   },
   "a1p8l1/a1p8q4": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1560,19 +1487,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I'll have a slice of ___ bread. (the colour of wholemeal)",
     wrong: ["green", "blue", "purple"],
-    allow: ["green", "blue", "purple"],
   },
   "a1p8l2/a1p8q6": {
     why: "options replaced with same-kind wrong options",
     prompt: "Would you like some ___ on your salad? (oil and vinegar)",
     wrong: ["jam", "cream", "honey"],
-    allow: ["jam", "cream", "honey"],
   },
   "a1p8l2/a1p8q7": {
     why: "options replaced with same-kind wrong options",
     prompt: "He always has ___ for dessert. (a sweet treat with candles on it)",
     wrong: ["soup", "rice", "salad"],
-    allow: ["soup", "rice", "salad"],
   },
   "a1p8l2/a1p8q8": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1582,13 +1506,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I'm allergic to ___. (the small nuts in a packet)",
     wrong: ["cherries", "carrots", "olives"],
-    allow: ["cherries", "carrots", "olives"],
   },
   "a1p8l3/a1p8q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "She drinks ___ juice every morning. (squeezed from a citrus fruit)",
     wrong: ["apple", "carrot", "tomato"],
-    allow: ["apple", "carrot", "tomato"],
   },
   "a1p8l3/a1p8q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1598,31 +1520,26 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Could you pass the ___ for my tea? (to make it sweet)",
     wrong: ["salt", "pepper", "flour"],
-    allow: ["salt", "pepper", "flour"],
   },
   "a1p8l3/a1p8q13": {
     why: "options replaced with same-kind wrong options",
     prompt: "Let's order a ___ of pizza to share. (one triangle of the whole)",
     wrong: ["box", "bottle", "bowl"],
-    allow: ["box", "bottle", "bowl"],
   },
   "a1p8l3/a1p8q14": {
     why: "options replaced with same-kind wrong options",
     prompt: "He spread some ___ on his toast. (sweet and made from fruit)",
     wrong: ["cheese", "ham", "mustard"],
-    allow: ["cheese", "ham", "mustard"],
   },
   "a1p8l4/a1p8q15": {
     why: "options replaced with same-kind wrong options",
     prompt: "I prefer ___ tea to green tea. (with no milk)",
     wrong: ["white", "milky", "creamy"],
-    allow: ["white", "milky", "creamy"],
   },
   "a1p8l4/a1p8q16": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could I have the bill, or the ___? (the word Americans use)",
     wrong: ["menu", "tip", "order"],
-    allow: ["menu", "tip", "order"],
   },
   "a1p8l4/a1p8q17": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1632,7 +1549,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "She's a vegetarian, so no ___ for her. (she doesn't eat animals)",
     wrong: ["salad", "rice", "bread"],
-    allow: ["salad", "rice", "bread"],
   },
   "a1p8l4/a1p8q19": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1646,25 +1562,21 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "He always orders his steak ___. (barely cooked inside)",
     wrong: ["well done", "medium", "burnt"],
-    allow: ["well done", "medium", "burnt"],
   },
   "a1p8l5/a1p8q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could we split the ___ between us? (at the end of the meal)",
     wrong: ["menu", "soup", "table"],
-    allow: ["menu", "soup", "table"],
   },
   "a1p8l5/a1p8q23": {
     why: "options replaced with same-kind wrong options",
     prompt: "This cake is made with real ___. (yellow, from cream)",
     wrong: ["cheese", "pepper", "ice"],
-    allow: ["cheese", "pepper", "ice"],
   },
   "a1p8l5/a1p8q24": {
     why: "options replaced with same-kind wrong options",
     prompt: "Would you like ___ or sparkling water? (without bubbles)",
     wrong: ["warm", "salty", "dry"],
-    allow: ["warm", "salty", "dry"],
   },
   "a1p9l1/a1p9q0": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1675,13 +1587,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "He always wears a black ___. (a top with sleeves that zips up)",
     wrong: ["scarf", "hat", "belt"],
-    allow: ["scarf", "hat", "belt"],
   },
   "a1p9l1/a1p9q2": {
     why: "options replaced with same-kind wrong options",
     prompt: "I need new ___ for winter. (for snow and rain)",
     wrong: ["sandals", "slippers", "trainers"],
-    allow: ["sandals", "slippers", "trainers"],
   },
   "a1p9l1/a1p9q3": {
     why: '"sleeves" is a part of a garment, not a garment',
@@ -1692,7 +1602,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "These ___ are too tight. (blue, made of denim)",
     wrong: ["socks", "gloves", "boots"],
-    allow: ["socks", "gloves", "boots"],
   },
   "a1p9l2/a1p9q5": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1712,7 +1621,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "It's cold — wear a ___. (around your neck)",
     wrong: ["belt", "gloves", "socks"],
-    allow: ["belt", "gloves", "socks"],
   },
   "a1p9l2/a1p9q9": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1726,7 +1634,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "These shoes have a broken ___. (you tie it)",
     wrong: ["zip", "button", "pocket"],
-    allow: ["zip", "button", "pocket"],
   },
   "a1p9l3/a1p9q12": {
     why: "options replaced with same-kind wrong options",
@@ -1737,7 +1644,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "She wears a ___ on her wrist. (it tells the time)",
     wrong: ["bracelet", "belt", "glove"],
-    allow: ["bracelet", "belt", "glove"],
   },
   "a1p9l3/a1p9q14": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -1756,19 +1662,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "He loosened his ___ after a long day. (it hangs from his collar)",
     wrong: ["belt", "scarf", "bag"],
-    allow: ["belt", "scarf", "bag"],
   },
   "a1p9l4/a1p9q18": {
     why: "options replaced with same-kind wrong options",
     prompt: "I need to buy new ___ for the gym. (short, for hot weather)",
     wrong: ["jumper", "coat", "boots"],
-    allow: ["jumper", "coat", "boots"],
   },
   "a1p9l4/a1p9q19": {
     why: "options replaced with same-kind wrong options",
     prompt: "She wore a white ___ under her jacket. (a smart top)",
     wrong: ["skirt", "trousers", "belt"],
-    allow: ["skirt", "trousers", "belt"],
   },
   "a1p9l5/a1p9q20": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1788,13 +1691,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "He rolled up his ___. (the parts that cover his arms)",
     wrong: ["pockets", "buttons", "legs"],
-    allow: ["pockets", "buttons", "legs"],
   },
   "a1p9l5/a1p9q24": {
     why: "options replaced with same-kind wrong options",
     prompt: "I ironed my ___ this morning. (two legs, worn with a belt)",
     wrong: ["skirt", "dress", "jacket"],
-    allow: ["skirt", "dress", "jacket"],
   },
   "a2p10l1/a2p10q0": {
     why: "other adjectives' superlatives are too easy to rule out; the comparative and -est/most errors are the real mistakes",
@@ -1900,20 +1801,17 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Could I see the ___, please? (the list of dishes)",
     wrong: ["bill", "tip", "table"],
-    allow: ["bill", "tip", "table"],
   },
   "a2p11l1/a2p11q1": {
     why: "looking, ketchup and booked: ketchup is not a verb form",
     context:
       "Book a table follows I would like to; booking, booked and books are the wrong forms of the verb.",
     wrong: ["booking", "booked", "books"],
-    allow: ["booking", "booked", "books"],
   },
   "a2p11l1/a2p11q2": {
     why: "options replaced with same-kind wrong options",
     prompt: "Are you ready to ___? (tell the waiter what you want)",
     wrong: ["pay", "sit", "leave"],
-    allow: ["pay", "sit", "leave"],
   },
   "a2p11l1/a2p11q3": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -1928,7 +1826,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Is service ___ in the price?",
     wrong: ["include", "including", "includes"],
-    allow: ["include", "including", "includes"],
   },
   "a2p11l2/a2p11q6": {
     why: "reason refreshed",
@@ -1941,7 +1838,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     prompt: "I'm allergic to ___, so no peanuts please. (they grow in a shell)",
     wrong: ["bread", "milk", "eggs"],
-    allow: ["bread", "milk", "eggs"],
   },
   "a2p11l2/a2p11q8": {
     why: '"window / medium / bill" cannot follow "tap"',
@@ -1955,7 +1851,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "The waiter brings the food and recommends dishes; the chef, the manager and the cook have other roles.",
     prompt: "The ___ recommended the fish today. (he brings your food to the table)",
     wrong: ["chef", "manager", "cook"],
-    allow: ["chef", "manager", "cook"],
   },
   "a2p11l3/a2p11q10": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -1967,14 +1862,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     prompt: "Could you bring some more ___, please? (we want to eat it with butter)",
     wrong: ["water", "soup", "wine"],
-    allow: ["water", "soup", "wine"],
   },
   "a2p11l3/a2p11q12": {
     why: "kids, cards and order are not ways of cooking",
     context:
       "Medium is a way of cooking steak; well done, burnt and overcooked are the opposite of not too well done.",
     wrong: ["well done", "burnt", "overcooked"],
-    allow: ["well done", "burnt", "overcooked"],
   },
   "a2p11l3/a2p11q13": {
     why: "reason refreshed to match the current options",
@@ -1986,27 +1879,23 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Can I pay by ___ card? (you pay the bank later)",
     wrong: ["debit", "gift", "loyalty"],
-    allow: ["debit", "gift", "loyalty"],
   },
   "a2p11l4/a2p11q15": {
     why: "tip, book and bill are not places",
     context: "the sentence already rules out the other options",
     wrong: ["kitchen", "bar", "toilets"],
     prompt: "We would like to sit by the ___, please. (so we can see the street)",
-    allow: ["kitchen", "bar", "toilets"],
   },
   "a2p11l4/a2p11q16": {
     why: "book, order and ketchup are not adverbs",
     context: "the sentence already rules out the other options",
     prompt: "This soup is ___ hot, be careful. (it could burn you)",
     wrong: ["barely", "hardly", "slightly"],
-    allow: ["barely", "hardly", "slightly"],
   },
   "a2p11l4/a2p11q17": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could we get some extra ___ for the fries? (a red sauce)",
     wrong: ["mustard", "mayonnaise", "vinegar"],
-    allow: ["mustard", "mayonnaise", "vinegar"],
   },
   "a2p11l4/a2p11q18": {
     why: "book, ketchup and credit are not things a chef cooks",
@@ -2019,33 +1908,28 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     wrong: ["menu", "bill", "table"],
     prompt: "I will have the same ___ as my friend. (what is on the plate)",
-    allow: ["menu", "bill", "table"],
   },
   "a2p11l5/a2p11q20": {
     why: "reason refreshed to match the current options",
     context:
       "Cards are a way of paying, in contrast to cash; menus, orders and tables are restaurant items.",
     wrong: ["menus", "orders", "tables"],
-    allow: ["menus", "orders", "tables"],
   },
   "a2p11l5/a2p11q21": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could you box this up, we'd like a ___ bag? (the nickname for a bag of leftovers)",
     wrong: ["gift", "party", "kitchen"],
-    allow: ["gift", "party", "kitchen"],
   },
   "a2p11l5/a2p11q22": {
     why: "reason refreshed to match the current options",
     context:
       "A busy restaurant is fully booked; ordered, delayed and declined describe other things.",
     wrong: ["ordered", "delayed", "declined"],
-    allow: ["ordered", "delayed", "declined"],
   },
   "a2p11l5/a2p11q23": {
     why: "options replaced with same-kind wrong options",
     prompt: "Please leave a ___ for the staff if service was good. (extra money)",
     wrong: ["discount", "deposit", "receipt"],
-    allow: ["discount", "deposit", "receipt"],
   },
   "a2p11l5/a2p11q24": {
     why: "reason refreshed to match the current options",
@@ -2066,8 +1950,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
   },
   "a2p12l1/a2p12q3": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
+    why: "reason added",
     wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
+    prompt: '"Generally" means ___.',
+    context:
+      "Generally is a frequency adverb for most cases; the other options describe rare or absent events.",
   },
   "a2p12l1/a2p12q4": {
     why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
@@ -2209,19 +2096,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Go ___ at the traffic lights. (don't turn)",
     wrong: ["left", "right", "back"],
-    allow: ["left", "right", "back"],
   },
   "a2p13l1/a2p13q1": {
     why: "options replaced with same-kind wrong options",
     prompt: "Turn ___ at the next corner. (the opposite of right)",
     wrong: ["straight", "up", "forward"],
-    allow: ["straight", "up", "forward"],
   },
   "a2p13l1/a2p13q2": {
     why: "options replaced with same-kind wrong options",
     prompt: "Turn ___ at the bank. (the direction of your writing hand for most people)",
     wrong: ["left", "straight", "back"],
-    allow: ["left", "straight", "back"],
   },
   "a2p13l1/a2p13q3": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2246,7 +2130,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Cross the ___ carefully. (where cars drive)",
     wrong: ["pavement", "garden", "park"],
-    allow: ["pavement", "garden", "park"],
   },
   "a2p13l2/a2p13q8": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2263,7 +2146,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "The end is where a street stops; start, middle and side name other parts of it.",
     prompt: "The station is at the ___ of the street. (where the street stops)",
     wrong: ["start", "middle", "side"],
-    allow: ["start", "middle", "side"],
   },
   "a2p13l3/a2p13q11": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2281,7 +2163,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "A turning is a small side road on your left; corner, junction and bridge name other road features.",
     prompt: "Take the first ___ on your left. (a small side road)",
     wrong: ["corner", "junction", "bridge"],
-    allow: ["corner", "junction", "bridge"],
   },
   "a2p13l3/a2p13q14": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2299,9 +2180,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["above", "beside", "behind"],
   },
   "a2p13l4/a2p13q17": {
-    why: "reason refreshed to match the current options",
+    why: "reason refreshed",
     context:
-      "Signs lead you to an exit; in, down and walk are directions or actions, never destinations.",
+      "Signs lead you to an exit; the other options are directions or actions that name no destination.",
     wrong: ["in", "down", "walk"],
   },
   "a2p13l4/a2p13q18": {
@@ -2314,7 +2195,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     prompt: "It's about a five-minute ___ from here. (you go on foot)",
     wrong: ["drive", "ride", "flight"],
-    allow: ["drive", "ride", "flight"],
   },
   "a2p13l5/a2p13q20": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2345,7 +2225,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "Would you like to ___ out for dinner tonight?",
     wrong: ["going", "goes", "went"],
-    allow: ["going", "goes", "went"],
     context:
       "After would you like to comes the base verb go; going, goes and went are other forms.",
   },
@@ -2353,7 +2232,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "I'm ___ to a party on Saturday, do you want to come?",
     wrong: ["go", "went", "goes"],
-    allow: ["go", "went", "goes"],
     context:
       "I'm going to a party uses the -ing form after I'm; go, went and goes are the wrong forms there.",
   },
@@ -2361,31 +2239,29 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Are you ___ this weekend?",
     wrong: ["freed", "freely", "freeing"],
-    allow: ["freed", "freely", "freeing"],
   },
   "a2p14l1/a2p14q3": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     context:
-      "Meet up is the phrasal verb for arranging to see someone; keep up, planning up and forward up do not mean that.",
+      "Meet up is the phrasal verb for arranging to see someone; the other options pair with different particles.",
     wrong: ["keep", "planning", "forward"],
   },
   "a2p14l1/a2p14q4": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'd love to, but I already have ___.",
     wrong: ["plan", "planning", "planned"],
-    allow: ["plan", "planning", "planned"],
   },
   "a2p14l2/a2p14q5": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could we ___ the meeting to next week?",
     wrong: ["postponing", "postponed", "postpones"],
-    allow: ["postponing", "postponed", "postpones"],
   },
   "a2p14l2/a2p14q6": {
-    why: "reason refreshed to match the current options",
+    why: "reason added",
+    wrong: ["do", "take", "have"],
+    prompt: "I'm afraid I can't ___ to your party, I have other plans.",
     context:
-      "Make it means attend in time or in person; let, pick and forward take other words after them.",
-    wrong: ["let", "pick", "forward"],
+      "Make it to a party means to attend, and in the negative it politely declines; the other verbs build different phrases with to.",
   },
   "a2p14l2/a2p14q7": {
     why: "reason refreshed to match the current options",
@@ -2397,45 +2273,41 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Let's ___ it a rain check and go another time.",
     wrong: ["calling", "called", "calls"],
-    allow: ["calling", "called", "calls"],
   },
   "a2p14l2/a2p14q9": {
-    why: "reason added",
-    context: "You check your schedule before confirming; go, pick or looking your schedule do not.",
+    why: "reason refreshed to match the options",
+    context:
+      "You check your schedule before confirming; the other options pair with different objects.",
     wrong: ["go", "pick", "looking"],
   },
   "a2p14l3/a2p14q10": {
-    why: "reason refreshed against the replaced options",
+    why: "verb forms of one lemma",
     prompt: "Can you ___ me know by Friday?",
-    wrong: ["letting", "lets", "left"],
-    allow: ["letting", "lets", "left"],
+    wrong: ["letting", "lets", "let's"],
     context:
       "Let me know is the fixed phrase; letting, lets and left are the wrong forms after Can you.",
+    slot: "inflection",
   },
   "a2p14l3/a2p14q11": {
     why: "options replaced with same-kind wrong options",
     prompt: "We're ___ to have a picnic on Sunday.",
     wrong: ["plan", "planned", "plans"],
-    allow: ["plan", "planned", "plans"],
   },
   "a2p14l3/a2p14q12": {
-    why: '"set you up" has another meaning',
+    why: "reason refreshed to match the options",
     context:
-      "Pick you up at eight means collect you; check you up, manage you up and show you up do not mean collecting.",
+      "Pick you up at eight means collect you in a car; the other options give other meanings with up.",
     wrong: ["check", "manage", "show"],
-    allow: ["check", "manage", "show"],
   },
   "a2p14l3/a2p14q13": {
     why: "options replaced with same-kind wrong options",
     prompt: "Let's ___ for coffee sometime next week.",
     wrong: ["arranging", "arranged", "arranges"],
-    allow: ["arranging", "arranged", "arranges"],
   },
   "a2p14l3/a2p14q14": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'm really ___ forward to seeing you.",
     wrong: ["look", "looked", "looks"],
-    allow: ["look", "looked", "looks"],
   },
   "a2p14l4/a2p14q15": {
     why: "reason added",
@@ -2448,50 +2320,45 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["does", "did", "doing"],
   },
   "a2p14l4/a2p14q17": {
-    why: "reason refreshed against the replaced options",
+    why: "verb forms of one lemma",
     prompt: "I'll ___ you a text to confirm the time.",
     wrong: ["wrote", "writing", "writes"],
-    allow: ["wrote", "writing", "writes"],
     context: "After I'll comes the base verb write; wrote, writing and writes are the wrong forms.",
+    slot: "inflection",
   },
   "a2p14l4/a2p14q18": {
-    why: '"pick it for Thursday" is also correct',
+    why: "reason refreshed to match the options",
     context:
-      "Keep it for Thursday means leave the plan but on that day; check, manage and miss it for Thursday do not.",
+      "Keep it for Thursday means leave the plan but move it to that day; the other options have other meanings.",
     wrong: ["check", "manage", "miss"],
-    allow: ["check", "manage", "miss"],
   },
   "a2p14l4/a2p14q19": {
     why: "reason refreshed to match the current options",
     context:
       "Can manage that day means being available then; call, forward and hold change the meaning.",
     wrong: ["call", "forward", "hold"],
-    allow: ["call", "forward", "hold"],
   },
   "a2p14l5/a2p14q20": {
     why: "options replaced with same-kind wrong options",
     prompt: "Can we ___ the time to later in the day?",
     wrong: ["changing", "changed", "changes"],
-    allow: ["changing", "changed", "changes"],
   },
   "a2p14l5/a2p14q21": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     context:
-      "Leave it for another day means postpone it; agree it, planning it and looking it for another day do not.",
+      "Leave it for another day means postpone it; the other options give other meanings with it.",
     wrong: ["agree", "planning", "looking"],
   },
   "a2p14l5/a2p14q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "Let's ___ on a place to meet.",
     wrong: ["agreeing", "agreed", "agrees"],
-    allow: ["agreeing", "agreed", "agrees"],
   },
   "a2p14l5/a2p14q23": {
-    why: '"pick the tickets" is also a sentence',
+    why: "reason refreshed to match the options",
     context:
-      "Book the tickets in advance means reserve them; set, make it and look the tickets do not.",
+      "Book the tickets in advance means reserve them; the other options give other meanings with the tickets.",
     wrong: ["set", "make it", "look"],
-    allow: ["set", "make it", "look"],
   },
   "a2p14l5/a2p14q24": {
     why: "reason added",
@@ -2508,19 +2375,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Could I have a ___ for this letter? (it is stuck on the envelope)",
     wrong: ["parcel", "queue", "form"],
-    allow: ["parcel", "queue", "form"],
   },
   "a2p15l1/a2p15q2": {
     why: "options replaced with same-kind wrong options",
     prompt: "I need to ___ some money into my account.",
     wrong: ["deposits", "depositing", "deposited"],
-    allow: ["deposits", "depositing", "deposited"],
   },
   "a2p15l1/a2p15q3": {
     why: "options replaced with same-kind wrong options",
     prompt: "Could I ___ some cash from the machine?",
     wrong: ["withdrew", "withdrawing", "withdraws"],
-    allow: ["withdrew", "withdrawing", "withdraws"],
   },
   "a2p15l1/a2p15q4": {
     why: "reason refreshed to match the current options",
@@ -2528,13 +2392,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "A new bank account is where money is kept; a branch, a balance and a card are other bank words.",
     prompt: "I'd like to open a new bank ___. (where your money is kept)",
     wrong: ["branch", "balance", "card"],
-    allow: ["branch", "balance", "card"],
   },
   "a2p15l2/a2p15q5": {
     why: "reason refreshed against the replaced options",
     prompt: "The parcel should arrive within three working ___.",
     wrong: ["day", "weekends", "Mondays"],
-    allow: ["day", "weekends", "Mondays"],
     context:
       "Three working days is the usual delivery wording; day is singular and weekends and Mondays are counted differently.",
   },
@@ -2548,13 +2410,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "I need to ___ this form before I send it.",
     wrong: ["filling in", "filled in", "fills in"],
-    allow: ["filling in", "filled in", "fills in"],
   },
   "a2p15l2/a2p15q8": {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ machine is outside the bank. (it gives out cash)",
     wrong: ["vending", "washing", "ticket"],
-    allow: ["vending", "washing", "ticket"],
   },
   "a2p15l2/a2p15q9": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -2566,7 +2426,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Airmail post travels by plane; second-class, surface and registered name other kinds of post.",
     prompt: "I'd like to send this by ___ post. (it travels by plane)",
     wrong: ["second-class", "surface", "registered"],
-    allow: ["second-class", "surface", "registered"],
   },
   "a2p15l3/a2p15q11": {
     why: "reason refreshed to match the current options",
@@ -2578,7 +2437,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed to match the current options",
     context: "A PIN number can be changed; parcel, cash and post are other post and money words.",
     wrong: ["parcel", "cash", "post"],
-    allow: ["parcel", "cash", "post"],
   },
   "a2p15l3/a2p15q13": {
     why: "stamp, PIN and balance are not places",
@@ -2590,7 +2448,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Could you check my account ___, please? (how much money is in it)",
     wrong: ["number", "holder", "manager"],
-    allow: ["number", "holder", "manager"],
   },
   "a2p15l4/a2p15q15": {
     why: "the options were not verbs for a cheque you exchange",
@@ -2611,15 +2468,15 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["branch", "order", "balance"],
   },
   "a2p15l4/a2p15q18": {
-    why: "reason added",
-    context: "You transfer money to a bank; a package, a cost or a stamp does not receive money.",
+    why: "reason refreshed to match the options",
+    context:
+      "You transfer money to a bank, the place that receives it; the other options are post office words.",
     wrong: ["package", "cost", "stamp"],
   },
   "a2p15l4/a2p15q19": {
     why: "options replaced with same-kind wrong options",
     prompt: "The bank ___ closes at five o'clock. (the local office)",
     wrong: ["account", "card", "loan"],
-    allow: ["account", "card", "loan"],
   },
   "a2p15l5/a2p15q20": {
     why: "reason refreshed to match the current options",
@@ -2631,13 +2488,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Could you tell me the ___ to send this parcel? (how much I must pay)",
     wrong: ["weight", "colour", "number"],
-    allow: ["weight", "colour", "number"],
   },
   "a2p15l5/a2p15q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'd like to set up a standing ___. (a regular automatic payment)",
     wrong: ["account", "card", "queue"],
-    allow: ["account", "card", "queue"],
   },
   "a2p15l5/a2p15q23": {
     why: "reason refreshed to match the current options",
@@ -2664,7 +2519,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The ___ next door always says hello. (a person who lives beside you)",
     wrong: ["customer", "passenger", "tourist"],
-    allow: ["customer", "passenger", "tourist"],
   },
   "a2p16l1/a2p16q3": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2680,7 +2534,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "shopping, bus and train are nouns in an adjective slot",
     prompt: "My area has lots of ___ shops. (near to where I live)",
     wrong: ["busy", "quiet", "clean"],
-    allow: ["busy", "quiet", "clean"],
   },
   "a2p16l2/a2p16q6": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2691,7 +2544,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: '"a quiet area" also fitted',
     prompt: "I live in a ___ area, not the city. (mostly houses, few shops)",
     wrong: ["shopping", "commercial", "industrial"],
-    allow: ["shopping", "commercial", "industrial"],
   },
   "a2p16l2/a2p16q8": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2702,13 +2554,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The bus ___ is right outside my house. (where the bus waits for people)",
     wrong: ["driver", "ticket", "seat"],
-    allow: ["driver", "ticket", "seat"],
   },
   "a2p16l3/a2p16q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "My street is very ___ at night. (there is almost no noise)",
     wrong: ["busy", "noisy", "crowded"],
-    allow: ["busy", "noisy", "crowded"],
   },
   "a2p16l3/a2p16q11": {
     why: '"clean" is an adjective; the options are now places',
@@ -2733,16 +2583,14 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "My neighbourhood is close to the city ___. (the middle of the city)",
   },
   "a2p16l4/a2p16q15": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "The area has lots of green ___. (parks and open land)",
-    wrong: ["light", "paint", "tea"],
-    allow: ["light", "paint", "tea"],
+    wrong: ["stop", "centre", "road"],
   },
   "a2p16l4/a2p16q16": {
     why: "options replaced with same-kind wrong options",
     prompt: "There's a friendly ___ atmosphere here. (neighbours know each other)",
     wrong: ["traffic", "parking", "tax"],
-    allow: ["traffic", "parking", "tax"],
   },
   "a2p16l4/a2p16q17": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2753,7 +2601,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "We live in a ___ that's popular with families. (a quiet area outside the city)",
     wrong: ["factory", "airport", "station"],
-    allow: ["factory", "airport", "station"],
   },
   "a2p16l4/a2p16q19": {
     why: '"stop / neighbour / community" were nouns for an adjective slot',
@@ -2769,25 +2616,23 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "There's a good ___ centre nearby for sports. (a place for exercise)",
     wrong: ["shopping", "garden", "police"],
-    allow: ["shopping", "garden", "police"],
   },
   "a2p16l5/a2p16q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "The area gets quite ___ during rush hour. (full of cars and people)",
     wrong: ["empty", "quiet", "silent"],
-    allow: ["empty", "quiet", "silent"],
   },
   "a2p16l5/a2p16q23": {
     why: "options replaced with same-kind wrong options",
     prompt: "My neighbourhood has changed a lot over the ___. (a long period of time)",
     wrong: ["morning", "hour", "minute"],
-    allow: ["morning", "hour", "minute"],
   },
   "a2p16l5/a2p16q24": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "I really like living in this part of ___. (the city or the village)",
-    wrong: ["kitchen", "garden", "school"],
-    allow: ["kitchen", "garden", "school"],
+    why: "reason added",
+    prompt: "I really like living in this part of ___.",
+    wrong: ["street", "park", "school"],
+    context:
+      "Part of town is the usual phrase without an article; street, park and school each need the in this phrase.",
   },
   "a2p17l1/a2p17q0": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2813,7 +2658,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: '"near to his sister" is also correct',
     context: "Sitting next to is the phrase; behind to, far to and beside to his sister are wrong.",
     wrong: ["behind", "far", "beside"],
-    allow: ["behind", "far", "beside"],
   },
   "a2p17l2/a2p17q6": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2844,7 +2688,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: 'duplicate of the A1 sentence "The plane flies above the clouds"; the A2 version uses a new sentence',
     prompt: "The balloon floated ___ the village. (higher than the houses)",
     wrong: ["below", "among", "in"],
-    allow: ["below", "among", "in"],
   },
   "a2p17l3/a2p17q12": {
     why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
@@ -2891,16 +2734,21 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["behind", "beside", "in front of"],
   },
   "a2p17l5/a2p17q22": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     prompt: "The car is parked ___ the garage. (next to it, not inside)",
     wrong: ["in", "behind", "inside"],
     context:
-      "Alongside the garage means next to it; in, behind and inside do not mean beside the building.",
+      "Alongside the garage means next to it; the other prepositions place the car inside or behind the building.",
   },
   "a2p17l5/a2p17q23": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
     prompt: "The plane flew ___ the city. (it went by without stopping)",
     wrong: ["into", "towards", "onto"],
+  },
+  "a2p17l5/a2p17q24": {
+    why: "options are other motion prepositions",
+    prompt: "The path leads ___ the forest. (it stops before the first trees)",
+    wrong: ["into", "through", "onto"],
   },
   "a2p18l1/a2p18q0": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -2933,10 +2781,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["read", "readed", "reads"],
   },
   "a2p18l2/a2p18q6": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["drive", "drove", "drives"],
-    allow: ["drive", "drove", "drives"],
   },
   "a2p18l2/a2p18q7": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -2978,22 +2825,19 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["jog", "jogged", "jogs"],
   },
   "a2p18l4/a2p18q15": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["write", "wrote", "writes"],
-    allow: ["write", "wrote", "writes"],
   },
   "a2p18l4/a2p18q16": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["swim", "swam", "swims"],
-    allow: ["swim", "swam", "swims"],
   },
   "a2p18l4/a2p18q17": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["sing", "sang", "sings"],
-    allow: ["sing", "sang", "sings"],
   },
   "a2p18l4/a2p18q18": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -3026,10 +2870,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["chat", "chatted", "chats"],
   },
   "a2p18l5/a2p18q24": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["ride", "rode", "rides"],
-    allow: ["ride", "rode", "rides"],
   },
   "a2p19l1/a2p19q0": {
     why: "past cue present: the present modals are wrong, and 'ought'/'used' were out of the pool",
@@ -3077,6 +2920,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "can/could/may all fit without the function; the clue says which",
     prompt: "___ you pass me the salt, please? (a polite request)",
     wrong: ["must", "shall", "might"],
+  },
+  "a2p19l3/a2p19q12": {
+    why: "options and wording fixed after the third review",
+    prompt: "We ___ not enter without a ticket. (we are unable to)",
+    wrong: ["may", "might", "shall"],
   },
   "a2p19l3/a2p19q13": {
     why: "past cue present: the present modals are wrong, and 'ought'/'used' were out of the pool",
@@ -3228,13 +3076,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "This bag is as ___ as that one. (they weigh the same)",
     wrong: ["tall", "wide", "loud"],
-    allow: ["tall", "wide", "loud"],
   },
   "a2p20l1/a2p20q1": {
     why: "options replaced with same-kind wrong options",
     prompt: "She is as ___ as her sister. (the same height)",
     wrong: ["old", "wide", "heavy"],
-    allow: ["old", "wide", "heavy"],
   },
   "a2p20l1/a2p20q2": {
     why: "reason refreshed to match the current options",
@@ -3246,7 +3092,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "His car is as ___ as mine. (they go at the same speed)",
     wrong: ["big", "loud", "old"],
-    allow: ["big", "loud", "old"],
   },
   "a2p20l1/a2p20q4": {
     why: '"as quick / small" were weak options; the clue picks the one that burns',
@@ -3258,42 +3103,36 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The film was as ___ as the book. (equally enjoyable)",
     wrong: ["expensive", "heavy", "wide"],
-    allow: ["expensive", "heavy", "wide"],
   },
   "a2p20l2/a2p20q6": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "He runs as ___ as a professional sprinter. (very fast)",
-    wrong: ["heavy", "tall", "loud"],
-    allow: ["heavy", "tall", "loud"],
+    wrong: ["slow", "weak", "tired"],
   },
   "a2p20l2/a2p20q7": {
     why: "options replaced with same-kind wrong options",
     prompt: "This hotel is as ___ as the other one. (it costs the same)",
     wrong: ["big", "old", "noisy"],
-    allow: ["big", "old", "noisy"],
   },
   "a2p20l2/a2p20q8": {
-    why: "options replaced with same-kind wrong options",
+    why: "options and wording fixed after the third review",
     prompt: "Her English is as ___ as her brother's. (speaks smoothly)",
-    wrong: ["heavy", "tall", "sweet"],
+    wrong: ["poor", "basic", "weak"],
   },
   "a2p20l2/a2p20q9": {
     why: "options replaced with same-kind wrong options",
     prompt: "The weather today is as ___ as yesterday. (it is freezing)",
     wrong: ["hot", "warm", "mild"],
-    allow: ["hot", "warm", "mild"],
   },
   "a2p20l3/a2p20q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "This restaurant is as ___ as the one downtown. (it has as many customers)",
     wrong: ["quiet", "tiny", "silent"],
-    allow: ["quiet", "tiny", "silent"],
   },
   "a2p20l3/a2p20q11": {
     why: "reason refreshed against the replaced options",
     prompt: "The exam was not as ___ as I thought. (difficult)",
     wrong: ["easy", "short", "long"],
-    allow: ["easy", "short", "long"],
     context:
       "Hard here means difficult, in contrast with easy; short and long describe length, not how hard an exam is.",
   },
@@ -3301,79 +3140,66 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "This coffee is as ___ as the one at home. (it wakes you up just as much)",
     wrong: ["weak", "cold", "small"],
-    allow: ["weak", "cold", "small"],
   },
   "a2p20l3/a2p20q13": {
     why: "options replaced with same-kind wrong options",
     prompt: "The journey was as ___ as we expected. (it took the same time)",
     wrong: ["heavy", "loud", "wide"],
-    allow: ["heavy", "loud", "wide"],
   },
   "a2p20l3/a2p20q14": {
     why: "options replaced with same-kind wrong options",
     prompt: "His new phone is as ___ as the old one. (it never breaks down)",
     wrong: ["heavy", "cheap", "noisy"],
-    allow: ["heavy", "cheap", "noisy"],
   },
   "a2p20l4/a2p20q15": {
     why: "options replaced with same-kind wrong options",
     prompt: "This road is as ___ as the motorway. (the same amount of traffic)",
     wrong: ["quiet", "empty", "clean"],
-    allow: ["quiet", "empty", "clean"],
   },
   "a2p20l4/a2p20q16": {
     why: "options replaced with same-kind wrong options",
     prompt: "The party was as ___ as last year's. (everyone enjoyed it as much)",
     wrong: ["boring", "cold", "quiet"],
-    allow: ["boring", "cold", "quiet"],
   },
   "a2p20l4/a2p20q17": {
     why: "options replaced with same-kind wrong options",
     prompt: "Her cooking is as ___ as a professional chef's. (it tastes just as good)",
     wrong: ["terrible", "awful", "bland"],
-    allow: ["terrible", "awful", "bland"],
   },
   "a2p20l4/a2p20q18": {
     why: "options replaced with same-kind wrong options",
     prompt: "The city is as ___ as the countryside. (just as quiet and calm)",
     wrong: ["noisy", "crowded", "busy"],
-    allow: ["noisy", "crowded", "busy"],
   },
   "a2p20l4/a2p20q19": {
     why: "options replaced with same-kind wrong options",
     prompt: "This jacket is as ___ as the other colour. (it keeps you cosy)",
     wrong: ["light", "heavy", "expensive"],
-    allow: ["light", "heavy", "expensive"],
   },
   "a2p20l5/a2p20q20": {
     why: "options replaced with same-kind wrong options",
     prompt: "My flat is as ___ as yours. (the same size, tiny)",
     wrong: ["large", "huge", "big"],
-    allow: ["large", "huge", "big"],
   },
   "a2p20l5/a2p20q21": {
     why: "options replaced with same-kind wrong options",
     prompt: "The lesson was as ___ as the last one. (it kept me awake just as much)",
     wrong: ["boring", "long", "short"],
-    allow: ["boring", "long", "short"],
   },
   "a2p20l5/a2p20q22": {
     why: "options replaced with same-kind wrong options",
     prompt: "This wine is as ___ as the other bottle. (the same amount of sugar)",
     wrong: ["bitter", "salty", "sour"],
-    allow: ["bitter", "salty", "sour"],
   },
   "a2p20l5/a2p20q23": {
     why: "options replaced with same-kind wrong options",
     prompt: "Her plan is as ___ as mine. (just as easy to follow)",
     wrong: ["complicated", "difficult", "confusing"],
-    allow: ["complicated", "difficult", "confusing"],
   },
   "a2p20l5/a2p20q24": {
     why: "options replaced with same-kind wrong options",
     prompt: "The bridge is as ___ as the old one. (it won't break)",
     wrong: ["fragile", "weak", "flimsy"],
-    allow: ["fragile", "weak", "flimsy"],
   },
   "a2p2l1/a2p2q0": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -3390,11 +3216,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["do", "was", "were"],
   },
   "a2p2l1/a2p2q3": {
-    why: "reason refreshed against the replaced options",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["was talking", "were talk", "have talked"],
     prompt: "While we ___ , the phone rang.",
-    allow: ["was talking", "were talk", "have talked"],
     context:
       "While plus the past continuous sets up a longer action that the phone call interrupted; was talking disagrees with we.",
   },
@@ -3447,7 +3272,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     slot: "inflection",
     wrong: ["was playing", "were play", "are playing"],
     prompt: "At six o'clock yesterday, the children ___ in the garden.",
-    allow: ["was playing", "were play", "are playing"],
   },
   "a2p2l4/a2p2q15": {
     why: "no time cue: the present form was also correct; the cue picks the past",
@@ -3472,10 +3296,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "The train ___ on time yesterday.",
   },
   "a2p2l4/a2p2q19": {
-    why: 'the blank held the whole of "used to"',
+    why: "options are forms of use",
     slot: "inflection",
-    wrong: ["use", "uses", "using"],
-    allow: ["use", "uses", "using"],
+    wrong: ["use", "uses", "to use"],
     prompt: "He ___ to walk to school when he was young.",
   },
   "a2p2l5/a2p2q20": {
@@ -3604,16 +3427,16 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["usefuler", "most useful", "more usefuler"],
   },
   "a2p4l1/a2p4q0": {
-    why: "options replaced with same-kind wrong options",
+    why: "verb forms of one lemma",
     prompt: "Can I ___ this on? (in a shop, to see if it fits)",
     wrong: ["trying", "tried", "tries"],
-    allow: ["trying", "tried", "tries"],
+    slot: "inflection",
   },
   "a2p4l1/a2p4q1": {
-    why: "reason refreshed to match the current options",
-    context:
-      "A room is booked in a hotel; write, catch and fit go with letters, buses and clothes.",
-    wrong: ["write", "catch", "fit"],
+    why: "options and wording fixed after the third review",
+    wrong: ["booking", "booked", "books"],
+    prompt: "I'd like to ___ a room.",
+    slot: "inflection",
   },
   "a2p4l1/a2p4q2": {
     why: "reason refreshed to match the current options",
@@ -3621,7 +3444,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "The bill is what you ask for when you want to pay; a menu, a receipt and change are other restaurant items.",
     prompt: "Could I have the ___ , please? (we want to pay)",
     wrong: ["menu", "receipt", "change"],
-    allow: ["menu", "receipt", "change"],
   },
   "a2p4l1/a2p4q3": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -3631,7 +3453,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Do you ___ by card? (accept payment)",
     wrong: ["taking", "took", "takes"],
-    allow: ["taking", "took", "takes"],
   },
   "a2p4l2/a2p4q5": {
     why: "reason refreshed to match the current options",
@@ -3643,37 +3464,32 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "time anchor added so only one tense fits",
     prompt: "The train ___ from platform 4 at nine every day.",
     wrong: ["depart", "departing", "departure"],
-    allow: ["depart", "departing", "departure"],
   },
   "a2p4l2/a2p4q7": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'd like a ___ ticket, please. (a trip there and back)",
     wrong: ["single", "student", "child"],
-    allow: ["single", "student", "child"],
   },
   "a2p4l2/a2p4q8": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "Is this seat ___ ? (someone is sitting there)",
-    wrong: ["free", "empty", "open"],
-    allow: ["free", "empty", "open"],
+    why: "options and wording fixed after the third review",
+    prompt: "Is this seat ___ ?",
+    wrong: ["take", "taking", "takes"],
+    slot: "inflection",
   },
   "a2p4l2/a2p4q9": {
     why: "options replaced with same-kind wrong options",
     prompt: "Can you ___ me the way to the museum?",
     wrong: ["shows", "showing", "showed"],
-    allow: ["shows", "showing", "showed"],
   },
   "a2p4l3/a2p4q10": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'm just ___ , thanks. (browsing in a shop)",
     wrong: ["look", "looked", "looks"],
-    allow: ["look", "looked", "looks"],
   },
   "a2p4l3/a2p4q11": {
     why: "reason refreshed to match the current options",
     context: "A size can be bigger; colour, style and shape come in other kinds of difference.",
     wrong: ["colour", "style", "shape"],
-    allow: ["colour", "style", "shape"],
   },
   "a2p4l3/a2p4q12": {
     why: "reason refreshed to match the current options",
@@ -3681,13 +3497,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "A jacket is returned to a shop; wear, try and buy happen before or instead of taking it back.",
     prompt: "I'd like to ___ this jacket. (take it back to the shop)",
     wrong: ["wear", "try", "buy"],
-    allow: ["wear", "try", "buy"],
   },
   "a2p4l3/a2p4q13": {
     why: "options replaced with same-kind wrong options",
     prompt: "What time is ___ out? (leaving the hotel)",
     wrong: ["take", "set", "hand"],
-    allow: ["take", "set", "hand"],
   },
   "a2p4l3/a2p4q14": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -3697,28 +3511,25 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "The flight has been ___ .",
     wrong: ["delay", "delaying", "delays"],
-    allow: ["delay", "delaying", "delays"],
   },
   "a2p4l4/a2p4q16": {
-    why: "reason refreshed against the replaced options",
+    why: "verb forms of one lemma",
     prompt: "Could you ___ that down for me?",
     wrong: ["wrote", "writing", "writes"],
-    allow: ["wrote", "writing", "writes"],
     context:
       "Write down is the phrasal verb for noting something on paper; wrote, writing and writes have the wrong form after Could you.",
+    slot: "inflection",
   },
   "a2p4l4/a2p4q17": {
     why: "options replaced with same-kind wrong options",
     prompt: "I'd like to ___ some money. (swap it into another currency)",
     wrong: ["changing", "changed", "changes"],
-    allow: ["changing", "changed", "changes"],
   },
   "a2p4l4/a2p4q18": {
     why: '"Are you behind in the queue?" is also correct; the clue says your turn is next',
     context: "the sentence already rules out the other options",
     wrong: ["behind", "near", "far"],
     prompt: "Are you ___ in the queue? (it is your turn after this person)",
-    allow: ["behind", "near", "far"],
   },
   "a2p4l4/a2p4q19": {
     why: "reason refreshed to match the current options",
@@ -3730,7 +3541,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "This shirt doesn't ___ me. (it's too small)",
     wrong: ["fits", "fitting", "fitted"],
-    allow: ["fits", "fitting", "fitted"],
   },
   "a2p4l5/a2p4q21": {
     why: "reason refreshed to match the current options",
@@ -3739,22 +3549,20 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["off", "away", "back"],
   },
   "a2p4l5/a2p4q22": {
-    why: "reason added",
+    why: "reason refreshed to match the options",
     context:
-      "In a shop I'll take it means I'm buying; I'll write it, looking it and delayed it do not.",
+      "In a shop I'll take it means I'm buying; the other options use the wrong verb form after I'll.",
     wrong: ["write", "looking", "delayed"],
   },
   "a2p4l5/a2p4q23": {
     why: "reason refreshed to match the current options",
     context: "A bus is caught at a stop; fit, write and wash go with clothes, letters and dishes.",
     wrong: ["fit", "write", "wash"],
-    allow: ["fit", "write", "wash"],
   },
   "a2p4l5/a2p4q24": {
     why: "options replaced with same-kind wrong options",
     prompt: "The hotel ___ breakfast. (it is part of the room price)",
     wrong: ["include", "including", "to include"],
-    allow: ["include", "including", "to include"],
   },
   "a2p5l3/a2p5q11": {
     why: "the wrong options were filler from outside the slot's pool",
@@ -3764,7 +3572,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options replaced with same-kind wrong options",
     prompt: "Add a ___ of salt. (a very small amount between two fingers)",
     wrong: ["spoon", "cup", "bag"],
-    allow: ["spoon", "cup", "bag"],
   },
   "a2p5l5/a2p5q22": {
     why: "the wrong options were filler from outside the slot's pool",
@@ -3775,10 +3582,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["to", "with", "from"],
   },
   "a2p6l1/a2p6q0": {
-    why: "might/may/could also fitted a prediction; a promise needs will",
+    why: "options and wording fixed after the third review",
     prompt: "I promise I ___ call you tomorrow.",
-    wrong: ["must", "ought", "need"],
-    allow: ["must", "ought", "need"],
+    wrong: ["must", "should", "might"],
   },
   "a2p6l1/a2p6q1": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3801,10 +3607,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["go", "gone"],
   },
   "a2p6l2/a2p6q5": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["leave", "leaving", "left"],
-    allow: ["leave", "leaving", "left"],
   },
   "a2p6l2/a2p6q6": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3849,7 +3654,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     slot: "inflection",
     wrong: ["start", "starting", "started"],
     prompt: "The film ___ at nine tonight.",
-    allow: ["start", "starting", "started"],
   },
   "a2p6l4/a2p6q15": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3872,10 +3676,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["might", "may", "could"],
   },
   "a2p6l4/a2p6q19": {
-    why: "irregular forms of one verb share only their first letters",
+    why: "verb forms of one lemma",
     slot: "inflection",
     wrong: ["take", "takes", "took"],
-    allow: ["take", "takes", "took"],
   },
   "a2p6l5/a2p6q20": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3939,7 +3742,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Gardens are behind a house; nothing can be behind a window, a ceiling or a floor as a place for a garden.",
     wrong: ["window", "ceiling", "floor"],
     prompt: "There's a nice garden behind the ___.",
-    allow: ["window", "ceiling", "floor"],
   },
   "a2p7l2/a2p7q7": {
     why: '"on the wardrobe" is also a sentence; the clue says where we eat',
@@ -4014,7 +3816,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "The light is switched off at bedtime; television, heating and oven are other things in a house.",
     prompt: "Turn off the ___ before you sleep. (it makes the room bright)",
     wrong: ["television", "heating", "oven"],
-    allow: ["television", "heating", "oven"],
   },
   "a2p7l5/a2p7q21": {
     why: "the options were not homes (bathroom, mat)",
@@ -4033,8 +3834,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "I store old boxes in the ___. (the room under the ground floor)",
   },
   "a2p7l5/a2p7q24": {
-    why: "topic word: the photo shows the answer, so no other option fits",
+    why: "options and wording fixed after the third review",
     imageKey: "mat",
+    prompt: "Please wipe your feet on the ___ by the front door.",
+    wrong: ["bed", "sofa", "wardrobe"],
   },
   "a2p8l4/a2p8q18": { why: "sewing also uses a needle", wrong: ["swimming", "badminton", "golf"] },
   "a2p8l4/a2p8q19": {
@@ -4046,77 +3849,66 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     prompt: "I have a bad ___ and can't stop sneezing. (my nose is blocked)",
     wrong: ["cough", "fever", "headache"],
-    allow: ["cough", "fever", "headache"],
   },
   "a2p9l1/a2p9q1": {
     why: "options are now illnesses, ruled out by pain in her head",
     context: "the sentence already rules out the other options",
     prompt: "She's got a ___ — take some painkillers. (pain in her head)",
     wrong: ["cough", "fever", "bruise"],
-    allow: ["cough", "fever", "bruise"],
   },
   "a2p9l1/a2p9q2": {
     why: "options were not body parts you run with",
     context: "the sentence already rules out the other options",
     wrong: ["arm", "throat", "wrist"],
     prompt: "My ___ hurts after running. (the part you run with)",
-    allow: ["arm", "throat", "wrist"],
   },
   "a2p9l1/a2p9q3": {
     why: "pulse, throat and fever cannot be broken",
     context: "the sentence already rules out the other options",
     wrong: ["leg", "ankle", "throat"],
     prompt: "He broke his ___ playing football. (his hand was in a sling)",
-    allow: ["leg", "ankle", "throat"],
   },
   "a2p9l1/a2p9q4": {
     why: '"I feel sick" is also correct; the clue says the room is spinning',
     context: "the sentence already rules out the other options",
     wrong: ["sick", "injured", "hungry"],
     prompt: "I feel ___ — I need to sit down. (the room is spinning)",
-    allow: ["sick", "injured", "hungry"],
   },
   "a2p9l2/a2p9q5": {
     why: "options were body parts; now illnesses, ruled out by the pain in her head",
     context: "the sentence already rules out the other options",
     wrong: ["cough", "fever", "bruise"],
     prompt: "She has a ___ — please be quiet. (a very bad pain in her head)",
-    allow: ["cough", "fever", "bruise"],
   },
   "a2p9l2/a2p9q6": {
     why: "reason refreshed to match the current options",
     context:
       "The throat becomes sore from shouting; the ankle, knee and wrist are joints used for moving.",
     wrong: ["ankle", "knee", "wrist"],
-    allow: ["ankle", "knee", "wrist"],
   },
   "a2p9l2/a2p9q7": {
     why: "reason refreshed to match the current options",
     context:
       "A high temperature is another way to say fever; cough, headache and bruise go with other words.",
     wrong: ["cough", "headache", "bruise"],
-    allow: ["cough", "headache", "bruise"],
   },
   "a2p9l2/a2p9q8": {
     why: "options were not joints",
     context: "the sentence already rules out the other options",
     prompt: "I twisted my ___ on the stairs. (the joint above my foot)",
     wrong: ["wrist", "knee", "elbow"],
-    allow: ["wrist", "knee", "elbow"],
   },
   "a2p9l2/a2p9q9": {
     why: "sick, injured and faint are adjectives",
     context: "the sentence already rules out the other options",
     prompt: "She's allergic to ___. (small hard foods in a shell)",
     wrong: ["bread", "milk", "eggs"],
-    allow: ["bread", "milk", "eggs"],
   },
   "a2p9l3/a2p9q10": {
     why: "a doctor also gives a spray; the clue says you swallow it",
     context: "the sentence already rules out the other options",
     wrong: ["spray", "cream", "bruise"],
     prompt: "The doctor gave me some ___. (I swallow it)",
-    allow: ["spray", "cream", "bruise"],
   },
   "a2p9l3/a2p9q11": {
     why: "topic word: the photo shows the answer, so no other option fits",
@@ -4133,14 +3925,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     context: "the sentence already rules out the other options",
     wrong: ["dizzy", "faint", "upset"],
     prompt: "He's been ___ since Monday. (ill in bed all week)",
-    allow: ["dizzy", "faint", "upset"],
   },
   "a2p9l3/a2p9q14": {
     why: "nuts and wrist are nouns",
     context: "the sentence already rules out the other options",
     wrong: ["injured", "upset", "hungry"],
     prompt: "She fainted because she felt ___. (like she was about to pass out)",
-    allow: ["injured", "upset", "hungry"],
   },
   "a2p9l4/a2p9q15": {
     why: '"headache / fever / ankle": "I cut my ankle" is also correct; the options are now things that cannot be cut',
@@ -4154,56 +3944,49 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "The nurse checked my ___. (the beat of my heart)",
   },
   "a2p9l4/a2p9q17": {
-    why: "nuts is a food",
+    why: "reason refreshed",
     context:
-      "An injured leg needs rest; upset, faint and dizzy describe how a person feels, not a leg.",
+      "An injured leg needs rest; the other options describe how a person feels instead of a leg.",
     wrong: ["upset", "faint", "dizzy"],
-    allow: ["upset", "faint", "dizzy"],
   },
   "a2p9l4/a2p9q18": {
     why: "reason added",
     context: "Upset starts with a vowel sound so an fits; faint, cold and sick take a.",
     wrong: ["faint", "sick", "tired"],
-    allow: ["faint", "sick", "tired"],
   },
   "a2p9l4/a2p9q19": {
     why: "throat, arm and ankle are not illnesses",
     context: "the sentence already rules out the other options",
     wrong: ["cough", "bruise", "cold"],
     prompt: "She's recovering from a ___. (a high temperature)",
-    allow: ["cough", "bruise", "cold"],
   },
   "a2p9l5/a2p9q20": {
-    why: "reason refreshed against the replaced options",
-    wrong: ["hurting", "hurted", "is hurts"],
-    allow: ["hurting", "hurted", "is hurts"],
-    prompt: "My back always ___ after lifting the box.",
+    why: "options and wording fixed after the third review",
+    wrong: ["hurting", "is hurts", "to hurt"],
+    prompt: "My back ___ after lifting the box.",
+    slot: "inflection",
   },
   "a2p9l5/a2p9q21": {
     why: "reason refreshed to match the current options",
     context:
       "A bruise is the dark mark that appears on a knee; a fever, a cough and a headache describe the whole body or head.",
     wrong: ["fever", "cough", "headache"],
-    allow: ["fever", "cough", "headache"],
   },
   "a2p9l5/a2p9q22": {
     why: "a dentist, spray or medicine is not a symptom",
     context: "the sentence already rules out the other options",
     wrong: ["headache", "ankle", "fever"],
     prompt: "I should see a doctor about my ___. (I keep coughing at night)",
-    allow: ["headache", "ankle", "fever"],
   },
   "a2p9l5/a2p9q23": {
     why: "migraine, cough and fever cannot be sprained",
     context: "the sentence already rules out the other options",
     wrong: ["ankle", "knee", "elbow"],
     prompt: "She sprained her ___ at the gym. (the joint between her hand and arm)",
-    allow: ["ankle", "knee", "elbow"],
   },
   "a2p9l5/a2p9q24": {
-    why: "the options were body parts; now things a pharmacist could mention",
-    context: "the sentence already rules out the other options",
-    wrong: ["medicine", "cough", "bruise"],
+    why: "options and wording fixed after the third review",
+    wrong: ["syrup", "tablet", "plaster"],
     prompt: "The pharmacist recommended this ___ for allergies. (you squirt it into your nose)",
   },
   "u1l1/q4": {
@@ -4215,7 +3998,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: 'nonsense options "Good hello" and "Good time" replaced with real expressions',
     wrong: ["Good morning.", "Good afternoon.", "Good luck."],
     prompt: "Choose the correct farewell for the night. (said to someone going to bed)",
-    allow: ["Good morning.", "Good afternoon.", "Good luck."],
   },
   "u1l1/q7": {
     why: "reason refreshed against the replaced options",
@@ -4246,9 +4028,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["answers", "answering", "am answer"],
   },
   "u2l2/q2": {
-    why: "reason refreshed against the replaced options",
+    why: "options and wording fixed after the third review",
     wrong: ["work", "working", "is work"],
-    prompt: "She ___ in a bank every day.",
+    prompt: "She ___ in a bank.",
   },
   "u2l2/q4": {
     why: '"We had a meeting" is also correct; the options are now agreement and form errors',
@@ -4289,10 +4071,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Set the alarm is the phrase for a wake-up call; alarms is plural and alarmed and alarming are adjectives.",
   },
   "u3l1/q2": {
-    why: '"Might you help me" is also a polite request',
+    why: "options and wording fixed after the third review",
     prompt: "___ you help me? (a polite request)",
-    wrong: ["Must", "Shall", "Ought"],
-    allow: ["Must", "Shall", "Ought"],
+    wrong: ["Must", "Shall", "Should"],
   },
   "u3l1/q4": {
     why: '"Pardon me, is this seat free?" is correct',
@@ -4354,25 +4135,14 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "The train ___ from platform 3 every morning.",
   },
-  "u6l2/q2": {
-    why: "reviewed: wrong forms after If I",
-    wrong: ["are", "will be", "been"],
-    allow: ["are", "will be", "been"],
-  },
-  "u6l2/q4": {
-    why: "reviewed: wrong forms after I",
-    wrong: ["will", "am", "did"],
-    allow: ["will", "am", "did"],
-  },
-  "u6l2/q6": {
-    why: "reviewed: wrong forms after have",
-    wrong: ["won't", "don't", "didn't"],
-    allow: ["won't", "don't", "didn't"],
-  },
+  "u6l2/q2": { why: "options are other forms of be", wrong: ["are", "is", "be"] },
+  "u6l2/q4": { why: "options are other modals", wrong: ["will", "shall", "must"] },
+  "u6l2/q6": { why: "options are other negatives", wrong: ["won't", "mustn't", "needn't"] },
   "u7l1/q2": {
-    why: "reason added",
+    why: "options are other words from attach",
     context:
       "Please find the report attached is the fixed email phrase; attaching, attach and attachment have the wrong form after the noun.",
+    wrong: ["attaching", "attachment", "attachments"],
   },
   "u9l1/q4": {
     why: '"hold ground" is also a phrase; options now cannot hold',
@@ -4384,8 +4154,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Data takes the plural verb indicate in formal writing; the other options add to or change the form.",
   },
   "u9l2/q4": {
-    why: '"during" and "within" also fit; options reduced to clearly wrong prepositions',
-    wrong: ["at", "by", "on"],
-    allow: ["at", "by", "on"],
+    why: "options from the particle group; the preposition over has no near rival there",
+    wrong: ["onto", "past", "from"],
   },
 };
