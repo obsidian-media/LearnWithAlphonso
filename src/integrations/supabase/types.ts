@@ -1203,6 +1203,73 @@ export type Database = {
           },
         ];
       };
+      podcast_quiz_awards: {
+        Row: {
+          best_correct: number;
+          best_xp: number;
+          episode_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          best_correct: number;
+          best_xp: number;
+          episode_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          best_correct?: number;
+          best_xp?: number;
+          episode_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_quiz_awards_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_quiz_questions: {
+        Row: {
+          answer_index: number;
+          choices: Json;
+          episode_id: string;
+          id: string;
+          prompt: string;
+          sort_order: number;
+        };
+        Insert: {
+          answer_index: number;
+          choices: Json;
+          episode_id: string;
+          id: string;
+          prompt: string;
+          sort_order: number;
+        };
+        Update: {
+          answer_index?: number;
+          choices?: Json;
+          episode_id?: string;
+          id?: string;
+          prompt?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_quiz_questions_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       podcast_transcripts: {
         Row: {
           created_at: string;
@@ -2509,6 +2576,17 @@ export type Database = {
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: never; Returns: string };
+      submit_podcast_quiz: {
+        Args: {
+          _answers: Json;
+          _at: string;
+          _completed_at?: string;
+          _episode_id: string;
+          _limit?: number;
+          _user_id: string;
+        };
+        Returns: Json;
+      };
       team_name_problem: { Args: { _name: string }; Returns: string };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
