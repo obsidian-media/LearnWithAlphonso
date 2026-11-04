@@ -3,6 +3,12 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ListenFolderView, PodcastSearchResults } from "./listen";
 
+vi.mock("../../components/PodcastQuizLauncher", () => ({
+  PodcastQuizLauncher: ({ episode }: { episode: { title: string } }) => (
+    <button type="button">{`Take the quiz: ${episode.title}`}</button>
+  ),
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
     <a href={to} {...rest}>
@@ -30,6 +36,30 @@ const episode = {
 };
 
 describe("ListenFolderView", () => {
+  it("offers a quiz only on the episodes that have one", () => {
+    const withQuiz = { ...episode, id: "e1", title: "Ordering Coffee" };
+    const without = { ...episode, id: "e2", slug: "other", title: "No Quiz Here" };
+    render(
+      <ListenFolderView
+        folders={folders}
+        episodes={[withQuiz, without]}
+        segments={["en", "a1"]}
+        quizEpisodeIds={new Set(["e1"])}
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "Take the quiz: Ordering Coffee" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Take the quiz: No Quiz Here" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows no quiz buttons when none are known", () => {
+    render(<ListenFolderView folders={folders} episodes={[episode]} segments={["en", "a1"]} />);
+    expect(screen.queryByRole("button", { name: /Take the quiz/ })).not.toBeInTheDocument();
+  });
+
   it("lists the child folders of the current level", () => {
     render(<ListenFolderView folders={folders} episodes={[]} segments={["en"]} />);
     expect(screen.getByText("A1 Beginner")).toBeInTheDocument();

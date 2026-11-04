@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-start", () => ({
 const adminRpc = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: adminRpc } }));
 
-const { completePodcastQuiz, fetchPodcastQuiz } =
+const { completePodcastQuiz, fetchPodcastQuiz, fetchQuizEpisodeIds } =
   (await import("./podcast-quiz.functions")) as unknown as {
     completePodcastQuiz: (o: {
       data: unknown;
@@ -32,6 +32,7 @@ const { completePodcastQuiz, fetchPodcastQuiz } =
       data: unknown;
       context: unknown;
     }) => Promise<Record<string, unknown> | null>;
+    fetchQuizEpisodeIds: (o: { data: unknown; context: unknown }) => Promise<string[]>;
   };
 const EP = "11111111-1111-4111-8111-111111111111";
 const answers = [{ questionId: "q1", choiceIndex: 1 }];
@@ -164,5 +165,58 @@ describe("fetchPodcastQuiz", () => {
       podcast_quiz_awards: { data: null, error: null },
     });
     await expect(get(c)).rejects.toThrow("boom");
+  });
+});
+
+describe("fetchQuizEpisodeIds", () => {
+  const ids = ["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"];
+  function client(result: { data: unknown; error: { message: string } | null }) {
+    const seen: { table?: string; col?: string; vals?: string[] } = {};
+    return {
+      seen,
+      supabase: {
+        from(table: string) {
+          seen.table = table;
+          const q = {
+            select: () => q,
+            in: (col: string, vals: string[]) => (
+              (seen.col = col),
+              (seen.vals = vals),
+              Promise.resolve(result)
+            ),
+          };
+          return q;
+        },
+      },
+    };
+  }
+  const call = (c: ReturnType<typeof client>, episodeIds: string[] = ids) =>
+    fetchQuizEpisodeIds({ data: { episodeIds }, context: { supabase: c.supabase, userId: "u" } });
+
+  it("returns each episode that has questions once", async () => {
+    const c = client({ data: [{ episode_id: ids[0] }, { episode_id: ids[0] }], error: null });
+    expect(await call(c)).toEqual([ids[0]]);
+    expect(c.seen).toMatchObject({ table: "podcast_quiz_questions", col: "episode_id", vals: ids });
+  });
+
+  it("asks nothing for an empty list", async () => {
+    const c = client({ data: [], error: null });
+    expect(await call(c, [])).toEqual([]);
+    expect(c.seen.table).toBeUndefined();
+  });
+
+  it("rejects ids that are not uuids and lists that are too long", async () => {
+    const c = client({ data: [], error: null });
+    await expect(call(c, ["nope"])).rejects.toThrow();
+    await expect(
+      call(
+        c,
+        Array.from({ length: 201 }, () => ids[0]!),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("a failed read is an error the caller can ignore", async () => {
+    await expect(call(client({ data: null, error: { message: "boom" } }))).rejects.toThrow("boom");
   });
 });

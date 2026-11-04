@@ -1,9 +1,10 @@
-import { useEffect, useReducer } from "react";
-import { SLOW_DOWN_MESSAGE, isCompletionRefusal } from "../lib/anti-farming";
+import { useEffect, useReducer, useRef } from "react";
 import { useProgress } from "../lib/progress";
+import type { PodcastQuizResult } from "../lib/podcast-quiz.functions";
 import {
   answersPayload,
   currentQuestion,
+  quizFailure,
   quizReducer,
   startQuiz,
   type QuizQuestion,
@@ -18,15 +19,29 @@ type Props = {
   questions: QuizQuestion[];
   best: { correct: number; xp: number } | null;
   onClose: () => void;
+  /** Called with the server's result once it is saved, so the caller can refresh its "best" label. */
+  onSaved?: (result: PodcastQuizResult) => void;
 };
 
 /**
- * The quiz offered after an episode. The learner picks an answer, checks it, and moves on; the score and the XP are
- * decided by the server from the choices alone (completePodcastQuiz). The right answer shown after each check is for
- * the learner's benefit and never affects what is paid.
+ * The quiz offered after an episode (or from its row). The learner picks an answer, checks it, and moves on; the score
+ * and the XP are decided by the server from the choices alone (completePodcastQuiz). The right answer shown after each
+ * check is for the learner's benefit and never affects what is paid. Right and wrong are stated in words and icons, not
+ * only in colour.
  */
-export function PodcastQuiz({ title, episodeId, course, questions, best, onClose }: Props) {
+export function PodcastQuiz({
+  title,
+  episodeId,
+  course,
+  questions,
+  best,
+  onClose,
+  onSaved,
+}: Props) {
   const [state, dispatch] = useReducer(quizReducer, questions, startQuiz);
+  const choiceRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const statusRef = useRef<HTMLDivElement | null>(null);
+
   // One request each time the quiz enters "submitting" (the last answer, or a retry). No cancellation: once sent, the
   // result is still saved and the XP still counted even if the learner closes the dialog.
   useEffect(() => {
@@ -40,21 +55,40 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
           const s = useProgress.getState();
           useProgress.setState({ xp: s.xp + result.xpGain });
         }
+        onSaved?.(result);
         dispatch({ type: "saved", result });
       } catch (err) {
-        dispatch({
-          type: "failed",
-          message: isCompletionRefusal(err)
-            ? SLOW_DOWN_MESSAGE
-            : "We couldn't save your answers. Check your connection and try again.",
-        });
+        dispatch({ type: "failed", ...quizFailure(err) });
       }
     })();
     // The payload is fixed once the phase is "submitting"; only entering the phase should start a request.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.phase]);
 
+  // When the question area is replaced by an error or the result, focus would otherwise fall to <body>.
+  useEffect(() => {
+    if (state.phase === "error" || state.phase === "done") statusRef.current?.focus();
+  }, [state.phase]);
+
   const q = currentQuestion(state);
+
+  // Arrow keys move through the choices like a native radio group (Left/Up back, Right/Down forward, wrapping).
+  const onChoiceKeyDown = (event: React.KeyboardEvent, from: number, count: number) => {
+    if (state.checked) return;
+    const delta =
+      event.key === "ArrowDown" || event.key === "ArrowRight"
+        ? 1
+        : event.key === "ArrowUp" || event.key === "ArrowLeft"
+          ? -1
+          : 0;
+    if (delta === 0) return;
+    event.preventDefault();
+    const next = (from + delta + count) % count;
+    dispatch({ type: "select", index: next });
+    choiceRefs.current[next]?.focus();
+  };
+
+  const onAction = () => dispatch({ type: state.checked ? "next" : "check" });
 
   return (
     <Modal labelledBy="podcast-quiz-title" onEscape={onClose} className="max-w-[430px]">
@@ -75,14 +109,21 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
                 const isPicked = state.selected === i;
                 const isRight = state.checked && i === q.answerIndex;
                 const isWrong = state.checked && isPicked && i !== q.answerIndex;
+                // One tab stop for the group: the chosen answer, or the first before any is chosen.
+                const tabStop = state.selected === null ? i === 0 : isPicked;
                 return (
                   <button
                     key={choice}
+                    ref={(el) => {
+                      choiceRefs.current[i] = el;
+                    }}
                     type="button"
                     role="radio"
                     aria-checked={isPicked}
+                    tabIndex={tabStop ? 0 : -1}
                     disabled={state.checked}
                     onClick={() => dispatch({ type: "select", index: i })}
+                    onKeyDown={(event) => onChoiceKeyDown(event, i, q.choices.length)}
                     className={[
                       "rounded-xl border px-4 py-3 text-left text-sm text-ink",
                       isRight
@@ -94,9 +135,23 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
                             : "border-hairline",
                     ].join(" ")}
                   >
-                    {choice}
-                    {isRight ? <span className="sr-only"> (correct answer)</span> : null}
-                    {isWrong ? <span className="sr-only"> (your answer, not correct)</span> : null}
+                    <span className="block">{choice}</span>
+                    {isRight ? (
+                      <span
+                        data-testid="verdict"
+                        className="mt-1 block text-xs font-semibold text-moss"
+                      >
+                        <span aria-hidden="true">✓ </span>Correct answer
+                      </span>
+                    ) : null}
+                    {isWrong ? (
+                      <span
+                        data-testid="verdict"
+                        className="mt-1 block text-xs font-semibold text-rose-600"
+                      >
+                        <span aria-hidden="true">✕ </span>Your answer, not correct
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -105,24 +160,19 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
               <button type="button" onClick={onClose} className="text-sm text-ink-soft">
                 Leave quiz
               </button>
-              {state.checked ? (
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "next" })}
-                  className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white"
-                >
-                  {state.index + 1 >= state.questions.length ? "Finish" : "Next"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={state.selected === null}
-                  onClick={() => dispatch({ type: "check" })}
-                  className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-                >
-                  Check
-                </button>
-              )}
+              {/* One button for Check and Next, so keyboard focus stays on it when its label changes. */}
+              <button
+                type="button"
+                disabled={!state.checked && state.selected === null}
+                onClick={onAction}
+                className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+              >
+                {!state.checked
+                  ? "Check"
+                  : state.index + 1 >= state.questions.length
+                    ? "Finish"
+                    : "Next"}
+              </button>
             </div>
           </div>
         ) : null}
@@ -134,7 +184,7 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
         ) : null}
 
         {state.phase === "error" ? (
-          <div className="mt-4">
+          <div ref={statusRef} tabIndex={-1} className="mt-4 outline-none">
             <p role="alert" className="text-sm text-rose-600">
               {state.error}
             </p>
@@ -142,19 +192,21 @@ export function PodcastQuiz({ title, episodeId, course, questions, best, onClose
               <button type="button" onClick={onClose} className="text-sm text-ink-soft">
                 Close
               </button>
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "retry" })}
-                className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white"
-              >
-                Try again
-              </button>
+              {state.retryable !== false ? (
+                <button
+                  type="button"
+                  onClick={() => dispatch({ type: "retry" })}
+                  className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Try again
+                </button>
+              ) : null}
             </div>
           </div>
         ) : null}
 
         {state.phase === "done" && state.result ? (
-          <div className="mt-4">
+          <div ref={statusRef} tabIndex={-1} className="mt-4 outline-none">
             <p className="text-2xl font-semibold text-ink">
               {state.result.correct} of {state.result.total} correct
             </p>

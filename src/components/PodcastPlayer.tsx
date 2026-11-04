@@ -119,9 +119,31 @@ export function PodcastPlayer() {
           onClose={() => setShowTranscript(false)}
         />
       ) : null}
-      {finished && offer ? (
-        <div className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
-          <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
+      {quizOpen && offer ? (
+        <PodcastQuiz
+          title={episode.title}
+          episodeId={episode.id}
+          course={ownCourse ?? activeCourse}
+          questions={offer.questions}
+          best={offer.best}
+          onClose={() => setQuizOpen(false)}
+          // The offer's "best" label follows a better run without another read.
+          onSaved={(result) =>
+            setOffer((current) =>
+              current
+                ? { ...current, best: { correct: result.bestCorrect, xp: result.bestXp } }
+                : current,
+            )
+          }
+        />
+      ) : null}
+      <div className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
+        {/* Inside the player bar, not a sibling: sticky siblings pinned to the same edge cover one another. */}
+        {finished && offer ? (
+          <div
+            data-testid="quiz-offer"
+            className="mx-auto flex max-w-[430px] items-center gap-3 border-b border-hairline px-5 py-3"
+          >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Test what you heard</p>
               <p className="text-xs text-ink-soft/70">
@@ -139,19 +161,7 @@ export function PodcastPlayer() {
               Take the quiz
             </button>
           </div>
-        </div>
-      ) : null}
-      {quizOpen && offer ? (
-        <PodcastQuiz
-          title={episode.title}
-          episodeId={episode.id}
-          course={ownCourse ?? activeCourse}
-          questions={offer.questions}
-          best={offer.best}
-          onClose={() => setQuizOpen(false)}
-        />
-      ) : null}
-      <div className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
+        ) : null}
         <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-ink">{episode.title}</p>

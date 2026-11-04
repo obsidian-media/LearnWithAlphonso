@@ -57,13 +57,60 @@ describe("PodcastQuiz", () => {
     expect(screen.getByRole("button", { name: "Check" })).toBeEnabled();
   });
 
-  it("tells the learner which answer was right after checking, in text and not only colour", async () => {
+  it("states right and wrong in visible words and icons, not only colour or screen-reader text", async () => {
     const { user } = renderQuiz();
     await user.click(screen.getByRole("radio", { name: "Alpha" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(screen.getByText("(correct answer)")).toBeInTheDocument();
-    expect(screen.getByText("(your answer, not correct)")).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: /Beta/ })).toBeDisabled();
+
+    const verdicts = screen.getAllByTestId("verdict");
+    expect(verdicts.map((v) => v.textContent)).toEqual([
+      "✕ Your answer, not correct",
+      "✓ Correct answer",
+    ]);
+    // Visible to a sighted learner: not inside a screen-reader-only (clipped) element.
+    for (const verdict of verdicts) {
+      expect(verdict.closest(".sr-only")).toBeNull();
+      expect(verdict).toBeVisible();
+    }
+    // The icon is decoration; the words carry the meaning for a screen reader.
+    expect(verdicts[1]!.querySelector('[aria-hidden="true"]')?.textContent).toBe("✓ ");
+    expect(screen.getByRole("radio", { name: /Beta.*Correct answer/ })).toBeDisabled();
+  });
+
+  it("keeps keyboard focus on the same button when Check becomes Next", async () => {
+    const { user } = renderQuiz();
+    await user.click(screen.getByRole("radio", { name: "Alpha" }));
+    const action = screen.getByRole("button", { name: "Check" });
+    action.focus();
+    await user.keyboard("{Enter}");
+    const next = screen.getByRole("button", { name: "Next" });
+    expect(next).toBe(action);
+    expect(next).toHaveFocus();
+  });
+
+  it("moves through the choices with the arrow keys like a radio group, with one tab stop", async () => {
+    const { user } = renderQuiz();
+    const radios = () => screen.getAllByRole("radio");
+    expect(radios().map((r) => r.getAttribute("tabindex"))).toEqual(["0", "-1", "-1"]);
+    radios()[0]!.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(radios()[1]).toHaveFocus();
+    expect(radios()[1]).toHaveAttribute("aria-checked", "true");
+    expect(radios().map((r) => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
+    await user.keyboard("{ArrowRight}{ArrowRight}"); // wraps
+    expect(radios()[0]).toHaveFocus();
+    await user.keyboard("{ArrowUp}");
+    expect(radios()[2]).toHaveFocus();
+    expect(radios()[2]).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("the arrow keys do nothing once the answer is checked", async () => {
+    const { user } = renderQuiz();
+    await user.click(screen.getByRole("radio", { name: "Alpha" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    screen.getByRole("button", { name: "Next" }).focus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("button", { name: "Next" })).toHaveFocus();
   });
 
   it("sends the chosen answers only, then shows the server's score and XP and updates the XP total", async () => {
@@ -165,6 +212,62 @@ describe("PodcastQuiz", () => {
     expect(await screen.findByText("2 of 2 correct")).toBeInTheDocument();
     expect(completePodcastQuiz).toHaveBeenCalledTimes(2);
     expect(completePodcastQuiz.mock.calls[1]![0]).toEqual(completePodcastQuiz.mock.calls[0]![0]);
+  });
+
+  it("a quiz that is gone says so plainly and offers no endless Try again", async () => {
+    completePodcastQuiz.mockRejectedValue(new Error("not-found"));
+    const { user } = renderQuiz();
+    await answerAll(user, ["Beta", "Delta"]);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "This quiz isn't available right now.",
+    );
+    expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
+    expect(completePodcastQuiz).toHaveBeenCalledTimes(1);
+  });
+
+  it("malformed answers get their own copy and no retry", async () => {
+    completePodcastQuiz.mockRejectedValue(new Error("invalid-answers"));
+    const { user } = renderQuiz();
+    await answerAll(user, ["Beta", "Delta"]);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/open it again/);
+    expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+  });
+
+  it("moves focus to the result so a keyboard or screen-reader user is not left on a removed button", async () => {
+    completePodcastQuiz.mockResolvedValue({
+      status: "applied",
+      correct: 2,
+      total: 2,
+      xpGain: 20,
+      streak: 1,
+      bestCorrect: 2,
+      bestXp: 20,
+      missedQuestionIds: [],
+    });
+    const { user } = renderQuiz();
+    await answerAll(user, ["Beta", "Delta"]);
+    const score = await screen.findByText("2 of 2 correct");
+    await waitFor(() => expect(score.parentElement).toHaveFocus());
+  });
+
+  it("tells the caller the server's result once saved, so its best label can refresh", async () => {
+    const result = {
+      status: "applied",
+      correct: 2,
+      total: 2,
+      xpGain: 20,
+      streak: 1,
+      bestCorrect: 2,
+      bestXp: 20,
+      missedQuestionIds: [],
+    };
+    completePodcastQuiz.mockResolvedValue(result);
+    const onSaved = vi.fn();
+    const { user } = renderQuiz({ onSaved });
+    await answerAll(user, ["Beta", "Delta"]);
+    await screen.findByText("2 of 2 correct");
+    expect(onSaved).toHaveBeenCalledWith(result);
   });
 
   it("any other failure offers a retry and never shows a score", async () => {

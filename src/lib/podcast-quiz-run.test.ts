@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  quizFailure,
   answersPayload,
   currentQuestion,
   quizReducer,
@@ -76,7 +77,7 @@ describe("podcast quiz run", () => {
 
   it("keeps the answers when saving fails, so a retry resubmits the same ones", () => {
     let s = play([1, 0]);
-    s = quizReducer(s, { type: "failed", message: "Slow down" });
+    s = quizReducer(s, { type: "failed", message: "Slow down", retryable: true });
     expect(s).toMatchObject({ phase: "error", error: "Slow down" });
     const before = answersPayload(s);
     s = quizReducer(s, { type: "retry" });
@@ -102,5 +103,28 @@ describe("podcast quiz run", () => {
 
   it("an empty quiz is never started", () => {
     expect(startQuiz([]).phase).toBe("empty");
+  });
+
+  it("a failure that retrying cannot fix stays failed: retry does nothing", () => {
+    let s = play([1, 0]);
+    s = quizReducer(s, { type: "failed", message: "gone", retryable: false });
+    s = quizReducer(s, { type: "retry" });
+    expect(s.phase).toBe("error");
+  });
+
+  it("tells the learner what actually went wrong, and only offers a retry when it can help", () => {
+    expect(quizFailure(new Error("rate-limited"))).toEqual({
+      message: "Slow down a little and try again.",
+      retryable: true,
+    });
+    const gone = quizFailure(new Error("not-found"));
+    const bad = quizFailure(new Error("invalid-answers"));
+    expect(gone.retryable).toBe(false);
+    expect(bad.retryable).toBe(false);
+    expect(gone.message).not.toBe(bad.message);
+    expect(gone.message).toMatch(/isn't available/);
+    expect(bad.message).toMatch(/open it again/);
+    expect(quizFailure(new Error("Failed to fetch"))).toMatchObject({ retryable: true });
+    expect(quizFailure("weird")).toMatchObject({ retryable: true });
   });
 });

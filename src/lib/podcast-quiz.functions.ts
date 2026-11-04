@@ -80,6 +80,10 @@ export type PodcastQuizOffer = {
 type LooseQuery = {
   select: (cols: string) => LooseQuery;
   eq: (col: string, val: string) => LooseQuery;
+  in: (
+    col: string,
+    vals: string[],
+  ) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
   order: (col: string) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
   maybeSingle: () => Promise<{
     data: Record<string, unknown> | null;
@@ -131,4 +135,25 @@ export const fetchPodcastQuiz = createServerFn({ method: "GET" })
       })),
       best,
     };
+  });
+
+/**
+ * Which of these episodes have a quiz the learner can open, for the "Take the quiz" button on an episode row. Read with
+ * the learner's own client, so unpublished episodes never appear. A failed read means no buttons, not an error page.
+ */
+export const fetchQuizEpisodeIds = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ episodeIds: z.array(z.string().uuid()).max(200) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<string[]> => {
+    if (data.episodeIds.length === 0) return [];
+    const from = (context.supabase as unknown as { from: (t: string) => LooseQuery }).from.bind(
+      context.supabase,
+    );
+    const rows = await from("podcast_quiz_questions")
+      .select("episode_id")
+      .in("episode_id", data.episodeIds);
+    if (rows.error) throw new Error(rows.error.message);
+    return [...new Set((rows.data ?? []).map((r) => (r as { episode_id: string }).episode_id))];
   });

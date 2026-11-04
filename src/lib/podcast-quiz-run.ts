@@ -17,14 +17,34 @@ export type QuizState = {
   answers: { questionId: string; choiceIndex: number }[];
   result?: PodcastQuizResult;
   error?: string;
+  /** Whether sending the same answers again can help. A missing quiz or malformed answers will not fix themselves. */
+  retryable?: boolean;
 };
+
+/** What the learner is told when saving fails, and whether "Try again" is honest. By the server's stable codes. */
+export function quizFailure(err: unknown): { message: string; retryable: boolean } {
+  const code = err instanceof Error ? err.message : String(err);
+  if (code === "rate-limited")
+    return { message: "Slow down a little and try again.", retryable: true };
+  if (code === "not-found")
+    return { message: "This quiz isn't available right now.", retryable: false };
+  if (code === "invalid-answers")
+    return {
+      message: "Something went wrong with your answers. Leave the quiz and open it again.",
+      retryable: false,
+    };
+  return {
+    message: "We couldn't save your answers. Check your connection and try again.",
+    retryable: true,
+  };
+}
 
 export type QuizAction =
   | { type: "select"; index: number }
   | { type: "check" }
   | { type: "next" }
   | { type: "saved"; result: PodcastQuizResult }
-  | { type: "failed"; message: string }
+  | { type: "failed"; message: string; retryable: boolean }
   | { type: "retry" };
 
 export function startQuiz(questions: QuizQuestion[]): QuizState {
@@ -75,9 +95,11 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
         : state;
     case "failed":
       return state.phase === "submitting"
-        ? { ...state, phase: "error", error: action.message }
+        ? { ...state, phase: "error", error: action.message, retryable: action.retryable }
         : state;
     case "retry":
-      return state.phase === "error" ? { ...state, phase: "submitting", error: undefined } : state;
+      return state.phase === "error" && state.retryable !== false
+        ? { ...state, phase: "submitting", error: undefined }
+        : state;
   }
 }
