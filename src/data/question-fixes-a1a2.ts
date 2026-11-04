@@ -1979,8 +1979,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "Turn ___ at the next corner. (the opposite of right)",
   },
   "a2p13l1/a2p13q2": {
-    why: "topic word: several words of the topic fit without a clue; the bracketed context clue picks one",
-    prompt: "Turn ___ at the bank. (the opposite of left)",
+    why: "the clue no longer contains an option word",
+    prompt: "Turn ___ at the bank. (the direction of your writing hand for most people)",
   },
   "a2p13l1/a2p13q3": {
     why: "several pool members fit without a clue; the bracketed clue picks one",
@@ -2485,8 +2485,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["above", "behind", "beside"],
   },
   "a2p17l1/a2p17q1": {
-    why: 'duplicate of the A1 sentence "Put the book on the shelf"; the A2 version uses a new sentence',
-    prompt: "The vase stands ___ the shelf. (on its top surface)",
+    why: "the clue no longer states the answer",
+    prompt: "The vase stands ___ the shelf. (the shelf holds it up)",
     wrong: ["in", "under", "behind"],
   },
   "a2p17l1/a2p17q2": {
@@ -3036,9 +3036,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["do", "was", "were"],
   },
   "a2p2l1/a2p2q3": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "the second tense fitting was talked; replaced",
     slot: "inflection",
-    wrong: ["was talking", "were talk", "talked"],
+    wrong: ["was talking", "were talk", "have talked"],
+    prompt: "While we ___ , the phone rang.",
+    allow: ["was talking", "were talk", "have talked"],
   },
   "a2p2l1/a2p2q4": {
     why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
@@ -3083,9 +3085,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["finish", "finishes", "finishing"],
   },
   "a2p2l3/a2p2q14": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "the past continuous is fixed by the time; no other tense fits",
     slot: "inflection",
-    wrong: ["was playing", "were play", "played"],
+    wrong: ["was playing", "were play", "are playing"],
+    prompt: "At six o'clock yesterday, the children ___ in the garden.",
+    allow: ["was playing", "were play", "are playing"],
   },
   "a2p2l4/a2p2q15": {
     why: "no time cue: the present form was also correct; the cue picks the past",
@@ -3093,9 +3097,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["don't", "weren't", "wasn't"],
   },
   "a2p2l4/a2p2q16": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "time anchor added",
     slot: "inflection",
     wrong: ["close", "closes", "closing"],
+    prompt: "She ___ the door quietly last night.",
   },
   "a2p2l4/a2p2q17": {
     why: "no time cue: the present form was also correct; the cue picks the past",
@@ -3103,20 +3108,23 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["was", "are", "did"],
   },
   "a2p2l4/a2p2q18": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "time anchor added",
     slot: "inflection",
     wrong: ["arrive", "arrives", "arriving"],
+    prompt: "The train ___ on time yesterday.",
   },
   "a2p2l4/a2p2q19": {
-    why: "irregular forms of one verb share only their first letters",
+    why: 'the blank held the whole of "used to"',
     slot: "inflection",
     wrong: ["use", "uses", "using"],
     allow: ["use", "uses", "using"],
+    prompt: "He ___ to walk to school when he was young.",
   },
   "a2p2l5/a2p2q20": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "time anchor added so only the past form fits",
     slot: "inflection",
     wrong: ["know", "knows", "knowed"],
+    prompt: "Nobody ___ what to say at the party last night.",
   },
   "a2p2l5/a2p2q21": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -3128,9 +3136,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["have", "has", "having"],
   },
   "a2p2l5/a2p2q23": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "time anchor added",
     slot: "inflection",
     wrong: ["go", "goes", "goed"],
+    prompt: "Last night the lights ___ out suddenly.",
   },
   "a2p2l5/a2p2q24": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
@@ -3385,9 +3394,10 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["to", "with", "from"],
   },
   "a2p6l1/a2p6q0": {
-    why: "will/might/may/could all fit without the function; the clue says which",
-    prompt: "I think it ___ rain tomorrow. (a prediction, not a possibility)",
-    wrong: ["might", "may", "could"],
+    why: "might/may/could also fitted a prediction; a promise needs will",
+    prompt: "I promise I ___ call you tomorrow.",
+    wrong: ["must", "ought", "need"],
+    allow: ["must", "ought", "need"],
   },
   "a2p6l1/a2p6q1": {
     why: "will/might/may/could all fit without the function; the clue says which",
@@ -3454,9 +3464,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["go", "goes", "gone"],
   },
   "a2p6l3/a2p6q14": {
-    why: "verb slot: the wrong options were other verbs from the pack; now forms of the same verb",
+    why: "tonight fixes the present-for-schedule form",
     slot: "inflection",
     wrong: ["start", "starting", "started"],
+    prompt: "The film ___ at nine tonight.",
+    allow: ["start", "starting", "started"],
   },
   "a2p6l4/a2p6q15": {
     why: "will/might/may/could all fit without the function; the clue says which",

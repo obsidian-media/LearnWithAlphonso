@@ -2,6 +2,7 @@
 // wrong option belongs to its slot. The rules are written down in
 // docs/distractor-policy.md; src/data/distractor-gate.test.ts enforces them.
 
+import { REVIEWED_PHRASES } from "./reviewed-phrases";
 import { alsoCorrectReason, bracketClue, clueIsSpecific } from "./also-correct";
 export { bracketClue, clueIsSpecific };
 import { ANSWER_POS, PACK_ANSWER_POS } from "./answer-pos";
@@ -172,6 +173,7 @@ export type Issue =
   | { kind: "pos-mismatch"; option: string; answerPos: string; optionPos: string }
   | { kind: "also-correct"; option: string; reason: string }
   | { kind: "needs-clue" }
+  | { kind: "tense-unanchored" }
   | { kind: "weak-context" }
   | { kind: "unclassified" };
 
@@ -241,12 +243,19 @@ function contextIsReal(q: QuestionShape): boolean {
   );
 }
 
+/** Words that fix the tense of the sentence they are in. */
+export const TIME_ANCHOR =
+  /\b(yesterday|last (night|week|year|month|summer|weekend|\w*day)|\w+ ago|tomorrow|tonight|next (week|year|month|summer|weekend|\w*day)|right now|at the moment|every (day|week|year|morning|evening|night|month|summer|weekend|\w*day)|always|usually|often|never|sometimes|already|yet|since|for (\w+ )?(years|hours|days|minutes|weeks|months)|used to|in (19|20)\d\d|at \d|o.clock|by the time|just|this (morning|week|year|evening|afternoon)|when (he|she|i|we|they|it) (was|were|had)|\d\d?\s?(am|pm)|on (mon|tues|wednes|thurs|fri|satur|sun)day)s?\b|"[a-z]+"/i;
+
 /** Everything wrong with a question's options under docs/distractor-policy.md. */
 export function checkDistractors(q: QuestionShape): Issue[] {
   const slot = q.slot ?? inferSlot(q.prompt, q.answer, q.options, q.id);
   const wrong = q.options.filter((o) => o !== q.answer);
   if (!slot) return [{ kind: "unclassified" }];
-  if (slot === "phrase" && !q.reviewed) return [{ kind: "unclassified" }];
+  // A phrase slot is only trusted when someone read this very question (reviewed-phrases.ts);
+  // a `reviewed` flag on its own, or a slot override, does not make it so.
+  if (slot === "phrase" && !(q.reviewed && REVIEWED_PHRASES.has(q.key)))
+    return [{ kind: "unclassified" }];
   const issues: Issue[] = [];
   const allow = new Set(
     [...(DISTRACTOR_ALLOW[q.key]?.options ?? []), ...(q.allow ?? [])].map(norm),
@@ -298,6 +307,13 @@ export function checkDistractors(q: QuestionShape): Issue[] {
     }
   }
   if (slot === "category" && !clue && !real) issues.push({ kind: "needs-clue" });
+  // Every option of an inflection slot is a form of one verb, so another tense of it can also fit
+  // unless the sentence fixes the time (or a photo, a specific clue or a real reason does).
+  if (
+    slot === "inflection" &&
+    !(q.hasImage || clueIsSpecific(q.prompt) || real || TIME_ANCHOR.test(q.prompt))
+  )
+    issues.push({ kind: "tense-unanchored" });
   // A leftover context on a question that now has a photo or a specific clue is harmless.
   if (q.context && !real && !(q.hasImage || clueIsSpecific(q.prompt)))
     issues.push({ kind: "weak-context" });

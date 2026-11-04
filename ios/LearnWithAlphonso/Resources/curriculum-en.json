@@ -11975,7 +11975,7 @@
                 "were talking",
                 "was talking",
                 "were talk",
-                "talked"
+                "have talked"
               ],
               "answer": 0,
               "explanation": "\"were talking\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12127,12 +12127,12 @@
             {
               "id": "a2p2q14",
               "type": "mc",
-              "prompt": "The children ___ in the garden.",
+              "prompt": "At six o'clock yesterday, the children ___ in the garden.",
               "choices": [
                 "was playing",
                 "were play",
                 "were playing",
-                "played"
+                "are playing"
               ],
               "answer": 2,
               "explanation": "\"were playing\" is correct here. Past simple for finished events; past continuous for background action."
@@ -12160,7 +12160,7 @@
             {
               "id": "a2p2q16",
               "type": "mc",
-              "prompt": "She ___ the door quietly.",
+              "prompt": "She ___ the door quietly last night.",
               "choices": [
                 "closed",
                 "close",
@@ -12186,7 +12186,7 @@
             {
               "id": "a2p2q18",
               "type": "mc",
-              "prompt": "The train ___ on time.",
+              "prompt": "The train ___ on time yesterday.",
               "choices": [
                 "arrive",
                 "arrives",
@@ -12199,7 +12199,7 @@
             {
               "id": "a2p2q19",
               "type": "fill",
-              "prompt": "He ___ used to walk to school.",
+              "prompt": "He ___ to walk to school when he was young.",
               "bank": [
                 "used",
                 "use",
@@ -12219,7 +12219,7 @@
             {
               "id": "a2p2q20",
               "type": "fill",
-              "prompt": "Nobody ___ what to say.",
+              "prompt": "Nobody ___ what to say at the party last night.",
               "bank": [
                 "knew",
                 "know",
@@ -12258,7 +12258,7 @@
             {
               "id": "a2p2q23",
               "type": "mc",
-              "prompt": "The lights ___ out suddenly.",
+              "prompt": "Last night the lights ___ out suddenly.",
               "choices": [
                 "went",
                 "go",
@@ -13407,11 +13407,11 @@
             {
               "id": "a2p6q0",
               "type": "fill",
-              "prompt": "I think it ___ rain tomorrow. (a prediction, not a possibility)",
+              "prompt": "I promise I ___ call you tomorrow.",
               "bank": [
-                "might",
-                "may",
-                "could",
+                "must",
+                "ought",
+                "need",
                 "will"
               ],
               "answer": "will",
@@ -13600,7 +13600,7 @@
             {
               "id": "a2p6q14",
               "type": "mc",
-              "prompt": "The film ___ at nine.",
+              "prompt": "The film ___ at nine tonight.",
               "choices": [
                 "start",
                 "starting",
@@ -16022,7 +16022,7 @@
             {
               "id": "a2p13q2",
               "type": "fill",
-              "prompt": "Turn ___ at the bank. (the opposite of left)",
+              "prompt": "Turn ___ at the bank. (the direction of your writing hand for most people)",
               "bank": [
                 "right",
                 "end",
@@ -17487,7 +17487,7 @@
             {
               "id": "a2p17q1",
               "type": "mc",
-              "prompt": "The vase stands ___ the shelf. (on its top surface)",
+              "prompt": "The vase stands ___ the shelf. (the shelf holds it up)",
               "choices": [
                 "on",
                 "in",

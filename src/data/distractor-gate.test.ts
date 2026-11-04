@@ -108,6 +108,35 @@ describe("the gate fails on the reported defects", () => {
   });
 });
 
+describe("the gate fails on the second review's mutations", () => {
+  it("does not let slot phrase + reviewed:true launder an owner example", () => {
+    const issues = checkDistractors(
+      shape("The dog is ___ the door.", "behind", ["into", "down", "during"], {
+        slot: "phrase",
+        reviewed: true,
+      }),
+    );
+    expect(issues.length).toBeGreaterThan(0);
+  });
+
+  it("rejects an inflection slot where another tense also fits", () => {
+    const bad = checkDistractors(
+      shape("Nobody ___ what to say.", "knew", ["know", "knows", "knowed"], {
+        id: "a2p2q20",
+        slot: "inflection",
+      }),
+    );
+    expect(bad.some((i) => i.kind === "tense-unanchored")).toBe(true);
+    const ok = checkDistractors(
+      shape("Nobody ___ what to say last night.", "knew", ["know", "knows", "knowed"], {
+        id: "a2p2q20",
+        slot: "inflection",
+      }),
+    );
+    expect(ok.some((i) => i.kind === "tense-unanchored")).toBe(false);
+  });
+});
+
 describe("the gate fails on the review's mutations", () => {
   it("rejects a meaningless clue: '(look at it)' does not disambiguate place words", () => {
     const issues = checkDistractors(
@@ -244,12 +273,14 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 225, clue: 492 };
+  const PINNED_SPLIT = { picture: 45, context: 225, clue: 491 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
   const POS_MISMATCH_BUDGET = 0;
   const WEAK_CONTEXT_BUDGET = 0;
   const NEEDS_CLUE_BUDGET = 0;
   const UNCLASSIFIED_BUDGET = 0;
+  // Inflection questions with no time anchor, clue or reason (follow-up work; may only go down).
+  const TENSE_UNANCHORED_BUDGET = 57;
 
   it("does not add topic-word options of another part of speech", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "pos-mismatch")).length;
@@ -264,6 +295,11 @@ describe("the A1/A2 English bank", () => {
   it("does not add category questions without a clue", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "needs-clue")).length;
     expect(n).toBeLessThanOrEqual(NEEDS_CLUE_BUDGET);
+  });
+
+  it("does not add inflection questions where another tense also fits", () => {
+    const n = all.filter(({ issues }) => issues.some((i) => i.kind === "tense-unanchored")).length;
+    expect(n).toBeLessThanOrEqual(TENSE_UNANCHORED_BUDGET);
   });
 
   it("does not add questions with an unknown slot", () => {
