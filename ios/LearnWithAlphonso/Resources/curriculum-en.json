@@ -12055,7 +12055,7 @@
             {
               "id": "a2p2q9",
               "type": "mc",
-              "prompt": "She ___ used to smoke.",
+              "prompt": "When she was young, she ___ use to smoke.",
               "choices": [
                 "doesn't",
                 "don't",
@@ -12721,7 +12721,7 @@
             {
               "id": "a2p4q4",
               "type": "fill",
-              "prompt": "Do you ___ by card? (accept payment)",
+              "prompt": "Do you ___ cards? (accept payment)",
               "bank": [
                 "taking",
                 "took",
@@ -15627,67 +15627,67 @@
             {
               "id": "a2p12q0",
               "type": "mc",
-              "prompt": "How often does \"always\" happen?",
+              "prompt": "Which adverb means \"every single time, without exception\"?",
               "choices": [
-                "every single time, without exception",
-                "almost never at all",
-                "only rarely, not very often",
-                "not on any occasion, ever"
+                "always",
+                "usually",
+                "occasionally",
+                "hardly ever"
               ],
               "answer": 0,
-              "explanation": "always → every single time, without exception. Frequency adverbs matched to how often they mean."
+              "explanation": "every single time, without exception → always. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q1",
               "type": "fill",
-              "prompt": "How often does \"usually\" happen? ___",
+              "prompt": "Which adverb means \"the great majority of the time\"? ___",
               "bank": [
-                "the great majority of the time",
-                "almost never at all",
-                "only rarely, not very often",
-                "not on any occasion, ever"
+                "usually",
+                "continually",
+                "rarely",
+                "frequently"
               ],
-              "answer": "the great majority of the time",
-              "explanation": "usually → the great majority of the time. Frequency adverbs matched to how often they mean."
+              "answer": "usually",
+              "explanation": "the great majority of the time → usually. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q2",
               "type": "mc",
-              "prompt": "How often does \"normally\" happen?",
+              "prompt": "Which adverb means \"as a rule, under typical conditions\"?",
               "choices": [
-                "almost never at all",
-                "only rarely, not very often",
-                "as a rule, under typical conditions",
-                "not on any occasion, ever"
+                "now and then",
+                "generally",
+                "normally",
+                "barely ever"
               ],
               "answer": 2,
-              "explanation": "normally → as a rule, under typical conditions. Frequency adverbs matched to how often they mean."
+              "explanation": "as a rule, under typical conditions → normally. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q3",
               "type": "fill",
-              "prompt": "\"Generally\" means ___.",
+              "prompt": "Which adverb means \"in most cases you'll find\"? ___",
               "bank": [
-                "almost never at all",
-                "in most cases you'll find",
-                "only rarely, not very often",
-                "not on any occasion, ever"
+                "regularly",
+                "routinely",
+                "generally",
+                "scarcely ever"
               ],
-              "answer": "in most cases you'll find",
-              "explanation": "generally → in most cases you'll find. Frequency adverbs matched to how often they mean."
+              "answer": "generally",
+              "explanation": "in most cases you'll find → generally. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q4",
               "type": "mc",
-              "prompt": "How often does \"frequently\" happen?",
+              "prompt": "Which adverb means \"on many separate occasions\"?",
               "choices": [
-                "on many separate occasions",
-                "almost never at all",
-                "only rarely, not very often",
-                "not on any occasion, ever"
+                "frequently",
+                "often",
+                "from time to time",
+                "never"
               ],
               "answer": 0,
-              "explanation": "frequently → on many separate occasions. Frequency adverbs matched to how often they mean."
+              "explanation": "on many separate occasions → frequently. Frequency adverbs matched to how often they mean."
             }
           ]
         },
@@ -15699,67 +15699,67 @@
             {
               "id": "a2p12q5",
               "type": "fill",
-              "prompt": "How often does \"often\" happen? ___",
+              "prompt": "Which adverb means \"quite a lot, many times\"? ___",
               "bank": [
-                "almost never at all",
-                "only rarely, not very often",
-                "not on any occasion, ever",
-                "quite a lot, many times"
+                "occasionally",
+                "often",
+                "always",
+                "infrequently"
               ],
-              "answer": "quite a lot, many times",
-              "explanation": "often → quite a lot, many times. Frequency adverbs matched to how often they mean."
+              "answer": "often",
+              "explanation": "quite a lot, many times → often. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q6",
               "type": "mc",
-              "prompt": "How often does \"regularly\" happen?",
+              "prompt": "Which adverb means \"at fixed, repeated intervals\"?",
               "choices": [
-                "almost never at all",
-                "only rarely, not very often",
-                "at fixed, repeated intervals",
-                "not on any occasion, ever"
+                "usually",
+                "never",
+                "regularly",
+                "periodically"
               ],
               "answer": 2,
-              "explanation": "regularly → at fixed, repeated intervals. Frequency adverbs matched to how often they mean."
+              "explanation": "at fixed, repeated intervals → regularly. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q7",
               "type": "fill",
-              "prompt": "How often does \"sometimes\" happen? ___",
+              "prompt": "Which adverb means \"on certain occasions but not most\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not on any occasion, ever",
-                "on certain occasions but not most"
+                "constantly",
+                "often",
+                "seldom",
+                "sometimes"
               ],
-              "answer": "on certain occasions but not most",
-              "explanation": "sometimes → on certain occasions but not most. Frequency adverbs matched to how often they mean."
+              "answer": "sometimes",
+              "explanation": "on certain occasions but not most → sometimes. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q8",
               "type": "mc",
-              "prompt": "How often does \"occasionally\" happen?",
+              "prompt": "Which adverb means \"now and then, but not often\"?",
               "choices": [
-                "now and then, but not often",
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not on any occasion, ever"
+                "occasionally",
+                "barely ever",
+                "habitually",
+                "regularly"
               ],
               "answer": 0,
-              "explanation": "occasionally → now and then, but not often. Frequency adverbs matched to how often they mean."
+              "explanation": "now and then, but not often → occasionally. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q9",
               "type": "fill",
-              "prompt": "How often does \"periodically\" happen? ___",
+              "prompt": "Which adverb means \"at intervals, coming and going\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not on any occasion, ever",
-                "at intervals, coming and going"
+                "generally",
+                "periodically",
+                "once in a while",
+                "infrequently"
               ],
-              "answer": "at intervals, coming and going",
-              "explanation": "periodically → at intervals, coming and going. Frequency adverbs matched to how often they mean."
+              "answer": "periodically",
+              "explanation": "at intervals, coming and going → periodically. Frequency adverbs matched to how often they mean."
             }
           ]
         },
@@ -15771,67 +15771,67 @@
             {
               "id": "a2p12q10",
               "type": "fill",
-              "prompt": "How often does \"now and then\" happen? ___",
+              "prompt": "Which adverb means \"every so often, casually\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "every so often, casually",
-                "not on any occasion, ever"
+                "periodically",
+                "habitually",
+                "now and then",
+                "barely ever"
               ],
-              "answer": "every so often, casually",
-              "explanation": "now and then → every so often, casually. Frequency adverbs matched to how often they mean."
+              "answer": "now and then",
+              "explanation": "every so often, casually → now and then. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q11",
               "type": "mc",
-              "prompt": "How often does \"once in a while\" happen?",
+              "prompt": "Which adverb means \"not very often, infrequently\"?",
               "choices": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not very often, infrequently",
-                "not on any occasion, ever"
+                "seldom",
+                "routinely",
+                "once in a while",
+                "constantly"
               ],
               "answer": 2,
-              "explanation": "once in a while → not very often, infrequently. Frequency adverbs matched to how often they mean."
+              "explanation": "not very often, infrequently → once in a while. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q12",
               "type": "fill",
-              "prompt": "How often does \"from time to time\" happen? ___",
+              "prompt": "Which adverb means \"at scattered, irregular moments\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "at scattered, irregular moments",
-                "not on any occasion, ever"
+                "never",
+                "usually",
+                "from time to time",
+                "once in a while"
               ],
-              "answer": "at scattered, irregular moments",
-              "explanation": "from time to time → at scattered, irregular moments. Frequency adverbs matched to how often they mean."
+              "answer": "from time to time",
+              "explanation": "at scattered, irregular moments → from time to time. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q13",
               "type": "mc",
-              "prompt": "How often does \"seldom\" happen?",
+              "prompt": "Which adverb means \"only rarely, not very often\"?",
               "choices": [
-                "only rarely, not very often",
-                "every single time, without exception",
-                "without stopping, all the time",
-                "the great majority of the time"
+                "seldom",
+                "always",
+                "sometimes",
+                "hardly ever"
               ],
               "answer": 0,
-              "explanation": "seldom → only rarely, not very often. Frequency adverbs matched to how often they mean."
+              "explanation": "only rarely, not very often → seldom. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q14",
               "type": "fill",
-              "prompt": "How often does \"rarely\" happen? ___",
+              "prompt": "Which adverb means \"very infrequently indeed\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "very infrequently indeed",
-                "the great majority of the time"
+                "often",
+                "from time to time",
+                "constantly",
+                "rarely"
               ],
-              "answer": "very infrequently indeed",
-              "explanation": "rarely → very infrequently indeed. Frequency adverbs matched to how often they mean."
+              "answer": "rarely",
+              "explanation": "very infrequently indeed → rarely. Frequency adverbs matched to how often they mean."
             }
           ]
         },
@@ -15843,67 +15843,67 @@
             {
               "id": "a2p12q15",
               "type": "mc",
-              "prompt": "How often does \"hardly ever\" happen?",
+              "prompt": "Which adverb means \"almost never at all\"?",
               "choices": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "almost never at all",
-                "the great majority of the time"
+                "occasionally",
+                "usually",
+                "hardly ever",
+                "scarcely ever"
               ],
               "answer": 2,
-              "explanation": "hardly ever → almost never at all. Frequency adverbs matched to how often they mean."
+              "explanation": "almost never at all → hardly ever. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q16",
               "type": "fill",
-              "prompt": "How often does \"scarcely ever\" happen? ___",
+              "prompt": "Which adverb means \"barely ever, close to never\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "the great majority of the time",
-                "barely ever, close to never"
+                "scarcely ever",
+                "sometimes",
+                "repeatedly",
+                "rarely"
               ],
-              "answer": "barely ever, close to never",
-              "explanation": "scarcely ever → barely ever, close to never. Frequency adverbs matched to how often they mean."
+              "answer": "scarcely ever",
+              "explanation": "barely ever, close to never → scarcely ever. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q17",
               "type": "mc",
-              "prompt": "How often does \"barely ever\" happen?",
+              "prompt": "Which adverb means \"almost not at all\"?",
               "choices": [
-                "almost not at all",
-                "every single time, without exception",
-                "without stopping, all the time",
-                "the great majority of the time"
+                "barely ever",
+                "continually",
+                "generally",
+                "now and then"
               ],
               "answer": 0,
-              "explanation": "barely ever → almost not at all. Frequency adverbs matched to how often they mean."
+              "explanation": "almost not at all → barely ever. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q18",
               "type": "fill",
-              "prompt": "How often does \"infrequently\" happen? ___",
+              "prompt": "Which adverb means \"not often, with gaps between\"? ___",
               "bank": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not often, with gaps between",
-                "the great majority of the time"
+                "occasionally",
+                "usually",
+                "hardly ever",
+                "infrequently"
               ],
-              "answer": "not often, with gaps between",
-              "explanation": "infrequently → not often, with gaps between. Frequency adverbs matched to how often they mean."
+              "answer": "infrequently",
+              "explanation": "not often, with gaps between → infrequently. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q19",
               "type": "mc",
-              "prompt": "How often does \"never\" happen?",
+              "prompt": "Which adverb means \"not on any occasion, ever\"?",
               "choices": [
-                "every single time, without exception",
-                "without stopping, all the time",
-                "not on any occasion, ever",
-                "the great majority of the time"
+                "repeatedly",
+                "rarely",
+                "never",
+                "frequently"
               ],
               "answer": 2,
-              "explanation": "never → not on any occasion, ever. Frequency adverbs matched to how often they mean."
+              "explanation": "not on any occasion, ever → never. Frequency adverbs matched to how often they mean."
             }
           ]
         },
@@ -15915,67 +15915,67 @@
             {
               "id": "a2p12q20",
               "type": "mc",
-              "prompt": "How often does \"constantly\" happen?",
+              "prompt": "Which adverb means \"without stopping, all the time\"?",
               "choices": [
-                "almost never at all",
-                "not on any occasion, ever",
-                "without stopping, all the time",
-                "only rarely, not very often"
+                "periodically",
+                "normally",
+                "constantly",
+                "scarcely ever"
               ],
               "answer": 2,
-              "explanation": "constantly → without stopping, all the time. Frequency adverbs matched to how often they mean."
+              "explanation": "without stopping, all the time → constantly. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q21",
               "type": "fill",
-              "prompt": "How often does \"continually\" happen? ___",
+              "prompt": "Which adverb means \"again and again over time\"? ___",
               "bank": [
-                "almost never at all",
-                "again and again over time",
-                "not on any occasion, ever",
-                "only rarely, not very often"
+                "continually",
+                "seldom",
+                "constantly",
+                "generally"
               ],
-              "answer": "again and again over time",
-              "explanation": "continually → again and again over time. Frequency adverbs matched to how often they mean."
+              "answer": "continually",
+              "explanation": "again and again over time → continually. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q22",
               "type": "mc",
-              "prompt": "How often does \"repeatedly\" happen?",
+              "prompt": "Which adverb means \"one time after another\"?",
               "choices": [
-                "one time after another",
-                "almost never at all",
-                "not on any occasion, ever",
-                "only rarely, not very often"
+                "repeatedly",
+                "frequently",
+                "once in a while",
+                "infrequently"
               ],
               "answer": 0,
-              "explanation": "repeatedly → one time after another. Frequency adverbs matched to how often they mean."
+              "explanation": "one time after another → repeatedly. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q23",
               "type": "fill",
-              "prompt": "How often does \"routinely\" happen? ___",
+              "prompt": "Which adverb means \"as part of a fixed routine\"? ___",
               "bank": [
-                "almost never at all",
-                "not on any occasion, ever",
-                "as part of a fixed routine",
-                "only rarely, not very often"
+                "routinely",
+                "hardly ever",
+                "repeatedly",
+                "often"
               ],
-              "answer": "as part of a fixed routine",
-              "explanation": "routinely → as part of a fixed routine. Frequency adverbs matched to how often they mean."
+              "answer": "routinely",
+              "explanation": "as part of a fixed routine → routinely. Frequency adverbs matched to how often they mean."
             },
             {
               "id": "a2p12q24",
               "type": "mc",
-              "prompt": "How often does \"habitually\" happen?",
+              "prompt": "Which adverb means \"out of a settled habit\"?",
               "choices": [
-                "almost never at all",
-                "not on any occasion, ever",
-                "out of a settled habit",
-                "only rarely, not very often"
+                "seldom",
+                "regularly",
+                "habitually",
+                "constantly"
               ],
               "answer": 2,
-              "explanation": "habitually → out of a settled habit. Frequency adverbs matched to how often they mean."
+              "explanation": "out of a settled habit → habitually. Frequency adverbs matched to how often they mean."
             }
           ]
         }

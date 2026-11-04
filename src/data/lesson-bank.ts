@@ -926,7 +926,7 @@ ___ you enjoy the concert?|Did
 We ___ living in Rome then.|were
 The film ___ at eight.|started
 I ___ tired, so I left.|was
-She ___ used to smoke.|didn't
+She ___ use to smoke.|didn't
 It ___ raining all morning.|was
 They ___ married in 2015.|got
 He ___ never late before.|was
@@ -986,7 +986,7 @@ useful|more useful`,
 I'd like to ___ a room.|book
 Could I have the ___ , please?|bill
 How much ___ this cost?|does
-Do you ___ by card?|take
+Do you ___ cards?|take
 Where do I ___ my luggage?|check in
 The train ___ from platform 4.|departs
 I'd like a ___ ticket, please.|return
@@ -1239,33 +1239,33 @@ Enjoy your ___!|dinner`,
     title: "Adverbs of Frequency",
     subtitle: "How often things happen",
     kind: "pair",
-    prompt: 'How often does "%s" happen?',
+    prompt: 'Which adverb means "%s"?',
     note: "Frequency adverbs matched to how often they mean.",
-    data: `always|every single time, without exception
-usually|the great majority of the time
-normally|as a rule, under typical conditions
-generally|in most cases you'll find
-frequently|on many separate occasions
-often|quite a lot, many times
-regularly|at fixed, repeated intervals
-sometimes|on certain occasions but not most
-occasionally|now and then, but not often
-periodically|at intervals, coming and going
-now and then|every so often, casually
-once in a while|not very often, infrequently
-from time to time|at scattered, irregular moments
-seldom|only rarely, not very often
-rarely|very infrequently indeed
-hardly ever|almost never at all
-scarcely ever|barely ever, close to never
-barely ever|almost not at all
-infrequently|not often, with gaps between
-never|not on any occasion, ever
-constantly|without stopping, all the time
-continually|again and again over time
-repeatedly|one time after another
-routinely|as part of a fixed routine
-habitually|out of a settled habit`,
+    data: `every single time, without exception|always
+the great majority of the time|usually
+as a rule, under typical conditions|normally
+in most cases you'll find|generally
+on many separate occasions|frequently
+quite a lot, many times|often
+at fixed, repeated intervals|regularly
+on certain occasions but not most|sometimes
+now and then, but not often|occasionally
+at intervals, coming and going|periodically
+every so often, casually|now and then
+not very often, infrequently|once in a while
+at scattered, irregular moments|from time to time
+only rarely, not very often|seldom
+very infrequently indeed|rarely
+almost never at all|hardly ever
+barely ever, close to never|scarcely ever
+almost not at all|barely ever
+not often, with gaps between|infrequently
+not on any occasion, ever|never
+without stopping, all the time|constantly
+again and again over time|continually
+one time after another|repeatedly
+as part of a fixed routine|routinely
+out of a settled habit|habitually`,
   },
   {
     id: "a2p13",

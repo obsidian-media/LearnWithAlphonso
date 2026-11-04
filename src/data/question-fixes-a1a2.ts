@@ -1937,161 +1937,6 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Waiters wish diners to enjoy their dinner; credit, window and medium belong in other sentences.",
     wrong: ["credit", "window", "medium"],
   },
-  "a2p12l1/a2p12q0": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l1/a2p12q1": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l1/a2p12q2": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l1/a2p12q3": {
-    why: "reason added",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-    prompt: '"Generally" means ___.',
-    context:
-      "Generally is a frequency adverb for most cases; the other options describe rare or absent events.",
-  },
-  "a2p12l1/a2p12q4": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l2/a2p12q5": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l2/a2p12q6": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "only rarely, not very often", "not on any occasion, ever"],
-  },
-  "a2p12l2/a2p12q7": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l2/a2p12q8": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l2/a2p12q9": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l3/a2p12q10": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l3/a2p12q11": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l3/a2p12q12": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "not on any occasion, ever",
-    ],
-  },
-  "a2p12l3/a2p12q13": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l3/a2p12q14": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l4/a2p12q15": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l4/a2p12q16": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l4/a2p12q17": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l4/a2p12q18": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l4/a2p12q19": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: [
-      "every single time, without exception",
-      "without stopping, all the time",
-      "the great majority of the time",
-    ],
-  },
-  "a2p12l5/a2p12q20": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "not on any occasion, ever", "only rarely, not very often"],
-  },
-  "a2p12l5/a2p12q21": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "not on any occasion, ever", "only rarely, not very often"],
-  },
-  "a2p12l5/a2p12q22": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "not on any occasion, ever", "only rarely, not very often"],
-  },
-  "a2p12l5/a2p12q23": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "not on any occasion, ever", "only rarely, not very often"],
-  },
-  "a2p12l5/a2p12q24": {
-    why: "frequency adverbs: the other definitions were near-synonyms of the answer; wrong options now come from a clearly different frequency band",
-    wrong: ["almost never at all", "not on any occasion, ever", "only rarely, not very often"],
-  },
   "a2p13l1/a2p13q0": {
     why: "options replaced with same-kind wrong options",
     prompt: "Go ___ at the traffic lights. (don't turn)",
@@ -3245,6 +3090,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   },
   "a2p2l2/a2p2q9": {
     why: "the wrong options were other verbs from the pack; now the agreement and tense errors a learner makes",
+    prompt: "When she was young, she ___ use to smoke.",
     wrong: ["doesn't", "don't", "wasn't"],
   },
   "a2p2l3/a2p2q10": {
@@ -3451,7 +3297,7 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   },
   "a2p4l1/a2p4q4": {
     why: "options replaced with same-kind wrong options",
-    prompt: "Do you ___ by card? (accept payment)",
+    prompt: "Do you ___ cards? (accept payment)",
     wrong: ["taking", "took", "takes"],
   },
   "a2p4l2/a2p4q5": {
