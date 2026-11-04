@@ -9,6 +9,7 @@ class AlphonsoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        CrashReporting.start(this)
         NotificationChannels.ensure(this)
         container = AppContainer(this)
     }

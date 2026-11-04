@@ -19,6 +19,9 @@
         android:supportsRtl="true"
         android:allowBackup="false">
 
+        <!-- Sentry is started by hand in AlphonsoApplication (release only), never by the library's auto-init. -->
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,3 +1,5 @@
+import { SENTRY_INGEST_ORIGIN } from "./sentry-config";
+
 const CSP_NONCE_HEADER = "x-app-csp-nonce";
 
 export function createCspNonce(): string {
@@ -40,7 +42,9 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Invalid/missing configuration must not broaden the policy.
   }
   const realtimeOrigin = supabaseOrigin?.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
-  const connect = ["'self'", supabaseOrigin, realtimeOrigin].filter(Boolean).join(" ");
+  const connect = ["'self'", supabaseOrigin, realtimeOrigin, SENTRY_INGEST_ORIGIN]
+    .filter(Boolean)
+    .join(" ");
   const images = ["'self'", "data:", "blob:", supabaseOrigin].filter(Boolean).join(" ");
   return [
     "default-src 'self'",
