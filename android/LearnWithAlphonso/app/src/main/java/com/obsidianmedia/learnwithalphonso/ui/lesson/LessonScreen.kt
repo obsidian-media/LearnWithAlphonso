@@ -191,8 +191,12 @@ private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, 
                         Text(item.term, style = MaterialTheme.typography.titleLarge, color = palette.ink)
                         TextButton(onClick = { Speech.get(context).speak(item.term, course) }) { Text("🔊", color = palette.inkSoft) }
                     }
-                    Text(item.meaning, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    Text(item.example, style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic), color = palette.inkSoft)
+                    if (item.meaning.isNotEmpty()) {
+                        Text(item.meaning, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    }
+                    if (item.example.isNotEmpty()) {
+                        Text(item.example, style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic), color = palette.inkSoft)
+                    }
                 }
             }
         }

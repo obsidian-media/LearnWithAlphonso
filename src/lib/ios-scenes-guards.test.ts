@@ -52,10 +52,12 @@ describe("ScreenScene: the reusable scene background", () => {
     expect(body).toMatch(/\.scaleEffect\(reduceMotion \? 1 : /);
   });
 
-  it("reads scroll position through a preference so the host screen does not re-render per frame", () => {
-    expect(s).toContain("struct SceneScrollKey: PreferenceKey");
+  it("keeps the scroll position in a modifier's own state so the host screen does not re-render per frame", () => {
+    // Build 55: the preference was replaced, because a List row's preference can report a stale position
+    // after the row is recycled (Learn's greeting bubble came back). ios-build55-guards pins the details.
+    expect(s).toContain("struct SceneScrollHost: ViewModifier");
     expect(s).toContain("struct SceneScrollProbe: View");
-    expect(s).toContain("backgroundPreferenceValue(SceneScrollKey.self)");
+    expect(s).toContain("modifier(SceneScrollHost(");
     expect(s).toContain("func screenScene(_ scene: SceneName)");
     expect(s).toContain("func sceneScrollProbe()");
   });

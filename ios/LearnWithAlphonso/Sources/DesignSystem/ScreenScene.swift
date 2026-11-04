@@ -7,23 +7,102 @@ enum SceneName: String, CaseIterable {
     var assetName: String { "Scene-\(rawValue)" }
 }
 
-/// The raw global-space position of whatever row carries `sceneScrollProbe()`. Travels up the view tree as a
-/// preference, so only the scene background re-renders while scrolling, never the screen that hosts it.
-struct SceneScrollKey: PreferenceKey {
-    static var defaultValue: CGFloat? { nil }
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        value = nextValue() ?? value
+/// What the probe row tells its scene: where it is, and when it comes on or goes off screen.
+enum SceneScrollEvent {
+    case moved(CGFloat)
+    /// The scroll view's own offset (0 at rest, negative scrolled down), from `SceneScrollOffsetReader`.
+    case scrolled(CGFloat)
+    case appeared
+    case disappeared
+}
+
+private struct SceneScrollReporterKey: EnvironmentKey {
+    static let defaultValue: (SceneScrollEvent) -> Void = { _ in }
+}
+
+extension EnvironmentValues {
+    /// Set by `SceneScrollHost`; the probe calls it.
+    var sceneScrollReporter: (SceneScrollEvent) -> Void {
+        get { self[SceneScrollReporterKey.self] }
+        set { self[SceneScrollReporterKey.self] = newValue }
     }
 }
 
-/// Zero-cost reporter of a row's global top edge. Put it (through `sceneScrollProbe()`) on a row near the top
-/// of the scrolling content.
+/// Reports a row's global top edge to the enclosing scene. Put it (through `sceneScrollProbe()`) on a row near
+/// the top of the scrolling content. It also reports leaving the screen: a List recycles the row, and a position
+/// read from a recycled row is not where the list is (Learn's greeting bubble came back after a long scroll).
 struct SceneScrollProbe: View {
+    @Environment(\.sceneScrollReporter) private var report
+
     var body: some View {
+        // A GeometryReader read on every change, the signal earlier builds used.
         GeometryReader { proxy in
-            Color.clear.preference(key: SceneScrollKey.self, value: proxy.frame(in: .global).minY)
+            Color.clear
+                .onChange(of: proxy.frame(in: .global).minY, initial: true) { _, minY in
+                    report(.moved(minY))
+                }
         }
-        .accessibilityHidden(true)
+            .onAppear { report(.appeared) }
+            .onDisappear { report(.disappeared) }
+            .accessibilityHidden(true)
+    }
+}
+
+/// Holds the scroll position in its own state, so only the scene background re-renders while scrolling, never
+/// the screen that hosts it.
+struct SceneScrollHost: ViewModifier {
+    let scene: SceneName
+    var clip: ClipName? = nil
+    var clipAnchor: CGFloat = 1
+    var pin: ClipPin? = nil
+
+    @State private var offset: CGFloat?
+    @State private var probeVisible = true
+    /// True once the scroll view itself reports (iOS 18+); the probe row is then ignored.
+    @State private var scrollDriven = false
+
+    func body(content: Content) -> some View {
+        content
+            .modifier(SceneScrollOffsetReader { report(.scrolled($0)) })
+            .environment(\.sceneScrollReporter, report)
+            .background {
+                ScreenScene(scene: scene, rawOffset: offset, clip: clip, clipAnchor: clipAnchor, pin: pin,
+                            probeVisible: probeVisible || scrollDriven)
+            }
+    }
+
+    private func report(_ event: SceneScrollEvent) {
+        switch event {
+        case .appeared:
+            probeVisible = true
+        case .disappeared:
+            probeVisible = false
+        case .scrolled(let y):
+            scrollDriven = true
+            offset = y
+        case .moved(let minY):
+            guard probeVisible, !scrollDriven else { return }
+            offset = minY
+        }
+    }
+}
+
+/// Reads the scroll view's own offset when this modifier sits on one (Learn's List, a ScrollView). On Limrun a
+/// List row's probe never reached the scene in any build, so the bubble never faded; this is the signal that works.
+/// iOS 17 has no such API and keeps the probe.
+struct SceneScrollOffsetReader: ViewModifier {
+    let onScroll: (CGFloat) -> Void
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { geometry in
+                -(geometry.contentOffset.y + geometry.contentInsets.top)
+            } action: { _, y in
+                onScroll(y)
+            }
+        } else {
+            content
+        }
     }
 }
 
@@ -48,6 +127,8 @@ struct ScreenScene: View {
     var clipAnchor: CGFloat = 1
     /// Something drawn on the clip, in the clip's own coordinates.
     var pin: ClipPin? = nil
+    /// False while the probe row is off screen: the pin stays hidden then, whatever was last reported.
+    var probeVisible: Bool = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
@@ -97,7 +178,10 @@ struct ScreenScene: View {
     }
 
     /// Fully shown at rest, gone after 60 pt of scroll in either direction.
-    private var pinOpacity: Double { max(0, 1 - Double(abs(held)) / 60) }
+    private var pinOpacity: Double {
+        guard probeVisible else { return 0 }
+        return max(0, 1 - Double(abs(held)) / 60)
+    }
 
     /// The clip when this screen has one, otherwise the scene still. Its pin is drawn in a layer above the scrim.
     @ViewBuilder
@@ -121,16 +205,12 @@ struct ScreenScene: View {
 extension View {
     /// Puts a scene behind this screen. Pair it with `sceneScrollProbe()` on a top row for parallax.
     func screenScene(_ scene: SceneName) -> some View {
-        backgroundPreferenceValue(SceneScrollKey.self) { offset in
-            ScreenScene(scene: scene, rawOffset: offset)
-        }
+        modifier(SceneScrollHost(scene: scene))
     }
 
     /// The scene's living clip behind this screen, with an optional pin (a speech bubble) in the clip's own frame.
     func screenScene(_ scene: SceneName, clip: ClipName, clipAnchor: CGFloat = 1, pin: ClipPin? = nil) -> some View {
-        backgroundPreferenceValue(SceneScrollKey.self) { offset in
-            ScreenScene(scene: scene, rawOffset: offset, clip: clip, clipAnchor: clipAnchor, pin: pin)
-        }
+        modifier(SceneScrollHost(scene: scene, clip: clip, clipAnchor: clipAnchor, pin: pin))
     }
 
     /// The clip version of `screenScene(_:if:)`: the clip only when `show` is true.

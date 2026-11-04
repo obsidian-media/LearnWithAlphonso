@@ -22,7 +22,8 @@ struct AnswerVerdictPanel: View {
         return "Answer: \(correctAnswer)"
     }
 
-    private var tint: Color { correct ? AlphonsoColor.moss : AlphonsoColor.destructive }
+    /// Build 55: a wrong answer is the theme's softer coral where it has one (AlphonsoColor.wrongAnswer).
+    private var tint: Color { correct ? AlphonsoColor.moss : AlphonsoColor.wrongAnswer }
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.sm + 4) {
@@ -36,7 +37,8 @@ struct AnswerVerdictPanel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title ?? AnswerVerdict.title(correct: correct))
                         .font(AlphonsoFont.display(20, weight: .bold))
-                        .foregroundStyle(tint)
+                        // Ink for "Not quite": coral text on its own tint is under 3:1 on the light themes.
+                        .foregroundStyle(correct ? tint : AlphonsoColor.ink)
                     if let answerLine {
                         Text(answerLine)
                             .font(AlphonsoFont.sans(15, weight: .semiBold))
@@ -49,9 +51,10 @@ struct AnswerVerdictPanel: View {
                 .buttonStyle(
                     correct
                         ? AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
-                        : AlphonsoPrimaryButtonStyle(
-                            tint: AlphonsoColor.destructive, shadow: Color(red: 0.55, green: 0, blue: 0.04),
-                            foreground: .white)
+                        : (AlphonsoColor.wrongAnswerUsesEmber ? AlphonsoPrimaryButtonStyle.alphonsoEmber
+                            : AlphonsoPrimaryButtonStyle(
+                                tint: AlphonsoColor.destructive, shadow: Color(red: 0.55, green: 0, blue: 0.04),
+                                foreground: .white))
                 )
         }
         .padding(AlphonsoSpacing.md)

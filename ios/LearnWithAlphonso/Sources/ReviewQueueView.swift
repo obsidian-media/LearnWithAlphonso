@@ -541,6 +541,8 @@ private struct ReviewQuestionCard: View {
                                 Button(word) { picked = word }
                                     .buttonStyle(.alphonsoWordChip(picked: picked == word))
                                     .disabled(checked)
+                                    // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
+                                    .padding(.bottom, 4)
                             }
                         }
                     }
@@ -631,6 +633,8 @@ private struct ReviewQuestionCard: View {
                         Button(token) { orderPicks.append(i) }
                             .buttonStyle(.alphonsoWordChip(picked: false))
                             .disabled(checked)
+                            // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
+                            .padding(.bottom, 4)
                     }
                 }
             }

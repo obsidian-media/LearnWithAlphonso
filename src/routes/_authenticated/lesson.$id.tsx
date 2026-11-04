@@ -7,7 +7,7 @@ import { CountUp } from "../../components/Celebration";
 import { LoopingClip } from "../../components/LoopingClip";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
-import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
+import { type TileTone, TILE_TONE_CLASSES, tileTone } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
@@ -704,10 +704,12 @@ function VocabScreen({
                 🔊
               </button>
             </div>
-            <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-            <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
-              {v.example}
-            </p>
+            {v.meaning && <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>}
+            {v.example && (
+              <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
+                {v.example}
+              </p>
+            )}
           </motion.div>
         ))}
       </div>
@@ -746,6 +748,16 @@ function VocabDeckScreen({
   const count = items.length;
   const v = items[Math.min(index, count - 1)];
   const last = index >= count - 1;
+  const speakButton = (
+    <button
+      type="button"
+      onClick={() => speak(v.term, localeForCourse(course))}
+      aria-label={`Play pronunciation for ${v.term}`}
+      className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-hairline bg-surface text-lg text-ink transition hover:border-ink/30"
+    >
+      🔊
+    </button>
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -758,25 +770,26 @@ function VocabDeckScreen({
 
   return (
     <div className="flex flex-1 flex-col px-5 pb-6 pt-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-            Vocabulary · {subtitle}
-          </p>
-          <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
-          <p className="tnum mt-1 text-sm text-ink-soft/80">
+      <div className="min-w-0">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
+          Vocabulary · {subtitle}
+        </p>
+        <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
+        {/* Skip shares the counter's row: beside the title it crowded long titles. */}
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="tnum text-sm text-ink-soft/80">
             Word {index + 1} of {count}
           </p>
+          {count > 1 && (
+            <button
+              type="button"
+              onClick={onStart}
+              className="-mr-3 min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-ink-soft hover:text-ink"
+            >
+              Skip to practice
+            </button>
+          )}
         </div>
-        {count > 1 && (
-          <button
-            type="button"
-            onClick={onStart}
-            className="min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-ink-soft hover:text-ink"
-          >
-            Skip to practice
-          </button>
-        )}
       </div>
 
       <div className="relative mt-6 flex flex-1 flex-col">
@@ -798,25 +811,38 @@ function VocabDeckScreen({
               decoding="async"
               className="pointer-events-none absolute -right-2 -top-1 z-10 size-[72px] object-contain"
             />
-            {v.image && <VocabImage url={v.image.url} alt={v.image.alt} className="h-44 w-full" />}
-            <div className="px-5 pb-5 pt-4">
-              <div className="flex items-center gap-3 pr-14">
-                <p className="font-display text-[34px] font-bold leading-tight text-ink">
-                  {v.term}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => speak(v.term, localeForCourse(course))}
-                  aria-label={`Play pronunciation for ${v.term}`}
-                  className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-hairline bg-surface text-lg text-ink transition hover:border-ink/30"
+            {v.image ? (
+              <>
+                <VocabImage url={v.image.url} alt={v.image.alt} className="h-44 w-full" />
+                <div className="flex items-center gap-3 px-5 pr-14 pt-4">
+                  <p className="font-display text-[34px] font-bold leading-tight text-ink">
+                    {v.term}
+                  </p>
+                  {speakButton}
+                </div>
+              </>
+            ) : (
+              // No photo (grammar words never have one): the word itself, large, on a tile colour that
+              // changes card to card, so the deck still feels illustrated.
+              <div className="p-3 pb-0">
+                <div
+                  data-word-band
+                  className={`flex flex-col items-center gap-3 rounded-[22px] px-14 py-6 text-center ${TILE_TONE_CLASSES[tileTone(index)]}`}
                 >
-                  🔊
-                </button>
+                  <p className="text-balance font-display text-[40px] font-bold leading-tight">
+                    {v.term}
+                  </p>
+                  {speakButton}
+                </div>
               </div>
-              <p className="mt-1 text-base text-ink-soft">{v.meaning}</p>
-              <p className="mt-3 rounded-2xl bg-surface px-4 py-3 text-[15px] italic text-ink-soft">
-                {v.example}
-              </p>
+            )}
+            <div className="px-5 pb-5 pt-3">
+              {v.meaning && <p className="text-base text-ink-soft">{v.meaning}</p>}
+              {v.example && (
+                <p className="mt-3 rounded-2xl bg-surface px-4 py-3 text-[15px] italic text-ink-soft">
+                  {v.example}
+                </p>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
