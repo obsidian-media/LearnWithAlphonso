@@ -33,12 +33,14 @@ struct SceneScrollProbe: View {
     @Environment(\.sceneScrollReporter) private var report
 
     var body: some View {
-        Color.clear
-            .onGeometryChange(for: CGFloat.self) { proxy in
-                proxy.frame(in: .global).minY
-            } action: { minY in
-                report(.moved(minY))
-            }
+        // A GeometryReader read on every change: `onGeometryChange` never fired while a List scrolled (seen on
+        // Limrun), so the scene stood still.
+        GeometryReader { proxy in
+            Color.clear
+                .onChange(of: proxy.frame(in: .global).minY, initial: true) { _, minY in
+                    report(.moved(minY))
+                }
+        }
             .onAppear { report(.appeared) }
             .onDisappear { report(.disappeared) }
             .accessibilityHidden(true)

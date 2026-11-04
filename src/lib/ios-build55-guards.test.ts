@@ -114,7 +114,11 @@ describe("4. word chips keep their bottom edge", () => {
 describe("5. the scene follows the scroll, so Learn's greeting bubble fades", () => {
   it("the probe reports its position and when it leaves the screen, through a callback", () => {
     const probe = between(scene, "struct SceneScrollProbe: View", "struct ScreenScene: View");
-    expect(probe).toContain(".onGeometryChange(for: CGFloat.self");
+    // A GeometryReader in the row, read on every change: Limrun showed `onGeometryChange` never fires while a
+    // List scrolls (the scene stood still and the bubble never faded), the old GeometryReader signal did.
+    expect(probe).toContain("GeometryReader { proxy in");
+    expect(probe).toContain(".onChange(of: proxy.frame(in: .global).minY, initial: true)");
+    expect(probe).not.toContain("onGeometryChange");
     expect(probe).toContain(".onAppear");
     expect(probe).toContain(".onDisappear");
     expect(probe).toContain("sceneScrollReporter");
