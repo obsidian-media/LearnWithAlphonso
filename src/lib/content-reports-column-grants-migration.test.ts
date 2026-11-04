@@ -43,10 +43,9 @@ describe("content_reports column grants (real Postgres)", () => {
   });
 
   it("still accepts exactly what the iOS and Android clients send", async () => {
-    await db.query(
-      "INSERT INTO public.content_reports (reported, reason) VALUES ($1, 'spam')",
-      [USER],
-    );
+    await db.query("INSERT INTO public.content_reports (reported, reason) VALUES ($1, 'spam')", [
+      USER,
+    ]);
     await db.query(
       `INSERT INTO public.content_reports (reported, reason, kind, context)
        VALUES ($1, 'rude', 'team_name', '{"team_id":"t"}')`,
@@ -70,7 +69,10 @@ describe("content_reports column grants (real Postgres)", () => {
 
   it("refuses a client-chosen id", async () => {
     await expect(
-      db.query("INSERT INTO public.content_reports (id, reported, reason) VALUES (gen_random_uuid(), $1, 'x')", [USER]),
+      db.query(
+        "INSERT INTO public.content_reports (id, reported, reason) VALUES (gen_random_uuid(), $1, 'x')",
+        [USER],
+      ),
     ).rejects.toThrow(/permission denied/);
   });
 
