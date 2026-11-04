@@ -1,6 +1,6 @@
 import { Fragment, memo } from "react";
 import type { SavedWordCourse } from "../lib/saved-word";
-import { allowsSaving } from "../lib/saved-word-client";
+import { savesWholeText } from "../lib/saved-word-client";
 import { isSavableWord, saveRequestFor, segmentText } from "../lib/word-segmenter";
 import { useSaveWord } from "./SaveWord";
 
@@ -31,7 +31,7 @@ export const TappableText = memo(function TappableText({
   wholeCourseLanguage?: boolean;
 }) {
   const open = useSaveWord();
-  if (!open || !(wholeCourseLanguage ? isCourse(course) : allowsSaving(course))) return <>{text}</>;
+  if (!open || !(wholeCourseLanguage ? isCourse(course) : savesWholeText(course))) return <>{text}</>;
 
   return (
     <>

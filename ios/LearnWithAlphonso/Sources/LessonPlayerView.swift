@@ -1418,7 +1418,8 @@ private struct GeneratedPracticeSection: View {
     /// wholly in its own language (`SavedWordPolicy`); same rule as ExplanationView.
     private var saveCourse: String? {
         let code = course.translationCourseCode
-        return SavedWordPolicy.allowsSaving(inCourse: code) ? code : nil
+        // Generated practice has no Question to prove which text is course-language: English only.
+        return SavedWordPolicy.savesWholeText(inCourse: code) ? code : nil
     }
 
     private enum Status: Equatable { case idle, loading, ready, empty, error }

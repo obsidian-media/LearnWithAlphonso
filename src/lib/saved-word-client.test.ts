@@ -4,7 +4,7 @@ vi.mock("./auth-headers", () => ({
   authHeaders: vi.fn(async () => ({ Authorization: "Bearer tok" })),
 }));
 
-import { allowsSaving, saveErrorFor, saveWord } from "./saved-word-client";
+import { allowsSaving, savesWholeText, saveErrorFor, saveWord } from "./saved-word-client";
 
 const input = { word: "tea", sentence: "I want tea.", course: "en" as const };
 
@@ -109,9 +109,13 @@ describe("saveErrorFor", () => {
 });
 
 describe("allowsSaving", () => {
-  it("is English-only: French and Spanish lesson text mixes two languages", () => {
+  it("covers the three courses, and only English saves a lesson's whole text", () => {
     expect(allowsSaving("en")).toBe(true);
-    expect(allowsSaving("fr")).toBe(false);
-    expect(allowsSaving("es")).toBe(false);
+    expect(allowsSaving("fr")).toBe(true);
+    expect(allowsSaving("es")).toBe(true);
+    expect(allowsSaving("de")).toBe(false);
+    expect(savesWholeText("en")).toBe(true);
+    expect(savesWholeText("fr")).toBe(false);
+    expect(savesWholeText("es")).toBe(false);
   });
 });

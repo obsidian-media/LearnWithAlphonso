@@ -86,12 +86,17 @@ function isResult(value: unknown): value is SavedWordResult {
 }
 
 /**
- * Saving is limited to the English course for now. French and Spanish lesson
- * text mixes the course language with English instructions, so a tapped word
- * could be saved under the wrong language. Same rule as the iOS SavedWordPolicy;
- * widen both together once course-language text can be told apart.
+ * Whether a course offers saving at all. English lesson text is wholly English, so every word on
+ * screen can be saved (`savesWholeText`). French and Spanish explanations mix English with quoted
+ * course text, so only the spans proven to be course-language are offered
+ * (course-language-spans.ts). Same rule as the iOS SavedWordPolicy.
  */
 export function allowsSaving(course: string): boolean {
+  return course === "en" || course === "fr" || course === "es";
+}
+
+/** True where the whole of a lesson's text is in the course's language (the English course). */
+export function savesWholeText(course: string): boolean {
   return course === "en";
 }
 

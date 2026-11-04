@@ -23,21 +23,52 @@ struct TappableText: View {
     /// conversation or lesson the text came from.
     let course: String
     let onSave: (SaveWordRequest) -> Void
+    /// French and Spanish lesson explanations mix English with quoted course text: when set, only words
+    /// inside these course-language strings are linked, and the saved sentence is that string
+    /// (`CourseLanguageSpans`). nil (the default) links every word, for text wholly in the course's language.
+    var courseSpans: [String]? = nil
+
+    /// The text cut into pieces; with no `courseSpans` it is one piece in which every word is linkable.
+    private var pieces: [CourseLanguageSpans.Piece] {
+        guard let courseSpans else { return [.init(text: text, isCourseLanguage: true)] }
+        return CourseLanguageSpans.split(text, spans: courseSpans)
+    }
 
     private var attributed: AttributedString {
         var result = AttributedString()
         var offset = 0
-        for segment in WordSegmenter.segments(in: text) {
-            var piece = AttributedString(segment.text)
-            if segment.isWord, WordSegmenter.isSavable(segment.text),
-                let url = WordLink.url(for: segment.text, offset: offset)
-            {
-                piece.link = url
+        for part in pieces {
+            var partOffset = 0
+            for segment in WordSegmenter.segments(in: part.text) {
+                var piece = AttributedString(segment.text)
+                if part.isCourseLanguage, segment.isWord, WordSegmenter.isSavable(segment.text),
+                    let url = WordLink.url(for: segment.text, offset: offset + partOffset)
+                {
+                    piece.link = url
+                }
+                result.append(piece)
+                partOffset += segment.text.count
             }
-            result.append(piece)
-            offset += segment.text.count
+            offset += part.text.count
         }
         return result
+    }
+
+    /// The sentence to save for a tap at `offset`: the course-language piece it fell in when spans are used.
+    private func sentence(for word: String, atOffset offset: Int?) -> String {
+        guard courseSpans != nil else {
+            return offset.map { WordSegmenter.sentence(containing: word, in: text, atOffset: $0) }
+                ?? WordSegmenter.sentence(containing: word, in: text)
+        }
+        var start = 0
+        for part in pieces {
+            let end = start + part.text.count
+            if part.isCourseLanguage, let offset, offset >= start, offset < end {
+                return WordSegmenter.sentence(containing: word, in: part.text, atOffset: offset - start)
+            }
+            start = end
+        }
+        return word
     }
 
     var body: some View {
@@ -46,10 +77,7 @@ struct TappableText: View {
             .tint(color)
             .environment(\.openURL, OpenURLAction { url in
                 guard let word = WordLink.word(from: url) else { return .systemAction }
-                let sentence =
-                    WordLink.offset(from: url).map {
-                        WordSegmenter.sentence(containing: word, in: text, atOffset: $0)
-                    } ?? WordSegmenter.sentence(containing: word, in: text)
+                let sentence = sentence(for: word, atOffset: WordLink.offset(from: url))
                 onSave(SaveWordRequest(word: word, sentence: sentence, course: course))
                 return .handled
             })
