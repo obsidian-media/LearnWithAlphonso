@@ -19,6 +19,12 @@
       "off-term"
     ]
   },
+  "pexels:11018212": {
+    "key": "shopping",
+    "reasons": [
+      "owner-objection"
+    ]
+  },
   "pexels:11284045": {
     "key": "bank",
     "reasons": [
@@ -179,6 +185,12 @@
     "key": "photography",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:16365469": {
+    "key": "sweet",
+    "reasons": [
+      "owner-objection"
     ]
   },
   "pexels:16510209": {
@@ -350,6 +362,12 @@
     "key": "elephant",
     "reasons": [
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:27176149": {
+    "key": "beat",
+    "reasons": [
+      "owner-objection"
     ]
   },
   "pexels:27429847": {
@@ -597,6 +615,12 @@
     "reasons": [
       "nudity-or-suggestive",
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:36328523": {
+    "key": "bank",
+    "reasons": [
+      "owner-objection"
     ]
   },
   "pexels:36556567": {
@@ -879,6 +903,12 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:5684793": {
+    "key": "closed",
+    "reasons": [
+      "owner-objection"
+    ]
+  },
   "pexels:5750886": {
     "key": "boxing",
     "reasons": [
@@ -990,6 +1020,12 @@
       "off-term"
     ]
   },
+  "pexels:7513100": {
+    "key": "tidy",
+    "reasons": [
+      "owner-objection"
+    ]
+  },
   "pexels:753619": {
     "key": "hurricane",
     "reasons": [
@@ -1081,6 +1117,12 @@
     "reasons": [
       "alcohol-tobacco-drugs-gambling",
       "off-term"
+    ]
+  },
+  "pexels:8954109": {
+    "key": "tall",
+    "reasons": [
+      "owner-objection"
     ]
   },
   "pexels:907865": {
