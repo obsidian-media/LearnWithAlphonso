@@ -16553,8 +16553,8 @@
               "type": "fill",
               "prompt": "We should ___ this again sometime.",
               "bank": [
+                "does",
                 "manage",
-                "is",
                 "do",
                 "planning"
               ],
