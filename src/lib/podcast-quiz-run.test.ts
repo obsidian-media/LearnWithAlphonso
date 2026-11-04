@@ -91,6 +91,7 @@ describe("podcast quiz run", () => {
       correct: 1,
       total: 2,
       xpGain: 10,
+      streak: 1,
       bestCorrect: 1,
       bestXp: 10,
       missedQuestionIds: ["q2"],
