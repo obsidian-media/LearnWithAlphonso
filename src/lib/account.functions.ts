@@ -31,6 +31,7 @@ export const USER_ID_EXPORT_TABLES = [
   "lesson_completions",
   "podcast_play_events",
   "podcast_playback",
+  "podcast_quiz_awards",
   "review_items",
   "review_grade_attempts",
   "season_cohort_members",
@@ -144,7 +145,9 @@ export const exportMyData = createServerFn({ method: "POST" })
         USER_ID_EXPORT_TABLES.map((table) =>
           readAllExportPages(table, (first, last) =>
             supabase
-              .from(table)
+              // podcast_quiz_awards is not in the generated types until they are regenerated against a database that
+              // has its migration (regenerate-supabase-types.yml, after deploy). Every table here has a user_id.
+              .from(table as Exclude<typeof table, "podcast_quiz_awards">)
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {
                 count: "exact",
               })

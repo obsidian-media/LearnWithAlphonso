@@ -316,6 +316,13 @@ jobs:
           deno check index.ts
           deno test handler.test.ts
 
+      # Same shape as the complete-lesson handler test: fake dependencies, plus a type-check of the deployed entry point.
+      - name: Test the complete-podcast-quiz handler
+        working-directory: supabase/functions/complete-podcast-quiz
+        run: |
+          deno check index.ts
+          deno test handler.test.ts
+
       - name: Test the shared FCM sender (Android push)
         # No network and no key material: the test generates its own RSA key
         # and injects fetch. --allow-env only because fcm.ts reads Deno.env
