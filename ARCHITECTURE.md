@@ -1599,8 +1599,9 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 - **Course-aware tutor (2026-10-08).** The active course (shared with Learn,
   remembered per account) drives Hector, Practice, Campaigns and speaking
   questions. Scenarios and campaigns are course-keyed (`en`/`fr`/`es`: 12
-  scenarios and the three-scene `city-day` campaign each). `/api/chat`'s
-  whitelist is `ALL_SYSTEM_PROMPTS` (45 prompts) and it requires a known
+  scenarios and five campaigns each: `city-day` plus the story campaigns `first-week-job`,
+  `doctors-visit`, `train-trip` and `new-flat`, authored in `src/data/campaigns-more.ts`). `/api/chat`'s
+  whitelist is `ALL_SYSTEM_PROMPTS` (84 prompts) and it requires a known
   persona (400 `unknown-system-prompt`). English prompts are byte-identical
   to the pre-course ones (`legacy-system-prompts.test.ts`), so old builds keep
   working. French and Spanish prompts tell the model not to assume the

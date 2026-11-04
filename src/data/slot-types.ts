@@ -151,7 +151,7 @@ export function inferSlot(
 
 /** Pair-pack prompts that already define the answer ("Someone who cooks food is a..."). */
 const DEFINITION_STEM =
-  /^(someone who|an animal that|something that|opposite of|female form of|the body part|this hobby involves|which (sport or hobby|noun goes with|adverb means)|how often does)/i;
+  /^(someone who|an animal that|something that|opposite of|female form of|the body part|this hobby involves|which (sport or hobby|noun goes with)|how often does)/i;
 
 /** A specific bracketed clue, a photo, or a definition-style prompt. */
 export function hasClue(prompt: string, hasImage = false): boolean {

@@ -288,7 +288,7 @@ describe("POST /api/chat", () => {
         ...SCENARIOS.map((s) => scenarioPrompt(s.id, course)),
         ...CAMPAIGNS.flatMap((c) => c.scenes.map((sc) => campaignScenePrompt(c.id, sc.id, course))),
       ];
-      expect(prompts).toHaveLength(15);
+      expect(prompts).toHaveLength(28);
       for (const systemPrompt of prompts) {
         const res = await handler({
           request: req({ systemPrompt, messages: [{ role: "user", content: "hi" }] }),

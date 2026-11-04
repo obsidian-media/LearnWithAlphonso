@@ -30,6 +30,8 @@ export const advancedUnits: Unit[] = [
             choices: ["goed", "went", "gone", "going"],
             answer: 1,
             explanation: '"Go" is irregular: go → went → gone.',
+            meaning: 'the past of "go"',
+            example: "We went home early.",
           },
           {
             id: "q2",
@@ -38,6 +40,7 @@ export const advancedUnits: Unit[] = [
             bank: ["ate", "eat", "eaten", "eating"],
             answer: "ate",
             explanation: 'Past simple of "eat" is "ate".',
+            meaning: 'the past of "eat"',
           },
           {
             id: "q3",
@@ -46,6 +49,7 @@ export const advancedUnits: Unit[] = [
             choices: ["She didn't went.", "She didn't go.", "She not go.", "She no went."],
             answer: 1,
             explanation: 'After "didn\'t" use the base verb.',
+            term: "",
           },
           {
             id: "q4",
@@ -54,6 +58,7 @@ export const advancedUnits: Unit[] = [
             bank: ["lived", "live", "living", "lives"],
             answer: "lived",
             explanation: "Regular verbs add -ed.",
+            meaning: 'the past of "live"',
           },
           {
             id: "q5",
@@ -62,6 +67,8 @@ export const advancedUnits: Unit[] = [
             choices: ["buyed", "bought", "brought", "buying"],
             answer: 1,
             explanation: 'buy → bought. "Brought" is from "bring".',
+            meaning: 'the past of "buy"',
+            example: "I bought a new bag.",
           },
           {
             id: "q6",
@@ -70,6 +77,7 @@ export const advancedUnits: Unit[] = [
             bank: ["Did", "Do", "Does", "Done"],
             answer: "Did",
             explanation: 'Past questions use "did" + base verb.',
+            meaning: "starts a question about the past",
           },
         ],
       },
@@ -85,6 +93,7 @@ export const advancedUnits: Unit[] = [
             bank: ["First", "Finally", "Meanwhile", "However"],
             answer: "First",
             explanation: '"First" opens a sequence.',
+            meaning: "starts a list of events",
           },
           {
             id: "q2",
@@ -93,6 +102,8 @@ export const advancedUnits: Unit[] = [
             choices: ["Then", "Suddenly", "Also", "Because"],
             answer: 1,
             explanation: '"Suddenly" signals an unexpected event.',
+            meaning: "very quickly and without warning",
+            example: "Suddenly, the lights went out.",
           },
           {
             id: "q3",
@@ -101,6 +112,7 @@ export const advancedUnits: Unit[] = [
             bank: ["when", "while", "during", "since"],
             answer: "when",
             explanation: 'Past continuous + "when" + past simple.',
+            meaning: "at the time that",
           },
           {
             id: "q4",
@@ -114,6 +126,8 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 0,
             explanation: '"In the end" wraps up a story naturally.',
+            meaning: "tells how a story finally ended",
+            example: "In the end, we laughed about it.",
           },
           {
             id: "q5",
@@ -122,6 +136,7 @@ export const advancedUnits: Unit[] = [
             bank: ["While", "When did", "Since", "Until"],
             answer: "While",
             explanation: '"While" + continuous action.',
+            meaning: "during the time that",
           },
           {
             id: "q6",
@@ -130,6 +145,9 @@ export const advancedUnits: Unit[] = [
             choices: ["A future plan", "A past habit", "A wish", "An order"],
             answer: 1,
             explanation: '"I used to swim" = past habit, no longer true.',
+            term: "used to",
+            meaning: "something you did often before",
+            example: "I used to swim every day.",
           },
         ],
       },
@@ -154,6 +172,8 @@ export const advancedUnits: Unit[] = [
             choices: ["Price?", "How much is this?", "Money how?", "Give price."],
             answer: 1,
             explanation: '"How much is this?" is standard and polite.',
+            meaning: "asks the price of something",
+            example: "Excuse me, how much is this?",
           },
           {
             id: "q2",
@@ -162,6 +182,7 @@ export const advancedUnits: Unit[] = [
             bank: ["in", "on", "at", "of"],
             answer: "in",
             explanation: '"In" is used with sizes and colours.',
+            meaning: "used with sizes and colours",
           },
           {
             id: "q3",
@@ -170,6 +191,8 @@ export const advancedUnits: Unit[] = [
             choices: ["I need help", "I'm only looking", "I'll buy it", "It's broken"],
             answer: 1,
             explanation: "A polite way to decline assistance.",
+            meaning: "means you are not ready to buy",
+            example: "I'm only looking, thank you.",
           },
           {
             id: "q4",
@@ -193,6 +216,8 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 0,
             explanation: 'Polite requests use "I\'d like to…".',
+            meaning: "asks to take something back to a shop",
+            example: "Hello, I'd like to return this, please.",
           },
           {
             id: "q6",
@@ -201,6 +226,7 @@ export const advancedUnits: Unit[] = [
             bank: ["cheaper", "cheap", "cheapest", "more cheap"],
             answer: "cheaper",
             explanation: 'Comparative of "cheap" is "cheaper".',
+            meaning: "costing less",
           },
         ],
       },
@@ -216,6 +242,8 @@ export const advancedUnits: Unit[] = [
             choices: ["cancelled", "delayed", "boarding", "landed"],
             answer: 1,
             explanation: '"Delayed" = later than scheduled.',
+            meaning: "late; not on time",
+            example: "The delayed train arrives at six.",
           },
           {
             id: "q2",
@@ -224,6 +252,7 @@ export const advancedUnits: Unit[] = [
             bank: ["check", "take", "put", "give"],
             answer: "check",
             explanation: '"Check in luggage" at the counter.',
+            meaning: "to hand in bags at the airport",
           },
           {
             id: "q3",
@@ -232,6 +261,9 @@ export const advancedUnits: Unit[] = [
             choices: ["Rude", "An indirect polite question", "A command", "A complaint"],
             answer: 1,
             explanation: "Indirect questions sound more polite.",
+            term: "Could you tell me…?",
+            meaning: "a polite way to ask for information",
+            example: "Could you tell me where gate 12 is?",
           },
           {
             id: "q4",
@@ -240,6 +272,7 @@ export const advancedUnits: Unit[] = [
             bank: ["departs", "departure", "departing", "depart"],
             answer: "departs",
             explanation: "Present simple for timetables.",
+            meaning: "leaves",
           },
           {
             id: "q5",
@@ -253,6 +286,8 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 1,
             explanation: "Present perfect fits a recent event with present effect.",
+            meaning: "tells staff you lost your bag",
+            example: "Excuse me, I've lost my bag — who can help?",
           },
           {
             id: "q6",
@@ -261,6 +296,7 @@ export const advancedUnits: Unit[] = [
             bank: ["stopping", "stop", "stopped", "stops"],
             answer: "stopping",
             explanation: '"Stopping over" = layover.',
+            meaning: "staying for a short time on a trip",
           },
         ],
       },

@@ -49,6 +49,18 @@ class ConversationContentTest {
     }
 
     @Test
+    fun `every course ships the same five campaigns, each with 3 or 4 scenes and unique ids`() {
+        val expected = listOf("city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat")
+        for (course in listOf(Course.ENGLISH, Course.FRENCH, Course.SPANISH)) {
+            val camps = store.campaigns(course)
+            assertEquals(expected, camps.map { it.id }, "${course.code} campaign ids")
+            camps.forEach { assertTrue(it.scenes.size in 3..4, "${course.code} ${it.id} has ${it.scenes.size} scenes") }
+            val sceneIds = camps.flatMap { c -> c.scenes.map { it.id } }
+            assertEquals(sceneIds.size, sceneIds.toSet().size, "${course.code} scene ids are unique")
+        }
+    }
+
+    @Test
     fun `each file is in the language its name says, so swapped suffixes fail`() {
         fun prompts(course: Course): List<String> =
             store.scenarios(course).map { it.systemPrompt } +
