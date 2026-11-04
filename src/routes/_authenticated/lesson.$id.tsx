@@ -704,10 +704,12 @@ function VocabScreen({
                 🔊
               </button>
             </div>
-            <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-            <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
-              {v.example}
-            </p>
+            {v.meaning && <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>}
+            {v.example && (
+              <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
+                {v.example}
+              </p>
+            )}
           </motion.div>
         ))}
       </div>
