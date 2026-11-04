@@ -14,7 +14,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u4",
     level: "A2",
-    eyebrow: "Unit 4",
+    eyebrow: "Unit 1",
     title: "Yesterday & Before",
     description: "Past simple, past habits, and telling stories.",
     lessons: [
@@ -138,7 +138,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u5",
     level: "A2",
-    eyebrow: "Unit 5",
+    eyebrow: "Unit 2",
     title: "Out in the World",
     description: "Shopping, travel, and getting help.",
     lessons: [
@@ -269,7 +269,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u6",
     level: "B1",
-    eyebrow: "Unit 6",
+    eyebrow: "Unit 1",
     title: "Opinions & Ideas",
     description: "Agreeing, disagreeing, and conditionals.",
     lessons: [
@@ -398,7 +398,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u7",
     level: "B1",
-    eyebrow: "Unit 7",
+    eyebrow: "Unit 2",
     title: "Working Life",
     description: "Emails, meetings, and professional tone.",
     lessons: [
@@ -527,7 +527,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u8",
     level: "B2",
-    eyebrow: "Unit 8",
+    eyebrow: "Unit 1",
     title: "Nuance & Precision",
     description: "Passives, hedging, and complex linking.",
     lessons: [
@@ -666,7 +666,7 @@ export const advancedUnits: Unit[] = [
   {
     id: "u9",
     level: "C1",
-    eyebrow: "Unit 9",
+    eyebrow: "Unit 1",
     title: "Register & Idiom",
     description: "Sounding natural, precise, and appropriate.",
     lessons: [

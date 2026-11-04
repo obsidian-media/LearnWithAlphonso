@@ -129,7 +129,7 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
   const shot = (name: string) =>
     page.screenshot({ path: `test-results/visual-refresh/canopy-390-${name}-screen.png` });
   try {
-    await playLessonToTheEnd(page);
+    await playLessonToTheEnd(page, shot);
     // Mid-celebration: the clip is playing and the numbers have counted up.
     await page.waitForTimeout(1300);
     await shot("lesson-complete");
@@ -163,10 +163,17 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
 });
 
 /** Plays the first lesson with the right answers, read from the curriculum, until the finish screen shows. */
-async function playLessonToTheEnd(page: import("@playwright/test").Page) {
+async function playLessonToTheEnd(
+  page: import("@playwright/test").Page,
+  shot?: (name: string) => Promise<unknown>,
+) {
   await page.goto(`/lesson/${LESSON.id}`);
   await page.getByRole("button", { name: "Begin lesson" }).click();
-  await page.getByRole("button", { name: "Start practice" }).click();
+  // The words-to-learn deck, one card at a time.
+  await page.locator("[data-vocab-card]").waitFor();
+  await shot?.("vocab-deck");
+  await page.getByRole("button", { name: "Skip to practice" }).click();
+  let verdictShot = false;
   for (let step = 0; step < 40; step++) {
     if ((await page.locator('[data-stage="complete"]').count()) > 0) return;
     const gotIt = page.getByRole("button", { name: "Got it" });
@@ -198,6 +205,13 @@ async function playLessonToTheEnd(page: import("@playwright/test").Page) {
       continue;
     }
     await page.getByRole("button", { name: "Check" }).click();
+    if (!verdictShot) {
+      // The first answer's verdict panel, with Alphonso reacting.
+      await page.locator("[data-verdict]").waitFor();
+      await page.waitForTimeout(400);
+      await shot?.("verdict-panel");
+      verdictShot = true;
+    }
   }
   throw new Error("the finish screen never showed");
 }

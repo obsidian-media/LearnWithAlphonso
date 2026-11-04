@@ -275,20 +275,27 @@ struct LessonPlayerView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    @ViewBuilder
+    /// The question scrolls; Check and the verdict panel are pinned above the tab bar. A tall question (an image,
+    /// four tiles, Alphonso's tip) plus the panel is taller than an iPhone SE's screen, and before this the column
+    /// did not scroll, so Continue could land under the tab bar. At accessibility text sizes the same layout holds.
     private var quizBody: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            // The question column has no scrolling of its own; at the largest text sizes a long question plus the
-            // Check button would run off the screen, so the whole column scrolls there.
-            ScrollView { quizColumn }
-                .scrollDismissesKeyboard(.interactively)
-                .background(AlphonsoColor.surface)
-        } else {
-            quizColumn
+        ScrollView {
+            quizContent
         }
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            quizControls
+                .padding(.horizontal)
+                .padding(.vertical, AlphonsoSpacing.sm)
+                .background(AlphonsoColor.surface)
+        }
+        .background(AlphonsoColor.surface)
+        // The verdict panel announces the verdict itself; the explanation under the question stays quiet.
+        .environment(\.verdictAnnouncedByPanel, true)
+        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.85), value: checked)
     }
 
-    private var quizColumn: some View {
+    private var quizContent: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             AlphonsoProgressBar(progress: total == 0 ? 0 : Double(idx) / Double(total))
             Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
@@ -317,8 +324,13 @@ struct LessonPlayerView: View {
             QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
                 .id("\(isReinforcing ? "reinforce" : "main")-\(questionID(currentQuestion))")
 
-            Spacer()
+        }
+        .padding()
+    }
 
+    /// Check, or the verdict panel once checked: pinned below the scrolling question.
+    @ViewBuilder
+    private var quizControls: some View {
             if isSubmitting {
                 ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
             } else if isCheckingTranslation {
@@ -347,7 +359,11 @@ struct LessonPlayerView: View {
                     // Whitespace is not an answer.
                     .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } else {
-                Button(isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish") {
+                AnswerVerdictPanel(
+                    correct: lastAnswerCorrect,
+                    correctAnswer: AnswerVerdict.correctAnswer(for: currentQuestion),
+                    continueTitle: isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish"
+                ) {
                     if let pendingReinforcement {
                         activeReinforcement = pendingReinforcement
                         self.pendingReinforcement = nil
@@ -369,12 +385,19 @@ struct LessonPlayerView: View {
                         Task { await finish() }
                     }
                 }
-                .buttonStyle(.alphonsoPrimary)
             }
-        }
-        .padding()
-        .background(AlphonsoColor.surface)
     }
+
+    /// The verdict the panel shows: a translation's settled grade when there is one (it may come from the AI
+    /// grader), otherwise the local match. The same rule recordAnswer scores by.
+    private var lastAnswerCorrect: Bool {
+        if case .translate = currentQuestion, let translationVerdict {
+            return translationVerdict.correct
+        }
+        return isAnswerCorrect(currentQuestion, picked: picked, course: course)
+    }
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Settles the current translation's verdict before it is scored.
     private func settleTranslationVerdict() async {
@@ -652,7 +675,7 @@ private struct QuestionCard: View {
                 }
                 Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
-                    choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -671,7 +694,7 @@ private struct QuestionCard: View {
                         HStack {
                             ForEach(q.bank, id: \.self) { word in
                                 Button(word) { picked = word }
-                                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                                    .buttonStyle(.alphonsoWordChip(picked: picked == word))
                                     .disabled(checked)
                             }
                         }
@@ -715,7 +738,7 @@ private struct QuestionCard: View {
                 Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
                     // `answer` is the choice text, not an index.
-                    choiceButton(choice, isCorrectChoice: q.answer == choice)
+                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }
                 }
                 if checked {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
@@ -773,58 +796,12 @@ private struct QuestionCard: View {
                 ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
                     if !orderPicks.contains(i) {
                         Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                            .buttonStyle(.alphonsoWordChip(picked: false))
                             .disabled(checked)
                     }
                 }
             }
         }
-    }
-
-    private func choiceButton(_ choice: String, isCorrectChoice: Bool) -> some View {
-        Button {
-            picked = choice
-        } label: {
-            HStack {
-                Text(choice)
-                    .font(AlphonsoFont.sans(16))
-                Spacer()
-                if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
-                        .accessibilityHidden(true)
-                } else if checked && picked == choice {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
-                        .accessibilityHidden(true)
-                }
-            }
-            .padding(AlphonsoSpacing.sm + 4)
-            .background(
-                picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
-                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                    .strokeBorder(picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: picked == choice ? 1.5 : 1)
-            )
-        }
-        .disabled(checked)
-        .foregroundStyle(AlphonsoColor.ink)
-        // The checkmark/xmark above is the ONLY place correct/incorrect
-        // per-choice state lived before this -- hidden now (it duplicated
-        // whatever this label already says) but that means this label is
-        // the sole place VoiceOver can learn "which choice was right" and
-        // "was mine right," so it has to say both explicitly, not just the
-        // choice text.
-        .accessibilityLabel(choiceAccessibilityLabel(choice, isCorrectChoice: isCorrectChoice))
-        .accessibilityAddTraits(picked == choice ? .isSelected : [])
-    }
-
-    private func choiceAccessibilityLabel(_ choice: String, isCorrectChoice: Bool) -> String {
-        guard checked else { return choice }
-        if isCorrectChoice {
-            return picked == choice ? "\(choice), your answer, correct" : "\(choice), correct answer"
-        }
-        return picked == choice ? "\(choice), your answer, incorrect" : choice
     }
 }
 
@@ -920,16 +897,148 @@ private struct VocabScreen: View {
     let course: Course
     let onStart: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var page = 0
 
     var body: some View {
         if dynamicTypeSize.isAccessibilitySize {
-            ScrollView { content }
+            // At the largest text sizes a fixed card would clip its words, so the screen stays one scrolling list.
+            ScrollView { listContent }
         } else {
-            content
+            deck
         }
     }
 
-    private var content: some View {
+    /// Words to learn, one big card at a time: the picture, the word, its sound, the meaning and an example, with
+    /// Alphonso peeking over the corner. "Next word" moves on and the last card starts practice; Skip goes straight
+    /// to it. Swiping also moves between cards.
+    private var deck: some View {
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Vocabulary · \(lesson.subtitle)".uppercased())
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                    Text(lesson.title)
+                        .font(AlphonsoFont.display(24, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("Word \(page + 1) of \(items.count)")
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .monospacedDigit()
+                }
+                Spacer(minLength: 0)
+                if items.count > 1 {
+                    Button("Skip to practice", action: onStart)
+                        .font(AlphonsoFont.sans(14, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                }
+            }
+
+            TabView(selection: $page) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    wordCard(item)
+                        .padding(.horizontal, 2)
+                        .padding(.top, 14)
+                        .padding(.bottom, 8)
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: page)
+
+            HStack(spacing: 6) {
+                ForEach(items.indices, id: \.self) { index in
+                    Capsule()
+                        .fill(index == page ? AlphonsoColor.moss : AlphonsoColor.hairline)
+                        .frame(width: index == page ? 20 : 8, height: 8)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+
+            Button(VocabDeck.buttonTitle(index: page, count: items.count)) {
+                if page < items.count - 1 {
+                    page += 1
+                } else {
+                    onStart()
+                }
+            }
+            .buttonStyle(.alphonsoPrimary)
+        }
+        .padding()
+        .background(AlphonsoColor.surface)
+    }
+
+    /// The card's picture: 180 pt, smaller on a short screen (an iPhone SE) so the words below it still fit.
+    private static var cardImageHeight: CGFloat { min(180, UIScreen.main.bounds.height * 0.2) }
+
+    private func wordCard(_ item: VocabItem) -> some View {
+        // The words scroll inside the card when they still do not fit (a long example on a short screen).
+        ScrollView {
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+            if let image = item.image {
+                VocabImageView(image: image, cardHeight: Self.cardImageHeight)
+            }
+            HStack(spacing: AlphonsoSpacing.sm) {
+                Text(item.term)
+                    .font(AlphonsoFont.display(34, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(2)
+                Button {
+                    speak(item.term, course: course)
+                } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.body)
+                        .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
+                        .background(AlphonsoColor.surface, in: Circle())
+                        .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(AlphonsoColor.ink)
+                .accessibilityLabel("Play pronunciation for \(item.term)")
+            }
+            .padding(.trailing, 56)
+            Text(item.meaning)
+                .font(AlphonsoFont.sans(16))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            Text(item.example)
+                .font(AlphonsoFont.sans(15).italic())
+                .foregroundStyle(AlphonsoColor.inkSoft)
+                .padding(.horizontal, AlphonsoSpacing.md)
+                .padding(.vertical, AlphonsoSpacing.sm + 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+        }
+        .padding(AlphonsoSpacing.md + 4)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AlphonsoColor.hairline)
+                .offset(y: 6)
+        )
+        .overlay(alignment: .topTrailing) {
+            // Decorative: Alphonso peeks over the card's corner.
+            Image("Alphonso-encouraging")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .offset(x: 6, y: -14)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    /// The scrolling list, kept for the largest text sizes.
+    private var listContent: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             Text("Vocabulary · \(lesson.subtitle)".uppercased())
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
@@ -941,16 +1050,8 @@ private struct VocabScreen: View {
             Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practise.")
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-
-            if dynamicTypeSize.isAccessibilitySize {
-                // At the largest text sizes the pinned title and button leave the list a sliver, so the whole
-                // screen scrolls as one instead.
-                wordList
-                startButton
-            } else {
-                ScrollView { wordList }
-                startButton
-            }
+            wordList
+            startButton
         }
         .padding()
         .background(AlphonsoColor.surface)
@@ -1072,9 +1173,10 @@ private struct FinishView: View {
     @State private var celebrated = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// The stage is never taller than 52% of the screen: on a short phone it narrows (same framing) instead of
-    /// pushing the rewards and Continue below the fold.
-    private static var stageMaxHeight: CGFloat { UIScreen.main.bounds.height * 0.52 }
+    @Environment(\.dismiss) private var dismiss
+
+    /// Clear space over the clip before the card starts, so Alphonso is seen first.
+    private static var clipWindow: CGFloat { UIScreen.main.bounds.height * 0.46 }
 
     private var unlockedAchievements: [Achievement] {
         result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
@@ -1083,7 +1185,7 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
-                // The title sits on glass, above the stage window.
+                // The title sits on glass, over the clip.
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
@@ -1091,27 +1193,17 @@ private struct FinishView: View {
                     .padding(.vertical, AlphonsoSpacing.sm)
                     .alphonsoGlass(radius: AlphonsoRadius.xl)
 
-                // The whole celebration is one looping clip: the stage, confetti cannons, streamers, sweeping spotlights
-                // and Alphonso cheering. It sits in a 10:13 window framed on him (he fills 23-91% of the clip's height;
-                // the window shows the clip from its top 20% to 94%), the same framing as the web. Under Reduce Motion
-                // the clip's first frame stands still.
-                // On a short screen (iPhone SE) the window narrows to at most 52% of the screen's height, so the
-                // rewards and Continue stay in view without changing the framing.
-                ClipBackdrop(clip: .complete, verticalAnchor: 0.76)
-                    .aspectRatio(10.0 / 13.0, contentMode: .fit)
-                    .frame(maxWidth: Self.stageMaxHeight * 10 / 13)
-                    .background(AlphonsoColor.ink)
-                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-                    .alphonsoLift()
-                    .springEntrance()
-                    .accessibilityElement(children: .ignore)
+                // Clear space: the clip behind shows Alphonso here, before the card.
+                Color.clear
+                    .frame(height: Self.clipWindow)
+                    .accessibilityElement()
                     .accessibilityLabel("Alphonso celebrating on the stage")
                     .accessibilityAddTraits(.isImage)
 
                 VStack(spacing: AlphonsoSpacing.md) {
                     Text(LessonFinishCopy.headline(correct: correct, total: total))
                         .font(AlphonsoFont.display(24, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.moss)
+                        .foregroundStyle(AlphonsoColor.ink)
                         .multilineTextAlignment(.center)
                     HStack(spacing: 10) {
                         ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
@@ -1142,11 +1234,6 @@ private struct FinishView: View {
                         .padding(.top, 8)
                     }
 
-                    if let onContinueToNextLesson {
-                        Button("Continue to next lesson", action: onContinueToNextLesson)
-                            .buttonStyle(.alphonsoEmber)
-                            .padding(.top, 4)
-                    }
                     if let onPractiseWithHector {
                         Button("Practise with Hector", action: onPractiseWithHector)
                             .buttonStyle(.alphonsoSecondary)
@@ -1157,10 +1244,40 @@ private struct FinishView: View {
                 .padding(AlphonsoSpacing.md)
                 .frame(maxWidth: .infinity)
                 .alphonsoGlass()
+                .springEntrance()
             }
             .padding()
         }
-        .background(AlphonsoColor.surface)
+        .scrollContentBackground(.hidden)
+        // The whole celebration is one looping clip (the stage, confetti cannons, streamers, sweeping spotlights and
+        // Alphonso cheering), filling the screen behind the card with Alphonso in the top half. A fade into the
+        // surface at the bottom keeps the card's text readable. Under Reduce Motion the clip's first frame stands
+        // still. Decorative here: the clear window above carries its label.
+        .background {
+            ZStack(alignment: .bottom) {
+                ClipBackdrop(clip: .complete, verticalAnchor: 0.2)
+                    .ignoresSafeArea()
+                LinearGradient(colors: [.clear, AlphonsoColor.surface.opacity(0.92)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: UIScreen.main.bounds.height * 0.55)
+                    .ignoresSafeArea(edges: .bottom)
+            }
+            .background(AlphonsoColor.ink)
+            .accessibilityHidden(true)
+        }
+        // Pinned above the tab bar: the way on never scrolls out of view, even on an iPhone SE.
+        .safeAreaInset(edge: .bottom) {
+            Group {
+                if let onContinueToNextLesson {
+                    Button("Continue to next lesson", action: onContinueToNextLesson)
+                } else {
+                    Button("Back to Learn") { dismiss() }
+                }
+            }
+            .buttonStyle(.alphonsoEmber)
+            .padding(.horizontal)
+            .padding(.vertical, AlphonsoSpacing.sm)
+            .background(.ultraThinMaterial)
+        }
         .sensoryFeedback(.success, trigger: celebrated)
         .onAppear {
             showPromotionOverlay = isLeaguePromotion

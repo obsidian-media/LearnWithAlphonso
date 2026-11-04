@@ -82,4 +82,40 @@ describe("AnswerOption", () => {
     );
     expect(screen.getByRole("button")).toHaveClass("border-l-moss");
   });
+
+  it("is a chunky tile that presses down, at least 56 px tall", () => {
+    render(
+      <AnswerOption
+        label="ascertain"
+        checked={false}
+        isPicked={false}
+        isRight={false}
+        disabled={false}
+        onClick={() => {}}
+      />,
+    );
+    const tile = screen.getByRole("button");
+    expect(tile).toHaveClass(
+      "min-h-14",
+      "active:translate-y-1",
+      "active:shadow-none",
+      "motion-reduce:transition-none",
+    );
+    expect(tile.className).toContain("shadow-[0_4px_0_0_");
+  });
+
+  it("a picked tile says so, to assistive tech too", () => {
+    render(
+      <AnswerOption
+        label="ascertain"
+        checked={false}
+        isPicked
+        isRight={false}
+        disabled={false}
+        onClick={() => {}}
+      />,
+    );
+    expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button")).toHaveClass("border-moss");
+  });
 });

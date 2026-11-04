@@ -248,12 +248,16 @@ struct AlphonsoProgressBar: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule().fill(AlphonsoColor.parchment)
+                // A moss gradient with a soft highlight along the top, so the bar reads as a solid piece.
                 Capsule()
-                    .fill(AlphonsoColor.moss)
+                    .fill(LinearGradient(colors: [AlphonsoColor.moss, AlphonsoColor.edgeMoss], startPoint: .top, endPoint: .bottom))
+                    .overlay(alignment: .top) {
+                        Capsule().fill(Color.white.opacity(0.28)).frame(height: 3).padding(.horizontal, 6).padding(.top, 2)
+                    }
                     .frame(width: proxy.size.width * min(max(progress, 0), 1))
             }
         }
-        .frame(height: 8)
+        .frame(height: 12)
         .animation(.easeOut(duration: 0.25), value: progress)
     }
 }
@@ -626,28 +630,17 @@ struct AlphonsoTipCard: View {
             .padding(AlphonsoSpacing.sm + 4)
             .padding(.trailing, AlphonsoSpacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // A plain card now: the bubble's tail used to point at his portrait, which moved to the verdict panel.
             .background(
-                SpeechBubbleShape().fill(AlphonsoColor.parchment)
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous).fill(AlphonsoColor.parchment)
             )
             .overlay(
-                SpeechBubbleShape().strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    .strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
             )
 
-            // Portrait, not content -- the mascot's presence is what
-            // "Alphonso says" already tells you; without this it's its own
-            // unlabeled VoiceOver stop (announcing nothing useful, or the
-            // asset name) between "Alphonso says" and the explanation text.
-            Image("Alphonso")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 88, height: 112)
-                .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                        .strokeBorder(AlphonsoColor.ember, lineWidth: 2)
-                )
-                .padding(.leading, -6)
-                .accessibilityHidden(true)
+            // Alphonso himself now reacts in the verdict panel below (AnswerVerdictPanel), so the tip card no longer
+            // carries his portrait: he would be on screen twice.
         }
         // The slide-in-from-trailing-edge is what Reduced Motion targets --
         // a plain opacity fade in both directions is the substitute,
@@ -710,6 +703,9 @@ struct ExplanationView: View {
     var correctOverride: Bool? = nil
 
     @Environment(\.saveWordHandler) private var saveWordHandler
+    /// The lesson and review set this: their verdict panel announces the verdict, and a second post in the same
+    /// frame would cut it off.
+    @Environment(\.verdictAnnouncedByPanel) private var verdictAnnouncedByPanel
 
     private var isCorrect: Bool {
         correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
@@ -753,6 +749,7 @@ struct ExplanationView: View {
         // navigating to this exact element, which "does it work without
         // looking at the screen" needs to not require.
         .onAppear {
+            guard !verdictAnnouncedByPanel else { return }
             UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
         }
     }

@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
-import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { AnswerVerdictPanel } from "../../components/AnswerVerdictPanel";
+import { WordChip } from "../../components/WordChip";
+import { correctAnswerText } from "../../lib/answer-verdict";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { MascotBanner } from "../../components/MascotBanner";
 import { VocabImage } from "../../components/VocabImage";
@@ -360,15 +362,13 @@ function ReviewPage() {
               <div className="flex flex-wrap gap-2">
                 {q.tokens.map((t, i) =>
                   orderPicks.includes(i) ? null : (
-                    <button
+                    <WordChip
                       key={i}
-                      type="button"
+                      word={t}
+                      picked={false}
                       disabled={checked}
                       onClick={() => setOrderPicks((arr) => [...arr, i])}
-                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
-                    >
-                      {t}
-                    </button>
+                    />
                   ),
                 )}
               </div>
@@ -407,31 +407,31 @@ function ReviewPage() {
               />
               <div className="mt-2 flex flex-wrap gap-2">
                 {q.bank.map((w) => (
-                  <button
+                  <WordChip
                     key={w}
+                    word={w}
+                    picked={picked === w}
                     disabled={checked}
                     onClick={() => setPicked(w)}
-                    className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
-                  >
-                    {w}
-                  </button>
+                  />
                 ))}
               </div>
             </div>
           ) : null}
         </div>
 
-        {checked && (
-          <AnswerFeedback
+        {checked ? (
+          <AnswerVerdictPanel
             correct={shownCorrect}
-            headline={shownCorrect ? "Still got it." : "Back in the queue."}
+            title={shownCorrect ? "Still got it." : "Back in the queue."}
+            correctAnswer={correctAnswerText(q)}
             explanation={q.explanation}
             saveCourse={course}
+            continueLabel={idx < cards.length - 1 ? "Continue" : "Finish"}
+            onContinue={next}
           />
-        )}
-
-        <div className="mt-auto pt-6">
-          {!checked ? (
+        ) : (
+          <div className="mt-auto pt-6">
             <button
               disabled={
                 // `checking` matters as much as the emptiness check: `checked`
@@ -451,15 +451,8 @@ function ReviewPage() {
             >
               {checking ? "Checking…" : "Check"}
             </button>
-          ) : (
-            <button
-              onClick={next}
-              className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
-            >
-              {idx < cards.length - 1 ? "Continue" : "Finish"}
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </LessonFrame>
   );

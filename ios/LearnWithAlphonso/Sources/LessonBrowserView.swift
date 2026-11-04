@@ -233,24 +233,19 @@ struct LessonBrowserView: View {
                 // your level, the picker lets you move off it.
                 ForEach(unitsForSelectedLevel) { unit in
                     let lessonRows = ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
-                        NavigationLink(value: lesson.id) {
-                            AlphonsoRowCard(
-                                title: lesson.title,
-                                subtitle: lesson.subtitle,
-                                // TestFlight feedback (2026-09-29): this
-                                // dot previously never reflected real
-                                // completion -- it was `index == 0`, i.e.
-                                // "is this the unit's first lesson,"
-                                // completely unconditionally. `.hairline`
-                                // is this design system's own documented
-                                // "locked/dimmed" accent (AlphonsoComponents
-                                // .swift); reused here for "done" as the
-                                // same "no longer the active target" idea.
-                                accent: completedLessonIDs.contains(lesson.id)
-                                    ? AlphonsoColor.hairline
-                                    : (index == 0 ? AlphonsoColor.ember : AlphonsoColor.moss)
-                            )
-                        }
+                        // A chunky tile with a status medallion: done (completed), next (the band's next lesson), or
+                        // its number. The link sits invisibly behind it, so List adds no disclosure chevron (same as
+                        // LearnContinueCard).
+                        LessonPathRow(
+                            number: index + 1,
+                            title: lesson.title,
+                            subtitle: lesson.subtitle,
+                            status: completedLessonIDs.contains(lesson.id)
+                                ? .done
+                                : (nextLesson?.lesson.id == lesson.id ? .next : .open)
+                        )
+                        .background(NavigationLink(value: lesson.id) { EmptyView() }.opacity(0))
+                        .accessibilityAddTraits(.isButton)
                         // Lazy List rows already fire onAppear as they
                         // scroll into view, so this cascades naturally
                         // rather than animating the whole (possibly
@@ -274,16 +269,35 @@ struct LessonBrowserView: View {
                     Section {
                         lessonRows
                     } header: {
-                        Text("\(unit.eyebrow) · \(unit.title)")
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .tracking(0.4)
-                            .foregroundStyle(AlphonsoColor.ember)
-                            // Over the scene a bare header would sit straight on the picture: put it on glass.
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .alphonsoGlass(radius: AlphonsoRadius.xl)
+                        // A glass banner over the scene: the unit's number small, its title large, and how many of
+                        // its lessons are done.
+                        HStack(alignment: .center, spacing: AlphonsoSpacing.sm) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(unit.eyebrow.uppercased())
+                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                                    .tracking(0.4)
+                                    .foregroundStyle(AlphonsoColor.ember)
+                                Text(unit.title)
+                                    .font(AlphonsoFont.display(20, weight: .bold))
+                                    .foregroundStyle(AlphonsoColor.ink)
+                            }
+                            Spacer(minLength: 0)
+                            Text("\(unit.lessons.filter { completedLessonIDs.contains($0.id) }.count)/\(unit.lessons.count) done")
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .monospacedDigit()
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                        }
+                        .textCase(nil)
+                        .padding(.horizontal, AlphonsoSpacing.md)
+                        .padding(.vertical, AlphonsoSpacing.sm)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .alphonsoGlass(radius: AlphonsoRadius.xl)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(.isHeader)
                     }
                     .listRowBackground(Color.clear)
+                    // The tiles carry their own edges; a hairline between them would cut through the bottom edge.
+                    .listRowSeparator(.hidden)
                 }
             }
             .scrollContentBackground(.hidden)

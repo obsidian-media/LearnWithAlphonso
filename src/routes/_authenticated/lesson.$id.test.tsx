@@ -93,7 +93,7 @@ function renderPage(consentApi = fakeConsentApi()) {
 
 async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
-  await user.click(await screen.findByRole("button", { name: "Start practice" }));
+  await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
 }
 
 beforeEach(() => {
@@ -259,7 +259,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Type the phrase"), "good morning");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("marks a different phrase wrong on a speaking question", async () => {
@@ -270,7 +270,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Type the phrase"), "good night");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalled();
   });
 
@@ -282,7 +282,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Type the phrase"), "good night");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    const feedback = (await screen.findByText("Not quite.")).closest('[role="status"]')!;
+    const feedback = (await screen.findByText("Not quite")).closest('[role="status"]')!;
     const words = within(feedback as HTMLElement).queryAllByRole("button");
     expect(words.length).toBeGreaterThan(0);
     await user.click(words[0]);
@@ -308,7 +308,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Your answer"), "good morning");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("upgrades a wrong local verdict when the grader accepts the wording", async () => {
@@ -326,7 +326,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("without consent grades a translation locally and never asks the grader", async () => {
@@ -342,7 +342,7 @@ describe("Lesson page", () => {
     expect(await screen.findByText("Turn on AI grading")).toBeInTheDocument();
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(fetchSpy).not.toHaveBeenCalledWith("/api/grade-translation", expect.anything());
   });
 
@@ -377,7 +377,7 @@ describe("Lesson page", () => {
     expect(screen.getByTestId("consent-status")).toHaveTextContent("granted");
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(screen.getByTestId("consent-status")).toHaveTextContent("denied");
   });
 
@@ -396,7 +396,7 @@ describe("Lesson page", () => {
 
     await user.type(screen.getByLabelText("Your answer"), "goodbye");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(screen.getByText("Good morning.")).toBeInTheDocument();
     expect(screen.getByText("That is a farewell.")).toBeInTheDocument();
   });
@@ -420,12 +420,59 @@ describe("Lesson page", () => {
     expect(screen.getByText("8 questions")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Begin lesson" }));
-    expect(await screen.findByText("8 words to learn before you practise.")).toBeInTheDocument();
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
     expect(screen.getByText("Good morning.")).toBeInTheDocument(); // a derived vocab term
 
-    await user.click(screen.getByRole("button", { name: "Start practice" }));
+    await user.click(screen.getByRole("button", { name: "Skip to practice" }));
     expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
     expect(screen.getByText("1/8")).toBeInTheDocument();
+  });
+
+  it("words to learn come one card at a time: Next word moves on, the last card starts practice", async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+    expect(container.querySelectorAll("[data-vocab-card]")).toHaveLength(1);
+    expect(screen.getByText("Good morning.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next word" }));
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+    // The first card slides out, then only the second is on screen.
+    await waitFor(() => expect(screen.queryByText("Good morning.")).not.toBeInTheDocument());
+    expect(container.querySelectorAll("[data-vocab-card]")).toHaveLength(1);
+
+    for (let i = 2; i < 8; i++) await user.click(screen.getByRole("button", { name: "Next word" }));
+    expect(await screen.findByText("Word 8 of 8")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Next word" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Start practice" }));
+    expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
+  });
+
+  it("the arrow keys move through the words too", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowRight}");
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowLeft}");
+    expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
+  });
+
+  it("Studio Ink keeps the full word list", async () => {
+    const { useTheme } = await import("../../lib/theme");
+    useTheme.setState({ theme: "studio-ink" });
+    try {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+      expect(await screen.findByText("8 words to learn before you practise.")).toBeInTheDocument();
+      expect(screen.queryByText("Word 1 of 8")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Start practice" })).toBeInTheDocument();
+    } finally {
+      useTheme.setState({ theme: "meadow" });
+    }
   });
 
   it("grades a correct answer, shows feedback, and advances on Continue", async () => {
@@ -435,7 +482,7 @@ describe("Lesson page", () => {
 
     await user.click(screen.getByRole("button", { name: ANSWERS[0].correct }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
@@ -452,7 +499,7 @@ describe("Lesson page", () => {
     await user.click(screen.getByRole("button", { name: ANSWERS[0].wrong }));
     await user.click(screen.getByRole("button", { name: "Check" }));
 
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalledTimes(1);
     expect(useProgress.getState().hearts).toBe(startingHearts - 1);
   });
@@ -469,7 +516,7 @@ describe("Lesson page", () => {
     await screen.findByText("Nice to ___ you.");
     await user.click(screen.getByRole("button", { name: "meet" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("completes the lesson with server-graded misses and applies the returned progress", async () => {
@@ -578,7 +625,7 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
     // Miss q1 -- its own feedback shows first, not the reinforcement yet.
     await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
 
@@ -680,7 +727,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("shows a play-audio button and grades a listening mc question normally", async () => {
@@ -693,7 +740,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("assembles and grades a reorder question by tapping tokens in order", async () => {
@@ -712,7 +759,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
     }
     expect(checkButton).toBeEnabled();
     await user.click(checkButton);
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 
   it("marks a reorder question wrong when tapped out of order", async () => {
@@ -725,7 +772,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
       await user.click(screen.getByRole("button", { name: word }));
     }
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
   });
 
   it("lets a tapped reorder token be removed and re-picked", async () => {
@@ -741,7 +788,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
       await user.click(screen.getByRole("button", { name: word }));
     }
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
   });
 });
 
