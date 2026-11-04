@@ -10,6 +10,8 @@ enum SceneName: String, CaseIterable {
 /// What the probe row tells its scene: where it is, and when it comes on or goes off screen.
 enum SceneScrollEvent {
     case moved(CGFloat)
+    /// The scroll view's own offset (0 at rest, negative scrolled down), from `SceneScrollOffsetReader`.
+    case scrolled(CGFloat)
     case appeared
     case disappeared
 }
@@ -33,8 +35,7 @@ struct SceneScrollProbe: View {
     @Environment(\.sceneScrollReporter) private var report
 
     var body: some View {
-        // A GeometryReader read on every change: `onGeometryChange` never fired while a List scrolled (seen on
-        // Limrun), so the scene stood still.
+        // A GeometryReader read on every change, the signal earlier builds used.
         GeometryReader { proxy in
             Color.clear
                 .onChange(of: proxy.frame(in: .global).minY, initial: true) { _, minY in
@@ -57,13 +58,16 @@ struct SceneScrollHost: ViewModifier {
 
     @State private var offset: CGFloat?
     @State private var probeVisible = true
+    /// True once the scroll view itself reports (iOS 18+); the probe row is then ignored.
+    @State private var scrollDriven = false
 
     func body(content: Content) -> some View {
         content
+            .modifier(SceneScrollOffsetReader { report(.scrolled($0)) })
             .environment(\.sceneScrollReporter, report)
             .background {
                 ScreenScene(scene: scene, rawOffset: offset, clip: clip, clipAnchor: clipAnchor, pin: pin,
-                            probeVisible: probeVisible)
+                            probeVisible: probeVisible || scrollDriven)
             }
     }
 
@@ -73,9 +77,31 @@ struct SceneScrollHost: ViewModifier {
             probeVisible = true
         case .disappeared:
             probeVisible = false
+        case .scrolled(let y):
+            scrollDriven = true
+            offset = y
         case .moved(let minY):
-            guard probeVisible else { return }
+            guard probeVisible, !scrollDriven else { return }
             offset = minY
+        }
+    }
+}
+
+/// Reads the scroll view's own offset when this modifier sits on one (Learn's List, a ScrollView). On Limrun a
+/// List row's probe never reached the scene in any build, so the bubble never faded; this is the signal that works.
+/// iOS 17 has no such API and keeps the probe.
+struct SceneScrollOffsetReader: ViewModifier {
+    let onScroll: (CGFloat) -> Void
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { geometry in
+                -(geometry.contentOffset.y + geometry.contentInsets.top)
+            } action: { _, y in
+                onScroll(y)
+            }
+        } else {
+            content
         }
     }
 }

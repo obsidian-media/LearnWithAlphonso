@@ -134,6 +134,29 @@ describe("5. the scene follows the scroll, so Learn's greeting bubble fades", ()
     expect(host).toContain("probeVisible: probeVisible");
   });
 
+  it("reads the scroll view's own offset (iOS 18+): a List row's probe never reached the scene on Limrun", () => {
+    // Builds 53/54 and the first two build 55 tries: on Learn's List the scene never moved and the bubble never
+    // faded, whichever way the probe row reported. The scroll view's own geometry is the reliable signal.
+    const reader = between(
+      scene,
+      "struct SceneScrollOffsetReader: ViewModifier",
+      "struct ScreenScene: View",
+    );
+    expect(reader).toContain("if #available(iOS 18.0, *)");
+    expect(reader).toContain(".onScrollGeometryChange(for: CGFloat.self)");
+    expect(reader).toMatch(/-\(geometry\.contentOffset\.y \+ geometry\.contentInsets\.top\)/);
+    const host = between(
+      scene,
+      "struct SceneScrollHost: ViewModifier",
+      "struct SceneScrollOffsetReader",
+    );
+    expect(host).toContain(".modifier(SceneScrollOffsetReader { report(.scrolled($0)) })");
+    // Once the scroll view reports, the probe is ignored and the pin no longer depends on the probe row.
+    expect(host).toMatch(/case \.scrolled\(let y\):\s*scrollDriven = true\s*offset = y/);
+    expect(host).toMatch(/guard probeVisible, !scrollDriven else \{ return \}\s*offset = /);
+    expect(host).toContain("probeVisible: probeVisible || scrollDriven");
+  });
+
   it("the bubble stays hidden while the top row is off screen, whatever position was last reported", () => {
     const pin = from(scene, "private var pinOpacity: Double").slice(0, 200);
     expect(pin).toContain("guard probeVisible else { return 0 }");
@@ -141,6 +164,6 @@ describe("5. the scene follows the scroll, so Learn's greeting bubble fades", ()
 
   it("a position reported while the row is off screen is ignored", () => {
     const host = between(scene, "struct SceneScrollHost: ViewModifier", "extension View");
-    expect(host).toMatch(/guard probeVisible else \{ return \}\s*offset = /);
+    expect(host).toMatch(/guard probeVisible(, !scrollDriven)? else \{ return \}\s*offset = /);
   });
 });
