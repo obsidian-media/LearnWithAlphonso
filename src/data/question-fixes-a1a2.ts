@@ -430,11 +430,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["oval", "rectangle", "hexagon"],
   },
   "a1p15l3/a1p15q12": {
-    why: "options are other size words",
+    why: "stale explanation after the prompt changed",
     prompt: "A road that goes on and on is very ___.",
     context:
       "A road that goes on and on has great length, which is the meaning of long; thick, narrow and heavy describe width and weight.",
     wrong: ["short", "narrow", "thin"],
+    explanation: "A road that goes on and on has great length, so the word is long.",
   },
   "a1p15l5/a1p15q21": {
     why: "a triangle also has a pointed top",
@@ -656,11 +657,14 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
       "Sit down is the phrasal verb for taking a seat; the other particles give other meanings or none.",
   },
   "a1p17l4/a1p17q15": {
-    why: "rise/rose are a different verb; options now forms of raise",
-    wrong: ["raises", "raising", "to raise"],
+    why: "keeps the raise/rise contrast the learner needs",
+    wrong: ["rise", "rose", "raised"],
     context:
       "Raise takes an object like hands; rise has no object and rose and raised are the wrong forms after to.",
-    slot: "inflection",
+    slot: "category",
+    prompt: "The teacher asked us to ___ our hands. (lift them up)",
+    explanation:
+      "raise takes an object (our hands); rise has no object, and rose and raised are past forms.",
   },
   "a1p17l4/a1p17q16": {
     why: "reason refreshed to match the current options",
@@ -1116,11 +1120,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["bus", "taxi", "ferry"],
   },
   "a1p21l1/a1p21q2": {
-    why: "options are other body parts",
+    why: "stale explanation after the prompt changed",
     prompt: "You smell with your ___.",
     context:
       "The nose is the part of the face used for smelling; feet, mouth and cheeks are other body parts with other jobs.",
     wrong: ["eyes", "ears", "hands"],
+    explanation: "You smell with your nose; eyes, ears and hands do other jobs.",
   },
   "a1p22l1/a1p22q0": {
     why: '"reading a new language" is also correct',
@@ -1396,9 +1401,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["in", "at", "to"],
   },
   "a1p4l5/a1p4q23": {
-    why: "several pool members fit without a clue; the bracketed clue picks one",
+    why: "the generated explanation was about in/on/at",
     prompt: "The ball rolled ___ the hill. (from the top to the bottom)",
     wrong: ["up", "along", "across"],
+    explanation:
+      "down means from a higher place to a lower one, like a ball rolling from the top of a hill to the bottom.",
   },
   "a1p6l1/a1p6q1": {
     why: '"How/Why do you live?" are valid questions without the reply',
@@ -2920,9 +2927,11 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["must", "shall", "might"],
   },
   "a2p19l3/a2p19q12": {
-    why: "options and wording fixed after the third review",
-    prompt: "We ___ not enter without a ticket. (we are unable to)",
-    wrong: ["may", "might", "shall"],
+    why: 'the prompt wrote "can not" as two words; now a one-word sentence with Nobody',
+    prompt: "Nobody ___ enter without a ticket, because the doors are locked.",
+    wrong: ["must", "shall", "needn't"],
+    explanation:
+      "can expresses ability: with the doors locked, nobody is able to enter without a ticket.",
   },
   "a2p19l3/a2p19q13": {
     why: "past cue present: the present modals are wrong, and 'ought'/'used' were out of the pool",
@@ -3170,8 +3179,8 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["noisy", "crowded", "busy"],
   },
   "a2p20l4/a2p20q19": {
-    why: "options replaced with same-kind wrong options",
-    prompt: "This jacket is as ___ as the other colour. (it keeps you cosy)",
+    why: '"the other colour" read oddly; now "the other one"',
+    prompt: "This jacket is as ___ as the other one. (it keeps you cosy)",
     wrong: ["light", "heavy", "expensive"],
   },
   "a2p20l5/a2p20q20": {
@@ -3573,8 +3582,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["spoon", "cup", "bag"],
   },
   "a2p5l5/a2p5q22": {
-    why: "the wrong options were filler from outside the slot's pool",
+    why: "the generated explanation was about much/many",
     wrong: ["to", "with", "from"],
+    explanation: "Both of them is the fixed pattern: both takes of before a pronoun such as them.",
   },
   "a2p5l5/a2p5q23": {
     why: "the wrong options were filler from outside the slot's pool",
@@ -3960,9 +3970,9 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     prompt: "She's recovering from a ___. (a high temperature)",
   },
   "a2p9l5/a2p9q20": {
-    why: "options and wording fixed after the third review",
+    why: 'restores "always", the habit anchor',
     wrong: ["hurting", "is hurts", "to hurt"],
-    prompt: "My back ___ after lifting the box.",
+    prompt: "My back always ___ after lifting the box.",
     slot: "inflection",
   },
   "a2p9l5/a2p9q21": {
@@ -3987,6 +3997,19 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "options and wording fixed after the third review",
     wrong: ["syrup", "tablet", "plaster"],
     prompt: "The pharmacist recommended this ___ for allergies. (you squirt it into your nose)",
+  },
+  "b1p17l5/b1p17q20": {
+    why: 'the sentence read "kind of two minds", which is not English; "kind of torn" keeps the answer kind',
+    prompt: "I'm ___ of torn about this.",
+  },
+  "c1p20l4/c1p20q17": {
+    why: "onward, following and light were absurd options",
+    prompt: "It is ___ noting the limitations of this approach.",
+    wrong: ["worthy", "worthless", "value"],
+  },
+  "c1p20l5/c1p20q23": {
+    why: 'the sentence read "Consistent with with"; the blank follows the adjective, so the word before it is dropped',
+    prompt: "Consistent ___ prior research, the findings confirm the theory.",
   },
   "u1l1/q4": {
     why: "Fine/Nice evening are also fine greetings; the clue says which",
@@ -4134,6 +4157,14 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     why: "reason refreshed against the replaced options",
     prompt: "The train ___ from platform 3 every morning.",
   },
+  "u5l2/q5": {
+    why: "the wrong options were absurd; now learner errors in the same phrase",
+    wrong: [
+      "My bag are lost — who can help?",
+      "I have lose my bag — who can help?",
+      "Bag lost I — who can help?",
+    ],
+  },
   "u6l2/q2": { why: "options are other forms of be", wrong: ["are", "is", "be"] },
   "u6l2/q4": { why: "options are other modals", wrong: ["will", "shall", "must"] },
   "u6l2/q6": { why: "options are other negatives", wrong: ["won't", "mustn't", "needn't"] },
@@ -4155,17 +4186,5 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
   "u9l2/q4": {
     why: "options from the particle group; the preposition over has no near rival there",
     wrong: ["onto", "past", "from"],
-  },
-  "c1p20l4/c1p20q17": {
-    why: 'the sentence read "worth to note"; worth takes an -ing form',
-    prompt: "It is ___ noting the limitations of this approach.",
-  },
-  "c1p20l5/c1p20q23": {
-    why: 'the sentence read "Consistent with with"; the blank follows the adjective, so the word before it is dropped',
-    prompt: "Consistent ___ prior research, the findings confirm the theory.",
-  },
-  "b1p17l5/b1p17q20": {
-    why: 'the sentence read "kind of two minds", which is not English; "kind of torn" keeps the answer kind',
-    prompt: "I'm ___ of torn about this.",
   },
 };

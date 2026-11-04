@@ -88,6 +88,9 @@ export const PACK_EXTRA_VOCAB: Record<string, string[]> = {
     "write",
   ],
   a1p17: [
+    "rise",
+    "rose",
+    "raised",
     "bell",
     "bells",
     "board",
