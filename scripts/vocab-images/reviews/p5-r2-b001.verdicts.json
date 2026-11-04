@@ -1,0 +1,134 @@
+{
+  "batch": "p5-r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p5-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "audience": {
+      "verdict": "approve",
+      "alt": "A woman applauds with raised hands facing a lit stage in a dark theatre.",
+      "peopleVisible": true
+    },
+    "catch": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cyclone": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "drinks": {
+      "verdict": "reject",
+      "reasons": [
+        "alcohol-tobacco-drugs-gambling"
+      ]
+    },
+    "hailstorm": {
+      "verdict": "approve",
+      "alt": "Small white hailstones lie scattered on wet grey pavement.",
+      "peopleVisible": false
+    },
+    "head": {
+      "verdict": "approve",
+      "alt": "A bearded man's head seen in side profile against a black background.",
+      "peopleVisible": true
+    },
+    "hexagon": {
+      "verdict": "approve",
+      "alt": "A close-up of golden honeycomb showing rows of hexagonal cells.",
+      "peopleVisible": false
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "injured": {
+      "verdict": "approve",
+      "alt": "A woman sits on a sofa with a cast on her leg and a crutch beside her.",
+      "peopleVisible": true
+    },
+    "interview": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "lungs": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "opens": {
+      "verdict": "approve",
+      "alt": "Two hands open the golden handles of blue glass-paned doors.",
+      "peopleVisible": true
+    },
+    "oval": {
+      "verdict": "approve",
+      "alt": "Two oval mirrors hang above a double sink in a bathroom.",
+      "peopleVisible": false
+    },
+    "pinch": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "reception": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands behind a wooden reception desk in an old-fashioned hotel lobby.",
+      "peopleVisible": true
+    },
+    "rectangle": {
+      "verdict": "approve",
+      "alt": "A pale grey rectangle stands out against a bright blue background.",
+      "peopleVisible": false
+    },
+    "simmer": {
+      "verdict": "approve",
+      "alt": "A floral enamel pot with soup simmers over a blue gas flame on a stove.",
+      "peopleVisible": false
+    },
+    "skin": {
+      "verdict": "approve",
+      "alt": "A close-up in black and white of wrinkled skin on fingers.",
+      "peopleVisible": true
+    },
+    "speak": {
+      "verdict": "approve",
+      "alt": "A man in a suit speaks at a podium in front of a seated group in a meeting room.",
+      "peopleVisible": true
+    },
+    "throw": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "washes": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

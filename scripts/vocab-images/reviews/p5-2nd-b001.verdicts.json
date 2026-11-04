@@ -1,0 +1,142 @@
+{
+  "batch": "p5-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p5-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "arguing": {
+      "verdict": "approve",
+      "alt": "A woman gestures emphatically as she argues with a man standing in front of her on a street.",
+      "peopleVisible": true
+    },
+    "audience": {
+      "verdict": "approve",
+      "alt": "A woman applauds with raised hands facing a lit stage in a dark theatre.",
+      "peopleVisible": true
+    },
+    "cardio": {
+      "verdict": "approve",
+      "alt": "A man stands on a treadmill in a gym during a cardio workout.",
+      "peopleVisible": true
+    },
+    "contactless": {
+      "verdict": "approve",
+      "alt": "A hand holds a bank card to a card reader to pay without touching it, against a blue and orange background.",
+      "peopleVisible": true
+    },
+    "delivery": {
+      "verdict": "approve",
+      "alt": "A courier hands over a small parcel while a person signs a paper receipt.",
+      "peopleVisible": true
+    },
+    "draw": {
+      "verdict": "approve",
+      "alt": "Hands draw with a pencil on a sheet of paper surrounded by pencils and a paint palette.",
+      "peopleVisible": true
+    },
+    "fill in": {
+      "verdict": "approve",
+      "alt": "A person fills in a paper form with a blue pen on a desk.",
+      "peopleVisible": true
+    },
+    "fix": {
+      "verdict": "approve",
+      "alt": "A man in a hooded sweatshirt repairs a red bicycle held upside down in a room with bookshelves.",
+      "peopleVisible": true
+    },
+    "hailstorm": {
+      "verdict": "approve",
+      "alt": "Small white hailstones lie scattered on wet grey pavement.",
+      "peopleVisible": false
+    },
+    "head": {
+      "verdict": "approve",
+      "alt": "A bearded man's head seen in side profile against a black background.",
+      "peopleVisible": true
+    },
+    "heart": {
+      "verdict": "approve",
+      "alt": "A hand holds a red anatomical model of a human heart against a pale background.",
+      "peopleVisible": true
+    },
+    "injured": {
+      "verdict": "approve",
+      "alt": "A woman sits on a sofa with a cast on her leg and a crutch beside her.",
+      "peopleVisible": true
+    },
+    "melt": {
+      "verdict": "approve",
+      "alt": "A strawberry ice cream cone lies on a stone surface with its pink ice cream melting out.",
+      "peopleVisible": false
+    },
+    "nervousness": {
+      "verdict": "approve",
+      "alt": "A woman looks anxious with her hand pressed to her mouth and wide eyes.",
+      "peopleVisible": true
+    },
+    "opens": {
+      "verdict": "approve",
+      "alt": "Two hands open the golden handles of blue glass-paned doors.",
+      "peopleVisible": true
+    },
+    "pay": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "plants": {
+      "verdict": "approve",
+      "alt": "Succulent plants grow in rows of small red and pink pots.",
+      "peopleVisible": false
+    },
+    "pulse": {
+      "verdict": "approve",
+      "alt": "A health worker in gloves holds a patient's wrist to feel the pulse.",
+      "peopleVisible": true
+    },
+    "reception": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands behind a wooden reception desk in an old-fashioned hotel lobby.",
+      "peopleVisible": true
+    },
+    "skin": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "speak": {
+      "verdict": "approve",
+      "alt": "A man in a suit speaks at a podium in front of a seated group in a meeting room.",
+      "peopleVisible": true
+    },
+    "square": {
+      "verdict": "approve",
+      "alt": "A single red square sits in the middle of a plain black background.",
+      "peopleVisible": false
+    },
+    "travels": {
+      "verdict": "approve",
+      "alt": "A traveller pulls a suitcase through a sunlit airport terminal with other passengers behind.",
+      "peopleVisible": true
+    },
+    "vote": {
+      "verdict": "approve",
+      "alt": "A hand drops a paper ballot into a clear ballot box.",
+      "peopleVisible": true
+    },
+    "wait": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text",
+        "off-term"
+      ]
+    },
+    "wake": {
+      "verdict": "approve",
+      "alt": "A woman stretches her arms above her head as she wakes up in a bed with white sheets.",
+      "peopleVisible": true
+    }
+  }
+}
