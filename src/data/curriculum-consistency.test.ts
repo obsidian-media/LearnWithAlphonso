@@ -77,7 +77,12 @@ function answerTextOf(question: Question): string {
  * wrong is silence about a genuine repeat. A prompt only belongs here when the
  * questions sharing it are demonstrably different questions.
  */
-const INSTRUCTIONAL_PROMPTS = new Set(["choose the correct question."]);
+const INSTRUCTIONAL_PROMPTS = new Set([
+  "choose the correct question.",
+  // The material is in the shuffled words (question-variety.ts); the instruction is the same each time.
+  "put the words in order to make a sentence.",
+  "which sentence did you hear?",
+]);
 
 /**
  * Cross-pack duplicate prompt groups per course, as measured on 2026-09-25.
