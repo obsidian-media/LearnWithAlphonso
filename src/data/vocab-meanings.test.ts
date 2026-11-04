@@ -12,10 +12,11 @@ import type { Level } from "./levels";
  * then holds it there. Never remove a level, and never loosen a rule to let a card
  * through: fix the card.
  */
-const GATED_LEVELS: Level[] = ["A1", "A2"];
+const GATED_LEVELS: Level[] = ["A1", "A2", "B1"];
 
 const MAX_MEANING_WORDS = 8;
-const MAX_EXAMPLE_WORDS = 10;
+/** A1 to B1 examples stay short; B2 and C1 sentences need a few more words to sound natural. */
+const maxExampleWords = (level: Level) => (level === "B2" || level === "C1" ? 12 : 10);
 
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
 const tokens = (s: string) => s.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g) ?? [];
@@ -76,7 +77,10 @@ function repeatsTerm(meaning: string, term: string): boolean {
 const LABEL = /\b(?:talks? about|is an? (?:indirect|polite|formal|informal)|refers? to)\b/i;
 
 /** Everything wrong with one card, as short reasons ("" list = clean). */
-function cardProblems(card: { term: string; meaning: string; example: string }): string[] {
+function cardProblems(
+  card: { term: string; meaning: string; example: string },
+  level: Level = "A1",
+): string[] {
   const out: string[] = [];
   const { term, meaning, example } = card;
   if (!meaning.trim()) out.push("empty meaning");
@@ -87,7 +91,8 @@ function cardProblems(card: { term: string; meaning: string; example: string }):
   }
   if (!example.trim()) out.push("empty example");
   else {
-    if (words(example).length > MAX_EXAMPLE_WORDS) out.push("example over 10 words");
+    if (words(example).length > maxExampleWords(level))
+      out.push(`example over ${maxExampleWords(level)} words`);
     if (!mentionsTerm(example, term)) out.push("example lacks the word");
     if (LABEL.test(example)) out.push("example is a label, not a sentence");
   }
@@ -125,6 +130,13 @@ describe("cardProblems (the gate's own rules)", () => {
     expect(
       cardProblems({ ...ok, example: "I run and run and run and run and run and run." }),
     ).toContain("example over 10 words"));
+  it("allows 12 words in a B2 or C1 example but only 10 below", () => {
+    const twelve = "I run every single morning before work and then I rest here.";
+    expect(words(twelve).length).toBe(12);
+    expect(cardProblems({ ...ok, example: twelve }, "B1")).toContain("example over 10 words");
+    expect(cardProblems({ ...ok, example: twelve }, "B2")).toEqual([]);
+    expect(cardProblems({ ...ok, example: twelve }, "C1")).toEqual([]);
+  });
   it("flags an example without the word, but accepts an inflected form", () => {
     expect(cardProblems({ ...ok, example: "I walk every morning." })).toContain(
       "example lacks the word",
@@ -191,7 +203,7 @@ describe("English word cards have an authored meaning and example", () => {
       const all = cards(level);
       expect(all.length).toBeGreaterThan(0);
       const bad = all
-        .map((c) => ({ c, p: cardProblems(c) }))
+        .map((c) => ({ c, p: cardProblems(c, level) }))
         .filter((x) => x.p.length > 0)
         .map((x) => `${x.c.lesson} "${x.c.term}": ${x.p.join(", ")}`);
       expect(bad).toEqual([]);

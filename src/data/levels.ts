@@ -321,6 +321,8 @@ export const advancedUnits: Unit[] = [
             choices: ["You're wrong.", "I see your point, but…", "No.", "That's nonsense."],
             answer: 1,
             explanation: "Acknowledge first, then disagree.",
+            meaning: "a polite way to start disagreeing",
+            example: "I see your point, but I disagree.",
           },
           {
             id: "q2",
@@ -329,6 +331,9 @@ export const advancedUnits: Unit[] = [
             bank: ["as", "that", "so", "than"],
             answer: "as",
             explanation: 'Fixed phrase: "as far as I\'m concerned".',
+            term: "as",
+            meaning: "used before far to limit what you say",
+            example: "As far as I know, it works.",
           },
           {
             id: "q3",
@@ -337,6 +342,9 @@ export const advancedUnits: Unit[] = [
             choices: ["A joke", "A reasoned opinion", "A question", "An apology"],
             answer: 1,
             explanation: "It introduces a considered claim.",
+            term: "I'd argue that…",
+            meaning: "introduces a considered opinion",
+            example: "I'd argue that this plan is better.",
           },
           {
             id: "q4",
@@ -345,6 +353,8 @@ export const advancedUnits: Unit[] = [
             bank: ["entirely", "entire", "entirety", "enter"],
             answer: "entirely",
             explanation: 'Adverb "entirely" modifies "convinced".',
+            meaning: "completely",
+            example: "I'm not entirely convinced by that.",
           },
           {
             id: "q5",
@@ -358,6 +368,9 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 1,
             explanation: '"Tends to" softens a generalisation.',
+            term: "tends to",
+            meaning: "is often the case; usually",
+            example: "It tends to rain here in May.",
           },
           {
             id: "q6",
@@ -366,6 +379,8 @@ export const advancedUnits: Unit[] = [
             bank: ["point", "thing", "speech", "word"],
             answer: "point",
             explanation: '"A fair point" concedes partial agreement.',
+            meaning: "an idea you give in a discussion",
+            example: "That is a fair point.",
           },
         ],
       },
@@ -381,6 +396,8 @@ export const advancedUnits: Unit[] = [
             choices: ["stayed", "will stay", "would stayed", "stay would"],
             answer: 1,
             explanation: "First conditional: if + present, will + base.",
+            meaning: "is going to remain there",
+            example: "We will stay inside if it rains.",
           },
           {
             id: "q2",
@@ -389,6 +406,8 @@ export const advancedUnits: Unit[] = [
             bank: ["were", "are", "will be", "been"],
             answer: "were",
             explanation: 'Second conditional uses "were" for hypotheticals.',
+            meaning: "a form of be for imaginary situations",
+            example: "If I were rich, I'd travel.",
           },
           {
             id: "q3",
@@ -402,6 +421,8 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 1,
             explanation: "Second conditional describes imaginary situations.",
+            meaning: "an imaginary situation that is not real",
+            example: "If I had wings, I'd fly to Rome.",
           },
           {
             id: "q4",
@@ -410,6 +431,8 @@ export const advancedUnits: Unit[] = [
             bank: ["would", "will", "am", "did"],
             answer: "would",
             explanation: '"Would" + base in the result clause.',
+            meaning: "shows an unreal result",
+            example: "I would help if I could.",
           },
           {
             id: "q5",
@@ -418,6 +441,9 @@ export const advancedUnits: Unit[] = [
             choices: ["if", "if not", "because", "although"],
             answer: 1,
             explanation: '"Unless you hurry" = "if you don\'t hurry".',
+            term: "unless",
+            meaning: "if not",
+            example: "Unless you hurry, you will miss it.",
           },
           {
             id: "q6",
@@ -426,6 +452,8 @@ export const advancedUnits: Unit[] = [
             bank: ["wouldn't", "won't", "don't", "didn't"],
             answer: "wouldn't",
             explanation: "Third conditional: would(n't) have + past participle.",
+            meaning: "the short form of would not",
+            example: "We wouldn't have missed it.",
           },
         ],
       },
@@ -450,6 +478,8 @@ export const advancedUnits: Unit[] = [
             choices: ["Hey!", "Dear Ms Patel,", "Yo team", "Hi hi"],
             answer: 1,
             explanation: '"Dear + title + surname" is formal.',
+            meaning: "a formal way to start an email",
+            example: "Dear Ms Patel, I am writing about the job.",
           },
           {
             id: "q2",
@@ -458,6 +488,8 @@ export const advancedUnits: Unit[] = [
             bank: ["attached", "attaching", "attach", "attachment"],
             answer: "attached",
             explanation: 'Fixed phrase: "please find attached".',
+            meaning: "joined to an email as a file",
+            example: "Please find the report attached.",
           },
           {
             id: "q3",
@@ -471,6 +503,9 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 1,
             explanation: '"Following up" is neutral and professional.',
+            term: "following up",
+            meaning: "asking again about an earlier message",
+            example: "I am following up on my last email.",
           },
           {
             id: "q4",
@@ -479,6 +514,8 @@ export const advancedUnits: Unit[] = [
             bank: ["hearing", "hear", "heard", "be hearing"],
             answer: "hearing",
             explanation: '"Look forward to" + -ing.',
+            meaning: "getting news or a reply",
+            example: "I look forward to hearing from you.",
           },
           {
             id: "q5",
@@ -487,6 +524,8 @@ export const advancedUnits: Unit[] = [
             choices: ["Cheers mate", "Kind regards,", "Later", "Bye bye"],
             answer: 1,
             explanation: '"Kind regards" suits professional email.',
+            meaning: "a polite way to end a letter",
+            example: "Thank you again. Kind regards, Anna.",
           },
           {
             id: "q6",
@@ -495,6 +534,8 @@ export const advancedUnits: Unit[] = [
             bank: ["for", "of", "to", "on"],
             answer: "for",
             explanation: '"Apologies for" + noun.',
+            meaning: "used before the reason you apologise",
+            example: "Apologies for the delay.",
           },
         ],
       },
@@ -510,6 +551,9 @@ export const advancedUnits: Unit[] = [
             choices: ["Stop talking.", "Sorry, may I jump in here?", "My turn.", "Listen to me."],
             answer: 1,
             explanation: '"May I jump in?" is polite and common.',
+            term: "jump in",
+            meaning: "to join a talk by interrupting",
+            example: "May I jump in here for a moment?",
           },
           {
             id: "q2",
@@ -518,6 +562,8 @@ export const advancedUnits: Unit[] = [
             bank: ["elaborate", "elaboration", "elaborated", "elaborating"],
             answer: "elaborate",
             explanation: "Modal + base verb.",
+            meaning: "to give more details",
+            example: "Could you elaborate on that point?",
           },
           {
             id: "q3",
@@ -526,6 +572,9 @@ export const advancedUnits: Unit[] = [
             choices: ["Discuss it later", "Cancel it", "Vote now", "Write it down"],
             answer: 0,
             explanation: "Business idiom for postponing a topic.",
+            term: "Let's park that",
+            meaning: "put a topic aside until later",
+            example: "Let's park that until Friday.",
           },
           {
             id: "q4",
@@ -534,6 +583,8 @@ export const advancedUnits: Unit[] = [
             bank: ["sum", "add", "put", "end"],
             answer: "sum",
             explanation: '"To sum up" introduces a summary.',
+            meaning: "to give the main points at the end",
+            example: "To sum up, we agreed on three actions.",
           },
           {
             id: "q5",
@@ -547,6 +598,8 @@ export const advancedUnits: Unit[] = [
             ],
             answer: 0,
             explanation: "Restating shows active listening.",
+            meaning: "a polite way to check you understood",
+            example: "So, if I've understood correctly, we start Monday.",
           },
           {
             id: "q6",
@@ -555,6 +608,8 @@ export const advancedUnits: Unit[] = [
             bank: ["lead", "leader", "leading", "led"],
             answer: "lead",
             explanation: '"Take the lead" = own the task.',
+            meaning: "the position of being in charge",
+            example: "Who will take the lead on this?",
           },
         ],
       },
