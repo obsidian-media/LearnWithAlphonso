@@ -933,7 +933,7 @@ ___ you enjoy the concert?|Did|starts a question about the past
 We ___ living in Rome then.|were|the past of "are", used with we
 The film ___ at eight.|started|began
 I ___ tired, so I left.|was|the past of "am", used with I
-She ___ used to smoke.|didn't|short for did not|She didn't call me last year.
+She ___ use to smoke.|didn't|short for did not|She didn't call me last year.
 It ___ raining all morning.|was|the past of "is", used with it
 They ___ married in 2015.|got|the past of "get"; became
 He ___ never late before.|was
@@ -993,7 +993,7 @@ useful|more useful|helping more|A map is more useful than a watch here.`,
 I'd like to ___ a room.|book|to reserve a room or seat
 Could I have the ___ , please?|bill|the paper that shows what you owe
 How much ___ this cost?|does|helps make a question with "it"
-Do you ___ by card?|take|to accept; used for payments|Do you take credit cards?
+Do you ___ cards?|take|to accept; used for payments|Do you take credit cards?
 Where do I ___ my luggage?|check in|to register when you arrive
 The train ___ from platform 4.|departs|leaves, as a train or plane does
 I'd like a ___ ticket, please.|return|a ticket for going and coming back
@@ -1303,7 +1303,7 @@ The pharmacy is ___ the corner from here.|round|British way to say "around"
 It's about a five-minute ___ from here.|walk|a short trip on foot
 The bus stop is ___ the church.|outside|not inside a building
 Go ___ this road until you reach the roundabout.|down|along or to a lower place
-The café is ___ the corner of Main Street.|on|at the point where two streets meet|Turn left, the bank is on the corner.
+The café is ___ the corner of Main Street.|on|touching a place, as in "on the corner"|Turn left, the bank is on the corner.
 The nearest ATM is ___ the entrance.|inside|in the inner part of
 You can't miss it, it's ___ the town square.|in|inside a place or area`,
   },
@@ -1424,7 +1424,7 @@ The plane flew ___ the clouds.|above|higher than
 The cat hid ___ the sofa cushions.|beneath|under or below
 The children are playing ___ the swings.|by|close to the side of
 The bridge goes ___ the river.|over|above and across
-The bank is ___ from the café.|opposite|across from
+The bank is ___ the café.|opposite|across from
 He walked ___ the room and sat down.|into|moving to the inside of
 The lamp is ___ the desk.|beside|at the side of
 She placed the vase ___ the window.|near|not far from

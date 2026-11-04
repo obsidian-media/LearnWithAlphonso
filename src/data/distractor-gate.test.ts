@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
+import { rawCurriculum } from "./curriculum";
 import { QUESTION_FIXES } from "./question-fixes";
 import { REVIEWED_PHRASES } from "./reviewed-phrases";
 import {
   BLANKET_CONTEXT,
+  buildPackVocab,
   checkDistractors,
   hasClue,
   inferSlot,
@@ -161,6 +163,102 @@ describe("the gate fails on the second review's mutations", () => {
   });
 });
 
+describe("the gate fails on the third review's mutations", () => {
+  const cat = (
+    id: string,
+    pa: string[],
+    prompt: string,
+    answer: string,
+    wrong: string[],
+    extra = {},
+  ) => shape(prompt, answer, wrong, { id, packAnswers: new Set(pa), ...extra });
+  const bad: [string, ReturnType<typeof shape>][] = [
+    [
+      "a fix's own allow list does not excuse its options",
+      shape(
+        "The dog is ___ the door. (on the other side of it)",
+        "behind",
+        ["into", "down", "during"],
+        {
+          allow: ["into", "down", "during"],
+        },
+      ),
+    ],
+    [
+      "absurd replacement options (petrol / tickets rain bread) fail the pool check",
+      cat(
+        "a1p20q22",
+        ["petrol", "tram", "taxi"],
+        "The car needs more ___ before the trip. (fuel for most cars)",
+        "petrol",
+        ["tickets", "rain", "bread"],
+        {
+          wrongReplaced: true,
+          allow: ["tickets", "rain", "bread"],
+        },
+      ),
+    ],
+    ...(
+      [
+        "meat, cheese and coffee isn't what goes with pepper on a table",
+        "none of meat, cheese or coffee would make sense next to pepper here",
+        "people never pass meat, cheese or coffee with the pepper pot",
+      ] as string[]
+    ).map((context): [string, ReturnType<typeof shape>] => [
+      "negative reason: " + context,
+      cat(
+        "a1p8q4",
+        ["salt", "meat", "cheese", "coffee"],
+        "Pass the ___ and pepper.",
+        "salt",
+        ["meat", "cheese", "coffee"],
+        { context },
+      ),
+    ]),
+    [
+      "every day does not rule out played",
+      shape("The children ___ in the garden every day.", "play", ["played", "plays", "playing"], {
+        slot: "inflection",
+      }),
+    ],
+    [
+      "a quoted word is not a time anchor",
+      shape('He ___ "hello" to me.', "said", ["say", "says", "saying"], { slot: "inflection" }),
+    ],
+    [
+      "is ___ at the end of a sentence still allows opened",
+      shape("The shop is ___ .", "open", ["opened", "opening", "opens"], { slot: "inflection" }),
+    ],
+    [
+      "a clue over unreplaced options, no fix entry",
+      cat(
+        "a1p8q10",
+        ["orange", "still", "rare", "black"],
+        "She drinks ___ juice. (squeezed from a citrus fruit)",
+        "orange",
+        ["still", "rare", "black"],
+        { wrongReplaced: undefined },
+      ),
+    ],
+  ];
+  for (const [name, q] of bad)
+    it(name, () => {
+      expect(checkDistractors(q).length).toBeGreaterThan(0);
+    });
+  it("accepts an anchor that rules the rival tense out", () => {
+    expect(
+      checkDistractors(
+        shape(
+          "Last night the children ___ in the garden.",
+          "played",
+          ["play", "plays", "playing"],
+          { slot: "inflection" },
+        ),
+      ).some((i) => i.kind === "tense-unanchored"),
+    ).toBe(false);
+  });
+});
+
 describe("the gate fails on the review's mutations", () => {
   it("rejects a meaningless clue: '(look at it)' does not disambiguate place words", () => {
     const issues = checkDistractors(
@@ -245,7 +343,6 @@ describe("the A1/A2 English bank", () => {
             hasImage: q.type === "mc" && !!q.imageKey,
             context: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.context,
             slot: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.slot,
-            allow: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.allow,
             reviewed: REVIEWED_PHRASES.has(`${lesson.id}/${q.id}`),
             wrongReplaced: QUESTION_FIXES[`${lesson.id}/${q.id}`]
               ? !!QUESTION_FIXES[`${lesson.id}/${q.id}`]!.wrong
@@ -254,6 +351,20 @@ describe("the A1/A2 English bank", () => {
         });
       }
   }
+  // The words a pack itself uses: its answers plus the options of its questions before any fix.
+  const rawVocab = new Map<string, Set<string>>();
+  for (const unit of rawCurriculum)
+    for (const lesson of unit.lessons)
+      for (const q of lesson.questions) {
+        const pack = /^(a[12]pd+)qd+$/.exec(q.id)?.[1];
+        if (!pack || (q.type !== "mc" && q.type !== "fill")) continue;
+        const set = rawVocab.get(pack) ?? new Set<string>();
+        for (const o of q.type === "mc" ? q.choices : q.bank) set.add(o);
+        rawVocab.set(pack, set);
+      }
+  for (const [p, set] of packAnswers)
+    for (const w of set) (rawVocab.get(p) ?? rawVocab.set(p, new Set()).get(p)!).add(w);
+  const packVocab = buildPackVocab(rawVocab);
   const contextUses = new Map<string, number>();
   for (const it of items)
     if (it.shape.context)
@@ -261,7 +372,10 @@ describe("the A1/A2 English bank", () => {
   for (const it of items) {
     if (it.shape.context) it.shape.contextUses = contextUses.get(it.shape.context);
     const pack = /^(a[12]p\d+)q\d+$/.exec(it.shape.id)?.[1];
-    if (pack) it.shape.packAnswers = packAnswers.get(pack);
+    if (pack) {
+      it.shape.packAnswers = packAnswers.get(pack);
+      it.shape.packVocab = packVocab.get(pack);
+    }
   }
 
   const all = items.map((it) => ({ it, issues: checkDistractors(it.shape) }));
@@ -300,7 +414,7 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 140, clue: 548 };
+  const PINNED_SPLIT = { picture: 45, context: 141, clue: 548 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
   const POS_MISMATCH_BUDGET = 0;
   const WEAK_CONTEXT_BUDGET = 0;
