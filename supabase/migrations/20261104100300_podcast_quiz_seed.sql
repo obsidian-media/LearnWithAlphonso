@@ -5,7 +5,7 @@
 
 -- en/a1/ordering-coffee-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'What does "I''d like" tell the person you are talking to?', '["That you are in a hurry","That you are asking politely","That you do not want anything"]'::jsonb, 1, 1
+SELECT e.id, 'q1', 'What does "I''d like" tell the person you are talking to?', '["That you are ordering for someone else","That you are asking politely","That you are not sure what you want"]'::jsonb, 1, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'a1' AND e.slug = 'ordering-coffee-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -61,13 +61,13 @@ WHERE e.course = 'en' AND f.slug = 'b1' AND e.slug = 'why-phones-are-addictive-v
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'Why are short videos so hard to stop watching?', '["They are very long","They cost money","There is almost no stopping point"]'::jsonb, 2, 3
+SELECT e.id, 'q3', 'Why are short videos so hard to stop watching?', '["They are always about interesting topics","They need a decision before each one","There is almost no stopping point"]'::jsonb, 2, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'b1' AND e.slug = 'why-phones-are-addictive-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'Does using your phone a lot automatically mean you have a medical addiction?', '["Yes, always","No, it can simply be a strong habit","Only for teenagers"]'::jsonb, 1, 4
+SELECT e.id, 'q4', 'Does using your phone a lot automatically mean you have a medical addiction?', '["Yes, always","No, it can simply be a strong habit","Only if you use it at night"]'::jsonb, 1, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'b1' AND e.slug = 'why-phones-are-addictive-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -85,7 +85,7 @@ WHERE e.course = 'en' AND f.slug = 'b1' AND e.slug = 'why-phones-are-addictive-v
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'What does the host say your phone is?', '["A tool","An enemy","A toy"]'::jsonb, 0, 7
+SELECT e.id, 'q7', 'What does the host say your phone is?', '["A tool","A distraction","A habit"]'::jsonb, 0, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'b1' AND e.slug = 'why-phones-are-addictive-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -93,7 +93,7 @@ ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = E
 
 -- en/c1/does-money-buy-happiness-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'Once your basic needs are covered, what happens to the happiness each extra dollar buys?', '["It buys more and more","It stays exactly the same","It buys less and less"]'::jsonb, 2, 1
+SELECT e.id, 'q1', 'Once your basic needs are covered, what happens to the happiness each extra dollar buys?', '["It buys more and more","It buys the same amount","It buys less and less"]'::jsonb, 2, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -105,13 +105,13 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'Why does a colleague''s bonus make your own raise feel smaller?', '["Your salary was reduced","Your reference point changed, not your situation","Your raise is taxed more"]'::jsonb, 1, 3
+SELECT e.id, 'q3', 'Why does a colleague''s bonus make your own raise feel smaller?', '["You spent your raise on something else","Your reference point changed, not your situation","Your colleague is simply better at their job"]'::jsonb, 1, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'Which kind of spending tends to create more lasting satisfaction?', '["Spending on things","Spending on experiences","Saving everything"]'::jsonb, 1, 4
+SELECT e.id, 'q4', 'Which kind of spending tends to create more lasting satisfaction?', '["Spending on things","Spending on experiences","Spending it as soon as it arrives"]'::jsonb, 1, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -129,7 +129,7 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'In the vocabulary section, what is the hedonic treadmill?', '["A machine that makes you exercise","Quickly returning to a stable level of happiness despite big changes","A way to save money every month"]'::jsonb, 1, 7
+SELECT e.id, 'q7', 'In the vocabulary section, what is the hedonic treadmill?', '["A habit of spending more as you earn more","Quickly returning to a stable level of happiness despite big changes","The point where extra income stops mattering"]'::jsonb, 1, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'does-money-buy-happiness-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -149,13 +149,13 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'Why is the fight for your attention not a fair one?', '["Phones are too heavy","Apps are free","Every app competes for your attention, and teams work to keep you looking"]'::jsonb, 2, 3
+SELECT e.id, 'q3', 'Why is the fight for your attention not a fair one?', '["Phones are cheaper than they used to be","Apps are only used for work","Every app competes for your attention, and teams work to keep you looking"]'::jsonb, 2, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'What does the host compare attention to?', '["A muscle","A river","A battery"]'::jsonb, 0, 4
+SELECT e.id, 'q4', 'What does the host compare attention to?', '["A muscle","A map","A lamp"]'::jsonb, 0, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -167,13 +167,13 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q6', 'Which work block does the host say beats three scattered hours?', '["Five scattered minutes","Two exhausting hours","Twenty-five uninterrupted minutes"]'::jsonb, 2, 6
+SELECT e.id, 'q6', 'Which work block does the host say beats three scattered hours?', '["Ten minutes between messages","Three hours with the phone beside you","Twenty-five uninterrupted minutes"]'::jsonb, 2, 6
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'Why does the host say your phone keeps interrupting you?', '["It is the business model, not an accident","It is broken","You downloaded too few apps"]'::jsonb, 0, 7
+SELECT e.id, 'q7', 'Why does the host say your phone keeps interrupting you?', '["It is the business model, not an accident","It is designed to help you focus","You switched off the sound too late"]'::jsonb, 0, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-cant-we-focus-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -187,7 +187,7 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q2', 'Which second explanation does the host say may be even more relevant?', '["The clock speeding up","Getting less sleep","Memory"]'::jsonb, 2, 2
+SELECT e.id, 'q2', 'Which second explanation does the host say may be even more relevant?', '["Days becoming shorter","Having more things to do","Memory"]'::jsonb, 2, 2
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -199,19 +199,19 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'What benefit of routine does the host mention?', '["It makes time slower","It saves mental energy","It improves your memory"]'::jsonb, 1, 4
+SELECT e.id, 'q4', 'What benefit of routine does the host mention?', '["It makes weekends feel longer","It saves mental energy","It makes decisions easier"]'::jsonb, 1, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q5', 'What is the trade-off when your days become very similar?', '["You get more tired","You spend more money","Fewer moments stand out in memory"]'::jsonb, 2, 5
+SELECT e.id, 'q5', 'What is the trade-off when your days become very similar?', '["You make worse decisions","You have less free time","Fewer moments stand out in memory"]'::jsonb, 2, 5
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q6', 'What does the host suggest we do now and then?', '["Make our lives unfamiliar","Quit our jobs","Stop looking at calendars"]'::jsonb, 0, 6
+SELECT e.id, 'q6', 'What does the host suggest we do now and then?', '["Make our lives unfamiliar","Move to another country","Plan every minute of the week"]'::jsonb, 0, 6
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-time-feels-faster-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -225,13 +225,13 @@ ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = E
 
 -- en/c1/why-changing-minds-is-hard-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'Why can admitting you are wrong feel personal?', '["Beliefs are connected to our identity","Other people always laugh","We forget what we believed"]'::jsonb, 0, 1
+SELECT e.id, 'q1', 'Why can admitting you are wrong feel personal?', '["Beliefs are connected to our identity","Other people judge us harshly","We prefer to follow the majority"]'::jsonb, 0, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-changing-minds-is-hard-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q2', 'What is confirmation bias?', '["Asking friends to confirm a fact","Noticing and remembering information that supports what we already believe","Checking a fact twice"]'::jsonb, 1, 2
+SELECT e.id, 'q2', 'What is confirmation bias?', '["Preferring facts that come from friends","Noticing and remembering information that supports what we already believe","Doubting every piece of information"]'::jsonb, 1, 2
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-changing-minds-is-hard-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -269,7 +269,7 @@ ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = E
 
 -- en/c1/why-we-procrastinate-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'According to researchers, procrastination is mainly about managing what?', '["Time","A feeling","A calendar"]'::jsonb, 1, 1
+SELECT e.id, 'q1', 'According to researchers, procrastination is mainly about managing what?', '["Time","A feeling","A habit"]'::jsonb, 1, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -281,13 +281,13 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'Why does avoidance feel so effective?', '["It works in the short term, because the anxiety drops","It solves the task","It makes the deadline later"]'::jsonb, 0, 3
+SELECT e.id, 'q3', 'Why does avoidance feel so effective?', '["It works in the short term, because the anxiety drops","It gives you more time to prepare","It makes the task easier later"]'::jsonb, 0, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'What do guilt and shame tend to do?', '["Make you more disciplined","Make the emotional discomfort bigger","Make the task easier"]'::jsonb, 1, 4
+SELECT e.id, 'q4', 'What do guilt and shame tend to do?', '["Make you more disciplined","Make the emotional discomfort bigger","Make you more honest with yourself"]'::jsonb, 1, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -305,7 +305,7 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'How do we treat our future self, according to some researchers?', '["Like a friend","Like a stranger","Like a boss"]'::jsonb, 1, 7
+SELECT e.id, 'q7', 'How do we treat our future self, according to some researchers?', '["Like a coach","Like a stranger","Like a rival"]'::jsonb, 1, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-we-procrastinate-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -313,31 +313,31 @@ ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = E
 
 -- en/c1/why-everyone-looks-better-online-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'What is social comparison?', '["Posting photos for friends","Meeting new people","Using other people as the ruler for how well we are doing"]'::jsonb, 2, 1
+SELECT e.id, 'q1', 'What is social comparison?', '["Looking at photos of friends","Following celebrities","Using other people as the ruler for how well we are doing"]'::jsonb, 2, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q2', 'What do sociologists call it when groups that used to stay separate are blended in one feed?', '["Context collapse","Social distance","Digital detox"]'::jsonb, 0, 2
+SELECT e.id, 'q2', 'What do sociologists call it when groups that used to stay separate are blended in one feed?', '["Context collapse","Filter bubble","Echo chamber"]'::jsonb, 0, 2
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'For which goal is the system behind the feed optimized?', '["Teaching you something","Keeping you looking","Helping you sleep"]'::jsonb, 1, 3
+SELECT e.id, 'q3', 'For which goal is the system behind the feed optimized?', '["Showing you your friends first","Keeping you looking","Keeping your data private"]'::jsonb, 1, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'Which content tends to keep people looking longer?', '["Plain news","Long articles","Content that triggers a small emotional reaction"]'::jsonb, 2, 4
+SELECT e.id, 'q4', 'Which content tends to keep people looking longer?', '["Calm, neutral posts","Content from close friends","Content that triggers a small emotional reaction"]'::jsonb, 2, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q5', 'Why does the feed lack comparisons that make us feel better?', '["Nobody posts their worst week honestly","Phones hide them","Everyone is doing better"]'::jsonb, 0, 5
+SELECT e.id, 'q5', 'Why does the feed lack comparisons that make us feel better?', '["Nobody posts their worst week honestly","Friends delete them","Algorithms remove them by mistake"]'::jsonb, 0, 5
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -349,7 +349,7 @@ WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'What does the host suggest doing with a small envious pull?', '["Ignore it completely","Post about it","Notice it and name it"]'::jsonb, 2, 7
+SELECT e.id, 'q7', 'What does the host suggest doing with a small envious pull?', '["Unfollow everyone","Compare yourself even harder","Notice it and name it"]'::jsonb, 2, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'c1' AND e.slug = 'why-everyone-looks-better-online-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -357,7 +357,7 @@ ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = E
 
 -- en/mind-fools-you/why-we-trust-our-gut-v2
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q1', 'What is a chess grandmaster''s quick sense of the right move?', '["Pattern recognition","Pure luck","A magic trick"]'::jsonb, 0, 1
+SELECT e.id, 'q1', 'What is a chess grandmaster''s quick sense of the right move?', '["Pattern recognition","Wishful thinking","Natural talent"]'::jsonb, 0, 1
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-our-gut-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -369,19 +369,19 @@ WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-o
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'What is the first question of the researchers'' filter?', '["Am I in a hurry?","Is my friend sure?","Have I had real, repeated practice here with fast feedback?"]'::jsonb, 2, 3
+SELECT e.id, 'q3', 'What is the first question of the researchers'' filter?', '["Am I in a good mood?","Does everyone agree with me?","Have I had real, repeated practice here with fast feedback?"]'::jsonb, 2, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-our-gut-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'Which professional gets feedback on their instincts constantly?', '["A doctor","A hiring manager","A tourist"]'::jsonb, 0, 4
+SELECT e.id, 'q4', 'Which professional gets feedback on their instincts constantly?', '["A doctor","A hiring manager","A new graduate"]'::jsonb, 0, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-our-gut-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q5', 'When does intuition become less reliable?', '["When you are relaxed","When you are stressed, rushed, or upset","When you are asleep"]'::jsonb, 1, 5
+SELECT e.id, 'q5', 'When does intuition become less reliable?', '["When you are relaxed","When you are stressed, rushed, or upset","When you are alone"]'::jsonb, 1, 5
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-our-gut-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -393,7 +393,7 @@ WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-o
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'What does "to jump to conclusions" mean?', '["To decide something too quickly, without enough evidence","To run very fast","To change your mind often"]'::jsonb, 0, 7
+SELECT e.id, 'q7', 'What does "to jump to conclusions" mean?', '["To decide something too quickly, without enough evidence","To ignore evidence on purpose","To make a decision after long thought"]'::jsonb, 0, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'mind-fools-you' AND e.slug = 'why-we-trust-our-gut-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
@@ -413,31 +413,31 @@ WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-t
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q3', 'What does someone who leans avoidant tend to do?', '["Chase people constantly","Move house often","Keep people at arm''s length"]'::jsonb, 2, 3
+SELECT e.id, 'q3', 'What does someone who leans avoidant tend to do?', '["Share every feeling immediately","Avoid all relationships","Keep people at arm''s length"]'::jsonb, 2, 3
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-the-same-type-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q4', 'What is the familiarity trap?', '["Being drawn to what is familiar, because it registers as safe","Dating someone you know from work","Forgetting old friends"]'::jsonb, 0, 4
+SELECT e.id, 'q4', 'What is the familiarity trap?', '["Being drawn to what is familiar, because it registers as safe","Choosing a partner who is similar to you","Falling in love too quickly"]'::jsonb, 0, 4
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-the-same-type-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q5', 'Is attachment style fixed?', '["Yes, it never changes","No, it can shift through new experience","Only before age ten"]'::jsonb, 1, 5
+SELECT e.id, 'q5', 'Is attachment style fixed?', '["Yes, it never changes","No, it can shift through new experience","Only with a therapist"]'::jsonb, 1, 5
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-the-same-type-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q6', 'Which quiet question does the host suggest asking?', '["Is this person rich?","Will they text me back?","Is this excitement, or is this just recognition?"]'::jsonb, 2, 6
+SELECT e.id, 'q6', 'Which quiet question does the host suggest asking?', '["Is this person good-looking?","Do my friends like them?","Is this excitement, or is this just recognition?"]'::jsonb, 2, 6
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-the-same-type-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,
   answer_index = EXCLUDED.answer_index, sort_order = EXCLUDED.sort_order;
 INSERT INTO public.podcast_quiz_questions (episode_id, id, prompt, choices, answer_index, sort_order)
-SELECT e.id, 'q7', 'What does "a red flag" mean?', '["An early warning sign that something is wrong","A national holiday","A sign of true love"]'::jsonb, 0, 7
+SELECT e.id, 'q7', 'What does "a red flag" mean?', '["An early warning sign that something is wrong","A sign of strong attraction","A reason to stay patient"]'::jsonb, 0, 7
 FROM public.podcast_episodes e JOIN public.podcast_folders f ON f.id = e.folder_id
 WHERE e.course = 'en' AND f.slug = 'why-we-love' AND e.slug = 'why-we-fall-for-the-same-type-v2'
 ON CONFLICT (episode_id, id) DO UPDATE SET prompt = EXCLUDED.prompt, choices = EXCLUDED.choices,

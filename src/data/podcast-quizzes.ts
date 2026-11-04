@@ -48,7 +48,11 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
   quiz("en", "a1", "ordering-coffee-v2", [
     q(
       'What does "I\'d like" tell the person you are talking to?',
-      ["That you are in a hurry", "That you are asking politely", "That you do not want anything"],
+      [
+        "That you are ordering for someone else",
+        "That you are asking politely",
+        "That you are not sure what you want",
+      ],
       1,
       '"I\'d like" is the polite way to ask for something.',
     ),
@@ -108,13 +112,17 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Why are short videos so hard to stop watching?",
-      ["They are very long", "They cost money", "There is almost no stopping point"],
+      [
+        "They are always about interesting topics",
+        "They need a decision before each one",
+        "There is almost no stopping point",
+      ],
       2,
       "There is almost no stopping point.",
     ),
     q(
       "Does using your phone a lot automatically mean you have a medical addiction?",
-      ["Yes, always", "No, it can simply be a strong habit", "Only for teenagers"],
+      ["Yes, always", "No, it can simply be a strong habit", "Only if you use it at night"],
       1,
       "…it is simply a strong habit.",
     ),
@@ -132,7 +140,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What does the host say your phone is?",
-      ["A tool", "An enemy", "A toy"],
+      ["A tool", "A distraction", "A habit"],
       0,
       "your phone is a tool.",
     ),
@@ -140,7 +148,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
   quiz("en", "c1", "does-money-buy-happiness-v2", [
     q(
       "Once your basic needs are covered, what happens to the happiness each extra dollar buys?",
-      ["It buys more and more", "It stays exactly the same", "It buys less and less"],
+      ["It buys more and more", "It buys the same amount", "It buys less and less"],
       2,
       "each additional dollar buys less and less happiness.",
     ),
@@ -153,16 +161,16 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Why does a colleague's bonus make your own raise feel smaller?",
       [
-        "Your salary was reduced",
+        "You spent your raise on something else",
         "Your reference point changed, not your situation",
-        "Your raise is taxed more",
+        "Your colleague is simply better at their job",
       ],
       1,
       "Nothing about your situation changed. Only your reference point did.",
     ),
     q(
       "Which kind of spending tends to create more lasting satisfaction?",
-      ["Spending on things", "Spending on experiences", "Saving everything"],
+      ["Spending on things", "Spending on experiences", "Spending it as soon as it arrives"],
       1,
       "Spending on experiences tends to create more lasting satisfaction than spending on things.",
     ),
@@ -185,9 +193,9 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "In the vocabulary section, what is the hedonic treadmill?",
       [
-        "A machine that makes you exercise",
+        "A habit of spending more as you earn more",
         "Quickly returning to a stable level of happiness despite big changes",
-        "A way to save money every month",
+        "The point where extra income stops mattering",
       ],
       1,
       "The tendency to quickly return to a stable level of happiness despite major positive or negative changes.",
@@ -213,8 +221,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Why is the fight for your attention not a fair one?",
       [
-        "Phones are too heavy",
-        "Apps are free",
+        "Phones are cheaper than they used to be",
+        "Apps are only used for work",
         "Every app competes for your attention, and teams work to keep you looking",
       ],
       2,
@@ -222,7 +230,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What does the host compare attention to?",
-      ["A muscle", "A river", "A battery"],
+      ["A muscle", "A map", "A lamp"],
       0,
       "Attention behaves a lot like a muscle.",
     ),
@@ -234,13 +242,21 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Which work block does the host say beats three scattered hours?",
-      ["Five scattered minutes", "Two exhausting hours", "Twenty-five uninterrupted minutes"],
+      [
+        "Ten minutes between messages",
+        "Three hours with the phone beside you",
+        "Twenty-five uninterrupted minutes",
+      ],
       2,
       "Twenty-five uninterrupted minutes beats three scattered hours.",
     ),
     q(
       "Why does the host say your phone keeps interrupting you?",
-      ["It is the business model, not an accident", "It is broken", "You downloaded too few apps"],
+      [
+        "It is the business model, not an accident",
+        "It is designed to help you focus",
+        "You switched off the sound too late",
+      ],
       0,
       "That's not an accident. It's the business model.",
     ),
@@ -254,7 +270,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Which second explanation does the host say may be even more relevant?",
-      ["The clock speeding up", "Getting less sleep", "Memory"],
+      ["Days becoming shorter", "Having more things to do", "Memory"],
       2,
       "another explanation that may be even more relevant: memory.",
     ),
@@ -270,19 +286,19 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What benefit of routine does the host mention?",
-      ["It makes time slower", "It saves mental energy", "It improves your memory"],
+      ["It makes weekends feel longer", "It saves mental energy", "It makes decisions easier"],
       1,
       "Routine saves mental energy",
     ),
     q(
       "What is the trade-off when your days become very similar?",
-      ["You get more tired", "You spend more money", "Fewer moments stand out in memory"],
+      ["You make worse decisions", "You have less free time", "Fewer moments stand out in memory"],
       2,
       "fewer moments stand out in memory.",
     ),
     q(
       "What does the host suggest we do now and then?",
-      ["Make our lives unfamiliar", "Quit our jobs", "Stop looking at calendars"],
+      ["Make our lives unfamiliar", "Move to another country", "Plan every minute of the week"],
       0,
       "It's to occasionally make it unfamiliar",
     ),
@@ -298,8 +314,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "Why can admitting you are wrong feel personal?",
       [
         "Beliefs are connected to our identity",
-        "Other people always laugh",
-        "We forget what we believed",
+        "Other people judge us harshly",
+        "We prefer to follow the majority",
       ],
       0,
       "They're connected to our identity.",
@@ -307,9 +323,9 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is confirmation bias?",
       [
-        "Asking friends to confirm a fact",
+        "Preferring facts that come from friends",
         "Noticing and remembering information that supports what we already believe",
-        "Checking a fact twice",
+        "Doubting every piece of information",
       ],
       1,
       "we notice and remember information that supports what we already believe.",
@@ -360,7 +376,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
   quiz("en", "c1", "why-we-procrastinate-v2", [
     q(
       "According to researchers, procrastination is mainly about managing what?",
-      ["Time", "A feeling", "A calendar"],
+      ["Time", "A feeling", "A habit"],
       1,
       "Procrastination isn't primarily about managing time. It's about managing a feeling.",
     ),
@@ -378,15 +394,19 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "Why does avoidance feel so effective?",
       [
         "It works in the short term, because the anxiety drops",
-        "It solves the task",
-        "It makes the deadline later",
+        "It gives you more time to prepare",
+        "It makes the task easier later",
       ],
       0,
       "Avoidance actually works, in the short term.",
     ),
     q(
       "What do guilt and shame tend to do?",
-      ["Make you more disciplined", "Make the emotional discomfort bigger", "Make the task easier"],
+      [
+        "Make you more disciplined",
+        "Make the emotional discomfort bigger",
+        "Make you more honest with yourself",
+      ],
       1,
       "Guilt and shame tend to increase the very emotional discomfort",
     ),
@@ -412,7 +432,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "How do we treat our future self, according to some researchers?",
-      ["Like a friend", "Like a stranger", "Like a boss"],
+      ["Like a coach", "Like a stranger", "Like a rival"],
       1,
       "We treat our future self like a stranger",
     ),
@@ -421,8 +441,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is social comparison?",
       [
-        "Posting photos for friends",
-        "Meeting new people",
+        "Looking at photos of friends",
+        "Following celebrities",
         "Using other people as the ruler for how well we are doing",
       ],
       2,
@@ -430,25 +450,33 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What do sociologists call it when groups that used to stay separate are blended in one feed?",
-      ["Context collapse", "Social distance", "Digital detox"],
+      ["Context collapse", "Filter bubble", "Echo chamber"],
       0,
       "Sociologists call this context collapse.",
     ),
     q(
       "For which goal is the system behind the feed optimized?",
-      ["Teaching you something", "Keeping you looking", "Helping you sleep"],
+      ["Showing you your friends first", "Keeping you looking", "Keeping your data private"],
       1,
       "optimized for one goal: keep you looking.",
     ),
     q(
       "Which content tends to keep people looking longer?",
-      ["Plain news", "Long articles", "Content that triggers a small emotional reaction"],
+      [
+        "Calm, neutral posts",
+        "Content from close friends",
+        "Content that triggers a small emotional reaction",
+      ],
       2,
       "tends to keep people looking longer than content that doesn't.",
     ),
     q(
       "Why does the feed lack comparisons that make us feel better?",
-      ["Nobody posts their worst week honestly", "Phones hide them", "Everyone is doing better"],
+      [
+        "Nobody posts their worst week honestly",
+        "Friends delete them",
+        "Algorithms remove them by mistake",
+      ],
       0,
       "Nobody posts their worst week captioned honestly.",
     ),
@@ -460,7 +488,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What does the host suggest doing with a small envious pull?",
-      ["Ignore it completely", "Post about it", "Notice it and name it"],
+      ["Unfollow everyone", "Compare yourself even harder", "Notice it and name it"],
       2,
       "that small envious pull, and naming it",
     ),
@@ -468,7 +496,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
   quiz("en", "mind-fools-you", "why-we-trust-our-gut-v2", [
     q(
       "What is a chess grandmaster's quick sense of the right move?",
-      ["Pattern recognition", "Pure luck", "A magic trick"],
+      ["Pattern recognition", "Wishful thinking", "Natural talent"],
       0,
       "It's pattern recognition, built from thousands of repeated experiences",
     ),
@@ -485,8 +513,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is the first question of the researchers' filter?",
       [
-        "Am I in a hurry?",
-        "Is my friend sure?",
+        "Am I in a good mood?",
+        "Does everyone agree with me?",
         "Have I had real, repeated practice here with fast feedback?",
       ],
       2,
@@ -494,13 +522,13 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "Which professional gets feedback on their instincts constantly?",
-      ["A doctor", "A hiring manager", "A tourist"],
+      ["A doctor", "A hiring manager", "A new graduate"],
       0,
       "A doctor gets feedback on their instincts constantly",
     ),
     q(
       "When does intuition become less reliable?",
-      ["When you are relaxed", "When you are stressed, rushed, or upset", "When you are asleep"],
+      ["When you are relaxed", "When you are stressed, rushed, or upset", "When you are alone"],
       1,
       "Intuition gets louder and less reliable exactly when you're stressed, rushed, or upset",
     ),
@@ -514,8 +542,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       'What does "to jump to conclusions" mean?',
       [
         "To decide something too quickly, without enough evidence",
-        "To run very fast",
-        "To change your mind often",
+        "To ignore evidence on purpose",
+        "To make a decision after long thought",
       ],
       0,
       "to decide something too quickly, without enough evidence.",
@@ -540,7 +568,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
     q(
       "What does someone who leans avoidant tend to do?",
-      ["Chase people constantly", "Move house often", "Keep people at arm's length"],
+      ["Share every feeling immediately", "Avoid all relationships", "Keep people at arm's length"],
       2,
       "keeping people at arm's length.",
     ),
@@ -548,23 +576,23 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "What is the familiarity trap?",
       [
         "Being drawn to what is familiar, because it registers as safe",
-        "Dating someone you know from work",
-        "Forgetting old friends",
+        "Choosing a partner who is similar to you",
+        "Falling in love too quickly",
       ],
       0,
       "We're drawn to what's familiar",
     ),
     q(
       "Is attachment style fixed?",
-      ["Yes, it never changes", "No, it can shift through new experience", "Only before age ten"],
+      ["Yes, it never changes", "No, it can shift through new experience", "Only with a therapist"],
       1,
       "attachment style isn't fixed.",
     ),
     q(
       "Which quiet question does the host suggest asking?",
       [
-        "Is this person rich?",
-        "Will they text me back?",
+        "Is this person good-looking?",
+        "Do my friends like them?",
         "Is this excitement, or is this just recognition?",
       ],
       2,
@@ -574,8 +602,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       'What does "a red flag" mean?',
       [
         "An early warning sign that something is wrong",
-        "A national holiday",
-        "A sign of true love",
+        "A sign of strong attraction",
+        "A reason to stay patient",
       ],
       0,
       "an early warning sign that something is wrong.",
