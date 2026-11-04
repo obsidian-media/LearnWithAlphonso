@@ -13,19 +13,32 @@ sealed interface SaveWordPart {
     data class Word(override val text: String, val request: SaveWordRequest) : SaveWordPart
 }
 
+/**
+ * Which words of a text may be tapped to save. Every caller of TappableText passes one explicitly (there is no default),
+ * so none can fall into a wrong behaviour by leaving it out.
+ */
+sealed interface SaveWordMode {
+    /** Every word: text wholly in the course's language (Hector, Practice and Campaign replies, transcripts, English lessons). */
+    data object AllWords : SaveWordMode
+
+    /** Only words inside these course-language strings (French and Spanish lesson explanations); the saved sentence is the string. */
+    data class Spans(val spans: List<String>) : SaveWordMode
+
+    /** Nothing is tappable. */
+    data object Plain : SaveWordMode
+}
+
 object SaveWordParts {
     /**
-     * The text cut into parts. With [courseSpans] null the whole text is in the course's language (Hector, Practice and
-     * podcast transcripts are, and so is an English lesson), so every word is tappable. With spans, only words inside
-     * those course-language strings are tappable, and the saved sentence is that string (the sentence of it that the word
-     * is in), never the English text around it. Lesson explanations decide which of the two applies with
-     * [SavedWordPolicy.scope], so a French or Spanish explanation never reaches here with null spans.
+     * The text cut into parts. [SaveWordMode.AllWords] makes every word tappable; [SaveWordMode.Spans] only words inside
+     * those course-language strings, saving that string (the sentence of it the word is in) as the sentence, never the English
+     * text around it; [SaveWordMode.Plain] none. Lesson explanations choose with [SavedWordPolicy.scope].
      */
-    fun of(text: String, course: String, courseSpans: List<String>?): List<SaveWordPart> {
-        val pieces = if (courseSpans == null) {
-            listOf(CourseLanguageSpans.Piece(text, true))
-        } else {
-            CourseLanguageSpans.split(text, courseSpans)
+    fun of(text: String, course: String, mode: SaveWordMode): List<SaveWordPart> {
+        val pieces = when (mode) {
+            SaveWordMode.AllWords -> listOf(CourseLanguageSpans.Piece(text, true))
+            SaveWordMode.Plain -> listOf(CourseLanguageSpans.Piece(text, false))
+            is SaveWordMode.Spans -> CourseLanguageSpans.split(text, mode.spans)
         }
         val parts = ArrayList<SaveWordPart>()
         for (piece in pieces) {

@@ -132,21 +132,21 @@ class CourseLanguageSpansTest {
     @Test
     fun `scope - spans come only from course language strings`() {
         val scope = SavedWordPolicy.scope(frenchFill, frenchFill.explanation, "fr")
-        assertEquals(SavedWordPolicy.Scope.Spans(listOf("Salut")), scope)
+        assertEquals(SaveWordMode.Spans(listOf("Salut")), scope)
     }
 
     @Test
     fun `scope - no spans in a course that is not English means nothing is tappable`() {
         val idiom = fill("The idiom \"tomber dans les pommes\" means… ___", "to faint", "tomber → \"to faint\". Idioms.")
-        assertEquals(SavedWordPolicy.Scope.None, SavedWordPolicy.scope(idiom, idiom.explanation, "fr"))
-        assertEquals(SavedWordPolicy.Scope.None, SavedWordPolicy.scope(idiom, idiom.explanation, "es"))
-        assertEquals(SavedWordPolicy.Scope.None, SavedWordPolicy.scope(idiom, idiom.explanation, "de"))
+        assertEquals(SaveWordMode.Plain, SavedWordPolicy.scope(idiom, idiom.explanation, "fr"))
+        assertEquals(SaveWordMode.Plain, SavedWordPolicy.scope(idiom, idiom.explanation, "es"))
+        assertEquals(SaveWordMode.Plain, SavedWordPolicy.scope(idiom, idiom.explanation, "de"))
     }
 
     @Test
     fun `scope - English behaviour is unchanged, every word`() {
         val q = fill("Fill the blank: I ___ a student.", "am", "We say \"I am\" for yourself.")
-        assertEquals(SavedWordPolicy.Scope.WholeText, SavedWordPolicy.scope(q, q.explanation, "en"))
+        assertEquals(SaveWordMode.AllWords, SavedWordPolicy.scope(q, q.explanation, "en"))
         assertTrue(SavedWordPolicy.savesWholeText("en"))
         assertFalse(SavedWordPolicy.savesWholeText("fr"))
         assertFalse(SavedWordPolicy.savesWholeText("es"))
@@ -154,7 +154,7 @@ class CourseLanguageSpansTest {
 
     @Test
     fun `tapping a French span saves under fr with the span as the sentence`() {
-        val parts = SaveWordParts.of(frenchFill.explanation, "fr", listOf("Salut"))
+        val parts = SaveWordParts.of(frenchFill.explanation, "fr", SaveWordMode.Spans(listOf("Salut")))
         val words = parts.filterIsInstance<SaveWordPart.Word>()
         assertEquals(listOf("Salut"), words.map { it.text })
         assertEquals(SaveWordRequest("Salut", "Salut", "fr"), words.single().request)
@@ -166,15 +166,21 @@ class CourseLanguageSpansTest {
     @Test
     fun `a multi-word span saves the span itself as the sentence for each of its words`() {
         val e = "goodbye → Au revoir. Greetings."
-        val words = SaveWordParts.of(e, "fr", listOf("Au revoir")).filterIsInstance<SaveWordPart.Word>()
+        val words = SaveWordParts.of(e, "fr", SaveWordMode.Spans(listOf("Au revoir"))).filterIsInstance<SaveWordPart.Word>()
         assertEquals(listOf("Au", "revoir"), words.map { it.text })
         assertEquals(listOf("Au revoir", "Au revoir"), words.map { it.request.sentence })
         assertEquals(listOf("fr", "fr"), words.map { it.request.course })
     }
 
     @Test
+    fun `plain mode makes nothing tappable`() {
+        val parts = SaveWordParts.of("hello → Salut.", "fr", SaveWordMode.Plain)
+        assertTrue(parts.none { it is SaveWordPart.Word })
+    }
+
+    @Test
     fun `English text without spans links every word with its own sentence`() {
-        val words = SaveWordParts.of("I am here. You are there.", "en", null).filterIsInstance<SaveWordPart.Word>()
+        val words = SaveWordParts.of("I am here. You are there.", "en", SaveWordMode.AllWords).filterIsInstance<SaveWordPart.Word>()
         assertEquals(listOf("I", "am", "here", "You", "are", "there"), words.map { it.text })
         assertEquals("You are there.", words.last().request.sentence)
     }

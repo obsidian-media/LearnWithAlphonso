@@ -54,6 +54,7 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordHint
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordPart
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordParts
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
@@ -101,24 +102,25 @@ fun SaveWordHost(container: AppContainer, content: @Composable () -> Unit) {
  * [extraActions] (for example "Report this response") are kept beside it, and [accessibilityPrefix] ("Correct.") is
  * announced first.
  *
- * [courseSpans]: French and Spanish lesson explanations mix English with quoted course text. When set, only words inside
- * these course-language strings are links, and the saved sentence is that string ([SaveWordParts]). Null links every
- * word (Hector, Practice and transcripts, and English lessons, are wholly in the course's language).
+ * [mode] is required, with no default, so no caller can fall into a wrong behaviour by leaving it out:
+ * [SaveWordMode.AllWords] for text wholly in the course's language (Hector, Practice and transcripts, English lessons),
+ * [SaveWordMode.Spans] for French and Spanish lesson explanations (only words inside those course-language strings are
+ * links, and the saved sentence is that string), [SaveWordMode.Plain] for none.
  */
 @Composable
 fun TappableText(
     text: String,
     course: String,
+    mode: SaveWordMode,
     onSave: (SaveWordRequest) -> Unit,
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.bodyLarge,
     color: Color = AlphonsoColor.palette.ink,
     extraActions: List<CustomAccessibilityAction> = emptyList(),
     accessibilityPrefix: String? = null,
-    courseSpans: List<String>? = null,
 ) {
     val save by rememberUpdatedState(onSave)
-    val parts = remember(text, course, courseSpans) { SaveWordParts.of(text, course, courseSpans) }
+    val parts = remember(text, course, mode) { SaveWordParts.of(text, course, mode) }
     val annotated = remember(parts, color) {
         buildAnnotatedString {
             parts.forEachIndexed { index, part ->

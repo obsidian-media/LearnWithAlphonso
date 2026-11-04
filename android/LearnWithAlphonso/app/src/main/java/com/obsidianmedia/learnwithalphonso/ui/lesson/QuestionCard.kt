@@ -35,6 +35,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordPolicy
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
@@ -142,17 +143,16 @@ fun QuestionCard(
  */
 @Composable
 internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course, question: Question? = null) {
-    val scope = if (question != null) {
+    val mode = if (question != null) {
         SavedWordPolicy.scope(question, explanation, course.code)
     } else if (SavedWordPolicy.savesWholeText(course.code)) {
-        SavedWordPolicy.Scope.WholeText
+        SaveWordMode.AllWords
     } else {
-        SavedWordPolicy.Scope.None
+        SaveWordMode.Plain
     }
-    val saveCourse = course.code.takeIf { scope != SavedWordPolicy.Scope.None }
-    val courseSpans = (scope as? SavedWordPolicy.Scope.Spans)?.spans
+    val saveCourse = course.code.takeIf { mode != SaveWordMode.Plain }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, courseSpans = courseSpans)
+        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, saveMode = mode)
         if (saveCourse != null && LocalSaveWordHandler.current != null) SaveWordHintLine(container)
     }
 }

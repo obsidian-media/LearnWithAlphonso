@@ -52,17 +52,6 @@ class SavedWordException(val error: SavedWordError) : Exception(error.name)
  * language being practised, so they are not gated by this.
  */
 object SavedWordPolicy {
-    /** What a lesson explanation offers for saving. */
-    sealed interface Scope {
-        data object None : Scope
-
-        /** Every word (the English course). */
-        data object WholeText : Scope
-
-        /** Only words inside these course-language strings (French and Spanish). */
-        data class Spans(val spans: List<String>) : Scope
-    }
-
     fun allowsSaving(courseCode: String): Boolean = courseCode == "en" || courseCode == "fr" || courseCode == "es"
 
     /** True where the whole of a lesson's text is in the course's language. */
@@ -72,11 +61,11 @@ object SavedWordPolicy {
      * What the explanation under [question] offers. Generated practice has no [Question]: it uses [savesWholeText] and
      * stays English-only.
      */
-    fun scope(question: Question, explanation: String, courseCode: String): Scope {
-        if (!allowsSaving(courseCode)) return Scope.None
-        if (savesWholeText(courseCode)) return Scope.WholeText
+    fun scope(question: Question, explanation: String, courseCode: String): SaveWordMode {
+        if (!allowsSaving(courseCode)) return SaveWordMode.Plain
+        if (savesWholeText(courseCode)) return SaveWordMode.AllWords
         val spans = CourseLanguageSpans.spans(question, explanation)
-        return if (spans.isEmpty()) Scope.None else Scope.Spans(spans)
+        return if (spans.isEmpty()) SaveWordMode.Plain else SaveWordMode.Spans(spans)
     }
 }
 

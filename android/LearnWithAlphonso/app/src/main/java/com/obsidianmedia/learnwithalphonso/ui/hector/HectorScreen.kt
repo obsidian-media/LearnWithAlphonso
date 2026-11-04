@@ -53,6 +53,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
@@ -243,7 +244,7 @@ private fun HectorConversation(container: AppContainer) {
                             val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
                             // Hector's replies are in the language being practised, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
-                                TappableText(turn.content, vm.course.code, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
+                                TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
                             } else {
                                 Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
                             }
