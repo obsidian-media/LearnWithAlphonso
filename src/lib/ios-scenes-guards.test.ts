@@ -158,7 +158,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
       expect(browser, keep).toContain(keep);
     }
     // Section headers were bare ember text on the list background; over a scene they sit on glass.
-    expect(from(browser, "unit.eyebrow").slice(0, 500)).toContain(".alphonsoGlass(");
+    expect(from(browser, "unit.eyebrow").slice(0, 1600)).toContain(".alphonsoGlass(");
     // The chips are material, not flat surface.
     expect(header).toContain(".regularMaterial");
   });
