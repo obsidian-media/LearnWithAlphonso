@@ -8,6 +8,10 @@ file itself won't be kept perfectly current — treat entries as a guide
 to _when_ something shipped, and re-check the actual code for _how it
 works now_.
 
+## Unreleased
+
+**More story campaigns (2026-11-04).** Four new campaigns in English, French and Spanish (3-4 scenes each): first week at a new job, doctor's visit (practice only, no medical advice), trip by train, and moving to a new flat. `ALL_SYSTEM_PROMPTS` grows from 45 to 84. Bundled iOS and Android campaign JSON re-exported; `campaign-catalog-guards.test.ts` keeps the list screens and the bundles honest.
+
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
 **Docs refresh after the 2026-10-17 batch (2026-10-18, #328).** README: Android now has the newer iOS work (AI consent, public-name step, hearts gate, report an AI reply, French and Spanish conversations, offline-sync and podcast-player reliability, save any word), none of it run on a device; save any word is listed on web, iOS and Android, with transcript words saved under the episode's own course; the Pro section mentions the yearly plan picker and iOS hands-free Hector. AGENTS: the signed-in Playwright flow and its CI job, and current test counts (web 3,612, Swift Kit 1,080, Android JVM 758).

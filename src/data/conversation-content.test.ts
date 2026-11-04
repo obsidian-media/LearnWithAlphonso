@@ -215,7 +215,13 @@ describe("campaign prompt rules", () => {
 
   it("keeps campaign Spanish in the Latin American variety", () => {
     for (const { label, text } of campaignTexts("es")) {
-      const cleaned = text.replace("nunca uses «vosotros» ni «vos»", "");
+      // Only the floor sense with an ordinal or number ("tercer piso", "piso 3") is allowed; a bare "el piso" reads as Spain's "flat".
+      const cleaned = text
+        .replace("nunca uses «vosotros» ni «vos»", "")
+        .replace(
+          /\b(primer|segundo|tercer|cuarto|quinto) piso\b|\bpiso \d+\b|\b\d+\.º piso\b/gi,
+          "",
+        );
       expect(cleaned, label).not.toMatch(/\bvosotr|\bvuestr|\bpiso\b|\bcoger\b|\bordenador\b/i);
     }
   });
@@ -249,8 +255,9 @@ describe("ALL_SYSTEM_PROMPTS", () => {
     }
     expect(ALL_SYSTEM_PROMPTS.size).toBe(expected.size);
     for (const p of expected) expect(ALL_SYSTEM_PROMPTS.has(p)).toBe(true);
-    // 12 scenarios + 3 campaign scenes = 15 prompts, times 3 courses, all distinct.
-    expect(ALL_SYSTEM_PROMPTS.size).toBe(45);
+    // 12 scenarios + 16 campaign scenes (city-day 3, first-week-job 4, doctors-visit 3,
+    // train-trip 3, new-flat 3) = 28 prompts, times 3 courses, all distinct.
+    expect(ALL_SYSTEM_PROMPTS.size).toBe(84);
   });
 });
 
