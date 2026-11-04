@@ -23,10 +23,15 @@ function posIn(packId: string, word: string): string | undefined {
  * Exactly that happened once: 12 words lost their tags, the ratio moved from
  * 0.0361 to 0.0269, and 43 questions across 11 packs got worse.
  *
- * Measured at 482 on this branch. Set AT the measured value, not above it, so
- * any future loss of coverage trips it rather than being absorbed by slack.
+ * Measured at 521. It was 482 before also-correct.ts: that filter drops a wrong
+ * answer that is really a right one and fills the gap with a clearly wrong form
+ * ("is" for "They ___", "during" for a place slot, ...). Those 39 supplements are
+ * appended AFTER ranking, so rank() never sees them and they cannot be promoted
+ * over a better candidate; they are untagged by construction, not by tag loss.
+ * Set AT the measured value, not above it, so any future loss of coverage trips
+ * it rather than being absorbed by slack.
  */
-const UNTAGGED_CANDIDATE_BUDGET = 482;
+const UNTAGGED_CANDIDATE_BUDGET = 521;
 
 function choicesFor(key: string): string[] {
   const ref = getCourse("en").questionIndex[key];

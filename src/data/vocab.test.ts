@@ -46,9 +46,54 @@ describe("deriveVocab", () => {
     expect(items[1].example).toBe("I drink coffee.");
   });
 
-  it("formats mc questions as prompt -> answer", () => {
+  it("fills the blank for a cloze multiple-choice question too", () => {
     const items = deriveVocab(lesson);
-    expect(items[0].example).toBe("She ___ happy. → is");
+    expect(items[0].example).toBe("She is happy.");
+  });
+
+  it("never shows the quiz explanation as the meaning", () => {
+    // The data carries no gloss for a word, only the explanation of why it was the
+    // right answer ("'am' is correct here. Match the verb form to the subject."),
+    // which is not what a word means. Nothing is better than that.
+    const items = deriveVocab(lesson);
+    for (const item of items) {
+      expect(item.meaning).toBe("");
+      expect(item.meaning).not.toBe("third person singular");
+    }
+  });
+
+  it("shows no example when the prompt is a quiz stem rather than a sentence", () => {
+    const stems = [
+      'Plural of "baby": ___',
+      'Which verb goes with "homework"? ___',
+      'Opposite of "hot":',
+      "Choose the correct word:",
+    ];
+    for (const prompt of stems) {
+      const q: Question = {
+        id: "s",
+        type: "mc",
+        prompt,
+        choices: ["babies", "x", "y"],
+        answer: 0,
+        explanation: "e",
+      };
+      const [item] = deriveVocab({ id: "s", title: "", subtitle: "", questions: [q] });
+      expect(item.example, prompt).toBe("");
+    }
+  });
+
+  it("never leaks quiz text into any derived card in the real English course", () => {
+    const course = getCourse("en");
+    const bad: string[] = [];
+    for (const unit of course.curriculum)
+      for (const l of unit.lessons)
+        for (const item of deriveVocab(l)) {
+          if (item.example.includes("___") || item.example.includes("→"))
+            bad.push(`${l.id} ${item.term}: ${item.example}`);
+          if (item.meaning !== "") bad.push(`${l.id} ${item.term}: meaning ${item.meaning}`);
+        }
+    expect(bad).toEqual([]);
   });
 
   it("skips questions whose answer is blank", () => {

@@ -5,6 +5,7 @@ import {
   orderDistractorCandidates,
   packAnswerPos,
 } from "@/lib/distractor-affinity";
+import { alsoCorrectReason, clearlyWrongFor } from "./also-correct";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -3991,13 +3992,38 @@ function pickDistractors(
   // rationale. Same fix applied to both, found via an automated
   // content-consistency scan (2026-09-22).
   const seen = new Set<string>([answer.toLowerCase()]);
+  // A distractor that also makes a correct sentence marks a right answer wrong
+  // ("They ___ at home." with "study"), so it is skipped; clearly wrong forms
+  // for the slot fill any gap. Only cloze prompts have a blank to test.
+  const hasBlank = prompt?.includes("___") === true;
+  const skipped: string[] = [];
   for (let i = 0; out.length < 3 && i < ordered.length; i++) {
     const cand = ordered[i];
     const key = cand?.toLowerCase();
     if (cand && key && !seen.has(key)) {
+      if (hasBlank && alsoCorrectReason(prompt!, answer, cand)) {
+        skipped.push(cand);
+        continue;
+      }
       out.push(cand);
       seen.add(key);
     }
+  }
+  if (hasBlank && out.length < 3) {
+    for (const cand of clearlyWrongFor(prompt!, answer)) {
+      const key = cand.toLowerCase();
+      if (out.length >= 3) break;
+      if (!seen.has(key)) {
+        out.push(cand);
+        seen.add(key);
+      }
+    }
+  }
+  // Last resort, so a question never drops below three wrong answers (which
+  // would flip it between fill and mc): the guard test names any that remain.
+  for (const cand of skipped) {
+    if (out.length >= 3) break;
+    out.push(cand);
   }
   return out;
 }

@@ -24,7 +24,7 @@ class VocabDerivationTest {
             items.map { it.term },
         )
         assertEquals("Nice to meet you.", items[1].example)
-        assertEquals("Which is a formal greeting? → Good morning.", items[0].example)
+        assertEquals("", items[0].example) // a quiz stem is not a sentence
     }
 
     @Test
@@ -39,7 +39,7 @@ class VocabDerivationTest {
         )
         val items = deriveVocab(lesson, emptyMap())
         assertEquals(listOf("Good"), items.map { it.term })
-        assertEquals("e1", items[0].meaning)
+        assertEquals("", items[0].meaning) // the quiz explanation is never the meaning
     }
 
     @Test
@@ -57,17 +57,22 @@ class VocabDerivationTest {
     }
 
     @Test
-    fun `fill example appends the answer when the prompt has no blank and mc strips a trailing colon`() {
+    fun `only a cloze sentence gives an example and no card shows the quiz explanation`() {
         val lesson = Lesson(
             "l", "t", "s",
             listOf(
                 Question.FillInBlank("a", "Say hello", listOf("hi"), "hi", "e"),
                 Question.MultipleChoice("b", "Choose the farewell: ", listOf("Bye", "Hi"), 0, "e"),
+                Question.MultipleChoice("c", "She ___ happy.", listOf("is", "am"), 0, "e"),
+                Question.MultipleChoice("d", "Plural of \"baby\": ___", listOf("babies", "x"), 0, "e"),
             ),
         )
         val items = deriveVocab(lesson, mapOf("bye" to VocabImageRef("u", "alt", "c")))
-        assertEquals("Say hello hi", items[0].example)
-        assertEquals("Choose the farewell → Bye", items[1].example)
+        assertEquals("", items[0].example)
+        assertEquals("", items[1].example)
+        assertEquals("She is happy.", items[2].example)
+        assertEquals("", items[3].example)
+        assertEquals(listOf("", "", "", ""), items.map { it.meaning })
         assertEquals("u", items[1].image?.url)
         assertNull(items[0].image)
     }

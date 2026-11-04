@@ -25,31 +25,65 @@ function answerOf(q: Question): string {
   return "";
 }
 
+/** Quiz instructions and pair-drill stems: filling their blank gives a label, not a sentence. */
+const STEM =
+  /^(choose|which|select|complete|fill|plural of|opposite of|past (simple )?of|female form|male form|comparative|superlative|what is|what does|match)\b/i;
+
+/**
+ * A model sentence for the card, or "" when there is none to show.
+ *
+ * Only a cloze sentence with the answer put back in the blank counts
+ * ("She ___ happy." -> "She is happy."). A pair-drill stem ('Plural of "baby":
+ * ___') or an instruction is not a sentence, and showing 'Plural of "baby": ___ ->
+ * babies' as an "example" was the defect this replaces. Empty is honest; the
+ * card hides an empty slot.
+ */
 function exampleOf(q: Question): string {
+  if (q.type !== "mc" && q.type !== "fill") return "";
   const answer = answerOf(q);
-  if (q.type === "fill") {
-    const filled = q.prompt.replace("___", answer);
-    return filled === q.prompt ? `${q.prompt} ${answer}` : filled;
-  }
-  const prompt = q.prompt.replace(/[:：]\s*$/, "");
-  return `${prompt} → ${answer}`;
+  const blank = q.prompt.indexOf("___");
+  if (blank < 0 || !answer || STEM.test(q.prompt.trim())) return "";
+  if (/[:?…"“]$/.test(q.prompt.slice(0, blank).trim())) return "";
+  return q.prompt.replace("___", answer);
 }
 
 function titleCaseKey(s: string) {
   return s.trim().toLowerCase();
 }
 
-/** Builds the vocabulary module for any lesson from its own questions. */
+/**
+ * Builds the vocabulary module for any lesson from its own questions.
+ *
+ * `meaning` is always "" today. The questions carry an explanation of why the
+ * answer was right ("'am' is correct here. Match the verb form to the subject."),
+ * never a gloss of the word, and printing that under the word as its meaning was
+ * wrong. A real meaning needs authored data (see docs/content-audit-2026-11.md).
+ */
 export function deriveVocab(lesson: Lesson): VocabItem[] {
+  return deriveVocabWithContext(lesson).map(({ context: _context, ...item }) => item);
+}
+
+/**
+ * deriveVocab plus the quiz explanation each card came from, as `context`. The
+ * context is for tooling only (the image pipeline uses it to disambiguate a
+ * term); it is never shown to a learner.
+ */
+export function deriveVocabWithContext(lesson: Lesson): (VocabItem & { context: string })[] {
   const seen = new Set<string>();
-  const items: VocabItem[] = [];
+  const items: (VocabItem & { context: string })[] = [];
   for (const q of lesson.questions) {
     const term = answerOf(q).trim();
     if (!term) continue;
     const key = titleCaseKey(term);
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push({ term, meaning: q.explanation, example: exampleOf(q), image: VOCAB_IMAGES[key] });
+    items.push({
+      term,
+      meaning: "",
+      example: exampleOf(q),
+      image: VOCAB_IMAGES[key],
+      context: q.explanation,
+    });
   }
   return items;
 }
