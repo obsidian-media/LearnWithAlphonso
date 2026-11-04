@@ -1,0 +1,24 @@
+{
+  "pass": 5,
+  "note": "Terms settled as no-image after the first try and one retry with a better query; none of them is written to vocab-images.ts.",
+  "terms": {
+    "alcohol": "photos show brand labels and drinks branding; no clean unbranded alcohol photo",
+    "carriage": "ambiguous: a photo reads as train, not carriage",
+    "catch": "rejected on first try and on the retry with a better query",
+    "circle": "rejected on first try and on the retry with a better query",
+    "collect": "abstract; the photos show courier delivery instead",
+    "cyclone": "rejected on first try and on the retry with a better query",
+    "drinks": "rejected on first try and on the retry with a better query",
+    "hurricane": "rejected on first try and on the retry with a better query",
+    "interview": "rejected on first try and on the retry with a better query",
+    "lungs": "rejected on first try and on the retry with a better query",
+    "notes": "banknotes carry foreign text and portraits",
+    "pinch": "rejected on first try and on the retry with a better query",
+    "post office": "rejected on first try and on the retry with a better query",
+    "skin": "rejected on first try and on the retry with a better query",
+    "sunny": "owner-flagged term (App Store audit 2026-10-07); must never have an image",
+    "throw": "rejected on first try and on the retry with a better query",
+    "wait": "rejected on first try and on the retry with a better query",
+    "washes": "rejected on first try and on the retry with a better query"
+  }
+}

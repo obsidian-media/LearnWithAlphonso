@@ -129,6 +129,16 @@
     "reviewedBy": "agent:review-r1-b001",
     "reviewedAt": "2026-10-07"
   },
+  "airmail": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/airmail.jpg?v=0ae88afe",
+    "alt": "A blank white airmail envelope with red and blue striped edges lies on a striped cloth.",
+    "credit": "Ann Hannes",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-photo-of-an-envelope-with-stripes-2635830/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
+  },
   "airport": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/airport.jpg?v=89c4d061",
     "alt": "A passenger jet parked at an airport gate beside a boarding bridge under a cloudy sky.",
@@ -238,6 +248,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b001",
     "reviewedAt": "2026-10-07"
+  },
+  "arguing": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/arguing.jpg?v=c1539369",
+    "alt": "A woman gestures emphatically as she argues with a man standing in front of her on a street.",
+    "credit": "Budgeron Bach",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/ethnic-couple-arguing-on-street-in-daytime-6532738/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
   },
   "arm": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/arm.jpg?v=9b9e9868",
@@ -349,6 +369,16 @@
     "reviewedBy": "agent:review-r2-b001",
     "reviewedAt": "2026-10-07"
   },
+  "audience": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/audience.jpg?v=8ce47330",
+    "alt": "A woman applauds with raised hands facing a lit stage in a dark theatre.",
+    "credit": "Caleb Oquendo",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/audience-at-a-concert-with-vibrant-stage-lighting-34623535/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "avión": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/avion-3a7c5b16.jpg?v=9b81c47b",
     "alt": "A small passenger jet flies high in a clear blue sky.",
@@ -358,6 +388,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p2-r3-b001",
     "reviewedAt": "2026-10-09"
+  },
+  "awards": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/awards.jpg?v=b48f9c5b",
+    "alt": "Two small metal sports trophies, one topped with a soccer ball, stand on a wooden shelf.",
+    "credit": "Squish Law",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/trophies-for-soccer-and-baseball-on-display-32711485/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "ayuntamiento": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/ayuntamiento.jpg?v=10cc81ea",
@@ -779,6 +819,16 @@
     "reviewedBy": "agent:p3-p3-r1-b001+agent:p3-2nd-b001",
     "reviewedAt": "2026-11-04"
   },
+  "bruise": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/bruise.jpg?v=1c4bdaf3",
+    "alt": "A close-up of a purple and dark red bruise on a person's skin.",
+    "credit": "https://kaboompics.com/",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-of-bruises-on-body-6643074/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
+  },
   "brush": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/brush.jpg?v=5c31b601",
     "alt": "A woman in a green t-shirt brushes her teeth in a bathroom, with her reflection in the mirror.",
@@ -788,6 +838,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r4-b001+agent:review2-r2-2nd-b001",
     "reviewedAt": "2026-10-07"
+  },
+  "brushes": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/brushes.jpg?v=5e9fdb0a",
+    "alt": "Several paint brushes with paint on the bristles stand next to a plastic paint palette.",
+    "credit": "Anna Tarazevich",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/black-and-silver-paintbrushes-on-white-surface-5076764/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "bufanda": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/bufanda.jpg?v=a92af1db",
@@ -868,6 +928,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b002+agent:review2-r1-2nd-b001",
     "reviewedAt": "2026-10-07"
+  },
+  "by the river": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/by-the-river.jpg?v=33d5febb",
+    "alt": "A wide brown river flows past grassy banks and green trees on a calm day.",
+    "credit": "Gleb Bryzhak",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/serene-riverbank-with-lush-greenery-in-summer-38351825/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "bâtiment": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/batiment-368ced1b.jpg?v=104885c3",
@@ -1089,6 +1159,16 @@
     "reviewedBy": "agent:p3-p3-r1-b001+agent:p3-2nd-b001",
     "reviewedAt": "2026-11-04"
   },
+  "cardio": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/cardio.jpg?v=31ab407e",
+    "alt": "A man stands on a treadmill in a gym during a cardio workout.",
+    "credit": "Andrea Piacquadio",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/strong-sportsman-using-treadmill-for-cardio-workout-in-gym-3888343/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "cargador": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/cargador.jpg?v=26a18b74",
     "alt": "Two smartphones lying side by side on a desk, each plugged into a charging cable.",
@@ -1308,6 +1388,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b003+agent:review2-r1-2nd-b001",
     "reviewedAt": "2026-10-07"
+  },
+  "chemistry": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/chemistry.jpg?v=573bbfd3",
+    "alt": "Glass laboratory flasks filled with blue liquid stand on a white surface.",
+    "credit": "cottonbro studio",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/clear-glass-apparatus-on-white-table-8927674/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "chess": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/chess.jpg?v=0a6485ec",
@@ -1589,6 +1679,16 @@
     "reviewedBy": "agent:review-r1-b004",
     "reviewedAt": "2026-10-07"
   },
+  "contactless": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/contactless.jpg?v=8e1a4859",
+    "alt": "A hand holds a bank card to a card reader to pay without touching it, against a blue and orange background.",
+    "credit": "Towfiqu barbhuiya",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-person-tapping-a-card-on-a-payment-terminal-11316617/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "contento": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/contento.jpg?v=94b870ea",
     "alt": "A smiling woman and man laugh together as they sit in a dry field.",
@@ -1849,6 +1949,16 @@
     "reviewedBy": "agent:p4-b001+agent:p4-2nd-b001",
     "reviewedAt": "2026-11-04"
   },
+  "delivery": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/delivery.jpg?v=cd4dd1a5",
+    "alt": "A courier hands over a small parcel while a person signs a paper receipt.",
+    "credit": "Artem Podrez",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-person-signing-a-proof-of-delivery-8989470/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "dentist": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/dentist.jpg?v=507e5d49",
     "alt": "A dentist in a mask and gloves examining a seated patient under bright overhead lights.",
@@ -2047,6 +2157,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/man-cooking-prawns-11209141/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p4-b001+agent:p4-2nd-b001",
+    "reviewedAt": "2026-11-04"
+  },
+  "draw": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/draw.jpg?v=0ed47442",
+    "alt": "Hands draw with a pencil on a sheet of paper surrounded by pencils and a paint palette.",
+    "credit": "Jonathan Borba",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-hand-coloring-the-bond-paper-12845956/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
     "reviewedAt": "2026-11-04"
   },
   "dress": {
@@ -2569,6 +2689,16 @@
     "reviewedBy": "agent:p3-p3-r1-b002+agent:p3-2nd-b001",
     "reviewedAt": "2026-11-04"
   },
+  "fill in": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/fill-in.jpg?v=b70d2d4e",
+    "alt": "A person fills in a paper form with a blue pen on a desk.",
+    "credit": "Kindel Media",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-person-filling-out-adoption-request-documents-7979436/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "finger": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/finger.jpg?v=3fd54c33",
     "alt": "Several hands point their index fingers on a white background.",
@@ -2588,6 +2718,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r2-b002+agent:review2-r1-2nd-b002",
     "reviewedAt": "2026-10-07"
+  },
+  "fire": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/fire.jpg?v=387b042e",
+    "alt": "Bright orange flames lick a burning log in a fire.",
+    "credit": "Nuh Isa El Carillo",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/burning-wood-on-fire-pit-in-close-up-photography-12293287/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "firefighter": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/firefighter.jpg?v=e11d56d7",
@@ -2619,6 +2759,16 @@
     "reviewedBy": "agent:review-r1-b005",
     "reviewedAt": "2026-10-07"
   },
+  "fix": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/fix.jpg?v=d3cdb74f",
+    "alt": "A man in a hooded sweatshirt repairs a red bicycle held upside down in a room with bookshelves.",
+    "credit": "https://kaboompics.com/",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/man-looking-at-bicycle-in-room-6334121/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "flood": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/flood.jpg?v=b2c1a25c",
     "alt": "Fast grey flood water rushes over and around a floating dock on a swollen river.",
@@ -2638,6 +2788,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b005+agent:review2-r1-2nd-b002",
     "reviewedAt": "2026-10-07"
+  },
+  "fly": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/fly.jpg?v=b616e1c5",
+    "alt": "A seagull flies with wings spread over blue sea near a rocky coast.",
+    "credit": "Kindel Media",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/photo-of-a-flying-seagull-7148377/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "fog": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/fog.jpg?v=2a22987d",
@@ -2748,6 +2908,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b005",
     "reviewedAt": "2026-10-07"
+  },
+  "gale": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/gale.jpg?v=e95827f5",
+    "alt": "Palm trees bend in a strong wind under a dark stormy sky in a black and white photo.",
+    "credit": "Shubham Dhage",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/dramatic-tropical-storm-in-rural-india-32047821/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "garage": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/garage.jpg?v=d5ead192",
@@ -2969,6 +3139,16 @@
     "reviewedBy": "agent:review-r1-b006+agent:review2-r1-2nd-b002",
     "reviewedAt": "2026-10-07"
   },
+  "hailstorm": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/hailstorm.jpg?v=a3e61a90",
+    "alt": "Small white hailstones lie scattered on wet grey pavement.",
+    "credit": "Julia Filirovska",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/hail-balls-after-heavy-rain-lying-on-ice-8237250/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "hair": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/hair.jpg?v=fe81996b",
     "alt": "Black and white image of long loose hair blowing across a person's face.",
@@ -3029,6 +3209,16 @@
     "reviewedBy": "agent:review-r1-b006",
     "reviewedAt": "2026-10-07"
   },
+  "head": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/head.jpg?v=af45eb02",
+    "alt": "A bearded man's head seen in side profile against a black background.",
+    "credit": "Anderson Santos",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-portrait-of-a-bearded-man-14086522/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "headache": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/headache.jpg?v=2d6e488d",
     "alt": "A woman at a desk presses her hand to her forehead and squints in pain over an open notebook.",
@@ -3037,6 +3227,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/female-student-suffering-from-headache-at-home-3808016/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r2-b001+agent:p3-2nd-b001",
+    "reviewedAt": "2026-11-04"
+  },
+  "heart": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/heart.jpg?v=e0fc86b3",
+    "alt": "A hand holds a red anatomical model of a human heart against a pale background.",
+    "credit": "DS stories",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/photo-of-a-person-s-hand-holding-a-red-heart-9228364/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
     "reviewedAt": "2026-11-04"
   },
   "heatwave": {
@@ -3078,6 +3278,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:p2-r5-b001+agent:p2-second-b001",
     "reviewedAt": "2026-10-09"
+  },
+  "hexagon": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/hexagon.jpg?v=d4eb4e02",
+    "alt": "A close-up of golden honeycomb showing rows of hexagonal cells.",
+    "credit": "hejpetrpepa  Pepa",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/honeycomb-structure-in-beehive-20012002/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003",
+    "reviewedAt": "2026-11-04"
   },
   "hielo": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/hielo.jpg?v=f5afbb5a",
@@ -3177,6 +3387,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/a-glass-with-ice-cubes-12987266/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r1-b003",
+    "reviewedAt": "2026-11-04"
+  },
+  "injured": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/injured.jpg?v=dffd24d1",
+    "alt": "A woman sits on a sofa with a cast on her leg and a crutch beside her.",
+    "credit": "Vika Glitter",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/young-woman-in-pain-in-leg-in-cast-4497804/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
     "reviewedAt": "2026-11-04"
   },
   "invierno": {
@@ -4188,6 +4408,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:p2-q1-b005",
     "reviewedAt": "2026-10-09"
+  },
+  "lace": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/lace.jpg?v=0e6b6916",
+    "alt": "A close-up of white lace fabric with a pattern of small holes and curls.",
+    "credit": "Maria Tyutina",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-of-lace-fabric-7498815/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
   },
   "lago": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/lago.jpg?v=31b1f9c9",
@@ -5819,6 +6049,26 @@
     "reviewedBy": "agent:p3-p3-r1-b003",
     "reviewedAt": "2026-11-04"
   },
+  "melt": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/melt.jpg?v=b8181ade",
+    "alt": "A strawberry ice cream cone lies on a stone surface with its pink ice cream melting out.",
+    "credit": "Tobias Baur",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-shot-of-melted-ice-cream-on-cone-9887878/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
+  "melts": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/melts.jpg?v=b8181ade",
+    "alt": "A strawberry ice cream cone lies on a stone surface with its pink ice cream melting out.",
+    "credit": "Tobias Baur",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-shot-of-melted-ice-cream-on-cone-9887878/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
+  },
   "menu": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/menu.jpg?v=40cfa37b",
     "alt": "Overhead view of two people holding paper menus at a marble table with two cups of coffee.",
@@ -6029,6 +6279,16 @@
     "reviewedBy": "agent:p3-p3-r2-b001+agent:p3-2nd-b001",
     "reviewedAt": "2026-11-04"
   },
+  "nervousness": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/nervousness.jpg?v=80874e07",
+    "alt": "A woman looks anxious with her hand pressed to her mouth and wide eyes.",
+    "credit": "Andrea Piacquadio",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/woman-in-gray-sweater-holding-her-face-3767399/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "niebla": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/niebla.jpg?v=76e06972",
     "alt": "Rays of sunlight pass through fog among dark forest trees.",
@@ -6109,6 +6369,16 @@
     "reviewedBy": "agent:p3-p3-r1-b003",
     "reviewedAt": "2026-11-04"
   },
+  "octagon": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/octagon.jpg?v=7b47b86b",
+    "alt": "An eight-sided skylight seen from below frames a pale sky inside a dark ceiling.",
+    "credit": "Dennis Ariel",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/sky-and-treetop-seen-through-octagon-window-18892321/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b001",
+    "reviewedAt": "2026-11-04"
+  },
   "océano": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/oceano-5e9b48af.jpg?v=cc12fe3f",
     "alt": "A large turquoise ocean wave curls and breaks.",
@@ -6159,6 +6429,16 @@
     "reviewedBy": "agent:p2-r1-b009+agent:p2-second-b003",
     "reviewedAt": "2026-10-09"
   },
+  "opens": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/opens.jpg?v=34da1b27",
+    "alt": "Two hands open the golden handles of blue glass-paned doors.",
+    "credit": "Marcus Aurelius",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/close-up-shot-of-a-person-opening-a-door-9788371/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "orange": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/orange.jpg?v=3d785159",
     "alt": "A ripe orange hanging from a leafy branch of an orange tree in sunlight.",
@@ -6189,6 +6469,16 @@
     "reviewedBy": "agent:p2-r1-b009",
     "reviewedAt": "2026-10-09"
   },
+  "oval": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/oval.jpg?v=ca6a4d39",
+    "alt": "Two oval mirrors hang above a double sink in a bathroom.",
+    "credit": "Curtis Adams",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/ceramic-toilet-sink-with-oval-mirrors-10486220/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003",
+    "reviewedAt": "2026-11-04"
+  },
   "oveja": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/oveja.jpg?v=12d413da",
     "alt": "A white sheep looking at the camera among a crowded flock of sheep.",
@@ -6207,6 +6497,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/a-person-packing-up-belongings-9186024/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p4-b003+agent:p4-2nd-b001",
+    "reviewedAt": "2026-11-04"
+  },
+  "package": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/package.jpg?v=29c20793",
+    "alt": "A cardboard box and two paper mailing envelopes rest on a stone doorstep.",
+    "credit": "RDNE Stock project",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/packages-at-the-doorway-7363199/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
     "reviewedAt": "2026-11-04"
   },
   "painter": {
@@ -6349,6 +6649,16 @@
     "reviewedBy": "agent:review-r1-b008+agent:review2-r1-2nd-b003",
     "reviewedAt": "2026-10-07"
   },
+  "passport": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/passport.jpg?v=20170944",
+    "alt": "A blue passport lies on a white surface with a red boarding pass tucked behind it.",
+    "credit": "Borys Zaitsev",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/the-front-cover-of-a-current-biometric-ukrainian-passport-8061952/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
+  },
   "path": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/path.jpg?v=52d9fc65",
     "alt": "A narrow gravel path winding up through grassy dunes under a clear sky.",
@@ -6368,6 +6678,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r1-b008",
     "reviewedAt": "2026-10-07"
+  },
+  "pay": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/pay.jpg?v=8302ecdc",
+    "alt": "A customer holds a bank card against a card reader at a shop checkout counter while the cashier holds it.",
+    "credit": "Kampus Production",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/paying-in-a-counter-using-a-bank-card-8475161/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b005+agent:coordinator-p5c-second",
+    "reviewedAt": "2026-11-04"
   },
   "peanuts": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/peanuts.jpg?v=370b9227",
@@ -6438,6 +6758,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r2-b003+agent:review2-r1-2nd-b003",
     "reviewedAt": "2026-10-07"
+  },
+  "pentagon": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/pentagon.jpg?v=e4f9c7c7",
+    "alt": "Five-sided frames of light form a repeating geometric pattern in a dark glass ceiling seen from below.",
+    "credit": "Zion Smith",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/intricate-geometric-glass-roof-interior-38612875/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
   },
   "pepino": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/pepino.jpg?v=101ce276",
@@ -6538,6 +6868,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r3-b002",
     "reviewedAt": "2026-10-07"
+  },
+  "photographs": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/photographs.jpg?v=ff7d2316",
+    "alt": "Three printed photographs hang from a string with small pegs.",
+    "credit": "Kristina Chuprina",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/photo-prints-hanging-on-a-string-10500586/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
   },
   "photography": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/photography.jpg?v=b7799154",
@@ -6667,6 +7007,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/close-up-of-plants-with-delicate-flowers-in-the-pots-25462388/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r1-b004",
+    "reviewedAt": "2026-11-04"
+  },
+  "plants": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/plants.jpg?v=6dd776de",
+    "alt": "Succulent plants grow in rows of small red and pink pots.",
+    "credit": "Natalia Sevruk",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/colorful-succulent-arrangement-in-pots-36620948/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
     "reviewedAt": "2026-11-04"
   },
   "plastic": {
@@ -6869,6 +7219,16 @@
     "reviewedBy": "agent:p2-r1-b010",
     "reviewedAt": "2026-10-09"
   },
+  "pulse": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/pulse.jpg?v=916c445e",
+    "alt": "A health worker in gloves holds a patient's wrist to feel the pulse.",
+    "credit": "Jeff Yen",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-medical-professional-checking-a-patients-pulse-5319553/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "pyjamas": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/pyjamas.jpg?v=78ec664c",
     "alt": "People in blue, white, yellow and lilac pyjamas hold coloured pillows, shown from the neck down.",
@@ -6927,6 +7287,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/woman-in-white-and-black-dress-standing-in-front-of-glass-window-13594133/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r2-b002+agent:p3-2nd-b002",
+    "reviewedAt": "2026-11-04"
+  },
+  "raining": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/raining.jpg?v=67a00104",
+    "alt": "Raindrops make ripples on wet road markings during a rainy day.",
+    "credit": "Nothing Ahead",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/puddle-on-street-4510488/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
     "reviewedAt": "2026-11-04"
   },
   "rainy": {
@@ -6988,6 +7358,26 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r2-b003",
     "reviewedAt": "2026-10-07"
+  },
+  "reception": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/reception.jpg?v=dd400e11",
+    "alt": "A smiling woman stands behind a wooden reception desk in an old-fashioned hotel lobby.",
+    "credit": "Andrea Piacquadio",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/hospitable-woman-standing-behind-front-desk-3771087/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
+  "rectangle": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/rectangle.jpg?v=9c0e8f02",
+    "alt": "A pale grey rectangle stands out against a bright blue background.",
+    "credit": "Jan van der Wolf",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/minimalist-abstract-wall-with-bold-colors-30938848/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003",
+    "reviewedAt": "2026-11-04"
   },
   "recycling": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/recycling.jpg?v=2f2f0181",
@@ -7459,6 +7849,16 @@
     "reviewedBy": "agent:p2-r2-b003",
     "reviewedAt": "2026-10-09"
   },
+  "simmer": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/simmer.jpg?v=1bc66672",
+    "alt": "A floral enamel pot with soup simmers over a blue gas flame on a stove.",
+    "credit": "betül nur akyürek",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/enamel-pot-on-gas-stove-with-steaming-soup-34640219/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003",
+    "reviewedAt": "2026-11-04"
+  },
   "singing": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/singing.jpg?v=e3880ef0",
     "alt": "A woman sings into a microphone on a dark stage lit by warm lights.",
@@ -7629,6 +8029,16 @@
     "reviewedBy": "agent:review-r1-b011",
     "reviewedAt": "2026-10-07"
   },
+  "speak": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/speak.jpg?v=1f4cc3d3",
+    "alt": "A man in a suit speaks at a podium in front of a seated group in a meeting room.",
+    "credit": "Werner Pfennig",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/man-in-black-suit-standing-in-front-of-black-laptop-computer-6949931/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b003+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "sphere": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/sphere.jpg?v=79dc011b",
     "alt": "Three glossy white spheres of different sizes sit on a red surface in a beam of light.",
@@ -7659,6 +8069,16 @@
     "reviewedBy": "agent:review-r1-b011",
     "reviewedAt": "2026-10-07"
   },
+  "spray": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/spray.jpg?v=5810bf74",
+    "alt": "A yellow and red spray bottle trigger and nozzle in close-up.",
+    "credit": "Alexey Demidov",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/red-and-yellow-spray-bottle-11215808/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
+  },
   "sprinkle": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/sprinkle.jpg?v=723e3572",
     "alt": "Coarse salt falls from above onto a raw piece of beef next to rosemary.",
@@ -7667,6 +8087,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/sprinkling-salt-on-raw-meat-10201880/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r1-b005",
+    "reviewedAt": "2026-11-04"
+  },
+  "square": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/square.jpg?v=ec520610",
+    "alt": "A single red square sits in the middle of a plain black background.",
+    "credit": "Magda Ehlers",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/red-square-on-black-background-1340377/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
     "reviewedAt": "2026-11-04"
   },
   "stamp": {
@@ -8039,6 +8469,16 @@
     "reviewedBy": "agent:p2-r5-b001",
     "reviewedAt": "2026-10-09"
   },
+  "temperature": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/temperature.jpg?v=694aa454",
+    "alt": "A glass thermometer and a digital thermometer lie on a blue background.",
+    "credit": "Maksim Goncharenok",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/white-and-yellow-thermometers-5995227/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
+  },
   "tenedor": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/tenedor.jpg?v=d485063c",
     "alt": "Many silver forks, knives and spoons are lined up on a black background.",
@@ -8148,6 +8588,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r1-b011",
     "reviewedAt": "2026-10-07"
+  },
+  "till": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/till.jpg?v=c15a9406",
+    "alt": "An old pale blue cash register stands on a wooden counter next to a coffee cup.",
+    "credit": "Magda Ehlers",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/vintage-cash-register-in-retro-shop-setting-38640932/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
   },
   "toalla": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/toalla.jpg?v=9f1aa38e",
@@ -8308,6 +8758,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r1-b012",
     "reviewedAt": "2026-10-07"
+  },
+  "travels": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/travels.jpg?v=10d2ab79",
+    "alt": "A traveller pulls a suitcase through a sunlit airport terminal with other passengers behind.",
+    "credit": "Magic K",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/busy-people-on-the-airport-terminal-6726195/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
   },
   "tren": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/tren.jpg?v=212330da",
@@ -8549,6 +9009,16 @@
     "reviewedBy": "agent:review-r2-b004",
     "reviewedAt": "2026-10-07"
   },
+  "vote": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/vote.jpg?v=51480b5f",
+    "alt": "A hand drops a paper ballot into a clear ballot box.",
+    "credit": "Fatima Yusuf",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/man-throwing-out-paper-15993793/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
+  },
   "waiter": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/waiter.jpg?v=bffea77a",
     "alt": "A waiter in a white shirt and dark tie carries a tray with a drink and fruit in a cafe.",
@@ -8568,6 +9038,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r1-b012+agent:review2-r1-2nd-b004",
     "reviewedAt": "2026-10-07"
+  },
+  "wake": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/wake.jpg?v=2da7a04b",
+    "alt": "A woman stretches her arms above her head as she wakes up in a bed with white sheets.",
+    "credit": "Kampus Production",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/woman-in-gray-shirt-raising-her-hands-while-sitting-on-the-bed-7556598/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002+agent:p5-b004",
+    "reviewedAt": "2026-11-04"
   },
   "walk": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/walk.jpg?v=f59b2b99",
@@ -8649,6 +9129,16 @@
     "reviewedBy": "agent:p2-r3-b001+agent:p2-second-b003",
     "reviewedAt": "2026-10-09"
   },
+  "water": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/water.jpg?v=ec34aeaa",
+    "alt": "Three glasses of different sizes filled with water stand on a pale blue background.",
+    "credit": "James Servant",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/clear-drinking-glasses-with-water-13464445/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
+    "reviewedAt": "2026-11-04"
+  },
   "weights": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/weights.jpg?v=9ff8bbdf",
     "alt": "Racks of dumbbells lined up in a gym.",
@@ -8717,6 +9207,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/palm-trees-during-a-hurricane-16313103/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p3-p3-r1-b006",
+    "reviewedAt": "2026-11-04"
+  },
+  "with wool": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/with-wool.jpg?v=1ceb3e66",
+    "alt": "A ball of bright yellow wool yarn on a white background.",
+    "credit": "Valentin Ivantsov",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/bright-yellow-yarn-ball-on-white-background-38684264/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:p5-b002",
     "reviewedAt": "2026-11-04"
   },
   "woman": {

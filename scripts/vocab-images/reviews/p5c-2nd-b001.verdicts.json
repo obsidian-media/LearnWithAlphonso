@@ -1,0 +1,13 @@
+{
+  "batch": "p5c-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:coordinator-p5c-second",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "pay": {
+      "verdict": "approve",
+      "alt": "A customer pays with a bank card on a card reader held out at a shop counter.",
+      "peopleVisible": true
+    }
+  }
+}

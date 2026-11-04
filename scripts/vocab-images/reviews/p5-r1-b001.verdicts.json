@@ -1,0 +1,229 @@
+{
+  "batch": "p5-r1-b001",
+  "pass": "first",
+  "reviewer": "agent:p5-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "airmail": {
+      "verdict": "approve",
+      "alt": "A blank white airmail envelope with red and blue striped edges lies on a striped cloth.",
+      "peopleVisible": false
+    },
+    "alcohol": {
+      "verdict": "reject",
+      "reasons": [
+        "alcohol-tobacco-drugs-gambling",
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "arguing": {
+      "verdict": "approve",
+      "alt": "A woman gestures emphatically as she argues with a man standing in front of her on a street.",
+      "peopleVisible": true
+    },
+    "audience": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "awards": {
+      "verdict": "approve",
+      "alt": "Two small metal sports trophies, one topped with a soccer ball, stand on a wooden shelf.",
+      "peopleVisible": false
+    },
+    "bruise": {
+      "verdict": "approve",
+      "alt": "A close-up of a purple and dark red bruise on a person's skin.",
+      "peopleVisible": false
+    },
+    "brushes": {
+      "verdict": "approve",
+      "alt": "Several paint brushes with paint on the bristles stand next to a plastic paint palette.",
+      "peopleVisible": false
+    },
+    "by the river": {
+      "verdict": "approve",
+      "alt": "A wide brown river flows past grassy banks and green trees on a calm day.",
+      "peopleVisible": false
+    },
+    "cardio": {
+      "verdict": "approve",
+      "alt": "A man stands on a treadmill in a gym during a cardio workout.",
+      "peopleVisible": true
+    },
+    "carriage": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "catch": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "chemistry": {
+      "verdict": "approve",
+      "alt": "Glass laboratory flasks filled with blue liquid stand on a white surface.",
+      "peopleVisible": false
+    },
+    "circle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "collect": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "contactless": {
+      "verdict": "approve",
+      "alt": "A hand holds a bank card to a card reader to pay without touching it, against a blue and orange background.",
+      "peopleVisible": true
+    },
+    "cyclone": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "delivery": {
+      "verdict": "approve",
+      "alt": "A courier hands over a small parcel while a person signs a paper receipt.",
+      "peopleVisible": true
+    },
+    "draw": {
+      "verdict": "approve",
+      "alt": "Hands draw with a pencil on a sheet of paper surrounded by pencils and a paint palette.",
+      "peopleVisible": true
+    },
+    "drinks": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fill in": {
+      "verdict": "approve",
+      "alt": "A person fills in a paper form with a blue pen on a desk.",
+      "peopleVisible": true
+    },
+    "fire": {
+      "verdict": "approve",
+      "alt": "Bright orange flames lick a burning log in a fire.",
+      "peopleVisible": false
+    },
+    "fix": {
+      "verdict": "approve",
+      "alt": "A man in a hooded sweatshirt repairs a red bicycle held upside down in a room with bookshelves.",
+      "peopleVisible": true
+    },
+    "fly": {
+      "verdict": "approve",
+      "alt": "A seagull flies with wings spread over blue sea near a rocky coast.",
+      "peopleVisible": false
+    },
+    "gale": {
+      "verdict": "approve",
+      "alt": "Palm trees bend in a strong wind under a dark stormy sky in a black and white photo.",
+      "peopleVisible": false
+    },
+    "hailstorm": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "head": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "heart": {
+      "verdict": "approve",
+      "alt": "A hand holds a red anatomical model of a human heart against a pale background.",
+      "peopleVisible": true
+    },
+    "hexagon": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "hurricane": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text",
+        "off-term"
+      ]
+    },
+    "injured": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "interview": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "lace": {
+      "verdict": "approve",
+      "alt": "A close-up of white lace fabric with a pattern of small holes and curls.",
+      "peopleVisible": false
+    },
+    "lungs": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "melt": {
+      "verdict": "approve",
+      "alt": "A strawberry ice cream cone lies on a stone surface with its pink ice cream melting out.",
+      "peopleVisible": false
+    },
+    "melts": {
+      "verdict": "approve",
+      "alt": "A strawberry ice cream cone lies on a stone surface with its pink ice cream melting out.",
+      "peopleVisible": false
+    },
+    "nervousness": {
+      "verdict": "approve",
+      "alt": "A woman looks anxious with her hand pressed to her mouth and wide eyes.",
+      "peopleVisible": true
+    },
+    "notes": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text",
+        "off-term"
+      ]
+    },
+    "octagon": {
+      "verdict": "approve",
+      "alt": "An eight-sided skylight seen from below frames a pale sky inside a dark ceiling.",
+      "peopleVisible": false
+    },
+    "opens": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "oval": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}
