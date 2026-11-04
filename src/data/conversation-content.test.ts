@@ -215,7 +215,10 @@ describe("campaign prompt rules", () => {
 
   it("keeps campaign Spanish in the Latin American variety", () => {
     for (const { label, text } of campaignTexts("es")) {
-      const cleaned = text.replace("nunca uses «vosotros» ni «vos»", "");
+      // "piso" is the floor of a building here (Spain's "flat" sense is what the ban is for).
+      const cleaned = text
+        .replace("nunca uses «vosotros» ni «vos»", "")
+        .replace(/(el|tercer) piso|\(piso,/g, "");
       expect(cleaned, label).not.toMatch(/\bvosotr|\bvuestr|\bpiso\b|\bcoger\b|\bordenador\b/i);
     }
   });

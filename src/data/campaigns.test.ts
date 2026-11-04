@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CAMPAIGNS, getCampaign } from "./campaigns";
+import { NO_MEDICAL } from "./campaigns-more";
 
 describe("campaigns data", () => {
   it("ships at least one campaign with 2+ scenes (proof of the architecture)", () => {
@@ -81,18 +82,59 @@ describe("story campaigns", () => {
     }
   });
 
-  it("keeps the doctor's visit practice-only: no medical advice, drug names or doses", () => {
+  it("pins the whole practice-only guard in every clinic scene: no advice, kind decline, emergency exit", () => {
     const doctors = getCampaign("doctors-visit")!;
-    const guard = {
-      en: "never diagnose",
-      fr: "ne pose jamais de diagnostic",
-      es: "nunca des un diagnóstico",
+    // Each clause on its own, so removing any one of them turns this red.
+    const clauses = {
+      en: [
+        "never diagnose, never name a medicine or a dose, and never say how to treat anything.",
+        "kindly say that the doctor or the pharmacist will go through it with them",
+        "chest pain, trouble breathing or thoughts of harming themselves, step out of character",
+        "contact local emergency services or a trusted adult right now",
+      ],
+      fr: [
+        "ne pose jamais de diagnostic, ne nomme aucun médicament ni aucune dose",
+        "que le médecin ou le pharmacien l'expliquera",
+        "une douleur à la poitrine, une difficulté à respirer ou des idées de se faire du mal, sors brièvement de ton personnage",
+        "contacter tout de suite les secours de son pays",
+      ],
+      es: [
+        "nunca des un diagnóstico, nunca nombres un medicamento ni una dosis",
+        "que la médica o el farmacéutico lo explicará",
+        "dolor en el pecho, dificultad para respirar o ideas de hacerse daño, sal brevemente de tu personaje",
+        "servicios de emergencia de su país",
+      ],
     } as const;
     for (const s of doctors.scenes) {
       for (const course of COURSES) {
-        expect(s.systemPrompt[course], `${s.id}.${course}`).toContain(guard[course]);
+        expect(s.systemPrompt[course], `${s.id}.${course} has the whole guard`).toContain(
+          NO_MEDICAL[course],
+        );
+        for (const clause of clauses[course]) {
+          expect(NO_MEDICAL[course], `${course} guard clause`).toContain(clause);
+          expect(s.systemPrompt[course], `${s.id}.${course}: ${clause}`).toContain(clause);
+        }
       }
     }
+  });
+
+  it("the guard check can fail: a prompt missing the emergency clause is caught", () => {
+    const cut = NO_MEDICAL.en.replace(/ If the learner describes chest pain.*$/, "");
+    expect(`You are Maya. ${cut}`).not.toContain(NO_MEDICAL.en);
+  });
+
+  it("never asks the booking caller for a surname, phone number or address (ai-safety rule)", () => {
+    const book = getCampaign("doctors-visit")!.scenes[0];
+    expect(book.systemPrompt.en).toContain("Never ask for a surname, a phone number, an address");
+    expect(book.systemPrompt.fr).toContain("Ne demande jamais un nom de famille");
+    expect(book.systemPrompt.es).toContain("Nunca pidas apellido, número de teléfono");
+    for (const course of COURSES) {
+      expect(book.systemPrompt[course]).toMatch(/first name|prénom|nombre de pila/);
+    }
+  });
+
+  it("keeps the doctor's visit free of drug names and doses in learner-facing lines", () => {
+    const doctors = getCampaign("doctors-visit")!;
     // No dose or strength anywhere in the learner-facing lines ("500 mg", "2 tablets").
     for (const s of doctors.scenes) {
       for (const course of COURSES) {
