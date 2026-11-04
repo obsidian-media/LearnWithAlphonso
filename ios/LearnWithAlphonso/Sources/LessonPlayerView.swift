@@ -1513,7 +1513,7 @@ private struct GeneratedPracticeSection: View {
                     if let saveCourse, let saveWordHandler {
                         TappableText(
                             text: q.explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
-                            onSave: saveWordHandler
+                            mode: .allWords, onSave: saveWordHandler
                         )
                         .font(AlphonsoFont.sans(13))
                     } else {

@@ -281,7 +281,7 @@ private struct PodcastTranscriptSheet: View {
                                 ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
                                     // A transcript is wholly in its episode's course language.
                                     TappableText(
-                                        text: paragraph, color: AlphonsoColor.ink, course: course
+                                        text: paragraph, color: AlphonsoColor.ink, course: course, mode: .allWords
                                     ) { savingWord = $0 }
                                     .font(AlphonsoFont.sans(15))
                                     .frame(maxWidth: .infinity, alignment: .leading)

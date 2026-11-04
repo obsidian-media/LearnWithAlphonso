@@ -22,21 +22,37 @@ struct TappableText: View {
     /// The course the word is saved under ("en", "fr" or "es"): the course of the
     /// conversation or lesson the text came from.
     let course: String
+    /// Which words of `text` may be tapped. Required, with no default, so no caller can fall into a wrong
+    /// default by leaving it out.
+    let mode: Mode
     let onSave: (SaveWordRequest) -> Void
-    /// French and Spanish lesson explanations mix English with quoted course text: when set, only words
-    /// inside these course-language strings are linked, and the saved sentence is that string
-    /// (`CourseLanguageSpans`). nil (the default) links every word, for text wholly in the course's language.
-    var courseSpans: [String]? = nil
 
-    /// The text cut into pieces; with no `courseSpans` it is one piece in which every word is linkable.
-    private var pieces: [CourseLanguageSpans.Piece] {
-        // No spans means "the whole text is in the course's language", which is true only of the English
-        // course. For any other course it means nothing is linkable, so a caller that forgets the spans
-        // can never offer English words under French or Spanish.
-        guard let courseSpans else {
-            return [.init(text: text, isCourseLanguage: SavedWordPolicy.savesWholeText(inCourse: course))]
+    enum Mode: Equatable {
+        /// Every word: text wholly in the course's language (Hector, Practice and Campaign replies, podcast
+        /// transcripts, and English lessons).
+        case allWords
+        /// Only words inside these course-language strings (French and Spanish lesson explanations, where the
+        /// English text around them must stay plain); the saved sentence is that string (`CourseLanguageSpans`).
+        case spans([String])
+        /// Nothing is tappable (named `plain`, not `none`, so it can never be confused with Optional.none).
+        case plain
+
+        /// A lesson explanation: every word in the English course, only the proven spans in French and Spanish,
+        /// and nothing in a French or Spanish course that has no spans.
+        static func lesson(course: String, spans: [String]?) -> Mode {
+            if SavedWordPolicy.savesWholeText(inCourse: course) { return .allWords }
+            guard let spans, !spans.isEmpty else { return .plain }
+            return .spans(spans)
         }
-        return CourseLanguageSpans.split(text, spans: courseSpans)
+    }
+
+    /// The text cut into pieces; `.allWords` is one piece in which every word is linkable.
+    private var pieces: [CourseLanguageSpans.Piece] {
+        switch mode {
+        case .allWords: return [.init(text: text, isCourseLanguage: true)]
+        case .plain: return [.init(text: text, isCourseLanguage: false)]
+        case .spans(let spans): return CourseLanguageSpans.split(text, spans: spans)
+        }
     }
 
     private var attributed: AttributedString {
@@ -61,7 +77,7 @@ struct TappableText: View {
 
     /// The sentence to save for a tap at `offset`: the course-language piece it fell in when spans are used.
     private func sentence(for word: String, atOffset offset: Int?) -> String {
-        guard courseSpans != nil else {
+        guard case .spans = mode else {
             return offset.map { WordSegmenter.sentence(containing: word, in: text, atOffset: $0) }
                 ?? WordSegmenter.sentence(containing: word, in: text)
         }

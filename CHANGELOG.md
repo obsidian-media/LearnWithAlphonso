@@ -10,6 +10,8 @@ works now_.
 
 ## Unreleased
 
+**iOS: Hector and podcast transcripts are tappable again in French and Spanish (2026-11-04).** #371 made `TappableText` treat "no spans" as "nothing linkable" outside English, which switched off word saving in Hector replies and podcast transcripts in the French and Spanish courses (both are wholly in the course language and passed no spans). Which words are tappable is now an explicit, required `TappableText.Mode` at every call site: `.allWords` (Hector, transcripts, generated practice, English lessons), `.spans([...])` and `.plain`, with `Mode.lesson(course:spans:)` for lesson explanations (English: all words; French/Spanish: the proven spans, else nothing). `ios-save-word-guards.test.ts` pins every caller to its mode. The app target compiles only in CI.
+
 **More story campaigns (2026-11-04).** Four new campaigns in English, French and Spanish (3-4 scenes each): first week at a new job, doctor's visit (practice only, no medical advice), trip by train, and moving to a new flat. `ALL_SYSTEM_PROMPTS` grows from 45 to 84. Bundled iOS and Android campaign JSON re-exported; `campaign-catalog-guards.test.ts` keeps the list screens and the bundles honest.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)

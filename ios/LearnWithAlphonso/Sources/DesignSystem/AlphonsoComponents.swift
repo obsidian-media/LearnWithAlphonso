@@ -611,6 +611,13 @@ struct AlphonsoTipCard: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.saveWordHandler) private var saveWordHandler
 
+    /// What the explanation offers for saving, or nil for plain text (`TappableText.Mode.lesson`).
+    private var tapMode: TappableText.Mode? {
+        guard let saveCourse else { return nil }
+        let mode = TappableText.Mode.lesson(course: saveCourse, spans: courseSpans)
+        return mode == .plain ? nil : mode
+    }
+
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
             VStack(alignment: .leading, spacing: 3) {
@@ -618,12 +625,10 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                     .tracking(0.3)
                     .foregroundStyle(AlphonsoColor.ember)
-                if let saveCourse, let saveWordHandler,
-                    SavedWordPolicy.savesWholeText(inCourse: saveCourse) || courseSpans != nil
-                {
+                if let saveCourse, let saveWordHandler, let mode = tapMode {
                     TappableText(
                         text: explanation, color: AlphonsoColor.ink, course: saveCourse,
-                        onSave: saveWordHandler, courseSpans: courseSpans
+                        mode: mode, onSave: saveWordHandler
                     )
                     .font(AlphonsoFont.sans(14))
                 } else {
@@ -774,7 +779,7 @@ struct ExplanationView: View {
         if let saveCourse, let saveWordHandler {
             TappableText(
                 text: explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
-                onSave: saveWordHandler, courseSpans: courseSpans
+                mode: .lesson(course: saveCourse, spans: courseSpans), onSave: saveWordHandler
             )
             .font(AlphonsoFont.sans(13))
         } else {
