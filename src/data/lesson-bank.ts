@@ -1327,7 +1327,7 @@ Can you ___ me know by Friday?|let|to tell me|Can you let me know by Friday?|let
 We're ___ to have a picnic on Sunday.|planning|getting ready to do something
 I'll ___ you up at eight o'clock.|pick|"pick up" means to collect someone
 Let's ___ for coffee sometime next week.|arrange|to plan and organise something
-I'm really ___ forward to seeing you.|looking|used in "looking forward to"
+I'm really ___ forward to seeing you.|looking|to wait for something with pleasure|I'm really looking forward to seeing you.|look forward to
 Could you ___ me an invite for the party?|forward|to send a message on to someone
 We should ___ this again sometime.|do|to carry out an activity
 I'll ___ you a text to confirm the time.|write|to put words in a message
@@ -1367,7 +1367,7 @@ Could I transfer money to another ___?|bank|a place that keeps people's money
 The bank ___ closes at five o'clock.|branch|one office of a bank
 I need to ___ my bank card, it's expired.|renew|to get a new copy
 Could you tell me the ___ to send this parcel?|cost|the price of something
-I'd like to set up a standing ___.|order|a regular payment your bank makes for you|I set up a standing order for my rent.
+I'd like to set up a standing ___.|order|a regular payment your bank makes for you|I set up a standing order for my rent.|standing order
 The clerk asked me to ___ the form.|sign|to write your name on
 I need to collect a ___ from the post office.|delivery|something brought to your home`,
   },
@@ -1701,7 +1701,7 @@ Unless you hurry, you ___ miss it.|will|shows a result that surely follows|Unles
 If I ___ you, I'd apologise.|were|a form of be used for advice|If I were you, I'd apologise.
 What would you do if you ___ the lottery?|won|got a prize or a game by luck|What would you do if you won the lottery?
 If they leave now, they ___ arrive by six.|will|shows a likely future result|If they leave now, they will arrive by six.
-I wouldn't do that if I ___ you.|were|a form of be used when giving advice|I wouldn't do that if I were you.
+I wouldn't do that if I ___ you.|were|a way to give advice|I wouldn't do that if I were you.|if I were you
 If she ___ harder, she'd succeed.|tried|made an effort to do something|If she tried harder, she'd succeed.
 We'll go out if the weather ___ good.|is|a form of be used with weather|We'll go out if the weather is good.
 If I had known, I ___ have come.|would|shows a result that did not happen|If I had known, I would have come.
@@ -1730,7 +1730,7 @@ You ___ not smoke here.|must|shows that something is not allowed|You must not sm
 She ___ be at work now.|might|shows that something is possible|She might be at work now.
 We ___ to leave early.|ought|used to say what is right|We ought to leave early.
 He ___ have missed the train.|may|shows that something is possibly true|He may have missed the train.
-You ___ have told me!|should|shows a regret about the past|You should have told me!
+You ___ have told me!|should|shows you regret not doing something|You should have told me!|should have
 I ___ swim when I was five.|could|shows an ability in the past|I could swim when I was five.
 Students ___ not use phones.|may|shows that something is not allowed|Students may not use phones.
 That ___ be John — he's abroad.|can't|shows you are sure it is not true|That can't be John, he's abroad.
@@ -1804,7 +1804,7 @@ keep in ___|touch|to stay in contact|Let's keep in touch.|keep in touch
 strongly ___ (opinion verb)|agree|to have the same opinion as someone|I strongly agree with you.
 express an ___|opinion|what you think about something|Please express your opinion honestly.
 change your ___|mind|your thoughts and ideas|She changed her mind about the trip.
-make a ___ (choose)|decision|a choice you make after thinking|He made a decision quickly.
+make a ___ (choose)|decision|to choose after thinking|He had to make a decision quickly.|make a decision
 draw a ___|conclusion|a final judgement after thinking|We drew a conclusion from the facts.
 have a ___ (talk)|conversation|a talk between two or more people|We had a long conversation.
 hold a ___ (meeting verb)|meeting|an event where people come together to talk|The manager holds a meeting every Monday.
@@ -1921,10 +1921,10 @@ sympathetic|sympathy|a feeling of care for someone who suffers|She showed sympat
 She's saving up to ___ a deposit for a flat.|pay|to give money in exchange for something|She's saving to pay a deposit.
 We ___ a loan to buy the car.|took out|borrowed money from a bank|We took out a loan to buy the car.
 He's ___ into debt because of his spending.|falling|to start owing money|He is falling into debt.|fall into debt
-I set up a standing ___ for my rent.|order|a regular payment set up at your bank|I set up a standing order for my rent.
+I set up a standing ___ for my rent.|order|a regular payment set up at your bank|I set up a standing order for my rent.|standing order
 The bank charges a ___ for overdrafts.|fee|money you pay for a service|The bank charges a fee for overdrafts.
 She transferred money ___ her savings account.|to|towards a place, person or account|She transferred money to her savings account.
-We compared prices before making a ___.|decision|a choice you make after thinking|We compared prices before making a decision.
+We compared prices before making a ___.|decision|to choose after thinking|We must make a decision soon.|make a decision
 He's trying to ___ his monthly expenses.|track|to follow and record something over time|He's trying to track his monthly expenses.
 I applied for a credit ___.|card|plastic you use to buy now, pay later|I applied for a credit card.
 The store offers a money-back ___.|guarantee|a promise to give your money back|The store offers a money-back guarantee.
@@ -2055,7 +2055,7 @@ The interviewer asked about my greatest ___.|weakness|a part of you that is not 
 I believe I would be a great ___ for this role.|fit|the right size or type for something|I think I'm a good fit for this role.
 I'm available for an ___ any day next week.|interview|a meeting to talk about a job|I'm free for an interview next week.
 My current ___ ends next month.|contract|a written agreement to do work|My contract ends next month.
-I'm hoping to ___ my career to the next level.|take|to lift something to a new level|I hope to take my career further.
+I'm hoping to ___ my career to the next level.|take|to raise to a higher stage|I want to take my career to the next level.|take to the next level
 The job ___ mentions strong communication skills.|description|a list of what a job involves|The job description lists the duties.
 I have a ___ in business administration.|degree|a university title after three or four years|I have a degree in business.
 I worked as an ___ for a local company last summer.|intern|a trainee who works to learn|She worked as an intern last summer.
@@ -2069,7 +2069,7 @@ I have excellent ___ skills, both written and spoken.|communication|the ability 
 The recruiter will be in ___ shortly.|touch|in contact|The recruiter will be in touch soon.|in touch
 I'm keen to ___ more about the role.|learn|to gain knowledge of something|I'd love to learn more about the role.
 Thank you for ___ my application.|considering|thinking about something carefully|Thank you for considering my application.
-I look forward to ___ from you soon.|hearing|listening to news from someone|I look forward to hearing from you.`,
+I look forward to ___ from you soon.|hearing|to get news from someone|I look forward to hearing from you.|hear from`,
   },
   {
     id: "b1p14",
@@ -2187,7 +2187,7 @@ I'm ___ sure that's correct.|not|used to make a sentence negative|I'm not sure t
 I'd have to ___ with you on that one.|disagree|to have a different opinion|I'd have to disagree with you.
 From my point of ___, it's a good plan.|view|the way you look at something|From my point of view, it's good.
 I ___ your point, but I still disagree.|understand|to know what someone means|I understand your point, but disagree.
-Honestly, I don't ___ it that way.|see|to look at an idea in a way|I don't see it that way.
+Honestly, I don't ___ it that way.|see|to have the same view|I don't see it that way.|see it that way
 I tend to ___ with the majority here.|side|to support one group in an argument|I tend to side with them.
 That's exactly what I was going to ___.|say|to tell your thoughts in words|That's what I was going to say.
 I'm ___ convinced by that argument.|hardly|almost not at all|I'm hardly convinced by that.
@@ -2651,7 +2651,7 @@ He maintained that he ___ innocent.|was|a past form of be in reported speech|He 
     kind: "pair",
     prompt: 'Complete: "%s ___"',
     note: "Natural English depends on the right partner word.",
-    data: `make a|decision|a choice you make|You must make a decision today.
+    data: `make a|decision|to choose after thinking|You must make a decision today.|make a decision
 take a|risk|a chance of loss or danger|It's worth taking a risk.
 pay|attention|careful listening or watching|Please pay attention to the teacher.
 draw a|conclusion|a final opinion reached after thought|We drew a conclusion from the facts.
@@ -2765,7 +2765,7 @@ We need more data before we can ___.|decide|to choose after thinking|We need mor
 The negotiation ___ down to price alone.|came|to be decided by one main thing|It may come down to price.|come down to
 She's known for driving a hard ___.|bargain|an agreement where both sides argue for terms|She drives a hard bargain.
 The board will ___ on the proposal tomorrow.|vote|to choose by raising a hand or ballot|The board will vote tomorrow.
-We're under pressure to ___ a decision quickly.|make|to reach a choice|We must make a decision quickly.
+We're under pressure to ___ a decision quickly.|make|to choose after thinking|We must make a decision quickly.|make a decision
 The deal fell ___ at the last minute.|through|to fail to happen|The deal could fall through.|fall through
 They agreed to ___ the contract for a year.|extend|to make something last longer|They agreed to extend the contract.
 The company issued new ___ to investors.|shares|parts of a company that people can own|The firm issued new shares.
@@ -2782,7 +2782,7 @@ Negotiations are still ___ ongoing.|very much|to a great degree|Negotiations are
     data: `The suspect was ___ near the scene.|arrested|taken by police for a suspected crime|The suspect was arrested.
 Police are ___ the robbery as a priority case.|treating|handling something in a certain way|Police are treating it as a priority.
 The witness gave a detailed ___ to police.|statement|a spoken or written account|The witness gave a statement.
-He was found ___ of the crime.|guilty|found to have done the crime|He was found guilty.
+He was found ___ of the crime.|guilty|responsible for a crime|He was found guilty.
 The jury reached a ___ after two days.|verdict|the decision of a court jury|The jury reached a verdict.
 She was ___ to five years in prison.|sentenced|given a punishment by a judge|She was sentenced to five years.
 The thief managed to ___ before police arrived.|escape|to get away from a place|The thief tried to escape.
@@ -2896,7 +2896,7 @@ to get cold feet|to become nervous about doing something|to become nervous befor
 to go back to square one|to start again from the beginning|to start again from the beginning|We had to go back to square one.
 to be a piece of the puzzle|to be one part of a larger issue|to be one part of a larger issue|His comment seems to be a piece of the puzzle.
 to hit the nail on the head|to describe something exactly right|to describe something exactly right|You seem to hit the nail on the head!
-to pull someone's leg|to joke with someone|to joke with someone|He likes to pull someone's leg.
+to pull someone's leg|to joke with someone|to trick someone as a joke|Don't try to pull someone's leg.
 to be up in the air|to be undecided or uncertain|to be undecided or uncertain|Our plans seem to be up in the air.
 to bite off more than you can chew|to take on too much|to take on too much|Try not to bite off more than you can chew.
 to take something for granted|to not appreciate something properly|to not value something enough|It is easy to take something for granted.
@@ -3396,7 +3396,7 @@ Either party may ___ this contract with 30 days' notice.|terminate|to end an agr
 The company reserves the ___ to amend these terms.|right|a legal claim or power to do something|The company reserves the right to amend these terms.
 All disputes shall be ___ by arbitration.|resolved|settled; solved|All disputes shall be resolved by arbitration.
 The parties hereby ___ to the following terms.|agree|to accept something officially|The parties hereby agree to these terms.
-This policy is ___ to change without prior notice.|subject|likely to be affected by something|This policy is subject to change.
+This policy is ___ to change without prior notice.|subject|depending on; open to|This policy is subject to change.|subject to
 The signatory ___ that all information is accurate.|warrants|promises that a fact is true|The signatory warrants that all details are accurate.
 Failure to comply may result in immediate ___.|termination|the act of ending something officially|Failure to comply may result in termination.
 The agreement shall remain in ___ for two years.|effect|valid and in use|The agreement shall remain in effect for two years.|in effect
@@ -3464,7 +3464,7 @@ The argument ___ down to a matter of values.|boils|to be simply a matter of|It b
 She ___ her point with a striking example.|illustrated|explained with an example|She illustrated her point well.
 The rhetoric was ___ but ultimately hollow.|persuasive|able to make people believe something|The speech was persuasive but hollow.
 His claim does not ___ up to scrutiny.|stand|to be strong enough to bear a test|His claim does not stand up to scrutiny.|stand up to
-The debate ___ on questions of fairness.|turns|depends on one important point|The debate turns on fairness.
+The debate ___ on questions of fairness.|turns|to depend on|The debate turns on fairness.|turn on
 She skilfully ___ the opposing argument.|dismantled|took apart piece by piece|She dismantled the opposing argument.
 The speech was carefully ___ to appeal to emotion.|crafted|made with skill and care|The speech was carefully crafted.
 His conclusion ___ naturally from the evidence.|follows|comes as a logical result|His conclusion follows from the evidence.
@@ -3620,7 +3620,7 @@ The data is believed to have been ___.|compromised|made less safe or secret|The 
 Please do not ___ to contact me if you need further information.|hesitate|to pause because you are unsure|Please do not hesitate to contact me.
 I would be ___ if you could confirm receipt of this email.|grateful|thankful|I would be grateful for a reply.
 With reference ___ our earlier conversation, I am attaching the report.|to|about; concerning|With reference to our call, here is the report.|with reference to
-I ___ forward to hearing from you soon.|look|to turn your eyes towards something|I look forward to hearing from you.
+I ___ forward to hearing from you soon.|look|to wait for something with pleasure|I look forward to hearing from you.|look forward to
 Please find ___ the requested documents.|attached|joined to an email as a file|Please find attached the documents.
 I am writing ___ behalf of the marketing department.|on|part of the phrase "on behalf of"|I am writing on behalf of the team.
 Should you have any questions, please do not hesitate to ___ out.|reach|to make contact with someone|Please feel free to reach out.|reach out
@@ -3635,7 +3635,7 @@ Kindly ___ me know your availability for next week.|let|to tell me|Kindly let me
 I am writing to ___ up on my previous email.|follow|to ask again about an earlier matter|I am writing to follow up on my email.|follow up
 Please ___ this matter as a priority.|treat|to handle in a certain way|Please treat this matter as a priority.
 I would appreciate it if you could ___ this at your earliest convenience.|address|to deal with a problem|Please address this at your earliest convenience.
-We are ___ forward to a successful collaboration.|looking|turning your eyes towards the future|We are looking forward to working together.
+We are ___ forward to a successful collaboration.|looking|to wait for something with pleasure|We are looking forward to working together.|look forward to
 Please accept our ___ apologies for the delay.|sincere|honest and heartfelt|Please accept our sincere apologies.
 I am ___ that you found the presentation useful.|glad|pleased|I am glad you found it useful.
 Should circumstances ___, please inform us immediately.|change|to become different|Should circumstances change, tell us.
@@ -3724,9 +3724,9 @@ do|business|buying and selling goods|We do business with many countries.
 do|damage|harm that spoils something|The storm did damage to the roof.
 do|research|a careful study to find facts|They do research on diseases.
 do|a favour|a kind act you do for someone|Could you do me a favour?
-take|responsibility|a duty to accept blame or care|Take responsibility for your actions.
+take|responsibility|a duty to accept blame or care|Take responsibility for your actions.|take responsibility
 take|a risk|a chance of loss or danger|It's worth taking a risk.
-take|advantage|a chance to gain from something|Take advantage of the offer.
+take|advantage|to use a chance well|Take advantage of the offer.|take advantage of
 take|notice|attention paid to something|Take no notice of him.
 take|a break|a short rest|Let's take a break.
 have|an argument|a quarrel with someone|They had an argument last night.
@@ -3771,8 +3771,8 @@ downsized position|job cut|job cut|His downsized position was removed.
 substance abuse|drug addiction|drug addiction|He is treated for substance abuse.
 in between opportunities|currently without a job|currently without a job|She is in between opportunities.
 not the sharpest tool in the shed|not very intelligent|not very intelligent|He's not the sharpest tool in the shed.
-letting nature take its course|not intervening medically|not intervening medically|The family agreed on letting nature take its course.
-economical|cheap or stingy|cheap or stingy|He is economical with money.`,
+letting nature take its course|not intervening medically|choosing not to treat an illness|The family agreed on letting nature take its course.
+economical|cheap or stingy|a polite word for stingy|He is economical with money, never generous.`,
   },
   {
     id: "c1p19",
@@ -3792,7 +3792,7 @@ The setbacks were serious; ___, morale remained high.|nevertheless|in spite of t
 The plan had flaws; it worked out well ___.|nonetheless|in spite of what was said|The plan had flaws; it worked nonetheless.
 Sales were falling, ___ the company kept hiring.|yet|but; used to add a surprising contrast|Sales fell, yet the company kept hiring.
 The risks were high; he took the job ___.|even so|in spite of that|It was risky; he took the job even so.
-It was a difficult year; profits rose, ___.|that said|used to add a good point|It was hard; that said, profits rose.
+It was a difficult year; profits rose, ___.|that said|used to add a contrast to a claim|It was hard; that said, profits rose.
 He is, ___ talented, still very inexperienced.|albeit|although; used before an adjective|He is, albeit talented, inexperienced.
 ___ the results are disappointing, we should continue.|granted that|admitting that something may be true|Granted that it's disappointing, we should continue.
 The evidence is weak; it may, ___, still be true.|be that as it may|used to accept a point but still disagree|Be that as it may, we should go on.

@@ -232,7 +232,12 @@ const PHRASES: RegExp[] = [
   /\bdue to\b/,
   /\bpressed on\b/,
   /\bbrings? us back\b/,
-  /\bforward to\b/,
+  /\b(?:look|looks|looked|looking) forward to\b/,
+  /\bstanding order\b/,
+  /\bsubject to\b/,
+  /\b(?:turn|turns|turned) on\b/,
+  /\b(?:hear|hears|heard|hearing) from\b/,
+  /\b(?:make|makes|made|making) (?:a )?decisions?\b/,
 ];
 
 /** The phrase (if any) that the answer sits inside, when the question has no authored term. */
@@ -269,6 +274,9 @@ describe("barePhrase (the phrase-term rule's own behaviour)", () => {
     expect(barePhrase(fill("It is in ___ a ban.", "effect"))).toBe("in effect");
     expect(barePhrase(fill("Kindly ___ me know.", "let"))).toBe("let me know");
     expect(barePhrase(fill("She ___ to be shy.", "used"))).toBe("used to");
+    expect(barePhrase(fill("I ___ forward to it.", "look"))).toBe("look forward to");
+    expect(barePhrase(fill("Please ___ a decision.", "make"))).toBe("make a decision");
+    expect(barePhrase(fill("A standing ___ pays rent.", "order"))).toBe("standing order");
   });
   it("accepts an authored term, or a blank outside any phrase", () => {
     expect(barePhrase({ ...fill("I ___ out at the gym.", "work"), term: "work out" })).toBeNull();

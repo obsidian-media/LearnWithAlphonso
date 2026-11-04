@@ -514,7 +514,8 @@ export const advancedUnits: Unit[] = [
             bank: ["hearing", "hear", "heard", "be hearing"],
             answer: "hearing",
             explanation: '"Look forward to" + -ing.',
-            meaning: "getting news or a reply",
+            term: "hear from",
+            meaning: "to get news from someone",
             example: "I look forward to hearing from you.",
           },
           {

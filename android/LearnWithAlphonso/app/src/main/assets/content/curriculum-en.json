@@ -2218,7 +2218,8 @@
               ],
               "answer": "hearing",
               "explanation": "\"Look forward to\" + -ing.",
-              "meaning": "getting news or a reply",
+              "term": "hear from",
+              "meaning": "to get news from someone",
               "example": "I look forward to hearing from you."
             },
             {
@@ -18169,7 +18170,9 @@
               ],
               "answer": "looking",
               "explanation": "\"looking\" is correct here. Everyday phrases for arranging to meet and making plans.",
-              "meaning": "used in \"looking forward to\""
+              "term": "look forward to",
+              "meaning": "to wait for something with pleasure",
+              "example": "I'm really looking forward to seeing you."
             }
           ]
         },
@@ -18692,6 +18695,7 @@
               ],
               "answer": "order",
               "explanation": "\"order\" is correct here. A2-level vocabulary for post office and banking errands.",
+              "term": "standing order",
               "meaning": "a regular payment your bank makes for you",
               "example": "I set up a standing order for my rent."
             },
@@ -22258,7 +22262,8 @@
               ],
               "answer": 0,
               "explanation": "\"were\" is correct here. First conditional: if + present, will. Second: if + past, would.",
-              "meaning": "a form of be used when giving advice",
+              "term": "if I were you",
+              "meaning": "a way to give advice",
               "example": "I wouldn't do that if I were you."
             },
             {
@@ -22625,7 +22630,8 @@
               ],
               "answer": "should",
               "explanation": "\"should\" is correct here. Modals express degree of certainty, permission, or obligation.",
-              "meaning": "shows a regret about the past",
+              "term": "should have",
+              "meaning": "shows you regret not doing something",
               "example": "You should have told me!"
             },
             {
@@ -23613,8 +23619,9 @@
               ],
               "answer": "decision",
               "explanation": "make a ___ (choose) → decision. Collocations make speech sound natural.",
-              "meaning": "a choice you make after thinking",
-              "example": "He made a decision quickly."
+              "term": "make a decision",
+              "meaning": "to choose after thinking",
+              "example": "He had to make a decision quickly."
             },
             {
               "id": "b1p5q17",
@@ -25090,6 +25097,7 @@
               ],
               "answer": 2,
               "explanation": "\"order\" is correct here. Intermediate vocabulary for managing money.",
+              "term": "standing order",
               "meaning": "a regular payment set up at your bank",
               "example": "I set up a standing order for my rent."
             }
@@ -25142,8 +25150,9 @@
               ],
               "answer": "decision",
               "explanation": "\"decision\" is correct here. Intermediate vocabulary for managing money.",
-              "meaning": "a choice you make after thinking",
-              "example": "We compared prices before making a decision."
+              "term": "make a decision",
+              "meaning": "to choose after thinking",
+              "example": "We must make a decision soon."
             },
             {
               "id": "b1p9q8",
@@ -26872,8 +26881,9 @@
               ],
               "answer": 2,
               "explanation": "\"take\" is correct here. B1-level vocabulary for job applications and interviews.",
-              "meaning": "to lift something to a new level",
-              "example": "I hope to take my career further."
+              "term": "take to the next level",
+              "meaning": "to raise to a higher stage",
+              "example": "I want to take my career to the next level."
             },
             {
               "id": "b1p13q11",
@@ -27097,7 +27107,8 @@
               ],
               "answer": "hearing",
               "explanation": "\"hearing\" is correct here. B1-level vocabulary for job applications and interviews.",
-              "meaning": "listening to news from someone",
+              "term": "hear from",
+              "meaning": "to get news from someone",
               "example": "I look forward to hearing from you."
             }
           ]
@@ -28589,7 +28600,8 @@
               ],
               "answer": 0,
               "explanation": "\"see\" is correct here. B1-level phrases for discussion and debate.",
-              "meaning": "to look at an idea in a way",
+              "term": "see it that way",
+              "meaning": "to have the same view",
               "example": "I don't see it that way."
             },
             {
@@ -33947,7 +33959,8 @@
               ],
               "answer": 0,
               "explanation": "make a → decision. Natural English depends on the right partner word.",
-              "meaning": "a choice you make",
+              "term": "make a decision",
+              "meaning": "to choose after thinking",
               "example": "You must make a decision today."
             },
             {
@@ -35497,7 +35510,8 @@
               ],
               "answer": "make",
               "explanation": "\"make\" is correct here. B2-level vocabulary for meetings and negotiations.",
-              "meaning": "to reach a choice",
+              "term": "make a decision",
+              "meaning": "to choose after thinking",
               "example": "We must make a decision quickly."
             },
             {
@@ -35671,7 +35685,7 @@
               ],
               "answer": 0,
               "explanation": "\"guilty\" is correct here. B2-level vocabulary for news and crime reports.",
-              "meaning": "found to have done the crime",
+              "meaning": "responsible for a crime",
               "example": "He was found guilty."
             },
             {
@@ -37211,8 +37225,8 @@
               "answer": 2,
               "explanation": "to pull someone's leg → to joke with someone. Common B2-level idioms and fixed expressions.",
               "term": "to pull someone's leg",
-              "meaning": "to joke with someone",
-              "example": "He likes to pull someone's leg."
+              "meaning": "to trick someone as a joke",
+              "example": "Don't try to pull someone's leg."
             }
           ]
         },
@@ -43060,7 +43074,8 @@
               ],
               "answer": 0,
               "explanation": "\"subject\" is correct here. Formal, legalistic register found in contracts, policies, and official notices.",
-              "meaning": "likely to be affected by something",
+              "term": "subject to",
+              "meaning": "depending on; open to",
               "example": "This policy is subject to change."
             },
             {
@@ -43953,7 +43968,8 @@
               ],
               "answer": 0,
               "explanation": "\"turns\" is correct here. C1-level vocabulary for constructing a persuasive argument.",
-              "meaning": "depends on one important point",
+              "term": "turn on",
+              "meaning": "to depend on",
               "example": "The debate turns on fairness."
             },
             {
@@ -45971,7 +45987,8 @@
               ],
               "answer": "look",
               "explanation": "\"look\" is correct here. C1-level phrases for formal written communication.",
-              "meaning": "to turn your eyes towards something",
+              "term": "look forward to",
+              "meaning": "to wait for something with pleasure",
               "example": "I look forward to hearing from you."
             }
           ]
@@ -46220,7 +46237,8 @@
               ],
               "answer": "looking",
               "explanation": "\"looking\" is correct here. C1-level phrases for formal written communication.",
-              "meaning": "turning your eyes towards the future",
+              "term": "look forward to",
+              "meaning": "to wait for something with pleasure",
               "example": "We are looking forward to working together."
             }
           ]
@@ -47336,6 +47354,7 @@
               ],
               "answer": "responsibility",
               "explanation": "take → responsibility. C1-level fixed collocations with common light verbs.",
+              "term": "take responsibility",
               "meaning": "a duty to accept blame or care",
               "example": "Take responsibility for your actions."
             },
@@ -47366,7 +47385,8 @@
               ],
               "answer": "advantage",
               "explanation": "take → advantage. C1-level fixed collocations with common light verbs.",
-              "meaning": "a chance to gain from something",
+              "term": "take advantage of",
+              "meaning": "to use a chance well",
               "example": "Take advantage of the offer."
             },
             {
@@ -47988,7 +48008,7 @@
               "answer": 2,
               "explanation": "letting nature take its course → not intervening medically. C1-level euphemisms for sensitive or blunt topics.",
               "term": "letting nature take its course",
-              "meaning": "not intervening medically",
+              "meaning": "choosing not to treat an illness",
               "example": "The family agreed on letting nature take its course."
             },
             {
@@ -48004,8 +48024,8 @@
               "answer": "cheap or stingy",
               "explanation": "economical → cheap or stingy. C1-level euphemisms for sensitive or blunt topics.",
               "term": "economical",
-              "meaning": "cheap or stingy",
-              "example": "He is economical with money."
+              "meaning": "a polite word for stingy",
+              "example": "He is economical with money, never generous."
             }
           ]
         }
@@ -48229,7 +48249,7 @@
               ],
               "answer": "that said",
               "explanation": "\"that said\" is correct here. C1-level connectors for contrast and concession.",
-              "meaning": "used to add a good point",
+              "meaning": "used to add a contrast to a claim",
               "example": "It was hard; that said, profits rose."
             },
             {
