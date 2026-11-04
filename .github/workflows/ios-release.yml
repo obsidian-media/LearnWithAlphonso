@@ -247,6 +247,7 @@ jobs:
             DEVELOPMENT_TEAM="$TEAM_ID"
 
       - name: Export signed .ipa
+        id: export
         working-directory: ios/LearnWithAlphonso
         run: |
           xcodebuild -exportArchive \
@@ -450,14 +451,25 @@ jobs:
         env:
           UPLOAD_REQUESTED: ${{ inputs.upload_to_testflight }}
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          EXPORT_OUTCOME: ${{ steps.export.outcome }}
+          JOB_STATUS: ${{ job.status }}
         run: |
-          BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' ios/LearnWithAlphonso/project.yml | sed 's/[^0-9]//g')
+          BUILD=$(grep -m1 -E '^[[:space:]]+CURRENT_PROJECT_VERSION:' ios/LearnWithAlphonso/project.yml | sed 's/[^0-9]//g')
           if [ "$UPLOAD_REQUESTED" = "true" ] && [ "$UPLOAD_OUTCOME" = "success" ]; then
             echo "### iOS release: uploaded build ${BUILD} to TestFlight" >> "$GITHUB_STEP_SUMMARY"
           elif [ "$UPLOAD_REQUESTED" = "true" ]; then
-            echo "### iOS release: upload requested but NOT done (upload step: ${UPLOAD_OUTCOME:-skipped})" >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::upload_to_testflight was true but no upload happened (upload step: ${UPLOAD_OUTCOME:-skipped})."
+            if [ "$JOB_STATUS" = "cancelled" ] && { [ -z "$UPLOAD_OUTCOME" ] || [ "$UPLOAD_OUTCOME" = "skipped" ] || [ "$UPLOAD_OUTCOME" = "cancelled" ]; }; then
+              MSG="cancelled before upload"
+            else
+              MSG="upload requested but NOT done (upload step: ${UPLOAD_OUTCOME:-skipped})"
+            fi
+            echo "### iOS release: ${MSG}" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::upload_to_testflight was true but no upload happened: ${MSG}."
             exit 1
-          else
+          elif [ "$EXPORT_OUTCOME" = "success" ]; then
             echo "### iOS release: exported only (upload_to_testflight was false, nothing sent to TestFlight)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### iOS release: archive or export did not complete (export step: ${EXPORT_OUTCOME:-skipped}); nothing was exported or uploaded" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::archive or export did not complete."
+            exit 1
           fi
