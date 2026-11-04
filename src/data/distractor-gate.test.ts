@@ -109,6 +109,30 @@ describe("the gate fails on the reported defects", () => {
 });
 
 describe("the gate fails on the second review's mutations", () => {
+  it("rejects a reason that only says the options are wrong", () => {
+    const base = shape("Pass the ___ and pepper.", "salt", ["meat", "cheese", "coffee"], {
+      id: "a1p8q4",
+      packAnswers: new Set(["salt", "meat", "cheese", "coffee"]),
+    });
+    expect(
+      kinds({ ...base, context: "meat, cheese and coffee cannot go with pepper on a table" }),
+    ).toContain("weak-context");
+  });
+
+  it("rejects a clue that sits on top of unreplaced pack-neighbour options", () => {
+    const q = shape(
+      "She drinks ___ juice every morning. (squeezed from a citrus fruit)",
+      "orange",
+      ["still", "rare", "black"],
+      {
+        id: "a1p8q10",
+        packAnswers: new Set(["orange", "still", "rare", "black"]),
+        wrongReplaced: false,
+      },
+    );
+    expect(kinds(q)).toContain("options-not-replaced");
+  });
+
   it("does not let slot phrase + reviewed:true launder an owner example", () => {
     const issues = checkDistractors(
       shape("The dog is ___ the door.", "behind", ["into", "down", "during"], {
@@ -198,7 +222,7 @@ describe("the A1/A2 English bank", () => {
   const packAnswers = new Map<string, Set<string>>();
   const items: { shape: QuestionShape; level: string }[] = [];
   for (const unit of course.curriculum) {
-    if (unit.level !== "A1" && unit.level !== "A2") continue;
+    if (unit.level !== "A1" && unit.level !== "A2" && !/^u\d$/.test(unit.id)) continue;
     for (const lesson of unit.lessons)
       for (const q of lesson.questions) {
         if (q.type !== "mc" && q.type !== "fill") continue;
@@ -223,6 +247,9 @@ describe("the A1/A2 English bank", () => {
             slot: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.slot,
             allow: QUESTION_FIXES[`${lesson.id}/${q.id}`]?.allow,
             reviewed: REVIEWED_PHRASES.has(`${lesson.id}/${q.id}`),
+            wrongReplaced: QUESTION_FIXES[`${lesson.id}/${q.id}`]
+              ? !!QUESTION_FIXES[`${lesson.id}/${q.id}`]!.wrong
+              : undefined,
           },
         });
       }
@@ -273,14 +300,15 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 225, clue: 491 };
+  const PINNED_SPLIT = { picture: 45, context: 140, clue: 548 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
   const POS_MISMATCH_BUDGET = 0;
   const WEAK_CONTEXT_BUDGET = 0;
   const NEEDS_CLUE_BUDGET = 0;
   const UNCLASSIFIED_BUDGET = 0;
+  const OPTIONS_NOT_REPLACED_BUDGET = 0;
   // Inflection questions with no time anchor, clue or reason (follow-up work; may only go down).
-  const TENSE_UNANCHORED_BUDGET = 57;
+  const TENSE_UNANCHORED_BUDGET = 0;
 
   it("does not add topic-word options of another part of speech", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "pos-mismatch")).length;
@@ -300,6 +328,13 @@ describe("the A1/A2 English bank", () => {
   it("does not add inflection questions where another tense also fits", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "tense-unanchored")).length;
     expect(n).toBeLessThanOrEqual(TENSE_UNANCHORED_BUDGET);
+  });
+
+  it("does not add a clue or reason on top of unreplaced pack-neighbour options", () => {
+    const n = all.filter(({ issues }) =>
+      issues.some((i) => i.kind === "options-not-replaced"),
+    ).length;
+    expect(n).toBeLessThanOrEqual(OPTIONS_NOT_REPLACED_BUDGET);
   });
 
   it("does not add questions with an unknown slot", () => {
