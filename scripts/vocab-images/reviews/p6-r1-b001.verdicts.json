@@ -1,0 +1,170 @@
+{
+  "batch": "p6-r1-b001",
+  "pass": "first",
+  "reviewer": "agent:p6-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "aburrido": {
+      "verdict": "approve",
+      "alt": "A man in a green hoodie slumps on a brown leather sofa with a hand against his head, looking bored.",
+      "peopleVisible": true
+    },
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "ahorros": {
+      "verdict": "approve",
+      "alt": "A terracotta piggy bank stands on a dark wooden surface against a plain grey wall.",
+      "peopleVisible": false
+    },
+    "almorzar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "amoureux": {
+      "verdict": "approve",
+      "alt": "A couple kisses in a grassy field while the man dips the woman, with a turquoise car behind them.",
+      "peopleVisible": true
+    },
+    "andén": {
+      "verdict": "approve",
+      "alt": "A long train platform under a steel roof with a red and grey train waiting on each side.",
+      "peopleVisible": true
+    },
+    "antidouleur": {
+      "verdict": "approve",
+      "alt": "White round tablets laid out on a pale blue background.",
+      "peopleVisible": false
+    },
+    "aplicación": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "archipiélago": {
+      "verdict": "approve",
+      "alt": "An aerial view of a group of small rocky islands in calm blue water at dusk.",
+      "peopleVisible": false
+    },
+    "arroser": {
+      "verdict": "approve",
+      "alt": "A watering can pours water over yellow and red flowers in a garden.",
+      "peopleVisible": true
+    },
+    "aso": {
+      "verdict": "approve",
+      "alt": "Pieces of meat grill on a small barbecue while a hand turns them with tongs.",
+      "peopleVisible": true
+    },
+    "aspirer": {
+      "verdict": "approve",
+      "alt": "A vacuum cleaner head glides over a patterned rug.",
+      "peopleVisible": true
+    },
+    "asustado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "autobús": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "balayer": {
+      "verdict": "approve",
+      "alt": "A broom sweeps dirt into a dustpan on a wooden floor.",
+      "peopleVisible": true
+    },
+    "bato": {
+      "verdict": "approve",
+      "alt": "A hand whisks beaten egg over a frying pan on a stove.",
+      "peopleVisible": true
+    },
+    "boda": {
+      "verdict": "approve",
+      "alt": "A bride in a white dress and a groom in a blue suit walk out of a stone doorway while guests clap.",
+      "peopleVisible": true
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "brazo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "cabeza": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "caja fuerte": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "cajero automático": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "caldo": {
+      "verdict": "approve",
+      "alt": "A bowl of noodle soup with chicken, carrot and green onion in a clear broth.",
+      "peopleVisible": false
+    },
+    "calle": {
+      "verdict": "approve",
+      "alt": "A wide city street lined with tall buildings under a dramatic sky, with a few people walking.",
+      "peopleVisible": true
+    },
+    "cansado": {
+      "verdict": "approve",
+      "alt": "A man in a dark shirt covers his mouth with his hand as he yawns with his eyes closed.",
+      "peopleVisible": true
+    },
+    "cantar": {
+      "verdict": "approve",
+      "alt": "A woman sings with her eyes closed into a microphone on a dark stage.",
+      "peopleVisible": true
+    },
+    "cara": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "chanter": {
+      "verdict": "approve",
+      "alt": "A woman sings with her eyes closed into a microphone on a dark stage.",
+      "peopleVisible": true
+    },
+    "cirugía": {
+      "verdict": "approve",
+      "alt": "Surgeons in masks and blue gowns operate on a patient in a bright operating room.",
+      "peopleVisible": true
+    }
+  }
+}

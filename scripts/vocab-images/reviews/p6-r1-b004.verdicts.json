@@ -1,0 +1,169 @@
+{
+  "batch": "p6-r1-b004",
+  "pass": "first",
+  "reviewer": "agent:p6-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "l'athlétisme": {
+      "verdict": "approve",
+      "alt": "Lanes marked 1, 2 and 3 on a red running track.",
+      "peopleVisible": false
+    },
+    "l'avenue": {
+      "verdict": "approve",
+      "alt": "A long straight avenue lined with tall bare trees in black and white.",
+      "peopleVisible": false
+    },
+    "l'enseignant": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "children visible in class"
+    },
+    "l'escalade": {
+      "verdict": "approve",
+      "alt": "A climber in a helmet scales a rock face with a view of mountains behind.",
+      "peopleVisible": true
+    },
+    "l'exposition": {
+      "verdict": "approve",
+      "alt": "A long, bright museum hall with display cases and exhibition panels.",
+      "peopleVisible": false
+    },
+    "l'imprimante": {
+      "verdict": "approve",
+      "alt": "Large printers stand in a bright print room with computers in the background.",
+      "peopleVisible": false
+    },
+    "l'ingénieur": {
+      "verdict": "approve",
+      "alt": "A smiling man in an orange hard hat sits at a desk with a highlighter pen.",
+      "peopleVisible": true
+    },
+    "l'inondation": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "l'école": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ],
+      "note": "students probably minors"
+    },
+    "l'écrivain": {
+      "verdict": "approve",
+      "alt": "A man types on an old typewriter at a wooden desk with a lamp and a mug.",
+      "peopleVisible": true
+    },
+    "l'église": {
+      "verdict": "approve",
+      "alt": "The brick front of a church with pointed arches, a rose window and a statue.",
+      "peopleVisible": false
+    },
+    "l'élection": {
+      "verdict": "approve",
+      "alt": "A hand drops a folded ballot paper into a plastic ballot box.",
+      "peopleVisible": true
+    },
+    "l'épaule": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la banlieue": {
+      "verdict": "approve",
+      "alt": "Red-roofed houses among green trees in a quiet suburb.",
+      "peopleVisible": false
+    },
+    "la banque": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la boxe": {
+      "verdict": "approve",
+      "alt": "A boxer in a brown glove throws a punch toward a person in a white t-shirt.",
+      "peopleVisible": true
+    },
+    "la calculatrice": {
+      "verdict": "approve",
+      "alt": "A hand presses the keys of a black calculator lying on paper plans.",
+      "peopleVisible": true
+    },
+    "la circulation": {
+      "verdict": "approve",
+      "alt": "A busy road full of cars, taxis, motorbikes and buses stuck in traffic.",
+      "peopleVisible": true
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la danse": {
+      "verdict": "approve",
+      "alt": "A dancer in a purple top does a high leg extension in a bright empty studio.",
+      "peopleVisible": true
+    },
+    "la dent": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la déforestation": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la galerie": {
+      "verdict": "approve",
+      "alt": "Two visitors sit on a bench and look at framed paintings in an art gallery, in black and white.",
+      "peopleVisible": true
+    },
+    "la gomme": {
+      "verdict": "approve",
+      "alt": "Pink and rainbow erasers lie next to a blank sheet of paper on a pale pink surface.",
+      "peopleVisible": false
+    },
+    "la grand-mère": {
+      "verdict": "approve",
+      "alt": "An older woman with glasses smiles and leans close to a baby sitting in a wooden chair.",
+      "peopleVisible": true
+    },
+    "la gymnastique": {
+      "verdict": "approve",
+      "alt": "A gymnast in a red top hangs from rings in a bright gym.",
+      "peopleVisible": true
+    },
+    "la jambe": {
+      "verdict": "approve",
+      "alt": "Two bare legs bent at the knee against a plain grey background.",
+      "peopleVisible": true
+    },
+    "la jupe": {
+      "verdict": "approve",
+      "alt": "A person in a black sweater and a long beige skirt stands in a grassy field holding a small yellow flower.",
+      "peopleVisible": true
+    },
+    "la moto": {
+      "verdict": "approve",
+      "alt": "A rider in a helmet speeds along a country road on a motorcycle.",
+      "peopleVisible": true
+    }
+  }
+}

@@ -5,6 +5,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:10303884": {
+    "key": "comisaría",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:10482146": {
     "key": "agua",
     "reasons": [
@@ -23,6 +29,24 @@
     "key": "shopping",
     "reasons": [
       "owner-objection"
+    ]
+  },
+  "pexels:11129922": {
+    "key": "l'ordinateur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:1117132": {
+    "key": "le réalisateur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:11265435": {
+    "key": "dinero",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:11284045": {
@@ -76,6 +100,12 @@
       "off-term"
     ]
   },
+  "pexels:12790295": {
+    "key": "le bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:12975963": {
     "key": "camisa",
     "reasons": [
@@ -126,6 +156,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:13918522": {
+    "key": "le taxi",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:144608": {
     "key": "dog",
     "reasons": [
@@ -135,6 +171,12 @@
   },
   "pexels:1467562": {
     "key": "beat",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:14721": {
+    "key": "llave",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -267,6 +309,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:17527817": {
+    "key": "boleto",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:17994718": {
     "key": "bus",
     "reasons": [
@@ -298,6 +346,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:18799888": {
+    "key": "boleto",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:19242075": {
     "key": "calle",
     "reasons": [
@@ -312,6 +366,12 @@
   },
   "pexels:19314213": {
     "key": "hurricane",
+    "reasons": [
+      "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:19343572": {
+    "key": "le soldat",
     "reasons": [
       "violence-weapons-disaster-injury"
     ]
@@ -356,6 +416,12 @@
     "key": "firefighter",
     "reasons": [
       "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:2217613": {
+    "key": "buzón",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:22763683": {
@@ -427,6 +493,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:2927585": {
+    "key": "le magazine",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:29659894": {
     "key": "escuela",
     "reasons": [
@@ -488,6 +560,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:31751927": {
+    "key": "le roman",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:32081456": {
     "key": "passport",
     "reasons": [
@@ -502,6 +580,12 @@
   },
   "pexels:32176062": {
     "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:32229751": {
+    "key": "la banque",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -537,6 +621,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:33394245": {
+    "key": "farmacia",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:33497885": {
     "key": "passport",
     "reasons": [
@@ -555,6 +645,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:33839270": {
+    "key": "buzón",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:33968153": {
     "key": "gare",
     "reasons": [
@@ -563,6 +659,12 @@
   },
   "pexels:34009126": {
     "key": "mercado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:34207369": {
+    "key": "la robotique",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -681,6 +783,12 @@
       "politics-protest-religion"
     ]
   },
+  "pexels:36768596": {
+    "key": "le handball",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:36905101": {
     "key": "cuchara",
     "reasons": [
@@ -750,6 +858,12 @@
       "violence-weapons-disaster-injury"
     ]
   },
+  "pexels:3794170": {
+    "key": "l'argent",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:37972696": {
     "key": "ceiling",
     "reasons": [
@@ -771,6 +885,12 @@
   },
   "pexels:38433898": {
     "key": "post office",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:3850263": {
+    "key": "aplicación",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -813,6 +933,12 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:39704273": {
+    "key": "le rugby",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:39842677": {
     "key": "dress",
     "reasons": [
@@ -838,6 +964,12 @@
       "nudity-or-suggestive"
     ]
   },
+  "pexels:40062647": {
+    "key": "la télécommande",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:40278398": {
     "key": "heatwave",
     "reasons": [
@@ -846,6 +978,12 @@
   },
   "pexels:40317538": {
     "key": "reception",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4440715": {
+    "key": "le dictionnaire",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -991,6 +1129,18 @@
       "off-term"
     ]
   },
+  "pexels:6025036": {
+    "key": "le piéton",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:6132753": {
+    "key": "cajero automático",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:6169014": {
     "key": "colis",
     "reasons": [
@@ -1021,6 +1171,12 @@
     "key": "headache",
     "reasons": [
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:6740535": {
+    "key": "manger",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:6837644": {
@@ -1133,6 +1289,18 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:7927530": {
+    "key": "frustré",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8019509": {
+    "key": "buzón",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:806626": {
     "key": "camiseta",
     "reasons": [
@@ -1145,8 +1313,20 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:8266773": {
+    "key": "boleto",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:8305726": {
     "key": "ketchup",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8410747": {
+    "key": "fier",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1245,6 +1425,12 @@
       "off-term"
     ]
   },
+  "pixabay:1172463": {
+    "key": "periódico",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:1177009": {
     "key": "la sculpture",
     "reasons": [
@@ -1326,6 +1512,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:1705684": {
+    "key": "le réalisateur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:1729445": {
     "key": "farmacia",
     "reasons": [
@@ -1341,6 +1533,12 @@
   },
   "pixabay:1834294": {
     "key": "la règle",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1838985": {
+    "key": "voto",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1379,6 +1577,12 @@
     "key": "la danse",
     "reasons": [
       "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:1853259": {
+    "key": "l'ordinateur",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pixabay:1853305": {
@@ -1524,6 +1728,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:2510289": {
+    "key": "pasaporte",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:2521534": {
     "key": "trainers",
     "reasons": [
@@ -1552,6 +1762,12 @@
   },
   "pixabay:2585507": {
     "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2587179": {
+    "key": "rire",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1650,6 +1866,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:2986181": {
+    "key": "precio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:3040029": {
     "key": "shopping",
     "reasons": [
@@ -1676,6 +1898,12 @@
       "off-term"
     ]
   },
+  "pixabay:315833": {
+    "key": "le bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:3215049": {
     "key": "farmacia",
     "reasons": [
@@ -1688,6 +1916,12 @@
       "politics-protest-religion"
     ]
   },
+  "pixabay:3471371": {
+    "key": "partido",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:3568168": {
     "key": "le football",
     "reasons": [
@@ -1696,6 +1930,18 @@
   },
   "pixabay:3597219": {
     "key": "secadora",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:3694993": {
+    "key": "l'enseignant",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:3733812": {
+    "key": "la télécommande",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1720,6 +1966,12 @@
   },
   "pixabay:403074": {
     "key": "plancha",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4052658": {
+    "key": "precio",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1829,6 +2081,12 @@
       "off-term"
     ]
   },
+  "pixabay:4932607": {
+    "key": "piqûre",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:499481": {
     "key": "l'argent liquide",
     "reasons": [
@@ -1837,6 +2095,12 @@
   },
   "pixabay:5017870": {
     "key": "watching",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:502952": {
+    "key": "trier",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -1857,6 +2121,12 @@
     "key": "voiture",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:5275027": {
+    "key": "protesta",
+    "reasons": [
+      "politics-protest-religion"
     ]
   },
   "pixabay:5620566": {
@@ -2014,6 +2284,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pixabay:709124": {
+    "key": "sacudir",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pixabay:7094635": {
     "key": "mercado",
     "reasons": [
@@ -2122,6 +2398,12 @@
   },
   "pixabay:8508636": {
     "key": "plane",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:8594729": {
+    "key": "precio",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]

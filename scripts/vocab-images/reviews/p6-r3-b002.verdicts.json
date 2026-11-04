@@ -1,0 +1,94 @@
+{
+  "batch": "p6-r3-b002",
+  "pass": "first",
+  "reviewer": "agent:p6-r3-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "nariz": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "nevando": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "noche": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "orgulloso": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "pasaporte": {
+      "verdict": "approve",
+      "alt": "A hand holds up a dark blue passport with a gold emblem against a white wall.",
+      "peopleVisible": true
+    },
+    "periódico": {
+      "verdict": "approve",
+      "alt": "An older man and woman sit outside and read newspapers.",
+      "peopleVisible": true
+    },
+    "piqûre": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "precio": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "retrato": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "sacudir": {
+      "verdict": "approve",
+      "alt": "A smiling young woman holds up a long feather duster.",
+      "peopleVisible": true
+    },
+    "sobras": {
+      "verdict": "approve",
+      "alt": "A slice of leftover pizza sits in an open cardboard takeaway box.",
+      "peopleVisible": false
+    },
+    "tos": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "trier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "unto": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "voto": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}
