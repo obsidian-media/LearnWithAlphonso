@@ -7290,17 +7290,16 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "Can",
-                "my",
-                "milk",
-                "some",
-                "with",
-                "tea",
-                "have",
-                "I"
+                "a",
+                "She",
+                "soup",
+                "bowl",
+                "tomato",
+                "of",
+                "ordered"
               ],
-              "answer": "Can I have some milk with my tea",
-              "explanation": "Correct order: \"Can I have some milk with my tea?\""
+              "answer": "She ordered a bowl of tomato soup",
+              "explanation": "Correct order: \"She ordered a bowl of tomato soup.\""
             },
             {
               "id": "a1p8q26",
@@ -14357,15 +14356,16 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "my",
-                "card",
-                "with",
-                "debit",
-                "paid",
-                "I"
+                "me",
+                "for",
+                "weigh",
+                "Could",
+                "these",
+                "vegetables",
+                "you"
               ],
-              "answer": "I paid with my debit card",
-              "explanation": "Correct order: \"I paid with my debit card.\""
+              "answer": "Could you weigh these vegetables for me",
+              "explanation": "Correct order: \"Could you weigh these vegetables for me?\""
             },
             {
               "id": "a1p19q29",
@@ -15519,28 +15519,27 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "nose",
-                "You",
-                "with",
                 "your",
-                "smell"
+                "mouth",
+                "wide",
+                "Open"
               ],
-              "answer": "You smell with your nose",
-              "explanation": "Correct order: \"You smell with your nose.\""
+              "answer": "Open your mouth wide",
+              "explanation": "Correct order: \"Open your mouth wide.\""
             },
             {
               "id": "a1p21q26",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "I brush my teeth twice a day.",
+              "audioText": "You smell with your nose.",
               "choices": [
-                "I brush my shin twice a day.",
-                "I brush my mouth twice a day.",
-                "I brush my teeth twice a day.",
-                "I brush my toes twice a day."
+                "You smell with your ears.",
+                "You smell with your eyes.",
+                "You smell with your nose.",
+                "You smell with your hands."
               ],
-              "answer": "I brush my teeth twice a day.",
-              "explanation": "The audio says \"I brush my teeth twice a day.\""
+              "answer": "You smell with your nose.",
+              "explanation": "The audio says \"You smell with your nose.\""
             },
             {
               "id": "a1p21q27",
@@ -16518,29 +16517,27 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "She",
-                "hat",
-                "knits",
-                "with",
-                "a",
-                "wool"
+                "run",
+                "I",
+                "exercise",
+                "for"
               ],
-              "answer": "She knits a hat with wool",
-              "explanation": "Correct order: \"She knits a hat with wool.\""
+              "answer": "I run for exercise",
+              "explanation": "Correct order: \"I run for exercise.\""
             },
             {
               "id": "a1p22q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "She goes to school on a bike.",
+              "audioText": "She knits a hat with wool.",
               "choices": [
-                "She goes to school on a bike.",
-                "She goes to school on a train.",
-                "She goes to work on a bike.",
-                "She goes to school on a bus."
+                "She knits a coat with wool.",
+                "She makes a hat with wool.",
+                "She knits a scarf with wool.",
+                "She knits a hat with wool."
               ],
-              "answer": "She goes to school on a bike.",
-              "explanation": "The audio says \"She goes to school on a bike.\""
+              "answer": "She knits a hat with wool.",
+              "explanation": "The audio says \"She knits a hat with wool.\""
             },
             {
               "id": "a1p22q36",
@@ -28026,30 +28023,30 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "wall",
                 "The",
                 "the",
-                "ladder",
+                "corner",
+                "round",
+                "right",
                 "is",
-                "leaning",
-                "against"
+                "shop"
               ],
-              "answer": "The ladder is leaning against the wall",
-              "explanation": "Correct order: \"The ladder is leaning against the wall.\""
+              "answer": "The shop is right round the corner",
+              "explanation": "Correct order: \"The shop is right round the corner.\""
             },
             {
               "id": "a2p17q29",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "She parked the car outside the building.",
+              "audioText": "The ladder is leaning against the wall.",
               "choices": [
-                "She parked the car between the building.",
-                "She parked the car in the building.",
-                "She parked the car outside the building.",
-                "She parked the car inside the building."
+                "The ladder is leaning against the wall.",
+                "The ladder is leaning near the wall.",
+                "The ladder is leaning against the door.",
+                "The ladder is leaning behind the wall."
               ],
-              "answer": "She parked the car outside the building.",
-              "explanation": "The audio says \"She parked the car outside the building.\""
+              "answer": "The ladder is leaning against the wall.",
+              "explanation": "The audio says \"The ladder is leaning against the wall.\""
             },
             {
               "id": "a2p17q30",
@@ -28145,16 +28142,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
+                "above",
                 "the",
-                "beneath",
-                "sofa",
-                "cushions",
-                "cat",
-                "The",
-                "hid"
+                "village",
+                "floated",
+                "balloon",
+                "The"
               ],
-              "answer": "The cat hid beneath the sofa cushions",
-              "explanation": "Correct order: \"The cat hid beneath the sofa cushions.\""
+              "answer": "The balloon floated above the village",
+              "explanation": "Correct order: \"The balloon floated above the village.\""
             },
             {
               "id": "a2p17q32",

@@ -115,9 +115,8 @@ function reorderQuestion(id: string, lessonId: string, sentence: string): Questi
 function listeningQuestion(id: string, s: Sentence, known: Set<string>): Question {
   const wrongs: string[] = [];
   // Wrong choices must be real, correctly spelled English that sounds clearly different from the
-  // answer (question-variety-gate.ts): the cloze's own wrong options when they qualify, then
-  // authored sentences.
-  for (const w of [...s.wrongs, ...(LISTENING_EXTRA_WRONGS[s.text] ?? [])]) {
+  // answer (question-variety-gate.ts): authored sentences first, then the cloze's own wrong options when they qualify.
+  for (const w of [...(LISTENING_EXTRA_WRONGS[s.text] ?? []), ...s.wrongs]) {
     const key = w.trim();
     if (key === s.text || wrongs.includes(key)) continue;
     if (listeningChoiceProblems(s.text, key, known).length) continue;

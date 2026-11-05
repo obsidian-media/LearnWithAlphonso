@@ -23,7 +23,7 @@ const MONTHS =
 const COP = String.raw`(?:\bis|\bare|\bwas|\bwere|\bam|\bbe|\bbeen|'s|'re|'m)`;
 const DET = "the|a|an|my|your|his|her|our|their|this|that|these|those";
 const PLACE_PREP =
-  "in|at|on|near|outside|inside|around|beside|behind|under|over|next to|across from|opposite|across";
+  "in|at|on|near|outside|inside|around|beside|behind|under|over|next to|across from|opposite|across|with|beneath|among|between|along|through|against";
 /** A place phrase after a full verb ("... in the park"): a copula keeps its one place. */
 const PLACE_RULE = new RegExp(
   String.raw`(?<!${COP} )(?<!${COP} (?:right |just |also |still |not )?)\b(${PLACE_PREP}) (?:(?:${DET}) )?\w+(?: \w+)?$`,

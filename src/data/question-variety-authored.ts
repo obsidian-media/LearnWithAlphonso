@@ -57,6 +57,12 @@ export const REORDER_FALLBACK: Record<string, string> = {
  * by one or two real words that sound clearly different.
  */
 export const LISTENING_EXTRA_WRONGS: Record<string, string[]> = {
+  "The ladder is leaning against the wall.": ["The ladder is leaning against the door."],
+  "She knits a hat with wool.": [
+    "She knits a scarf with wool.",
+    "She makes a hat with wool.",
+    "She knits a coat with wool.",
+  ],
   "The journey was as long as we expected.": ["The journey was as short as we expected."],
   "Let's meet up at the cinema at seven.": ["Let's meet up at the cinema at eight."],
   "My legs hurt after the run.": ["My legs hurt after the game."],
