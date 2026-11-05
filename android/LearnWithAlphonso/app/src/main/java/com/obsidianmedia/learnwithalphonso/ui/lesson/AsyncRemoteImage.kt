@@ -33,7 +33,8 @@ fun AsyncRemoteImage(url: String, contentDescription: String?, modifier: Modifie
     bitmap?.let { Image(it, contentDescription = contentDescription, modifier = modifier, contentScale = ContentScale.Crop) }
 }
 
-/** Fetches an already-allowlisted [url]; null on any failure, non-200, redirect or oversized body. */
+// Caller has already checked RemoteImagePolicy.isAllowed. Null on any
+// failure, non-200 (including a redirect) or a body over the cap.
 private fun downloadBitmap(url: String): ImageBitmap? = runCatching {
     val connection = URL(url).openConnection() as HttpURLConnection
     try {
