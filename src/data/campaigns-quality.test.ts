@@ -194,7 +194,9 @@ describe("campaign structure has no dead ends", () => {
     }
   });
 
-  it("every scene names a different persona and does not repeat its opener", () => {
+  // A persona may recur on purpose (Leo plans the picnic and shares it), so only the opener
+  // and the scene title must differ between the scenes of one campaign.
+  it("no campaign repeats an opener or a scene title", () => {
     for (const c of CAMPAIGNS) {
       const openers = c.scenes.map((s) => s.opener.en);
       expect(new Set(openers).size, c.id).toBe(openers.length);
@@ -212,4 +214,35 @@ describe("campaign structure has no dead ends", () => {
       }
     }
   });
+});
+
+describe("form-filling scenes ask for a first name only (ai-safety rule)", () => {
+  // The scenes where a persona writes the learner's details down: the lost property form and
+  // the support chat. Each must forbid the personal details and allow only a first name.
+  const FORM_SCENES = ["lost-property-office", "refund-parcel"];
+  const RULES = {
+    en: {
+      never: /never ask for a surname, a phone number, an address/i,
+      only: /ask only for a first name/i,
+    },
+    fr: {
+      never: /ne demande jamais un nom de famille, un numéro de téléphone, une adresse/i,
+      only: /demande seulement un prénom/i,
+    },
+    es: {
+      never: /nunca pidas apellido, número de teléfono, dirección/i,
+      only: /pide solo (el|un) nombre de pila/i,
+    },
+  } as const;
+
+  for (const id of FORM_SCENES) {
+    it(`${id} forbids surname, phone and address and asks only for a first name, in every course`, () => {
+      const scene = CAMPAIGNS.flatMap((c) => c.scenes).find((s) => s.id === id);
+      expect(scene, id).toBeDefined();
+      for (const course of COURSES) {
+        expect(scene!.systemPrompt[course], `${id}.${course}`).toMatch(RULES[course].never);
+        expect(scene!.systemPrompt[course], `${id}.${course}`).toMatch(RULES[course].only);
+      }
+    });
+  }
 });
