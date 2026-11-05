@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.nav
 
+import android.net.Uri
+
 /** Navigation routes. Tabs are top-level; the rest push over them. */
 object Routes {
     const val LEARN = "learn"
@@ -34,7 +36,7 @@ object Routes {
     fun listenFolder(id: String) = "listen/folder/$id"
 
     const val INVITE = "invite/{code}"
-    fun invite(code: String) = "invite/$code"
+    fun invite(code: String) = "invite/${Uri.encode(code)}"
 
     val tabs = listOf(LEARN, LISTEN, PRACTICE, HECTOR, PROFILE)
 }

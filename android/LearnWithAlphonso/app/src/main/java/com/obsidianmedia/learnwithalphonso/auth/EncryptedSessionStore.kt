@@ -14,11 +14,19 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
  * (AES-256 keys held by the Android Keystore), never plain preferences.
  */
 class EncryptedSessionStore(context: Context) : SessionStore {
-    private val prefs: SharedPreferences = run {
+    // A file this device cannot decrypt (restored or transferred from another phone, or a Keystore reset) would throw
+    // here on every launch. The session in it is unusable anyway, so the file is removed and recreated empty: the
+    // learner signs in again.
+    private val prefs: SharedPreferences = runCatching { open(context) }.getOrElse {
+        context.deleteSharedPreferences(FILE)
+        open(context)
+    }
+
+    private fun open(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
-        EncryptedSharedPreferences.create(
+        return EncryptedSharedPreferences.create(
             context,
-            "alphonso.session",
+            FILE,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
@@ -39,6 +47,7 @@ class EncryptedSessionStore(context: Context) : SessionStore {
     }
 
     private companion object {
+        const val FILE = "alphonso.session"
         const val KEY = "session"
     }
 }

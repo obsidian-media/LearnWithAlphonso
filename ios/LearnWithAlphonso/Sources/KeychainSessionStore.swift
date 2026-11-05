@@ -29,13 +29,11 @@ enum KeychainSessionStore {
         SecItemDelete(baseQuery as CFDictionary)
         var query = baseQuery
         query[kSecValueData as String] = data
-        // AfterFirstUnlock (not WhenUnlockedThisDeviceOnly): a background
-        // refresh -- or this app's own restoreSession() racing a very
-        // fast cold launch before the user has unlocked -- must still be
-        // able to read this. Never synced to iCloud Keychain (that
-        // requires kSecAttrSynchronizable, not set here), so this never
-        // leaves the device.
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        // AfterFirstUnlock, so a background refresh or a fast cold launch before the user unlocks can still read
+        // it; ThisDeviceOnly, so it never moves to another device in a backup or a device-to-device transfer.
+        // Never synced to iCloud Keychain (kSecAttrSynchronizable is not set). save() always deletes and re-adds,
+        // so an item stored under the older attribute is rewritten with this one on the next save.
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         SecItemAdd(query as CFDictionary, nil)
     }
 
@@ -52,6 +50,13 @@ enum KeychainSessionStore {
 
     static func clear() {
         SecItemDelete(baseQuery as CFDictionary)
+    }
+
+    /// Clears a session left behind by an earlier install of the app. Call once at launch, before load().
+    static func clearIfFreshInstall(defaults: UserDefaults = .standard) {
+        if FreshInstallGuard.isFirstLaunchOfThisInstall(defaults: defaults) {
+            clear()
+        }
     }
 
     private static var baseQuery: [String: Any] {

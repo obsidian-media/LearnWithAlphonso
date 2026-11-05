@@ -9,6 +9,7 @@ final class AuthAccountCleanupTests: XCTestCase {
     private final class Log {
         var unregistered: [(token: String, accessToken: String)] = []
         var notificationClears = 0
+        var serverSessionsEnded: [String] = []
     }
 
     private func makeDefaults() -> UserDefaults {
@@ -21,6 +22,7 @@ final class AuthAccountCleanupTests: XCTestCase {
         deviceToken: String? = "apns-hex",
         accessToken: String? = "ending-access-token",
         unregisterThrows: Bool = false,
+        logoutThrows: Bool = false,
         defaults: UserDefaults
     ) -> (AppleCredentialStore, AppleGivenNameStore) {
         let credentials = AppleCredentialStore(defaults: defaults)
@@ -32,6 +34,10 @@ final class AuthAccountCleanupTests: XCTestCase {
             unregisterDeviceToken: { token, access in
                 if unregisterThrows { throw Boom() }
                 log.unregistered.append((token, access))
+            },
+            endServerSession: { access in
+                if logoutThrows { throw Boom() }
+                log.serverSessionsEnded.append(access)
             },
             clearLocalNotifications: { log.notificationClears += 1 },
             appleCredentials: credentials,
@@ -90,6 +96,36 @@ final class AuthAccountCleanupTests: XCTestCase {
     func testHandlerIDsAreStableAndOrdered() {
         let lifecycle = SessionLifecycle()
         _ = register(lifecycle, log: Log(), defaults: makeDefaults())
-        XCTAssertEqual(lifecycle.registeredIDs, ["push.token", "notifications.local", "apple.credential"])
+        XCTAssertEqual(
+            lifecycle.registeredIDs,
+            ["push.token", "auth.serverSession", "notifications.local", "apple.credential"]
+        )
+    }
+
+    func testSignOutEndsTheSessionOnTheServerWithTheEndingToken() async {
+        let lifecycle = SessionLifecycle()
+        let log = Log()
+        _ = register(lifecycle, log: log, defaults: makeDefaults())
+        await lifecycle.run(.signedOut)
+        XCTAssertEqual(log.serverSessionsEnded, ["ending-access-token"])
+    }
+
+    func testDeletionDoesNotCallLogout() async {
+        let lifecycle = SessionLifecycle()
+        let log = Log()
+        _ = register(lifecycle, log: log, defaults: makeDefaults())
+        await lifecycle.run(.accountDeleted)
+        XCTAssertTrue(log.serverSessionsEnded.isEmpty, "the account and its sessions are already gone")
+    }
+
+    func testAFailedLogoutDoesNotStopTheOtherCleanup() async {
+        let lifecycle = SessionLifecycle()
+        let log = Log()
+        let defaults = makeDefaults()
+        let (credentials, _) = register(lifecycle, log: log, logoutThrows: true, defaults: defaults)
+        credentials.save(AppleCredentialLink(appleUserID: "a", supabaseUserID: "u1"))
+        await lifecycle.run(.signedOut)
+        XCTAssertEqual(log.notificationClears, 1)
+        XCTAssertNil(credentials.load())
     }
 }
