@@ -5,9 +5,13 @@ import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  bandMarkers,
   emptyTally,
   groupByBand,
   PLACEMENT_ORDER,
+  placementFinishedLabel,
+  placementMaxQuestions,
+  placementProgressLabel,
   resolveBand,
   scorePlacement,
   type PlacementQuestion,
@@ -37,6 +41,23 @@ export const Route = createFileRoute("/_authenticated/placement")({
     ],
   }),
 });
+
+const MARKER_WORDS = {
+  passed: "passed",
+  skipped: "skipped after strong answers",
+  current: "now",
+  missed: "not passed",
+  upcoming: "not reached",
+} as const;
+
+// A skipped band is dashed and a passed one solid, so credit and a real pass never look alike.
+const MARKER_STYLE = {
+  passed: "border-moss bg-moss text-surface",
+  skipped: "border-dashed border-moss text-moss",
+  current: "border-ink text-ink",
+  missed: "border-hairline text-ink-soft/60 line-through",
+  upcoming: "border-hairline text-ink-soft/50",
+} as const;
 
 type Session = {
   bandPool: Record<Level, PlacementQuestion[]>;
@@ -116,6 +137,9 @@ function PlacementPage() {
 
   const q = session.shown[step];
   const total = session.shown.length;
+  // The longest this sitting can get, fixed by the pool and shown from the first question: the counter must not
+  // grow as the exam adapts.
+  const maxQuestions = placementMaxQuestions(session.bandPool);
 
   async function chooseLanguage(next: Course) {
     if (switching) return;
@@ -260,6 +284,11 @@ function PlacementPage() {
           <p className="tnum mt-4 text-xs text-ink-soft/70">
             {correct} of {total} correct
           </p>
+          {total < maxQuestions && (
+            <p className="mt-1 text-[11px] font-medium text-moss">
+              {placementFinishedLabel(total)}
+            </p>
+          )}
           {skippedLevels.length > 0 && (
             <p className="mt-1.5 max-w-[280px] text-[11px] text-ink-soft/60">
               Fast-tracked past {skippedLevels.join(", ")} after strong answers.
@@ -305,7 +334,14 @@ function PlacementPage() {
     );
   }
 
-  const pct = Math.round((step / total) * 100);
+  const pct = Math.round((step / maxQuestions) * 100);
+  const markers = bandMarkers(
+    session.bandPool,
+    session.shown,
+    session.bandIdx,
+    { correctByLevel: correctByLevelRef.current, skippedLevels, revisiting: session.revisiting },
+    false,
+  );
   // Whether finishing this question is *guaranteed* regardless of its
   // outcome -- i.e. no band beyond the current one has any content left,
   // so even the "keep going" adaptive path would immediately finish()
@@ -338,9 +374,21 @@ function PlacementPage() {
             />
           </div>
           <span className="tnum text-[11px] font-medium text-ink-soft">
-            {step + 1}/{total}
+            {placementProgressLabel(step + 1, maxQuestions)}
           </span>
         </div>
+        <ul aria-label="Levels" className="mt-3 flex justify-center gap-1.5">
+          {markers.map((m) => (
+            <li
+              key={m.level}
+              data-state={m.state}
+              aria-label={`${m.level}, ${MARKER_WORDS[m.state]}`}
+              className={`tnum rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${MARKER_STYLE[m.state]}`}
+            >
+              {m.level}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-8 pt-10">

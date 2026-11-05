@@ -11,7 +11,12 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
 import com.obsidianmedia.learnwithalphonso.core.logic.AiItemMode
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.groupByBand
+import com.obsidianmedia.learnwithalphonso.core.logic.BandMarker
 import com.obsidianmedia.learnwithalphonso.core.logic.PlacementTally
+import com.obsidianmedia.learnwithalphonso.core.logic.bandMarkers
+import com.obsidianmedia.learnwithalphonso.core.logic.placementFinishedLabel
+import com.obsidianmedia.learnwithalphonso.core.logic.placementMaxQuestions
+import com.obsidianmedia.learnwithalphonso.core.logic.placementProgressLabel
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.core.logic.pickPlacementSet
 import com.obsidianmedia.learnwithalphonso.core.logic.playablePlacementPool
@@ -59,6 +64,14 @@ data class PlacementUiState(
     val isFinalQuestion: Boolean get() = step + 1 == total && (noBandsAhead || revisiting)
     val level: String get() = scorePlacement(correctByLevel).level
     val correctTotal: Int get() = answers.count { it }
+
+    /** The longest this sitting can get, fixed by the pool: shown from the first question, never growing. */
+    val maxQuestions: Int get() = placementMaxQuestions(bandPool)
+    val progressLabel: String get() = placementProgressLabel(step + 1, maxQuestions)
+
+    /** "Placed after N questions" when the exam ended before the maximum, else null. */
+    val finishedLabel: String? get() = if (total < maxQuestions) placementFinishedLabel(total) else null
+    val markers: List<BandMarker> get() = bandMarkers(bandPool, shown, bandIdx, PlacementTally(correctByLevel, skippedLevels, revisiting), done)
 }
 
 /** Port of PlacementView.swift's adaptive walk over the bands. */

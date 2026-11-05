@@ -152,3 +152,51 @@ fun isPlacementAnswerCorrect(question: PlacementQuestion, answer: String?): Bool
         is PlacementQuestion.Translate -> TranslationAnswer.matches(given, question.acceptableAnswers)
     }
 }
+
+/**
+ * The most questions the adaptive walk can ever ask for this pool: every band at most once, so the sum of the band
+ * sizes (15 for five bands of three). It does not depend on the answers, so it is shown from the first question.
+ */
+fun placementMaxQuestions(bandPool: Map<String, List<PlacementQuestion>>): Int =
+    placementOrder.sumOf { bandPool[it]?.size ?: 0 }
+
+/** "Question 4 · up to 15": the same words on web, iOS and Android. */
+fun placementProgressLabel(questionNumber: Int, max: Int): String = "Question $questionNumber · up to $max"
+
+/** Finishing before the maximum is a result, not a failure: the exam had what it needed. */
+fun placementFinishedLabel(asked: Int): String = "Placed after $asked questions"
+
+enum class BandMarkerState {
+    /** Asked and passed on the learner's own answers. */
+    PASSED,
+    /** Credited from a perfect band below, not asked: looks different on purpose. */
+    SKIPPED,
+    /** The band being asked now. */
+    CURRENT,
+    /** Asked, and not passed. */
+    MISSED,
+    /** Not reached. */
+    UPCOMING,
+}
+
+data class BandMarker(val level: String, val state: BandMarkerState)
+
+/** One marker per band that has questions, for the row under the counter. Port of placement.ts's bandMarkers. */
+fun bandMarkers(
+    bandPool: Map<String, List<PlacementQuestion>>,
+    shown: List<PlacementQuestion>,
+    bandIdx: Int,
+    tally: PlacementTally,
+    done: Boolean,
+): List<BandMarker> {
+    val asked = shown.map { it.level }.toSet()
+    return placementOrder.filter { !bandPool[it].isNullOrEmpty() }.map { level ->
+        val state = when {
+            !done && placementOrder.getOrNull(bandIdx) == level -> BandMarkerState.CURRENT
+            level in tally.skippedLevels -> BandMarkerState.SKIPPED
+            level in asked -> if ((tally.correctByLevel[level] ?: 0) >= PLACEMENT_PASS_MARK) BandMarkerState.PASSED else BandMarkerState.MISSED
+            else -> BandMarkerState.UPCOMING
+        }
+        BandMarker(level, state)
+    }
+}

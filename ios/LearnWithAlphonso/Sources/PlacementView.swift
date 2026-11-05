@@ -110,14 +110,44 @@ struct PlacementView: View {
         .tint(AlphonsoColor.moss)
     }
 
+    /// One chip per band. A skipped band is outlined with no fill and a passed one is filled, so credit and a real
+    /// pass never look alike; each reads its state aloud.
+    private var levelMarkers: some View {
+        HStack(spacing: 6) {
+            ForEach(attempt.markers(done: false), id: \.level) { marker in
+                let look = markerLook(marker.state)
+                Text(marker.level)
+                    .font(AlphonsoFont.sans(10, weight: .semiBold))
+                    .foregroundStyle(look.text)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 3)
+                    .background(look.fill, in: Capsule())
+                    .overlay(Capsule().strokeBorder(look.border, lineWidth: 1))
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(marker.level), \(look.words)")
+            }
+        }
+    }
+
+    private func markerLook(_ state: BandMarkerState) -> (words: String, fill: Color, border: Color, text: Color) {
+        switch state {
+        case .passed: return ("passed", AlphonsoColor.moss, AlphonsoColor.moss, AlphonsoColor.surface)
+        case .skipped: return ("skipped after strong answers", AlphonsoColor.surface, AlphonsoColor.moss, AlphonsoColor.moss)
+        case .current: return ("now", AlphonsoColor.surface, AlphonsoColor.ink, AlphonsoColor.ink)
+        case .missed: return ("not passed", AlphonsoColor.surface, AlphonsoColor.hairline, AlphonsoColor.inkSoft)
+        case .upcoming: return ("not reached", AlphonsoColor.surface, AlphonsoColor.hairline, AlphonsoColor.inkSoft)
+        }
+    }
+
     private func questionBody(_ q: PlacementQuestion) -> some View {
         let header = VStack(spacing: AlphonsoSpacing.sm) {
-            ProgressView(value: total > 0 ? Double(step) / Double(total) : 0)
+            ProgressView(value: attempt.maxQuestions > 0 ? Double(step) / Double(attempt.maxQuestions) : 0)
                 .tint(AlphonsoColor.moss)
                 .accessibilityLabel("Placement progress")
-            Text("\(step + 1) of \(total)")
+            Text(attempt.progressLabel(step: step))
                 .font(AlphonsoFont.sans(11, weight: .medium))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+            levelMarkers
         }
         .padding()
 
@@ -269,6 +299,11 @@ struct PlacementView: View {
             Text("\(correct) of \(total) correct")
                 .font(AlphonsoFont.sans(12))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+            if let finished = attempt.finishedLabel {
+                Text(finished)
+                    .font(AlphonsoFont.sans(11, weight: .medium))
+                    .foregroundStyle(AlphonsoColor.moss)
+            }
             // Only skips the learner's real answers backed up (see resolveBand): a band the exam went back to
             // and asked is no longer in this list.
             if !attempt.tally.skippedLevels.isEmpty {

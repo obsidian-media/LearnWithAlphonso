@@ -212,6 +212,62 @@ public func resolveBand(
         tally: PlacementTally(correctByLevel: correctByLevel, skippedLevels: skippedLevels, revisiting: false))
 }
 
+/// The most questions the adaptive walk can ever ask for this pool: every band at most once, so the sum of the
+/// band sizes (15 for five bands of three). It does not depend on the answers, so it is shown from the first
+/// question. Mirrors placement.ts's `placementMaxQuestions`.
+public func placementMaxQuestions(bandPool: [String: [PlacementQuestion]]) -> Int {
+    placementOrder.reduce(0) { $0 + (bandPool[$1]?.count ?? 0) }
+}
+
+/// "Question 4 · up to 15": the same words on web, iOS and Android.
+public func placementProgressLabel(questionNumber: Int, max: Int) -> String {
+    "Question \(questionNumber) · up to \(max)"
+}
+
+/// Finishing before the maximum is a result, not a failure: the exam had what it needed.
+public func placementFinishedLabel(asked: Int) -> String {
+    "Placed after \(asked) questions"
+}
+
+public enum BandMarkerState: Equatable {
+    /// Asked and passed on the learner's own answers.
+    case passed
+    /// Credited from a perfect band below, not asked: looks different on purpose.
+    case skipped
+    /// The band being asked now.
+    case current
+    /// Asked, and not passed.
+    case missed
+    /// Not reached.
+    case upcoming
+}
+
+public struct BandMarker: Equatable {
+    public let level: String
+    public let state: BandMarkerState
+}
+
+/// One marker per band that has questions, for the row under the counter. Mirrors placement.ts's `bandMarkers`.
+public func bandMarkers(
+    bandPool: [String: [PlacementQuestion]], shown: [PlacementQuestion], bandIdx: Int,
+    tally: PlacementTally, done: Bool
+) -> [BandMarker] {
+    let asked = Set(shown.map(\.level))
+    return placementOrder.filter { !(bandPool[$0]?.isEmpty ?? true) }.map { level in
+        let state: BandMarkerState
+        if !done && placementOrder.indices.contains(bandIdx) && placementOrder[bandIdx] == level {
+            state = .current
+        } else if tally.skippedLevels.contains(level) {
+            state = .skipped
+        } else if asked.contains(level) {
+            state = (tally.correctByLevel[level] ?? 0) >= placementPassMark ? .passed : .missed
+        } else {
+            state = .upcoming
+        }
+        return BandMarker(level: level, state: state)
+    }
+}
+
 /// Mirrors placement-grading.ts's `isPlacementAnswerCorrect` exactly: the
 /// submitted TEXT rather than an option index (a listening question
 /// answers with the choice's text, a translation with a whole sentence),

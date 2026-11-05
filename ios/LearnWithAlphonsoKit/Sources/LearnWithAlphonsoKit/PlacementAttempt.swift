@@ -46,6 +46,24 @@ public struct PlacementAttempt {
         self.init(bandPool: groupByBand(pickPlacementSet(pool)))
     }
 
+    /// The longest this sitting can get, fixed by the pool: shown from the first question, never growing.
+    public var maxQuestions: Int { placementMaxQuestions(bandPool: bandPool) }
+
+    /// "Question N · up to M" for the question at `step`.
+    public func progressLabel(step: Int) -> String {
+        placementProgressLabel(questionNumber: step + 1, max: maxQuestions)
+    }
+
+    /// "Placed after N questions" when the exam ended before the maximum, else nil.
+    public var finishedLabel: String? {
+        shown.count < maxQuestions ? placementFinishedLabel(asked: shown.count) : nil
+    }
+
+    /// The level markers under the counter.
+    public func markers(done: Bool) -> [BandMarker] {
+        bandMarkers(bandPool: bandPool, shown: shown, bandIdx: bandIdx, tally: tally, done: done)
+    }
+
     /// Where the exam places the learner on the credit so far.
     public var level: String {
         scorePlacement(correctByLevel: tally.correctByLevel).level

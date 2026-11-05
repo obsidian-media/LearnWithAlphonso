@@ -544,6 +544,80 @@ final class PlacementLogicTests: XCTestCase {
         XCTAssertEqual(empty.level, "A1")
     }
 
+    // MARK: - the length up front and the level markers
+
+    func testTheMaximumIsTheSumOfTheBandSizesAndIsReachable() {
+        XCTAssertEqual(placementMaxQuestions(bandPool: bands(placementOrder)), 15)
+        XCTAssertEqual(placementMaxQuestions(bandPool: bands(["A1", "B1", "C1"])), 9)
+        XCTAssertEqual(placementMaxQuestions(bandPool: bands(placementOrder, size: 2)), 10)
+        // pass every band 2 of 3 and all of them are asked
+        var p = newPlay()
+        for _ in 0..<5 { p.play(true, true, false) }
+        XCTAssertTrue(p.finished)
+        XCTAssertEqual(p.attempt.shown.count, p.attempt.maxQuestions)
+        XCTAssertNil(p.attempt.finishedLabel)
+    }
+
+    func testTheLabelsUseTheSameWordsAsWebAndAndroid() {
+        XCTAssertEqual(placementProgressLabel(questionNumber: 4, max: 15), "Question 4 · up to 15")
+        XCTAssertEqual(placementFinishedLabel(asked: 9), "Placed after 9 questions")
+    }
+
+    func testTheCounterSaysUpTo15FromTheFirstQuestionToTheLastWhateverTheExamDoes() {
+        var p = newPlay()
+        var seen: [String] = []
+        for right in [true, true, true, false, false, false, false, false, false] {
+            seen.append(p.attempt.progressLabel(step: p.answers.count))
+            p.play(right)
+        }
+        XCTAssertEqual(seen, (1...9).map { "Question \($0) · up to 15" })
+        XCTAssertTrue(p.finished)
+        XCTAssertEqual(p.attempt.finishedLabel, "Placed after 9 questions")
+    }
+
+    func testMarkersTellASkippedBandFromAPassedOneAndTakeItBackWhenTheCreditIsWithdrawn() {
+        var p = newPlay()
+        func states() -> [BandMarkerState] { p.attempt.markers(done: false).map(\.state) }
+        XCTAssertEqual(states(), [.current, .upcoming, .upcoming, .upcoming, .upcoming])
+        p.play(true, true, true) // A1 perfect: A2 skipped
+        XCTAssertEqual(states(), [.passed, .skipped, .current, .upcoming, .upcoming])
+        XCTAssertNotEqual(states()[0], states()[1])
+        p.play(false, false, false) // B1 failed: the credit goes and A2 is asked
+        XCTAssertEqual(states(), [.passed, .current, .missed, .upcoming, .upcoming])
+    }
+
+    func testAPassedBandAfterASkipKeepsBothMarkers() {
+        var p = newPlay()
+        p.play(true, true, true, true, true, false) // B1 2 of 3
+        XCTAssertEqual(p.attempt.markers(done: false).map(\.state), [.passed, .skipped, .passed, .current, .upcoming])
+    }
+
+    func testMarkersLeaveOutABandWithNoQuestions() {
+        XCTAssertEqual(newPlay(["A1", "B1"]).attempt.markers(done: false).map(\.level), ["A1", "B1"])
+    }
+
+    // MARK: - French and Spanish
+
+    /// The exam logic never looks at the language; this runs it on the real bundled French and Spanish pools.
+    func testSkipThenFailGoesBackToA2OnTheRealFrenchAndSpanishBanks() throws {
+        let store = try ContentStore()
+        for course: Course in [.french, .spanish] {
+            var rng = SystemRandomNumberGenerator()
+            let pool = groupByBand(pickPlacementSet(store.placementPool(for: course), using: &rng))
+            XCTAssertEqual(placementMaxQuestions(bandPool: pool), 15, "\(course)")
+            var p = Play(PlacementAttempt(bandPool: pool))
+            XCTAssertEqual(p.attempt.progressLabel(step: 0), "Question 1 · up to 15", "\(course)")
+            p.play(true, true, true)
+            p.play(false, false, false)
+            XCTAssertFalse(p.finished, "\(course): must go back, not end")
+            XCTAssertEqual(p.currentLevel, "A2", "\(course)")
+            p.play(false, false, false)
+            XCTAssertTrue(p.finished, "\(course)")
+            XCTAssertEqual(p.attempt.level, "A2", "\(course)")
+            XCTAssertEqual(p.attempt.tally.skippedLevels, [], "\(course)")
+        }
+    }
+
     // MARK: - playablePlacementPool
 
     func testPlayablePlacementPoolDropsListeningWhenAudioIsUnavailable() {

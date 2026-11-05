@@ -353,7 +353,7 @@ describe("Placement language choice", () => {
 describe("Placement test", () => {
   it("shows step progress and disables submit until an answer is picked", () => {
     renderPage();
-    expect(screen.getByText("1/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 1 · up to 2")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
   });
 
@@ -364,7 +364,7 @@ describe("Placement test", () => {
     await user.click(screen.getByRole("button", { name: "right" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
-    expect(screen.getByText("2/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 2 · up to 2")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "See my level" })).toBeDisabled();
   });
 
@@ -425,7 +425,7 @@ describe("Placement test", () => {
     await user.click(screen.getByRole("button", { name: "Retake the test" }));
 
     expect(pickPlacement).toHaveBeenCalled();
-    expect(screen.getByText("1/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 1 · up to 2")).toBeInTheDocument();
   });
 
   it("navigates to /learn from the results screen", async () => {
@@ -769,5 +769,73 @@ describe("A skipped band is only credited once the band after it is passed", () 
     expect(savePlacementResult).toHaveBeenCalledWith({
       data: { level: "A2", score: 3, course: "en" },
     });
+  });
+});
+
+describe("The length is shown up front and the level markers tell passes from skips", () => {
+  beforeEach(() => {
+    pickPlacement.mockReturnValue(FULL_BAND_QUESTIONS);
+  });
+
+  const state = (level: string) =>
+    screen.getByLabelText(new RegExp(`^${level},`)).getAttribute("data-state");
+
+  it("says 'up to 15' from the first question to the last, however the exam adapts", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    // A1 perfect (A2 skipped), B1 failed, back to A2: 9 questions. The counter grows, the maximum never does.
+    const seen: string[] = [];
+    for (const verdict of [R, R, R, W, W, W, W, W, W]) {
+      seen.push(screen.getByText(/^Question \d+ · up to \d+$/).textContent ?? "");
+      await answer(user, verdict);
+    }
+    expect(seen).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `Question ${n} · up to 15`));
+  });
+
+  it("reads an early finish as a result: 'Placed after 9 questions'", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R, R, W, W, W, W, W, W]);
+    expect(await screen.findByText("Placed after 9 questions")).toBeInTheDocument();
+  });
+
+  it("does not add the early-finish line when every question was asked", async () => {
+    pickPlacement.mockReturnValue(FIXED_QUESTIONS);
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R]);
+    await screen.findByText("A2");
+    expect(screen.queryByText(/Placed after/)).not.toBeInTheDocument();
+  });
+
+  it("marks a skipped band differently from a passed one", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    expect(state("A1")).toBe("current");
+    expect(state("C1")).toBe("upcoming");
+
+    await answerAll(user, [R, R, R]); // A1 perfect: A2 skipped
+    expect([state("A1"), state("A2"), state("B1"), state("B2")]).toEqual([
+      "passed",
+      "skipped",
+      "current",
+      "upcoming",
+    ]);
+
+    await answerAll(user, [R, R, W]); // B1 passed 2 of 3: B1 is passed, A2 still only skipped
+    expect([state("A1"), state("A2"), state("B1"), state("B2")]).toEqual([
+      "passed",
+      "skipped",
+      "passed",
+      "current",
+    ]);
+  });
+
+  it("takes the skipped marker back when the credit is withdrawn", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R, R, W, W, W]); // B1 failed: A2 is asked after all
+    expect([state("A1"), state("A2"), state("B1")]).toEqual(["passed", "current", "missed"]);
   });
 });

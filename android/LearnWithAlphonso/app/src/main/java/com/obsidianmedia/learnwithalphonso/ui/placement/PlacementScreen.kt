@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.placement
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,9 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,6 +38,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.PlacementQuestion
+import com.obsidianmedia.learnwithalphonso.core.logic.BandMarker
+import com.obsidianmedia.learnwithalphonso.core.logic.BandMarkerState
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
@@ -66,8 +72,9 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
                 AlphonsoPrimaryButton("Back to Learn", onClick = onFinished, modifier = Modifier.padding(top = 12.dp))
             }
             else -> Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                AlphonsoProgressBar(if (state.total == 0) 0f else state.step.toFloat() / state.total)
-                Text("${state.step + 1} of ${state.total}", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                AlphonsoProgressBar(if (state.maxQuestions == 0) 0f else state.step.toFloat() / state.maxQuestions)
+                Text(state.progressLabel, style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                LevelMarkers(state.markers)
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     AlphonsoSectionHeader("Placement test")
                     key(q.id) {
@@ -96,6 +103,35 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
     }
 }
 
+private data class MarkerLook(val words: String, val fill: Color, val border: Color, val text: Color)
+
+/** One chip per band. A skipped band is dashed-looking (outlined, no fill) and a passed one is filled, so credit and a real pass never look alike. */
+@Composable
+private fun LevelMarkers(markers: List<BandMarker>) {
+    val palette = AlphonsoColor.palette
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
+        markers.forEach { m ->
+            val look = when (m.state) {
+                BandMarkerState.PASSED -> MarkerLook("passed", palette.moss, palette.moss, palette.surface)
+                BandMarkerState.SKIPPED -> MarkerLook("skipped after strong answers", palette.surface, palette.moss, palette.moss)
+                BandMarkerState.CURRENT -> MarkerLook("now", palette.surface, palette.ink, palette.ink)
+                BandMarkerState.MISSED -> MarkerLook("not passed", palette.surface, palette.hairline, palette.inkSoft)
+                BandMarkerState.UPCOMING -> MarkerLook("not reached", palette.surface, palette.hairline, palette.inkSoft)
+            }
+            Box(
+                Modifier
+                    .clip(CircleShape)
+                    .background(look.fill)
+                    .border(1.dp, look.border, CircleShape)
+                    .padding(horizontal = 10.dp, vertical = 3.dp)
+                    .semantics { contentDescription = "${m.level}, ${look.words}" },
+            ) {
+                Text(m.level, fontSize = 10.sp, color = look.text)
+            }
+        }
+    }
+}
+
 @Composable
 private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: () -> Unit) {
     val palette = AlphonsoColor.palette
@@ -109,6 +145,7 @@ private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: (
             Text(it.second, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
         }
         Text("${state.correctTotal} of ${state.total} correct", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+        state.finishedLabel?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = palette.moss) }
         if (state.skippedLevels.isNotEmpty()) {
             Text("Fast-tracked past ${state.skippedLevels.joinToString(", ")} after strong answers.", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, textAlign = TextAlign.Center)
         }

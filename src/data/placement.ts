@@ -885,3 +885,60 @@ export function resolveBand(
     },
   };
 }
+
+/**
+ * The most questions the adaptive walk can ever ask for this pool: every band at most once (a skipped band
+ * is only asked when it is gone back to, and never twice), so the sum of the band sizes -- 15 for a course
+ * with three questions in each of five bands. It does not depend on the answers, so it can be shown from the
+ * first question and never changes.
+ */
+export function placementMaxQuestions(bandPool: Record<Level, PlacementQuestion[]>): number {
+  return PLACEMENT_ORDER.reduce((sum, lvl) => sum + (bandPool[lvl]?.length ?? 0), 0);
+}
+
+/** "Question 4 · up to 15": the same words on web, iOS and Android. */
+export function placementProgressLabel(questionNumber: number, max: number): string {
+  return `Question ${questionNumber} · up to ${max}`;
+}
+
+/** Finishing before the maximum is a result, not a failure: the exam had what it needed. */
+export function placementFinishedLabel(asked: number): string {
+  return `Placed after ${asked} questions`;
+}
+
+export type BandMarkerState =
+  /** Asked and passed on the learner's own answers. */
+  | "passed"
+  /** Credited from a perfect band below, not asked: looks different on purpose. */
+  | "skipped"
+  /** The band being asked now. */
+  | "current"
+  /** Asked, and not passed. */
+  | "missed"
+  /** Not reached. */
+  | "upcoming";
+
+/**
+ * One marker per band that has questions, in order, for the row under the progress counter. `shown` is the
+ * questions put to the learner so far (so a band is "asked" if any of them is from it). A skipped band whose
+ * credit was withdrawn is no longer in tally.skippedLevels, so it reads as upcoming and then current when
+ * the exam goes back to it.
+ */
+export function bandMarkers(
+  bandPool: Record<Level, PlacementQuestion[]>,
+  shown: PlacementQuestion[],
+  bandIdx: number,
+  tally: PlacementTally,
+  done: boolean,
+): { level: Level; state: BandMarkerState }[] {
+  const asked = new Set(shown.map((q) => q.level));
+  return PLACEMENT_ORDER.filter((lvl) => (bandPool[lvl]?.length ?? 0) > 0).map((level) => {
+    let state: BandMarkerState = "upcoming";
+    if (!done && PLACEMENT_ORDER[bandIdx] === level) state = "current";
+    else if (tally.skippedLevels.includes(level)) state = "skipped";
+    else if (asked.has(level)) {
+      state = (tally.correctByLevel[level] ?? 0) >= PLACEMENT_PASS_MARK ? "passed" : "missed";
+    }
+    return { level, state };
+  });
+}

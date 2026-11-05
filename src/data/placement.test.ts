@@ -3,15 +3,20 @@ import {
   PLACEMENT_ORDER,
   PLACEMENT_PASS_MARK,
   PLACEMENT_QUESTIONS,
+  bandMarkers,
   emptyTally,
   groupByBand,
   nextAdaptiveBand,
   pickPlacementSet,
+  placementFinishedLabel,
+  placementMaxQuestions,
+  placementProgressLabel,
   resolveBand,
   scorePlacement,
   type PlacementQuestion,
   type PlacementTally,
 } from "./placement";
+import { COURSES, getCourse } from "./courses";
 import type { Level } from "./levels";
 
 describe("pickPlacementSet", () => {
@@ -390,6 +395,94 @@ describe("a skipped band's credit never places a learner above what they really 
     for (const { real, tally } of bug) {
       const placed = scorePlacement(tally.correctByLevel).level;
       expect(placed, `A2 answered ${real.A2} of 3`).toBe((real.A2 ?? 0) >= 2 ? "B1" : "A2");
+    }
+  });
+});
+
+describe("the up-front length and the level markers", () => {
+  it("the maximum is the sum of the band sizes, and it is reachable", () => {
+    expect(placementMaxQuestions(poolOf(PLACEMENT_ORDER))).toBe(15);
+    expect(placementMaxQuestions(poolOf(["A1", "B1", "C1"]))).toBe(9);
+    expect(placementMaxQuestions(poolOf(PLACEMENT_ORDER, 2))).toBe(10);
+    // pass every band 2 of 3 and all of them are asked
+    const pool = poolOf(PLACEMENT_ORDER);
+    let tally = emptyTally();
+    let asked = 0;
+    for (let idx = 0; idx < 5;) {
+      asked += pool[PLACEMENT_ORDER[idx]!].length;
+      const r = resolveBand(pool, idx, 2, tally);
+      tally = r.tally;
+      idx = r.nextIdx;
+    }
+    expect(asked).toBe(placementMaxQuestions(pool));
+  });
+
+  it("no sitting asks more than the maximum", () => {
+    const pool = poolOf(PLACEMENT_ORDER);
+    const walk = (idx: number, tally: PlacementTally, asked: number) => {
+      for (let c = 0; c <= 3; c++) {
+        const r = resolveBand(pool, idx, c, tally);
+        expect(asked + 3).toBeLessThanOrEqual(placementMaxQuestions(pool));
+        const next = PLACEMENT_ORDER[r.nextIdx];
+        if (!r.stop && next && pool[next].length) walk(r.nextIdx, r.tally, asked + 3);
+      }
+    };
+    walk(0, emptyTally(), 0);
+  });
+
+  it("uses the same words on every platform", () => {
+    expect(placementProgressLabel(4, 15)).toBe("Question 4 · up to 15");
+    expect(placementFinishedLabel(9)).toBe("Placed after 9 questions");
+  });
+
+  it("marks passed, skipped, current, missed and upcoming bands", () => {
+    const pool = poolOf(PLACEMENT_ORDER);
+    const shown = [...pool.A1, ...pool.B1];
+    const states = (done: boolean, t: PlacementTally) =>
+      Object.fromEntries(bandMarkers(pool, shown, 2, t, done).map((m) => [m.level, m.state]));
+    const tally = tallyOf({ A1: 3, A2: 2 }, ["A2"]);
+    expect(states(false, tally)).toEqual({
+      A1: "passed",
+      A2: "skipped",
+      B1: "current",
+      B2: "upcoming",
+      C1: "upcoming",
+    });
+    expect(states(true, tallyOf({ A1: 3, A2: 2, B1: 1 }, ["A2"])).B1).toBe("missed");
+    expect(states(false, tally).A2).not.toBe(states(false, tally).A1);
+  });
+
+  it("leaves out a band that has no questions", () => {
+    const pool = poolOf(["A1", "B1"]);
+    expect(bandMarkers(pool, pool.A1, 0, emptyTally(), false).map((m) => m.level)).toEqual([
+      "A1",
+      "B1",
+    ]);
+  });
+});
+
+// The exam logic never looks at the language: it takes whatever three questions per band the course drew. This
+// proves it on the real French and Spanish banks (read, not edited) instead of asserting it.
+describe.each(COURSES.map((c) => c.id))("skip then fail on the %s course", (course) => {
+  const drawn = () => groupByBand(getCourse(course).pickPlacement(true));
+
+  it("has three questions in every band, so the maximum is 15", () => {
+    expect(placementMaxQuestions(drawn())).toBe(15);
+  });
+
+  it("A1 perfect, B1 failed: goes back to A2 and places on its real answers", () => {
+    const pool = drawn();
+    const afterA1 = resolveBand(pool, 0, 3, emptyTally());
+    expect(afterA1.tally.skippedLevels).toEqual(["A2"]);
+    expect(pool.A2.length).toBe(3); // the band it goes back to has real questions to ask
+    for (const b1 of [0, 1]) {
+      const back = resolveBand(pool, 2, b1, afterA1.tally);
+      expect(back.nextIdx).toBe(1);
+      for (const a2 of [0, 1, 2, 3]) {
+        const end = resolveBand(pool, 1, a2, back.tally);
+        expect(end.stop).toBe(true);
+        expect(scorePlacement(end.tally.correctByLevel).level).toBe(a2 >= 2 ? "B1" : "A2");
+      }
     }
   });
 });

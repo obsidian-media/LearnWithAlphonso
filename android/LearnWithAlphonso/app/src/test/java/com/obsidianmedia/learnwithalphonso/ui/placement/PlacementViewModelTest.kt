@@ -6,6 +6,7 @@ import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.PlacementQuestion
+import com.obsidianmedia.learnwithalphonso.core.logic.BandMarkerState
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.testContent
 import kotlinx.coroutines.runBlocking
@@ -21,8 +22,8 @@ class PlacementViewModelTest {
 
     private fun server() = FakeServer { req -> if (req.path.endsWith("save_placement_result")) json("") else json("""{"correct":false,"reason":null}""") }
 
-    private fun vm(s: FakeServer, canPlayAudio: Boolean = false) =
-        PlacementViewModel(testContent, s.progressClient, s.translation, Course.ENGLISH, canPlayAudio = canPlayAudio, isConnected = { false }, random = Random(7), hasAiConsent = { true })
+    private fun vm(s: FakeServer, canPlayAudio: Boolean = false, course: Course = Course.ENGLISH) =
+        PlacementViewModel(testContent, s.progressClient, s.translation, course, canPlayAudio = canPlayAudio, isConnected = { false }, random = Random(7), hasAiConsent = { true })
 
     private fun rightAnswer(q: PlacementQuestion): String = when (q) {
         is PlacementQuestion.MultipleChoice -> q.choices[q.answer]
@@ -253,5 +254,61 @@ class PlacementViewModelTest {
         assertEquals(5, end.correctTotal)
         assertEquals(12, end.total)
         assertEquals(emptyList<String>(), end.skippedLevels)
+    }
+
+    private fun markerStates(v: PlacementViewModel) = v.state.value.markers.associate { it.level to it.state }
+
+    @Test
+    fun `the counter says up to 15 from the first question to the last`() = runBlocking {
+        val v = vm(server())
+        val seen = mutableListOf<String>()
+        for (verdict in listOf(right, right, right, wrong, wrong, wrong, wrong, wrong, wrong)) {
+            seen += v.state.value.progressLabel
+            answers(v, verdict)
+        }
+        assertEquals((1..9).map { "Question $it · up to 15" }, seen)
+        // finishing early reads as a result
+        assertTrue(v.state.value.done)
+        assertEquals("Placed after 9 questions", v.state.value.finishedLabel)
+    }
+
+    @Test
+    fun `no finish note when every question was asked`() = runBlocking {
+        val v = vm(server())
+        // 2 of 3 in every band: nothing is skipped, all 15 are asked
+        repeat(5) { answers(v, right, right, wrong) }
+        assertTrue(v.state.value.done)
+        assertEquals(15, v.state.value.total)
+        assertEquals(null, v.state.value.finishedLabel)
+    }
+
+    @Test
+    fun `markers tell a skipped band from a passed one and take it back when the credit is withdrawn`() = runBlocking {
+        val v = vm(server())
+        assertEquals(BandMarkerState.CURRENT, markerStates(v)["A1"])
+        answers(v, right, right, right)
+        assertEquals(
+            listOf(BandMarkerState.PASSED, BandMarkerState.SKIPPED, BandMarkerState.CURRENT, BandMarkerState.UPCOMING, BandMarkerState.UPCOMING),
+            v.state.value.markers.map { it.state },
+        )
+        answers(v, wrong, wrong, wrong)
+        assertEquals(BandMarkerState.CURRENT, markerStates(v)["A2"])
+        assertEquals(BandMarkerState.MISSED, markerStates(v)["B1"])
+    }
+
+    @Test
+    fun `skip then fail goes back to A2 on the French and Spanish courses too`() = runBlocking {
+        for (course in listOf(Course.FRENCH, Course.SPANISH)) {
+            val v = vm(server(), course = course)
+            assertEquals("Question 1 · up to 15", v.state.value.progressLabel)
+            answers(v, right, right, right)
+            answers(v, wrong, wrong, wrong)
+            assertFalse("${course.name}: must go back, not end", v.state.value.done)
+            assertEquals(course.name, "A2", v.state.value.currentQuestion!!.level)
+            answers(v, wrong, wrong, wrong)
+            assertTrue(v.state.value.done)
+            assertEquals(course.name, "A2", v.state.value.level)
+            assertEquals(course.name, emptyList<String>(), v.state.value.skippedLevels)
+        }
     }
 }

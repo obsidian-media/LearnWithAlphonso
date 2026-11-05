@@ -283,6 +283,69 @@ class PlacementLogicTest {
     }
 
     @Test
+    fun `the maximum is the sum of the band sizes and does not depend on any answer`() {
+        assertEquals(15, placementMaxQuestions(bandsOf(placementOrder)))
+        assertEquals(9, placementMaxQuestions(bandsOf(listOf("A1", "B1", "C1"))))
+        assertEquals(10, placementMaxQuestions(bandsOf(placementOrder, 2)))
+        // and it is reachable: pass every band 2 of 3 and all of them are asked
+        val pool = bandsOf(placementOrder)
+        var tally = PlacementTally()
+        var idx = 0
+        var asked = 0
+        while (idx < placementOrder.size) {
+            asked += pool.getValue(placementOrder[idx]).size
+            val r = resolveBand(pool, idx, 2, tally)
+            tally = r.tally
+            idx = r.nextIdx
+        }
+        assertEquals(placementMaxQuestions(pool), asked)
+    }
+
+    @Test
+    fun `the labels use the same words as web and iOS`() {
+        assertEquals("Question 4 · up to 15", placementProgressLabel(4, 15))
+        assertEquals("Placed after 9 questions", placementFinishedLabel(9))
+    }
+
+    @Test
+    fun `markers tell a skipped band from a passed one`() {
+        val pool = bandsOf(placementOrder)
+        val shown = pool.getValue("A1") + pool.getValue("B1")
+        val tally = tallyOf(mapOf("A1" to 3, "A2" to 2), listOf("A2"))
+        assertEquals(
+            listOf(BandMarkerState.PASSED, BandMarkerState.SKIPPED, BandMarkerState.CURRENT, BandMarkerState.UPCOMING, BandMarkerState.UPCOMING),
+            bandMarkers(pool, shown, 2, tally, false).map { it.state },
+        )
+        assertEquals(
+            BandMarkerState.MISSED,
+            bandMarkers(pool, shown, 2, tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 1), listOf("A2")), true).first { it.level == "B1" }.state,
+        )
+        assertEquals(listOf("A1", "B1"), bandMarkers(bandsOf(listOf("A1", "B1")), pool.getValue("A1"), 0, PlacementTally(), false).map { it.level })
+    }
+
+    // The exam logic never looks at the language; this runs it on the real French and Spanish banks (read, not edited).
+    @Test
+    fun `skip then fail goes back to A2 on the real French and Spanish placement banks`() {
+        val store = ContentStore { name -> checkNotNull(javaClass.getResourceAsStream("/$name")).bufferedReader().readText() }
+        for (course in listOf(Course.FRENCH, Course.SPANISH)) {
+            val pool = groupByBand(pickPlacementSet(store.placementPool(course), Random(3)))
+            assertEquals(15, placementMaxQuestions(pool), course.name)
+            val afterA1 = resolveBand(pool, 0, 3, PlacementTally())
+            assertEquals(listOf("A2"), afterA1.tally.skippedLevels, course.name)
+            for (b1 in listOf(0, 1)) {
+                val back = resolveBand(pool, 2, b1, afterA1.tally)
+                assertEquals(1, back.nextIdx, course.name)
+                assertEquals(3, pool.getValue("A2").size, course.name)
+                for (a2 in 0..3) {
+                    val end = resolveBand(pool, 1, a2, back.tally)
+                    assertTrue(end.stop, course.name)
+                    assertEquals(if (a2 >= 2) "B1" else "A2", scorePlacement(end.tally.correctByLevel).level, "${course.name} A2 $a2")
+                }
+            }
+        }
+    }
+
+    @Test
     fun `isPlacementAnswerCorrect grades text and treats blank as wrong`() {
         val mcQ = PlacementQuestion.MultipleChoice("m", "A1", "p", listOf("are", "is"), 1)
         val listening = PlacementQuestion.Listening("l", "A1", "p", "Good morning", listOf("Good morning", "Good night"), "Good morning")
