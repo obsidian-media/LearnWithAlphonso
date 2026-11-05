@@ -79,6 +79,33 @@ describe("Reduce Motion", () => {
     }
   });
 
+  it("moves the whole figure only on the idle clock, never from the voice (the owner rejected the shaking)", () => {
+    // Every transform in the view, listed: the breath scale and sway rotation (each a function of the clock alone),
+    // the glint band's fixed angle and sweep, and the manifest placement of each layer. A head bob or tilt driven by
+    // the speech, the plan or a level would have to add or change one of these lines.
+    const transforms = view
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => /\.(offset|rotationEffect|scaleEffect)\(/.test(l));
+    expect(transforms.sort()).toEqual(
+      [
+        ".scaleEffect(x: frame.breath.x, y: frame.breath.y, anchor: .bottom)",
+        ".rotationEffect(.degrees(frame.swayDegrees), anchor: .bottom)",
+        ".rotationEffect(.degrees(20))",
+        ".offset(x: (progress - 0.5) * width * 1.6)",
+        ".offset(x: canvas * rect.x, y: canvas * rect.y)",
+        ".offset(x: canvas * rect.x, y: canvas * rect.y)",
+      ].sort(),
+    );
+    expect(view.match(/frame\.swayDegrees = /g)).toHaveLength(1);
+    expect(view).toContain("frame.swayDegrees = AvatarIdleMotion.swayDegrees(at: now)");
+    expect(view.match(/frame\.breath = /g)).toHaveLength(1);
+    expect(view).toContain("frame.breath = AvatarIdleMotion.breathScale(at: now)");
+    const idle = code(`${KIT}/AvatarIdle.swift`);
+    expect(idle).toContain("static func swayDegrees(at time: TimeInterval) -> Double");
+    expect(idle).toContain("static func breathScale(at time: TimeInterval) -> (x: Double, y: Double)");
+  });
+
   it("keeps the idle motion out of the Kit state machine, which has no Reduce Motion input", () => {
     expect(code(`${KIT}/AvatarMachine.swift`)).not.toMatch(/reduceMotion/i);
   });
