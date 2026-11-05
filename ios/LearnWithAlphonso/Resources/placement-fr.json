@@ -60,7 +60,7 @@
       "cher",
       "chère",
       "chers",
-      "chère que"
+      "chères"
     ],
     "answer": 1
   },
@@ -68,12 +68,12 @@
     "id": "fp6",
     "level": "A2",
     "type": "mc",
-    "prompt": "Tournez à gauche ___ la banque.",
+    "prompt": "La banque est ___ la poste et la pharmacie.",
     "choices": [
-      "après",
-      "avant",
-      "sur",
-      "dans"
+      "entre",
+      "vers",
+      "depuis",
+      "chez"
     ],
     "answer": 0
   },
@@ -83,12 +83,12 @@
     "type": "mc",
     "prompt": "S'il pleut, nous ___ à l'intérieur.",
     "choices": [
-      "restons",
       "resterons",
       "resterions",
-      "restâmes"
+      "sommes restés",
+      "restions"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "fp8",
@@ -120,7 +120,7 @@
     "id": "fp10",
     "level": "B2",
     "type": "mc",
-    "prompt": "Le rapport ___ publié la semaine prochaine.",
+    "prompt": "Le rapport ___ publié dès que les chiffres auront été vérifiés.",
     "choices": [
       "sera",
       "est",
@@ -159,14 +159,14 @@
     "id": "fp13",
     "level": "C1",
     "type": "mc",
-    "prompt": "L'équivalent le plus formel de \"découvrir\":",
+    "prompt": "Le verbe le plus soutenu pour \"acheter\" :",
     "choices": [
-      "dénicher",
-      "constater",
-      "trouver",
-      "voir"
+      "acquérir",
+      "dégoter",
+      "prendre",
+      "se payer"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "fp14",
@@ -189,8 +189,8 @@
     "choices": [
       "La mise en œuvre de la réduction des coûts",
       "Nous avons réduit les coûts",
-      "La réduction des coûts en œuvre",
-      "L'entreprise de réduction des coûts"
+      "La réalisation d'une diminution des coûts",
+      "L'opération de réduction des coûts a été réalisée"
     ],
     "answer": 1
   },
@@ -294,7 +294,7 @@
       "beaucoup de",
       "beaucoup",
       "beaucoup des",
-      "trop des"
+      "de beaucoup"
     ],
     "answer": 0
   },
@@ -317,12 +317,12 @@
     "type": "mc",
     "prompt": "Nous ___ (voyager) en France l'été prochain.",
     "choices": [
-      "voyageons",
       "voyagerons",
+      "voyagerions",
       "avons voyagé",
       "voyagions"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "fp5c",
@@ -356,7 +356,7 @@
     "type": "mc",
     "prompt": "Quand nous sommes arrivés, le film ___ déjà commencé.",
     "choices": [
-      "a",
+      "est",
       "avait",
       "aura",
       "ayant"
@@ -380,12 +380,12 @@
     "id": "fp9b",
     "level": "B1",
     "type": "mc",
-    "prompt": "Tu ne ___ pas fumer ici.",
+    "prompt": "Il est interdit de ___ ici.",
     "choices": [
-      "dois",
-      "peux",
-      "as",
-      "sais"
+      "fumer",
+      "fumez",
+      "fumé",
+      "fume"
     ],
     "answer": 0
   },
@@ -406,7 +406,7 @@
     "id": "fp8c",
     "level": "B1",
     "type": "mc",
-    "prompt": "\"Bien que\" est suivi du:",
+    "prompt": "\"Bien que\" est suivi de quel mode ?",
     "choices": [
       "indicatif",
       "subjonctif",
@@ -432,27 +432,27 @@
     "id": "fp10b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Elle a dit qu'elle ___ le rapport avant vendredi.",
+    "prompt": "Elle a promis qu'elle ___ le rapport le lendemain.",
     "choices": [
-      "finira",
       "finirait",
+      "finira",
       "finit",
       "a fini"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "fp11b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Manière la plus formelle de dire \"beaucoup de croissance\":",
+    "prompt": "Formule la plus soutenue pour \"une forte hausse\" :",
     "choices": [
-      "un tas de croissance",
-      "plein de croissance",
-      "une croissance substantielle",
-      "une grande croissance"
+      "une hausse de dingue",
+      "une hausse substantielle",
+      "une grosse hausse",
+      "un gros coup de hausse"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "fp12b",
@@ -484,12 +484,12 @@
     "id": "fp11c",
     "level": "B2",
     "type": "mc",
-    "prompt": "Le rapport doit ___ publié la semaine prochaine.",
+    "prompt": "Je doute qu'elle ___ la vérité.",
     "choices": [
-      "être",
-      "avoir",
-      "êtes",
-      "sera"
+      "connaisse",
+      "connaît",
+      "connaîtra",
+      "connaîtrait"
     ],
     "answer": 0
   },
@@ -523,12 +523,12 @@
     "id": "fp14b",
     "level": "C1",
     "type": "mc",
-    "prompt": "Mot le plus précis pour \"beaucoup de preuves\":",
+    "prompt": "Formule la plus appropriée dans un rapport :",
     "choices": [
-      "un tas de preuves",
+      "un paquet de preuves",
       "des preuves substantielles",
-      "de grosses preuves",
-      "beaucoup de trucs de preuve"
+      "pas mal de preuves",
+      "plein de preuves"
     ],
     "answer": 1
   },
@@ -540,8 +540,8 @@
     "choices": [
       "En marchant vers le magasin, la pluie a commencé.",
       "En marchant vers le magasin, j'ai été surpris par la pluie.",
-      "La pluie, en marchant vers le magasin, a commencé.",
-      "Vers le magasin marchant, la pluie a commencé."
+      "En arrivant au magasin, la pluie s'est arrêtée.",
+      "Tout en marchant vers le magasin, la pluie nous a trempés."
     ],
     "answer": 1
   },
