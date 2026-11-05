@@ -1,0 +1,226 @@
+{
+  "batch": "p7-r1-b001",
+  "pass": "first",
+  "reviewer": "agent:p7-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "acheter": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "agrandir": {
+      "verdict": "approve",
+      "alt": "A hand holds a magnifying glass over autumn leaves beside a pair of glasses.",
+      "peopleVisible": true
+    },
+    "alergia": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "alféizar": {
+      "verdict": "approve",
+      "alt": "Two small potted plants with seedlings stand on a windowsill in front of a blurred city view.",
+      "peopleVisible": false
+    },
+    "almorzar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "amigo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "amueblado": {
+      "verdict": "approve",
+      "alt": "A furnished living room with a grey sofa, a round side table, a dining table and a yellow chair beside a kitchen.",
+      "peopleVisible": false
+    },
+    "anestesia": {
+      "verdict": "approve",
+      "alt": "A clear anesthesia mask rests on a medical machine while surgeons in blue gowns work in the background.",
+      "peopleVisible": true
+    },
+    "aniversario": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "asiento": {
+      "verdict": "approve",
+      "alt": "Rows of black airplane seats stand beside oval cabin windows.",
+      "peopleVisible": false
+    },
+    "asustado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "attendre": {
+      "verdict": "approve",
+      "alt": "A man waits alone at a lit bus shelter on a quiet street at night.",
+      "peopleVisible": true
+    },
+    "bailando": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "bebo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "cajero": {
+      "verdict": "approve",
+      "alt": "A cashier's hand holds a card payment terminal over a red basket of groceries at a checkout counter.",
+      "peopleVisible": true
+    },
+    "camina": {
+      "verdict": "approve",
+      "alt": "A person with a shoulder bag walks away along a gravel path beside a river and tall grass.",
+      "peopleVisible": true
+    },
+    "cantando": {
+      "verdict": "approve",
+      "alt": "A woman sings with her head tilted back into a microphone on a dark stage.",
+      "peopleVisible": true
+    },
+    "cargar": {
+      "verdict": "approve",
+      "alt": "A man and a woman carry a large cardboard box down a staircase.",
+      "peopleVisible": true
+    },
+    "cliente": {
+      "verdict": "approve",
+      "alt": "A customer hands a bank card to a cashier over a checkout counter.",
+      "peopleVisible": true
+    },
+    "collectionner": {
+      "verdict": "approve",
+      "alt": "Stacks of postage stamps in clear sleeves lie on a table.",
+      "peopleVisible": false
+    },
+    "comiendo": {
+      "verdict": "approve",
+      "alt": "A hand holds chopsticks over a white bowl of noodles on a table.",
+      "peopleVisible": true
+    },
+    "compartir": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "comprar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "condominio": {
+      "verdict": "approve",
+      "alt": "Two modern apartment towers with stepped balconies rise against a blue sky.",
+      "peopleVisible": false
+    },
+    "conectar": {
+      "verdict": "approve",
+      "alt": "A white charger plug and a black plug are plugged into a wall socket.",
+      "peopleVisible": false
+    },
+    "construyendo": {
+      "verdict": "approve",
+      "alt": "Two workers build a red brick wall on the upper floor of a building under construction.",
+      "peopleVisible": true
+    },
+    "corriendo": {
+      "verdict": "approve",
+      "alt": "A man in black runs along a path in a city park.",
+      "peopleVisible": true
+    },
+    "cucharada": {
+      "verdict": "approve",
+      "alt": "A wooden spoon holds a spoonful of coarse white salt on a heap of salt.",
+      "peopleVisible": false
+    },
+    "decorar": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "distributeur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "duermo": {
+      "verdict": "approve",
+      "alt": "A woman sleeps on her side on a white pillow with her hand tucked under her cheek.",
+      "peopleVisible": true
+    },
+    "durmiendo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "ebullición": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "effrayé": {
+      "verdict": "approve",
+      "alt": "A close-up of a man with wide, frightened eyes and a hand over his mouth.",
+      "peopleVisible": true
+    },
+    "energía": {
+      "verdict": "approve",
+      "alt": "Rows of solar panels with a field of wind turbines behind them under a blue sky.",
+      "peopleVisible": false
+    },
+    "enregistrer": {
+      "verdict": "approve",
+      "alt": "A close-up of a studio microphone with a metal mesh head against a blue background.",
+      "peopleVisible": false
+    },
+    "enviar": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}

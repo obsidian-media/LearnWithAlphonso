@@ -1,0 +1,222 @@
+{
+  "batch": "p7-r1-b004",
+  "pass": "first",
+  "reviewer": "agent:p7-b004",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "orgulloso": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "ouvrir": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "paciente": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "pagar": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "payer": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "película": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "piqûre": {
+      "verdict": "approve",
+      "alt": "A nurse in gloves gives an injection into a patient's upper arm.",
+      "peopleVisible": true
+    },
+    "planeta": {
+      "verdict": "approve",
+      "alt": "The planet Earth seen from space against a black sky.",
+      "peopleVisible": false
+    },
+    "pointure": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "porción": {
+      "verdict": "approve",
+      "alt": "A slice of tart topped with cheese and grapes on a white plate on a wooden table.",
+      "peopleVisible": false
+    },
+    "precio": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "renovable": {
+      "verdict": "approve",
+      "alt": "Wind turbines stand in a green field under a blue sky with clouds.",
+      "peopleVisible": false
+    },
+    "reportaje": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "repos": {
+      "verdict": "approve",
+      "alt": "A man lies resting in a hammock between palm trees.",
+      "peopleVisible": true
+    },
+    "retrato": {
+      "verdict": "approve",
+      "alt": "An elderly man in a flat cap and scarf poses beside an old wooden box camera.",
+      "peopleVisible": true
+    },
+    "réviser": {
+      "verdict": "approve",
+      "alt": "A student with glasses writes notes in a notebook at a wooden desk.",
+      "peopleVisible": true
+    },
+    "sal": {
+      "verdict": "approve",
+      "alt": "Salt and pepper shakers in a metal holder on a wooden table.",
+      "peopleVisible": false
+    },
+    "sazonar": {
+      "verdict": "approve",
+      "alt": "A chef sprinkles seasoning over a flatbread topped with peppers.",
+      "peopleVisible": true
+    },
+    "sirop": {
+      "verdict": "approve",
+      "alt": "A clear bottle of orange syrup stands in front of brown medicine bottles.",
+      "peopleVisible": false
+    },
+    "subir": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "techo": {
+      "verdict": "approve",
+      "alt": "A ceiling with four round pendant lamps in grey, red, orange and white.",
+      "peopleVisible": false
+    },
+    "tos": {
+      "verdict": "approve",
+      "alt": "An elderly man coughs into his fist while an older woman comforts him on a sofa.",
+      "peopleVisible": true
+    },
+    "trabajando": {
+      "verdict": "approve",
+      "alt": "A man types on a laptop at a dark desk with a small plant and a blue folder.",
+      "peopleVisible": true
+    },
+    "traduire": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "travailler": {
+      "verdict": "approve",
+      "alt": "A man types on a laptop at a dark desk with a small plant and a blue folder.",
+      "peopleVisible": true
+    },
+    "trier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "trueno": {
+      "verdict": "approve",
+      "alt": "A fork of lightning flashes across a purple stormy sky behind tree branches.",
+      "peopleVisible": false
+    },
+    "une alimentation équilibrée": {
+      "verdict": "approve",
+      "alt": "A plate of baked salmon with lemon, baby corn, carrots and cherry tomatoes.",
+      "peopleVisible": false
+    },
+    "unto": {
+      "verdict": "approve",
+      "alt": "A hand spreads butter with a knife on a slice of bread over a speckled plate.",
+      "peopleVisible": true
+    },
+    "vecindario": {
+      "verdict": "approve",
+      "alt": "A quiet residential street lined with colourful wooden houses and parked cars.",
+      "peopleVisible": false
+    },
+    "vender": {
+      "verdict": "approve",
+      "alt": "A vendor arranges a pile of oranges at a wooden market stall.",
+      "peopleVisible": true
+    },
+    "vendre": {
+      "verdict": "approve",
+      "alt": "A vendor arranges a pile of oranges at a wooden market stall.",
+      "peopleVisible": true
+    },
+    "viajando": {
+      "verdict": "approve",
+      "alt": "A hiker with a backpack stands with his back to the camera facing snowy mountains.",
+      "peopleVisible": true
+    },
+    "viaje": {
+      "verdict": "approve",
+      "alt": "An open suitcase packed with clothes, a camera and a passport sits next to a pink sun hat.",
+      "peopleVisible": false
+    },
+    "visitar": {
+      "verdict": "approve",
+      "alt": "Three tourists stand with their backs to the camera looking at a stone cathedral across a square.",
+      "peopleVisible": true
+    },
+    "visiter": {
+      "verdict": "approve",
+      "alt": "Three tourists stand with their backs to the camera looking at a stone cathedral across a square.",
+      "peopleVisible": true
+    },
+    "voler": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "voto": {
+      "verdict": "approve",
+      "alt": "Two masked people drop ballots into white ballot boxes.",
+      "peopleVisible": true
+    },
+    "végétarien": {
+      "verdict": "approve",
+      "alt": "A plated vegetarian dish with a layered vegetable terrine, radish and carrot slices.",
+      "peopleVisible": false
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "pass": 7,
+  "note": "French and Spanish terms settled as no-image in pass 7 after up to three tries with better English queries (rejected photos are banned in rejected-sources.json). None of them is written to vocab-images.ts.",
+  "terms": {
+    "aduana": "every photo found shows legible airport or customs signs",
+    "alergia": "every photo found reads as a cold or illness rather than an allergy",
+    "asustado": "photos read as surprise or horror staging, not clearly fear",
+    "distributeur": "every photo found shows legible machine text or banknotes",
+    "enviar": "photos show legible post-box text or off-term objects, not the act of sending",
+    "envoyer": "photos show legible post-box text or off-term objects, not the act of sending",
+    "fermer": "photos show a closed door or a hand against a door, which reads as closed rather than to close",
+    "fier": "photos show a minor or a stock-style pose, not clearly pride",
+    "l'équipe": "photos show sponsor text, flags or minors, not a clear team",
+    "la presse": "every photo found shows legible newspaper titles",
+    "la source": "photos show rapids or wet stones, not a clear spring",
+    "le bus": "every photo found shows legible text on the bus or signs around it",
+    "le conducteur": "photos show a car brand logo or a car with the driver barely visible",
+    "le contrat": "photos are handshake stock clichés or show legible contract text",
+    "le cœur": "photos show heart-shaped objects or several organs, not clearly the word",
+    "le dossier": "every photo found shows legible dates or text on the folders",
+    "le pourboire": "photos show legible text or plain money, not clearly a tip",
+    "le reportage": "photos show legible news text or only a camera",
+    "le rugby": "every photo found shows sponsor names on the shirts or balls",
+    "le soldat": "every photo found shows soldiers with weapons or military vehicles",
+    "orgulloso": "photos show a minor or a stock-style pose, not clearly pride",
+    "pasaporte": "every photo found shows a legible country name on the passport",
+    "película": "photos show legible film studio or popcorn text",
+    "pointure": "the only match shows a newborn foot being measured, not a shoe size",
+    "precio": "every photo found shows brand names or legible text",
+    "reportaje": "photos show legible news text or only a camera",
+    "voler": "homograph: to fly and to steal, so a photo of one reads as the other"
+  }
+}
