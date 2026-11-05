@@ -119,6 +119,11 @@ private struct Alphonso3DWebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
+        coordinator.cancelTimeout()
+        // Stop the voice and the render loop and free the WebGL context now (a 16 MB model plus GTAO
+        // buffers), rather than whenever the web content process gets around to it.
+        webView.evaluateJavaScript("window.__teardown && window.__teardown()", completionHandler: nil)
+        webView.stopLoading()
         webView.configuration.userContentController.removeAllUserScripts()
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "alphonso")
     }
@@ -150,15 +155,47 @@ private struct Alphonso3DWebView: UIViewRepresentable {
         var onEvent: (Alphonso3DPreviewEvent) -> Void
         weak var webView: WKWebView?
         var loadedToken: Int?
+        /// Set once the current load has reported ready or failed; later messages from that load are ignored.
+        private var settled = false
+        private var timeout: DispatchWorkItem?
+        /// A hung CDN would otherwise spin forever. Restarted on every progress message, so a slow but
+        /// moving download is not cut off; 45 s with no sign of life shows the error state with Retry.
+        static let stallTimeout: TimeInterval = 45
 
         init(onEvent: @escaping (Alphonso3DPreviewEvent) -> Void) { self.onEvent = onEvent }
 
+        func cancelTimeout() {
+            timeout?.cancel()
+            timeout = nil
+        }
+
+        private func armTimeout() {
+            cancelTimeout()
+            let item = DispatchWorkItem { [weak self] in
+                guard let self, !self.settled else { return }
+                self.webView?.evaluateJavaScript("window.__teardown && window.__teardown()", completionHandler: nil)
+                self.webView?.stopLoading()
+                self.finish(.failed)
+            }
+            timeout = item
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.stallTimeout, execute: item)
+        }
+
+        private func finish(_ event: Alphonso3DPreviewEvent) {
+            guard !settled else { return }
+            settled = true
+            cancelTimeout()
+            onEvent(event)
+        }
+
         func load(_ token: Int) {
             loadedToken = token
+            settled = false
+            armTimeout()
             guard let webView,
                   let page = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "Preview3D")
             else {
-                DispatchQueue.main.async { self.onEvent(.failed) }
+                DispatchQueue.main.async { self.finish(.failed) }
                 return
             }
             // Read access to the bundled folder only; the model and three.js come over https.
@@ -168,18 +205,45 @@ private struct Alphonso3DWebView: UIViewRepresentable {
         func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
             guard let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
             switch type {
-            case "ready": onEvent(.ready)
-            case "progress": if let percent = body["percent"] as? Int { onEvent(.progress(percent)) }
-            case "error": onEvent(.failed)
+            case "ready": finish(.ready)
+            case "progress":
+                guard !settled, let percent = body["percent"] as? Int else { return }
+                armTimeout()
+                onEvent(.progress(percent))
+            case "error": finish(.failed)
             default: break
             }
         }
 
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { onEvent(.failed) }
-        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            onEvent(.failed)
+        /// The page may only ever show the bundled file: no link, redirect or script can take the web view elsewhere.
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
+            let url = navigationAction.request.url
+            let allowed = navigationAction.targetFrame?.isMainFrame == true
+                && url?.isFileURL == true
+                && url?.lastPathComponent == "index.html"
+                && url?.deletingLastPathComponent().lastPathComponent == "Preview3D"
+            decisionHandler(allowed ? .allow : .cancel)
         }
-        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { onEvent(.failed) }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            if !Self.isBenign(error) { finish(.failed) }
+        }
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            if !Self.isBenign(error) { finish(.failed) }
+        }
+
+        /// A load superseded by Retry reports "cancelled", and a navigation the policy above refused reports
+        /// "frame load interrupted" (WebKitErrorDomain 102); neither means the current page failed.
+        private static func isBenign(_ error: Error) -> Bool {
+            let e = error as NSError
+            return (e.domain == NSURLErrorDomain && e.code == NSURLErrorCancelled)
+                || (e.domain == "WebKitErrorDomain" && e.code == 102)
+        }
+        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { finish(.failed) }
     }
 }
 

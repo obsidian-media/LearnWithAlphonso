@@ -369,8 +369,10 @@ function loudness() {
 
 const tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler();
 const clock = new THREE.Clock();
+let rafId = 0, tornDown = false;
 function tick() {
-  requestAnimationFrame(tick);
+  if (tornDown) return;
+  rafId = requestAnimationFrame(tick);
   const now = performance.now() / 1000, dt = clock.getDelta();
   if (model) {
     const off = {};
@@ -405,6 +407,30 @@ function tick() {
   controls.update();
   if (mode === 'app') composer.render(); else renderer.render(scene, camera);
 }
+// Called by the app when the screen closes (and on pagehide): stop the voice and the render loop and
+// give the GPU memory back now, since a 16 MB model plus GTAO buffers matter on older phones.
+window.__teardown = function () {
+  if (tornDown) return;
+  tornDown = true;
+  cancelAnimationFrame(rafId);
+  try { if (source) source.stop(); } catch (e) {}
+  try { if (ac) ac.close(); } catch (e) {}
+  controls.dispose();
+  scene.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    for (const m of ms) {
+      for (const k in m) { const v = m[k]; if (v && v.isTexture) v.dispose(); }
+      m.dispose();
+    }
+  });
+  if (scene.background && scene.background.isTexture) scene.background.dispose();
+  studioEnv.dispose(); pmrem.dispose();
+  gtao.dispose(); composer.dispose();
+  renderer.dispose(); renderer.forceContextLoss();
+};
+window.addEventListener('pagehide', window.__teardown);
+
 resize();
 tick();
 </script>
