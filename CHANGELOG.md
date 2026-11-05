@@ -10,6 +10,8 @@ works now_.
 
 ## Unreleased
 
+**Hardening from the Codacy review (2026-11-05, #399, ef63789d).** Hardened sign-in return paths, image loading and push token handling, and stopped logging upstream response bodies. In no build yet for the native parts.
+
 **Placement test question quality, English, French and Spanish (2026-11-05, #396, ac07ad28).** Re-measured hard-defect rate, main to branch: English 20% to about 2%, French 27% to 0%, Spanish 40% to about 2%; absurd options 8 to 1, 8 to 2 and 4 to 1 (the "Nighting" / "Good nightly" item is fixed). 17 answer keys changed; band ids and counts are unchanged. The distractor gate and the French and Spanish gate (`romance-options.test.ts`) now cover the placement banks, and `docs/distractor-policy.md` has a "Placement banks" section. The items that need a native judgement are listed in the PR comment. The adaptive-skip scoring problem and the question counter are a separate change (#395, in review). In no build yet.
 
 **All third-party GitHub Action steps pinned to full commit SHAs (2026-11-05, #400, 74e54f9c).** 46 steps; every SHA was checked against its tag and no version changed.
