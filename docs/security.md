@@ -10,7 +10,8 @@ issue.
   ending session's token after clearing local state (`AuthAccountCleanup.swift`, `SessionManager.kt`). Account
   deletion and data export also confirm the session with the auth server first (`src/lib/live-session.server.ts`).
 - **Sessions stay on the device.** The iOS session is a this-device-only Keychain item, and the first launch after a
-  reinstall clears any session left by a previous install (`FreshInstallGuard.swift`). Android excludes app data from
+  reinstall clears any session left by a previous install, while an app update keeps it (`FreshInstallGuard.swift`,
+  `KeychainSessionStore.swift`). Android excludes app data from
   cloud backup and device transfer (`res/xml/data_extraction_rules.xml`) and resets a session file it cannot decrypt.
   Guards: `src/lib/ios-session-guards.test.ts`, `src/lib/android-data-guards.test.ts`.
 - **New passwords need 10 characters** on the web and Android (`src/lib/password-policy.ts`, `PasswordPolicy.kt`).
@@ -53,5 +54,5 @@ issue.
 - Workflows run repository scripts with `bun` from the lockfile, never `bunx tsx`. XcodeGen, bundletool, the Gradle
   distribution and the Swift packages are checked against pinned hashes.
 - The Android keystore is removed right after signing; binary artifacts are kept one day; signing files are
-  git-ignored. A dependency audit runs on every PR, and Dependabot opens security updates only.
+  git-ignored. Dependency advisories are checked on every PR, and Dependabot opens security updates only.
 - Guard: `src/lib/ci-hardening-guards.test.ts` (run with `GUARD_ROOT=<dir>` to check another tree).

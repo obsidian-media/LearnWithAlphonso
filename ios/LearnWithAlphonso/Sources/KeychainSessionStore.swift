@@ -53,10 +53,29 @@ enum KeychainSessionStore {
     }
 
     /// Clears a session left behind by an earlier install of the app. Call once at launch, before load().
+    ///
+    /// The first launch after an app UPDATE also has no install marker (builds before the marker never wrote it), so
+    /// the marker alone cannot tell an update from a reinstall. A session saved by those builds still carries the older
+    /// accessibility attribute: that one is kept and rewritten as this-device-only, so updating the app does not sign
+    /// every learner out. A this-device-only session with no marker can only be a previous install's, and is cleared.
     static func clearIfFreshInstall(defaults: UserDefaults = .standard) {
-        if FreshInstallGuard.isFirstLaunchOfThisInstall(defaults: defaults) {
-            clear()
+        guard FreshInstallGuard.isFirstLaunchOfThisInstall(defaults: defaults) else { return }
+        if storedAccessibility() == (kSecAttrAccessibleAfterFirstUnlock as String), let session = load() {
+            save(session)
+            return
         }
+        clear()
+    }
+
+    /// The kSecAttrAccessible value of the stored session item, or nil when there is none.
+    private static func storedAccessibility() -> String? {
+        var query = baseQuery
+        query[kSecReturnAttributes as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let attributes = result as? [String: Any] else { return nil }
+        return attributes[kSecAttrAccessible as String] as? String
     }
 
     private static var baseQuery: [String: Any] {

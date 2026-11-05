@@ -24,6 +24,18 @@ describe("iOS session storage and sign-out", () => {
     expect(clearAt).toBeLessThan(loadAt);
   });
 
+  it("an app update keeps the session saved by an earlier build instead of signing the learner out", () => {
+    const store = read("KeychainSessionStore.swift");
+    const body = store.slice(store.indexOf("static func clearIfFreshInstall"));
+    const keepAt = body.search(
+      /storedAccessibility\(\) == \(kSecAttrAccessibleAfterFirstUnlock as String\)[\s\S]{0,80}save\(session\)[\s\S]{0,20}return/,
+    );
+    const clearAt = body.indexOf("clear()");
+    expect(keepAt).toBeGreaterThan(-1);
+    expect(keepAt).toBeLessThan(clearAt);
+    expect(store).toMatch(/query\[kSecReturnAttributes as String\] = true/);
+  });
+
   it("sign-out ends the session on the auth server through the app's cleanup registration", () => {
     const app = read("LearnWithAlphonsoApp.swift");
     expect(app).toMatch(
