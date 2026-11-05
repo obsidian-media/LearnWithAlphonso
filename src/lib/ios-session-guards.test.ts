@@ -28,7 +28,7 @@ describe("iOS session storage and sign-out", () => {
     const store = read("KeychainSessionStore.swift");
     const body = store.slice(store.indexOf("static func clearIfFreshInstall"));
     const keepAt = body.search(
-      /storedAccessibility\(\) == \(kSecAttrAccessibleAfterFirstUnlock as String\)[\s\S]{0,80}save\(session\)[\s\S]{0,20}return/,
+      /let stored = storedAccessibility\(\),\s*stored != \(kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly as String\)[\s\S]{0,60}save\(session\)[\s\S]{0,20}return/,
     );
     const clearAt = body.indexOf("clear()");
     expect(keepAt).toBeGreaterThan(-1);

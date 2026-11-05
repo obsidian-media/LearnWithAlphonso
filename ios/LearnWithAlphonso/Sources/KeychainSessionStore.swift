@@ -56,11 +56,13 @@ enum KeychainSessionStore {
     ///
     /// The first launch after an app UPDATE also has no install marker (builds before the marker never wrote it), so
     /// the marker alone cannot tell an update from a reinstall. A session saved by those builds still carries the older
-    /// accessibility attribute: that one is kept and rewritten as this-device-only, so updating the app does not sign
+    /// accessibility attribute (anything but this-device-only): that one is kept and rewritten as this-device-only, so updating the app does not sign
     /// every learner out. A this-device-only session with no marker can only be a previous install's, and is cleared.
     static func clearIfFreshInstall(defaults: UserDefaults = .standard) {
         guard FreshInstallGuard.isFirstLaunchOfThisInstall(defaults: defaults) else { return }
-        if storedAccessibility() == (kSecAttrAccessibleAfterFirstUnlock as String), let session = load() {
+        if let stored = storedAccessibility(),
+           stored != (kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly as String),
+           let session = load() {
             save(session)
             return
         }
