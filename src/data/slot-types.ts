@@ -269,6 +269,7 @@ const POS_FIX: Record<string, Record<string, string>> = {
     "second-class": "Adjective",
   },
   a2p16: { ...nouns("centre,park,stop,market"), local: "Adjective" },
+  a1p17: { raise: "Verb", rise: "Verb", rose: "Verb", raised: "Verb" },
   a1p8: { orange: "Noun", medium: "Adjective" },
   a1p16: { sleep: "Verb", "glances at": "Verb", watch: "Verb", walk: "Verb" },
   a2p13: Object.fromEntries(

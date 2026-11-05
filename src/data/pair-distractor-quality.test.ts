@@ -25,10 +25,13 @@ const A1P15_SHAPES = new Set([
 ]);
 
 function packQuestions(packId: string) {
-  return curriculum
-    .flatMap((unit) => unit.lessons)
-    .flatMap((lesson) => lesson.questions)
-    .filter((q) => q.id.startsWith(`${packId}q`));
+  return (
+    curriculum
+      .flatMap((unit) => unit.lessons)
+      .flatMap((lesson) => lesson.questions)
+      // The pack's own 25 questions; question-variety.ts appends more after q24.
+      .filter((q) => q.id.startsWith(`${packId}q`) && Number(q.id.slice(packId.length + 1)) < 25)
+  );
 }
 
 describe("a1p15 Shapes & Sizes offers distractors from the answer's own class", () => {

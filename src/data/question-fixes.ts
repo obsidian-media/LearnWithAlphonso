@@ -18,7 +18,7 @@ export type QuestionFix = {
   /** Replacement wrong options, in order. Exactly as many as the question has now. */
   wrong?: string[];
   /** Reviewed slot type, when it cannot be inferred (for example the irregular past went / go / goed). */
-  slot?: "inflection";
+  slot?: "inflection" | "category";
   /** Photo key in VOCAB_IMAGES that shows the answer; multiple choice only. */
   imageKey?: string;
   /**
@@ -26,6 +26,8 @@ export type QuestionFix = {
    * clue is needed. The value says why, for the review table.
    */
   context?: string;
+  /** Replaces the generated explanation when that one does not fit the question. */
+  explanation?: string;
   /** One line for the review table: what was wrong with the old question. */
   why: string;
 };
@@ -39,8 +41,10 @@ function fixQuestion(key: string, q: Question, fix: QuestionFix): Question {
     throw new Error(`${key}: prompt lost its blank`);
   if (fix.imageKey && q.type !== "mc")
     throw new Error(`${key}: only multiple choice can show a photo`);
-  const withImage = (x: Question): Question =>
-    fix.imageKey && x.type === "mc" ? { ...x, imageKey: fix.imageKey } : x;
+  const withImage = (x: Question): Question => {
+    const y = fix.imageKey && x.type === "mc" ? { ...x, imageKey: fix.imageKey } : x;
+    return fix.explanation ? { ...y, explanation: fix.explanation } : y;
+  };
   if (!fix.wrong) return withImage({ ...q, prompt });
   const answerText = q.type === "mc" ? q.choices[q.answer]! : q.answer;
   const options = q.type === "mc" ? q.choices : q.bank;
