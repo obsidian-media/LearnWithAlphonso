@@ -47,6 +47,11 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
+      # The talking 2D Alphonso in Practice speaking: 15 WebP layers plus manifest.json, a folder reference read
+      # by path at run time (AlphonsoAvatarView). WebP decodes through UIImage on iOS 14 and later.
+      - path: AlphonsoAvatar
+        type: folder
+        buildPhase: resources
       - path: Sources
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources
