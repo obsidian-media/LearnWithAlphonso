@@ -97,3 +97,28 @@ must be listed in `src/data/reviewed-phrases.ts` after someone has read them.
 
 Topic-word clues describe the situation, not the dictionary definition: "(you tap your card)",
 not "(a kind of payment)". Wrong options for a topic word are other words of the same topic.
+
+## French and Spanish
+
+The same three rules hold for the hand-authored French and Spanish A1/A2 packs (`fra1p*`, `fra2p*`,
+`esa1p*`, `esa2p*`; the generated `frga`/`esga` sentence packs have their own gates in
+`src/data/generative/romance-gates.test.ts`). There is no part-of-speech tagger for either language, so the
+rules are applied from what the pack itself says. The code is `src/data/romance-options.ts`, the engine is
+`bank-engine.ts`, and the gate is `src/data/romance-options.test.ts`.
+
+- **Vocabulary questions ("The French word for ...").** A wrong option is the answer's class: a verb for a
+  gloss that starts with "to", a noun for a French answer with an article, a sentence for a question or a
+  four-word phrase, otherwise a word. Spanish nouns have no article, so the packs whose single words mix
+  nouns and adjectives carry a one-letter-per-line label (`PACK_CLASS_LABELS`). A pack that holds only two
+  or three verbs lends reviewed same-class words it does not teach (`EXTRA_DECOYS`).
+- **No second right answer.** A wrong option may not contain the answer or sit inside it ("où" / "où est"),
+  and may not be a synonym the pack also teaches (`SYNONYM_GROUPS`, `ANSWER_BANS`).
+- **Fill-in sentences.** A sentence takes its wrong options from `src/data/romance-cloze-options.ts`, written
+  for that sentence: the rest of the sentence rules each one out (gender, number, a missing elision, a wrong
+  verb form), or a short English clue in brackets does. Where two words fit ("pas", "plus", "jamais" in a
+  negation) the clue is required. A clue never equals the answer.
+- **Listening.** A wrong choice may not differ from the answer only by words that sound the same
+  (`HOMOPHONE_GROUPS`: ces / ses, cou / coup, cima / sima, cocer / coser, rayar / rallar, votar / botar):
+  nobody can answer those by ear.
+- **Walk.** The old seeded walk stepped by 7 and so visited only two candidates in a 15-line pack (14 others),
+  which gave those questions two wrong options instead of three. A step that does not divide the count fixes it.

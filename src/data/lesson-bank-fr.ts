@@ -684,13 +684,13 @@ speed|la vitesse`,
     // matchesAcceptableAnswer normalises via normaliseSpoken, whose accent
     // fold+ASCII strip collapses "désolé(e)" to a single ambiguous string
     // that does not actually equal either real gendered form's normalisation.
-    data: `Greet someone in the morning.|Bonjour.;Salut, ça va ?;Bonjour à vous.
+    data: `Greet someone in the morning.|Bonjour.;Bonjour, ça va ?;Bonjour à vous.
 Ask someone their name (informal).|Comment tu t'appelles ?;Tu t'appelles comment ?;C'est quoi ton prénom ?
 Say you do not understand.|Je ne comprends pas.;Pardon, je ne comprends pas.;Je n'y comprends rien.
-Ask where the train station is.|Où est la gare ?;Pourriez-vous me dire où est la gare ?;Comment aller à la gare ?
+Ask where the train station is.|Où est la gare ?;Pourriez-vous me dire où est la gare ?;La gare, c'est où ?
 Thank someone warmly.|Merci beaucoup.;Merci mille fois.;Je vous remercie vraiment.
-Ask someone to repeat something.|Pouvez-vous répéter ?;Vous pouvez répéter, s'il vous plaît ?;Pardon, vous disiez ?
-Say you come from Canada.|Je viens du Canada.;Je suis originaire du Canada.;J'arrive du Canada.
+Ask someone to repeat something.|Pouvez-vous répéter ?;Vous pouvez répéter, s'il vous plaît ?;Pardon, pouvez-vous répéter ?
+Say you come from Canada.|Je viens du Canada.;Je suis originaire du Canada.;Moi, je viens du Canada.
 Order a coffee politely.|Je voudrais un café, s'il vous plaît.;Un café, s'il vous plaît.;Puis-je avoir un café ?
 Ask how someone is doing.|Comment allez-vous ?;Comment ça va ?;Ça va bien ?
 Say you are fine, thanks.|Je vais bien, merci.;Ça va bien, merci.;Très bien, merci.
@@ -701,12 +701,12 @@ Ask what time it is.|Quelle heure est-il ?;Vous avez l'heure ?;Il est quelle heu
 Say goodbye to a friend.|Salut !;À bientôt !;Ciao !
 Say you are hungry.|J'ai faim.;Je meurs de faim.;J'ai vraiment faim.
 Ask someone where they live.|Où habitez-vous ?;Tu habites où ?;Où est-ce que vous habitez ?
-Say you live in Paris.|J'habite à Paris.;Je vis à Paris.;Mon domicile est à Paris.
+Say you live in Paris.|J'habite à Paris.;Je vis à Paris.;J'habite à Paris, en France.
 Ask for directions to the bathroom.|Où sont les toilettes ?;Pourriez-vous m'indiquer les toilettes ?;Les toilettes, s'il vous plaît ?
 Say you are sorry (apologize).|Je suis désolé.;Je suis désolée.;Toutes mes excuses.
 Wish someone a good day.|Bonne journée !;Passez une bonne journée !;Je vous souhaite une bonne journée.
 Ask how much something costs.|Combien ça coûte ?;C'est combien ?;Quel est le prix, s'il vous plaît ?
-Say you don't speak French well.|Je ne parle pas bien français.;Mon français n'est pas très bon.;Je parle un peu français.
+Say you don't speak French well.|Je ne parle pas bien français.;Mon français n'est pas très bon.;Je ne parle pas très bien français.
 Invite someone for coffee.|Tu veux prendre un café ?;On va prendre un café ?;Voulez-vous prendre un café avec moi ?
 Wish someone good luck.|Bonne chance !;Je te souhaite bonne chance !;Bon courage !`,
   },
@@ -1153,7 +1153,7 @@ J'ai reçu un ___ ce matin.|colis
 Il faut signer ce ___.|document
 Je voudrais changer de la ___ étrangère.|monnaie
 Ma carte de crédit a été ___.|refusée
-J'ai perdu mon ___ d'identité.|carte
+J'ai perdu ma ___ d'identité.|carte
 Le conseiller bancaire m'a bien ___.|conseillé`,
   },
   {
@@ -1463,7 +1463,7 @@ Complain that something is broken.|C'est cassé.;Ça ne marche pas.;C'est en pan
 Ask for a table for two.|Une table pour deux, s'il vous plaît.;Avez-vous une table pour deux ?;Je voudrais une table pour deux personnes.
 Say you forgot your keys.|J'ai oublié mes clés.;J'ai oublié mes clés à la maison.;Mes clés, je les ai oubliées.
 Ask if the seat is taken.|Cette place est-elle libre ?;Est-ce que cette place est prise ?;La place est libre ?
-Say you used to live in Lyon.|J'habitais à Lyon avant.;Avant, j'habitais à Lyon.;J'ai habité à Lyon pendant longtemps.
+Say you used to live in Lyon.|J'habitais à Lyon avant.;Avant, j'habitais à Lyon.;Avant, je vivais à Lyon.
 Recommend a restaurant to a friend.|Je te recommande ce restaurant.;Ce restaurant est vraiment bon, essaie-le.;Tu devrais essayer ce restaurant.
 Ask someone what they think of a movie.|Qu'est-ce que tu penses du film ?;Tu as aimé le film ?;Comment as-tu trouvé le film ?
 Say you need to see a doctor.|Je dois voir un médecin.;J'ai besoin de consulter un médecin.;Il faut que je voie un médecin.
@@ -1478,7 +1478,7 @@ Ask if there is a discount.|Y a-t-il une réduction ?;Est-ce qu'il y a une remis
 Say you will call back later.|Je rappellerai plus tard.;Je vous rappelle plus tard.;Je te rappelle tout à l'heure.
 Apologize for being late.|Désolé pour le retard.;Désolée pour le retard.;Je suis en retard, toutes mes excuses.
 Say you have never been to Italy.|Je ne suis jamais allé en Italie.;Je ne suis jamais allée en Italie.;Je n'ai encore jamais visité l'Italie.
-Ask if the wifi password is available.|Quel est le mot de passe wifi ?;Avez-vous le mot de passe du wifi ?;Le wifi, c'est quoi le mot de passe ?
+Ask for the wifi password.|Quel est le mot de passe wifi ?;Avez-vous le mot de passe du wifi ?;Le wifi, c'est quoi le mot de passe ?
 Say you plan to study tonight.|Je vais étudier ce soir.;Ce soir, je compte réviser.;J'ai l'intention d'étudier ce soir.
 Ask someone to slow down when speaking.|Pouvez-vous parler plus lentement ?;Parlez plus lentement, s'il vous plaît.;Pourriez-vous ralentir un peu quand vous parlez ?`,
   },

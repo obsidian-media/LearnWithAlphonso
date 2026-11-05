@@ -831,9 +831,9 @@ El paisaje era completamente basto.|El paisaje era completamente basto.
 Todos dijeron que el terreno era muy vasto.|Todos dijeron que el terreno era muy vasto.
 Todos dijeron que el terreno era muy basto.|Todos dijeron que el terreno era muy basto.
 Todos miraban el cerro con atención.|Todos miraban el cerro con atención.
-Todos miraban el cero con atención.|Todos miraban el cero con atención.
+Todos miraban el cero en el marcador.|Todos miraban el cero en el marcador.
 Se podía ver el cerro desde la ventana.|Se podía ver el cerro desde la ventana.
-Se podía ver el cero desde la ventana.|Se podía ver el cero desde la ventana.
+Se podía ver el cero en la pantalla.|Se podía ver el cero en la pantalla.
 Vamos a votar mañana temprano.|Vamos a votar mañana temprano.
 Vamos a botar mañana temprano.|Vamos a botar mañana temprano.
 Decidieron votar ayer por la tarde.|Decidieron votar ayer por la tarde.
@@ -985,7 +985,7 @@ Ellos son ___ trabajadores que nosotros.|más
 Esta calle es la ___ larga de la ciudad.|más
 El tren es ___ rápido que el autobús.|más
 Mi café está ___ caliente que el tuyo.|menos
-Esta película es la ___ buena del año.|más
+Esta película es la ___ interesante del año.|más
 Su casa es ___ bonita como la nuestra.|tan
 El invierno aquí es ___ frío que allá.|más
 Esta tienda es la ___ barata de todas.|más
@@ -1344,7 +1344,7 @@ to clean the house|limpiar la casa
 to go to the gym|ir al gimnasio
 to have a picnic|hacer un picnic
 to go out to eat|salir a comer
-to sleep late|acostarse tarde
+to go to bed late|acostarse tarde
 to do nothing|no hacer nada
 to read a book|leer un libro
 to cook a big meal|cocinar una gran comida
@@ -1587,12 +1587,12 @@ Espero verte pronto.|Espero verte pronto.`,
     subtitle: "Say it your own way",
     kind: "translate",
     note: "Asking, arranging and explaining, and more than one wording is right.",
-    data: `Ask someone if they are free tonight.|¿Estás libre esta noche?;¿Tienes tiempo esta noche?;¿Puedes esta noche?
+    data: `Ask someone if they are free tonight.|¿Estás libre esta noche?;¿Tienes tiempo esta noche?;¿Estás disponible esta noche?
 Suggest meeting tomorrow.|¿Nos vemos mañana?;¿Quedamos mañana?;Podríamos vernos mañana.
 Say you have to leave now.|Tengo que irme ahora.;Debo irme ya.;Ya me tengo que ir.
 Ask for directions to the station.|¿Cómo llego a la estación?;¿Dónde queda la estación?;¿Por dónde se va a la estación?
 Say turn left at the corner.|Gira a la izquierda en la esquina.;Dobla a la izquierda en la esquina.;En la esquina, gira a la izquierda.
-Ask if the store is open.|¿Está abierta la tienda?;¿La tienda está abierta?;¿Abrió ya la tienda?
+Ask if the store is open.|¿Está abierta la tienda?;¿La tienda está abierta?;¿Ya está abierta la tienda?
 Say you would like to reserve a table.|Quisiera reservar una mesa.;Me gustaría reservar una mesa.;Quiero hacer una reservación.
 Ask if there is a room available.|¿Hay una habitación disponible?;¿Tienen alguna habitación libre?;¿Queda alguna habitación?
 Ask what time the train leaves.|¿A qué hora sale el tren?;¿Cuándo sale el tren?;¿A qué hora parte el tren?
