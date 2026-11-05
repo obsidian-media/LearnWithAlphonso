@@ -1,6 +1,6 @@
 # Visual refresh, part 2: scenes, standing characters, a path map and a real celebration
 
-Status: approved by the owner, 3 November 2026 ("the plan does sounds good", "yes go with the look, and do the full-body poses", "its alright").
+Status: implemented (2026-11-04; scenes, figures and clips in #341, round 4 in #347, build 54 and 55 polish in #350). Approved by the owner, 3 November 2026 ("the plan does sounds good", "yes go with the look, and do the full-body poses", "its alright").
 
 ## Why
 

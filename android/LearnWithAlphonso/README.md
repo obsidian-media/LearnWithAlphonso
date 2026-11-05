@@ -40,9 +40,11 @@ Every tab is real, and all five plans are merged to `main` (the app arrived on
 owner's side of the release (`OWNER-SETUP.md`: Play account, subscription,
 RevenueCat Android key) and the device checklist below.
 
-## Not yet ported from iOS and web (as of 2026-10-18)
+## Not yet ported from iOS and web (as of 2026-11-04)
 
-Nothing known to be missing from iOS.
+Nothing known to be missing from iOS or web. The podcast quiz was ported 2026-11-04 (#381, not yet run on a device): core `PodcastQuiz` and `PodcastQuizSession`, `PodcastClient` quiz calls to the `complete-podcast-quiz` Edge Function, and the `PodcastQuizUi` screen in Listen.
+
+Ported on 2026-11-04, not yet run on a device: save a word from French and Spanish lessons (#372, the paragraph below), the notification card after the second lesson instead of a cold system prompt (#349, `ReminderPromptPolicy` in core), the authored English word-card meanings and examples and the new story campaigns (both arrive through the content export), and Sentry crash reporting in release builds (`CrashReporting.kt`, `docs/sentry-crash-reporting.md`).
 
 Ported on 2026-10-17, not yet run on a device: save-any-word. Tap a word in a Hector reply, a Practice or Campaign
 reply, an English-course lesson or review explanation, or a podcast transcript (under its episode's course) to save it with its sentence; the sheet

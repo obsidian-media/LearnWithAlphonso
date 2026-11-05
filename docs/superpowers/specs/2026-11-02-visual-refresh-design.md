@@ -1,6 +1,6 @@
 # Visual refresh: closing the gap with Learna and Duolingo
 
-Status: draft for owner approval, 2 November 2026.
+Status: implemented (2026-11-04). Approved 2 November 2026 and built in #341 (this spec), then #347 and #350 and the scenes spec; builds 53 to 55.
 
 ## Why
 

@@ -115,3 +115,4 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 
 `lesson_completion_hits` (`20261104100100`): service-role only, no client privileges. It backs the rolling-hour ceiling
 in `complete-lesson` and `completeLessonRemote` (`consume_lesson_completion_slot`, service role only).
+`podcast_quiz_questions` and `podcast_quiz_awards` (`20261104100200`): `authenticated` has SELECT only (questions: published episodes only, the answer key is readable like lesson questions; awards: the caller's own rows), `service_role` has ALL. `submit_podcast_quiz` is service role only.
