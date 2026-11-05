@@ -18,7 +18,10 @@ private enum AvatarArt {
     static func image(_ file: String) -> UIImage? {
         if let hit = cache[file] { return hit }
         let path = Bundle.main.bundlePath + "/AlphonsoAvatar/" + file
-        guard let image = UIImage(contentsOfFile: path) else { return nil }
+        guard let loaded = UIImage(contentsOfFile: path) else { return nil }
+        // contentsOfFile only maps the file; the WebP would otherwise decode lazily at first draw (and again if
+        // the system purges the decode). Decode now, once, and cache the bitmap.
+        let image = loaded.preparingForDisplay() ?? loaded
         cache[file] = image
         return image
     }
