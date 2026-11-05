@@ -85,10 +85,20 @@ describe("reorder gate: each rule has a fixture only it catches", () => {
       "My bag is heavier than yours",
       "Anna is as tall as Tom",
       "She is taller than her mother",
+      // an object before the comparison swaps with the one after it: "He likes me more than her"
+      "He likes her more than me",
+      "I like him as much as her",
+      "Tom likes Anna more than me",
     ])
       expect(movableAdverbial(s), s).not.toBeNull();
     // an object pronoun at the end cannot take the subject's place, so the other order is not the same words
-    for (const s of ["She is happier than him", "I am as tall as her", "He swims further than me"])
+    for (const s of [
+      "She is happier than him",
+      "I am as tall as her",
+      "He swims further than me",
+      "He is more polite than her",
+      "I am not as fast as him",
+    ])
       expect(movableAdverbial(s), s).toBeNull();
     for (const s of ["I wash my face", "Go straight ahead", "The keys are on the table"])
       expect(movableAdverbial(s), s).toBeNull();
