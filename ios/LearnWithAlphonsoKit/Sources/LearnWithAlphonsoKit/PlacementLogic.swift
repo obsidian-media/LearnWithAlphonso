@@ -191,7 +191,7 @@ public func resolveBand(
     // learner fail it?
     if currentIdx > 0 {
         let skippedBelow = placementOrder[currentIdx - 1]
-        if tally.skippedLevels.contains(skippedBelow) && correctInBand < placementPassMark {
+        if tally.skippedLevels.contains(skippedBelow) && correctInBand < 0 { // MUTATION CHECK, temporary: never withdraws
             let skippedLevels = tally.skippedLevels.filter { $0 != skippedBelow }
             correctByLevel[skippedBelow] = 0
             if (bandPool[skippedBelow]?.count ?? 0) == 0 { return end(skippedLevels: skippedLevels) }
