@@ -94,7 +94,9 @@ describe("3D Alphonso preview: the web view", () => {
     expect(view).toContain("config.mediaTypesRequiringUserActionForPlayback = []");
     expect(view).toContain("config.allowsInlineMediaPlayback = true");
     expect(view).toContain("webView.isOpaque = false");
-    expect(view).toContain("loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())");
+    expect(view).toContain(
+      "loadFileURL(page, allowingReadAccessTo: page.deletingLastPathComponent())",
+    );
   });
 
   it("shows a native loading state until the page posts ready, and Retry on a failed download", () => {
