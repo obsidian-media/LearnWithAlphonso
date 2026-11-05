@@ -1,0 +1,85 @@
+{
+  "batch": "p7-2nd-b003",
+  "pass": "second",
+  "reviewer": "agent:p7-2nd-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "sazonar": {
+      "verdict": "approve",
+      "alt": "A chef sprinkles seasoning over a flatbread topped with peppers.",
+      "peopleVisible": true
+    },
+    "subir": {
+      "verdict": "approve",
+      "alt": "A person's legs climb a wide flight of stone steps.",
+      "peopleVisible": true
+    },
+    "tos": {
+      "verdict": "approve",
+      "alt": "An elderly man coughs into his fist while an older woman comforts him on a sofa.",
+      "peopleVisible": true
+    },
+    "trabajando": {
+      "verdict": "approve",
+      "alt": "A man types on a laptop at a dark desk with a small plant and a blue folder.",
+      "peopleVisible": true
+    },
+    "traduire": {
+      "verdict": "approve",
+      "alt": "Hands turn the pages of a thick open dictionary on a wooden table.",
+      "peopleVisible": true
+    },
+    "travailler": {
+      "verdict": "approve",
+      "alt": "A man types on a laptop at a dark desk with a small plant and a blue folder.",
+      "peopleVisible": true
+    },
+    "une alimentation équilibrée": {
+      "verdict": "approve",
+      "alt": "A plate of baked salmon with lemon, baby corn, carrots and cherry tomatoes.",
+      "peopleVisible": false
+    },
+    "unto": {
+      "verdict": "approve",
+      "alt": "A hand spreads butter with a knife on a slice of bread over a speckled plate.",
+      "peopleVisible": true
+    },
+    "vender": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "vendre": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "viajando": {
+      "verdict": "approve",
+      "alt": "A hiker with a backpack stands with his back to the camera facing snowy mountains.",
+      "peopleVisible": true
+    },
+    "visitar": {
+      "verdict": "approve",
+      "alt": "Three tourists stand with their backs to the camera looking at a stone cathedral across a square.",
+      "peopleVisible": true
+    },
+    "visiter": {
+      "verdict": "approve",
+      "alt": "Three tourists stand with their backs to the camera looking at a stone cathedral across a square.",
+      "peopleVisible": true
+    },
+    "voto": {
+      "verdict": "approve",
+      "alt": "Two masked people drop ballots into white ballot boxes.",
+      "peopleVisible": true
+    },
+    "étudier": {
+      "verdict": "approve",
+      "alt": "A woman with black-framed glasses reads an open book.",
+      "peopleVisible": true
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "batch": "p7-r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p7-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "acheter": {
+      "verdict": "approve",
+      "alt": "A hand picks a small orange tomato from a pile at a market stall, a shopping bag on the wrist.",
+      "peopleVisible": true
+    },
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "bebo": {
+      "verdict": "approve",
+      "alt": "A woman in a black top lifts a clear water bottle to drink outdoors.",
+      "peopleVisible": true
+    },
+    "comprar": {
+      "verdict": "approve",
+      "alt": "A hand picks a small orange tomato from a pile at a market stall, a shopping bag on the wrist.",
+      "peopleVisible": true
+    },
+    "distributeur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "enviar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "envoyer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "estudiando": {
+      "verdict": "approve",
+      "alt": "A man in a blue shirt writes notes on a pad next to an open laptop at a desk.",
+      "peopleVisible": true
+    },
+    "fermer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "l'équipe": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la source": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le conducteur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le cours": {
+      "verdict": "approve",
+      "alt": "A large lecture hall full of students seated in tiered rows facing two projection screens.",
+      "peopleVisible": true
+    },
+    "le dossier": {
+      "verdict": "approve",
+      "alt": "Tall stacks of paper files with tabbed folders in black and white.",
+      "peopleVisible": false
+    },
+    "le match": {
+      "verdict": "approve",
+      "alt": "A football lies on the pitch of an empty stadium.",
+      "peopleVisible": false
+    },
+    "le pourboire": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le reportage": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le rugby": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "película": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "reportaje": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "étudier": {
+      "verdict": "approve",
+      "alt": "A woman with black-framed glasses reads an open book.",
+      "peopleVisible": true
+    }
+  }
+}

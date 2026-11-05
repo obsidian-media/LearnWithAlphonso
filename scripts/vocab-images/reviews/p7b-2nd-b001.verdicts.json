@@ -1,0 +1,28 @@
+{
+  "batch": "p7b-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p7b-2nd-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "asiento": {
+      "verdict": "approve",
+      "alt": "Rows of teal airplane seats with red trim, passengers' heads visible from behind.",
+      "peopleVisible": true
+    },
+    "la course": {
+      "verdict": "approve",
+      "alt": "Four runners in shorts race around a red athletics track.",
+      "peopleVisible": true
+    },
+    "vender": {
+      "verdict": "approve",
+      "alt": "A woman crouches on a pavement beside piles of green vegetables in plastic bags, selling them.",
+      "peopleVisible": true
+    },
+    "vendre": {
+      "verdict": "approve",
+      "alt": "A woman crouches on a pavement beside piles of green vegetables in plastic bags, selling them.",
+      "peopleVisible": true
+    }
+  }
+}
