@@ -184,6 +184,35 @@ describe("fill-in packs: a sentence has wrong options written for it", () => {
     expect(partial).toEqual([]);
   });
 
+  it("no fill-in prompt shows its own answer in brackets", () => {
+    // Checks the prompt the learner sees, not the authored hint: dropping a hint brings back the pack's
+    // own bracket, and "Yo voy a ___ (comprar) un regalo" with the answer "comprar" passed every other test.
+    const bad: string[] = [];
+    for (const pack of packs) {
+      if (pack.kind !== "cloze") continue;
+      for (const q of packQuestions(pack)) {
+        if (q.type !== "mc" && q.type !== "fill") continue;
+        const answer = (q.type === "mc" ? q.choices[q.answer]! : q.answer).toLowerCase();
+        for (const m of q.prompt.matchAll(/\(([^)]*)\)/g))
+          if (m[1]!.trim().toLowerCase() === answer) bad.push(`${q.id}: ${q.prompt}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it("no written wrong option contains the answer or sits inside it", () => {
+    const bad: string[] = [];
+    for (const [id, rows] of Object.entries(ROMANCE_CLOZE)) {
+      const data = lines(packs.find((p) => p.id === id)!);
+      for (const [i, row] of Object.entries(rows)) {
+        const answer = data[Number(i)]![1]!;
+        for (const w of row.wrong)
+          if (optionsOverlap(answer, w)) bad.push(`${id}#${i}: "${w}" for "${answer}"`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
   it("a clue is added only where the line has one authored, and replaces a bracketed word", () => {
     const qs = packQuestions(packs.find((p) => p.id === "esa2p4")!);
     expect(qs[1]!.type === "mc" || qs[1]!.type === "fill").toBe(true);
