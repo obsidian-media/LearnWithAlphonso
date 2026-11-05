@@ -54,6 +54,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionCard
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionViewModel
@@ -282,9 +283,14 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
         }
         AlphonsoMascotBanner(if (progress.streak > 0) "Nice ${progress.streak}-day streak! Ready for today's lesson?" else "Ready for today's lesson?")
         if (onBuyStreakFreeze != null) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft, modifier = Modifier.weight(1f))
-                TextButton(onClick = onBuyStreakFreeze) { Text("Buy freeze ($STREAK_FREEZE_XP_COST XP)", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+            // A card like the other Learn rows (parchment, hairline edge), so the words never sit straight on the garden photo.
+            // Ink on parchment, and the buy button is the secondary button: moss text alone is under 4.5:1 on Studio Ink's parchment.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).border(1.dp, palette.hairline, RoundedCornerShape(14.dp)).padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+            ) {
+                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelLarge, color = palette.ink, modifier = Modifier.weight(1f))
+                AlphonsoSecondaryButton("Buy freeze ($STREAK_FREEZE_XP_COST XP)", onClick = onBuyStreakFreeze, fullWidth = false)
             }
         }
     }

@@ -22,4 +22,22 @@ class AlphonsoPalettesTest {
         assertTrue(AlphonsoPalettes.resolve(AlphonsoThemeId.STUDIO_INK, systemDark = false).isDark)
         assertEquals(Color(0xFF0C1813), AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).surface)
     }
+
+    private fun luminance(c: Color): Double {
+        fun channel(v: Float): Double = if (v <= 0.03928f) v / 12.92 else Math.pow((v + 0.055) / 1.055, 2.4)
+        return 0.2126 * channel(c.red) + 0.7152 * channel(c.green) + 0.0722 * channel(c.blue)
+    }
+
+    private fun contrast(a: Color, b: Color): Double {
+        val (hi, lo) = listOf(luminance(a), luminance(b)).sortedDescending()
+        return (hi + 0.05) / (lo + 0.05)
+    }
+
+    @Test
+    fun `secondary buttons and row cards keep ink on parchment at 4_5 to 1 or better in every theme`() {
+        // The podcast "Take the quiz" chip and the episode card both sit on the scene photo with these two tokens.
+        val all = AlphonsoPalettes.light.values + AlphonsoPalettes.dark.values
+        assertEquals(7, all.size)
+        all.forEach { p -> assertTrue("ink on parchment ${contrast(p.ink, p.parchment)}", contrast(p.ink, p.parchment) >= 4.5) }
+    }
 }

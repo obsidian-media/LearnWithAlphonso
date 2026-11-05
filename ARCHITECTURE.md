@@ -1756,13 +1756,13 @@ Added 2026-10-08 (#249). Every vocab image is self-hosted in the public
 metadata stripped, `?v=<hash>` cache key; migration `20261008140000`). Only
 picturable terms get an image (a closed-default classifier,
 `scripts/vocab-imageability.json`); abstract words, phrases and anything
-sensitive get a text-only card. **1,154 images are live** (English 444, French
-356, Spanish 354), each visually reviewed (every image showing a person, plus a
+sensitive get a text-only card. **1,288 images are live** (English 444, French
+419, Spanish 425), each visually reviewed (every image showing a person, plus a
 10% sample, twice) and signed off by the owner (`signoff.json` digest). The
 first pass (#249) was 415 images (English 212, Spanish 176, French 27); a
 second pass of 315 more (#268, 2026-10-09) shipped in build 50, passes 3 and 4
-(#352, #353) are in build 55 (886 images), and passes 5 and 6 (#360 English, #370
-the first new French and Spanish photos) ship with the next iOS build, because
+(#352, #353) are in build 55 (886 images), and passes 5 to 7 (#360 English, #370 and #379
+French and Spanish photos) ship with the next iOS build, because
 the iOS and Android apps bundle `vocab-images.json`. The renderers (web `VocabImage`, iOS
 `VocabImageView`, Kit `VocabImagePolicy`) accept only bucket URLs, show a
 placeholder while loading and collapse the whole slot on failure. The iOS

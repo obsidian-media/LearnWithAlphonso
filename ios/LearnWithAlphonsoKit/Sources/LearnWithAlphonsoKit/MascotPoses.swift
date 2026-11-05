@@ -4,7 +4,7 @@ import Foundation
 /// src/data/mascot-moments.json, shared with the web.
 public enum MascotMoment: String, CaseIterable, Sendable {
     case learnGreeting, lessonComplete, lessonCompleteOffline, leaguePromotion, emptyState
-    case streakEncourage, campaignComplete, authWelcome
+    case streakEncourage, questionAsk, campaignComplete, authWelcome
     case hectorIdle, hectorListening, hectorSpeaking, hectorThinking, paywall
 }
 

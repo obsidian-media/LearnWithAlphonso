@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AskingAlphonso } from "../../components/AskingAlphonso";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
@@ -322,9 +323,14 @@ function ReviewPage() {
             🔊 Play audio
           </button>
         )}
-        <h2 className="font-display text-[25px] font-semibold leading-tight text-ink">
-          {q.prompt}
-        </h2>
+        <AskingAlphonso
+          prompt={q.prompt}
+          hasMedia={
+            q.type === "listening" ||
+            q.type === "speak" ||
+            (q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey])
+          }
+        />
 
         <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
           {q.type === "mc" || q.type === "listening" ? (

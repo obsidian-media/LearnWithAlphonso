@@ -4,6 +4,7 @@ import { StrictMode } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useProgress } from "../lib/progress";
+import { PODCAST_QUIZZES } from "../data/podcast-quizzes";
 
 const completePodcastQuiz = vi.fn();
 vi.mock("../lib/podcast-quiz.functions", () => ({ completePodcastQuiz }));
@@ -55,6 +56,29 @@ describe("PodcastQuiz", () => {
     expect(screen.getByRole("button", { name: "Check" })).toBeDisabled();
     await user.click(screen.getByRole("radio", { name: "Alpha" }));
     expect(screen.getByRole("button", { name: "Check" })).toBeEnabled();
+  });
+
+  // iOS QA froze at question 3 of this quiz (its choices are the shortest). The web walks every question of the real data.
+  it("walks all seven questions of Ordering Coffee: each takes a choice, a check and a move on", async () => {
+    const coffee = PODCAST_QUIZZES.find((x) => x.slug === "ordering-coffee-v2")!.questions;
+    expect(coffee.length).toBe(7);
+    const { user } = renderQuiz({ questions: coffee });
+    for (const [i, question] of coffee.entries()) {
+      expect(screen.getByText(question.prompt)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`Question ${i + 1} of 7`))).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Check" })).toBeDisabled();
+      // The same position each time, so a choice index that stuck from an earlier question would show here.
+      const pick = question.choices[2];
+      await user.click(screen.getByRole("radio", { name: pick }));
+      expect(screen.getByRole("radio", { name: pick })).toHaveAttribute("aria-checked", "true");
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      expect(screen.getAllByTestId("verdict").length).toBeGreaterThan(0);
+      await user.click(screen.getByRole("button", { name: i === 6 ? "Finish" : "Next" }));
+    }
+    await waitFor(() => expect(completePodcastQuiz).toHaveBeenCalledTimes(1));
+    expect(completePodcastQuiz.mock.calls[0][0].data.answers).toEqual(
+      coffee.map((x) => ({ questionId: x.id, choiceIndex: 2 })),
+    );
   });
 
   it("states right and wrong in visible words and icons, not only colour or screen-reader text", async () => {
