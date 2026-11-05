@@ -31,9 +31,10 @@ vi.mock("@tanstack/react-start", () => ({
 
 const deleteUser = vi.fn();
 const getUserById = vi.fn();
+const getUser = vi.fn();
 const supabaseAdminFrom = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom, auth: { admin: { deleteUser, getUserById } } },
+  supabaseAdmin: { from: supabaseAdminFrom, auth: { getUser, admin: { deleteUser, getUserById } } },
 }));
 
 const accountModule = await import("./account.functions");
@@ -55,13 +56,17 @@ function ctx(
   supabase: ReturnType<typeof createSupabaseMock>,
   claims: Record<string, unknown> = {},
 ) {
-  return { supabase, userId: USER_ID, claims };
+  return { supabase, userId: USER_ID, claims, accessToken: "live-token" };
 }
 
 beforeEach(() => {
+  getUser.mockReset();
+  // The session is live on the auth server unless a test says otherwise.
+  getUser.mockResolvedValue({ data: { user: { id: USER_ID } }, error: null });
   deleteUser.mockReset();
   supabaseAdminFrom.mockReset();
-  supabaseAdminFrom.mockReturnValue(chainable({}));
+  // Service-role reads answer "no rows" unless a test says otherwise.
+  supabaseAdminFrom.mockReturnValue(chainable({ data: [], error: null, count: 0 }));
   getUserById.mockReset();
   // An email-only learner unless a test says otherwise.
   getUserById.mockResolvedValue({
@@ -415,6 +420,94 @@ describe("deleteMyAccount", () => {
 // Assumption, verified when written: no migration adds a `user_id` column via
 // ALTER TABLE, and none drops a table, so scanning CREATE TABLE bodies sees
 // every user-scoped table. Re-check that if this ever starts under-reporting.
+describe("account actions need a session the auth server still recognises", () => {
+  const signedOut = () =>
+    getUser.mockResolvedValue({ data: { user: null }, error: { message: "Session not found" } });
+
+  it("refuses to delete the account with a token whose session was signed out", async () => {
+    signedOut();
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({}));
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/^Unauthorized/);
+    expect(deleteUser).not.toHaveBeenCalled();
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(getUser).toHaveBeenCalledWith("live-token");
+  });
+
+  it("refuses to export with a token whose session was signed out", async () => {
+    signedOut();
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({ data: [] }));
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/^Unauthorized/);
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("refuses when the token belongs to a different account than the claims", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "someone-else" } }, error: null });
+    const supabase = createSupabaseMock();
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/^Unauthorized/);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("exportMyData, rows the caller cannot read itself", () => {
+  it("adds blocks made, filed reports, created teams, codes and memberships, scoped to this account", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles" ? chainable({ data: {} }) : chainable({ data: [] }),
+    );
+    const calls: Record<string, { method: string; args: unknown[] }[]> = {};
+    supabaseAdminFrom.mockImplementation((table: string) => {
+      calls[table] = [];
+      return chainable({ data: [{ from: table }], error: null, count: 1 }, calls[table]);
+    });
+    getUserById.mockResolvedValue({
+      data: {
+        user: {
+          id: USER_ID,
+          created_at: "2026-01-01T00:00:00Z",
+          last_sign_in_at: "2026-11-01T00:00:00Z",
+          identities: [{ provider: "email" }, { provider: "google" }],
+        },
+      },
+      error: null,
+    });
+
+    const result = await exportMyData({ context: ctx(supabase) });
+    const tables = JSON.parse(result.tables);
+    for (const [table, column] of [
+      // Only blocks this account made: who blocked it is never revealed.
+      ["blocked_users", "blocker"],
+      ["content_reports", "reporter"],
+      ["teams", "created_by"],
+      ["team_kicks", "user_id"],
+      ["friend_invite_codes", "user_id"],
+      ["buddy_members", "user_id"],
+      ["lesson_completion_hits", "user_id"],
+    ]) {
+      expect(tables[table], table).toEqual([{ from: table }]);
+      expect(calls[table], table).toContainEqual({ method: "eq", args: [column, USER_ID] });
+    }
+    expect(tables.account).toEqual({
+      created_at: "2026-01-01T00:00:00Z",
+      last_sign_in_at: "2026-11-01T00:00:00Z",
+      sign_in_methods: ["email", "google"],
+    });
+  });
+
+  it("fails rather than exporting without the account record", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation(() => chainable({ data: [] }));
+    supabaseAdminFrom.mockImplementation(() => chainable({ data: [], error: null, count: 0 }));
+    getUserById.mockResolvedValue({ data: { user: null }, error: { message: "down" } });
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/account/);
+  });
+});
+
 describe("GDPR export table coverage", () => {
   const migrationsDir = path.resolve(import.meta.dirname, "../../supabase/migrations");
   const sql = readdirSync(migrationsDir)
@@ -450,34 +543,10 @@ describe("GDPR export table coverage", () => {
     //  3. Deletion is already handled: user_id REFERENCES auth.users
     //     ON DELETE CASCADE, so the row goes when the account does.
     "admin_users",
-    // buddy_members (20261006180000_buddy_pairing.sql) is server-only (no SELECT policy) and holds nothing the
-    // export lacks: an active membership is the account's open row in buddy_pairs, which IS exported.
-    "buddy_members",
     // buddy_pool_exclusions (20261013100100_buddy_pool_exclusion.sql) is a server-only operational flag that keeps
     // the App Review demo account out of stranger matching. It has no client policy and holds nothing the learner
     // typed or did; it goes with the account through ON DELETE CASCADE.
     "buddy_pool_exclusions",
-    // lesson_completion_hits (20261104100100) is a server-only anti-farming counter: (user_id, timestamp) rows that
-    // duplicate lesson_completions.completed_at, which IS exported. No client grant; pruned after 2 days and removed
-    // with the account through ON DELETE CASCADE.
-    "lesson_completion_hits",
-    // blocked_users (supabase/migrations/20260928020000_block_and_report.sql):
-    // the `blocker` half is genuinely this account's own data and RLS
-    // does let the caller read it back, but the generic USER_ID_EXPORT_TABLES
-    // loop only matches a literal `user_id` column, and OTHER_OWNED_EXPORT_TABLES
-    // ORs across every listed column -- which would also export the
-    // `blocked` half, i.e. who has blocked *me*. Revealing that to the
-    // blocked-by party defeats the point of blocking, so this needs a
-    // one-column-only export path the current mechanism doesn't have.
-    // Flagged as a real follow-up, not silently accepted as covered.
-    // Deletion is already handled: both columns REFERENCES auth.users
-    // ON DELETE CASCADE.
-    "blocked_users",
-    // content_reports (same migration): RLS has NO select policy for
-    // anyone, reporter included -- same admin_users reasoning above
-    // (reason 1: an export field that's always empty is worse than no
-    // field). Deletion is already handled the same CASCADE way.
-    "content_reports",
     // apple_auth_tokens (supabase/migrations/20260928030000_apple_auth_tokens.sql):
     // a CREDENTIAL, not the account's own data. Exporting it would hand
     // the user -- and anyone who ever receives a copy of their export
@@ -500,20 +569,6 @@ describe("GDPR export table coverage", () => {
     // decouple (2026-09-27); its create migration stays in history, so
     // this export-coverage scan still sees it and the exclusion must stay.
     "hector_links",
-    // friend_invite_codes (supabase/migrations/20260930140000_fix_friend_invite_forgeable_uuid.sql):
-    // same admin_users/apple_auth_tokens mechanics -- RLS on with no
-    // client-facing policies at all (only the two SECURITY DEFINER
-    // functions in that migration touch it), so the caller-scoped export
-    // would return empty regardless. Deletion is already handled: user_id
-    // REFERENCES auth.users ON DELETE CASCADE.
-    "friend_invite_codes",
-    // team_kicks (supabase/migrations/20260930150000_fix_kicked_member_instant_rejoin.sql):
-    // same mechanics again -- RLS on with no client-facing policies at
-    // all (only _join_team_impl and kick_team_member, both SECURITY
-    // DEFINER, touch it), so the caller-scoped export would return empty
-    // regardless. Deletion is handled: user_id REFERENCES auth.users ON
-    // DELETE CASCADE.
-    "team_kicks",
   ]);
 
   it("exports every table that has a user_id column", () => {
@@ -522,7 +577,10 @@ describe("GDPR export table coverage", () => {
       .map(({ table }) => table)
       .filter((t) => !NOT_PERSONAL_DATA.has(t));
 
-    const missing = withUserId.filter((t) => !exportTables.includes(t));
+    const serviceScoped = accountModule.SERVICE_SCOPED_EXPORT_TABLES.map((t) => t.table as string);
+    const missing = withUserId.filter(
+      (t) => !exportTables.includes(t) && !serviceScoped.includes(t),
+    );
     expect(missing).toEqual([]);
   });
 
@@ -545,10 +603,8 @@ describe("GDPR export table coverage", () => {
       // "profiles" is exported too, just keyed by `id` rather than
       // `user_id`, so it takes its own select below.
       "profiles",
-      // "teams" is shared group data, not personal data: its only link is
-      // `created_by ... ON DELETE SET NULL`, i.e. a team deliberately
-      // outlives the account that made it.
-      "teams",
+      // Read with the service role, scoped to this account (the caller has no SELECT on these).
+      ...accountModule.SERVICE_SCOPED_EXPORT_TABLES.map((t) => t.table),
       ...NOT_PERSONAL_DATA,
     ]);
     const referencing = createTableBlocks
@@ -757,6 +813,37 @@ describe("revokeAppleGrantForUser with Apple configuration", () => {
     }
     // Only the credential: nothing that ties the row to the account being deleted.
     expect(parked).toEqual([{ refresh_token: "rt-1" }]);
+  });
+
+  it("opens a sealed stored grant before revoking it, and parks it still sealed", async () => {
+    const { randomBytes } = await import("node:crypto");
+    const { sealToken } = await import("./token-sealing.server");
+    const key = randomBytes(32).toString("base64");
+    configureApple();
+    vi.stubEnv("APPLE_TOKEN_ENCRYPTION_KEY", key);
+    const { generateKeyPairSync } = await import("node:crypto");
+    const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    vi.stubEnv("APPLE_PRIVATE_KEY", privateKey.export({ type: "pkcs8", format: "pem" }).toString());
+    const sealed = sealToken("rt-1", key);
+    const parked: unknown[] = [];
+    const admin = {
+      from: (table: string) =>
+        table === "apple_revocation_pending"
+          ? { insert: async (row: unknown) => (parked.push(row), { error: null }) }
+          : chainable({ data: { refresh_token: sealed }, error: null }),
+    };
+    const realFetch = globalThis.fetch;
+    const fetchMock = vi.fn(
+      async (_url: unknown, _init?: RequestInit) => new Response("", { status: 503 }),
+    );
+    globalThis.fetch = fetchMock as never;
+    try {
+      expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+    expect(String(fetchMock.mock.calls[0][1]?.body)).toContain("token=rt-1");
+    expect(parked).toEqual([{ refresh_token: sealed }]);
   });
 
   it("queues nothing when Apple confirms the revocation", async () => {

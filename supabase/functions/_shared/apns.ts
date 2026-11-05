@@ -30,6 +30,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildFcmAccessToken, readFcmConfig, sendFcmToTokens } from "./fcm.ts";
+import { isValidApnsToken } from "./apns-token.ts";
 
 function apnsConfigured(): boolean {
   return !!(
@@ -157,6 +158,9 @@ export async function sendPushToUser(
   const host = Deno.env.get("APNS_HOST") ?? "https://api.push.apple.com";
 
   await Promise.all(iosRows.map(async (row: { id: string; token: string }) => {
+    // The token is user-written and goes into the request path: refuse
+    // anything that is not plain hex rather than send it to Apple.
+    if (!isValidApnsToken(row.token)) return;
     try {
       const res = await fetch(`${host}/3/device/${row.token}`, {
         method: "POST",

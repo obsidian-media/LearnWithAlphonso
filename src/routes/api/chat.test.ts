@@ -107,6 +107,24 @@ describe("POST /api/chat", () => {
     ]);
   });
 
+  it("forwards at most 16,000 characters of conversation, newest turns kept", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
+    );
+    const long = Array.from({ length: 40 }, (_, i) => ({
+      role: i % 2 ? "assistant" : "user",
+      content: `${i}`.padEnd(50_000, "x"),
+    }));
+    const res = await handler({ request: req({ systemPrompt: REAL_PROMPT, messages: long }) });
+    expect(res.status).toBe(200);
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const sent = JSON.parse(init.body as string).messages as { role: string; content: string }[];
+    const turns = sent.filter((m) => m.role !== "system");
+    expect(turns.reduce((n, m) => n + m.content.length, 0)).toBeLessThanOrEqual(16_000);
+    expect(turns.every((m) => m.content.length <= 4000)).toBe(true);
+    expect(turns.at(-1)!.content.startsWith("39")).toBe(true);
+  });
+
   it("appends a CEFR difficulty hint after the scenario's system prompt when cefrLevel is provided", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "hello!" } }] }), {

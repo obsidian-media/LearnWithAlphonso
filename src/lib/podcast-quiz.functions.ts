@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { HOURLY_COMPLETION_LIMIT } from "./anti-farming";
@@ -108,7 +109,7 @@ export const fetchPodcastQuiz = createServerFn({ method: "GET" })
       .select("id,prompt,choices,answer_index")
       .eq("episode_id", data.episodeId)
       .order("sort_order");
-    if (qs.error) throw new Error(qs.error.message);
+    if (qs.error) throw publicError(null, qs.error);
     const rows = (qs.data ?? []) as {
       id: string;
       prompt: string;
@@ -154,6 +155,6 @@ export const fetchQuizEpisodeIds = createServerFn({ method: "GET" })
     const rows = await from("podcast_quiz_questions")
       .select("episode_id")
       .in("episode_id", data.episodeIds);
-    if (rows.error) throw new Error(rows.error.message);
+    if (rows.error) throw publicError(null, rows.error);
     return [...new Set((rows.data ?? []).map((r) => (r as { episode_id: string }).episode_id))];
   });

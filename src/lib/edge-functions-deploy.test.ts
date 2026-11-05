@@ -9,7 +9,9 @@ const NOT_FUNCTIONS = new Set(["_shared"]);
 
 const ci = readFileSync(path.join(root, ".github/workflows/ci.yml"), "utf8");
 const deployed = new Set(
-  [...ci.matchAll(/^\s*supabase functions deploy ([a-z0-9-]+)\s*$/gm)].map((m) => m[1]!),
+  [...ci.matchAll(/^\s*supabase functions deploy ([a-z0-9-]+)(?:\s+--[a-z-]+)*\s*$/gm)].map(
+    (m) => m[1]!,
+  ),
 );
 const functions = readdirSync(functionsDir).filter(
   (d) => statSync(path.join(functionsDir, d)).isDirectory() && !NOT_FUNCTIONS.has(d),

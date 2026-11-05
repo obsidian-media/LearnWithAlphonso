@@ -5,13 +5,17 @@ on:
   push:
     branches: [main]
 
+# Read-only token: nothing here writes to the repository through GitHub.
+permissions:
+  contents: read
+
 jobs:
   lint-and-typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
 
@@ -49,6 +53,31 @@ jobs:
       # is its own job (`types-fresh`, below) so that a red result cannot gate
       # `deploy-supabase`, which needs this job. See that job's comment.
 
+  dependency-audit:
+    # Surfaces known advisories in the locked JavaScript dependencies on every PR and push. Reported, not yet
+    # blocking (continue-on-error), so a newly published advisory in a dev-only tool cannot stop an unrelated fix;
+    # the findings appear as this job's annotations and summary. Make it blocking by removing continue-on-error once
+    # the lockfile is clean.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.3.10"
+      - name: Audit the lockfile for high and critical advisories
+        run: |
+          set -o pipefail
+          if bun audit --audit-level=high | tee audit.txt; then
+            echo "No high or critical advisories." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::bun audit reports high or critical advisories; see this job's log."
+            { echo '```'; tail -n 60 audit.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
   # Split out of lint-and-typecheck so its result does NOT gate deploy-supabase.
   # deploy-supabase `needs` lint-and-typecheck, and this check fails on EVERY PR
   # that adds a table (it regenerates against production, which only gets the
@@ -56,13 +85,20 @@ jobs:
   # lint-and-typecheck, it therefore blocked the very deploy that would have made
   # it pass: merging #157 left `hector_links` absent from production until the
   # migration was applied by hand (BACKLOG 0.0h / 0.0i). Deliberately NOT in
-  # deploy-supabase's `needs`; it stays a visible check on every PR, advisory.
+  # deploy-supabase's `needs`; advisory.
+  #
+  # It reads the Supabase account token, so it runs where deploy-supabase does:
+  # on pushes to main, in the production-supabase environment. A branch or pull
+  # request run cannot reach that token. After merging a migration, run the
+  # "Regenerate Supabase Types" workflow; this job turns green on the next push.
   types-fresh:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production-supabase
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
 
@@ -93,7 +129,7 @@ jobs:
       # gap), not a one-line change. Until then: land the migration alone,
       # merge, let deploy-supabase apply it, then regenerate types.ts in a
       # follow-up PR/commit.
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           version: 2.118.0
 
@@ -113,9 +149,9 @@ jobs:
   admin-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
 
@@ -138,8 +174,8 @@ jobs:
   web-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
       - name: Install dependencies
@@ -152,9 +188,9 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
 
@@ -178,7 +214,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report
           path: playwright-report/
@@ -194,13 +230,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           version: 2.118.0
 
@@ -245,7 +281,7 @@ jobs:
 
       - name: Upload Playwright report and traces
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-signed-in
           path: |
@@ -262,9 +298,9 @@ jobs:
     # this job). *.test.ts files mirror src/lib's own test vectors exactly.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.x
 
@@ -328,6 +364,18 @@ jobs:
         # and injects fetch. --allow-env only because fcm.ts reads Deno.env
         # in the helpers the test does not call.
         run: deno test --allow-env supabase/functions/_shared/fcm.test.ts
+
+      - name: Test the APNs device-token validator
+        run: deno test supabase/functions/_shared/apns-token.test.ts
+
+      - name: Test the translation grader keeps learner text inside its markers
+        run: deno test supabase/functions/_shared/translation-grader.test.ts
+
+      - name: Test who may call send-push
+        working-directory: supabase/functions/send-push
+        run: |
+          deno check index.ts
+          deno test auth.test.ts
 
       # A new Edge Function directory needs its own deno.json import map, and
       # nothing caught a missing one until the real deploy -- found 2026-09-22
@@ -399,6 +447,7 @@ jobs:
     # (doesn't fail the job) if those two secrets aren't set yet.
     name: Deploy Supabase migrations + Edge Functions
     runs-on: ubuntu-latest
+    environment: production-supabase
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # deno-tests added deliberately: it is the ONLY CI job that ever runs or
     # type-checks anything under supabase/functions/ (tsc's own include is
@@ -415,7 +464,7 @@ jobs:
     # failure yet; that's luck, not protection.
     needs: [lint-and-typecheck, web-build, admin-build, e2e, deno-tests]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       # Pinned, NOT `latest`. `latest` makes setup-cli resolve the release
       # through the GitHub API, which is rate-limited on shared runners --
@@ -424,7 +473,7 @@ jobs:
       # broken migration, and this job applies migrations, deploys Edge
       # Functions, syncs APNs and seeds the curriculum, so misreading it is
       # expensive. Bump deliberately; that is the trade being made.
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           version: 2.118.0
 
@@ -445,12 +494,26 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           LESSON_SESSION_SECRET: ${{ secrets.LESSON_SESSION_SECRET }}
 
+      - name: Sync the push trigger secret
+        # Optional until the owner creates it (docs/security.md, "Push notifications"). Without it send-push keeps
+        # accepting the trigger's older service-role header.
+        run: |
+          if [ -n "$SEND_PUSH_SECRET" ]; then
+            supabase secrets set SEND_PUSH_SECRET="$SEND_PUSH_SECRET"
+          else
+            echo "SEND_PUSH_SECRET is not set; skipping."
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SEND_PUSH_SECRET: ${{ secrets.SEND_PUSH_SECRET }}
+
       - name: Deploy Edge Functions
         run: |
           supabase functions deploy complete-lesson
           supabase functions deploy start-lesson-session
           supabase functions deploy grade-review
-          supabase functions deploy send-push
+          # Not a user-facing function: it checks its own shared secret (send-push/auth.ts), which is not a JWT.
+          supabase functions deploy send-push --no-verify-jwt
           supabase functions deploy get-season-status
           supabase functions deploy complete-podcast-quiz
         env:
@@ -494,7 +557,7 @@ jobs:
           FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
           FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.3.10
 
@@ -586,7 +649,7 @@ jobs:
       # This step cannot prove DELIVERY -- only receiving a real signup
       # email does that.
       - name: Auth email config has not drifted
-        run: bunx tsx scripts/check-auth-config.ts
+        run: bun scripts/check-auth-config.ts
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
@@ -597,7 +660,7 @@ jobs:
     # Build Tools, Windows Developer Mode for SwiftPM symlinks) apply here.
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Run LearnWithAlphonsoKit test suite
         run: swift test --package-path ios/LearnWithAlphonsoKit
@@ -612,10 +675,10 @@ jobs:
     # ios/LearnWithAlphonso/project.yml's own comment and .gitignore).
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: bash scripts/install-xcodegen.sh  # pinned version and checksum
 
       - name: Generate Xcode project
         working-directory: ios/LearnWithAlphonso

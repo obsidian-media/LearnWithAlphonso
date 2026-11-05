@@ -24,6 +24,7 @@
  * Nothing here submits an App Store version for review. `submit-beta-review --apply` is the one command that
  * submits (TestFlight external Beta App Review, one named build); nothing here adds a build to a TestFlight group.
  */
+import { ascErrorSummary } from "../src/lib/app-store/asc-error-summary";
 import { createSign } from "node:crypto";
 import {
   ageRatingDeclarationReadPath,
@@ -411,7 +412,7 @@ async function submitBetaReview(): Promise<void> {
     },
   });
   if (!res.ok) {
-    throw new Error(`submit failed: ${res.status} ${JSON.stringify(res.json)}`);
+    throw new Error(`submit failed: ${res.status} ${ascErrorSummary(res.json)}`);
   }
   console.log(
     `  submitted: betaReviewState=${String(dataOf<Resource>(res).attributes?.betaReviewState)}`,
@@ -568,7 +569,7 @@ async function main() {
     const r = await api(`/appStoreVersions/${version.id}/relationships/build`, "PATCH", {
       data: { type: "builds", id: build.id },
     });
-    if (!r.ok) throw new Error(`attach failed: ${r.status} ${JSON.stringify(r.json)}`);
+    if (!r.ok) throw new Error(`attach failed: ${r.status} ${ascErrorSummary(r.json)}`);
     const check = await api(`/appStoreVersions/${version.id}/build`);
     console.log(`Attached now: ${String(dataOf<Resource | null>(check)?.attributes?.version)}`);
   } else if (cmd === "beta-review-info") {
@@ -613,7 +614,7 @@ async function main() {
         attributes: { contentRightsDeclaration: "USES_THIRD_PARTY_CONTENT" },
       },
     });
-    console.log(r.ok ? "content rights: OK" : `FAILED ${r.status} ${JSON.stringify(r.json)}`);
+    console.log(r.ok ? "content rights: OK" : `FAILED ${r.status} ${ascErrorSummary(r.json)}`);
     if (!r.ok) process.exitCode = 1;
   } else if (cmd === "release-type") {
     const version = await editableVersion();

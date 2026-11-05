@@ -89,6 +89,7 @@ class AppContainer(context: Context) {
     val session = SessionManager(
         SupabaseAuthClient(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_PUBLISHABLE_KEY, engine),
         EncryptedSessionStore(app),
+        backgroundScope = appScope,
     )
 
     /** Every Supabase call shares the session's token and its one-retry-on-401 refresh. */

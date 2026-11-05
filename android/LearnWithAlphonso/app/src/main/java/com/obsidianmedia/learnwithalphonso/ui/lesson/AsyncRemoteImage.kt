@@ -26,18 +26,32 @@ import java.util.Collections
 fun AsyncRemoteImage(url: String, contentDescription: String?, modifier: Modifier = Modifier) {
     var bitmap by remember(url) { mutableStateOf(cache[url]) }
     LaunchedEffect(url) {
-        if (bitmap != null) return@LaunchedEffect
-        bitmap = withContext(Dispatchers.IO) {
-            runCatching {
-                val connection = URL(url).openConnection() as HttpURLConnection
-                connection.connectTimeout = 8_000
-                connection.readTimeout = 8_000
-                connection.inputStream.use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
-            }.getOrNull()
-        }?.also { cache[url] = it }
+        if (bitmap == null && RemoteImagePolicy.isAllowed(url)) {
+            bitmap = withContext(Dispatchers.IO) { downloadBitmap(url) }?.also { cache[url] = it }
+        }
     }
     bitmap?.let { Image(it, contentDescription = contentDescription, modifier = modifier, contentScale = ContentScale.Crop) }
 }
+
+// Caller has already checked RemoteImagePolicy.isAllowed. Null on any
+// failure, non-200 (including a redirect) or a body over the cap.
+private fun downloadBitmap(url: String): ImageBitmap? = runCatching {
+    val connection = URL(url).openConnection() as HttpURLConnection
+    try {
+        connection.connectTimeout = 8_000
+        connection.readTimeout = 8_000
+        // A redirect could leave the allowlisted host; treat it as a failure.
+        connection.instanceFollowRedirects = false
+        val bytes = if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+            connection.inputStream.use { RemoteImagePolicy.readCapped(it) }
+        } else {
+            null
+        }
+        bytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }?.asImageBitmap()
+    } finally {
+        connection.disconnect()
+    }
+}.getOrNull()
 
 private val cache: MutableMap<String, ImageBitmap> = Collections.synchronizedMap(
     object : LinkedHashMap<String, ImageBitmap>(32, 0.75f, true) {

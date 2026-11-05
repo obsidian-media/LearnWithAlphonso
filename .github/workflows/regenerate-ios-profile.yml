@@ -17,23 +17,28 @@ name: Regenerate iOS Provisioning Profile
 # profile does not carry the entitlement -- it cannot add one.
 #
 # Reuses the EXISTING distribution certificate rather than minting one.
-# setup-ios-manual-signing.yml cannot be used for this: it always requests
-# a new certificate, and Apple answers 409 when one already exists. Only
+# scripts/generate-ios-distribution-signing.ts cannot be used for this: it
+# always requests a new certificate, and Apple answers 409 when one exists. Only
 # IOS_PROVISIONING_PROFILE_BASE64 and IOS_PROVISIONING_PROFILE_UUID change.
 on:
   workflow_dispatch:
+
+# Read-only token: nothing here writes to the repository through GitHub.
+permissions:
+  contents: read
 
 jobs:
   regenerate:
     # macOS for `security cms`, which reads the profile's embedded plist.
     runs-on: macos-latest
+    environment: apple-signing
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
-      - run: bunx tsx scripts/regenerate-ios-profile.ts
+      - run: bun scripts/regenerate-ios-profile.ts
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -42,7 +47,7 @@ jobs:
       - name: Encode the profile for the secret
         run: base64 -i out/ios_distribution.mobileprovision -o out/ios_provisioning_profile_base64.txt
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-provisioning-profile
           # The profile is not a private key -- it is a signed public

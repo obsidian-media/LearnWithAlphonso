@@ -17,7 +17,9 @@
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Alphonso"
         android:supportsRtl="true"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
 
         <!-- Sentry is started by hand in AlphonsoApplication (release only), never by the library's auto-init. -->
         <meta-data android:name="io.sentry.auto-init" android:value="false" />

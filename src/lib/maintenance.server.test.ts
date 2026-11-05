@@ -116,6 +116,27 @@ describe("retryAppleRevocations", () => {
     last_attempt_at: null,
   });
 
+  it("opens a sealed credential before sending it to Apple", async () => {
+    const { randomBytes } = await import("node:crypto");
+    const { sealToken } = await import("./token-sealing.server");
+    const key = randomBytes(32).toString("base64");
+    vi.stubEnv("APPLE_TOKEN_ENCRYPTION_KEY", key);
+    try {
+      const row = { ...pending("a", 60_000), refresh_token: sealToken("token-a", key) };
+      const tables = { apple_revocation_pending: [row] };
+      const revoke = vi.fn(async () => true);
+      const { deps } = makeDeps(tables, { revoke });
+      expect(await retryAppleRevocations(deps)).toEqual({
+        revoked: 1,
+        stillPending: 0,
+        expired: 0,
+      });
+      expect(revoke).toHaveBeenCalledWith(APPLE, "token-a");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("removes a credential once Apple confirms the revocation", async () => {
     const tables = { apple_revocation_pending: [pending("a", 60_000)] };
     const revoke = vi.fn(async () => true);

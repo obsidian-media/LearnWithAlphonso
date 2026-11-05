@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  describeAuthHardeningGaps,
   describeEmailLimits,
   findAuthConfigProblems,
   IOS_OAUTH_CALLBACK,
@@ -252,5 +253,28 @@ describe("describeEmailLimits", () => {
       } as object),
     } as AuthConfig).join("\n");
     expect(lines).not.toMatch(/SECRET-VALUE|resend\b(?!\.)|a@b\.test/);
+  });
+});
+
+describe("auth hardening settings (reported as warnings, never blocking a deploy)", () => {
+  it("names a password minimum under 10, a missing captcha and a missing OTP expiry bound", () => {
+    const gaps = describeAuthHardeningGaps({
+      password_min_length: 6,
+      security_captcha_enabled: false,
+      mailer_otp_exp: 86400,
+    });
+    expect(gaps.join(" ")).toMatch(/minimum password length is under 10/);
+    expect(gaps.join(" ")).toMatch(/security_captcha_enabled/);
+    expect(gaps.join(" ")).toMatch(/mailer_otp_exp = 86400/);
+  });
+
+  it("is empty once the settings are in place", () => {
+    expect(
+      describeAuthHardeningGaps({
+        password_min_length: 10,
+        security_captcha_enabled: true,
+        mailer_otp_exp: 600,
+      }),
+    ).toEqual([]);
   });
 });

@@ -52,6 +52,7 @@ jobs:
   bundle:
     name: Signed release bundle
     runs-on: ubuntu-latest
+    environment: android-release
     defaults:
       run:
         working-directory: android/LearnWithAlphonso
@@ -66,12 +67,12 @@ jobs:
             refs/heads/android|refs/heads/main) echo "Releasing from $GITHUB_REF" ;;
             *) echo "::error::Releases are built only from the android or main branch, not $GITHUB_REF."; exit 1 ;;
           esac
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
       - run: chmod +x gradlew
 
       - name: Refuse to run without the signing secrets
@@ -116,14 +117,22 @@ jobs:
           ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew :core:test :app:testReleaseUnitTest :app:bundleRelease
 
+      - name: Remove the keystore as soon as the bundle is signed
+        # Nothing after this needs the key; the downloaded tools and the Play upload step run without it on disk.
+        # The always() step at the end still covers a failed build.
+        run: rm -f "$RUNNER_TEMP/upload.jks"
+
       - name: Validate the bundle itself, not just the source
         env:
           BUNDLETOOL_VERSION: "1.18.1"
+          # SHA-256 of bundletool-all-1.18.1.jar as first downloaded (2026-11-05); a changed file fails the job.
+          BUNDLETOOL_SHA256: "675786493983787ffa11550bdb7c0715679a44e1643f3ff980a529e9c822595c"
           EXPECTED_VERSION_CODE: ${{ github.run_number }}
         run: |
           AAB=app/build/outputs/bundle/release/app-release.aab
           [ -f "$AAB" ] || { echo "::error::No .aab at $AAB"; exit 1; }
           curl -sSL -o "$RUNNER_TEMP/bundletool.jar" "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar"
+          echo "$BUNDLETOOL_SHA256  $RUNNER_TEMP/bundletool.jar" | sha256sum -c - || { echo "::error::bundletool checksum mismatch."; exit 1; }
           MANIFEST=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle "$AAB")
           echo "$MANIFEST" | grep -q 'package="com.obsidianmedia.learnwithalphonso"' || { echo "::error::Wrong package name in the bundle manifest."; exit 1; }
           echo "$MANIFEST" | grep -q "android:versionCode=\"$EXPECTED_VERSION_CODE\"" || { echo "::error::versionCode in the bundle is not $EXPECTED_VERSION_CODE."; exit 1; }
@@ -136,7 +145,7 @@ jobs:
 
       - name: Upload to Google Play
         if: ${{ inputs.upload_to_play }}
-        uses: r0adkll/upload-google-play@v1
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.obsidianmedia.learnwithalphonso
@@ -148,11 +157,13 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/upload.jks" app/google-services.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: app-release-aab
           path: android/LearnWithAlphonso/app/build/outputs/bundle/release/app-release.aab
-          retention-days: 14
+          # Public repo: anyone signed in to GitHub can download artifacts. The stores and simulator QA hold the
+          # build; keep the copy here for one day only.
+          retention-days: 1
 
   screenshots:
     # The Play store screenshots (android/LearnWithAlphonso/play/screenshots.md),
@@ -161,9 +172,10 @@ jobs:
     # mints the iOS one; the test skips itself when no session is passed.
     name: Store screenshots (API 34 emulator)
     runs-on: ubuntu-latest
+    environment: production-supabase
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: "1.3.10"
       - run: bun install --frozen-lockfile
@@ -188,18 +200,18 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
       - run: chmod +x android/LearnWithAlphonso/gradlew
       - name: Firebase config (only when the owner has set the secret)
         working-directory: android/LearnWithAlphonso
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
         run: if [ -n "$GOOGLE_SERVICES_JSON" ]; then printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json; fi
-      - uses: reactivecircus/android-emulator-runner@v2
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 34
           arch: x86_64
@@ -218,12 +230,12 @@ jobs:
           # hide_error_dialogs: the headless emulator's launcher ANRs under load and its
           # "isn't responding" dialog sat on top of every capture in run 36684805571.
           script: adb shell settings put global hide_error_dialogs 1; ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"; status=$?; mkdir -p "$GITHUB_WORKSPACE/screenshots"; adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."; exit $status
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: android-screenshots
           path: screenshots/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: android-screenshot-test-report

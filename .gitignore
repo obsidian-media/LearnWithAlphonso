@@ -38,6 +38,13 @@ supabase/.temp/
 .env.local
 .env.*.local
 
+# Signing material and API keys: private keys and profiles must never enter this public repo, even by a broad
+# `git add`. Generated locally or in CI (scripts/generate-ios-distribution-signing.ts, ios-release.yml).
+*.p8
+*.p12
+*.mobileprovision
+private_keys/
+
 # Agent working notes — deferred/postponed work items, local-only scratch
 DEFERRED-WORDS.md
 
@@ -71,6 +78,8 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # committed. See the file itself for how to keep it current.
 docs/BACKLOG.md
 docs/BACKLOG.backup-*.md
+# Private security audit material, never commit
+docs/security-private/
 
 # V4 kickoff docs — same pattern as the V2/V3 kickoff docs above
 # (2026-09-21): local-only briefing docs for handing off individual V4
@@ -146,3 +155,7 @@ android/LearnWithAlphonso/app/google-services.json
 # The audit trail that matters is committed: scripts/vocab-images/reviews/,
 # rejected-sources.json, signoff.json.
 /scripts/vocab-images/work/
+
+# Local output of scripts/generate-ios-distribution-signing.ts: a private key
+# and its password. Never commit.
+/out/

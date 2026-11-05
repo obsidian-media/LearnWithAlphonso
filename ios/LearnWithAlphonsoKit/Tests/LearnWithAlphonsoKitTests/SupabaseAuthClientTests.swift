@@ -258,4 +258,32 @@ final class SupabaseAuthClientTests: XCTestCase {
         XCTAssertEqual(Set(payload.keys), ["data"])
         XCTAssertEqual((payload["data"] as? [String: String])?["given_name"], "Zoë")
     }
+
+    // MARK: - logout
+
+    func testLogoutEndsThisDevicesSessionOnTheServerWithItsOwnToken() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!)
+        }
+
+        try await client.logout(accessToken: "ending-access-token")
+
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/logout?scope=local")
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer ending-access-token")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
+    }
+
+    func testLogoutReportsAServerRefusal() async {
+        let client = makeClient { request in
+            self.response(for: request.url!, body: ["msg": "invalid JWT"], status: 401)
+        }
+        do {
+            try await client.logout(accessToken: "t")
+            XCTFail("expected a throw")
+        } catch {}
+    }
 }

@@ -99,7 +99,7 @@ async function main() {
   if (valid.length === 0) {
     throw new Error(
       "No unexpired DISTRIBUTION certificate exists. This script only reuses one -- " +
-        "run setup-ios-manual-signing.yml to mint a certificate first.",
+        "mint one locally with scripts/generate-ios-distribution-signing.ts first.",
     );
   }
   // Newest wins if the account somehow holds several.

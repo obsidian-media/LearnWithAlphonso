@@ -29,13 +29,11 @@ enum KeychainSessionStore {
         SecItemDelete(baseQuery as CFDictionary)
         var query = baseQuery
         query[kSecValueData as String] = data
-        // AfterFirstUnlock (not WhenUnlockedThisDeviceOnly): a background
-        // refresh -- or this app's own restoreSession() racing a very
-        // fast cold launch before the user has unlocked -- must still be
-        // able to read this. Never synced to iCloud Keychain (that
-        // requires kSecAttrSynchronizable, not set here), so this never
-        // leaves the device.
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        // AfterFirstUnlock, so a background refresh or a fast cold launch before the user unlocks can still read
+        // it; ThisDeviceOnly, so it never moves to another device in a backup or a device-to-device transfer.
+        // Never synced to iCloud Keychain (kSecAttrSynchronizable is not set). save() always deletes and re-adds,
+        // so an item stored under the older attribute is rewritten with this one on the next save.
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         SecItemAdd(query as CFDictionary, nil)
     }
 
@@ -52,6 +50,34 @@ enum KeychainSessionStore {
 
     static func clear() {
         SecItemDelete(baseQuery as CFDictionary)
+    }
+
+    /// Clears a session left behind by an earlier install of the app. Call once at launch, before load().
+    ///
+    /// The first launch after an app UPDATE also has no install marker (builds before the marker never wrote it), so
+    /// the marker alone cannot tell an update from a reinstall. A session saved by those builds still carries the older
+    /// accessibility attribute (anything but this-device-only): that one is kept and rewritten as this-device-only, so updating the app does not sign
+    /// every learner out. A this-device-only session with no marker can only be a previous install's, and is cleared.
+    static func clearIfFreshInstall(defaults: UserDefaults = .standard) {
+        guard FreshInstallGuard.isFirstLaunchOfThisInstall(defaults: defaults) else { return }
+        if let stored = storedAccessibility(),
+           stored != (kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly as String),
+           let session = load() {
+            save(session)
+            return
+        }
+        clear()
+    }
+
+    /// The kSecAttrAccessible value of the stored session item, or nil when there is none.
+    private static func storedAccessibility() -> String? {
+        var query = baseQuery
+        query[kSecReturnAttributes as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let attributes = result as? [String: Any] else { return nil }
+        return attributes[kSecAttrAccessible as String] as? String
     }
 
     private static var baseQuery: [String: Any] {

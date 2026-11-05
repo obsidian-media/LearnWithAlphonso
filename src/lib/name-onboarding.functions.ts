@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { profileErrorCode } from "./profile-error";
@@ -23,7 +24,7 @@ export const getNameStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<NameStatusResult> => {
     const { data, error } = await context.supabase.rpc("get_my_name_status");
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
     const row = Array.isArray(data) ? data[0] : null;
     if (!row) return null;
     const meta = (context.claims as { user_metadata?: Record<string, unknown> }).user_metadata;

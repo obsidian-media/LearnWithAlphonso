@@ -2418,6 +2418,7 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   checks with the same `optionClass` / `bannedBecause` / `homophoneOnly` tables the engine uses,
   so a wrong table entry passes silently. The question-variety gate likewise misses a
   frontable "here" (`a2p16q34`, pre-existing).
+- **The iOS "3D Alphonso (preview)" tile (#393) has been removed** (screen, page, gate and Practice tile). `src/lib/ios-3d-preview-guards.test.ts` now fails if any of it returns.
 - **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
   abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
   candidate to the answer's own class, so it sorts as a perfect distractor. The

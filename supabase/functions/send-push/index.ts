@@ -9,16 +9,11 @@
 // docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md.
 //
 // Authenticated the same way every other Edge Function in this repo
-// authenticates its caller's JWT (this repo still uses the legacy
-// service_role key for server-to-server calls -- see the design doc's
-// "Server-side trigger mechanism" section for why that's the right
-// choice here specifically, not a leftover). The trigger sends
-// `Authorization: Bearer <service_role key>`; this function requires the
-// claims to resolve to the service_role, not just any authenticated
-// user, since it's meant to send push to an arbitrary target user, which
-// no ordinary user JWT should be able to do.
+// Authenticated by a shared secret, not a user JWT: it sends a push to an
+// arbitrary target user, which no ordinary user token may do. See auth.ts.
 import { createClient } from "@supabase/supabase-js";
 import { sendPushToUser } from "../_shared/apns.ts";
+import { isAuthorizedPushCaller } from "./auth.ts";
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -32,17 +27,13 @@ export async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  const authHeader = req.headers.get("authorization");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  // Deliberately a plain string-equality check against the raw secret,
-  // not a JWT-claims decode -- the caller here is always our own
-  // database trigger (a machine-to-machine call, no end user involved),
-  // so there's no "which user is this" question to answer, only "is this
-  // really our own trigger." Mirrors LESSON_SESSION_SECRET's
-  // shared-secret verification shape (lesson-session.ts), not
-  // complete-lesson's user-JWT verification shape -- different callers,
-  // different trust model.
-  if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
+  // Deployed with --no-verify-jwt (the trigger's dedicated secret is not a JWT), so this check is the only gate.
+  // See auth.ts for what is accepted and why.
+  if (
+    !serviceRoleKey ||
+    !isAuthorizedPushCaller(req, { pushSecret: Deno.env.get("SEND_PUSH_SECRET"), serviceRoleKey })
+  ) {
     return jsonResponse({ error: "Unauthorized" }, 401);
   }
 

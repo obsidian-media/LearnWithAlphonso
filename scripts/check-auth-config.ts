@@ -11,6 +11,7 @@
  * Requires SUPABASE_ACCESS_TOKEN (the secret deploy-supabase already holds).
  */
 import {
+  describeAuthHardeningGaps,
   describeEmailLimits,
   findAuthConfigProblems,
   type AuthConfig,
@@ -42,6 +43,7 @@ async function main() {
   // Printed whether or not the invariants hold; read-only, no secrets (see describeEmailLimits).
   console.log("Email limits (reported, not asserted):");
   for (const line of describeEmailLimits(cfg)) console.log(`  ${line}`);
+  for (const gap of describeAuthHardeningGaps(cfg)) console.log(`::warning::${gap}`);
 
   if (problems.length) {
     console.error("Auth configuration has drifted:");

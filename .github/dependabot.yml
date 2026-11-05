@@ -1,0 +1,20 @@
+# Security updates only. Version-update pull requests are switched off (open-pull-requests-limit: 0); Dependabot
+# still opens a PR when a dependency has a published advisory, once "Dependabot security updates" is enabled in the
+# repository's Code security settings.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+  - package-ecosystem: gradle
+    directory: /android/LearnWithAlphonso
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0

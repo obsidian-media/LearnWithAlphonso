@@ -47,6 +47,7 @@
  * to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
+import { ascErrorSummary } from "../src/lib/app-store/asc-error-summary";
 import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
 import {
   buildReviewNotes,
@@ -119,7 +120,7 @@ async function api(path: string, method: "GET" | "PATCH" | "POST" = "GET", body?
     body: body ? JSON.stringify(body) : undefined,
   });
   const json = (await res.json()) as JsonApi;
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${JSON.stringify(json)}`);
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${ascErrorSummary(json)}`);
   return json;
 }
 
@@ -289,7 +290,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(err);
+main().catch(() => {
+  // Nothing from the error: this runs in public CI logs and an error message can carry the review contact, demo
+  // account or demo URL values. Each request's own status line above names what failed (asc-error-summary.ts).
+  console.error("update-app-review-info failed; the last status line above names the request.");
   process.exit(1);
 });
