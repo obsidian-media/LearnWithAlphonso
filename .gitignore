@@ -148,3 +148,7 @@ android/LearnWithAlphonso/app/google-services.json
 # The audit trail that matters is committed: scripts/vocab-images/reviews/,
 # rejected-sources.json, signoff.json.
 /scripts/vocab-images/work/
+
+# Local output of scripts/generate-ios-distribution-signing.ts: a private key
+# and its password. Never commit.
+/out/

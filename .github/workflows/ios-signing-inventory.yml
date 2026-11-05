@@ -1,0 +1,65 @@
+name: iOS signing inventory (read-only)
+
+# Prints which Apple certificates and provisioning profiles exist, and which
+# ones the repo's signing secrets contain. Public identifiers only: ids,
+# names, serial numbers, UUIDs and expiry dates. It never prints a private
+# key, a password or a whole file, and it uploads nothing.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    # macOS for `security cms` and `plutil`, which read provisioning profiles.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.3.10
+      - name: Certificates and profiles on the Apple account
+        run: bun scripts/ios-signing-inventory.ts
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+      - name: What the repo signing secrets contain
+        env:
+          P12_B64: ${{ secrets.IOS_DIST_CERTIFICATE_P12_BASE64 }}
+          P12_PASS: ${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}
+          APP_PROFILE_B64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          WIDGET_PROFILE_B64: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          T="$(mktemp -d)"
+          trap 'rm -rf "$T"' EXIT
+
+          echo "=== Certificate inside IOS_DIST_CERTIFICATE_P12_BASE64 ==="
+          printf '%s' "$P12_B64" | base64 --decode > "$T/c.p12"
+          if ! openssl pkcs12 -in "$T/c.p12" -nokeys -clcerts -passin env:P12_PASS -out "$T/c.pem" 2>/dev/null; then
+            openssl pkcs12 -legacy -in "$T/c.p12" -nokeys -clcerts -passin env:P12_PASS -out "$T/c.pem"
+          fi
+          openssl x509 -in "$T/c.pem" -noout -subject -serial -startdate -enddate
+
+          for kind in APP WIDGET; do
+            var="${kind}_PROFILE_B64"
+            echo ""
+            if [ "$kind" = APP ]; then name=IOS_PROVISIONING_PROFILE_BASE64; else name=IOS_WIDGET_PROVISIONING_PROFILE_BASE64; fi
+            echo "=== Profile inside $name ==="
+            printf '%s' "${!var}" | base64 --decode > "$T/$kind.mobileprovision"
+            security cms -D -i "$T/$kind.mobileprovision" > "$T/$kind.plist"
+            for key in Name UUID AppIDName ExpirationDate; do
+              echo "$key: $(plutil -extract "$key" raw -o - "$T/$kind.plist")"
+            done
+            count="$(plutil -extract DeveloperCertificates raw -o - "$T/$kind.plist")"
+            echo "Certificates embedded: $count"
+            for ((i = 0; i < count; i++)); do
+              plutil -extract "DeveloperCertificates.$i" raw -o - "$T/$kind.plist" \
+                | base64 --decode \
+                | openssl x509 -inform der -noout -serial -subject -enddate
+            done
+          done

@@ -17,8 +17,8 @@ name: Regenerate iOS Provisioning Profile
 # profile does not carry the entitlement -- it cannot add one.
 #
 # Reuses the EXISTING distribution certificate rather than minting one.
-# setup-ios-manual-signing.yml cannot be used for this: it always requests
-# a new certificate, and Apple answers 409 when one already exists. Only
+# scripts/generate-ios-distribution-signing.ts cannot be used for this: it
+# always requests a new certificate, and Apple answers 409 when one exists. Only
 # IOS_PROVISIONING_PROFILE_BASE64 and IOS_PROVISIONING_PROFILE_UUID change.
 on:
   workflow_dispatch:
