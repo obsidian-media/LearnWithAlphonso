@@ -46,6 +46,30 @@ struct ConversationView: View {
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("practiceHectorCard")
                     }
+                    // TestFlight and debug builds only, never an App Store install (BuildChannel).
+                    if BuildChannel.isTestFlightOrDebug {
+                        NavigationLink {
+                            Alphonso3DPreviewView()
+                        } label: {
+                            AlphonsoTile(
+                                tone: .mint,
+                                emoji: "\u{1F999}",
+                                title: "3D Alphonso",
+                                subtitle: "See him in 3D and hear him speak"
+                            )
+                            .overlay(alignment: .topTrailing) {
+                                Text("Preview")
+                                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Capsule().fill(AlphonsoColor.surface.opacity(0.85)))
+                                    .foregroundStyle(AlphonsoColor.ink)
+                                    .padding(AlphonsoSpacing.sm)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("practice3DPreviewRow")
+                    }
                     // V4 candidate #4: connected multi-scene campaigns, additive
                     // alongside the scenarios below. See CampaignView.swift.
                     if !campaigns.isEmpty {
