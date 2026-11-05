@@ -130,9 +130,12 @@ describe("Spanish cloze distractor cross-verb measurement", () => {
     // Re-pinned when the 9 generated one-verb Spanish packs (esga2p1-9, 135 questions)
     // were added: they add 135 verb-hinted questions and 405 same-verb distractors and
     // no cross-verb ones, so crossVerb and unresolved are exactly as before.
+    // Re-pinned with the French/Spanish A1/A2 option work (src/data/romance-options.ts): the walk now
+    // reaches every candidate of a 15-line pack, and the Ir a + Infinitive drills offer the verb's own wrong
+    // forms (voy a comprando), which this measurement cannot trace to a hint, so they count as unresolved.
     expect(verbHintedQuestions).toBe(780);
     expect(sameVerb).toBe(489);
-    expect(crossVerb).toBe(1611);
-    expect(unresolved).toBe(103);
+    expect(crossVerb).toBe(1600);
+    expect(unresolved).toBe(122);
   });
 });

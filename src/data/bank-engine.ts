@@ -1,5 +1,14 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
+import {
+  EXTRA_DECOYS,
+  ROMANCE_A1A2,
+  bannedBecause,
+  homophoneOnly,
+  optionClass,
+  type OptionClass,
+} from "./romance-options";
+import { ROMANCE_CLOZE } from "./romance-cloze-options";
 
 /**
  * Shared content-bank engine. A pack holds ~25 terse lines that the
@@ -40,14 +49,79 @@ export function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string, preferConfusable = false) {
-  const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
-  const start = hash(seed) % Math.max(1, others.length);
-  const walk: string[] = [];
-  for (let i = 0; i < others.length; i++) {
-    const cand = others[(start + i * 7) % others.length];
+/** The sentence with a short clue: it replaces a bracketed word the line already has, else follows the sentence. */
+function withClue(sentence: string, clue: string): string {
+  return /\([^)]*\)/.test(sentence)
+    ? sentence.replace(/\([^)]*\)/, `(${clue})`)
+    : `${sentence} (${clue})`;
+}
+
+/** The person a French reflexive form is in: me/m' (je), te/t', se/s', nous, vous. */
+function clitic(form: string): string {
+  const w = form.toLowerCase().split(/[\s']/)[0] ?? "";
+  return w === "m" ? "me" : w === "t" ? "te" : w === "s" ? "se" : w;
+}
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+/**
+ * The candidates in a seeded order that visits every one of them once. The step was a flat 7, which
+ * only visits every candidate when 7 does not divide the count: a 15-line pack (14 others) walked
+ * between two of them, so its questions had two wrong options instead of three.
+ */
+function hashedWalk<T>(others: T[], seed: string, coprime = true): T[] {
+  const n = others.length;
+  const start = hash(seed) % Math.max(1, n);
+  const step = coprime ? ([7, 5, 3, 1].find((k) => gcd(k, n) === 1) ?? 1) : 7;
+  const walk: T[] = [];
+  for (let i = 0; i < n; i++) {
+    const cand = others[(start + i * step) % n];
     if (cand) walk.push(cand);
   }
+  return walk;
+}
+
+/**
+ * Wrong options for a pair line of an A1/A2 French or Spanish pack: never the answer's own words
+ * or a synonym the pack also teaches, and the same kind of word as the answer (a verb for a verb,
+ * a noun for a noun) before any other. Falls back to other classes only when the pack has fewer
+ * than three of the answer's class.
+ */
+function pickPairDistractors(
+  index: number,
+  entries: { text: string; cls: OptionClass }[],
+  seed: string,
+  extra: { text: string; cls: OptionClass }[] = [],
+): string[] {
+  const me = entries[index]!;
+  const others = [...entries.filter((_, i) => i !== index), ...extra].filter(
+    (e) => !bannedBecause(me.text, e.text),
+  );
+  const seen = new Set<string>([me.text.toLowerCase()]);
+  const unique = hashedWalk(others, seed).filter((e) => {
+    const k = e.text.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  const same = unique.filter((e) => e.cls === me.cls);
+  const rest = unique.filter((e) => e.cls !== me.cls);
+  return [...same, ...rest].slice(0, 3).map((e) => e.text);
+}
+
+function pickDistractors(
+  answer: string,
+  pool: string[],
+  seed: string,
+  preferConfusable = false,
+  coprime = true,
+  soundAlike = false,
+  samePerson = false,
+) {
+  const others = pool.filter(
+    (o) => o.toLowerCase() !== answer.toLowerCase() && !(soundAlike && homophoneOnly(answer, o)),
+  );
+  const walk = hashedWalk(others, seed, coprime);
   // Listening ranks by confusability instead of the hashed walk's raw order:
   // the whole sentence is the answer, so a good distractor is one the learner
   // might mishear it as, not one that could grammatically fill a blank (there
@@ -61,7 +135,14 @@ function pickDistractors(answer: string, pool: string[], seed: string, preferCon
   // tagging) -- reimplemented here with a Unicode-aware tokenizer instead of
   // its `[a-z]`-only one, which would otherwise silently drop every accented
   // French/Spanish content word from the comparison.
-  const ordered = preferConfusable ? orderByContentWordOverlap(answer, walk) : walk;
+  const ordered = preferConfusable
+    ? orderByContentWordOverlap(answer, walk)
+    : samePerson
+      ? [
+          ...walk.filter((c) => clitic(c) === clitic(answer)),
+          ...walk.filter((c) => clitic(c) !== clitic(answer)),
+        ]
+      : walk;
   const out: string[] = [];
   // Dedupe case-insensitively -- a cloze pack legitimately reuses the same
   // word as the correct answer for two different lines with different
@@ -199,6 +280,21 @@ export function packQuestions(pack: Pack): Question[] {
     .filter(Boolean)
     .map((l) => l.split("|").map((p) => p.trim()));
   const pool = lines.map((l) => l[1]!);
+  const romance = ROMANCE_A1A2.test(pack.id);
+  // The generated sentence packs ("frga2p1") pick their own lines by running this function, so their
+  // walk stays as it was; every other A1/A2 pack gets the walk that reaches all its candidates.
+  const wideWalk = romance && !/^(fr|es)g/.test(pack.id);
+  const classed =
+    romance && pack.kind === "pair"
+      ? lines.map(([gloss, text], i) => ({
+          text: text!,
+          cls: optionClass(pack.id, i, gloss!, text!),
+        }))
+      : null;
+  const extra = (EXTRA_DECOYS[pack.id] ?? []).flatMap((g) =>
+    g.words.map((text) => ({ text, cls: g.cls })),
+  );
+  const authored = romance && pack.kind === "cloze" ? ROMANCE_CLOZE[pack.id] : undefined;
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
@@ -232,16 +328,31 @@ export function packQuestions(pack: Pack): Question[] {
     // Built before the distractors so they can be ranked against it -- a
     // candidate already present in the prompt makes a poor wrong answer.
     const prompt =
-      pack.kind === "pair"
-        ? (pack.prompt ?? "%s").replace("%s", left!)
-        : pack.kind === "listening"
-          ? // Substituted like a pair prompt so a template reused from one does
-            // not ship a literal "%s" on screen. The audio is heard, not read,
-            // so the sentence is only ever the fallback for a template that
-            // asks for it explicitly.
-            (pack.prompt ?? "What did you hear?").replace("%s", left!)
-          : left!;
-    const distractors = pickDistractors(answer, pool, seed, pack.kind === "listening");
+      pack.kind === "cloze" && authored?.[i]?.hint
+        ? withClue(left!, authored[i]!.hint!)
+        : pack.kind === "pair"
+          ? (pack.prompt ?? "%s").replace("%s", left!)
+          : pack.kind === "listening"
+            ? // Substituted like a pair prompt so a template reused from one does
+              // not ship a literal "%s" on screen. The audio is heard, not read,
+              // so the sentence is only ever the fallback for a template that
+              // asks for it explicitly.
+              (pack.prompt ?? "What did you hear?").replace("%s", left!)
+            : left!;
+    const line = authored?.[i];
+    const distractors = classed
+      ? pickPairDistractors(i, classed, seed, extra)
+      : line
+        ? line.wrong
+        : pickDistractors(
+            answer,
+            pool,
+            seed,
+            pack.kind === "listening",
+            wideWalk,
+            romance && pack.kind === "listening",
+            pack.id === "fra2p6",
+          );
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
