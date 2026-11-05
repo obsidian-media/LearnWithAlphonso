@@ -2418,6 +2418,7 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   checks with the same `optionClass` / `bannedBecause` / `homophoneOnly` tables the engine uses,
   so a wrong table entry passes silently. The question-variety gate likewise misses a
   frontable "here" (`a2p16q34`, pre-existing).
+- **The iOS "3D Alphonso (preview)" tile (#393) is a submission blocker and is to be removed.** It is gated on `BuildChannel.isTestFlightOrDebug` (DEBUG or a sandbox receipt), and App Review also runs on a sandbox receipt, so any build containing it must not be submitted. The owner rejected the 3D result on build 57 (2026-11-05), so the tile, screen and `src/lib/ios-3d-preview-guards.test.ts` go in the next build.
 - **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
   abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
   candidate to the answer's own class, so it sorts as a perfect distractor. The
