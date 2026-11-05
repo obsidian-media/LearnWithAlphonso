@@ -1,4 +1,5 @@
 import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
+import { AskingAlphonso } from "../../components/AskingAlphonso";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { Icon3D } from "../../components/Icon3D";
 import { Button } from "../../components/ui/Button";
@@ -522,9 +523,14 @@ function LessonPage() {
               <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
             </div>
           )}
-          <h2 className="font-display text-[25px] font-semibold leading-tight text-ink">
-            {q.prompt}
-          </h2>
+          <AskingAlphonso
+            prompt={q.prompt}
+            hasMedia={
+              q.type === "listening" ||
+              q.type === "speak" ||
+              (q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey])
+            }
+          />
 
           <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
             {q.type === "mc" || q.type === "listening" ? (
