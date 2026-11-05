@@ -103,7 +103,9 @@ describe("Reduce Motion", () => {
     expect(view).toContain("frame.breath = AvatarIdleMotion.breathScale(at: now)");
     const idle = code(`${KIT}/AvatarIdle.swift`);
     expect(idle).toContain("static func swayDegrees(at time: TimeInterval) -> Double");
-    expect(idle).toContain("static func breathScale(at time: TimeInterval) -> (x: Double, y: Double)");
+    expect(idle).toContain(
+      "static func breathScale(at time: TimeInterval) -> (x: Double, y: Double)",
+    );
   });
 
   it("keeps the idle motion out of the Kit state machine, which has no Reduce Motion input", () => {
