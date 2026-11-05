@@ -16,16 +16,15 @@
  * blocker" entry, found + fixed 2026-09-21). This script is the permanent
  * fix's setup step.
  *
- * Run via .github/workflows/setup-ios-manual-signing.yml (macos-latest --
- * needs `openssl` for key/CSR/PKCS12 work and `security` to read back the
- * provisioning profile's UUID). Writes out/ios_distribution.p12,
- * out/ios_distribution.mobileprovision, and out/p12_password.txt (a
- * freshly generated random password, never printed to logs -- it only
- * ever exists in the file and in memory). This script does NOT set any
- * repo secrets itself -- no token with that scope is passed to CI runs --
- * the workflow uploads these as an artifact instead; download it and add
- * the contents as repo secrets afterward (see this repo's own follow-up
- * for the exact secret names).
+ * Run LOCALLY only, never in CI: the output includes the private key and its
+ * password, and anything a workflow uploads from this public repo can be
+ * downloaded by anyone. (The CI workflow that used to run this uploaded the
+ * output as an artifact; it was removed for that reason.) Needs `openssl`.
+ * Writes out/ios_distribution.p12, out/ios_distribution.mobileprovision and
+ * out/p12_password.txt (a random password, never printed). out/ is
+ * git-ignored. Load the results straight into repo secrets with
+ * `gh secret set NAME < file` (base64 the binary files first), then delete
+ * out/. Never paste them into a chat, an issue or a log.
  *
  * Requires APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
  * APP_STORE_CONNECT_KEY_P8_BASE64 (already repo secrets, same key used
