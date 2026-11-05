@@ -177,8 +177,8 @@ describe("translate guard: confusable pairs are never accepted for each other", 
     [/\bopposite\b/, /\bin front of\b/],
     [/\boften\b/, /\busually\b/],
     [/\bsometimes\b/, /\b(often|usually)\b/],
-    // "need" says it is necessary; "want" only says you would like it
-    [/\bneed\b/, /\bwant\b/],
+    // "need" says it is necessary; "want" and "would like" only say you would like it
+    [/\bneed(s|ed)?\b/, /\b(want(s|ed)?|would like)\b|'d like\b/],
   ];
   it("catches an over-accept", () => {
     const canonical = "The soup is too hot.";
@@ -186,20 +186,25 @@ describe("translate guard: confusable pairs are never accepted for each other", 
     const [a, b] = PAIRS[0]!;
     expect(a.test(canonical) && bad.some((x) => b.test(x) && !a.test(x))).toBe(true);
   });
-  it("catches 'want' accepted for 'need'", () => {
+  it("catches 'want' or 'would like' accepted for 'need'", () => {
     const [a, b] = PAIRS[PAIRS.length - 1]!;
-    expect(a.test("I need a taxi to the station.")).toBe(true);
-    expect(
-      b.test("I want a taxi to the station.") && !a.test("I want a taxi to the station."),
-    ).toBe(true);
+    expect(a.test("i need a taxi to the station.")).toBe(true);
+    expect(a.test("she needs a taxi.")).toBe(true);
+    for (const x of [
+      "i want a taxi to the station.",
+      "i'd like a taxi to the station.",
+      "i would like to change my pin.",
+      "she wants a taxi.",
+    ])
+      expect(b.test(x) && !a.test(x), x).toBe(true);
   });
-  it("a1p20q36 and a2p15q36 accept no 'want' wording", () => {
+  it("a1p20q36 and a2p15q36 accept no 'want' or 'would like' wording", () => {
     for (const id of ["a1p20q36", "a2p15q36"]) {
       const hit = added.find(({ q }) => q.id === id);
       expect(hit, id).toBeTruthy();
       const q = hit!.q as { acceptableAnswers: string[] };
       expect(
-        q.acceptableAnswers.filter((x) => /\bwant\b/i.test(x)),
+        q.acceptableAnswers.filter((x) => /\bwant\b|\bwould like\b|'d like\b/i.test(x)),
         id,
       ).toEqual([]);
     }

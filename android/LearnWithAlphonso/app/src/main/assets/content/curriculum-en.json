@@ -15278,8 +15278,7 @@
                 "I need a cab to the station.",
                 "I need a taxi to go to the station.",
                 "I need a cab to get to the station.",
-                "I need a taxi to take me to the station.",
-                "I'd like a taxi to the station."
+                "I need a taxi to take me to the station."
               ],
               "explanation": "One way to say it: \"I need a taxi to the station.\""
             }
@@ -26978,7 +26977,6 @@
                 "I must change my PIN.",
                 "I need to change my PIN code.",
                 "I have to change my PIN code.",
-                "I'd like to change my PIN.",
                 "I need to change my pin number."
               ],
               "explanation": "One way to say it: \"I need to change my PIN.\""
