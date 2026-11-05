@@ -14,7 +14,16 @@
 
 import { hash } from "./bank-engine";
 import type { Lesson, Question, Unit } from "./curriculum";
+import { listeningChoiceProblems, knownWordsOf, movableAdverbial } from "./question-variety-gate";
+import {
+  LISTENING_EXTRA_WRONGS,
+  REORDER_FALLBACK,
+  REVIEWED_WORDS,
+} from "./question-variety-authored";
+import { normaliseSpoken } from "../lib/spoken-answer";
+import { expandAcceptedAnswers } from "./question-variety-expand";
 import { TRANSLATE_IDEAS } from "./question-variety-translate";
+import { TRANSLATE_MORE, TRANSLATE_REMOVE } from "./question-variety-translate-more";
 
 const MIN_WORDS = 3;
 const MAX_WORDS = 8;
@@ -103,14 +112,19 @@ function reorderQuestion(id: string, lessonId: string, sentence: string): Questi
   };
 }
 
-function listeningQuestion(id: string, lessonId: string, s: Sentence, others: string[]): Question {
+function listeningQuestion(id: string, s: Sentence, known: Set<string>): Question {
   const wrongs: string[] = [];
-  for (const w of [...s.wrongs, ...others]) {
+  // Wrong choices must be real, correctly spelled English that sounds clearly different from the
+  // answer (question-variety-gate.ts): the cloze's own wrong options when they qualify, then
+  // authored sentences.
+  for (const w of [...s.wrongs, ...(LISTENING_EXTRA_WRONGS[s.text] ?? [])]) {
     const key = w.trim();
-    if (key !== s.text && !wrongs.includes(key)) wrongs.push(key);
+    if (key === s.text || wrongs.includes(key)) continue;
+    if (listeningChoiceProblems(s.text, key, known).length) continue;
+    wrongs.push(key);
     if (wrongs.length === 3) break;
   }
-  const choices = [s.text, ...wrongs].sort((a, b) => hash(a + lessonId) - hash(b + lessonId));
+  const choices = [s.text, ...wrongs].sort((a, b) => hash(a + id) - hash(b + id));
   return {
     id,
     type: "listening",
@@ -122,11 +136,24 @@ function listeningQuestion(id: string, lessonId: string, s: Sentence, others: st
   };
 }
 
+/** The wordings a lesson's translate question accepts: the authored ones, the added ones, their variants. */
+export function acceptedWordings(lessonId: string): string[] {
+  const idea = TRANSLATE_IDEAS[lessonId];
+  if (!idea) return [];
+  const removed = new Set((TRANSLATE_REMOVE[lessonId] ?? []).map(normaliseSpoken));
+  const base = [...idea.say, ...(TRANSLATE_MORE[lessonId] ?? [])].filter(
+    (s) => !removed.has(normaliseSpoken(s)),
+  );
+  return expandAcceptedAnswers(base, /^(Ask|Tell)\b/.test(idea.idea)).filter(
+    (s) => !removed.has(normaliseSpoken(s)),
+  );
+}
+
 /** Questions to append to a lesson (none when it already has all three formats or no source). */
 export function varietyQuestions(
   lesson: Lesson,
   nextIds: [string, string, string],
-  pool: string[] = [],
+  known: Set<string> = new Set(),
   taken: Set<string> = new Set(),
 ): Question[] {
   const has = (t: Question["type"]) => lesson.questions.some((q) => q.type === t);
@@ -136,15 +163,24 @@ export function varietyQuestions(
   const sentences = free.length >= 2 ? free : all;
   if (sentences.length === 0) return [];
   const out: Question[] = [];
-  const reorderSource = sentences[0]!;
-  if (!has("reorder")) {
+  // A reorder sentence needs exactly one natural order: no movable time, place or frequency
+  // adverbial. The lesson's own sentences first, then an authored one.
+  const fallback = REORDER_FALLBACK[lesson.id];
+  // A lesson with a single sentence also uses the authored one, so reorder and listening differ.
+  const own = sentences.find((x) => !movableAdverbial(x.text));
+  const reorderSource: Sentence | undefined =
+    own && !(fallback && sentences.length < 2)
+      ? own
+      : fallback
+        ? { text: fallback, wrongs: [] }
+        : undefined;
+  if (!has("reorder") && reorderSource) {
     out.push(reorderQuestion(nextIds[0], lesson.id, reorderSource.text));
     taken.add(key(reorderSource.text));
   }
   if (!has("listening")) {
-    const source = sentences[1] ?? sentences[0]!;
-    const others = [...sentences.filter((x) => x !== source).map((x) => x.text), ...pool];
-    out.push(listeningQuestion(nextIds[1], lesson.id, source, others));
+    const source = sentences.find((x) => x !== reorderSource) ?? sentences[0]!;
+    out.push(listeningQuestion(nextIds[1], source, known));
     taken.add(key(source.text));
   }
   const idea = TRANSLATE_IDEAS[lesson.id];
@@ -153,7 +189,7 @@ export function varietyQuestions(
       id: nextIds[2],
       type: "translate",
       prompt: idea.idea,
-      acceptableAnswers: idea.say,
+      acceptableAnswers: acceptedWordings(lesson.id),
       explanation: `One way to say it: "${idea.say[0]}"`,
     });
   return out;
@@ -173,6 +209,7 @@ export function varietyIds(lesson: Lesson): [string, string, string] | null {
 export function addQuestionVariety(units: Unit[]): Unit[] {
   // Everything said or written elsewhere in the course, so a new question never repeats it.
   const taken = new Set<string>();
+  const known = knownWordsOf(units, REVIEWED_WORDS);
   for (const u of units)
     for (const l of u.lessons)
       for (const q of l.questions) {
@@ -187,10 +224,7 @@ export function addQuestionVariety(units: Unit[]): Unit[] {
       lessons: unit.lessons.map((lesson) => {
         const ids = varietyIds(lesson);
         if (!ids) return lesson;
-        const pool = unit.lessons
-          .filter((l) => l !== lesson)
-          .flatMap((l) => lessonSentences(l).map((x) => x.text));
-        const extra = varietyQuestions(lesson, ids, pool, taken);
+        const extra = varietyQuestions(lesson, ids, known, taken);
         return extra.length ? { ...lesson, questions: [...lesson.questions, ...extra] } : lesson;
       }),
     };

@@ -2927,11 +2927,12 @@ export const FIXES_A1A2: Record<string, QuestionFix> = {
     wrong: ["must", "shall", "might"],
   },
   "a2p19l3/a2p19q12": {
-    why: 'the prompt wrote "can not" as two words; now a one-word sentence with Nobody',
-    prompt: "Nobody ___ enter without a ticket, because the doors are locked.",
+    why: 'the prompt wrote "can not" as two words; "Nobody must/shall enter" is also a rule, so the context now says it is a question of what is possible',
+    prompt:
+      "The doors are locked and the keys are lost, so nobody ___ get in. (it is not possible)",
     wrong: ["must", "shall", "needn't"],
     explanation:
-      "can expresses ability: with the doors locked, nobody is able to enter without a ticket.",
+      "can expresses what is possible: with the doors locked and the keys lost, nobody can get in. must, shall and needn't talk about rules or need, not about what is possible.",
   },
   "a2p19l3/a2p19q13": {
     why: "past cue present: the present modals are wrong, and 'ought'/'used' were out of the pool",
