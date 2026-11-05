@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { isCourse } from "@/data/courses";
 import { deepgramVoiceForLanguage } from "@/lib/hector-conversation";
+import { voiceLanguage } from "@/lib/podcast-tts";
 
 /** Speech for the 2,000-character cap streams in a few seconds. */
 const TTS_TIMEOUT_MS = 30_000;
@@ -28,8 +29,10 @@ export const Route = createFileRoute("/api/tts")({
         // model id if overriding the default.
         // A conversation's course picks its native voice. An explicit `voice` still wins (podcast tooling); no
         // course keeps the English default every earlier client relies on.
+        // Only the app's own Aura-2 voices (one price tier, en/fr/es); anything else falls back to the course voice.
+        const voice = typeof body.voice === "string" && voiceLanguage(body.voice) ? body.voice : null;
         const model =
-          body.voice ||
+          voice ||
           (typeof body.course === "string" && isCourse(body.course)
             ? deepgramVoiceForLanguage(body.course)
             : "aura-2-thalia-en");

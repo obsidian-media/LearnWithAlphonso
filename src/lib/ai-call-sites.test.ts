@@ -97,3 +97,24 @@ describe("Deepgram call sites", () => {
     }
   });
 });
+
+describe("the owner's AI switch covers every paid AI route", () => {
+  // A route that spends on a model or voice provider must check the switch (directly, or through
+  // authorizeAiRequest, which checks it). Otherwise switching AI off during an incident leaves it spending.
+  const SPENDS = /llmChatCompletion|gradeTranslationWithAi|defineWord\(|api\.deepgram\.com|generatePractice|detectAndRecordWeaknesses/;
+  const CHECKS_SWITCH = /requireAiSwitchedOn\(|authorizeAiRequest\(/;
+
+  it("every /api route that reaches a paid provider checks the switch", () => {
+    const apiDir = path.join(ROOT, "src/routes/api");
+    const unguarded = walk(apiDir)
+      .filter((f) => SPENDS.test(fs.readFileSync(f, "utf8")))
+      .filter((f) => !CHECKS_SWITCH.test(fs.readFileSync(f, "utf8")))
+      .map(rel);
+    expect(unguarded).toEqual([]);
+  });
+
+  it("recognises a route that spends without checking", () => {
+    expect(SPENDS.test("await defineWord({ word })")).toBe(true);
+    expect(CHECKS_SWITCH.test("await requireAiConsent(userId)")).toBe(false);
+  });
+});

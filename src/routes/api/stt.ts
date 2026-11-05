@@ -4,6 +4,12 @@ import { isCourse } from "@/data/courses";
 
 /** A spoken answer is a few seconds of audio; transcription normally returns in about a second. */
 const STT_TIMEOUT_MS = 20_000;
+/**
+ * The provider bills per audio minute and the daily quota counts calls, so each call needs a ceiling. 1 MB is about
+ * 80 s of the apps' own recordings (Android AAC at 96 kbps, the highest bitrate any client sends); a spoken answer or a
+ * tutor turn is seconds.
+ */
+export const MAX_STT_BYTES = 1_000_000;
 
 export const Route = createFileRoute("/api/stt")({
   server: {
@@ -18,6 +24,9 @@ export const Route = createFileRoute("/api/stt")({
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {
           return Response.json({ error: "Empty or missing audio" }, { status: 400 });
+        }
+        if (file.size > MAX_STT_BYTES) {
+          return Response.json({ error: "audio-too-long" }, { status: 413 });
         }
         // Deepgram's course->language codes are identical to this repo's own
         // course codes ("en"/"fr"/"es"), so no separate mapping table is

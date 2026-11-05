@@ -5,9 +5,10 @@ const verifyAuth = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuotaFor: consumeQuota, verifyAuth }));
 
 const requireAiConsent = vi.fn();
+const requireAiSwitchedOn = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: blockedRpc } }));
 
-vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent, requireAiSwitchedOn }));
 
 const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
@@ -55,6 +56,8 @@ beforeEach(() => {
   verifyAuth.mockResolvedValue({ ok: true, userId: "user-1", supabase: { rpc: blockedRpc } });
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
+  requireAiSwitchedOn.mockReset();
+  requireAiSwitchedOn.mockResolvedValue(null);
   blockedRpc.mockClear();
   process.env.OPENROUTER_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
@@ -220,5 +223,22 @@ describe("POST /api/grade-translation, placement questions", () => {
     blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
     const res = await post({ submission: "morning to you all" });
     expect(await res.json()).toEqual({ correct: true, reason: null, source: "ai" });
+  });
+});
+
+describe("POST /api/grade-translation, owner AI switch", () => {
+  it("grades locally and calls no model or quota when AI is switched off", async () => {
+    requireAiSwitchedOn.mockResolvedValue(Response.json({ error: "ai-unavailable" }, { status: 503 }));
+    const res = await post({ submission: "Hello there, friend." });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ correct: false, reason: null, source: "local" });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(consumeQuota).not.toHaveBeenCalled();
+  });
+
+  it("still accepts a curated answer while AI is switched off", async () => {
+    requireAiSwitchedOn.mockResolvedValue(Response.json({ error: "ai-unavailable" }, { status: 503 }));
+    const res = await post({ submission: "Good morning." });
+    expect(await res.json()).toEqual({ correct: true, reason: null, source: "local" });
   });
 });
