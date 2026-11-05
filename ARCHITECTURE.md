@@ -2334,8 +2334,8 @@ deploy`, both easy to forget (this bit a real session that added several
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
-  2026-11-04 there are 378 web test files (4,558 tests plus 1 skipped, in CI on main after
-  #376), 1,189 Swift Kit tests and 833 Android JVM tests (counted from `@Test`); run `bun run
+  2026-11-05 there are 385 web test files (4,667 tests plus 1 skipped, in CI on main after
+  #390), 1,196 Swift Kit tests and 843 Android JVM tests (counted from `@Test`); run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
@@ -2390,6 +2390,18 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   baseline, so a placement question can be re-authored freely. Editing a pack line
   changes the content behind an id real users hold spaced-repetition state
   against. Where an overlap has to be resolved, the placement side gives way.
+- **Placement is outside the distractor gate, and the adaptive skip can place a learner
+  above what they answered (found on a Limrun run, 2026-11-05; both still open).**
+  `distractor-gate.test.ts` covers lesson banks only, so placement items still carry
+  absurd wrong options (the first A1 item in `src/data/placement.ts` offers "Good night"
+  among "Nighting" and "Good nightly"); the same text ships in the iOS and Android
+  `placement-en.json` exports. Separately, after a band answered 3/3 `nextAdaptiveBand`
+  skips the next band and `placement.tsx` credits it with a synthetic 2; if the band after
+  the skip then goes 0/3 the test stops and `scorePlacement` still counts the skipped band
+  as passed, so A1 3/3 then B1 0/3 (3 of 6 right) places at B1, although the code comment
+  says the credit is "never the sole basis for the final result" (reproduced by calling
+  the two functions). No test covers a failed band after a skip. iOS and Android show the
+  same "Fast-tracked past" line; their scoring has not been checked.
 - **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
   abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
   candidate to the answer's own class, so it sorts as a perfect distractor. The

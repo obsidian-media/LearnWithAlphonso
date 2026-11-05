@@ -80,7 +80,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   the course uses, so nobody is placed by an exam that tests something else.
   Speaking is deliberately excluded: it would require microphone permission during
   onboarding, and a denial would leave the question unanswerable
-- **AI conversation**: voice-enabled chat with 12 scenarios plus a three-scene campaign, in English, French and Spanish (the active course picks the persona, the prompt and the native Aura-2 voice: Thalia, Agathe, Selena). Replies come back in about a second since the chat model's reasoning was turned off on every call (2026-10-09)
+- **AI conversation**: voice-enabled chat with 12 scenarios plus nine story campaigns (three or four scenes each), in English, French and Spanish (the active course picks the persona, the prompt and the native Aura-2 voice: Thalia, Agathe, Selena). Replies come back in about a second since the chat model's reasoning was turned off on every call (2026-10-09)
 - **AI consent and safety**: every AI endpoint that sends learner input is gated by an account-level consent (generated practice, which sends only lesson text, is not) (`profiles.ai_consent_at`, enforced by the server on every AI endpoint; the consent screen and the Settings switch exist on web, iOS and Android, and withdrawal is immediate). Without consent a written translation is graded against the curated answers only and speaking falls back to typing; lessons and review are never walled. Model text shown to learners is checked by the moderation filter, and every assistant reply has a "Report this response" action (the report stores the reply text and where it appeared)
 - **Study together**: opt-in buddies (a friend, or a matched learner aged 13+ in the same course within one CEFR step), a shared weekly goal and a streak, and **preset messages only** (8 fixed encouragements, never free text). Block and Report are on every card
 - **Public name and moderation**: a one-time "What should other learners call you?" step after first sign-in (Skip keeps a `Learner-XXXX` handle); display and team names pass one server-side filter, every refusal is explained in words, blocked users disappear from each other's team lists, leaderboards and matching, and a new report emails the owner within seconds
@@ -316,7 +316,7 @@ compile verification that exists):
 - Lesson browser, lesson player (six question types), SM-2 review queue
   (never blank: the whole due queue is resolved against bundled content before
   anything is shown), progress sync (XP/streaks/hearts)
-- **Free** AI conversation: 12 roleplay scenarios and a campaign in English,
+- **Free** AI conversation: 12 roleplay scenarios and nine story campaigns in English,
   French and Spanish against this repo's own `/api/chat`/`/api/tts`/`/api/stt`
   (same backend the web app uses). One shared voice engine drives every mic
   screen, so a tab switch can no longer leave the microphone dead; every
