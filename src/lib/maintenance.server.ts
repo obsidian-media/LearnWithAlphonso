@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { openToken } from "./token-sealing.server";
 import type { Database } from "@/integrations/supabase/types";
 import type { AppleConfig } from "./apple-revocation";
 import type { RevenueCatConfig } from "./revenuecat-entitlement";
@@ -68,7 +69,9 @@ export async function retryAppleRevocations(deps: MaintenanceDeps): Promise<Revo
   const nowMs = deps.now().getTime();
   for (const row of rows) {
     const revoked = config
-      ? await deps.revoke(config, row.refresh_token).catch(() => false)
+      ? await Promise.resolve()
+          .then(() => deps.revoke(config, openToken(row.refresh_token)))
+          .catch(() => false)
       : false;
     if (revoked) {
       const { error: gone } = await db.from("apple_revocation_pending").delete().eq("id", row.id);

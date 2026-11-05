@@ -96,6 +96,24 @@ describe("POST /api/analyze-weaknesses", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  it("sends the model a bounded transcript and a capped reply length", async () => {
+    const long = Array.from({ length: 40 }, (_, i) => ({
+      role: "user",
+      content: `${i}`.padEnd(50_000, "y"),
+    }));
+    await handler({ request: req({ messages: long }) });
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const sent = JSON.parse(init.body as string) as {
+      max_tokens?: number;
+      messages: { role: string; content: string }[];
+    };
+    expect(sent.max_tokens).toBe(1500);
+    // The safety preamble (system) and the closing analysis instruction are the server's; the rest is transcript.
+    const transcript = sent.messages.filter((m) => m.role !== "system").slice(0, -1);
+    expect(transcript.reduce((n, m) => n + m.content.length, 0)).toBeLessThanOrEqual(16_000);
+    expect(transcript.every((m) => m.content.length <= 4000)).toBe(true);
+  });
+
   it("inserts a real user_id -- the bug this test suite exists to catch", async () => {
     const res = await handler({
       request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),

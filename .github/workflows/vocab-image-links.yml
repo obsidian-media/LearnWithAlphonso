@@ -15,12 +15,16 @@ on:
     - cron: "17 6 * * 1"
   workflow_dispatch:
 
+# Read-only token: nothing here writes to the repository through GitHub.
+permissions:
+  contents: read
+
 jobs:
   link-check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:

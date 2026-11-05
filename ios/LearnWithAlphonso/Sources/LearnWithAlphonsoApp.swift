@@ -85,6 +85,12 @@ struct LearnWithAlphonsoApp: App {
                     accessToken: accessToken
                 ).unregisterDeviceToken(token)
             },
+            endServerSession: { accessToken in
+                try await SupabaseAuthClient(
+                    supabaseURL: AppConfig.supabaseURL,
+                    publishableKey: AppConfig.supabasePublishableKey
+                ).logout(accessToken: accessToken)
+            },
             clearLocalNotifications: { await scheduler.cancelAll() },
             appleCredentials: AppleCredentialStore(),
             appleGivenNames: AppleGivenNameStore()

@@ -3,6 +3,7 @@ import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detecti
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { boundTranscript } from "@/lib/chat-transcript-limits";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -36,10 +37,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         }
         // A client could send role "system" here and it went to the model verbatim. Only the learner's and
         // partner's turns are transcript; the analysis instructions are this server's.
-        const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
-          (m): m is { role: "user" | "assistant"; content: string } =>
-            !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
-        );
+        // Bounded like /api/chat: the quota counts calls, so each call's input has a fixed ceiling.
+        const messages = boundTranscript(body.messages);
         if (messages.length === 0) {
           return Response.json({ weaknessesDetected: 0 });
         }

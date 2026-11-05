@@ -34,6 +34,14 @@ export type RevenueCatConfig = {
   /** RevenueCat API v2 (Web Billing cancel, prices). Present only when both are set. */
   v2SecretKey?: string;
   projectId?: string;
+  /**
+   * Accounts whose RevenueCat Test Store (or sandbox) purchases count, for the owner's own testing. Everyone else's
+   * Test Store purchases never count: the Test Store needs only the public SDK key and charges nothing.
+   */
+  testPurchaseUserIds?: string[];
+  /** When true, Apple/Google sandbox purchases count only for testPurchaseUserIds. Off by default, because App
+   *  Review and TestFlight buy in the sandbox. */
+  rejectSandbox?: boolean;
 };
 
 /**
@@ -52,7 +60,30 @@ export function revenueCatConfigFromEnv(
   if (!secretApiKey) return null;
   const v2SecretKey = env.REVENUECAT_V2_SECRET_KEY;
   const projectId = env.REVENUECAT_PROJECT_ID;
-  return v2SecretKey && projectId ? { secretApiKey, v2SecretKey, projectId } : { secretApiKey };
+  const config: RevenueCatConfig =
+    v2SecretKey && projectId ? { secretApiKey, v2SecretKey, projectId } : { secretApiKey };
+  const testers = (env.REVENUECAT_TEST_PURCHASE_USER_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (testers.length > 0) config.testPurchaseUserIds = testers;
+  if (env.REVENUECAT_REJECT_SANDBOX === "true") config.rejectSandbox = true;
+  return config;
+}
+
+type PurchaseRecord = { store?: string; is_sandbox?: boolean };
+
+/** Whether the purchase behind an entitlement may grant Pro to this account. */
+function purchaseCounts(
+  config: RevenueCatConfig,
+  appUserId: string,
+  purchase: PurchaseRecord | undefined,
+): boolean {
+  if (!purchase) return true;
+  if (config.testPurchaseUserIds?.includes(appUserId)) return true;
+  if (purchase.store === "test_store") return false;
+  if (config.rejectSandbox && purchase.is_sandbox === true) return false;
+  return true;
 }
 
 export type ProEntitlementStatus = "active" | "inactive" | "unavailable";
@@ -129,7 +160,8 @@ export async function getSubscriberSummary(
           string,
           { expires_date?: string | null; product_identifier?: string }
         >;
-        subscriptions?: Record<string, { store?: string }>;
+        subscriptions?: Record<string, PurchaseRecord>;
+        non_subscriptions?: Record<string, PurchaseRecord[]>;
         management_url?: string | null;
       };
     };
@@ -157,6 +189,13 @@ export async function getSubscriberSummary(
     if (!active) return { status: "inactive", trialEligible, ...none };
 
     const productId = entitlement.product_identifier;
+    const oneTime = productId ? subscriber.non_subscriptions?.[productId] : undefined;
+    const purchase: PurchaseRecord | undefined = productId
+      ? (subscriptions[productId] ?? (Array.isArray(oneTime) ? oneTime.at(-1) : undefined))
+      : undefined;
+    if (!purchaseCounts(config, appUserId, purchase)) {
+      return { status: "inactive", trialEligible, ...none };
+    }
     const store = productId ? storeOf(subscriptions[productId]?.store) : null;
     const managementUrl = store === "web" ? httpsUrlOrNull(subscriber.management_url) : null;
     return { status: "active", store, trialEligible, managementUrl };

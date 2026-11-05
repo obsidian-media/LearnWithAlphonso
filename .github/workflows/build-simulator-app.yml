@@ -17,14 +17,18 @@ on:
     branches:
       - "chore/simulator-app-artifact"
 
+# Read-only token: nothing here writes to the repository through GitHub.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: bash scripts/install-xcodegen.sh  # pinned version and checksum
 
       - name: Generate Xcode project
         working-directory: ios/LearnWithAlphonso
@@ -72,8 +76,10 @@ jobs:
           ditto -c -k --keepParent "$APP" build/out/LearnWithAlphonso-simulator.zip
           ls -la build/out
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: LearnWithAlphonso-simulator
           path: ios/LearnWithAlphonso/build/out/LearnWithAlphonso-simulator.zip
-          retention-days: 14
+          # Public repo: anyone signed in to GitHub can download artifacts. The stores and simulator QA hold the
+          # build; keep the copy here for one day only.
+          retention-days: 1

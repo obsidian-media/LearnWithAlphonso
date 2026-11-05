@@ -71,7 +71,7 @@ describe("getNameStatus", () => {
     supabase.rpc.mockReturnValueOnce(chainable({ data: [], error: null }));
     expect(await getNameStatus({ context: ctx() })).toBeNull();
     supabase.rpc.mockReturnValueOnce(chainable({ data: null, error: { message: "boom" } }));
-    await expect(getNameStatus({ context: ctx() })).rejects.toThrow("boom");
+    await expect(getNameStatus({ context: ctx() })).rejects.toThrow("request-failed");
   });
 });
 

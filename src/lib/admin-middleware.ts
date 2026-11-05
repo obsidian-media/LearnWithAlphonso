@@ -1,6 +1,11 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isAdminUser, UNAUTHORIZED_MESSAGE } from "./admin-auth";
+import {
+  isAdminUser,
+  meetsAdminAssurance,
+  SECOND_FACTOR_REQUIRED_MESSAGE,
+  UNAUTHORIZED_MESSAGE,
+} from "./admin-auth";
 
 /**
  * Gate for every admin server function.
@@ -25,6 +30,10 @@ export const requireAdmin = createMiddleware({ type: "function" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (!(await isAdminUser(supabaseAdmin, context.userId))) {
       throw new Error(UNAUTHORIZED_MESSAGE);
+    }
+    // After the allowlist, so only an admin ever learns that a second factor is what is missing.
+    if (!meetsAdminAssurance(context.claims, process.env.ADMIN_REQUIRE_AAL2)) {
+      throw new Error(SECOND_FACTOR_REQUIRED_MESSAGE);
     }
     return next({ context: { ...context, supabaseAdmin } });
   });

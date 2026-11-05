@@ -147,3 +147,14 @@ describe("deleteRevenueCatSubscriber", () => {
     expect(await deleteRevenueCatSubscriber(CONFIG, "user-1", broken)).toBe("failed");
   });
 });
+
+describe("revenueCatConfigFromEnv, purchase-source settings", () => {
+  it("reads the tester allowlist and the sandbox switch", () => {
+    const config = revenueCatConfigFromEnv({
+      REVENUECAT_SECRET_API_KEY: "sk_test",
+      REVENUECAT_TEST_PURCHASE_USER_IDS: " a , b ,,",
+      REVENUECAT_REJECT_SANDBOX: "true",
+    } as NodeJS.ProcessEnv);
+    expect(config).toMatchObject({ testPurchaseUserIds: ["a", "b"], rejectSandbox: true });
+  });
+});

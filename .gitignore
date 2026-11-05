@@ -38,6 +38,13 @@ supabase/.temp/
 .env.local
 .env.*.local
 
+# Signing material and API keys: private keys and profiles must never enter this public repo, even by a broad
+# `git add`. Generated locally or in CI (scripts/generate-ios-distribution-signing.ts, ios-release.yml).
+*.p8
+*.p12
+*.mobileprovision
+private_keys/
+
 # Agent working notes — deferred/postponed work items, local-only scratch
 DEFERRED-WORDS.md
 

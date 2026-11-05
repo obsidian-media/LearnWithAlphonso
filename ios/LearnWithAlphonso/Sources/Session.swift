@@ -217,6 +217,8 @@ final class Session {
             establishSession(bootstrapped)
             return
         }
+        // A reinstall must not resume the previous install's session from the Keychain.
+        KeychainSessionStore.clearIfFreshInstall()
         guard let stored = KeychainSessionStore.load() else { return }
         if stored.expiresAt > Date().addingTimeInterval(60) {
             establishSession(stored)
@@ -380,7 +382,7 @@ final class Session {
 
     private func endSession(_ event: SessionLifecycle.Event, notice: String? = nil) {
         // Captured BEFORE the state is cleared: the push-token handler deletes the old account's device row with
-        // it (GoTrue access tokens stay valid until expiry; signOut does not call /logout).
+        // it, and the server-session handler ends this device's session on the auth server (AuthAccountCleanup).
         let endingAccessToken = accessToken
         proactiveRefreshTask?.cancel()
         proactiveRefreshTask = nil

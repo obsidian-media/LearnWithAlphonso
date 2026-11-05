@@ -140,3 +140,65 @@ describe("getSubscriberSummary", () => {
     expect(await getProEntitlementStatus(CONFIG, "u1", respond(500))).toBe("unavailable");
   });
 });
+
+describe("purchases made outside a real store", () => {
+  function backed(entry: Record<string, unknown>, nonSubscription = false) {
+    const pro = {
+      expires_date: nonSubscription ? null : FUTURE,
+      product_identifier: "pro_monthly",
+    };
+    return {
+      subscriber: {
+        entitlements: { pro },
+        subscriptions: nonSubscription ? {} : { pro_monthly: entry },
+        non_subscriptions: nonSubscription ? { pro_monthly: [entry] } : {},
+        management_url: null,
+      },
+    };
+  }
+
+  it("a RevenueCat Test Store purchase does not count as Pro", async () => {
+    const fake = respond(200, backed({ store: "test_store", is_sandbox: true }));
+    expect((await getSubscriberSummary(CONFIG, "u1", fake)).status).toBe("inactive");
+  });
+
+  it("a Test Store one-time purchase does not count as Pro either", async () => {
+    const fake = respond(200, backed({ store: "test_store", is_sandbox: true }, true));
+    expect((await getSubscriberSummary(CONFIG, "u1", fake)).status).toBe("inactive");
+  });
+
+  it("a Test Store purchase counts for an allowlisted tester account", async () => {
+    const fake = respond(200, backed({ store: "test_store", is_sandbox: true }));
+    const config = { ...CONFIG, testPurchaseUserIds: ["u1"] };
+    expect((await getSubscriberSummary(config, "u1", fake)).status).toBe("active");
+  });
+
+  it("an App Store sandbox purchase still counts by default (App Review and TestFlight buy in sandbox)", async () => {
+    const fake = respond(200, backed({ store: "app_store", is_sandbox: true }));
+    expect((await getSubscriberSummary(CONFIG, "u1", fake)).status).toBe("active");
+  });
+
+  it("an App Store sandbox purchase does not count when sandbox purchases are switched off", async () => {
+    const fake = respond(200, backed({ store: "app_store", is_sandbox: true }));
+    const config = { ...CONFIG, rejectSandbox: true };
+    expect((await getSubscriberSummary(config, "u1", fake)).status).toBe("inactive");
+  });
+
+  it("a real App Store purchase is unaffected by either setting", async () => {
+    const fake = respond(200, backed({ store: "app_store", is_sandbox: false }));
+    const config = { ...CONFIG, rejectSandbox: true };
+    expect((await getSubscriberSummary(config, "u1", fake)).status).toBe("active");
+  });
+
+  it("a promotional grant (no backing purchase) still counts", async () => {
+    const fake = respond(200, {
+      subscriber: {
+        entitlements: { pro: { expires_date: FUTURE, product_identifier: "rc_promo_pro_yearly" } },
+        subscriptions: { rc_promo_pro_yearly: { store: "promotional", is_sandbox: false } },
+      },
+    });
+    expect(
+      (await getSubscriberSummary({ ...CONFIG, rejectSandbox: true }, "u1", fake)).status,
+    ).toBe("active");
+  });
+});

@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import com.obsidianmedia.learnwithalphonso.ui.RootScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
 import kotlinx.coroutines.launch
@@ -44,11 +45,9 @@ class MainActivity : ComponentActivity() {
     private fun handleInviteLink(intent: Intent?) {
         val uri = intent?.data ?: return
         if (intent.action != Intent.ACTION_VIEW || uri.scheme != "https") return
-        val segments = uri.pathSegments
-        if (segments.size == 2 && segments[0] == "invite" && segments[1].isNotBlank()) {
-            pendingInviteCode = segments[1]
-            intent.action = null
-        }
+        val code = InviteLink.codeFrom(uri.pathSegments) ?: return
+        pendingInviteCode = code
+        intent.action = null
     }
 
     override fun onResume() {

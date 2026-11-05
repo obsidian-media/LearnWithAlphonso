@@ -157,6 +157,22 @@ public final class SupabaseAuthClient: Sendable {
         return try Self.decodeSession(from: data)
     }
 
+    /// Ends this device's session on the auth server (GoTrue POST /auth/v1/logout?scope=local), so its refresh
+    /// token can no longer mint access tokens. Other devices stay signed in. The caller passes the ENDING session's
+    /// access token, captured before the local state is cleared.
+    public func logout(accessToken: String) async throws {
+        var components = URLComponents(
+            url: supabaseURL.appendingPathComponent("auth/v1/logout"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "scope", value: "local")]
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 15
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
     private static func requireSuccess(data: Data, response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw SupabaseAuthError.badResponse

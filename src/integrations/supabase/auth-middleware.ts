@@ -99,6 +99,9 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
         supabase,
         userId: data.claims.sub,
         claims: data.claims,
+        // For the few actions that also confirm the session is still live on the auth server (see
+        // src/lib/live-session.server.ts); the local claims check alone accepts a signed-out token until it expires.
+        accessToken: token,
       },
     });
   },

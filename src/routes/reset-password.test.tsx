@@ -64,11 +64,26 @@ describe("Reset password route", () => {
       expect(screen.getByRole("button", { name: "Update password" })).toBeEnabled(),
     );
 
-    await user.type(screen.getByPlaceholderText("New password"), "secret1");
-    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret2");
+    await user.type(screen.getByPlaceholderText("New password"), "secret1-river");
+    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret2-river");
     await user.click(screen.getByRole("button", { name: "Update password" }));
 
     expect(screen.getByText("Both passwords must match.")).toBeInTheDocument();
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  it("refuses a new password shorter than 10 characters without calling Supabase", async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    const user = userEvent.setup();
+    const Page = Route.options.component!;
+    render(<Page />);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Update password" })).toBeEnabled(),
+    );
+    await user.type(screen.getByPlaceholderText("New password"), "short1234");
+    await user.type(screen.getByPlaceholderText("Confirm new password"), "short1234");
+    await user.click(screen.getByRole("button", { name: "Update password" }));
+    expect(screen.getByText("Use at least 10 characters for your password.")).toBeInTheDocument();
     expect(updateUser).not.toHaveBeenCalled();
   });
 
@@ -83,11 +98,11 @@ describe("Reset password route", () => {
       expect(screen.getByRole("button", { name: "Update password" })).toBeEnabled(),
     );
 
-    await user.type(screen.getByPlaceholderText("New password"), "secret1");
-    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret1");
+    await user.type(screen.getByPlaceholderText("New password"), "secret1-river");
+    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret1-river");
     await user.click(screen.getByRole("button", { name: "Update password" }));
 
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ password: "secret1" }));
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ password: "secret1-river" }));
     expect(await screen.findByText(/Password updated/)).toBeInTheDocument();
 
     vi.advanceTimersByTime(1200);
@@ -105,8 +120,8 @@ describe("Reset password route", () => {
       expect(screen.getByRole("button", { name: "Update password" })).toBeEnabled(),
     );
 
-    await user.type(screen.getByPlaceholderText("New password"), "secret1");
-    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret1");
+    await user.type(screen.getByPlaceholderText("New password"), "secret1-river");
+    await user.type(screen.getByPlaceholderText("Confirm new password"), "secret1-river");
     await user.click(screen.getByRole("button", { name: "Update password" }));
 
     expect(await screen.findByText("Password too weak")).toBeInTheDocument();

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { BUDDY_PRESETS } from "./buddy";
@@ -45,7 +46,7 @@ export const getMyBuddy = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<MyBuddy> => {
     const { data: rows, error } = await context.supabase.rpc("get_my_buddy");
-    if (error) throw new Error(`getMyBuddy: ${error.message}`);
+    if (error) throw publicError("getMyBuddy", error);
     const r = rows?.[0];
     if (!r) return null;
     return {
@@ -70,7 +71,7 @@ export const getBuddyRequests = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BuddyRequest[]> => {
     const { data: rows, error } = await context.supabase.rpc("get_buddy_requests");
-    if (error) throw new Error(`getBuddyRequests: ${error.message}`);
+    if (error) throw publicError("getBuddyRequests", error);
     return (rows ?? []).map((r) => ({
       requestId: r.request_id,
       direction: r.direction === "incoming" ? "incoming" : "outgoing",
@@ -88,7 +89,7 @@ export const requestBuddy = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("request_buddy", {
       _friend: data.friendId,
     });
-    if (error) throw new Error(`requestBuddy: ${error.message}`);
+    if (error) throw publicError("requestBuddy", error);
     return statusOf(rows);
   });
 
@@ -102,7 +103,7 @@ export const respondBuddyRequest = createServerFn({ method: "POST" })
       _request: data.requestId,
       _accept: data.accept,
     });
-    if (error) throw new Error(`respondBuddyRequest: ${error.message}`);
+    if (error) throw publicError("respondBuddyRequest", error);
     return statusOf(rows);
   });
 
@@ -113,7 +114,7 @@ export const cancelBuddyRequest = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("cancel_buddy_request", {
       _request: data.requestId,
     });
-    if (error) throw new Error(`cancelBuddyRequest: ${error.message}`);
+    if (error) throw publicError("cancelBuddyRequest", error);
     return statusOf(rows);
   });
 
@@ -121,7 +122,7 @@ export const endBuddy = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BuddyActionResult> => {
     const { data: rows, error } = await context.supabase.rpc("end_buddy");
-    if (error) throw new Error(`endBuddy: ${error.message}`);
+    if (error) throw publicError("endBuddy", error);
     return statusOf(rows);
   });
 
@@ -143,7 +144,7 @@ export const sendBuddyMessage = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("send_buddy_message", {
       _preset: data.presetId,
     });
-    if (error) throw new Error(`sendBuddyMessage: ${error.message}`);
+    if (error) throw publicError("sendBuddyMessage", error);
     return statusOf(rows);
   });
 
@@ -152,7 +153,7 @@ export const getBuddyMessages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BuddyMessage[]> => {
     const { data: rows, error } = await context.supabase.rpc("get_buddy_messages", {});
-    if (error) throw new Error(`getBuddyMessages: ${error.message}`);
+    if (error) throw publicError("getBuddyMessages", error);
     return (rows ?? []).map((r) => ({
       messageId: r.message_id,
       senderId: r.sender_id,
@@ -184,7 +185,7 @@ export const joinBuddyPool = createServerFn({ method: "POST" })
       _course: data.course,
       _age_confirmed: data.ageConfirmed,
     });
-    if (error) throw new Error(`joinBuddyPool: ${error.message}`);
+    if (error) throw publicError("joinBuddyPool", error);
     return statusOf(rows);
   });
 
@@ -192,7 +193,7 @@ export const leaveBuddyPool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BuddyActionResult> => {
     const { data: rows, error } = await context.supabase.rpc("leave_buddy_pool");
-    if (error) throw new Error(`leaveBuddyPool: ${error.message}`);
+    if (error) throw publicError("leaveBuddyPool", error);
     return statusOf(rows);
   });
 
@@ -200,7 +201,7 @@ export const getBuddyPool = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BuddyPool> => {
     const { data: rows, error } = await context.supabase.rpc("get_buddy_pool");
-    if (error) throw new Error(`getBuddyPool: ${error.message}`);
+    if (error) throw publicError("getBuddyPool", error);
     const r = rows?.[0];
     return {
       matchingEnabled: r?.matching_enabled === true,

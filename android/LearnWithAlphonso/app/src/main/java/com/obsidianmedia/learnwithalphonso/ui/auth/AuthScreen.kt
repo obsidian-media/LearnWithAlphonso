@@ -41,6 +41,7 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.auth.GoogleSignIn
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.core.logic.PasswordPolicy
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
@@ -111,7 +112,11 @@ fun AuthScreen(container: AppContainer) {
                     if (passwordMode == PasswordMode.SIGN_UP) AuthField(displayName, { displayName = it.take(40) }, "Display name", KeyboardType.Text)
                     if (passwordMode != PasswordMode.FORGOT) AuthField(password, { password = it }, "Password", KeyboardType.Password, secret = true)
                     val label = when (passwordMode) { PasswordMode.SIGN_IN -> "Sign in"; PasswordMode.SIGN_UP -> "Create account"; PasswordMode.FORGOT -> "Send reset link" }
-                    val ready = email.contains("@") && (passwordMode == PasswordMode.FORGOT || password.length >= 6)
+                    val ready = email.contains("@") && when (passwordMode) {
+                        PasswordMode.FORGOT -> true
+                        PasswordMode.SIGN_UP -> PasswordPolicy.longEnoughToCreate(password)
+                        PasswordMode.SIGN_IN -> PasswordPolicy.longEnoughToSignIn(password)
+                    }
                     AlphonsoPrimaryButton(label, enabled = ready, busy = busy, onClick = {
                         scope.launch {
                             when (passwordMode) {

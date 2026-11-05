@@ -1,8 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/signin")({ component: SignIn });
+export const Route = createFileRoute("/signin")({
+  // `?mfa=required`: the server refused this admin's session for lacking a second factor (requireAdmin).
+  validateSearch: (search: Record<string, unknown>): { mfa?: "required" } =>
+    search.mfa === "required" ? { mfa: "required" } : {},
+  component: SignIn,
+});
+
+type SecondFactor =
+  | { phase: "none" }
+  | { phase: "verify"; factorId: string }
+  | { phase: "enroll"; factorId: string; secret: string; uri: string };
 
 /**
  * Admin sign-in.
@@ -26,6 +36,44 @@ function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { mfa } = Route.useSearch();
+  const [factor, setFactor] = useState<SecondFactor>({ phase: "none" });
+  const [code, setCode] = useState("");
+
+  // After any sign-in: an admin with an authenticator must enter its code before going on, and one the server refused
+  // for lacking a second factor is offered enrolment. Everyone else goes straight to the home page.
+  const continueAfterSignIn = useCallback(async () => {
+    const { data: level } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (level?.currentLevel === "aal2") return navigate({ to: "/" });
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const verified = factors?.totp.find((f) => f.status === "verified");
+    if (verified) return setFactor({ phase: "verify", factorId: verified.id });
+    if (mfa === "required") {
+      const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      if (enrollError || !data) return setError("Could not start authenticator setup.");
+      return setFactor({
+        phase: "enroll",
+        factorId: data.id,
+        secret: data.totp.secret,
+        uri: data.totp.uri,
+      });
+    }
+    navigate({ to: "/" });
+  }, [mfa, navigate]);
+
+  async function verifyCode(event: FormEvent) {
+    event.preventDefault();
+    if (factor.phase === "none") return;
+    setBusy(true);
+    setError(null);
+    const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
+      factorId: factor.factorId,
+      code: code.trim(),
+    });
+    setBusy(false);
+    if (verifyError) setError("That code did not work. Try the current one.");
+    else navigate({ to: "/" });
+  }
 
   // The OAuth callback lands HERE rather than on `/`, deliberately. The
   // client exchanges the PKCE `code` from the URL on load
@@ -36,16 +84,17 @@ function SignIn() {
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled && data.session) navigate({ to: "/" });
+      if (!cancelled && data.session) void continueAfterSignIn();
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate({ to: "/" });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      // MFA_CHALLENGE_VERIFIED is handled by verifyCode itself.
+      if (session && event === "SIGNED_IN") void continueAfterSignIn();
     });
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [continueAfterSignIn]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -58,7 +107,7 @@ function SignIn() {
     // from "wrong password" turns this form into an account-existence
     // oracle, and this is the login page of an admin tool.
     if (signInError) setError("Sign-in failed.");
-    else navigate({ to: "/" });
+    else await continueAfterSignIn();
   }
 
   async function signInWithGoogle() {
@@ -97,6 +146,48 @@ function SignIn() {
     setBusy(false);
     if (resetError) setError("Couldn't send the reset email.");
     else setNotice("Reset email sent. Set a new password, then sign in here.");
+  }
+
+  if (factor.phase !== "none") {
+    return (
+      <main className="mx-auto max-w-sm p-6">
+        <h1 className="font-display text-xl font-semibold">Alphonso Admin</h1>
+        {factor.phase === "enroll" ? (
+          <div className="mt-4 space-y-2 text-sm">
+            <p>
+              The admin tool needs an authenticator app. Add this key to it, then enter the 6-digit
+              code it shows.
+            </p>
+            <p className="break-all rounded border border-hairline p-2 font-mono">
+              {factor.secret}
+            </p>
+            <p className="break-all text-xs text-ink-soft">{factor.uri}</p>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm">Enter the 6-digit code from your authenticator app.</p>
+        )}
+        <form onSubmit={verifyCode} className="mt-4 space-y-3">
+          <input
+            inputMode="numeric"
+            pattern="[0-9]{6}"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="123456"
+            required
+            autoComplete="one-time-code"
+            className="w-full rounded border border-hairline px-3 py-2"
+          />
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded bg-moss px-3 py-2 text-surface disabled:opacity-60"
+          >
+            {busy ? "Checking…" : "Continue"}
+          </button>
+        </form>
+        {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
+      </main>
+    );
   }
 
   return (

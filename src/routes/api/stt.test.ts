@@ -73,6 +73,24 @@ describe("POST /api/stt", () => {
     expect(await res.json()).toEqual({ error: "Empty or missing audio" });
   });
 
+  it("rejects audio over 1 MB with 413 and calls no provider", async () => {
+    const res = await handler({ request: reqWithFile(new Blob([new Uint8Array(1_000_001)])) });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: "audio-too-long" });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("still transcribes a recording of exactly 1 MB (about 80 s of the apps' audio)", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(
+        JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "ok" }] }] } }),
+        { status: 200 },
+      ),
+    );
+    const res = await handler({ request: reqWithFile(new Blob([new Uint8Array(1_000_000)])) });
+    expect(res.status).toBe(200);
+  });
+
   it("rejects a request body that isn't form data", async () => {
     const res = await handler({
       request: new Request("https://example.com/api/stt", {

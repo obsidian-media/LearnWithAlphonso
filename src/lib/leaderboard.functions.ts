@@ -53,7 +53,12 @@ export const updateProfile = createServerFn({ method: "POST" })
     z
       .object({
         display_name: z.string().min(1).max(40).optional(),
-        country: z.string().max(2).optional().nullable(),
+        // A two-letter country code, as the database requires (profiles_country_iso2).
+        country: z
+          .string()
+          .regex(/^[A-Z]{2}$/)
+          .optional()
+          .nullable(),
         theme: z.enum(["meadow", "studio-ink", "manuscript", "canopy"]).optional(),
         avatar_seed: z.string().min(1).max(32).optional(),
       })
