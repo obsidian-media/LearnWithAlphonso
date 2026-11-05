@@ -77,8 +77,19 @@ describe("reorder gate: each rule has a fixture only it catches", () => {
       "My room is bigger than yours",
       "She plays the guitar and loves music",
       "Gardening is her favourite hobby",
+      // "X matches Y" reads the same the other way round
+      "These socks don't match my shoes",
+      "The curtains match the sofa",
+      "Your tie matches your shirt",
+      // two noun phrases or possessives can swap; only an object pronoun cannot
+      "My bag is heavier than yours",
+      "Anna is as tall as Tom",
+      "She is taller than her mother",
     ])
       expect(movableAdverbial(s), s).not.toBeNull();
+    // an object pronoun at the end cannot take the subject's place, so the other order is not the same words
+    for (const s of ["She is happier than him", "I am as tall as her", "He swims further than me"])
+      expect(movableAdverbial(s), s).toBeNull();
     for (const s of ["I wash my face", "Go straight ahead", "The keys are on the table"])
       expect(movableAdverbial(s), s).toBeNull();
   });
@@ -156,12 +167,32 @@ describe("translate guard: confusable pairs are never accepted for each other", 
     [/\bopposite\b/, /\bin front of\b/],
     [/\boften\b/, /\busually\b/],
     [/\bsometimes\b/, /\b(often|usually)\b/],
+    // "need" says it is necessary; "want" only says you would like it
+    [/\bneed\b/, /\bwant\b/],
   ];
   it("catches an over-accept", () => {
     const canonical = "The soup is too hot.";
     const bad = ["The soup is very hot."];
     const [a, b] = PAIRS[0]!;
     expect(a.test(canonical) && bad.some((x) => b.test(x) && !a.test(x))).toBe(true);
+  });
+  it("catches 'want' accepted for 'need'", () => {
+    const [a, b] = PAIRS[PAIRS.length - 1]!;
+    expect(a.test("I need a taxi to the station.")).toBe(true);
+    expect(
+      b.test("I want a taxi to the station.") && !a.test("I want a taxi to the station."),
+    ).toBe(true);
+  });
+  it("a1p20q36 and a2p15q36 accept no 'want' wording", () => {
+    for (const id of ["a1p20q36", "a2p15q36"]) {
+      const hit = added.find(({ q }) => q.id === id);
+      expect(hit, id).toBeTruthy();
+      const q = hit!.q as { acceptableAnswers: string[] };
+      expect(
+        q.acceptableAnswers.filter((x) => /\bwant\b/i.test(x)),
+        id,
+      ).toEqual([]);
+    }
   });
   it("no appended translate question accepts one for the other", () => {
     const bad: string[] = [];

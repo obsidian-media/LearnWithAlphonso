@@ -296,7 +296,6 @@ export const TRANSLATE_MORE: Record<string, string[]> = {
     "I need a taxi to go to the station.",
     "I need a cab to get to the station.",
     "I need a taxi to take me to the station.",
-    "I want a taxi to the station.",
     "I'd like a taxi to the station.",
   ],
   a1p20l5: [
@@ -763,7 +762,6 @@ export const TRANSLATE_MORE: Record<string, string[]> = {
     "I must change my PIN.",
     "I need to change my PIN code.",
     "I have to change my PIN code.",
-    "I want to change my PIN code.",
     "I'd like to change my PIN.",
     "I need to change my pin number.",
   ],

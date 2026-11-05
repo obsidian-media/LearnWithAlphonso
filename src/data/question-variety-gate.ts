@@ -30,6 +30,7 @@ const PLACE_RULE = new RegExp(
 );
 /** A relation that reads the same with its two noun phrases swapped ("X is next to Y" / "Y is next to X"). */
 const SYMMETRIC_PREP = "next to|near|beside|opposite|between|close to|across from|far from";
+const OBJ_PRONOUN = "(?:me|him|her|us|them)";
 const SPATIAL_PREP = "under|above|over|behind|below|inside|outside|in front of";
 
 type Rule = { name: string; re: RegExp };
@@ -105,7 +106,11 @@ export const MOVABLE_RULES: Rule[] = [
   // two things the sentence can put either way round: "A is next to B", "A is as big as B", "A is bigger than B", "X and Y", "X but Y"
   {
     name: "symmetric-relation",
-    re: new RegExp(String.raw`\b(${SYMMETRIC_PREP})\b|\bas \w+ as\b|\bthan\b|\b(and|but|or)\b`),
+    // "match(es)": "X matches Y" reads the same the other way round. A comparison that ends in an object
+    // pronoun ("taller than him") is exempt: swapping the sides would need "he" and "me", not the same words.
+    re: new RegExp(
+      String.raw`\b(${SYMMETRIC_PREP})\b|\bmatch(?:es|ed)?\b|\bas \w+ as\b(?! ${OBJ_PRONOUN}$)|\bthan\b(?! ${OBJ_PRONOUN}$)|\b(and|but|or)\b`,
+    ),
   },
   // "Gardening is her hobby" / "Her hobby is gardening"
   { name: "gerund-subject", re: /^\w+ing (is|are|was) / },

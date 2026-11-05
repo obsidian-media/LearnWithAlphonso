@@ -18,6 +18,7 @@ import { listeningChoiceProblems, knownWordsOf, movableAdverbial } from "./quest
 import {
   LISTENING_EXTRA_WRONGS,
   REORDER_FALLBACK,
+  REORDER_OVERRIDE,
   REVIEWED_WORDS,
 } from "./question-variety-authored";
 import { normaliseSpoken } from "../lib/spoken-answer";
@@ -170,8 +171,10 @@ export function varietyQuestions(
   const fallback = REORDER_FALLBACK[lesson.id];
   // A lesson with a single sentence also uses the authored one, so reorder and listening differ.
   const own = sentences.find((x) => !movableAdverbial(x.text));
-  const reorderSource: Sentence | undefined =
-    own && !(fallback && sentences.length < 2)
+  const override = REORDER_OVERRIDE[lesson.id];
+  const reorderSource: Sentence | undefined = override
+    ? { text: override, wrongs: [] }
+    : own && !(fallback && sentences.length < 2)
       ? own
       : fallback
         ? { text: fallback, wrongs: [] }

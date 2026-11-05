@@ -6,6 +6,11 @@ export const REVIEWED_WORDS: string[] =
     " ",
   );
 
+/** A reorder sentence that wins over the lesson's own sentences, for a lesson whose own one does not practise the structure it teaches. */
+export const REORDER_OVERRIDE: Record<string, string> = {
+  a2p3l5: "He is more polite than her",
+};
+
 /**
  * A reorder sentence for lessons whose own sentences all carry a movable time, place or frequency
  * adverbial (so the grader's one accepted order would reject a natural alternative), or that have
@@ -15,24 +20,25 @@ export const REORDER_FALLBACK: Record<string, string> = {
   a2p8l1: "He kicks the ball",
   a2p8l5: "She hits the ball",
   a1p20l2: "She takes the tram",
-  a2p3l1: "My brother is taller",
-  a2p3l2: "The weather is getting colder",
-  a2p3l3: "Prices are getting higher",
-  a2p3l4: "This test is easier",
+  a1p9l5: "She wears a green skirt",
+  a2p3l1: "She is happier than him",
+  a2p3l2: "He swims further than me",
+  a2p3l3: "She arrives earlier than us",
+  a2p3l4: "You are funnier than me",
   a2p13l1: "Go straight ahead",
   a2p13l3: "Take the second street",
   a2p13l5: "Cross the bridge",
   a2p16l3: "My street is very quiet",
   a2p16l5: "The market sells fresh fruit",
   a2p17l4: "The children walk to school",
-  a2p20l1: "This room is very big",
-  a2p20l2: "Her bag is very heavy",
-  a2p20l4: "The food was really good",
-  a2p20l5: "This chair is very comfortable",
+  a2p20l1: "I am as tall as her",
+  a2p20l2: "She is as fluent as him",
+  a2p20l4: "He is as busy as me",
+  a2p20l5: "You are as lucky as them",
   a1p6l1: "Where do you live",
   a2p2l5: "They had a great time",
   a2p11l4: "The waiter brings the bill",
-  a2p20l3: "This bag looks very heavy",
+  a2p20l3: "I am not as fast as him",
   a1p5l5: "They throw a big party",
   a1p10l5: "The sun melts the snow",
   a1p14l3: "A week has seven days",

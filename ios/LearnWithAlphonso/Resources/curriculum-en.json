@@ -8411,15 +8411,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "my",
-                "don't",
-                "match",
-                "socks",
-                "shoes",
-                "These"
+                "a",
+                "She",
+                "wears",
+                "green",
+                "skirt"
               ],
-              "answer": "These socks don't match my shoes",
-              "explanation": "Correct order: \"These socks don't match my shoes.\""
+              "answer": "She wears a green skirt",
+              "explanation": "Correct order: \"She wears a green skirt\""
             },
             {
               "id": "a1p9q38",
@@ -15280,7 +15279,6 @@
                 "I need a taxi to go to the station.",
                 "I need a cab to get to the station.",
                 "I need a taxi to take me to the station.",
-                "I want a taxi to the station.",
                 "I'd like a taxi to the station."
               ],
               "explanation": "One way to say it: \"I need a taxi to the station.\""
@@ -18935,13 +18933,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "taller",
-                "brother",
+                "him",
+                "She",
+                "happier",
                 "is",
-                "My"
+                "than"
               ],
-              "answer": "My brother is taller",
-              "explanation": "Correct order: \"My brother is taller\""
+              "answer": "She is happier than him",
+              "explanation": "Correct order: \"She is happier than him\""
             },
             {
               "id": "a2p3q26",
@@ -19056,14 +19055,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "is",
-                "The",
-                "colder",
-                "weather",
-                "getting"
+                "further",
+                "than",
+                "swims",
+                "He",
+                "me"
               ],
-              "answer": "The weather is getting colder",
-              "explanation": "Correct order: \"The weather is getting colder\""
+              "answer": "He swims further than me",
+              "explanation": "Correct order: \"He swims further than me\""
             },
             {
               "id": "a2p3q29",
@@ -19180,13 +19179,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "are",
-                "Prices",
-                "higher",
-                "getting"
+                "than",
+                "She",
+                "arrives",
+                "us",
+                "earlier"
               ],
-              "answer": "Prices are getting higher",
-              "explanation": "Correct order: \"Prices are getting higher\""
+              "answer": "She arrives earlier than us",
+              "explanation": "Correct order: \"She arrives earlier than us\""
             },
             {
               "id": "a2p3q32",
@@ -19302,13 +19302,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "This",
-                "test",
-                "easier",
-                "is"
+                "You",
+                "than",
+                "are",
+                "funnier",
+                "me"
               ],
-              "answer": "This test is easier",
-              "explanation": "Correct order: \"This test is easier\""
+              "answer": "You are funnier than me",
+              "explanation": "Correct order: \"You are funnier than me\""
             },
             {
               "id": "a2p3q35",
@@ -19427,13 +19428,14 @@
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
                 "is",
-                "road",
-                "The",
-                "here",
-                "narrower"
+                "polite",
+                "her",
+                "than",
+                "more",
+                "He"
               ],
-              "answer": "The road is narrower here",
-              "explanation": "Correct order: \"The road is narrower here.\""
+              "answer": "He is more polite than her",
+              "explanation": "Correct order: \"He is more polite than her\""
             },
             {
               "id": "a2p3q38",
@@ -26973,11 +26975,9 @@
               "acceptableAnswers": [
                 "I need to change my PIN.",
                 "I have to change my PIN.",
-                "I want to change my PIN.",
                 "I must change my PIN.",
                 "I need to change my PIN code.",
                 "I have to change my PIN code.",
-                "I want to change my PIN code.",
                 "I'd like to change my PIN.",
                 "I need to change my pin number."
               ],
@@ -29723,14 +29723,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "very",
-                "big",
-                "is",
-                "room",
-                "This"
+                "as",
+                "as",
+                "I",
+                "tall",
+                "am",
+                "her"
               ],
-              "answer": "This room is very big",
-              "explanation": "Correct order: \"This room is very big\""
+              "answer": "I am as tall as her",
+              "explanation": "Correct order: \"I am as tall as her\""
             },
             {
               "id": "a2p20q26",
@@ -29844,14 +29845,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "bag",
-                "heavy",
-                "Her",
+                "him",
+                "fluent",
+                "as",
+                "as",
                 "is",
-                "very"
+                "She"
               ],
-              "answer": "Her bag is very heavy",
-              "explanation": "Correct order: \"Her bag is very heavy\""
+              "answer": "She is as fluent as him",
+              "explanation": "Correct order: \"She is as fluent as him\""
             },
             {
               "id": "a2p20q29",
@@ -29963,14 +29965,16 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "This",
-                "looks",
-                "bag",
-                "heavy",
-                "very"
+                "am",
+                "not",
+                "I",
+                "fast",
+                "as",
+                "as",
+                "him"
               ],
-              "answer": "This bag looks very heavy",
-              "explanation": "Correct order: \"This bag looks very heavy\""
+              "answer": "I am not as fast as him",
+              "explanation": "Correct order: \"I am not as fast as him\""
             },
             {
               "id": "a2p20q32",
@@ -30081,14 +30085,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "was",
-                "really",
-                "food",
-                "good",
-                "The"
+                "as",
+                "as",
+                "me",
+                "busy",
+                "He",
+                "is"
               ],
-              "answer": "The food was really good",
-              "explanation": "Correct order: \"The food was really good\""
+              "answer": "He is as busy as me",
+              "explanation": "Correct order: \"He is as busy as me\""
             },
             {
               "id": "a2p20q35",
@@ -30202,14 +30207,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "is",
-                "This",
-                "comfortable",
-                "very",
-                "chair"
+                "You",
+                "them",
+                "lucky",
+                "as",
+                "as",
+                "are"
               ],
-              "answer": "This chair is very comfortable",
-              "explanation": "Correct order: \"This chair is very comfortable\""
+              "answer": "You are as lucky as them",
+              "explanation": "Correct order: \"You are as lucky as them\""
             },
             {
               "id": "a2p20q38",
