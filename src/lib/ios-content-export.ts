@@ -66,7 +66,7 @@ export function buildIOSVocabImagesBundle(): Record<string, VocabImage> {
  * band -- see placement.ts's PLACEMENT_QUESTIONS doc comment). Same
  * pass-through reasoning as buildIOSContentBundle: iOS decodes this into
  * the mirrored `PlacementQuestion` enum in PlacementModels.swift and runs
- * its own port of pickPlacementSet/groupByBand/nextAdaptiveBand/
+ * its own port of pickPlacementSet/groupByBand/nextAdaptiveBand/resolveBand/
  * scorePlacement (PlacementLogic.swift) client-side, exactly like the web
  * app's placement.tsx -- so the *sampling* happens on-device, fresh per
  * attempt, from this same fixed pool.

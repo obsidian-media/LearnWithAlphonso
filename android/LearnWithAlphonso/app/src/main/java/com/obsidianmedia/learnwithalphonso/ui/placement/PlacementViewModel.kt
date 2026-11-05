@@ -11,10 +11,11 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
 import com.obsidianmedia.learnwithalphonso.core.logic.AiItemMode
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.groupByBand
+import com.obsidianmedia.learnwithalphonso.core.logic.PlacementTally
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
-import com.obsidianmedia.learnwithalphonso.core.logic.nextAdaptiveBand
 import com.obsidianmedia.learnwithalphonso.core.logic.pickPlacementSet
 import com.obsidianmedia.learnwithalphonso.core.logic.playablePlacementPool
+import com.obsidianmedia.learnwithalphonso.core.logic.resolveBand
 import com.obsidianmedia.learnwithalphonso.core.logic.scorePlacement
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
@@ -44,13 +45,18 @@ data class PlacementUiState(
     val checking: Boolean = false,
     val answers: List<Boolean> = emptyList(),
     val correctByLevel: Map<String, Int> = emptyMap(),
+    /** The skipped bands whose synthetic credit still stands (see resolveBand): the only ones "fast-tracked" may name. */
     val skippedLevels: List<String> = emptyList(),
+    /** True while the current band is a skipped one the exam went back to: always the last band it asks. */
+    val revisiting: Boolean = false,
     val done: Boolean = false,
 ) {
     val currentQuestion: PlacementQuestion? get() = shown.getOrNull(step)
     val total: Int get() = shown.size
     val noBandsAhead: Boolean get() = placementOrder.drop(bandIdx + 1).all { bandPool[it].isNullOrEmpty() }
-    val isFinalQuestion: Boolean get() = step + 1 == total && noBandsAhead
+
+    /** Finishing this question is guaranteed whatever the answer: nothing lies beyond it, or it ends a band the exam went back to. */
+    val isFinalQuestion: Boolean get() = step + 1 == total && (noBandsAhead || revisiting)
     val level: String get() = scorePlacement(correctByLevel).level
     val correctTotal: Int get() = answers.count { it }
 }
@@ -101,33 +107,37 @@ class PlacementViewModel(
                 _state.update { it.copy(checking = false) }
                 if (verdict?.correct == true) correct = true
             }
-            applyAnswer(q, correct)
+            applyAnswer(correct)
         }
     }
 
-    private suspend fun applyAnswer(q: PlacementQuestion, correct: Boolean) {
+    private suspend fun applyAnswer(correct: Boolean) {
         val s = _state.value
         val next = s.answers + correct
         if (s.step + 1 < s.shown.size) {
             _state.update { it.copy(answers = next, picked = null, step = it.step + 1) }
             return
         }
+        // This band just finished. resolveBand owns the skip/stop rules AND what a skip's synthetic credit is worth:
+        // it only stands once the band after the skip is really passed. If that band was failed the credit comes back
+        // out and nextIdx points BACKWARDS, so the exam asks the skipped band instead -- a placement never rests on a
+        // band the learner was never asked.
         val correctInBand = next.drop(s.bandStart).count { it }
-        val correctByLevel = s.correctByLevel + (q.level to correctInBand)
-        val decision = nextAdaptiveBand(s.bandPool, s.bandIdx, correctInBand)
-        val skipped = s.skippedLevels + listOfNotNull(decision.skipped)
-        val withSkip = decision.skipped?.let { correctByLevel + (it to 2) } ?: correctByLevel
-        val nextLevel = placementOrder.getOrNull(decision.nextIdx)
-        val nextBand = if (!decision.stop && nextLevel != null) s.bandPool[nextLevel].orEmpty() else emptyList()
-        if (decision.stop || nextBand.isEmpty()) {
-            _state.update { it.copy(answers = next, picked = null, correctByLevel = withSkip, skippedLevels = skipped, done = true) }
+        val resolution = resolveBand(s.bandPool, s.bandIdx, correctInBand, PlacementTally(s.correctByLevel, s.skippedLevels, s.revisiting))
+        val tally = resolution.tally
+        val nextLevel = placementOrder.getOrNull(resolution.nextIdx)
+        val nextBand = if (!resolution.stop && nextLevel != null) s.bandPool[nextLevel].orEmpty() else emptyList()
+        if (resolution.stop || nextBand.isEmpty()) {
+            _state.update {
+                it.copy(answers = next, picked = null, correctByLevel = tally.correctByLevel, skippedLevels = tally.skippedLevels, revisiting = tally.revisiting, done = true)
+            }
             finish()
             return
         }
         _state.update {
             it.copy(
-                answers = next, picked = null, correctByLevel = withSkip, skippedLevels = skipped,
-                shown = it.shown + nextBand, bandIdx = decision.nextIdx, bandStart = it.shown.size, step = it.step + 1,
+                answers = next, picked = null, correctByLevel = tally.correctByLevel, skippedLevels = tally.skippedLevels, revisiting = tally.revisiting,
+                shown = it.shown + nextBand, bandIdx = resolution.nextIdx, bandStart = it.shown.size, step = it.step + 1,
             )
         }
     }

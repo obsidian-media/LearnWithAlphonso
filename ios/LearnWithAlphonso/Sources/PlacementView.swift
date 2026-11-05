@@ -47,8 +47,6 @@ struct PlacementView: View {
     @State private var picked: String?
     @State private var answers: [Bool] = []
     @State private var done = false
-    @State private var skippedLevels: [String] = []
-    @State private var correctByLevel: [String: Int] = [:]
 
     init(contentStore: ContentStore, session: Session, course: Course, onFinished: @escaping () -> Void = {}) {
         self.contentStore = contentStore
@@ -64,12 +62,11 @@ struct PlacementView: View {
 
     private var total: Int { attempt.shown.count }
 
-    private var noBandsAhead: Bool {
-        placementOrder[(attempt.bandIdx + 1)...].allSatisfy { (attempt.bandPool[$0]?.isEmpty ?? true) }
-    }
-
+    /// Whether finishing this question is guaranteed whatever the answer --
+    /// decided in the Kit (`PlacementAttempt.isFinalQuestion`), which also
+    /// knows the skipped band the exam goes back to is always its last.
     private var isFinalQuestion: Bool {
-        step + 1 == total && noBandsAhead
+        attempt.isFinalQuestion(step: step)
     }
 
     var body: some View {
@@ -243,7 +240,7 @@ struct PlacementView: View {
     }
 
     private var resultsBody: some View {
-        let level = scorePlacement(correctByLevel: correctByLevel).level
+        let level = attempt.level
         let meta = levelMeta[level]
         let correct = answers.filter { $0 }.count
         let content = VStack(spacing: AlphonsoSpacing.md) {
@@ -272,8 +269,10 @@ struct PlacementView: View {
             Text("\(correct) of \(total) correct")
                 .font(AlphonsoFont.sans(12))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-            if !skippedLevels.isEmpty {
-                Text("Fast-tracked past \(skippedLevels.joined(separator: ", ")) after strong answers.")
+            // Only skips the learner's real answers backed up (see resolveBand): a band the exam went back to
+            // and asked is no longer in this list.
+            if !attempt.tally.skippedLevels.isEmpty {
+                Text("Fast-tracked past \(attempt.tally.skippedLevels.joined(separator: ", ")) after strong answers.")
                     .font(AlphonsoFont.sans(11))
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
@@ -296,13 +295,11 @@ struct PlacementView: View {
     }
 
     private func restart() {
-        correctByLevel = [:]
         attempt = PlacementAttempt(pool: contentStore.placementPool(for: course))
         answers = []
         step = 0
         picked = nil
         done = false
-        skippedLevels = []
     }
 
     /// Mirrors placement.tsx's `submit()` exactly -- see that function's
@@ -324,35 +321,22 @@ struct PlacementView: View {
             return
         }
 
-        let correctInBand = next[attempt.bandStart...].filter { $0 }.count
-        correctByLevel[q.level] = correctInBand
-
-        let decision = nextAdaptiveBand(bandPool: attempt.bandPool, currentIdx: attempt.bandIdx, correctInBand: correctInBand)
-        if let skipped = decision.skipped {
-            // Synthetic pass credit -- only ever granted when a real band
-            // lies beyond it too (nextAdaptiveBand's landingHasContent
-            // guard), so it's never the sole basis for the final result.
-            correctByLevel[skipped] = 2
-            skippedLevels.append(skipped)
-        }
-
-        let nextLevel = decision.nextIdx < placementOrder.count ? placementOrder[decision.nextIdx] : nil
-        let nextBandQs = (!decision.stop && nextLevel != nil) ? (attempt.bandPool[nextLevel!] ?? []) : []
-        if decision.stop || nextBandQs.isEmpty {
+        // This band just finished. The Kit decides what comes next and what a
+        // skip's synthetic credit is worth (PlacementAttempt.completeBand ->
+        // resolveBand): it only stands once the band after the skip is really
+        // passed, and if that band was failed the exam goes BACK and asks the
+        // skipped band, so a placement never rests on a band the learner was
+        // never asked.
+        if attempt.completeBand(answers: next) {
             finish(finalAnswers: next)
             return
         }
-
-        let bandStart = attempt.shown.count
-        attempt.shown.append(contentsOf: nextBandQs)
-        attempt.bandIdx = decision.nextIdx
-        attempt.bandStart = bandStart
         step += 1
     }
 
     private func finish(finalAnswers: [Bool]) {
         done = true
-        let level = scorePlacement(correctByLevel: correctByLevel).level
+        let level = attempt.level
         let score = finalAnswers.filter { $0 }.count
         guard let accessToken = session.accessToken else { return }
         Task {
@@ -368,37 +352,6 @@ struct PlacementView: View {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = SpeechVoice.voice(for: course)
         placementSpeechSynthesizer.speak(utterance)
-    }
-}
-
-/// State for one placement attempt -- mirrors placement.tsx's local
-/// `Session` type, renamed to avoid clashing with this app's own
-/// `Session` (auth) class.
-private struct PlacementAttempt {
-    var bandPool: [String: [PlacementQuestion]]
-    /// Questions actually decided-on so far, in display order -- grows
-    /// band by band as the test adapts.
-    var shown: [PlacementQuestion]
-    /// `placementOrder` index of the band currently being tested.
-    var bandIdx: Int
-    /// Index into `shown` where the current band's questions begin.
-    var bandStart: Int
-
-    /// Always starts at A1 and walks forward to the first band that
-    /// actually has candidate questions -- defensive only (every shipped
-    /// course has content in every band), so a thin/misconfigured pool
-    /// degrades to "test whatever exists" instead of crashing on a
-    /// missing first question. Mirrors placement.tsx's `startSession`.
-    init(pool: [PlacementQuestion]) {
-        let grouped = groupByBand(pickPlacementSet(pool))
-        var idx = 0
-        while idx < placementOrder.count && (grouped[placementOrder[idx]]?.isEmpty ?? true) {
-            idx += 1
-        }
-        self.bandPool = grouped
-        self.shown = idx < placementOrder.count ? (grouped[placementOrder[idx]] ?? []) : []
-        self.bandIdx = idx
-        self.bandStart = 0
     }
 }
 

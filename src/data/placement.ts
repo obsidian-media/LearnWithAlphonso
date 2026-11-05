@@ -693,9 +693,16 @@ export function pickPlacementSet(
 }
 
 /**
- * A band is "passed" when at least 2 of its 3 questions are correct.
- * Placement = highest consecutively passed band, or the next band up when
- * every band is passed.
+ * A band is passed with at least this many of its three questions correct. The one definition of
+ * "passed": scorePlacement counts bands with it, and resolveBand uses it to decide whether the band
+ * after a skip held up -- if the two disagreed, a band could be "failed" for one and "passed" for the other.
+ */
+export const PLACEMENT_PASS_MARK = 2;
+
+/**
+ * A band is "passed" when at least PLACEMENT_PASS_MARK (2) of its 3 questions
+ * are correct. Placement = highest consecutively passed band, or the next band
+ * up when every band is passed.
  */
 export function scorePlacement(correctByLevel: Record<Level, number>): {
   level: Level;
@@ -703,7 +710,7 @@ export function scorePlacement(correctByLevel: Record<Level, number>): {
 } {
   const passed: Level[] = [];
   for (const lvl of PLACEMENT_ORDER) {
-    if ((correctByLevel[lvl] ?? 0) >= 2) passed.push(lvl);
+    if ((correctByLevel[lvl] ?? 0) >= PLACEMENT_PASS_MARK) passed.push(lvl);
     else break;
   }
   if (passed.length === 0) return { level: "A1", passed };
@@ -747,11 +754,14 @@ export type AdaptiveBandDecision = {
  *   steps ahead with actual content: skip the immediately-next band
  *   (synthetic pass credit, never shown to the learner) and resume
  *   testing from the one after it. The "two steps ahead has content"
- *   guard means a skip only ever happens when it can be confirmed by a
- *   real question afterwards -- it never grants free credit right before
- *   the test would otherwise end, and the final band (C1) can only ever
- *   be earned by answering real C1 questions, never awarded as a skip
- *   target.
+ *   guard means a skip only ever happens when there is a real band to
+ *   test next -- it never grants free credit right before the test would
+ *   otherwise end, and the final band (C1) can only ever be earned by
+ *   answering real C1 questions, never awarded as a skip target. That
+ *   guard only guarantees something is TESTED afterwards, not that it is
+ *   PASSED: the credit is a bet that the learner will pass that next
+ *   band, and resolveBand (below) is what settles it. Callers use
+ *   resolveBand, not this, to move between bands.
  * - Anything else (partial credit): advance to the very next band as
  *   normal -- ambiguous performance always gets a real test.
  */
@@ -772,4 +782,106 @@ export function nextAdaptiveBand(
     return { stop: false, skipped: PLACEMENT_ORDER[currentIdx + 1]!, nextIdx: landingIdx };
   }
   return { stop: false, skipped: null, nextIdx: currentIdx + 1 };
+}
+
+/** What the adaptive walk remembers from one band to the next. */
+export type PlacementTally = {
+  /**
+   * Correct answers per band. A skipped band holds PLACEMENT_PASS_MARK for as long as its credit stands, and
+   * 0 from the moment the credit is withdrawn until the band has really been asked.
+   */
+  correctByLevel: Record<Level, number>;
+  /** The skipped bands whose credit still stands: the only ones the result may call "fast-tracked". */
+  skippedLevels: Level[];
+  /** True while the learner answers a skipped band the exam sent them back to. That band is the last one asked. */
+  revisiting: boolean;
+};
+
+export type BandResolution = {
+  /** True when the exam ends here. */
+  stop: boolean;
+  /** Which PLACEMENT_ORDER index to ask next (meaningless when stop is true). */
+  nextIdx: number;
+  tally: PlacementTally;
+};
+
+/** The tally of an exam that has not started. */
+export function emptyTally(): PlacementTally {
+  return {
+    correctByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 },
+    skippedLevels: [],
+    revisiting: false,
+  };
+}
+
+/**
+ * What happens when the learner has answered the last question of a band: where the exam goes next, and
+ * what the credit for any skipped band is worth. Every platform's exam calls this when a band completes.
+ *
+ * A skip is a bet. Acing a band makes nextAdaptiveBand jump the next one -- credited as passed, never
+ * asked -- on the strength that someone who aced A1 will pass A2, so B1 is the interesting question. The
+ * credit stands only once the band after the skip (the landing band) is passed for real: a pass above
+ * implies a pass below. If the landing band is NOT passed (under PLACEMENT_PASS_MARK, so 0 or 1 of 3)
+ * the bet lost, and the credit must decide nothing: scorePlacement would read the credited band as
+ * passed and place the learner AT the band they had just failed, on an A2 nobody ever asked them. So the
+ * credit is withdrawn and the exam goes BACK and asks the skipped band -- then ends, because nothing
+ * above can change the result once the landing band has failed -- and the placement rests on answers the
+ * learner actually gave. A band that has been asked is never asked again, so a sitting is still at most
+ * 15 questions.
+ *
+ * A skipped band with no questions in the pool cannot be gone back to (a thin or misconfigured pool;
+ * every shipped course has all five bands). There the exam ends with the credit withdrawn and the learner
+ * is placed at the skipped band at most.
+ *
+ * Passing the landing band 2 of 3 changes nothing: the credit stands and the exam carries on as usual.
+ */
+export function resolveBand(
+  bandPool: Record<Level, PlacementQuestion[]>,
+  currentIdx: number,
+  correctInBand: number,
+  tally: PlacementTally,
+): BandResolution {
+  const correctByLevel = {
+    ...tally.correctByLevel,
+    [PLACEMENT_ORDER[currentIdx]!]: correctInBand,
+  };
+  const end = (skippedLevels: Level[]): BandResolution => ({
+    stop: true,
+    nextIdx: currentIdx,
+    tally: { correctByLevel, skippedLevels, revisiting: false },
+  });
+
+  // The band the learner was sent back to is the last one asked: the band above it already failed.
+  if (tally.revisiting) return end(tally.skippedLevels);
+
+  // Is the band just finished the landing band of a skip, and did the learner fail it?
+  const skippedBelow = PLACEMENT_ORDER[currentIdx - 1];
+  if (
+    skippedBelow &&
+    tally.skippedLevels.includes(skippedBelow) &&
+    correctInBand < PLACEMENT_PASS_MARK
+  ) {
+    const skippedLevels = tally.skippedLevels.filter((lvl) => lvl !== skippedBelow);
+    correctByLevel[skippedBelow] = 0;
+    if ((bandPool[skippedBelow]?.length ?? 0) === 0) return end(skippedLevels);
+    return {
+      stop: false,
+      nextIdx: currentIdx - 1,
+      tally: { correctByLevel, skippedLevels, revisiting: true },
+    };
+  }
+
+  const decision = nextAdaptiveBand(bandPool, currentIdx, correctInBand);
+  if (decision.skipped) correctByLevel[decision.skipped] = PLACEMENT_PASS_MARK;
+  return {
+    stop: decision.stop,
+    nextIdx: decision.nextIdx,
+    tally: {
+      correctByLevel,
+      skippedLevels: decision.skipped
+        ? [...tally.skippedLevels, decision.skipped]
+        : tally.skippedLevels,
+      revisiting: false,
+    },
+  };
 }
