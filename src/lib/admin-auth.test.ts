@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { isAdminUser, UNAUTHORIZED_MESSAGE } from "./admin-auth";
+import { isAdminUser, meetsAdminAssurance, SECOND_FACTOR_REQUIRED_MESSAGE, UNAUTHORIZED_MESSAGE } from "./admin-auth";
 
 /** Minimal PostgREST-shaped stub: .from().select().eq().maybeSingle() */
 function clientReturning(result: { data: unknown; error: unknown }) {
@@ -124,5 +124,29 @@ describe("admin_users is unreadable by a non-service client", () => {
       expect(error.message).toMatch(/permission denied|not authorized|insufficient/i);
       expect(error.message).not.toMatch(/does not exist|could not find|not find the table/i);
     }
+  });
+});
+
+describe("admin second factor", () => {
+  it("when required, only a session verified with a second factor passes", () => {
+    expect(meetsAdminAssurance({ aal: "aal2" }, "true")).toBe(true);
+    expect(meetsAdminAssurance({ aal: "aal1" }, "true")).toBe(false);
+    expect(meetsAdminAssurance({}, "true")).toBe(false);
+    expect(meetsAdminAssurance(undefined, "true")).toBe(false);
+  });
+
+  it("when not switched on, a password session still passes (enrol first, then switch it on)", () => {
+    expect(meetsAdminAssurance({ aal: "aal1" }, undefined)).toBe(true);
+    expect(meetsAdminAssurance({ aal: "aal1" }, "false")).toBe(true);
+  });
+
+  it("the admin gate checks the allowlist first, then the second factor", () => {
+    const mw = readFileSync("src/lib/admin-middleware.ts", "utf8");
+    const allow = mw.indexOf("isAdminUser(");
+    const aal = mw.indexOf("meetsAdminAssurance(context.claims, process.env.ADMIN_REQUIRE_AAL2)");
+    expect(allow).toBeGreaterThan(-1);
+    expect(aal).toBeGreaterThan(allow);
+    expect(mw).toMatch(/throw new Error\(SECOND_FACTOR_REQUIRED_MESSAGE\)/);
+    expect(SECOND_FACTOR_REQUIRED_MESSAGE).toMatch(/^Unauthorized: /);
   });
 });

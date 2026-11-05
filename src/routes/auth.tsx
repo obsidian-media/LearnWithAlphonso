@@ -1,4 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { captchaOptions, turnstileSiteKey } from "@/lib/turnstile";
+import { isLongEnoughNewPassword, MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_TOO_SHORT } from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +54,12 @@ function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  // Turnstile, only when a site key is configured (src/lib/turnstile.ts). Each token is single-use, so every request
+  // that spends one bumps captchaReset for a fresh widget.
+  const captchaSiteKey = turnstileSiteKey();
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const needsCaptcha = Boolean(captchaSiteKey) && mode !== "verify";
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -79,12 +88,17 @@ function AuthPage() {
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + "/reset-password",
+          ...captchaOptions(captchaToken),
         });
         if (error) throw error;
         setNotice(
           "If an account exists for that address, we've sent a link to reset your password. Check your inbox.",
         );
       } else if (mode === "signup") {
+        if (!isLongEnoughNewPassword(password)) {
+          setError(NEW_PASSWORD_TOO_SHORT);
+          return;
+        }
         // New signups land on the placement test first instead of a cold
         // /learn -- V4 pkg 3's onboarding call: not a hard gate (the
         // placement route's own exit button still lets them bail straight
@@ -98,6 +112,7 @@ function AuthPage() {
             // Never derive a public name from the email. An empty field means the account gets a
             // Learner-XXXX handle and the one-time name prompt asks after sign-in.
             data: displayName.trim() ? { display_name: displayName.trim() } : {},
+            ...captchaOptions(captchaToken),
           },
         });
         if (error) throw error;
@@ -108,7 +123,11 @@ function AuthPage() {
           setMode("verify");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+          ...(captchaToken ? { options: captchaOptions(captchaToken) } : {}),
+        });
         if (error) throw error;
         afterAuth();
       }
@@ -116,6 +135,7 @@ function AuthPage() {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
+      if (captchaSiteKey && mode !== "verify") setCaptchaReset((n) => n + 1);
     }
   }
 
@@ -127,7 +147,10 @@ function AuthPage() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: window.location.origin + (next ?? "/placement") },
+        options: {
+          emailRedirectTo: window.location.origin + (next ?? "/placement"),
+          ...captchaOptions(captchaToken),
+        },
       });
       if (error) throw error;
       setNotice("We sent a new code. It can take a minute to arrive.");
@@ -285,7 +308,7 @@ function AuthPage() {
                   id="auth-password"
                   type="password"
                   required
-                  minLength={6}
+                  minLength={mode === "signup" ? MIN_NEW_PASSWORD_LENGTH : undefined}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -315,9 +338,12 @@ function AuthPage() {
                 {notice}
               </p>
             )}
+            {needsCaptcha && captchaSiteKey ? (
+              <TurnstileWidget siteKey={captchaSiteKey} onToken={setCaptchaToken} resetKey={captchaReset} />
+            ) : null}
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || (needsCaptcha && !captchaToken)}
               className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
             >
               {busy

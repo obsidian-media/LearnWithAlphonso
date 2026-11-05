@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { isLongEnoughNewPassword, MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_TOO_SHORT } from "@/lib/password-policy";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";
@@ -48,6 +49,10 @@ function ResetPasswordPage() {
       setError("Both passwords must match.");
       return;
     }
+    if (!isLongEnoughNewPassword(password)) {
+      setError(NEW_PASSWORD_TOO_SHORT);
+      return;
+    }
     setBusy(true);
     try {
       const { error } = await supabase.auth.updateUser({ password });
@@ -73,7 +78,7 @@ function ResetPasswordPage() {
         </h1>
         <p className="mt-1.5 text-sm text-ink-soft/80">
           {ready
-            ? "Choose something you'll remember. At least 6 characters."
+            ? "Choose something you'll remember. At least 10 characters."
             : "Open this page from the link in your reset email to continue."}
         </p>
 
@@ -92,7 +97,7 @@ function ResetPasswordPage() {
             <TextField
               type="password"
               required
-              minLength={6}
+              minLength={MIN_NEW_PASSWORD_LENGTH}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="New password"
@@ -102,7 +107,7 @@ function ResetPasswordPage() {
             <TextField
               type="password"
               required
-              minLength={6}
+              minLength={MIN_NEW_PASSWORD_LENGTH}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Confirm new password"

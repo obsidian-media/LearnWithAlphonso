@@ -1,4 +1,5 @@
 import { SENTRY_INGEST_ORIGIN } from "./sentry-config";
+import { TURNSTILE_ORIGIN } from "./turnstile";
 
 const CSP_NONCE_HEADER = "x-app-csp-nonce";
 
@@ -58,6 +59,8 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     "font-src 'self' data:",
     "object-src 'none'",
     "base-uri 'self'",
+    // Turnstile's challenge iframe (src/lib/turnstile.ts); its script loads through 'strict-dynamic'.
+    `frame-src ${TURNSTILE_ORIGIN}`,
     "frame-ancestors 'none'",
     "form-action 'self'",
   ].join("; ");
