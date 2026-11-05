@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>3D Alphonso (preview)</title>
+<style>
+  /* Colours come from the app's theme: the native side injects window.__theme before this runs. */
+  :root {
+    --bg: #ede4d8; --stage-hi: #f5f0e8; --stage-lo: #ede4d8; --panel: #f5f0e8;
+    --ink: #112418; --muted: #435147; --line: rgba(17,36,24,.1); --accent: #2f6243; --accent-ink: #f5f0e8; --chip: #ede4d8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    color: var(--ink); font: 15px/1.45 -apple-system, system-ui, sans-serif;
+    display: flex; flex-direction: column;
+    -webkit-user-select: none; user-select: none;
+  }
+  /* Portrait phone: the stage takes the top, the controls scroll underneath. */
+  .stage {
+    position: relative; flex: 0 0 52%; min-height: 0; overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 18%, var(--stage-hi), var(--stage-lo));
+    border-bottom: 1px solid var(--line);
+  }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .modeTag {
+    position: absolute; top: 10px; left: 12px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px;
+  }
+  .framing { position: absolute; top: 4px; right: 8px; display: flex; gap: 4px; }
+  .caption {
+    position: absolute; left: 12px; right: 12px; bottom: 12px; margin: 0 auto; max-width: 520px;
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 10px 14px; font-size: 14px;
+  }
+  .caption[hidden] { display: none; }
+  .caption b { color: var(--accent); margin-right: 6px; }
+  .panel {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 16px max(16px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right));
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font: 600 15px/1.1 -apple-system, system-ui, sans-serif; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; min-height: 44px; cursor: pointer;
+    transition: transform .12s ease;
+  }
+  button:active { transform: scale(.97); }
+  button[disabled] { opacity: .5; }
+  button.primary { width: 100%; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-size: 16px; min-height: 48px; }
+  button.small { font-size: 13px; padding: 8px 12px; }
+  button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .note { background: var(--chip); border-radius: 14px; padding: 12px 14px; font-size: 14px; margin: 0; }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+</style>
+</head>
+<body>
+<section class="stage" aria-label="3D Alphonso, drag to turn him">
+  <canvas id="view"></canvas>
+  <div class="modeTag" id="modeTag">App-grade lighting</div>
+  <div class="framing">
+    <button class="small" id="closeBtn" aria-pressed="true">Video call</button>
+    <button class="small" id="fullBtn" aria-pressed="false">Full body</button>
+  </div>
+  <p class="caption" id="caption" hidden><b>Alphonso</b><span id="captionText"></span></p>
+</section>
+
+<main class="panel">
+  <div class="group">
+    <button class="primary" id="speakBtn" disabled>Hear Alphonso speak</button>
+  </div>
+
+  <div class="group">
+    <div class="label">Compare lighting</div>
+    <div class="row">
+      <button id="appLight" aria-pressed="true" disabled>App-grade</button>
+      <button id="basicLight" aria-pressed="false" disabled>Basic</button>
+      <button id="velvetBtn" aria-pressed="true" disabled>Soft velvet robe</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="label">Body language</div>
+    <div class="row">
+      <button id="nodBtn" disabled>Nod</button>
+      <button id="lookBtn" disabled>Look around</button>
+      <button id="tiltBtn" disabled>Tilt head</button>
+      <button id="gestureBtn" disabled>Open gesture</button>
+    </div>
+    <div class="row">
+      <button id="idleBtn" aria-pressed="true" disabled>Breathing and idle motion</button>
+    </div>
+  </div>
+
+  <p class="note"><strong>His mouth doesn't move yet.</strong> The 3D model comes with a closed mouth. A 3D artist adds mouth shapes next, and then his lips follow every word. His sunglasses mean the eyes never need animating.</p>
+</main>
+
+<script>
+  // Native bridge: a no-op outside the app, so the page can also be opened in a desktop browser.
+  window.postNative = function (msg) {
+    try { window.webkit.messageHandlers.alphonso.postMessage(msg); } catch (e) {}
+  };
+  (function applyTheme() {
+    var t = window.__theme; if (!t) return;
+    var r = document.documentElement.style;
+    for (var k in t) r.setProperty('--' + k, t[k]);
+  })();
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" onerror="postNative({type:'error',reason:'script'})">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// The rigged model is downloaded at run time and never ships inside the app.
+const MODEL_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_3ESNJkrNMFHLSXQUcOGQ7tw7sj0/hf_20261105_052534_f20ae60f-a89c-4051-9a81-c0fafab11171.glb';
+
+const canvas = document.getElementById('view');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+} catch (e) {
+  postNative({ type: 'error', reason: 'webgl' });
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+
+// Background: the same radial stage gradient as the page, painted into the 3D scene.
+function paintBackground() {
+  const css = getComputedStyle(document.documentElement);
+  const c = document.createElement('canvas'); c.width = 64; c.height = 128;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(32, 22, 4, 32, 40, 120);
+  grad.addColorStop(0, css.getPropertyValue('--stage-hi').trim());
+  grad.addColorStop(1, css.getPropertyValue('--stage-lo').trim());
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 128);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  scene.background = tex;
+}
+paintBackground();
+
+// Studio environment for soft reflections (procedural, no downloads).
+const pmrem = new THREE.PMREMGenerator(renderer);
+const studioEnv = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// Two lighting rigs: app-grade (environment, soft shadows, contact shading) and the basic first preview.
+const app = new THREE.Group(), basic = new THREE.Group();
+scene.add(app, basic);
+const key = new THREE.DirectionalLight(0xfff3e4, 2.1);
+key.position.set(1.4, 3.2, 2.6); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; key.shadow.radius = 6;
+key.shadow.camera.left = -1.2; key.shadow.camera.right = 1.2; key.shadow.camera.top = 1.4; key.shadow.camera.bottom = -1.4; key.shadow.camera.near = 0.5; key.shadow.camera.far = 8;
+const rim = new THREE.DirectionalLight(0xcfe8ff, 1.3); rim.position.set(-2.2, 2.4, -2.4);
+const bounce = new THREE.HemisphereLight(0xffffff, 0x6f7d74, 0.35);
+app.add(key, key.target, rim, bounce);
+basic.add(new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 1.5));
+const bk = new THREE.DirectionalLight(0xffffff, 1.6); bk.position.set(2, 4, 5); basic.add(bk);
+const bf = new THREE.DirectionalLight(0xffffff, 0.8); bf.position.set(-4, 2, -3); basic.add(bf);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.ShadowMaterial({ opacity: 0.22 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; app.add(ground);
+
+const camera = new THREE.PerspectiveCamera(28, 1, 0.01, 50);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.enablePan = false;
+controls.minDistance = 0.8; controls.maxDistance = 6;
+
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType }));
+composer.addPass(new RenderPass(scene, camera));
+const gtao = new GTAOPass(scene, camera, 1, 1);
+gtao.updateGtaoMaterial({ radius: 0.12, distanceExponent: 1.2, thickness: 1, scale: 1.1 });
+gtao.blendIntensity = 0.85;
+composer.addPass(gtao);
+composer.addPass(new OutputPass());
+
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(r.width, r.height);
+  camera.aspect = r.width / Math.max(1, r.height);
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+
+// Velvet: raise the material's minimum roughness so the robe stops reading as shiny satin.
+const velvet = { value: 0.55 };
+let mode = 'app', model, mats = [], bones = {}, rest = {}, box, size, center;
+
+function setMode(m) {
+  mode = m;
+  app.visible = m === 'app'; basic.visible = m === 'basic';
+  scene.environment = m === 'app' ? studioEnv : null;
+  scene.environmentIntensity = 0.75;
+  renderer.toneMappingExposure = m === 'app' ? 1.0 : 1.05;
+  document.getElementById('appLight').setAttribute('aria-pressed', m === 'app');
+  document.getElementById('basicLight').setAttribute('aria-pressed', m === 'basic');
+  document.getElementById('modeTag').textContent = m === 'app' ? 'App-grade lighting' : 'Basic lighting';
+}
+
+function onModel(gltf) {
+  model = gltf.scene;
+  model.traverse(o => {
+    if (o.isBone) { bones[o.name] = o; rest[o.name] = o.quaternion.clone(); }
+    if (o.isMesh) {
+      o.frustumCulled = false; o.castShadow = true; o.receiveShadow = true;
+      const ms = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of ms) {
+        if (m.map) m.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        m.onBeforeCompile = sh => {
+          sh.uniforms.velvetMin = velvet;
+          sh.fragmentShader = 'uniform float velvetMin;\n' + sh.fragmentShader.replace(
+            '#include <roughnessmap_fragment>',
+            '#include <roughnessmap_fragment>\n\troughnessFactor = max(roughnessFactor, velvetMin);'
+          );
+        };
+        m.needsUpdate = true; mats.push(m);
+      }
+    }
+  });
+  scene.add(model);
+  box = new THREE.Box3().setFromObject(model);
+  size = box.getSize(new THREE.Vector3()); center = box.getCenter(new THREE.Vector3());
+  ground.position.y = box.min.y + 0.002;
+  key.target.position.copy(center);
+  setMode('app');
+  resize();
+  frame('close', true);
+  document.querySelectorAll('button[disabled]').forEach(b => b.disabled = false);
+  postNative({ type: 'ready' });
+}
+
+let lastPct = -1;
+new GLTFLoader().load(
+  MODEL_URL,
+  onModel,
+  e => {
+    if (!e.lengthComputable || !e.total) return;
+    const pct = Math.min(99, Math.round(e.loaded / e.total * 100));
+    if (pct !== lastPct) { lastPct = pct; postNative({ type: 'progress', percent: pct }); }
+  },
+  () => postNative({ type: 'error', reason: 'model' })
+);
+
+document.getElementById('appLight').onclick = () => setMode('app');
+document.getElementById('basicLight').onclick = () => setMode('basic');
+const velvetBtn = document.getElementById('velvetBtn');
+velvetBtn.onclick = () => {
+  const on = velvet.value === 0;
+  velvet.value = on ? 0.55 : 0;
+  velvetBtn.setAttribute('aria-pressed', on);
+};
+
+// Camera framing: "close" is the video-call view (head and chest), "full" shows him head to toe.
+let camGoal = null;
+function frame(kind, instant) {
+  const h = kind === 'close' ? size.y * 0.42 : size.y * 1.18;
+  const target = kind === 'close' ? new THREE.Vector3(center.x, box.max.y - h * 0.5, center.z) : center.clone();
+  const dist = (h / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const pos = new THREE.Vector3(target.x + dist * 0.18, target.y + h * 0.04, target.z + dist);
+  if (instant) { camera.position.copy(pos); controls.target.copy(target); controls.update(); }
+  else camGoal = { pos, target };
+  document.getElementById('closeBtn').setAttribute('aria-pressed', kind === 'close');
+  document.getElementById('fullBtn').setAttribute('aria-pressed', kind === 'full');
+}
+document.getElementById('closeBtn').onclick = () => model && frame('close');
+document.getElementById('fullBtn').onclick = () => model && frame('full');
+controls.addEventListener('start', () => { camGoal = null; });
+
+// Animation layers: each action is an envelope over time that adds rotations to bones.
+const actions = [];
+const ease = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const bell = t => Math.sin(Math.PI * Math.min(Math.max(t, 0), 1));
+function play(name, dur, fn) { actions.push({ name, start: performance.now() / 1000, dur, fn }); }
+const deg = THREE.MathUtils.degToRad;
+
+document.getElementById('nodBtn').onclick = () => play('nod', 1.4, (t, add) => {
+  const a = Math.sin(t * Math.PI * 2) * bell(t);
+  add('Head', deg(14) * Math.max(a, -0.3), 0, 0); add('neck', deg(5) * Math.max(a, -0.3), 0, 0);
+});
+document.getElementById('lookBtn').onclick = () => play('look', 3.2, (t, add) => {
+  const y = Math.sin(t * Math.PI * 2) * bell(t);
+  add('Head', deg(3) * bell(t), deg(26) * y, 0); add('neck', 0, deg(10) * y, 0);
+});
+document.getElementById('tiltBtn').onclick = () => play('tilt', 2.2, (t, add) => {
+  const k = t < 0.25 ? ease(t / 0.25) : t > 0.75 ? ease((1 - t) / 0.25) : 1;
+  add('Head', deg(-4) * k, deg(6) * k, deg(15) * k);
+});
+document.getElementById('gestureBtn').onclick = () => play('gesture', 2.4, (t, add) => {
+  const k = t < 0.3 ? ease(t / 0.3) : t > 0.7 ? ease((1 - t) / 0.3) : 1;
+  add('RightArm', 0, deg(-18) * k, deg(-22) * k); add('LeftArm', 0, deg(18) * k, deg(22) * k);
+  add('Head', deg(-3) * k, 0, 0); add('Spine', deg(-2) * k, 0, 0);
+});
+
+let idleOn = !reduceMotion;
+const idleBtn = document.getElementById('idleBtn');
+idleBtn.setAttribute('aria-pressed', idleOn);
+idleBtn.onclick = () => { idleOn = !idleOn; idleBtn.setAttribute('aria-pressed', idleOn); };
+
+// Speaking: the voice line drives small head and body movements from its loudness.
+// The app hands the bundled mp3 over as base64 (window.__voiceB64): a file:// page cannot fetch it,
+// and a media element from a file URL would feed the analyser silence.
+const line = "Hi! I'm Alphonso. Let's practise ordering a coffee. What would you like to drink today?";
+let ac, analyser, levels, voiceBuf, source, speaking = false, loud = 0, captionTimer;
+function b64ToBuffer(b64) {
+  const bin = atob(b64); const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out.buffer;
+}
+function showCaption(text) {
+  document.getElementById('captionText').textContent = text;
+  document.getElementById('caption').hidden = false;
+}
+document.getElementById('speakBtn').onclick = async () => {
+  try {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = ac.createAnalyser(); analyser.fftSize = 512;
+      levels = new Uint8Array(analyser.fftSize);
+      analyser.connect(ac.destination);
+      voiceBuf = await ac.decodeAudioData(b64ToBuffer(window.__voiceB64));
+    }
+    await ac.resume();
+    if (source) { try { source.stop(); } catch (e) {} }
+    clearTimeout(captionTimer);
+    source = ac.createBufferSource();
+    source.buffer = voiceBuf;
+    source.connect(analyser);
+    source.onended = () => {
+      speaking = false;
+      captionTimer = setTimeout(() => { if (!speaking) document.getElementById('caption').hidden = true; }, 2500);
+    };
+    source.start();
+    speaking = true;
+    showCaption(line);
+  } catch (e) {
+    ac = null;
+    showCaption('Sound could not start. Check that the phone is not muted.');
+  }
+};
+
+function loudness() {
+  if (!analyser || !speaking) return 0;
+  analyser.getByteTimeDomainData(levels);
+  let s = 0; for (let i = 0; i < levels.length; i++) { const v = (levels[i] - 128) / 128; s += v * v; }
+  return Math.min(1, Math.sqrt(s / levels.length) * 4);
+}
+
+const tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler();
+const clock = new THREE.Clock();
+let rafId = 0, tornDown = false;
+function tick() {
+  if (tornDown) return;
+  rafId = requestAnimationFrame(tick);
+  const now = performance.now() / 1000, dt = clock.getDelta();
+  if (model) {
+    const off = {};
+    const add = (n, x, y, z) => { const o = off[n] || (off[n] = [0, 0, 0]); o[0] += x; o[1] += y; o[2] += z; };
+    if (idleOn) {
+      const br = Math.sin(now * 1.6);
+      add('Spine01', deg(0.9) * br, 0, 0); add('Spine', deg(0.6) * br, 0, 0);
+      add('Head', deg(1.6) * Math.sin(now * 0.43), deg(4) * Math.sin(now * 0.27) + deg(1.5) * Math.sin(now * 0.71), deg(1.2) * Math.sin(now * 0.37));
+      add('LeftArm', 0, 0, deg(1.2) * br); add('RightArm', 0, 0, deg(-1.2) * br);
+    }
+    loud += (loudness() - loud) * Math.min(1, dt * 14);
+    if (speaking) {
+      add('Head', deg(-5) * loud + deg(2.5) * Math.sin(now * 5.3) * loud, deg(3) * Math.sin(now * 1.9) * loud, deg(1.5) * Math.sin(now * 2.7) * loud);
+      add('neck', deg(-2) * loud, 0, 0);
+    }
+    for (let i = actions.length - 1; i >= 0; i--) {
+      const a = actions[i], t = (now - a.start) / a.dur;
+      if (t >= 1) { actions.splice(i, 1); continue; }
+      a.fn(t, add);
+    }
+    for (const n in rest) {
+      const b = bones[n]; b.quaternion.copy(rest[n]);
+      const o = off[n];
+      if (o) b.quaternion.multiply(tmpQ.setFromEuler(tmpE.set(o[0], o[1], o[2], 'XYZ')));
+    }
+  }
+  if (camGoal) {
+    const k = Math.min(1, dt * 4);
+    camera.position.lerp(camGoal.pos, k); controls.target.lerp(camGoal.target, k);
+    if (camera.position.distanceTo(camGoal.pos) < 0.002) camGoal = null;
+  }
+  controls.update();
+  if (mode === 'app') composer.render(); else renderer.render(scene, camera);
+}
+// Called by the app when the screen closes (and on pagehide): stop the voice and the render loop and
+// give the GPU memory back now, since a 16 MB model plus GTAO buffers matter on older phones.
+window.__teardown = function () {
+  if (tornDown) return;
+  tornDown = true;
+  cancelAnimationFrame(rafId);
+  try { if (source) source.stop(); } catch (e) {}
+  try { if (ac) ac.close(); } catch (e) {}
+  controls.dispose();
+  scene.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    for (const m of ms) {
+      for (const k in m) { const v = m[k]; if (v && v.isTexture) v.dispose(); }
+      m.dispose();
+    }
+  });
+  if (scene.background && scene.background.isTexture) scene.background.dispose();
+  studioEnv.dispose(); pmrem.dispose();
+  gtao.dispose(); composer.dispose();
+  renderer.dispose(); renderer.forceContextLoss();
+};
+window.addEventListener('pagehide', window.__teardown);
+
+resize();
+tick();
+</script>
+</body>
+</html>
