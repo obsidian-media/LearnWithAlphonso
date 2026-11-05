@@ -47,6 +47,7 @@
  * to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
+import { ascErrorSummary } from "../src/lib/app-store/asc-error-summary";
 import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
 import {
   buildReviewNotes,
@@ -119,7 +120,7 @@ async function api(path: string, method: "GET" | "PATCH" | "POST" = "GET", body?
     body: body ? JSON.stringify(body) : undefined,
   });
   const json = (await res.json()) as JsonApi;
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${JSON.stringify(json)}`);
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${ascErrorSummary(json)}`);
   return json;
 }
 
@@ -290,6 +291,7 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  // The message only: this runs in public CI logs (see asc-error-summary.ts).
+  console.error(err instanceof Error ? err.message : "update-app-review-info failed");
   process.exit(1);
 });
