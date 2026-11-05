@@ -17,9 +17,8 @@
  * fix's setup step.
  *
  * Run LOCALLY only, never in CI: the output includes the private key and its
- * password, and anything a workflow uploads from this public repo can be
- * downloaded by anyone. (The CI workflow that used to run this uploaded the
- * output as an artifact; it was removed for that reason.) Needs `openssl`.
+ * password, which must never become a workflow artifact or log line. Needs
+ * `openssl`.
  * Writes out/ios_distribution.p12, out/ios_distribution.mobileprovision and
  * out/p12_password.txt (a random password, never printed). out/ is
  * git-ignored. Load the results straight into repo secrets with
