@@ -6,6 +6,12 @@ public struct AvatarRect: Equatable, Sendable {
     public let y: Double
     public let w: Double
     public let h: Double
+    public init(x: Double, y: Double, w: Double, h: Double) {
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+    }
 }
 
 /// The file names and positions of the avatar's art layers. The numbers are copied from the kit's `manifest.json`
