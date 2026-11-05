@@ -13,7 +13,8 @@ export const Route = createFileRoute("/")({
       return await adminWhoAmI();
     } catch (error) {
       // An admin whose session lacks a required second factor is sent to finish it, not to sign in again.
-      const needsSecondFactor = error instanceof Error && error.message.includes(SECOND_FACTOR_REQUIRED_MESSAGE);
+      const needsSecondFactor =
+        error instanceof Error && error.message.includes(SECOND_FACTOR_REQUIRED_MESSAGE);
       throw redirect({ to: "/signin", search: needsSecondFactor ? { mfa: "required" } : {} });
     }
   },

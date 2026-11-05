@@ -1,6 +1,11 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isAdminUser, meetsAdminAssurance, SECOND_FACTOR_REQUIRED_MESSAGE, UNAUTHORIZED_MESSAGE } from "./admin-auth";
+import {
+  isAdminUser,
+  meetsAdminAssurance,
+  SECOND_FACTOR_REQUIRED_MESSAGE,
+  UNAUTHORIZED_MESSAGE,
+} from "./admin-auth";
 
 /**
  * Gate for every admin server function.

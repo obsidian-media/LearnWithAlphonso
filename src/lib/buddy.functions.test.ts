@@ -61,7 +61,9 @@ describe("getMyBuddy", () => {
   });
 
   it("throws on an RPC error so a failure never reads as 'no buddy'", async () => {
-    await expect(getMyBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("getMyBuddy: request-failed");
+    await expect(getMyBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow(
+      "getMyBuddy: request-failed",
+    );
   });
 
   it("maps the row", async () => {
@@ -223,7 +225,9 @@ describe("endBuddy", () => {
   });
 
   it("throws on an RPC error", async () => {
-    await expect(endBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("endBuddy: request-failed");
+    await expect(endBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow(
+      "endBuddy: request-failed",
+    );
   });
 });
 

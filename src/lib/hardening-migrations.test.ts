@@ -197,13 +197,17 @@ describe("nudges", () => {
   const appSend = `INSERT INTO public.nudges (recipient_id) VALUES ('${FRIEND}')`;
 
   it("before: a back-dated nudge dodged the 24-hour push cooldown, so every insert pushed", async () => {
-    await db.exec(`INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`);
+    await db.exec(
+      `INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`,
+    );
     for (let i = 0; i < 3; i++) await as(db, ME, backdated);
     expect((await db.query("SELECT 1 FROM net.calls")).rows).toHaveLength(3);
   });
 
   it("after: a client cannot choose created_at, so the cooldown counts real times (one push a day)", async () => {
-    await db.exec(`INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`);
+    await db.exec(
+      `INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`,
+    );
     await db.exec(DEFAULTS + LIMITS + RETENTION);
     await expect(as(db, ME, backdated)).rejects.toThrow(/permission denied/);
     for (let i = 0; i < 3; i++) await as(db, ME, appSend);
@@ -217,7 +221,11 @@ describe("nudges", () => {
       as(db, FRIEND, `UPDATE public.nudges SET read_at = now() WHERE recipient_id = '${FRIEND}'`),
     ).resolves.toBeTruthy();
     await expect(
-      as(db, FRIEND, `UPDATE public.nudges SET sender_id = '${FRIEND}' WHERE recipient_id = '${FRIEND}'`),
+      as(
+        db,
+        FRIEND,
+        `UPDATE public.nudges SET sender_id = '${FRIEND}' WHERE recipient_id = '${FRIEND}'`,
+      ),
     ).rejects.toThrow(/permission denied/);
   });
 
@@ -230,9 +238,13 @@ describe("nudges", () => {
 
 describe("push trigger credential", () => {
   it("before: every queued push request carried the service role key", async () => {
-    await db.exec(`INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`);
+    await db.exec(
+      `INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`,
+    );
     await as(db, ME, `INSERT INTO public.nudges (recipient_id) VALUES ('${FRIEND}')`);
-    const { rows } = await db.query<{ headers: Record<string, string> }>("SELECT headers FROM net.calls");
+    const { rows } = await db.query<{ headers: Record<string, string> }>(
+      "SELECT headers FROM net.calls",
+    );
     expect(rows[0].headers.Authorization).toBe("Bearer service-key");
   });
 
@@ -242,13 +254,17 @@ describe("push trigger credential", () => {
     );
     await db.exec(DEFAULTS + LIMITS + RETENTION);
     await as(db, ME, `INSERT INTO public.nudges (recipient_id) VALUES ('${FRIEND}')`);
-    const { rows } = await db.query<{ headers: Record<string, string> }>("SELECT headers FROM net.calls");
+    const { rows } = await db.query<{ headers: Record<string, string> }>(
+      "SELECT headers FROM net.calls",
+    );
     expect(rows[0].headers["X-Send-Push-Secret"]).toBe("push-secret");
     expect(JSON.stringify(rows[0].headers)).not.toContain("service-key");
   });
 
   it("after: without the dedicated secret yet, pushes still go out with the older header", async () => {
-    await db.exec(`INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`);
+    await db.exec(
+      `INSERT INTO vault.decrypted_secrets VALUES ('push_trigger_service_key', 'service-key')`,
+    );
     await db.exec(DEFAULTS + LIMITS + RETENTION);
     await as(db, ME, `INSERT INTO public.nudges (recipient_id) VALUES ('${FRIEND}')`);
     expect((await db.query("SELECT 1 FROM net.calls")).rows).toHaveLength(1);
@@ -257,41 +273,69 @@ describe("push trigger credential", () => {
 
 describe("weakness events and device tokens", () => {
   it("before: a client could write a 1 MB category and a path-shaped push token directly", async () => {
-    await as(db, ME, "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, $2, 'detected')", [
+    await as(
+      db,
       ME,
-      "x".repeat(1_000_000),
-    ]);
-    await as(db, ME, "INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, 'x/../../y', 'ios')", [ME]);
+      "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, $2, 'detected')",
+      [ME, "x".repeat(1_000_000)],
+    );
+    await as(
+      db,
+      ME,
+      "INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, 'x/../../y', 'ios')",
+      [ME],
+    );
   });
 
   it("after: clients cannot write weakness events at all; the server's labels fit the 64-character limit", async () => {
     await db.exec(DEFAULTS + LIMITS);
     await expect(
-      as(db, ME, "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, 'past-tense', 'detected')", [ME]),
+      as(
+        db,
+        ME,
+        "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, 'past-tense', 'detected')",
+        [ME],
+      ),
     ).rejects.toThrow(/permission denied/);
-    await db.query("INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, 'past-tense', 'detected')", [ME]);
+    await db.query(
+      "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, 'past-tense', 'detected')",
+      [ME],
+    );
     await expect(
-      db.query("INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, $2, 'detected')", [ME, "x".repeat(65)]),
+      db.query(
+        "INSERT INTO public.weakness_events (user_id, category, event_type) VALUES ($1, $2, 'detected')",
+        [ME, "x".repeat(65)],
+      ),
     ).rejects.toThrow(/weakness_events_category_len/);
   });
 
   it("after: tokens are registered only through claim_device_token, and an iOS token must be hex", async () => {
     await db.exec(DEFAULTS + LIMITS);
     await expect(
-      as(db, ME, "INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, $2, 'ios')", [ME, HEX_TOKEN]),
+      as(
+        db,
+        ME,
+        "INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, $2, 'ios')",
+        [ME, HEX_TOKEN],
+      ),
     ).rejects.toThrow(/permission denied/);
     await as(db, ME, "SELECT public.claim_device_token($1, 'ios')", [HEX_TOKEN]);
     await as(db, ME, "SELECT public.claim_device_token('fcm:APA91b-token_value', 'android')");
-    await expect(as(db, ME, "SELECT public.claim_device_token('x/../../y', 'ios')")).rejects.toThrow(
-      /device_tokens_apns_hex/,
-    );
+    await expect(
+      as(db, ME, "SELECT public.claim_device_token('x/../../y', 'ios')"),
+    ).rejects.toThrow(/device_tokens_apns_hex/);
     // Sign-out cleanup still removes the device's own row.
     await as(db, ME, "DELETE FROM public.device_tokens WHERE token = 'fcm:APA91b-token_value'");
-    expect((await db.query("SELECT token FROM public.device_tokens")).rows).toEqual([{ token: HEX_TOKEN }]);
+    expect((await db.query("SELECT token FROM public.device_tokens")).rows).toEqual([
+      { token: HEX_TOKEN },
+    ]);
   });
 
   it("after: existing rows that could never receive a push are removed by the migration", async () => {
-    await db.query("INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, 'x/../../y', 'ios')", [ME]);
+    await db.query(
+      "INSERT INTO public.device_tokens (user_id, token, platform) VALUES ($1, 'x/../../y', 'ios')",
+      [ME],
+    );
     await db.exec(DEFAULTS + LIMITS);
     expect((await db.query("SELECT 1 FROM public.device_tokens")).rows).toHaveLength(0);
   });
@@ -316,14 +360,20 @@ describe("reports and play events", () => {
       "INSERT INTO public.podcast_play_events (user_id, episode_id) SELECT $1, gen_random_uuid() FROM generate_series(1, 130)",
       [ME],
     );
-    const { rows } = await db.query<{ n: number }>("SELECT count(*)::int AS n FROM public.podcast_play_events");
+    const { rows } = await db.query<{ n: number }>(
+      "SELECT count(*)::int AS n FROM public.podcast_play_events",
+    );
     expect(rows[0].n).toBe(120);
   });
 });
 
 describe("profile country", () => {
   it("before: any text could be shown beside a name on the leaderboards", async () => {
-    await as(db, ME, `UPDATE public.profiles SET country = 'visit evil.example' WHERE id = '${ME}'`);
+    await as(
+      db,
+      ME,
+      `UPDATE public.profiles SET country = 'visit evil.example' WHERE id = '${ME}'`,
+    );
   });
 
   it("after: only two upper-case letters, and bad existing values are cleared", async () => {
@@ -359,9 +409,15 @@ describe("placement result", () => {
 
   it("after: the level must be a CEFR band and the score 0 to 100; a real result still saves", async () => {
     await db.exec(PLACEMENT);
-    await expect(as(db, ME, "SELECT public.save_placement_result('en', 'B1', 9999)")).rejects.toThrow(/invalid-score/);
-    await expect(as(db, ME, "SELECT public.save_placement_result('en', 'B1', -1)")).rejects.toThrow(/invalid-score/);
-    await expect(as(db, ME, "SELECT public.save_placement_result('en', 'Z9', 50)")).rejects.toThrow(/invalid-level/);
+    await expect(
+      as(db, ME, "SELECT public.save_placement_result('en', 'B1', 9999)"),
+    ).rejects.toThrow(/invalid-score/);
+    await expect(as(db, ME, "SELECT public.save_placement_result('en', 'B1', -1)")).rejects.toThrow(
+      /invalid-score/,
+    );
+    await expect(as(db, ME, "SELECT public.save_placement_result('en', 'Z9', 50)")).rejects.toThrow(
+      /invalid-level/,
+    );
     await as(db, ME, "SELECT public.save_placement_result('en', 'B1', 67)");
     expect((await db.query("SELECT placement_score FROM public.language_progress")).rows).toEqual([
       { placement_score: 67 },
@@ -384,9 +440,10 @@ describe("open duel queue", () => {
     await db.query("INSERT INTO public.buddy_pool_exclusions (user_id) VALUES ($1)", [STRANGER]);
     await as(db, STRANGER, join);
     expect((await db.query("SELECT 1 FROM public.duel_queue")).rows).toHaveLength(0);
-    await db.query("INSERT INTO public.duel_queue (user_id, course, cefr_level, match_by_level) VALUES ($1, 'en', 'A1', false)", [
-      STRANGER,
-    ]);
+    await db.query(
+      "INSERT INTO public.duel_queue (user_id, course, cefr_level, match_by_level) VALUES ($1, 'en', 'A1', false)",
+      [STRANGER],
+    );
     const { rows } = await as(db, ME, join);
     expect(rows[0]).toMatchObject({ matched: false });
   });
@@ -411,7 +468,10 @@ describe("retention in the maintenance sweep", () => {
          ($1, 'lesson_completed', now() - interval '181 days'), ($1, 'league_promotion', now() - interval '400 days'),
          ($1, 'lesson_completed', now() - interval '1 day');
        INSERT INTO public.podcast_play_events (user_id, episode_id, started_at) VALUES
-         ($1, gen_random_uuid(), now() - interval '401 days'), ($1, gen_random_uuid(), now());`.replace(/\$1/g, `'${ME}'`),
+         ($1, gen_random_uuid(), now() - interval '401 days'), ($1, gen_random_uuid(), now());`.replace(
+        /\$1/g,
+        `'${ME}'`,
+      ),
     );
     await db.query(
       `INSERT INTO public.nudges (sender_id, recipient_id, created_at) VALUES ($1, $2, now() - interval '91 days'), ($1, $2, now())`,

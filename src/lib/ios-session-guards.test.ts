@@ -9,7 +9,9 @@ const read = (p: string) => readFileSync(`${SRC}/${p}`, "utf8");
 describe("iOS session storage and sign-out", () => {
   it("the stored session never leaves this device in a backup or transfer", () => {
     const store = read("KeychainSessionStore.swift");
-    expect(store).toMatch(/kSecAttrAccessible as String\] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly\b/);
+    expect(store).toMatch(
+      /kSecAttrAccessible as String\] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly\b/,
+    );
     expect(store).not.toMatch(/= kSecAttrAccessibleAfterFirstUnlock\s*$/m);
     expect(store).not.toMatch(/kSecAttrSynchronizable as String/);
   });
@@ -24,6 +26,8 @@ describe("iOS session storage and sign-out", () => {
 
   it("sign-out ends the session on the auth server through the app's cleanup registration", () => {
     const app = read("LearnWithAlphonsoApp.swift");
-    expect(app).toMatch(/endServerSession: \{ accessToken in[\s\S]{0,300}\.logout\(accessToken: accessToken\)/);
+    expect(app).toMatch(
+      /endServerSession: \{ accessToken in[\s\S]{0,300}\.logout\(accessToken: accessToken\)/,
+    );
   });
 });

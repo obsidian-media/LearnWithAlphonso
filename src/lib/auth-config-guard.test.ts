@@ -258,7 +258,11 @@ describe("describeEmailLimits", () => {
 
 describe("auth hardening settings (reported as warnings, never blocking a deploy)", () => {
   it("names a password minimum under 10, a missing captcha and a missing OTP expiry bound", () => {
-    const gaps = describeAuthHardeningGaps({ password_min_length: 6, security_captcha_enabled: false, mailer_otp_exp: 86400 });
+    const gaps = describeAuthHardeningGaps({
+      password_min_length: 6,
+      security_captcha_enabled: false,
+      mailer_otp_exp: 86400,
+    });
     expect(gaps.join(" ")).toMatch(/password_min_length = 6/);
     expect(gaps.join(" ")).toMatch(/security_captcha_enabled/);
     expect(gaps.join(" ")).toMatch(/mailer_otp_exp = 86400/);
@@ -266,7 +270,11 @@ describe("auth hardening settings (reported as warnings, never blocking a deploy
 
   it("is empty once the settings are in place", () => {
     expect(
-      describeAuthHardeningGaps({ password_min_length: 10, security_captcha_enabled: true, mailer_otp_exp: 600 }),
+      describeAuthHardeningGaps({
+        password_min_length: 10,
+        security_captcha_enabled: true,
+        mailer_otp_exp: 600,
+      }),
     ).toEqual([]);
   });
 });

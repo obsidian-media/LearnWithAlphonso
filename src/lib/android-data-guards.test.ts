@@ -25,7 +25,9 @@ describe("Android app data stays on the device", () => {
     for (const section of ["cloud-backup", "device-transfer"]) {
       const body = new RegExp(`<${section}[^>]*>([\\s\\S]*?)</${section}>`).exec(rules)?.[1] ?? "";
       for (const domain of ["root", "file", "database", "sharedpref", "external"]) {
-        expect(body, `${section} ${domain}`).toMatch(new RegExp(`<exclude domain="${domain}" path="\\."\\s*/>`));
+        expect(body, `${section} ${domain}`).toMatch(
+          new RegExp(`<exclude domain="${domain}" path="\\."\\s*/>`),
+        );
       }
     }
   });

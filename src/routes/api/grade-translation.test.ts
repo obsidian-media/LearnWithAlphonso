@@ -228,7 +228,9 @@ describe("POST /api/grade-translation, placement questions", () => {
 
 describe("POST /api/grade-translation, owner AI switch", () => {
   it("grades locally and calls no model or quota when AI is switched off", async () => {
-    requireAiSwitchedOn.mockResolvedValue(Response.json({ error: "ai-unavailable" }, { status: 503 }));
+    requireAiSwitchedOn.mockResolvedValue(
+      Response.json({ error: "ai-unavailable" }, { status: 503 }),
+    );
     const res = await post({ submission: "Hello there, friend." });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ correct: false, reason: null, source: "local" });
@@ -237,7 +239,9 @@ describe("POST /api/grade-translation, owner AI switch", () => {
   });
 
   it("still accepts a curated answer while AI is switched off", async () => {
-    requireAiSwitchedOn.mockResolvedValue(Response.json({ error: "ai-unavailable" }, { status: 503 }));
+    requireAiSwitchedOn.mockResolvedValue(
+      Response.json({ error: "ai-unavailable" }, { status: 503 }),
+    );
     const res = await post({ submission: "Good morning." });
     expect(await res.json()).toEqual({ correct: true, reason: null, source: "local" });
   });

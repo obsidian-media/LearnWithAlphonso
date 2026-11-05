@@ -23,7 +23,8 @@ function loadTurnstile(): Promise<Turnstile> {
     const script = document.createElement("script");
     script.src = TURNSTILE_SCRIPT;
     script.async = true;
-    script.onload = () => (w.turnstile ? resolve(w.turnstile) : reject(new Error("turnstile missing")));
+    script.onload = () =>
+      w.turnstile ? resolve(w.turnstile) : reject(new Error("turnstile missing"));
     script.onerror = () => {
       loading = null;
       reject(new Error("turnstile failed to load"));

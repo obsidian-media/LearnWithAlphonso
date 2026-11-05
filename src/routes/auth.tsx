@@ -1,7 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { captchaOptions, turnstileSiteKey } from "@/lib/turnstile";
-import { isLongEnoughNewPassword, MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_TOO_SHORT } from "@/lib/password-policy";
+import {
+  isLongEnoughNewPassword,
+  MIN_NEW_PASSWORD_LENGTH,
+  NEW_PASSWORD_TOO_SHORT,
+} from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -339,7 +343,11 @@ function AuthPage() {
               </p>
             )}
             {needsCaptcha && captchaSiteKey ? (
-              <TurnstileWidget siteKey={captchaSiteKey} onToken={setCaptchaToken} resetKey={captchaReset} />
+              <TurnstileWidget
+                siteKey={captchaSiteKey}
+                onToken={setCaptchaToken}
+                resetKey={captchaReset}
+              />
             ) : null}
             <button
               type="submit"

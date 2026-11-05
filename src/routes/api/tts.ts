@@ -30,7 +30,8 @@ export const Route = createFileRoute("/api/tts")({
         // A conversation's course picks its native voice. An explicit `voice` still wins (podcast tooling); no
         // course keeps the English default every earlier client relies on.
         // Only the app's own Aura-2 voices (one price tier, en/fr/es); anything else falls back to the course voice.
-        const voice = typeof body.voice === "string" && voiceLanguage(body.voice) ? body.voice : null;
+        const voice =
+          typeof body.voice === "string" && voiceLanguage(body.voice) ? body.voice : null;
         const model =
           voice ||
           (typeof body.course === "string" && isCourse(body.course)

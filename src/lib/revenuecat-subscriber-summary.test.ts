@@ -143,7 +143,10 @@ describe("getSubscriberSummary", () => {
 
 describe("purchases made outside a real store", () => {
   function backed(entry: Record<string, unknown>, nonSubscription = false) {
-    const pro = { expires_date: nonSubscription ? null : FUTURE, product_identifier: "pro_monthly" };
+    const pro = {
+      expires_date: nonSubscription ? null : FUTURE,
+      product_identifier: "pro_monthly",
+    };
     return {
       subscriber: {
         entitlements: { pro },
@@ -194,8 +197,8 @@ describe("purchases made outside a real store", () => {
         subscriptions: { rc_promo_pro_yearly: { store: "promotional", is_sandbox: false } },
       },
     });
-    expect((await getSubscriberSummary({ ...CONFIG, rejectSandbox: true }, "u1", fake)).status).toBe(
-      "active",
-    );
+    expect(
+      (await getSubscriberSummary({ ...CONFIG, rejectSandbox: true }, "u1", fake)).status,
+    ).toBe("active");
   });
 });

@@ -18,14 +18,20 @@ describe("errors a server function sends to the browser", () => {
   it("keeps a code the database raised on purpose, so the page can show its own message", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(publicError(null, { message: "blocked-content" }).message).toBe("blocked-content");
-    expect(publicError("joinBuddyPool", { message: "rate-limited" }).message).toBe("joinBuddyPool: rate-limited");
+    expect(publicError("joinBuddyPool", { message: "rate-limited" }).message).toBe(
+      "joinBuddyPool: rate-limited",
+    );
     expect(publicError(null, { message: "unauthenticated" }).message).toBe("unauthenticated");
   });
 
   it("does not pass through a sentence or a relation name that merely looks short", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(publicError(null, { message: "permission denied for table profiles" }).message).toBe("request-failed");
-    expect(publicError(null, { message: "relation public.x does not exist" }).message).toBe("request-failed");
+    expect(publicError(null, { message: "permission denied for table profiles" }).message).toBe(
+      "request-failed",
+    );
+    expect(publicError(null, { message: "relation public.x does not exist" }).message).toBe(
+      "request-failed",
+    );
     expect(publicError(null, { message: "profiles_pkey" }).message).toBe("request-failed");
   });
 });

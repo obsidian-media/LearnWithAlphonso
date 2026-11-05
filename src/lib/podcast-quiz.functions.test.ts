@@ -217,6 +217,8 @@ describe("fetchQuizEpisodeIds", () => {
   });
 
   it("a failed read is an error the caller can ignore", async () => {
-    await expect(call(client({ data: null, error: { message: "boom" } }))).rejects.toThrow("request-failed");
+    await expect(call(client({ data: null, error: { message: "boom" } }))).rejects.toThrow(
+      "request-failed",
+    );
   });
 });

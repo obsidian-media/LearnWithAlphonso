@@ -8,7 +8,10 @@
  */
 const RAISED_CODE = /^(?:[a-z]+(?:-[a-z]+)+|unauthenticated)$/;
 
-export function publicError(context: string | null, error: { message?: string } | null | undefined): Error {
+export function publicError(
+  context: string | null,
+  error: { message?: string } | null | undefined,
+): Error {
   const message = error?.message ?? "";
   console.error(`[${context ?? "server-function"}] ${message}`);
   const code = RAISED_CODE.test(message) ? message : "request-failed";

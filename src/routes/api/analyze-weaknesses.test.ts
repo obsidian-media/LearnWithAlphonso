@@ -97,7 +97,10 @@ describe("POST /api/analyze-weaknesses", () => {
   });
 
   it("sends the model a bounded transcript and a capped reply length", async () => {
-    const long = Array.from({ length: 40 }, (_, i) => ({ role: "user", content: `${i}`.padEnd(50_000, "y") }));
+    const long = Array.from({ length: 40 }, (_, i) => ({
+      role: "user",
+      content: `${i}`.padEnd(50_000, "y"),
+    }));
     await handler({ request: req({ messages: long }) });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const sent = JSON.parse(init.body as string) as {

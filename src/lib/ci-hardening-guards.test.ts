@@ -15,7 +15,13 @@ const workflows = fs
   .filter((f) => f.endsWith(".yml"))
   .map((f) => ({ file: f, text: fs.readFileSync(path.join(WF_DIR, f), "utf8") }));
 
-type Step = { name?: string; uses?: string; run?: string; with?: Record<string, unknown>; env?: Record<string, string> };
+type Step = {
+  name?: string;
+  uses?: string;
+  run?: string;
+  with?: Record<string, unknown>;
+  env?: Record<string, string>;
+};
 type Job = { environment?: unknown; steps?: Step[]; [k: string]: unknown };
 const parsed = workflows.map((w) => ({
   ...w,
@@ -46,7 +52,9 @@ describe("CI runs only locked, verified code next to secrets", () => {
   });
 
   it("XcodeGen comes from the pinned, checksummed installer, not Homebrew", () => {
-    const brew = workflows.filter((w) => codeLines(w.text).some((l) => /brew install xcodegen/.test(l)));
+    const brew = workflows.filter((w) =>
+      codeLines(w.text).some((l) => /brew install xcodegen/.test(l)),
+    );
     expect(brew.map((w) => w.file)).toEqual([]);
     const script = fs.readFileSync(path.join(ROOT, "scripts", "install-xcodegen.sh"), "utf8");
     expect(script).toMatch(/XCODEGEN_SHA256="[0-9a-f]{64}"/);
@@ -56,7 +64,9 @@ describe("CI runs only locked, verified code next to secrets", () => {
   it("the Android release checks bundletool's checksum and removes the keystore before downloading it", () => {
     const rel = parsed.find((w) => w.file === "android-release.yml")!;
     const steps = rel.doc.jobs.bundle.steps!;
-    const removeAt = steps.findIndex((s) => /rm -f "\$RUNNER_TEMP\/upload\.jks"/.test(s.run ?? "") && !s.name?.includes("decoded"));
+    const removeAt = steps.findIndex(
+      (s) => /rm -f "\$RUNNER_TEMP\/upload\.jks"/.test(s.run ?? "") && !s.name?.includes("decoded"),
+    );
     const downloadAt = steps.findIndex((s) => /bundletool\.jar/.test(s.run ?? ""));
     expect(removeAt).toBeGreaterThan(-1);
     expect(removeAt).toBeLessThan(downloadAt);
@@ -104,10 +114,13 @@ describe("tokens and secrets are scoped", () => {
       const manualOnly = t.every((x) => x === "workflow_dispatch" || x === "schedule");
       for (const [name, job] of Object.entries(w.doc.jobs)) {
         // The RevenueCat SDK key ships inside every app binary, so it is public by design.
-        const usesSecrets = /secrets\.(?!GITHUB_TOKEN|REVENUECAT_API_KEY)[A-Z]/.test(JSON.stringify(job));
+        const usesSecrets = /secrets\.(?!GITHUB_TOKEN|REVENUECAT_API_KEY)[A-Z]/.test(
+          JSON.stringify(job),
+        );
         const isDeploy = w.file === "ci.yml" && name === "deploy-supabase";
         if ((manualOnly && usesSecrets) || isDeploy) {
-          if (typeof job.environment !== "string" || !job.environment) missing.push(`${w.file}:${name}`);
+          if (typeof job.environment !== "string" || !job.environment)
+            missing.push(`${w.file}:${name}`);
         }
       }
     }
@@ -130,8 +143,17 @@ describe("tokens and secrets are scoped", () => {
   });
 
   it("signing material can never be staged by a broad git add", () => {
-    const names = ["AuthKey_ABC.p8", "dist.p12", "app.mobileprovision", "private_keys/AuthKey_X.p8", "upload.jks"];
-    const r = spawnSync("git", ["check-ignore", "--no-index", ...names], { cwd: ROOT, encoding: "utf8" });
+    const names = [
+      "AuthKey_ABC.p8",
+      "dist.p12",
+      "app.mobileprovision",
+      "private_keys/AuthKey_X.p8",
+      "upload.jks",
+    ];
+    const r = spawnSync("git", ["check-ignore", "--no-index", ...names], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
     expect(r.stdout.trim().split(/\r?\n/).sort()).toEqual([...names].sort());
   });
 });

@@ -194,7 +194,9 @@ describe("checkNewFunctionGrants (the checker itself)", () => {
   });
 
   it("accepts a server-only function that revokes from the client roles", () => {
-    expect(names(`${fn()} REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`)).toEqual([]);
+    expect(
+      names(`${fn()} REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`),
+    ).toEqual([]);
   });
 
   it("a REVOKE that leaves authenticated out does not count", () => {
@@ -206,13 +208,15 @@ describe("checkNewFunctionGrants (the checker itself)", () => {
   });
 
   it("a statement about a different function does not count", () => {
-    expect(names(`${fn()} GRANT EXECUTE ON FUNCTION public.g(int) TO authenticated;`)).toEqual(["f"]);
+    expect(names(`${fn()} GRANT EXECUTE ON FUNCTION public.g(int) TO authenticated;`)).toEqual([
+      "f",
+    ]);
   });
 
   it("a REVOKE inside a comment does not count", () => {
-    expect(names(`${fn()} -- REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`)).toEqual([
-      "f",
-    ]);
+    expect(
+      names(`${fn()} -- REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`),
+    ).toEqual(["f"]);
   });
 
   it("ignores functions in other schemas", () => {
@@ -225,7 +229,9 @@ describe("migrations written after functions started closed", () => {
     const file = fs.readdirSync(MIGRATIONS).find((f) => f.startsWith(FUNCTION_CUTOFF));
     expect(file).toBeDefined();
     const sql = fs.readFileSync(path.join(MIGRATIONS, file!), "utf8");
-    expect(sql).toMatch(/ALTER DEFAULT PRIVILEGES FOR ROLE postgres\s+REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC/i);
+    expect(sql).toMatch(
+      /ALTER DEFAULT PRIVILEGES FOR ROLE postgres\s+REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC/i,
+    );
     expect(sql).toMatch(
       /ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public\s+REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated/i,
     );

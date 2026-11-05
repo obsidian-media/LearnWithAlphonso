@@ -355,7 +355,9 @@ describe("POST /api/define-word", () => {
 
 describe("POST /api/define-word, owner AI switch", () => {
   it("returns 503 ai-unavailable when AI is switched off and spends no quota or model call", async () => {
-    requireAiSwitchedOn.mockResolvedValue(Response.json({ error: "ai-unavailable" }, { status: 503 }));
+    requireAiSwitchedOn.mockResolvedValue(
+      Response.json({ error: "ai-unavailable" }, { status: 503 }),
+    );
     modelFetch(new Response(JSON.stringify(modelOk), { status: 200 }));
     const res = await handler({ request: req() });
     expect(res.status).toBe(503);

@@ -50,7 +50,9 @@ describe("security policy", () => {
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("frame-ancestors 'none'");
     // Only the captcha may be framed; nothing else.
-    expect(policy.split("; ").find((d) => d.startsWith("frame-src"))).toBe("frame-src https://challenges.cloudflare.com");
+    expect(policy.split("; ").find((d) => d.startsWith("frame-src"))).toBe(
+      "frame-src https://challenges.cloudflare.com",
+    );
     expect(contentSecurityPolicy("n", "not-a-url")).not.toContain("not-a-url");
     expect(contentSecurityPolicy("n", "http://localhost:54321")).not.toContain("localhost");
   });

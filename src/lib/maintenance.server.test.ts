@@ -126,7 +126,11 @@ describe("retryAppleRevocations", () => {
       const tables = { apple_revocation_pending: [row] };
       const revoke = vi.fn(async () => true);
       const { deps } = makeDeps(tables, { revoke });
-      expect(await retryAppleRevocations(deps)).toEqual({ revoked: 1, stillPending: 0, expired: 0 });
+      expect(await retryAppleRevocations(deps)).toEqual({
+        revoked: 1,
+        stillPending: 0,
+        expired: 0,
+      });
       expect(revoke).toHaveBeenCalledWith(APPLE, "token-a");
     } finally {
       vi.unstubAllEnvs();

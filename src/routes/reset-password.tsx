@@ -1,5 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { isLongEnoughNewPassword, MIN_NEW_PASSWORD_LENGTH, NEW_PASSWORD_TOO_SHORT } from "@/lib/password-policy";
+import {
+  isLongEnoughNewPassword,
+  MIN_NEW_PASSWORD_LENGTH,
+  NEW_PASSWORD_TOO_SHORT,
+} from "@/lib/password-policy";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";

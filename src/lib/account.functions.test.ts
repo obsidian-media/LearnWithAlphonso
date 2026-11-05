@@ -833,7 +833,9 @@ describe("revokeAppleGrantForUser with Apple configuration", () => {
           : chainable({ data: { refresh_token: sealed }, error: null }),
     };
     const realFetch = globalThis.fetch;
-    const fetchMock = vi.fn(async (_url: unknown, _init?: RequestInit) => new Response("", { status: 503 }));
+    const fetchMock = vi.fn(
+      async (_url: unknown, _init?: RequestInit) => new Response("", { status: 503 }),
+    );
     globalThis.fetch = fetchMock as never;
     try {
       expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");

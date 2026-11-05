@@ -42,6 +42,8 @@ describe("no preview-only 3D screen in the iOS app", () => {
     const files = walk("ios");
     expect(files.filter((p) => /\.(glb|gltf)$/i.test(p))).toEqual([]);
     const pages = files.filter((p) => /\.html?$/i.test(p));
-    expect(pages.filter((p) => /cdn\.jsdelivr|unpkg\.com|cloudfront\.net/.test(read(p)))).toEqual([]);
+    expect(pages.filter((p) => /cdn\.jsdelivr|unpkg\.com|cloudfront\.net/.test(read(p)))).toEqual(
+      [],
+    );
   });
 });

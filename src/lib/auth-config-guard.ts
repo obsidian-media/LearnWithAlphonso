@@ -57,13 +57,19 @@ export type AuthConfig = {
 export function describeAuthHardeningGaps(cfg: AuthConfig): string[] {
   const gaps: string[] = [];
   if (typeof cfg.password_min_length !== "number" || cfg.password_min_length < 10) {
-    gaps.push(`password_min_length = ${cfg.password_min_length ?? "unset"}; set 10 (Authentication > Sign In / Providers > Email)`);
+    gaps.push(
+      `password_min_length = ${cfg.password_min_length ?? "unset"}; set 10 (Authentication > Sign In / Providers > Email)`,
+    );
   }
   if (cfg.security_captcha_enabled !== true) {
-    gaps.push("security_captcha_enabled is off; turn on Turnstile once VITE_TURNSTILE_SITE_KEY is live (Authentication > Attack Protection)");
+    gaps.push(
+      "security_captcha_enabled is off; turn on Turnstile once VITE_TURNSTILE_SITE_KEY is live (Authentication > Attack Protection)",
+    );
   }
   if (typeof cfg.mailer_otp_exp !== "number" || cfg.mailer_otp_exp > 900) {
-    gaps.push(`mailer_otp_exp = ${cfg.mailer_otp_exp ?? "unset"} seconds; set 600 (Authentication > Sign In / Providers > Email > Email OTP Expiration)`);
+    gaps.push(
+      `mailer_otp_exp = ${cfg.mailer_otp_exp ?? "unset"} seconds; set 600 (Authentication > Sign In / Providers > Email > Email OTP Expiration)`,
+    );
   }
   return gaps;
 }

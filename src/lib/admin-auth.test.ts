@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { isAdminUser, meetsAdminAssurance, SECOND_FACTOR_REQUIRED_MESSAGE, UNAUTHORIZED_MESSAGE } from "./admin-auth";
+import {
+  isAdminUser,
+  meetsAdminAssurance,
+  SECOND_FACTOR_REQUIRED_MESSAGE,
+  UNAUTHORIZED_MESSAGE,
+} from "./admin-auth";
 
 /** Minimal PostgREST-shaped stub: .from().select().eq().maybeSingle() */
 function clientReturning(result: { data: unknown; error: unknown }) {

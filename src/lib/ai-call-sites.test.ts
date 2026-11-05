@@ -101,7 +101,8 @@ describe("Deepgram call sites", () => {
 describe("the owner's AI switch covers every paid AI route", () => {
   // A route that spends on a model or voice provider must check the switch (directly, or through
   // authorizeAiRequest, which checks it). Otherwise switching AI off during an incident leaves it spending.
-  const SPENDS = /llmChatCompletion|gradeTranslationWithAi|defineWord\(|api\.deepgram\.com|generatePractice|detectAndRecordWeaknesses/;
+  const SPENDS =
+    /llmChatCompletion|gradeTranslationWithAi|defineWord\(|api\.deepgram\.com|generatePractice|detectAndRecordWeaknesses/;
   const CHECKS_SWITCH = /requireAiSwitchedOn\(|authorizeAiRequest\(/;
 
   it("every /api route that reaches a paid provider checks the switch", () => {

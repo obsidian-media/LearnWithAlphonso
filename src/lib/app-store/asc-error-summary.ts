@@ -3,7 +3,12 @@
  * an error's `detail` can quote back what was submitted (review notes carry the reviewer's sign-in helper link), so
  * only the stable parts are kept: status, code, title and the JSON pointer of the field.
  */
-type AscError = { status?: unknown; code?: unknown; title?: unknown; source?: { pointer?: unknown } };
+type AscError = {
+  status?: unknown;
+  code?: unknown;
+  title?: unknown;
+  source?: { pointer?: unknown };
+};
 
 export function ascErrorSummary(body: unknown): string {
   const errors = (body as { errors?: unknown } | null)?.errors;

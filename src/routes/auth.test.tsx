@@ -177,7 +177,9 @@ describe("Auth page", () => {
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
     await user.type(screen.getByLabelText("Password"), "short1234");
     await user.click(screen.getByRole("button", { name: "Create account" }));
-    expect(await screen.findByText("Use at least 10 characters for your password.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Use at least 10 characters for your password."),
+    ).toBeInTheDocument();
     expect(signUp).not.toHaveBeenCalled();
   });
 

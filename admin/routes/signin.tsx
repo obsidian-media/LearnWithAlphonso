@@ -51,7 +51,12 @@ function SignIn() {
     if (mfa === "required") {
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
       if (enrollError || !data) return setError("Could not start authenticator setup.");
-      return setFactor({ phase: "enroll", factorId: data.id, secret: data.totp.secret, uri: data.totp.uri });
+      return setFactor({
+        phase: "enroll",
+        factorId: data.id,
+        secret: data.totp.secret,
+        uri: data.totp.uri,
+      });
     }
     navigate({ to: "/" });
   }, [mfa, navigate]);
@@ -149,8 +154,13 @@ function SignIn() {
         <h1 className="font-display text-xl font-semibold">Alphonso Admin</h1>
         {factor.phase === "enroll" ? (
           <div className="mt-4 space-y-2 text-sm">
-            <p>The admin tool needs an authenticator app. Add this key to it, then enter the 6-digit code it shows.</p>
-            <p className="break-all rounded border border-hairline p-2 font-mono">{factor.secret}</p>
+            <p>
+              The admin tool needs an authenticator app. Add this key to it, then enter the 6-digit
+              code it shows.
+            </p>
+            <p className="break-all rounded border border-hairline p-2 font-mono">
+              {factor.secret}
+            </p>
             <p className="break-all text-xs text-ink-soft">{factor.uri}</p>
           </div>
         ) : (

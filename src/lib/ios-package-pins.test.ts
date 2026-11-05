@@ -12,7 +12,10 @@ import { describe, expect, it } from "vitest";
 const RC_COMMIT = "e45bb84b726885492ce4e7ee94ddb252d171a205";
 const SENTRY_COMMIT = "4bb2282661ee6ca2212aa01d19a1214394cd3c45";
 
-function resolved(rc: { version: string; revision: string }, sentry: { version: string; revision: string }) {
+function resolved(
+  rc: { version: string; revision: string },
+  sentry: { version: string; revision: string },
+) {
   return {
     pins: [
       { identity: "purchases-ios", kind: "remoteSourceControl", state: rc },
@@ -36,7 +39,10 @@ function run(body: unknown) {
 describe("Swift package pins", () => {
   it("passes when both packages resolve to the pinned version and commit", () => {
     const r = run(
-      resolved({ version: "5.92.0", revision: RC_COMMIT }, { version: "9.30.2", revision: SENTRY_COMMIT }),
+      resolved(
+        { version: "5.92.0", revision: RC_COMMIT },
+        { version: "9.30.2", revision: SENTRY_COMMIT },
+      ),
     );
     expect(r.stderr + r.stdout).not.toMatch(/::error::/);
     expect(r.status).toBe(0);
@@ -44,7 +50,10 @@ describe("Swift package pins", () => {
 
   it("fails when RevenueCat's version tag resolves to a different commit", () => {
     const r = run(
-      resolved({ version: "5.92.0", revision: "0".repeat(40) }, { version: "9.30.2", revision: SENTRY_COMMIT }),
+      resolved(
+        { version: "5.92.0", revision: "0".repeat(40) },
+        { version: "9.30.2", revision: SENTRY_COMMIT },
+      ),
     );
     expect(r.status).not.toBe(0);
     expect(r.stdout + r.stderr).toMatch(/purchases-ios/);
@@ -52,7 +61,10 @@ describe("Swift package pins", () => {
 
   it("fails when Sentry's version tag resolves to a different commit", () => {
     const r = run(
-      resolved({ version: "5.92.0", revision: RC_COMMIT }, { version: "9.30.2", revision: "1".repeat(40) }),
+      resolved(
+        { version: "5.92.0", revision: RC_COMMIT },
+        { version: "9.30.2", revision: "1".repeat(40) },
+      ),
     );
     expect(r.status).not.toBe(0);
     expect(r.stdout + r.stderr).toMatch(/sentry-cocoa/);

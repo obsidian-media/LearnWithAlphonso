@@ -206,7 +206,9 @@ export const exportMyData = createServerFn({ method: "POST" })
     );
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId);
     if (authError || !authData?.user) {
-      throw new Error("exportMyData: could not read the account record; the export would be incomplete");
+      throw new Error(
+        "exportMyData: could not read the account record; the export would be incomplete",
+      );
     }
     // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
     // could look complete while omitting a table. Fail instead and name the tables.

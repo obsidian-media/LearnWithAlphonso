@@ -80,7 +80,9 @@ describe("gradeTranslationWithAi, learner text stays inside its markers", () => 
   it("removes the closing marker when a learner types it", async () => {
     const fetchMock = vi.fn(async (_url: string, _init: { body: string }) => ({
       ok: true,
-      json: async () => ({ choices: [{ message: { content: '{"correct": false, "reason": "x"}' } }] }),
+      json: async () => ({
+        choices: [{ message: { content: '{"correct": false, "reason": "x"}' } }],
+      }),
     }));
     vi.stubGlobal("fetch", fetchMock);
     await gradeTranslationWithAi({
