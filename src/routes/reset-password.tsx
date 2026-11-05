@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import {
   isLongEnoughNewPassword,
   MIN_NEW_PASSWORD_LENGTH,
-  NEW_PASSWORD_TOO_SHORT,
+  TOO_SHORT_MESSAGE,
 } from "@/lib/password-policy";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,7 +54,7 @@ function ResetPasswordPage() {
       return;
     }
     if (!isLongEnoughNewPassword(password)) {
-      setError(NEW_PASSWORD_TOO_SHORT);
+      setError(TOO_SHORT_MESSAGE);
       return;
     }
     setBusy(true);

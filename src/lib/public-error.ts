@@ -6,7 +6,12 @@
  * `unauthenticated`: lower-case words joined by hyphens) passes through, because pages map those to their own copy
  * (for example profile-error.ts). Everything else becomes `request-failed`.
  */
-const RAISED_CODE = /^(?:[a-z]+(?:-[a-z]+)+|unauthenticated)$/;
+function isRaisedCode(message: string): boolean {
+  if (message === "unauthenticated") return true;
+  if (message.length > 64) return false;
+  const parts = message.split("-");
+  return parts.length > 1 && parts.every((p) => /^[a-z]+$/.test(p));
+}
 
 export function publicError(
   context: string | null,
@@ -14,6 +19,6 @@ export function publicError(
 ): Error {
   const message = error?.message ?? "";
   console.error(`[${context ?? "server-function"}] ${message}`);
-  const code = RAISED_CODE.test(message) ? message : "request-failed";
+  const code = isRaisedCode(message) ? message : "request-failed";
   return new Error(context ? `${context}: ${code}` : code);
 }

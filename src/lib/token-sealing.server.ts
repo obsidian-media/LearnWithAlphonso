@@ -37,7 +37,9 @@ export function openToken(stored: string, keyB64: string | undefined = appleToke
   const iv = raw.subarray(0, 12);
   const tag = raw.subarray(raw.length - 16);
   const body = raw.subarray(12, raw.length - 16);
-  const decipher = createDecipheriv("aes-256-gcm", keyBytes(keyB64), iv);
+  const decipher = createDecipheriv("aes-256-gcm", keyBytes(keyB64), iv, {
+    authTagLength: 16,
+  });
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(body), decipher.final()]).toString("utf8");
 }

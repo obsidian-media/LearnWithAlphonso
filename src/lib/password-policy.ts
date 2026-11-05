@@ -5,7 +5,7 @@
  */
 export const MIN_NEW_PASSWORD_LENGTH = 10;
 
-export const NEW_PASSWORD_TOO_SHORT = `Use at least ${MIN_NEW_PASSWORD_LENGTH} characters for your password.`;
+export const TOO_SHORT_MESSAGE = `Use at least ${MIN_NEW_PASSWORD_LENGTH} characters for your password.`;
 
 export function isLongEnoughNewPassword(password: string): boolean {
   return password.length >= MIN_NEW_PASSWORD_LENGTH;

@@ -48,6 +48,7 @@ echo "RevenueCat resolved $GOT == pin $PIN."
 
 # A version tag can be moved to other code, so each pinned package must also resolve to the exact commit that tag
 # named when it was pinned. Bumping a version means updating its commit here in the same PR.
+# shellcheck disable=SC2016 # the node script below is single-quoted on purpose: its $ belongs to JavaScript.
 EXPECTED_REVISIONS='{"purchases-ios":"e45bb84b726885492ce4e7ee94ddb252d171a205","sentry-cocoa":"4bb2282661ee6ca2212aa01d19a1214394cd3c45"}'
 node -e '
   const data = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));

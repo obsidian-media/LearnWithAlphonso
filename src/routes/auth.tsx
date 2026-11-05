@@ -4,7 +4,7 @@ import { captchaOptions, turnstileSiteKey } from "@/lib/turnstile";
 import {
   isLongEnoughNewPassword,
   MIN_NEW_PASSWORD_LENGTH,
-  NEW_PASSWORD_TOO_SHORT,
+  TOO_SHORT_MESSAGE,
 } from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -100,7 +100,7 @@ function AuthPage() {
         );
       } else if (mode === "signup") {
         if (!isLongEnoughNewPassword(password)) {
-          setError(NEW_PASSWORD_TOO_SHORT);
+          setError(TOO_SHORT_MESSAGE);
           return;
         }
         // New signups land on the placement test first instead of a cold

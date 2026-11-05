@@ -120,9 +120,14 @@ export function checkNewFunctionGrants(sql: string): FunctionGrantViolation[] {
 
   const violations: FunctionGrantViolation[] = [];
   for (const fn of new Set(functions)) {
-    const onThis = new RegExp(`\\bON\\s+FUNCTION\\s+(?:public\\.)?${fn}\\s*\\(`, "i");
+    // Statements are whitespace-collapsed above, so plain substring checks cover every spelling.
+    const targets = [fn, `public.${fn}`].flatMap((name) => [
+      `on function ${name}(`,
+      `on function ${name} (`,
+    ]);
     const stated = statements.some((statement) => {
-      if (!onThis.test(statement)) return false;
+      const lower = statement.toLowerCase();
+      if (!targets.some((t) => lower.includes(t))) return false;
       const revoke = /^REVOKE\s+.+?\s+FROM\s+(.+)$/i.exec(statement);
       if (revoke) return /\bauthenticated\b/i.test(revoke[1]);
       const grant = /^GRANT\s+.+?\s+TO\s+(.+)$/i.exec(statement);
