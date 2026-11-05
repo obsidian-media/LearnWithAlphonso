@@ -29,7 +29,7 @@
     "id": "ep3",
     "level": "A1",
     "type": "mc",
-    "prompt": "Choose the correct number for \"five\":",
+    "prompt": "Elige cómo se escribe 5:",
     "choices": [
       "cuatro",
       "cinco",
@@ -94,7 +94,7 @@
     "id": "ep2c",
     "level": "A1",
     "type": "mc",
-    "prompt": "Cómo se dice \"goodbye\"?",
+    "prompt": "¿Cómo se dice \"goodbye\"?",
     "choices": [
       "Hola",
       "Gracias",
@@ -125,7 +125,7 @@
       "voy",
       "fui",
       "iré",
-      "iba"
+      "había ido"
     ],
     "answer": 1
   },
@@ -138,7 +138,7 @@
       "caro",
       "cara",
       "caros",
-      "más caro"
+      "caras"
     ],
     "answer": 1
   },
@@ -146,20 +146,20 @@
     "id": "ep6",
     "level": "A2",
     "type": "mc",
-    "prompt": "Gira a la izquierda ___ el banco.",
+    "prompt": "El banco está ___ la farmacia y el supermercado.",
     "choices": [
-      "después de",
-      "antes de",
+      "entre",
+      "en",
       "sobre",
-      "en"
+      "bajo"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep4b",
     "level": "A2",
     "type": "mc",
-    "prompt": "Ella ___ (terminar) su tarea ya.",
+    "prompt": "Ayer ella ___ (terminar) su tarea.",
     "choices": [
       "termina",
       "terminó",
@@ -200,12 +200,12 @@
     "type": "mc",
     "prompt": "Nosotros ___ (viajar) a España el próximo verano.",
     "choices": [
-      "viajamos",
       "viajaremos",
+      "viajaríamos",
       "hemos viajado",
       "viajábamos"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep5c",
@@ -216,7 +216,7 @@
       "buena",
       "mejor",
       "bien",
-      "mejora"
+      "más bien"
     ],
     "answer": 1
   },
@@ -224,7 +224,7 @@
     "id": "ep6c",
     "level": "A2",
     "type": "mc",
-    "prompt": "___ has visitado Madrid?",
+    "prompt": "¿___ visitado Madrid alguna vez?",
     "choices": [
       "Has",
       "Eres",
@@ -237,14 +237,14 @@
     "id": "ep7",
     "level": "B1",
     "type": "mc",
-    "prompt": "Si llueve, nosotros ___ dentro.",
+    "prompt": "Si llueve, nos ___ dentro.",
     "choices": [
-      "quedamos",
       "quedaremos",
+      "quedaríamos",
       "quedáramos",
       "quedábamos"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep8",
@@ -252,10 +252,10 @@
     "type": "mc",
     "prompt": "Es necesario que tú ___ a tiempo.",
     "choices": [
-      "eres",
-      "serás",
-      "seas",
-      "ser"
+      "llegas",
+      "llegarás",
+      "llegues",
+      "llegar"
     ],
     "answer": 2
   },
@@ -263,12 +263,12 @@
     "id": "ep9",
     "level": "B1",
     "type": "mc",
-    "prompt": "\"Aunque\" introduces…",
+    "prompt": "\"Aunque\" introduce…",
     "choices": [
-      "a cause",
-      "a concession",
-      "a purpose",
-      "a condition"
+      "una causa",
+      "una concesión",
+      "un propósito",
+      "una condición"
     ],
     "answer": 1
   },
@@ -302,12 +302,12 @@
     "id": "ep9b",
     "level": "B1",
     "type": "mc",
-    "prompt": "No ___ fumar aquí.",
+    "prompt": "Está prohibido ___ aquí.",
     "choices": [
-      "debes",
-      "puedes",
-      "has",
-      "sabes"
+      "fumar",
+      "fumando",
+      "fumado",
+      "fumas"
     ],
     "answer": 0
   },
@@ -341,12 +341,12 @@
     "id": "ep9c",
     "level": "B1",
     "type": "mc",
-    "prompt": "___ llueve, saldremos.",
+    "prompt": "___ llueva, saldremos.",
     "choices": [
       "Aunque",
       "A pesar de",
       "Sin embargo",
-      "Porque"
+      "Ya que"
     ],
     "answer": 0
   },
@@ -354,7 +354,7 @@
     "id": "ep10",
     "level": "B2",
     "type": "mc",
-    "prompt": "El informe ___ publicado la próxima semana.",
+    "prompt": "El informe ___ publicado en cuanto se hayan revisado las cifras.",
     "choices": [
       "será",
       "es",
@@ -367,7 +367,7 @@
     "id": "ep11",
     "level": "B2",
     "type": "mc",
-    "prompt": "___ el costo, la demanda aumentó.",
+    "prompt": "___ lo caro que era, la demanda aumentó.",
     "choices": [
       "Aunque",
       "A pesar de",
@@ -393,14 +393,14 @@
     "id": "ep10b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Ella dijo que ___ el informe antes del viernes.",
+    "prompt": "Ella prometió que ___ el informe al día siguiente.",
     "choices": [
-      "terminará",
       "terminaría",
-      "termina",
-      "terminó"
+      "terminando",
+      "terminó",
+      "terminará"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep11b",
@@ -432,12 +432,12 @@
     "id": "ep10c",
     "level": "B2",
     "type": "mc",
-    "prompt": "El informe debe ___ publicado la próxima semana.",
+    "prompt": "Dudo que ella ___ la verdad.",
     "choices": [
-      "ser",
-      "estar",
-      "siendo",
-      "sido"
+      "sepa",
+      "sabe",
+      "sabrá",
+      "sabría"
     ],
     "answer": 0
   },
@@ -458,7 +458,7 @@
     "id": "ep12c",
     "level": "B2",
     "type": "mc",
-    "prompt": "El puente está ___ inspeccionado anualmente.",
+    "prompt": "El puente está ___ inspeccionado en este momento.",
     "choices": [
       "siendo",
       "sido",
@@ -471,40 +471,40 @@
     "id": "ep13",
     "level": "C1",
     "type": "mc",
-    "prompt": "The most formal equivalent of \"descubrir\":",
+    "prompt": "El verbo más formal para \"comprar\":",
     "choices": [
-      "hallar",
-      "constatar",
-      "encontrar",
-      "ver"
+      "adquirir",
+      "agenciarse",
+      "pillar",
+      "llevarse"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep14",
     "level": "C1",
     "type": "mc",
-    "prompt": "Si ella ___ (saber) la respuesta, la diría.",
+    "prompt": "Por mucho que ___ (insistir), no cambiará de opinión.",
     "choices": [
-      "sabe",
-      "sabrá",
-      "supiera",
-      "sabía"
+      "insiste",
+      "insista",
+      "insistirá",
+      "insistiera"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "ep15",
     "level": "C1",
     "type": "mc",
-    "prompt": "\"No obstante\" is closest in meaning to:",
+    "prompt": "No es que no ___ ayudarte, es que no puedo.",
     "choices": [
-      "por ejemplo",
-      "sin embargo",
-      "por lo tanto",
-      "es decir"
+      "quiera",
+      "quiero",
+      "querré",
+      "querría"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ep13b",
@@ -523,12 +523,12 @@
     "id": "ep14b",
     "level": "C1",
     "type": "mc",
-    "prompt": "Palabra más precisa para \"mucha evidencia\":",
+    "prompt": "Opción más adecuada en un informe formal:",
     "choices": [
       "un montón de pruebas",
       "pruebas sustanciales",
-      "pruebas grandes",
-      "mucha cosa de pruebas"
+      "tropecientas pruebas",
+      "bastantes pruebas"
     ],
     "answer": 1
   },
@@ -538,10 +538,10 @@
     "type": "mc",
     "prompt": "¿Qué oración evita una construcción torpe?",
     "choices": [
-      "Caminando hacia la tienda, empezó a llover.",
-      "Caminando hacia la tienda, me sorprendió la lluvia.",
-      "La lluvia, caminando hacia la tienda, empezó.",
-      "Hacia la tienda caminando, empezó a llover."
+      "Caminando hacia la tienda, la lluvia cayó con fuerza.",
+      "Mientras caminaba hacia la tienda, me sorprendió la lluvia.",
+      "Caminando hacia la tienda, el paraguas se mojó.",
+      "Yendo hacia la tienda, la lluvia empezó a caer."
     ],
     "answer": 1
   },

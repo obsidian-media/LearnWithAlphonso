@@ -3,6 +3,9 @@ import { BANK_ES } from "./lesson-bank-es";
 import { BANK_FR } from "./lesson-bank-fr";
 import { packQuestions, type Pack } from "./bank-engine";
 import { ROMANCE_CLOZE } from "./romance-cloze-options";
+import { PLACEMENT_QUESTIONS_ES } from "./placement-es";
+import { PLACEMENT_QUESTIONS_FR } from "./placement-fr";
+import type { PlacementQuestion } from "./placement";
 import {
   EXTRA_DECOYS,
   PACK_CLASS_LABELS,
@@ -257,5 +260,91 @@ describe("listening packs: the choices can be told apart by ear", () => {
     }
     expect(n).toBe(100);
     expect(bad).toEqual([]);
+  });
+});
+
+// What this guards (docs/distractor-policy.md, "Placement banks"): the French and Spanish placement
+// tests. They decide a learner's starting level, and were never covered by the lesson-bank gates.
+// The rules that generalise without a part-of-speech tagger are checked on the sentence the KEY makes
+// and on the words the learner reads; the judgement calls (a second defensible answer, a wrong band)
+// stay a human review, written into the PR.
+describe("the French and Spanish placement banks", () => {
+  const banks = [
+    ["fr", PLACEMENT_QUESTIONS_FR],
+    ["es", PLACEMENT_QUESTIONS_ES],
+  ] as const;
+  const mc = (pool: PlacementQuestion[]) => pool.flatMap((q) => (q.type === "mc" ? [q] : []));
+  const keyOf = (q: Extract<PlacementQuestion, { type: "mc" }>) => q.choices[q.answer]!;
+
+  // Words that only English has. Quoted glosses ("thank you") and bracketed hints ("(to go)") are the
+  // course's deliberate English and are removed first. "formal", "correct" and the like are shared with the
+  // Romance languages and are not listed.
+  const ENGLISH =
+    /\b(the|is|are|choose|closest|introduces|equivalent|meaning|means|which|most|number|for)\b/i;
+  const withoutGlosses = (t: string) =>
+    t.replace(/["“«][^"”»]*["”»]/g, " ").replace(/\([^)]*\)/g, " ");
+
+  // Options that shipped in the placement banks and are not words a learner would ever choose; kept so
+  // they cannot come back. Each was found by the placement-question-quality review.
+  const RETIRED = [
+    "chère que",
+    "restâmes",
+    "trop des",
+    "beaucoup de trucs de preuve",
+    "vers le magasin marchant, la pluie a commencé.",
+    "la réduction des coûts en œuvre",
+    "l'entreprise de réduction des coûts",
+    "mucha cosa de pruebas",
+    "hacia la tienda caminando, empezó a llover.",
+    "la lluvia, caminando hacia la tienda, empezó.",
+    "mejora",
+    "más caro",
+  ];
+
+  it("no question speaks English outside a quoted gloss or a bracketed hint", () => {
+    const bad: string[] = [];
+    for (const [lang, pool] of banks)
+      for (const q of mc(pool)) {
+        for (const text of [q.prompt, ...q.choices])
+          if (ENGLISH.test(withoutGlosses(text))) bad.push(`${lang} ${q.id}: ${text}`);
+      }
+    expect(bad).toEqual([]);
+  });
+
+  it("the sentence the key makes is not broken: no doubled word, no uncontracted article", () => {
+    const bad: string[] = [];
+    for (const [lang, pool] of banks)
+      for (const q of mc(pool)) {
+        if (!q.prompt.includes("___")) continue;
+        const filled = q.prompt.replace("___", keyOf(q));
+        if (/(^|[\s¿])(\p{L}+)\s+\2(?![\p{L}])/iu.test(filled))
+          bad.push(`${lang} ${q.id}: repeats a word -> ${filled}`);
+        // Spanish a/de + el, French à/de + le/les, are always contracted (al, del, au, du, aux, des).
+        if (/(^|\s)(de|a) el(\s|$)/.test(filled) || /(^|\s)(de|à) (le|les)(\s|$)/.test(filled))
+          bad.push(`${lang} ${q.id}: uncontracted article -> ${filled}`);
+      }
+    expect(bad).toEqual([]);
+  });
+
+  it("a Spanish question opens with the inverted mark it closes with", () => {
+    const bad = mc(PLACEMENT_QUESTIONS_ES)
+      .filter((q) => /\?\s*$/.test(q.prompt) && !q.prompt.includes("¿"))
+      .map((q) => q.id);
+    expect(bad).toEqual([]);
+  });
+
+  it("no retired absurd option is back", () => {
+    const bad: string[] = [];
+    for (const [lang, pool] of banks)
+      for (const q of mc(pool))
+        for (const c of q.choices)
+          if (RETIRED.includes(c.trim().toLowerCase())) bad.push(`${lang} ${q.id}: ${c}`);
+    expect(bad).toEqual([]);
+  });
+
+  it("the gate itself rejects the defects it was written for", () => {
+    expect(ENGLISH.test(withoutGlosses("Choose the correct number for five"))).toBe(true);
+    expect(ENGLISH.test(withoutGlosses('Comment dit-on "thank you" en français ?'))).toBe(false);
+    expect(ENGLISH.test(withoutGlosses("Hier, je ___ (to go) au marché."))).toBe(false);
   });
 });
