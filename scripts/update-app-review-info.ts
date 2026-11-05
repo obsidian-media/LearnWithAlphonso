@@ -290,8 +290,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  // The message only: this runs in public CI logs (see asc-error-summary.ts).
-  console.error(err instanceof Error ? err.message : "update-app-review-info failed");
+main().catch(() => {
+  // Nothing from the error: this runs in public CI logs and an error message can carry the review contact, demo
+  // account or demo URL values. Each request's own status line above names what failed (asc-error-summary.ts).
+  console.error("update-app-review-info failed; the last status line above names the request.");
   process.exit(1);
 });

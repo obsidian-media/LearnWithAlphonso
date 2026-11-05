@@ -263,7 +263,7 @@ describe("auth hardening settings (reported as warnings, never blocking a deploy
       security_captcha_enabled: false,
       mailer_otp_exp: 86400,
     });
-    expect(gaps.join(" ")).toMatch(/password_min_length = 6/);
+    expect(gaps.join(" ")).toMatch(/minimum password length is under 10/);
     expect(gaps.join(" ")).toMatch(/security_captcha_enabled/);
     expect(gaps.join(" ")).toMatch(/mailer_otp_exp = 86400/);
   });

@@ -58,7 +58,7 @@ export function describeAuthHardeningGaps(cfg: AuthConfig): string[] {
   const gaps: string[] = [];
   if (typeof cfg.password_min_length !== "number" || cfg.password_min_length < 10) {
     gaps.push(
-      `password_min_length = ${cfg.password_min_length ?? "unset"}; set 10 (Authentication > Sign In / Providers > Email)`,
+      "the minimum password length is under 10; set 10 (Authentication > Sign In / Providers > Email)",
     );
   }
   if (cfg.security_captcha_enabled !== true) {
