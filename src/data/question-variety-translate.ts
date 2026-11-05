@@ -896,7 +896,7 @@ export const TRANSLATE_IDEAS: Record<string, TranslateIdea> = {
   },
   a2p15l4: {
     idea: "Say that you need to change your PIN.",
-    say: ["I need to change my PIN.", "I have to change my PIN.", "I want to change my PIN."],
+    say: ["I need to change my PIN.", "I have to change my PIN.", "I must change my PIN."],
   },
   a2p15l5: {
     idea: "Ask to cancel your card.",

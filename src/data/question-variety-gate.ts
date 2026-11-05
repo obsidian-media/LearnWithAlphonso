@@ -30,6 +30,14 @@ const PLACE_RULE = new RegExp(
 );
 /** A relation that reads the same with its two noun phrases swapped ("X is next to Y" / "Y is next to X"). */
 const SYMMETRIC_PREP = "next to|near|beside|opposite|between|close to|across from|far from";
+const OBJ_PRONOUN = "(?:me|him|her|us|them)";
+/**
+ * "She is taller than him", "I am not as tall as her": a subject pronoun compared with an object pronoun.
+ * The other way round needs other words ("He is taller than her"), so this whole-sentence shape keeps one
+ * order. Nothing may stand between the verb and the comparison: in "He likes her more than me" the two
+ * objects swap with the same words ("He likes me more than her").
+ */
+const PRONOUN_COMPARISON = String.raw`(?:i|you|he|she|it|we|they) \w+ (?:not )?(?:(?:more |less )?\w+ than|as \w+ as) ${OBJ_PRONOUN}`;
 const SPATIAL_PREP = "under|above|over|behind|below|inside|outside|in front of";
 
 type Rule = { name: string; re: RegExp };
@@ -105,7 +113,11 @@ export const MOVABLE_RULES: Rule[] = [
   // two things the sentence can put either way round: "A is next to B", "A is as big as B", "A is bigger than B", "X and Y", "X but Y"
   {
     name: "symmetric-relation",
-    re: new RegExp(String.raw`\b(${SYMMETRIC_PREP})\b|\bas \w+ as\b|\bthan\b|\b(and|but|or)\b`),
+    // "match(es)": "X matches Y" reads the same the other way round. A comparison is exempt only as a
+    // whole PRONOUN_COMPARISON sentence ("taller than him"), where swapping the sides needs other words.
+    re: new RegExp(
+      String.raw`\b(${SYMMETRIC_PREP})\b|\bmatch(?:es|ed)?\b|^(?!${PRONOUN_COMPARISON}$).*\b(?:as \w+ as|than)\b|\b(and|but|or)\b`,
+    ),
   },
   // "Gardening is her hobby" / "Her hobby is gardening"
   { name: "gerund-subject", re: /^\w+ing (is|are|was) / },

@@ -77,8 +77,29 @@ describe("reorder gate: each rule has a fixture only it catches", () => {
       "My room is bigger than yours",
       "She plays the guitar and loves music",
       "Gardening is her favourite hobby",
+      // "X matches Y" reads the same the other way round
+      "These socks don't match my shoes",
+      "The curtains match the sofa",
+      "Your tie matches your shirt",
+      // two noun phrases or possessives can swap; only an object pronoun cannot
+      "My bag is heavier than yours",
+      "Anna is as tall as Tom",
+      "She is taller than her mother",
+      // an object before the comparison swaps with the one after it: "He likes me more than her"
+      "He likes her more than me",
+      "I like him as much as her",
+      "Tom likes Anna more than me",
     ])
       expect(movableAdverbial(s), s).not.toBeNull();
+    // an object pronoun at the end cannot take the subject's place, so the other order is not the same words
+    for (const s of [
+      "She is happier than him",
+      "I am as tall as her",
+      "He swims further than me",
+      "He is more polite than her",
+      "I am not as fast as him",
+    ])
+      expect(movableAdverbial(s), s).toBeNull();
     for (const s of ["I wash my face", "Go straight ahead", "The keys are on the table"])
       expect(movableAdverbial(s), s).toBeNull();
   });
@@ -156,12 +177,37 @@ describe("translate guard: confusable pairs are never accepted for each other", 
     [/\bopposite\b/, /\bin front of\b/],
     [/\boften\b/, /\busually\b/],
     [/\bsometimes\b/, /\b(often|usually)\b/],
+    // "need" says it is necessary; "want" and "would like" only say you would like it
+    [/\bneed(s|ed)?\b/, /\b(want(s|ed)?|would like)\b|'d like\b/],
   ];
   it("catches an over-accept", () => {
     const canonical = "The soup is too hot.";
     const bad = ["The soup is very hot."];
     const [a, b] = PAIRS[0]!;
     expect(a.test(canonical) && bad.some((x) => b.test(x) && !a.test(x))).toBe(true);
+  });
+  it("catches 'want' or 'would like' accepted for 'need'", () => {
+    const [a, b] = PAIRS[PAIRS.length - 1]!;
+    expect(a.test("i need a taxi to the station.")).toBe(true);
+    expect(a.test("she needs a taxi.")).toBe(true);
+    for (const x of [
+      "i want a taxi to the station.",
+      "i'd like a taxi to the station.",
+      "i would like to change my pin.",
+      "she wants a taxi.",
+    ])
+      expect(b.test(x) && !a.test(x), x).toBe(true);
+  });
+  it("a1p20q36 and a2p15q36 accept no 'want' or 'would like' wording", () => {
+    for (const id of ["a1p20q36", "a2p15q36"]) {
+      const hit = added.find(({ q }) => q.id === id);
+      expect(hit, id).toBeTruthy();
+      const q = hit!.q as { acceptableAnswers: string[] };
+      expect(
+        q.acceptableAnswers.filter((x) => /\bwant\b|\bwould like\b|'d like\b/i.test(x)),
+        id,
+      ).toEqual([]);
+    }
   });
   it("no appended translate question accepts one for the other", () => {
     const bad: string[] = [];
