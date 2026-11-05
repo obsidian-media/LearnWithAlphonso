@@ -109,4 +109,28 @@ class PodcastQuizSourceGuardsTest {
         val src = read(ui)
         assertEquals(2, Regex("""PodcastQuizBest\(r\.bestCorrect, r\.bestXp\)""").findAll(src).count())
     }
+
+    @Test
+    fun `the whole choice card is the tap target, not only its text`() {
+        // iOS froze at question 3 of "Ordering Coffee": its short choices left the middle of each card dead. Here the
+        // selectable sits on the full-width card itself, never on the Text inside it.
+        val src = read(ui)
+        val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
+        assertTrue(
+            Regex("""modifier = Modifier\.fillMaxWidth\(\)\.heightIn\(min = 48\.dp\)\s*\.selectable\(selected = picked""").containsMatchIn(question),
+        )
+        assertEquals(1, Regex("""\.selectable\(""").findAll(question).count())
+        assertFalse(question.contains("Text(text, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier"))
+    }
+
+    @Test
+    fun `the row button is an opaque chip with ink words, not a transparent outline on the photo`() {
+        val src = read(ui)
+        val row = src.substring(src.indexOf("fun PodcastQuizRowButton("), src.indexOf("fun PodcastQuizOfferRow("))
+        assertTrue(row.contains("AlphonsoSecondaryButton("))
+        assertFalse(row.contains("OutlinedButton("))
+        val components = read("src/main/java/com/obsidianmedia/learnwithalphonso/ui/components/AlphonsoComponents.kt")
+        val secondary = components.substring(components.indexOf("fun AlphonsoSecondaryButton("), components.indexOf("fun AlphonsoSectionHeader("))
+        assertTrue(secondary.contains("colors = ButtonDefaults.outlinedButtonColors(containerColor = p.parchment, contentColor = p.ink)"))
+    }
 }

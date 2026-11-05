@@ -135,6 +135,10 @@ struct PodcastQuizSheet: View {
                         lineWidth: isPicked || isRight || isWrong ? 2 : 1
                     )
             )
+            // The whole card is the target. A plain-style button only hit-tests what it draws: the glyphs and the 1 pt
+            // stroke, never the padding or the Spacer. A short choice ("It means no") left the middle of its card
+            // dead, so a tap there selected nothing and Check stayed disabled.
+            .contentShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
         .disabled(run.checked)
@@ -230,12 +234,12 @@ struct PodcastQuizRowButton: View {
             Button {
                 Task { await open() }
             } label: {
-                Text(isLoading ? "Loading quiz…" : "Take the quiz")
-                    .font(AlphonsoFont.sans(13, weight: .semiBold))
-                    .frame(minHeight: 44)
+                Label(isLoading ? "Loading quiz…" : "Take the quiz", systemImage: "questionmark.circle.fill")
+                    .labelStyle(PodcastQuizChipLabelStyle())
             }
-            .buttonStyle(.bordered)
-            .tint(AlphonsoColor.moss)
+            // An opaque surface chip with ink text, like the episode card above it: the row sits on the scene photo,
+            // where the old translucent moss tint left moss text on a picture.
+            .buttonStyle(AlphonsoSecondaryButtonStyle(fullWidth: false))
             .disabled(isLoading)
             .accessibilityLabel("Take the quiz: \(episode.title)")
             if unavailable {
@@ -268,6 +272,20 @@ struct PodcastQuizRowButton: View {
             showQuiz = true
         } else {
             unavailable = true
+        }
+    }
+}
+
+/// The chip's icon is the moss accent; the words stay ink on the opaque surface, so they read on every theme.
+private struct PodcastQuizChipLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: AlphonsoSpacing.xs) {
+            configuration.icon
+                .foregroundStyle(AlphonsoColor.moss)
+                .accessibilityHidden(true)
+            configuration.title
+                .font(AlphonsoFont.sans(14, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
         }
     }
 }
