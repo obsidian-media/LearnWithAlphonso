@@ -71,6 +71,8 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # committed. See the file itself for how to keep it current.
 docs/BACKLOG.md
 docs/BACKLOG.backup-*.md
+# Private security audit material, never commit
+docs/security-private/
 
 # V4 kickoff docs — same pattern as the V2/V3 kickoff docs above
 # (2026-09-21): local-only briefing docs for handing off individual V4
