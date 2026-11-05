@@ -148,6 +148,17 @@ class SupabaseAuthClient(
             ),
         )
 
+    /** Ends this device's session on the auth server (GoTrue logout, scope=local); other devices stay signed in. */
+    suspend fun logout(accessToken: String) {
+        requireSuccess(
+            client.post("${supabaseUrl.trimEnd('/')}/auth/v1/logout") {
+                parameter("scope", "local")
+                header("apikey", publishableKey)
+                header("Authorization", "Bearer $accessToken")
+            },
+        )
+    }
+
     private suspend fun post(path: String, body: JsonObject, query: Map<String, String> = emptyMap()): HttpResponse =
         client.post("${supabaseUrl.trimEnd('/')}/$path") {
             query.forEach { (k, v) -> parameter(k, v) }

@@ -55,6 +55,20 @@ export const OTHER_OWNED_EXPORT_TABLES = [
   { table: "buddy_requests", columns: ["from_user", "to_user"] },
 ] as const;
 
+// Rows of this account that the caller's own token cannot read (no client SELECT by design: reports, codes,
+// server-side counters). The export reads them with the service role, filtered to exactly one column that holds this
+// account's id, so nothing about anyone else comes back: blocked_users is read by `blocker` only, never by `blocked`,
+// so the export never reveals who has blocked this account.
+export const SERVICE_SCOPED_EXPORT_TABLES = [
+  { table: "blocked_users", column: "blocker" },
+  { table: "content_reports", column: "reporter" },
+  { table: "teams", column: "created_by" },
+  { table: "team_kicks", column: "user_id" },
+  { table: "friend_invite_codes", column: "user_id" },
+  { table: "buddy_members", column: "user_id" },
+  { table: "lesson_completion_hits", column: "user_id" },
+] as const;
+
 // Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's
 // own-pairs SELECT policy is what limits the export to this account's pairs.
 export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as const;
@@ -138,6 +152,7 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
+    await (await import("./live-session.server")).requireLiveSession(context.accessToken, userId);
     // Tables are parallel; pages within a table are sequential so no capped
     // PostgREST response silently truncates a large account.
     const [userIdRows, otherOwnedRows, profileResult, rlsScopedRows] = await Promise.all([
@@ -176,6 +191,25 @@ export const exportMyData = createServerFn({ method: "POST" })
         ),
       ),
     ]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const serviceScopedRows = await Promise.all(
+      SERVICE_SCOPED_EXPORT_TABLES.map(({ table, column }) =>
+        readAllExportPages(table, (first, last) =>
+          supabaseAdmin
+            // Not every one of these tables is in the generated types' client-facing set; each has the column named.
+            .from(table as "teams")
+            .select("*", { count: "exact" })
+            .eq(column as "created_by", userId)
+            .range(first, last),
+        ),
+      ),
+    );
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (authError || !authData?.user) {
+      throw new Error(
+        "exportMyData: could not read the account record; the export would be incomplete",
+      );
+    }
     // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
     // could look complete while omitting a table. Fail instead and name the tables.
     const failed = profileResult.error ? ["profiles"] : [];
@@ -195,6 +229,16 @@ export const exportMyData = createServerFn({ method: "POST" })
     RLS_SCOPED_EXPORT_TABLES.forEach((table, i) => {
       tables[table] = rlsScopedRows[i];
     });
+    SERVICE_SCOPED_EXPORT_TABLES.forEach(({ table }, i) => {
+      tables[table] = serviceScopedRows[i];
+    });
+    const exported: Record<string, unknown> = { ...tables };
+    // How the account signs in and when it was created: the auth record, without any token or secret.
+    exported.account = {
+      created_at: authData.user.created_at ?? null,
+      last_sign_in_at: authData.user.last_sign_in_at ?? null,
+      sign_in_methods: [...new Set((authData.user.identities ?? []).map((i) => i.provider))],
+    };
     return {
       exported_at: new Date().toISOString(),
       user_id: userId,
@@ -206,7 +250,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       // data" export silently omitted the one field the privacy policy's
       // own "What we collect" section lists first.
       email: (claims as { email?: string }).email ?? null,
-      tables: JSON.stringify(tables),
+      tables: JSON.stringify(exported),
     };
   });
 
@@ -296,7 +340,9 @@ export async function revokeAppleGrantForUser(
       return (await appleIdentityOf(supabaseAdmin, userId)) === false ? "not_applicable" : "failed";
     }
 
-    const revoked = await revokeAppleGrant(config, refreshToken);
+    // Stored sealed when APPLE_TOKEN_ENCRYPTION_KEY is set (token-sealing.server.ts); parked below in the same form.
+    const { openToken } = await import("./token-sealing.server");
+    const revoked = await revokeAppleGrant(config, openToken(refreshToken));
     if (revoked) return "revoked";
     // The stored grant is deleted with the account (ON DELETE CASCADE), which used to make this failure
     // permanent. Park the credential, with nothing that links it to the account, so the scheduled pass
@@ -355,6 +401,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ confirm: z.literal("DELETE") }).parse(d))
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
+    await (await import("./live-session.server")).requireLiveSession(context.accessToken, userId);
 
     // Remove owned rows first, as the caller, so RLS stays the source of
     // truth. "profiles" is deliberately not deleted here -- its FK to

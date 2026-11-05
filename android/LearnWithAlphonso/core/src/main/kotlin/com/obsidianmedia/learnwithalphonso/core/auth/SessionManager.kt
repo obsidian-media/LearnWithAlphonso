@@ -6,7 +6,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.PkceChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthError
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -36,6 +38,8 @@ class AccountChangedException : java.io.IOException("The signed-in account chang
 class SessionManager(
     private val auth: SupabaseAuthClient,
     private val store: SessionStore,
+    /** Where sign-out's server call runs after the local state is cleared; null skips it (tests that do not care). */
+    private val backgroundScope: CoroutineScope? = null,
     private val nowSeconds: () -> Long = { System.currentTimeMillis() / 1000 },
 ) {
     private val _state = MutableStateFlow<AuthState>(AuthState.SignedOut)
@@ -106,7 +110,7 @@ class SessionManager(
             refreshed.accessToken
         } catch (e: Exception) {
             // A rejected refresh token ends the session it belonged to, not whichever session is signed in by now.
-            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) signOut()
+            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) endSession(endOnServer = false)
             null
         }
     }
@@ -187,10 +191,21 @@ class SessionManager(
         }
     }
 
-    fun signOut() {
+    fun signOut() = endSession(endOnServer = true)
+
+    /**
+     * Local sign-out is immediate. Then, best effort, this device's session is ended on the auth server with the ending
+     * access token (captured first), so a copied refresh token stops working. Not when the server already rejected the
+     * refresh token: that session is gone.
+     */
+    private fun endSession(endOnServer: Boolean) {
+        val ending = currentSession()
         _state.value = AuthState.SignedOut
         _errorMessage.value = null
         store.clear()
+        if (endOnServer && ending != null) {
+            backgroundScope?.launch { runCatching { auth.logout(ending.accessToken) } }
+        }
     }
 
     fun clearMessages() {

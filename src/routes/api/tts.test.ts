@@ -174,6 +174,18 @@ describe("POST /api/tts", () => {
     expect(urls[1]).toContain("model=aura-2-thalia-en");
   });
 
+  it.each(["aura-asteria-en", "aura-2-thalia-de", "some-premium-model", "aura-2-x-en&model=y"])(
+    "ignores a voice outside the app's voice family (%s) and uses the course voice",
+    async (voice) => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("mp3", { status: 200 }),
+      );
+      await handler({ request: req({ text: "Hola", voice, course: "es" }) });
+      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      expect(String(url)).toContain("model=aura-2-selena-es");
+    },
+  );
+
   it("gives up with a retryable 504 when the speech provider does not answer in time", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     let sent: RequestInit | undefined;

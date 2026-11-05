@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PodcastFolder } from "./podcast-tree";
@@ -85,7 +86,7 @@ export const listFolders = createServerFn({ method: "GET" })
       .from("podcast_folders")
       .select("id, parent_id, slug, title, description, sort_order, course")
       .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
     return (data ?? []).map((row) => ({
       id: row.id,
       parentId: row.parent_id,
@@ -112,7 +113,7 @@ export const listEpisodes = createServerFn({ method: "GET" })
       )
       .eq("folder_id", data.folderId)
       .order("sort_order", { ascending: true });
-    if (episodesRes.error) throw new Error(episodesRes.error.message);
+    if (episodesRes.error) throw publicError(null, episodesRes.error);
 
     const episodes = episodesRes.data ?? [];
 
@@ -180,7 +181,7 @@ export const savePlaybackPosition = createServerFn({ method: "POST" })
       },
       { onConflict: "user_id,episode_id" },
     );
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
     return { positionSeconds };
   });
 
@@ -206,7 +207,7 @@ export const recordPlayEvent = createServerFn({ method: "POST" })
       _episode_id: data.episodeId,
       _seconds_listened: Math.round(data.secondsListened),
     });
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
   });
 
 /**
@@ -238,7 +239,7 @@ export const searchEpisodes = createServerFn({ method: "GET" })
       .or(filter)
       .order("title", { ascending: true })
       .limit(50);
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
 
     // Resume position is deliberately not joined here: a search result is a
     // way to find an episode, and the player reads the authoritative
@@ -270,6 +271,6 @@ export const fetchTranscript = createServerFn({ method: "GET" })
       .select("text")
       .eq("episode_id", data.episodeId)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
     return row?.text ?? null;
   });

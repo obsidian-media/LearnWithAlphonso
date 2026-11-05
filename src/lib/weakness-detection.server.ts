@@ -96,6 +96,9 @@ export function analysisPrompt(sourceDescription: string): string {
  * pipeline's existing fail-quiet design (weakness detection is a nice-to-
  * have layered on top of the real feature, not a trust boundary itself).
  */
+/** Output ceiling for one analysis call. */
+export const WEAKNESS_MAX_TOKENS = 1500;
+
 export async function detectAndRecordWeaknesses(params: {
   userId: string;
   sourceDescription: string;
@@ -118,6 +121,8 @@ export async function detectAndRecordWeaknesses(params: {
       apiKey: params.llmApiKey,
       body: {
         model: params.llmModel,
+        // A handful of short JSON questions; the cap bounds cost if the model runs on.
+        max_tokens: WEAKNESS_MAX_TOKENS,
         messages: [
           ...params.transcriptMessages.map((m) => ({
             role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),

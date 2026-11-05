@@ -35,7 +35,10 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     return Response.json({ error: "unauthorized" }, { status: 401 });
   const userId = userData.user.id;
 
-  const { requireAiConsent } = await import("@/lib/ai-consent.server");
+  // Same order as every AI route: auth, the owner's AI switch, consent, then quota.
+  const { requireAiConsent, requireAiSwitchedOn } = await import("@/lib/ai-consent.server");
+  const off = await requireAiSwitchedOn("define-word");
+  if (off) return off;
   const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "define-word" });
   if (denied) return denied;
 

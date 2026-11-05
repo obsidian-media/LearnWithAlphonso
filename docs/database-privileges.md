@@ -116,3 +116,18 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 `lesson_completion_hits` (`20261104100100`): service-role only, no client privileges. It backs the rolling-hour ceiling
 in `complete-lesson` and `completeLessonRemote` (`consume_lesson_completion_slot`, service role only).
 `podcast_quiz_questions` and `podcast_quiz_awards` (`20261104100200`): `authenticated` has SELECT only (questions: published episodes only, the answer key is readable like lesson questions; awards: the caller's own rows), `service_role` has ALL. `submit_podcast_quiz` is service role only.
+
+## Sixth step (2026-11-05)
+
+Functions are now closed by default too (`20261105100000`): `ALTER DEFAULT PRIVILEGES FOR ROLE postgres` revokes
+EXECUTE on new functions from `PUBLIC`, and in `public` from `anon` and `authenticated`. A migration that adds a
+callable function must `GRANT EXECUTE` to the role that calls it; `src/lib/migration-grants.ts`
+(`checkNewFunctionGrants`) fails CI for any function created after that migration with neither a revoke naming
+`authenticated` nor a deliberate grant. Trigger functions need no grant. The default `pg_net` grants are owned by
+`supabase_admin` and are not changed by a migration.
+
+Client writes (`20261105100100`): `weakness_events` has no client INSERT (the server writes it); `device_tokens` has
+no client INSERT or UPDATE (`claim_device_token` only) and a token-shape check; `nudges` allows INSERT on
+`sender_id, recipient_id` and UPDATE on `read_at` only. A trigger caps nudges and content reports at 20 per hour per
+sender and drops podcast play events past 120 per hour. `profiles.country` must be two capital letters
+(`20261105100200`). The `podcast-audio` bucket can no longer be listed (`20261105100300`).

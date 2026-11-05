@@ -12,7 +12,8 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 
 const requireAiConsent = vi.fn();
-vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
+const requireAiSwitchedOn = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent, requireAiSwitchedOn }));
 
 const consumeQuota = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
@@ -68,6 +69,8 @@ beforeEach(() => {
   consumeQuota.mockReset();
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
+  requireAiSwitchedOn.mockReset();
+  requireAiSwitchedOn.mockResolvedValue(null);
   blockedRpc.mockClear();
   process.env.OPENROUTER_API_KEY = "nv_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
@@ -347,5 +350,19 @@ describe("POST /api/define-word", () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "Could not look that word up. Try again." });
     expect(from).toHaveBeenCalledTimes(2); // lookup and count only, no insert
+  });
+});
+
+describe("POST /api/define-word, owner AI switch", () => {
+  it("returns 503 ai-unavailable when AI is switched off and spends no quota or model call", async () => {
+    requireAiSwitchedOn.mockResolvedValue(
+      Response.json({ error: "ai-unavailable" }, { status: 503 }),
+    );
+    modelFetch(new Response(JSON.stringify(modelOk), { status: 200 }));
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "ai-unavailable" });
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });

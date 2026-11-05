@@ -50,11 +50,6 @@ targets:
       - path: Sources
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources
-      # 3D Alphonso preview (TestFlight/debug only): index.html + voice.mp3, kept as a folder reference so
-      # the web view can read them side by side. The model itself is NOT here: it downloads at run time.
-      - path: Preview3D
-        type: folder
-        buildPhase: resources
     # App Group shared with LearnWithAlphonsoWidget below -- the read-only
     # app -> widget progress channel (WidgetSharing.swift, Kit;
     # WidgetProgressPublisher.swift here). XcodeGen generates the

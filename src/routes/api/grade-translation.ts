@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/grade-translation")({
         const { verifyAuth, consumeQuotaFor } = await import("@/lib/ai-quota.server");
         const auth = await verifyAuth(request);
         if (!auth.ok) return Response.json({ error: auth.message }, { status: auth.status });
-        const { requireAiConsent } = await import("@/lib/ai-consent.server");
+        const { requireAiConsent, requireAiSwitchedOn } = await import("@/lib/ai-consent.server");
         const denied = await requireAiConsent(auth.userId, {
           db: auth.supabase,
           route: "grade-translation",
@@ -119,6 +119,8 @@ export const Route = createFileRoute("/api/grade-translation")({
 
         const key = resolveLlmApiKey();
         if (!key) return Response.json(localVerdict);
+        // The owner's AI switch: off means local grading only, never a model call.
+        if (await requireAiSwitchedOn("grade-translation")) return Response.json(localVerdict);
 
         // Quota is spent only now -- after the local list has already failed to
         // settle it, so the budget tracks real vendor calls rather than

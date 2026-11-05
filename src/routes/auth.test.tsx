@@ -116,13 +116,13 @@ describe("Auth page", () => {
     renderPage();
 
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
-    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() =>
       expect(signInWithPassword).toHaveBeenCalledWith({
         email: "ada@example.com",
-        password: "hunter22",
+        password: "hunter22-river",
       }),
     );
     expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true });
@@ -148,13 +148,13 @@ describe("Auth page", () => {
 
     await user.click(screen.getByRole("button", { name: /Create an account/ }));
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
-    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() =>
       expect(signUp).toHaveBeenCalledWith({
         email: "ada@example.com",
-        password: "hunter22",
+        password: "hunter22-river",
         options: {
           // New signups confirm into the placement test, not a cold
           // /learn -- see auth.tsx's signup branch (V4 pkg 3 onboarding).
@@ -170,12 +170,25 @@ describe("Auth page", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it("refuses a new password shorter than 10 characters without calling Supabase", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /Create an account/ }));
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "short1234");
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+    expect(
+      await screen.findByText("Use at least 10 characters for your password."),
+    ).toBeInTheDocument();
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
   async function signUpWithoutSession(user: ReturnType<typeof userEvent.setup>) {
     signUp.mockResolvedValue({ data: { session: null }, error: null });
     renderPage();
     await user.click(screen.getByRole("button", { name: /Create an account/ }));
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
-    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Create account" }));
     return screen.findByLabelText("6-digit code");
   }
@@ -261,7 +274,7 @@ describe("Auth page", () => {
     await user.click(screen.getByRole("button", { name: /Create an account/ }));
     await user.type(screen.getByLabelText("Display name"), "Grace");
     await user.type(screen.getByLabelText("Email"), "grace@example.com");
-    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() =>
@@ -282,7 +295,7 @@ describe("Auth page", () => {
 
     await user.click(screen.getByRole("button", { name: /Create an account/ }));
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
-    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() =>

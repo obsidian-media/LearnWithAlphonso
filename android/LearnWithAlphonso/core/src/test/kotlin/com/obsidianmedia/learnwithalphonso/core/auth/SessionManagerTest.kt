@@ -6,6 +6,11 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -219,5 +224,48 @@ class SessionManagerTest {
         m.restore()
         assertNull(m.freshAccessToken(force = true), "u1's refresh failed")
         assertEquals("u2", (m.state.value as AuthState.SignedIn).session.userId, "u2 is still signed in")
+    }
+
+    @Test
+    fun `sign-out ends this device's session on the auth server with the ending token`() = runTest {
+        val seen = ArrayList<Pair<String, String?>>()
+        val called = CompletableDeferred<Unit>()
+        val engine = MockEngine { req ->
+            seen.add(req.url.encodedPath + "?" + req.url.encodedQuery to req.headers["Authorization"])
+            called.complete(Unit)
+            respond("", HttpStatusCode.NoContent)
+        }
+        val store = MemoryStore(valid())
+        val m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }, store, backgroundScope) { now }
+        m.restore()
+        m.signOut()
+        // The engine answers on its own thread, so wait for the request itself (real time, bounded) rather than the test clock.
+        withContext(Dispatchers.Default) { withTimeout(5_000) { called.await() } }
+        assertEquals(AuthState.SignedOut, m.state.value)
+        assertNull(store.session)
+        assertEquals(listOf("/auth/v1/logout?scope=local" to "Bearer at"), seen)
+    }
+
+    @Test
+    fun `sign-out still ends locally when the logout call fails`() = runTest {
+        val engine = MockEngine { throw IOException("offline") }
+        val store = MemoryStore(valid())
+        val m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }, store, backgroundScope) { now }
+        m.restore()
+        m.signOut()
+        advanceUntilIdle()
+        assertEquals(AuthState.SignedOut, m.state.value)
+        assertNull(store.session)
+    }
+
+    @Test
+    fun `a rejected refresh token signs out without a logout call`() = runTest {
+        val calls = ArrayList<String>()
+        val m = SessionManager(auth(false, calls), MemoryStore(valid()), backgroundScope) { now }
+        m.restore()
+        assertNull(m.freshAccessToken(force = true))
+        advanceUntilIdle()
+        assertEquals(AuthState.SignedOut, m.state.value)
+        assertTrue(calls.none { it.contains("logout") }, calls.toString())
     }
 }

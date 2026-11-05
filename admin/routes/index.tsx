@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { SECOND_FACTOR_REQUIRED_MESSAGE } from "@/lib/admin-auth";
 import { adminWhoAmI } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/")({
@@ -10,8 +11,11 @@ export const Route = createFileRoute("/")({
   loader: async () => {
     try {
       return await adminWhoAmI();
-    } catch {
-      throw redirect({ to: "/signin" });
+    } catch (error) {
+      // An admin whose session lacks a required second factor is sent to finish it, not to sign in again.
+      const needsSecondFactor =
+        error instanceof Error && error.message.includes(SECOND_FACTOR_REQUIRED_MESSAGE);
+      throw redirect({ to: "/signin", search: needsSecondFactor ? { mfa: "required" } : {} });
     }
   },
   component: Home,

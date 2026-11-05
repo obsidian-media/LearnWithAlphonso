@@ -12,30 +12,27 @@ name: Regenerate Supabase Types
 #
 # Required repo secrets:
 #   SUPABASE_ACCESS_TOKEN -- already configured (deploy-supabase uses it)
-#   TYPES_REGEN_DEPLOY_KEY -- private half of the repository deploy key "types-regen workflow (push to main)"
+#   TYPES_REGEN_DEPLOY_KEY -- private half of the repository deploy key "types-regen workflow (push to main)";
+#     loaded only in the final push step, never during install, generate or format
 on:
   workflow_dispatch:
 
-# The default GITHUB_TOKEN is read-only on contents unless a workflow says
-# otherwise. Without this, the commit step below authenticates fine (checkout
-# wires that up) but the push is refused: "Permission to
-# obsidian-media/LearnWithAlphonso.git denied to github-actions[bot] ...
-# 403" -- found by actually dispatching this workflow, not guessed. A
-# workflow whose one job is to push a commit needs this declared explicitly.
+# The push is made with the deploy key in the last step, never with the Actions token, so the token stays
+# read-only.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   regenerate:
     name: Regenerate types.ts from the live schema and commit
     runs-on: ubuntu-latest
+    environment: production-supabase
     steps:
-      # Checked out with a deploy key, so the push below is made by that key and not by the Actions token.
-      # main requires passing checks before anything lands; this job commits a generated file straight to main,
-      # and the ruleset lets this one key through (GitHub does not allow exempting the Actions token itself).
-      - uses: actions/checkout@v4
+      # Checked out WITHOUT credentials: the install, generate and format steps below run third-party code and must
+      # not hold push rights. Only the final step loads the deploy key, for the one push to main.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          ssh-key: ${{ secrets.TYPES_REGEN_DEPLOY_KEY }}
+          persist-credentials: false
 
       # Pinned, same reason as ci.yml's deploy-supabase job: `latest`
       # resolves through the GitHub API and can fail on rate limits alone.
@@ -67,4 +64,15 @@ jobs:
             exit 0
           fi
           git commit -m "chore: regenerate supabase types"
-          git push origin HEAD:"$GITHUB_REF_NAME"
+          # The deploy key exists for main only (it is the one actor main's ruleset lets push a generated file).
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "This workflow pushes to main only; dispatched from $GITHUB_REF_NAME, so not pushing."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/types-regen-key"
+          ( umask 077; printf '%s\n' "$TYPES_REGEN_DEPLOY_KEY" > "$key" )
+          trap 'rm -f "$key"' EXIT
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          git push "git@github.com:${GITHUB_REPOSITORY}.git" HEAD:main
+        env:
+          TYPES_REGEN_DEPLOY_KEY: ${{ secrets.TYPES_REGEN_DEPLOY_KEY }}
