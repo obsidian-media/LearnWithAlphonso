@@ -92,3 +92,50 @@ export function checkNewTableGrants(sql: string): GrantViolation[] {
   }
   return violations;
 }
+
+/**
+ * Guard for new functions (docs/database-privileges.md). Since migration 20261105100000 a new function in `public`
+ * no longer gets EXECUTE for PUBLIC, `anon` or `authenticated` by default. Every function a later migration creates
+ * or replaces must still say, in the same file, who may call it:
+ *   - `REVOKE ... ON FUNCTION public.<name> ... FROM ...` naming `authenticated` (server-only, trigger or cron
+ *     functions), or
+ *   - `GRANT EXECUTE ON FUNCTION public.<name> ... TO` a client role (an RPC the apps call).
+ * Stating it explicitly means a migration reads the same on a database whose defaults differ, and a reviewer sees
+ * the decision. Text-only, like checkNewTableGrants.
+ */
+export type FunctionGrantViolation = { fn: string; problem: string };
+
+export function checkNewFunctionGrants(sql: string): FunctionGrantViolation[] {
+  const code = normalise(sql);
+  // Function bodies can contain anything, including the words GRANT and REVOKE; drop dollar-quoted bodies first.
+  const withoutBodies = code.replace(/\$([a-z_]*)\$[\s\S]*?\$\1\$/gi, " ");
+  const statements = withoutBodies.split(";").map((s) => s.replace(/\s+/g, " ").trim());
+  const functions = [
+    ...withoutBodies.matchAll(
+      /CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+(?:([a-z_0-9]+)\.)?([a-z_0-9]+)\s*\(/gi,
+    ),
+  ]
+    .filter((m) => !m[1] || m[1].toLowerCase() === "public")
+    .map((m) => m[2].toLowerCase());
+
+  const violations: FunctionGrantViolation[] = [];
+  for (const fn of new Set(functions)) {
+    const onThis = new RegExp(`\\bON\\s+FUNCTION\\s+(?:public\\.)?${fn}\\s*\\(`, "i");
+    const stated = statements.some((statement) => {
+      if (!onThis.test(statement)) return false;
+      const revoke = /^REVOKE\s+.+?\s+FROM\s+(.+)$/i.exec(statement);
+      if (revoke) return /\bauthenticated\b/i.test(revoke[1]);
+      const grant = /^GRANT\s+.+?\s+TO\s+(.+)$/i.exec(statement);
+      return !!grant && CLIENT_GRANTEE.test(grant[1]);
+    });
+    if (!stated) {
+      violations.push({
+        fn,
+        problem:
+          `public.${fn} is created without a REVOKE naming authenticated or a GRANT EXECUTE to a client role. ` +
+          `State who may call it in the same migration.`,
+      });
+    }
+  }
+  return violations;
+}

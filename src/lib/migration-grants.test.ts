@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { checkNewTableGrants } from "./migration-grants";
+import { checkNewFunctionGrants, checkNewTableGrants } from "./migration-grants";
 
 const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations");
 /** The migration that made new tables start closed; only migrations AFTER it are held to the rule. */
@@ -174,6 +174,66 @@ describe("migrations written after the privilege tightening", () => {
   it("every new table declares what clients may do with it", () => {
     const problems = migrationsAfter(CUTOFF).flatMap((f) =>
       checkNewTableGrants(fs.readFileSync(path.join(MIGRATIONS, f), "utf8")).map(
+        (v) => `${f}: ${v.problem}`,
+      ),
+    );
+    expect(problems).toEqual([]);
+  });
+});
+
+/** The migration that made new functions start closed to the client roles. */
+const FUNCTION_CUTOFF = "20261105100000";
+
+describe("checkNewFunctionGrants (the checker itself)", () => {
+  const names = (sql: string) => checkNewFunctionGrants(sql).map((v) => v.fn);
+  const fn = (name = "public.f") =>
+    `CREATE OR REPLACE FUNCTION ${name}(_a int) RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;`;
+
+  it("rejects a function with no REVOKE and no GRANT for the client roles", () => {
+    expect(names(fn())).toEqual(["f"]);
+  });
+
+  it("accepts a server-only function that revokes from the client roles", () => {
+    expect(names(`${fn()} REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`)).toEqual([]);
+  });
+
+  it("a REVOKE that leaves authenticated out does not count", () => {
+    expect(names(`${fn()} REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon;`)).toEqual(["f"]);
+  });
+
+  it("accepts a client-callable function that grants EXECUTE to authenticated", () => {
+    expect(names(`${fn()} GRANT EXECUTE ON FUNCTION public.f(int) TO authenticated;`)).toEqual([]);
+  });
+
+  it("a statement about a different function does not count", () => {
+    expect(names(`${fn()} GRANT EXECUTE ON FUNCTION public.g(int) TO authenticated;`)).toEqual(["f"]);
+  });
+
+  it("a REVOKE inside a comment does not count", () => {
+    expect(names(`${fn()} -- REVOKE ALL ON FUNCTION public.f(int) FROM PUBLIC, anon, authenticated;`)).toEqual([
+      "f",
+    ]);
+  });
+
+  it("ignores functions in other schemas", () => {
+    expect(names(fn("private.f"))).toEqual([]);
+  });
+});
+
+describe("migrations written after functions started closed", () => {
+  it("the cutoff migration exists, and changes the default for functions", () => {
+    const file = fs.readdirSync(MIGRATIONS).find((f) => f.startsWith(FUNCTION_CUTOFF));
+    expect(file).toBeDefined();
+    const sql = fs.readFileSync(path.join(MIGRATIONS, file!), "utf8");
+    expect(sql).toMatch(/ALTER DEFAULT PRIVILEGES FOR ROLE postgres\s+REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC/i);
+    expect(sql).toMatch(
+      /ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public\s+REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated/i,
+    );
+  });
+
+  it("every function a later migration creates states what clients may do with it", () => {
+    const problems = migrationsAfter(FUNCTION_CUTOFF).flatMap((f) =>
+      checkNewFunctionGrants(fs.readFileSync(path.join(MIGRATIONS, f), "utf8")).map(
         (v) => `${f}: ${v.problem}`,
       ),
     );
