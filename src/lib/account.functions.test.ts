@@ -815,6 +815,35 @@ describe("revokeAppleGrantForUser with Apple configuration", () => {
     expect(parked).toEqual([{ refresh_token: "rt-1" }]);
   });
 
+  it("opens a sealed stored grant before revoking it, and parks it still sealed", async () => {
+    const { randomBytes } = await import("node:crypto");
+    const { sealToken } = await import("./token-sealing.server");
+    const key = randomBytes(32).toString("base64");
+    configureApple();
+    vi.stubEnv("APPLE_TOKEN_ENCRYPTION_KEY", key);
+    const { generateKeyPairSync } = await import("node:crypto");
+    const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    vi.stubEnv("APPLE_PRIVATE_KEY", privateKey.export({ type: "pkcs8", format: "pem" }).toString());
+    const sealed = sealToken("rt-1", key);
+    const parked: unknown[] = [];
+    const admin = {
+      from: (table: string) =>
+        table === "apple_revocation_pending"
+          ? { insert: async (row: unknown) => (parked.push(row), { error: null }) }
+          : chainable({ data: { refresh_token: sealed }, error: null }),
+    };
+    const realFetch = globalThis.fetch;
+    const fetchMock = vi.fn(async (_url: unknown, _init?: RequestInit) => new Response("", { status: 503 }));
+    globalThis.fetch = fetchMock as never;
+    try {
+      expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+    expect(String(fetchMock.mock.calls[0][1]?.body)).toContain("token=rt-1");
+    expect(parked).toEqual([{ refresh_token: sealed }]);
+  });
+
   it("queues nothing when Apple confirms the revocation", async () => {
     const { generateKeyPairSync } = await import("node:crypto");
     const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });

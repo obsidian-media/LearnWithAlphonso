@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { parseTeamMission, type TeamMission, type TeamMissionRow } from "./team-mission";
@@ -112,7 +113,7 @@ export const getTeamMission = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<TeamMission | null> => {
     const { data: rows, error } = await context.supabase.rpc("get_team_mission");
-    if (error) throw new Error(`getTeamMission: ${error.message}`);
+    if (error) throw publicError("getTeamMission", error);
     return parseTeamMission((rows as TeamMissionRow[] | null)?.[0], Date.now());
   });
 
@@ -121,7 +122,7 @@ export const getMyTeam = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<MyTeam> => {
     const { data: rows, error } = await context.supabase.rpc("get_my_team");
     // A failed lookup must not read as "no team": the screens would offer to create or join one.
-    if (error) throw new Error(`getMyTeam: ${error.message}`);
+    if (error) throw publicError("getMyTeam", error);
     const row = rows?.[0];
     if (!row) return null;
     return {

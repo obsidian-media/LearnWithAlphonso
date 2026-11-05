@@ -338,7 +338,9 @@ export async function revokeAppleGrantForUser(
       return (await appleIdentityOf(supabaseAdmin, userId)) === false ? "not_applicable" : "failed";
     }
 
-    const revoked = await revokeAppleGrant(config, refreshToken);
+    // Stored sealed when APPLE_TOKEN_ENCRYPTION_KEY is set (token-sealing.server.ts); parked below in the same form.
+    const { openToken } = await import("./token-sealing.server");
+    const revoked = await revokeAppleGrant(config, openToken(refreshToken));
     if (revoked) return "revoked";
     // The stored grant is deleted with the account (ON DELETE CASCADE), which used to make this failure
     // permanent. Park the credential, with nothing that links it to the account, so the scheduled pass

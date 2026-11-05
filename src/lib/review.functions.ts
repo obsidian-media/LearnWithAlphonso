@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { publicError } from "./public-error";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -118,7 +119,7 @@ export const recordMisses = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("review_items")
       .upsert(rows, { onConflict: "user_id,item_key,language" });
-    if (error) throw new Error(error.message);
+    if (error) throw publicError(null, error);
     return { added: rows.length };
   });
 

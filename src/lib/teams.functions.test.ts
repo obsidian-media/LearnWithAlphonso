@@ -210,7 +210,7 @@ describe("getMyTeam", () => {
   it("throws when the request fails, so a broken lookup is never mistaken for 'no team'", async () => {
     const supabase = createSupabaseMock();
     supabase.rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
-    await expect(getMyTeam({ context: ctx(supabase) })).rejects.toThrow("getMyTeam: boom");
+    await expect(getMyTeam({ context: ctx(supabase) })).rejects.toThrow("getMyTeam: request-failed");
   });
 
   it("maps the row, defaulting this week's XP to zero", async () => {
@@ -267,6 +267,6 @@ describe("getTeamMission", () => {
   it("throws on an RPC error instead of pretending there is no mission", async () => {
     const supabase = createSupabaseMock();
     supabase.rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
-    await expect(getTeamMission({ context: ctx(supabase) })).rejects.toThrow(/boom/);
+    await expect(getTeamMission({ context: ctx(supabase) })).rejects.toThrow("getTeamMission: request-failed");
   });
 });

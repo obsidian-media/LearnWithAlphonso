@@ -61,7 +61,7 @@ describe("getMyBuddy", () => {
   });
 
   it("throws on an RPC error so a failure never reads as 'no buddy'", async () => {
-    await expect(getMyBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("getMyBuddy: boom");
+    await expect(getMyBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("getMyBuddy: request-failed");
   });
 
   it("maps the row", async () => {
@@ -138,7 +138,7 @@ describe("getBuddyRequests", () => {
 
   it("throws on an RPC error", async () => {
     await expect(getBuddyRequests({ context: ctx(rpcFailing()) })).rejects.toThrow(
-      "getBuddyRequests: boom",
+      "getBuddyRequests: request-failed",
     );
   });
 });
@@ -171,7 +171,7 @@ describe("requestBuddy", () => {
   it("throws on an RPC error", async () => {
     await expect(
       requestBuddy({ context: ctx(rpcFailing()), data: { friendId: FRIEND } }),
-    ).rejects.toThrow("requestBuddy: boom");
+    ).rejects.toThrow("requestBuddy: request-failed");
   });
 });
 
@@ -193,7 +193,7 @@ describe("respondBuddyRequest", () => {
         context: ctx(rpcFailing()),
         data: { requestId: REQUEST, accept: false },
       }),
-    ).rejects.toThrow("respondBuddyRequest: boom");
+    ).rejects.toThrow("respondBuddyRequest: request-failed");
   });
 });
 
@@ -211,7 +211,7 @@ describe("cancelBuddyRequest", () => {
   it("throws on an RPC error", async () => {
     await expect(
       cancelBuddyRequest({ context: ctx(rpcFailing()), data: { requestId: REQUEST } }),
-    ).rejects.toThrow("cancelBuddyRequest: boom");
+    ).rejects.toThrow("cancelBuddyRequest: request-failed");
   });
 });
 
@@ -223,7 +223,7 @@ describe("endBuddy", () => {
   });
 
   it("throws on an RPC error", async () => {
-    await expect(endBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("endBuddy: boom");
+    await expect(endBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("endBuddy: request-failed");
   });
 });
 
@@ -247,7 +247,7 @@ describe("sendBuddyMessage", () => {
   it("throws on an RPC error", async () => {
     await expect(
       sendBuddyMessage({ context: ctx(rpcFailing()), data: { presetId: "nice_work" } }),
-    ).rejects.toThrow("sendBuddyMessage: boom");
+    ).rejects.toThrow("sendBuddyMessage: request-failed");
   });
 });
 
@@ -276,7 +276,7 @@ describe("getBuddyMessages", () => {
 
   it("throws on an RPC error, never an empty history", async () => {
     await expect(getBuddyMessages({ context: ctx(rpcFailing()) })).rejects.toThrow(
-      "getBuddyMessages: boom",
+      "getBuddyMessages: request-failed",
     );
   });
 });
@@ -321,10 +321,10 @@ describe("buddy matching", () => {
 
   it("throws on an RPC error (never 'matching is off' or 'not waiting' by accident)", async () => {
     await expect(getBuddyPool({ context: ctx(rpcFailing()) })).rejects.toThrow(
-      "getBuddyPool: boom",
+      "getBuddyPool: request-failed",
     );
     await expect(
       joinBuddyPool({ context: ctx(rpcFailing()), data: { course: "en", ageConfirmed: true } }),
-    ).rejects.toThrow("joinBuddyPool: boom");
+    ).rejects.toThrow("joinBuddyPool: request-failed");
   });
 });

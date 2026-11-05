@@ -164,7 +164,7 @@ describe("fetchPodcastQuiz", () => {
       podcast_quiz_questions: { data: null, error: { message: "boom" } },
       podcast_quiz_awards: { data: null, error: null },
     });
-    await expect(get(c)).rejects.toThrow("boom");
+    await expect(get(c)).rejects.toThrow("request-failed");
   });
 });
 
@@ -217,6 +217,6 @@ describe("fetchQuizEpisodeIds", () => {
   });
 
   it("a failed read is an error the caller can ignore", async () => {
-    await expect(call(client({ data: null, error: { message: "boom" } }))).rejects.toThrow("boom");
+    await expect(call(client({ data: null, error: { message: "boom" } }))).rejects.toThrow("request-failed");
   });
 });

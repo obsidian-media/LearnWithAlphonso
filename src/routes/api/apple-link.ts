@@ -73,10 +73,12 @@ export const Route = createFileRoute("/api/apple-link")({
 
         // Upsert: signing in with Apple again issues a new grant, and the
         // newest token is the one revocation must use.
+        const { sealToken } = await import("@/lib/token-sealing.server");
         const { error } = await supabaseAdmin.from("apple_auth_tokens").upsert(
           {
             user_id: userData.user.id,
-            refresh_token: refreshToken,
+            // Sealed with APPLE_TOKEN_ENCRYPTION_KEY when it is set (token-sealing.server.ts).
+            refresh_token: sealToken(refreshToken),
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" },
