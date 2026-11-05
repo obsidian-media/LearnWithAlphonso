@@ -3,32 +3,59 @@
 # data, tests/fixtures, one-off tooling or docs; our own CI (eslint, tsc,
 # prettier, the migration/grant guards) already covers the shipped code in
 # src/, supabase/functions and the iOS/Android sources.
-# Kept ON on purpose: .github/** (Semgrep GitHub Actions rules) and secrets
-# scanning over all non-test source.
+# Kept ON on purpose: .github/** (Semgrep GitHub Actions rules), the shell
+# scripts in scripts/ (they handle CI secrets), and every src/data module that
+# holds logic (grading, bank engine, generative compilers).
+# Globs are Java glob syntax: "**/" needs at least one directory, so root-level
+# files need their own pattern (e.g. "*.md"). Note: while this file exists,
+# Codacy ignores the "Ignored files" settings in its UI.
 exclude_paths:
   # Tests, fixtures, end-to-end specs
   - "**/*.test.ts"
   - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/__testutils__/**"
+  - "**/*.testutil.ts"
   - "e2e/**"
   - "ios/LearnWithAlphonsoKit/Tests/**"
   - "android/**/src/test/**"
   - "android/**/src/androidTest/**"
   # Generated files and exported content
   - "src/integrations/supabase/types.ts"
-  - "src/data/**"
+  # src/data: content-only modules (no exported logic). Mixed modules such as
+  # lesson-bank.ts, curriculum*.ts, placement.ts, bank-engine.ts and
+  # also-correct.ts ship runtime logic and stay analysed.
+  - "src/data/**.json"
+  - "src/data/vocab-images.ts"
+  - "src/data/question-fixes-a1a2.ts"
+  - "src/data/lesson-bank-es.ts"
+  - "src/data/lesson-bank-fr.ts"
+  - "src/data/question-variety-translate.ts"
+  - "src/data/question-variety-translate-more.ts"
+  - "src/data/question-variety-authored.ts"
+  - "src/data/campaigns-more.ts"
+  - "src/data/campaigns-batch2.ts"
+  - "src/data/levels.ts"
+  - "src/data/podcast-quizzes.ts"
+  - "src/data/placement-es.ts"
+  - "src/data/placement-fr.ts"
+  - "src/data/pack-extra-vocab.ts"
+  - "src/data/generative/*-data.ts"
   - "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Resources/**"
   - "ios/LearnWithAlphonso/Resources/**"
   - "android/LearnWithAlphonso/app/src/main/assets/content/**"
   - "android/LearnWithAlphonso/app/schemas/**"
   - ".audit-baseline/**"
-  # Build-time/ops scripts (fixed hosts, repo-local paths) and review data
-  - "scripts/**"
+  # Build-time/ops scripts (fixed hosts, repo-local paths) and review data.
+  # Run in CI only via workflow_dispatch (write-access inputs). *.sh stays in.
+  - "scripts/**.ts"
+  - "scripts/**.py"
+  - "scripts/**.json"
   # SQL migrations: the SQL rules enabled in Codacy target a different
   # schema convention (RAC_* tables, role-only GRANT). Grants are enforced by
   # our own CI guards (migration-grants).
   - "supabase/migrations/**"
   # Prose
   - "docs/**"
+  - "*.md"
   - "**/*.md"
