@@ -18,6 +18,7 @@ import LearnWithAlphonsoKit
 struct SettingsView: View {
     let session: Session
     @EnvironmentObject private var aiConsent: AIConsentStore
+    @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     @State private var showAIDisclosure = false
     @State private var isUpdatingAIConsent = false
     @State private var aiConsentErrorMessage: String?
@@ -144,6 +145,25 @@ struct SettingsView: View {
                         .font(AlphonsoFont.sans(12, weight: .semiBold))
                         .tracking(0.4)
                         .foregroundStyle(AlphonsoColor.ember)
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+
+                Section {
+                    Toggle(isOn: $showAlphonso) {
+                        Text("Show Alphonso while practising")
+                            .font(AlphonsoFont.sans(15, weight: .medium))
+                    }
+                    .tint(AlphonsoColor.moss)
+                    .accessibilityIdentifier("showAlphonsoToggle")
+                } header: {
+                    Text("Practice")
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                } footer: {
+                    Text("A little animated Alphonso listens and talks with you in Practice speaking.")
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
