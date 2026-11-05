@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import { rawCurriculum } from "./curriculum";
+import { PLACEMENT_QUESTIONS } from "./placement";
 import { QUESTION_FIXES } from "./question-fixes";
 import { REVIEWED_PHRASES } from "./reviewed-phrases";
 import {
@@ -471,5 +472,85 @@ describe("the A1/A2 English bank", () => {
       (s) => !s.hasImage && (!s.context || s.context === BLANKET_CONTEXT) && hasClue(s.prompt),
     );
     expect({ picture, context, clue }).toEqual(PINNED_SPLIT);
+  });
+});
+
+/**
+ * The English placement test (src/data/placement.ts). It sets a learner's starting level and was
+ * not covered by the lesson sweep above, which is how "Nighting / Good nightly" shipped as the
+ * options for "Choose the correct farewell". The same slot check runs on its fill-in questions.
+ */
+describe("the English placement bank", () => {
+  // Reviewed exceptions: a wrong option that is a real learner error but sits outside the slot pool.
+  // Each needs a reason; none may be added to make an absurd option pass.
+  const PLACEMENT_ALLOW: Record<string, string[]> = {
+    // "He is having a big house": the stative-verb error, a common one.
+    p3b: ["is having"],
+    // "You don't have to / might not smoke in here": the must-not / not-have-to confusion.
+    p9b: ["don't have to", "might not"],
+  };
+  // Fill-in questions whose slot the inference cannot name (verb forms, relatives, connectors).
+  // Their wrong options are judged by a reader, not by this gate; the count may only go down.
+  const UNCLASSIFIED_BUDGET = 17;
+  const cloze = PLACEMENT_QUESTIONS.flatMap((q) =>
+    q.type === "mc" && q.prompt.includes("___") ? [q] : [],
+  );
+  const check = (q: (typeof cloze)[number]) =>
+    checkDistractors({
+      key: "placement/" + q.id,
+      id: q.id,
+      prompt: q.prompt,
+      answer: q.choices[q.answer]!,
+      options: q.choices,
+    }).filter((i) => !(i.kind === "off-pool" && PLACEMENT_ALLOW[q.id]?.includes(i.option)));
+
+  it("fails on the options that shipped", () => {
+    const kindsOf = (prompt: string, answer: string, wrong: string[]) =>
+      kinds(shape(prompt, answer, wrong));
+    expect(kindsOf("He ___ a big house.", "has", ["have", "haves", "having"])).toContain(
+      "off-pool",
+    );
+    expect(
+      kindsOf("There ___ a lot of people at the party last night.", "were", ["was", "is", "be"]),
+    ).toContain("also-correct");
+  });
+
+  it("has no wrong option outside its slot, and none that is also correct", () => {
+    const bad = cloze
+      .map((q) => ({ id: q.id, issues: check(q).filter((i) => i.kind !== "unclassified") }))
+      .filter((x) => x.issues.length)
+      .map((x) => `${x.id} ${JSON.stringify(x.issues)}`);
+    expect(bad).toEqual([]);
+  });
+
+  it("does not add fill-in questions whose slot cannot be inferred", () => {
+    const n = cloze.filter((q) => check(q).some((i) => i.kind === "unclassified")).length;
+    expect(n).toBeLessThanOrEqual(UNCLASSIFIED_BUDGET);
+  });
+
+  it("keeps the retired absurd options out of every question", () => {
+    // Options that shipped and that no learner would ever choose.
+    const RETIRED = [
+      "nighting",
+      "good nightly",
+      "good night to you go",
+      "haves",
+      "mine own",
+      "would took",
+      "take will",
+      "don't must",
+      "to the store walking, rain started.",
+      "the rain, walking to the store, started.",
+      "much proof stuff",
+      "goodest",
+    ];
+    const bad = PLACEMENT_QUESTIONS.flatMap((q) =>
+      q.type === "mc" || q.type === "listening"
+        ? q.choices
+            .filter((c) => RETIRED.includes(c.trim().toLowerCase()))
+            .map((c) => q.id + ": " + c)
+        : [],
+    );
+    expect(bad).toEqual([]);
   });
 });

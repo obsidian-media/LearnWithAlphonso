@@ -124,3 +124,23 @@ rules are applied from what the pack itself says. The code is `src/data/romance-
   nobody can answer those by ear.
 - **Walk.** The old seeded walk stepped by 7 and so visited only two candidates in a 15-line pack (14 others),
   which gave those questions two wrong options instead of three. A step that does not divide the count fixes it.
+
+## Placement banks
+
+The placement tests (`src/data/placement.ts`, `placement-fr.ts`, `placement-es.ts`) set a learner's starting level
+and follow the same three rules. They were first reviewed on 2026-11-05 and had the same defect classes the lesson
+banks had (nonsense options, a second defensible answer, a key that makes a broken sentence, English leaking into
+French and Spanish, items in the wrong band). Question ids, the nine-per-band pool and the adaptive structure do not
+change when a question is fixed; only its content does.
+
+- **English fill-in questions** run through the same slot check as the lessons
+  (`distractor-gate.test.ts`, "the English placement bank"): no wrong option outside its slot pool unless it is on
+  that test's reviewed allow-list (with a reason), no wrong option that is also correct, and the count of
+  questions the inference cannot classify may only go down.
+- **French and Spanish** have no tagger, so the gate (`romance-options.test.ts`, "the French and Spanish placement
+  banks") checks what generalises: no English outside a quoted gloss or a bracketed hint, the sentence the key makes
+  has no doubled word and no uncontracted article ("a pesar de el"), a Spanish question opens with the inverted mark
+  it closes with, and the options that shipped as nonsense cannot return.
+- **A single right answer is a human judgement** for tense, mood and connector questions (a present tense that is
+  also acceptable for a near future, "shouldn't" next to "mustn't"). The fix is to rewrite the stem so one option
+  fits, not to swap in an absurd option. Questions of that kind are listed in the PR as needing a native check.

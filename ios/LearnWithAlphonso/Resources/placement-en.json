@@ -18,12 +18,12 @@
     "type": "mc",
     "prompt": "Choose the most formal greeting:",
     "choices": [
-      "Oi you",
+      "Hey",
+      "Hi there",
       "Good morning",
-      "Yo",
-      "Alright mate"
+      "What's up"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "p3",
@@ -72,8 +72,8 @@
     "choices": [
       "have",
       "has",
-      "haves",
-      "having"
+      "having",
+      "is having"
     ],
     "answer": 1
   },
@@ -86,7 +86,7 @@
       "I",
       "my",
       "me",
-      "mine own"
+      "mine"
     ],
     "answer": 1
   },
@@ -107,12 +107,12 @@
     "id": "p3c",
     "level": "A1",
     "type": "mc",
-    "prompt": "Choose the correct farewell:",
+    "prompt": "It is late at night and you are going to bed. Choose the correct farewell:",
     "choices": [
       "Good night",
-      "Good night to you go",
-      "Nighting",
-      "Good nightly"
+      "Good morning",
+      "Good afternoon",
+      "Hello again"
     ],
     "answer": 0
   },
@@ -159,7 +159,7 @@
     "id": "p4b",
     "level": "A2",
     "type": "mc",
-    "prompt": "She ___ her homework already.",
+    "prompt": "Yesterday she ___ her homework before dinner.",
     "choices": [
       "finish",
       "finished",
@@ -172,14 +172,14 @@
     "id": "p5b",
     "level": "A2",
     "type": "mc",
-    "prompt": "There ___ many people at the party.",
+    "prompt": "There ___ a lot of people at the party last night.",
     "choices": [
-      "was",
-      "is",
       "were",
-      "be"
+      "is",
+      "be",
+      "been"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "p6b",
@@ -216,7 +216,7 @@
       "good",
       "better",
       "best",
-      "goodest"
+      "most good"
     ],
     "answer": 2
   },
@@ -241,8 +241,8 @@
     "choices": [
       "took",
       "will take",
-      "would took",
-      "take will"
+      "would take",
+      "have taken"
     ],
     "answer": 1
   },
@@ -306,8 +306,8 @@
     "choices": [
       "don't have to",
       "mustn't",
-      "shouldn't",
-      "don't must"
+      "needn't",
+      "might not"
     ],
     "answer": 1
   },
@@ -393,14 +393,14 @@
     "id": "p10b",
     "level": "B2",
     "type": "mc",
-    "prompt": "She said she ___ the report by Friday.",
+    "prompt": "Last week she said she ___ the report by Friday.",
     "choices": [
-      "will finish",
       "would finish",
-      "finishes",
-      "finish"
+      "finishing",
+      "had finish",
+      "finishes"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "p11b",
@@ -458,27 +458,27 @@
     "id": "p12c",
     "level": "B2",
     "type": "mc",
-    "prompt": "\"Nevertheless\" signals:",
+    "prompt": "\"Hence\" is closest in meaning to:",
     "choices": [
-      "addition",
-      "concession/contrast",
-      "cause",
-      "example"
+      "therefore",
+      "however",
+      "meanwhile",
+      "although"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "p13",
     "level": "C1",
     "type": "mc",
-    "prompt": "Most formal equivalent of \"buy\":",
+    "prompt": "Not only ___ the deadline, but they also went over budget.",
     "choices": [
-      "pick up",
-      "purchase",
-      "get hold of",
-      "grab"
+      "did they miss",
+      "they missed",
+      "they did miss",
+      "they miss"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "p14",
@@ -523,14 +523,14 @@
     "id": "p14b",
     "level": "C1",
     "type": "mc",
-    "prompt": "Most precise register-appropriate word for \"a lot of proof\":",
+    "prompt": "She took the setback in her ___ and carried on.",
     "choices": [
-      "loads of proof",
-      "substantial evidence",
-      "big proof",
-      "much proof stuff"
+      "stride",
+      "step",
+      "pace",
+      "march"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "p15b",
@@ -540,8 +540,8 @@
     "choices": [
       "Walking to the store, the rain started.",
       "Walking to the store, I got caught in the rain.",
-      "The rain, walking to the store, started.",
-      "To the store walking, rain started."
+      "While walking to the store, the rain soaked my shoes.",
+      "Having walked to the store, the rain stopped."
     ],
     "answer": 1
   },
@@ -593,7 +593,7 @@
     "choices": [
       "The shop shuts at six.",
       "The shop shuts at seven.",
-      "The shops shut at six.",
+      "The shop shuts at five.",
       "The shop opens at six."
     ],
     "answer": "The shop shuts at six."
@@ -750,11 +750,14 @@
     "id": "p62",
     "level": "B1",
     "type": "translate",
-    "prompt": "Explain that you cannot commit until you know your schedule.",
+    "prompt": "Say that it all depends on how much time you have.",
     "acceptableAnswers": [
       "It depends how much time we have.",
       "It depends on the time available.",
-      "That depends how much time there is."
+      "That depends how much time there is.",
+      "It depends on how much time I have.",
+      "That depends on how much time I have.",
+      "It depends how much time I have."
     ]
   },
   {
