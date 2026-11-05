@@ -289,7 +289,7 @@ final class PlacementLogicTests: XCTestCase {
                 let resolution = resolveBand(bandPool: pool, currentIdx: idx, correctInBand: correct, tally: tally)
                 var nextReal = real
                 nextReal[level] = correct
-                let nextBand = resolution.nextIdx < placementOrder.count
+                let nextBand = placementOrder.indices.contains(resolution.nextIdx)
                     ? (pool[placementOrder[resolution.nextIdx]] ?? [])
                     : []
                 if resolution.stop || nextBand.isEmpty {
@@ -332,7 +332,11 @@ final class PlacementLogicTests: XCTestCase {
                 // Every credit still standing at the end rests on a REAL pass of the band above it -- and the band
                 // itself was not asked.
                 for skipped in s.tally.skippedLevels {
-                    let above = placementOrder[placementOrder.firstIndex(of: skipped)! + 1]
+                    guard let i = placementOrder.firstIndex(of: skipped), i + 1 < placementOrder.count else {
+                        XCTFail("\(story): \(skipped) can never be a skipped band")
+                        continue
+                    }
+                    let above = placementOrder[i + 1]
                     XCTAssertFalse(s.asked.contains(skipped), story)
                     XCTAssertGreaterThanOrEqual(s.real[above] ?? 0, placementPassMark, story)
                 }
@@ -385,7 +389,12 @@ final class PlacementLogicTests: XCTestCase {
         var correct: Int { answers.filter { $0 }.count }
 
         mutating func answer(_ right: Bool) {
-            precondition(!finished, "answered after the exam ended")
+            // A failed expectation, not a trap: if the exam ends early (the very regression these tests exist for)
+            // a precondition here would kill the whole test process and take every other Kit test down with it.
+            guard !finished else {
+                XCTFail("answered a question after the exam had already ended")
+                return
+            }
             answers.append(right)
             if answers.count == attempt.shown.count {
                 finished = attempt.completeBand(answers: answers)

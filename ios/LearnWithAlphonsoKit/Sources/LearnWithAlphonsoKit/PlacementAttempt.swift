@@ -81,7 +81,7 @@ public struct PlacementAttempt {
             bandPool: bandPool, currentIdx: bandIdx, correctInBand: correctInBand, tally: tally)
         tally = resolution.tally
 
-        let nextBand = resolution.nextIdx < placementOrder.count
+        let nextBand = placementOrder.indices.contains(resolution.nextIdx)
             ? (bandPool[placementOrder[resolution.nextIdx]] ?? [])
             : []
         if resolution.stop || nextBand.isEmpty { return true }
