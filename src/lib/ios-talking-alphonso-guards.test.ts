@@ -17,7 +17,9 @@ const APP = "ios/LearnWithAlphonso";
 const KIT = "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit";
 const ART = `${APP}/AlphonsoAvatar`;
 const VIEW = `${APP}/Sources/AlphonsoAvatarView.swift`;
-const AVATAR_KIT_FILES = fs.readdirSync(path.join(root, KIT)).filter((f) => /^Avatar.*\.swift$/.test(f));
+const AVATAR_KIT_FILES = fs
+  .readdirSync(path.join(root, KIT))
+  .filter((f) => /^Avatar.*\.swift$/.test(f));
 const AVATAR_FILES = [VIEW, ...AVATAR_KIT_FILES.map((f) => `${KIT}/${f}`)];
 
 const manifest = JSON.parse(read(`${ART}/manifest.json`)) as {
@@ -27,21 +29,29 @@ const manifest = JSON.parse(read(`${ART}/manifest.json`)) as {
 describe("the setting", () => {
   it("is 'Show Alphonso while practising', stored under one key that defaults to on", () => {
     const layers = code(`${KIT}/AvatarLayers.swift`);
-    expect(layers).toMatch(/enum AvatarPreference\s*\{[^}]*static let key = "showAlphonsoWhilePractising"/s);
+    expect(layers).toMatch(
+      /enum AvatarPreference\s*\{[^}]*static let key = "showAlphonsoWhilePractising"/s,
+    );
     expect(layers).toMatch(/enum AvatarPreference\s*\{[^}]*static let defaultValue = true/s);
   });
 
   it("has a toggle in Settings bound to that key with the default", () => {
     const settings = code(`${APP}/Sources/SettingsView.swift`);
-    expect(settings).toContain("@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue");
+    expect(settings).toContain(
+      "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
+    );
     expect(settings).toContain("Toggle(isOn: $showAlphonso)");
     expect(settings).toContain("Show Alphonso while practising");
   });
 
   it("gates the stage on the Practice speaking screen, so off leaves the screen as it was", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
-    expect(conversation).toContain("@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue");
-    expect(conversation).toMatch(/\.safeAreaInset\(edge: \.top, spacing: 0\) \{\s*if showAlphonso \{\s*AlphonsoAvatarStage\(/);
+    expect(conversation).toContain(
+      "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
+    );
+    expect(conversation).toMatch(
+      /\.safeAreaInset\(edge: \.top, spacing: 0\) \{\s*if showAlphonso \{\s*AlphonsoAvatarStage\(/,
+    );
   });
 });
 
@@ -57,7 +67,13 @@ describe("Reduce Motion", () => {
     const guardAt = view.indexOf("guard !reduceMotion else { return frame }");
     expect(poseAt).toBeGreaterThan(-1);
     expect(guardAt).toBeGreaterThan(poseAt);
-    for (const motion of ["idle.advance(", "idle.twitchingEar", "idle.glintProgress", "AvatarIdleMotion.swayDegrees(", "AvatarIdleMotion.breathScale("]) {
+    for (const motion of [
+      "idle.advance(",
+      "idle.twitchingEar",
+      "idle.glintProgress",
+      "AvatarIdleMotion.swayDegrees(",
+      "AvatarIdleMotion.breathScale(",
+    ]) {
       const at = view.indexOf(motion);
       expect(at, motion).toBeGreaterThan(guardAt);
     }
@@ -75,7 +91,8 @@ describe("the art", () => {
   it("ships every layer in the manifest, plus the manifest, and nothing else", () => {
     expect(expectedWebp).toHaveLength(15);
     expect([...files].sort()).toEqual([...expectedWebp, "manifest.json"].sort());
-    for (const f of expectedWebp) expect(fs.statSync(path.join(root, ART, f)).size, f).toBeGreaterThan(100);
+    for (const f of expectedWebp)
+      expect(fs.statSync(path.join(root, ART, f)).size, f).toBeGreaterThan(100);
   });
 
   it("is a folder reference in the app target's resources", () => {
@@ -87,11 +104,16 @@ describe("the art", () => {
     const layers = code(`${KIT}/AvatarLayers.swift`);
     expect(layers).toContain('"mouth-\\(viseme.rawValue).webp"');
     expect(layers).toContain('"brows-\\(brows.rawValue).webp"');
-    expect(layers).toContain('"ear-\\(side == .left ? "left" : "right")-\\(twitching ? "twitch" : "neutral").webp"');
+    expect(layers).toContain(
+      '"ear-\\(side == .left ? "left" : "right")-\\(twitching ? "twitch" : "neutral").webp"',
+    );
     expect(layers).toContain('baseFile = "base.webp"');
     expect(layers).toContain('glintMaskFile = "glint-mask.webp"');
-    for (const mouth of ["half", "talk", "ah", "oh", "ee", "fv"]) expect(manifest.layers[`mouth-${mouth}`], mouth).toBeDefined();
-    expect(code(`${KIT}/AvatarVisemes.swift`)).toMatch(/enum AvatarViseme[^{]*\{\s*case closed, half, talk, ah, oh, ee, fv\s*\}/);
+    for (const mouth of ["half", "talk", "ah", "oh", "ee", "fv"])
+      expect(manifest.layers[`mouth-${mouth}`], mouth).toBeDefined();
+    expect(code(`${KIT}/AvatarVisemes.swift`)).toMatch(
+      /enum AvatarViseme[^{]*\{\s*case closed, half, talk, ah, oh, ee, fv\s*\}/,
+    );
   });
 
   it("is placed with the manifest's own rectangles", () => {
@@ -115,7 +137,9 @@ describe("what he is built from", () => {
   it("has no web view, scene kit or sprite kit, and no new dependency", () => {
     for (const f of AVATAR_FILES) {
       const src = code(f);
-      expect(src, f).not.toMatch(/WKWebView|import WebKit|SFSafariViewController|import SpriteKit|import SceneKit|import RealityKit/);
+      expect(src, f).not.toMatch(
+        /WKWebView|import WebKit|SFSafariViewController|import SpriteKit|import SceneKit|import RealityKit/,
+      );
     }
   });
 
@@ -128,7 +152,10 @@ describe("what he is built from", () => {
   it("is drawn from the reply audio's own clock, not a second voice", () => {
     const view = code(VIEW);
     expect(view).toContain("voice.replyPlayback");
-    for (const f of AVATAR_FILES) expect(code(f), f).not.toMatch(/AVSpeechSynthesizer|AVSpeechUtterance|AVSpeechSynthesisVoice/);
+    for (const f of AVATAR_FILES)
+      expect(code(f), f).not.toMatch(
+        /AVSpeechSynthesizer|AVSpeechUtterance|AVSpeechSynthesisVoice/,
+      );
   });
 
   it("keeps SpeechVoice as the only place that chooses an on-device voice", () => {
@@ -138,12 +165,15 @@ describe("what he is built from", () => {
         if (e.isDirectory()) return swift(rel);
         return e.name.endsWith(".swift") ? [rel] : [];
       });
-    const users = swift(`${APP}/Sources`).filter((f) => code(f).includes("AVSpeechSynthesisVoice(language:"));
+    const users = swift(`${APP}/Sources`).filter((f) =>
+      code(f).includes("AVSpeechSynthesisVoice(language:"),
+    );
     expect(users).toEqual([`${APP}/Sources/SpeechVoice.swift`]);
   });
 
   it("commits no local path", () => {
     const own = [...AVATAR_FILES, `${ART}/manifest.json`];
-    for (const f of own) expect(read(f), f).not.toMatch(/[A-Za-z]:[\\/](?:Users|Agent|Temp)|\/Users\/|AgentDev/);
+    for (const f of own)
+      expect(read(f), f).not.toMatch(/[A-Za-z]:[\\/](?:Users|Agent|Temp)|\/Users\/|AgentDev/);
   });
 });
