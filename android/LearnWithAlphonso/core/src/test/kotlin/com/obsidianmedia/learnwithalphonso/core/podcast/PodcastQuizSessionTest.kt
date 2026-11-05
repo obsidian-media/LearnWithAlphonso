@@ -82,4 +82,25 @@ class PodcastQuizSessionTest {
         gate.complete(server)
         assertTrue(s.run.value.phase == PodcastQuizPhase.Done)
     }
+
+    @Test
+    fun `every question of a seven-question quiz takes a choice after the ones before, then sends once`() = runTest {
+        // The shape of "Ordering Coffee" (keys 1,0,2,1,2,0,2); on iOS question 3 froze in QA.
+        val keys = listOf(1, 0, 2, 1, 2, 0, 2)
+        val seven = keys.mapIndexed { i, key -> PodcastQuizQuestion("q${i + 1}", "P$i", listOf("a", "b", "c"), key) }
+        val sent = ArrayList<List<PodcastQuizAnswer>>()
+        val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
+        val s = PodcastQuizSession(PodcastQuizOffer(seven, null), scope, { a, _ -> sent.add(a); server }, { 1L })
+        for (position in seven.indices) {
+            assertEquals(position, s.run.value.index)
+            assertEquals(null, s.run.value.selected, "question ${position + 1} starts with nothing chosen")
+            s.select(2)
+            assertEquals(2, s.run.value.selected, "question ${position + 1} took the choice")
+            s.check()
+            assertTrue(s.run.value.checked)
+            s.next()
+        }
+        assertEquals(1, sent.size)
+        assertEquals(seven.map { PodcastQuizAnswer(it.id, 2) }, sent[0])
+    }
 }

@@ -112,6 +112,45 @@ final class PodcastQuizTests: XCTestCase {
         XCTAssertEqual(run.result, result)
     }
 
+    /// The shape of "Ordering Coffee" (seven questions, three choices, keys 1,0,2,1,2,0,2), walked past question 3 the
+    /// way QA did: question 3 froze on a device. The run must accept a choice on every question, whatever was picked
+    /// before, so a freeze there is the screen's (it was a dead tap target), never this state machine's.
+    func testEveryQuestionOfASevenQuestionQuizTakesAChoiceAfterTheOnesBefore() {
+        let keys = [1, 0, 2, 1, 2, 0, 2]
+        let seven = keys.enumerated().map { offset, key in
+            PodcastQuizQuestion(
+                id: "q\(offset + 1)", prompt: "Question \(offset + 1)?", choices: ["a", "b", "c"], answerIndex: key)
+        }
+        for pick in 0..<3 {
+            var run = PodcastQuizRun(questions: seven)
+            for position in 0..<seven.count {
+                XCTAssertEqual(run.index, position)
+                XCTAssertNil(run.selected, "question \(position + 1) starts with nothing chosen")
+                XCTAssertFalse(run.checked)
+                run.select(pick)
+                XCTAssertEqual(run.selected, pick, "question \(position + 1) took choice \(pick)")
+                run.check()
+                XCTAssertTrue(run.checked)
+                run.next()
+            }
+            XCTAssertEqual(run.phase, .submitting)
+            XCTAssertEqual(run.answers.map(\.choiceIndex), Array(repeating: pick, count: 7))
+            XCTAssertEqual(run.answers.map(\.questionID), (1...7).map { "q\($0)" })
+        }
+        // The two device runs: question 2 answered right, then wrong; question 3 must still take a choice.
+        for picks in [[1, 0], [1, 1]] {
+            var run = PodcastQuizRun(questions: seven)
+            for pick in picks {
+                run.select(pick)
+                run.check()
+                run.next()
+            }
+            XCTAssertEqual(run.index, 2)
+            run.select(2)
+            XCTAssertEqual(run.selected, 2)
+        }
+    }
+
     func testSavedAndFailedAreIgnoredWhenNothingWasSubmitted() {
         var run = PodcastQuizRun(questions: questions)
         run.saved(PodcastQuizResult(correct: 2, total: 2, xpGain: 20, streak: 1, bestCorrect: 2, bestXP: 20, missedQuestionIDs: []))

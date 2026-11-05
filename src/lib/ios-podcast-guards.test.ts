@@ -346,3 +346,77 @@ describe("iOS podcast quiz guards", () => {
     expect(retry).toContain("error.isRetryable");
   });
 });
+
+describe("iOS podcast quiz: every choice card takes a tap, and the row button reads on the scene", () => {
+  const sheet = () => source("Sources/PodcastQuizSheet.swift");
+
+  // QA froze at question 3 of "Ordering Coffee": its choices ("It means no") are the first that are all shorter than
+  // half the card. A plain-style button hit-tests only what it draws, so the middle of each card was dead.
+  it("the choice button's hit shape is the whole card, set after the full-width frame", () => {
+    const row = functionBody(
+      sheet(),
+      "private func choiceRow(index: Int, text: String, answerIndex: Int) -> some View {",
+    );
+    const frame = row.indexOf(".frame(maxWidth: .infinity, minHeight: 44");
+    const shape = row.indexOf(".contentShape(RoundedRectangle(cornerRadius: 12))");
+    const plain = row.indexOf(".buttonStyle(.plain)");
+    expect(frame).toBeGreaterThan(-1);
+    expect(plain).toBeGreaterThan(-1);
+    // On the label, after the frame that makes it full width (a shape on the Text alone would cover only the glyphs).
+    expect(shape).toBeGreaterThan(frame);
+    expect(shape).toBeLessThan(plain);
+    expect(row.indexOf("run.select(index)")).toBeLessThan(shape);
+  });
+
+  const rowButton = () => {
+    const text = sheet();
+    const start = text.indexOf("struct PodcastQuizRowButton: View {");
+    expect(start).toBeGreaterThan(-1);
+    return text.slice(start, text.indexOf("private func open() async {", start));
+  };
+
+  it("the row button is an opaque surface chip with ink words, not a translucent tint on the photo", () => {
+    const button = rowButton();
+    expect(button).toContain(".buttonStyle(AlphonsoSecondaryButtonStyle(fullWidth: false))");
+    expect(button).not.toMatch(/\.buttonStyle\(\.bordered\)|\.buttonStyle\(\.plain\)/);
+    expect(button).not.toMatch(/\.tint\(AlphonsoColor\.moss\)/);
+    expect(button).toContain(".labelStyle(PodcastQuizChipLabelStyle())");
+    const style = sheet().slice(
+      sheet().indexOf("private struct PodcastQuizChipLabelStyle: LabelStyle {"),
+    );
+    expect(style).toMatch(/configuration\.title[\s\S]*?\.foregroundStyle\(AlphonsoColor\.ink\)/);
+    const components = source("Sources/DesignSystem/AlphonsoComponents.swift");
+    const secondary = functionBody(
+      components.slice(components.indexOf("struct AlphonsoSecondaryButtonStyle: ButtonStyle {")),
+      "func makeBody(configuration: Configuration) -> some View {",
+    );
+    expect(secondary).toContain(
+      ".background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))",
+    );
+  });
+
+  it("ink on surface is at least 4.5:1 in every theme, light and dark", () => {
+    const theme = source("Sources/DesignSystem/AlphonsoTheme.swift");
+    const hex = (name: string) =>
+      [
+        ...theme.matchAll(new RegExp(String.raw`\b${name}: Color\(hex: 0x([0-9A-Fa-f_]+)\)`, "g")),
+      ].map((m) => parseInt(m[1].replace(/_/g, ""), 16));
+    const surfaces = hex("surface");
+    const inks = hex("ink");
+    // Four light themes and three dark variants: a parse that finds none would pass vacuously.
+    expect(surfaces.length).toBe(7);
+    expect(inks.length).toBe(surfaces.length);
+    const luminance = (rgb: number) => {
+      const [r, g, b] = [rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff].map((c) => {
+        const v = c / 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ratio = (a: number, b: number) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    surfaces.forEach((surface, i) => expect(ratio(inks[i], surface)).toBeGreaterThanOrEqual(4.5));
+  });
+});

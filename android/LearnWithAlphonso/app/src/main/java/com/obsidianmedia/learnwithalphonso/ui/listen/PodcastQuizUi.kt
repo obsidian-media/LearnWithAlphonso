@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizBest
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizCopy
@@ -180,11 +181,15 @@ fun PodcastQuizRowButton(container: AppContainer, episode: PodcastEpisode) {
     var loading by remember(episode.id) { mutableStateOf(false) }
     var unavailable by remember(episode.id) { mutableStateOf(false) }
     var show by remember(episode.id) { mutableStateOf(false) }
-    Column(Modifier.padding(start = 8.dp)) {
-        OutlinedButton(
+    Column(Modifier.padding(start = 8.dp, top = 6.dp)) {
+        // An opaque parchment chip with ink words, like the episode card above it: the row sits on the scene photo, where
+        // a transparent outlined button left moss text on a picture.
+        AlphonsoSecondaryButton(
+            text = if (loading) "Loading quiz…" else PodcastQuizCopy.TAKE_THE_QUIZ,
+            fullWidth = false,
             onClick = {
                 unavailable = false
-                if (offer != null) { show = true; return@OutlinedButton }
+                if (offer != null) { show = true; return@AlphonsoSecondaryButton }
                 scope.launch {
                     loading = true
                     try {
@@ -201,7 +206,7 @@ fun PodcastQuizRowButton(container: AppContainer, episode: PodcastEpisode) {
             },
             enabled = !loading,
             modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "${PodcastQuizCopy.TAKE_THE_QUIZ}: ${episode.title}" },
-        ) { Text(if (loading) "Loading quiz…" else PodcastQuizCopy.TAKE_THE_QUIZ, fontWeight = FontWeight.SemiBold) }
+        )
         if (unavailable) Text(PodcastQuizCopy.message(PodcastQuizError.NOT_FOUND), style = MaterialTheme.typography.bodySmall, color = palette.destructive)
     }
     val current = offer
