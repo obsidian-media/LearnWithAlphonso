@@ -3,7 +3,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 /**
  * AES-256-GCM for the Apple refresh tokens kept for revocation (apple_auth_tokens, apple_revocation_pending), with
  * a key that lives only in the server environment (APPLE_TOKEN_ENCRYPTION_KEY: 32 random bytes, base64). A database
- * dump or a leaked backup then holds no usable Apple grant.
+ * dump or a copied backup then holds no usable Apple grant.
  *
  * Stored form: `v1:` + base64(12-byte nonce | ciphertext | 16-byte tag). A value without the prefix was stored before
  * sealing existed and is returned as is, so turning the key on needs no data migration. Without a key nothing is

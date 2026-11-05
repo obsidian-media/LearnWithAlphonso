@@ -8,7 +8,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 const MIN_SECRET_LENGTH = 32;
 
-// Compares SHA-256 digests, so both sides are always 32 bytes and the length of the secret does not leak.
+// Compares SHA-256 digests, so both sides are always 32 bytes and the timing does not reveal the secret's length.
 function matches(expected: string, given: string): boolean {
   const digest = (v: string) => createHash("sha256").update(v).digest();
   return timingSafeEqual(digest(expected), digest(given));
