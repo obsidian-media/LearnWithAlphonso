@@ -1,0 +1,34 @@
+---
+# Paths Codacy should not analyse. Everything here is generated, content
+# data, tests/fixtures, one-off tooling or docs; our own CI (eslint, tsc,
+# prettier, the migration/grant guards) already covers the shipped code in
+# src/, supabase/functions and the iOS/Android sources.
+# Kept ON on purpose: .github/** (Semgrep GitHub Actions rules) and secrets
+# scanning over all non-test source.
+exclude_paths:
+  # Tests, fixtures, end-to-end specs
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__testutils__/**"
+  - "e2e/**"
+  - "ios/LearnWithAlphonsoKit/Tests/**"
+  - "android/**/src/test/**"
+  - "android/**/src/androidTest/**"
+  # Generated files and exported content
+  - "src/integrations/supabase/types.ts"
+  - "src/data/**"
+  - "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Resources/**"
+  - "ios/LearnWithAlphonso/Resources/**"
+  - "android/LearnWithAlphonso/app/src/main/assets/content/**"
+  - "android/LearnWithAlphonso/app/schemas/**"
+  - ".audit-baseline/**"
+  # Build-time/ops scripts (fixed hosts, repo-local paths) and review data
+  - "scripts/**"
+  # SQL migrations: the SQL rules enabled in Codacy target a different
+  # schema convention (RAC_* tables, role-only GRANT). Grants are enforced by
+  # our own CI guards (migration-grants, default-grants).
+  - "supabase/migrations/**"
+  # Prose
+  - "docs/**"
+  - "**/*.md"
