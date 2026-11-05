@@ -49,8 +49,11 @@ class ConversationContentTest {
     }
 
     @Test
-    fun `every course ships the same five campaigns, each with 3 or 4 scenes and unique ids`() {
-        val expected = listOf("city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat")
+    fun `every course ships the same nine campaigns, each with 3 or 4 scenes and unique ids`() {
+        val expected = listOf(
+            "city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat",
+            "market-day", "dinner-guest", "lost-bag", "refund-return",
+        )
         for (course in listOf(Course.ENGLISH, Course.FRENCH, Course.SPANISH)) {
             val camps = store.campaigns(course)
             assertEquals(expected, camps.map { it.id }, "${course.code} campaign ids")

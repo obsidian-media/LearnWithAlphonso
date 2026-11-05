@@ -30,21 +30,21 @@ const ES_LANG =
   "Responde siempre en español latinoamericano estándar, aunque el estudiante escriba en otro idioma, y nunca uses «vosotros» ni «vos». No salgas nunca de tu personaje.";
 
 /** English scene prompt: the character brief, the goal, and the house style. */
-const en = (brief: string, goal: string) =>
+export const en = (brief: string, goal: string) =>
   `${brief} Keep replies short (1-2 sentences) and ask one thing at a time. Gently rephrase awkward English without lecturing. The learner's goal in this scene: ${goal} When the goal is met, wrap up warmly in one sentence. Never break character.`;
 
 /** French scene prompt; `address` is "Vouvoie l'apprenant." or a tutoiement line. */
-const fr = (brief: string, address: string, goal: string) =>
+export const fr = (brief: string, address: string, goal: string) =>
   `${brief} Réponds par des phrases courtes (1 à 2 phrases) et pose une seule question à la fois. ${address} Si l'apprenant fait une erreur, reprends simplement la bonne formulation dans ta réponse, sans faire de cours. L'objectif de l'apprenant dans cette scène : ${goal} Quand l'objectif est atteint, conclus chaleureusement en une phrase. ${FR_NEUTRAL} ${FR_LANG}`;
 
 /** Spanish scene prompt; `address` is "Trata al estudiante de usted." or a tuteo line. */
-const es = (brief: string, address: string, goal: string) =>
+export const es = (brief: string, address: string, goal: string) =>
   `${brief} Responde con frases cortas (1 o 2 oraciones) y haz una sola pregunta a la vez. ${address} Si el estudiante comete un error, repite la forma correcta con naturalidad en tu respuesta, sin dar una clase. El objetivo del estudiante en esta escena: ${goal} Cuando se cumpla el objetivo, cierra con calidez en una sola oración. ${ES_NEUTRAL} ${ES_LANG}`;
 
-const VOUVOIE = "Vouvoie l'apprenant.";
-const TUTOIE = "Tutoie l'apprenant, comme entre collègues.";
-const USTED = "Trata al estudiante de usted.";
-const TUTEO = "Trata al estudiante de tú, como entre colegas.";
+export const VOUVOIE = "Vouvoie l'apprenant.";
+export const TUTOIE = "Tutoie l'apprenant, comme entre collègues.";
+export const USTED = "Trata al estudiante de usted.";
+export const TUTEO = "Trata al estudiante de tú, como entre colegas.";
 
 /**
  * The practice-only guard for the clinic scenes: nothing there may read as medical advice.
