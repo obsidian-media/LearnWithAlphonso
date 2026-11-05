@@ -53,14 +53,6 @@ jobs:
       # is its own job (`types-fresh`, below) so that a red result cannot gate
       # `deploy-supabase`, which needs this job. See that job's comment.
 
-  # Split out of lint-and-typecheck so its result does NOT gate deploy-supabase.
-  # deploy-supabase `needs` lint-and-typecheck, and this check fails on EVERY PR
-  # that adds a table (it regenerates against production, which only gets the
-  # migration from deploy-supabase itself, post-merge). Living inside
-  # lint-and-typecheck, it therefore blocked the very deploy that would have made
-  # it pass: merging #157 left `hector_links` absent from production until the
-  # migration was applied by hand (BACKLOG 0.0h / 0.0i). Deliberately NOT in
-  # deploy-supabase's `needs`; it stays a visible check on every PR, advisory.
   dependency-audit:
     # Surfaces known advisories in the locked JavaScript dependencies on every PR and push. Reported, not yet
     # blocking (continue-on-error), so a newly published advisory in a dev-only tool cannot stop an unrelated fix;
@@ -86,8 +78,23 @@ jobs:
             exit 1
           fi
 
+  # Split out of lint-and-typecheck so its result does NOT gate deploy-supabase.
+  # deploy-supabase `needs` lint-and-typecheck, and this check fails on EVERY PR
+  # that adds a table (it regenerates against production, which only gets the
+  # migration from deploy-supabase itself, post-merge). Living inside
+  # lint-and-typecheck, it therefore blocked the very deploy that would have made
+  # it pass: merging #157 left `hector_links` absent from production until the
+  # migration was applied by hand (BACKLOG 0.0h / 0.0i). Deliberately NOT in
+  # deploy-supabase's `needs`; advisory.
+  #
+  # It reads the Supabase account token, so it runs where deploy-supabase does:
+  # on pushes to main, in the production-supabase environment. A branch or pull
+  # request run cannot reach that token. After merging a migration, run the
+  # "Regenerate Supabase Types" workflow; this job turns green on the next push.
   types-fresh:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production-supabase
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 

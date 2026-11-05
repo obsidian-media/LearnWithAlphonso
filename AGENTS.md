@@ -260,9 +260,9 @@ wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 `main` (both Swift jobs run on a macOS runner; Vitest runs as a step
 inside the `lint-and-typecheck` job, not its own named check — easy to
 miss when reading `gh pr checks` output; the Supabase generated-types
-freshness check is its own advisory `types-fresh` job that `deploy-supabase`
-does not wait on, so it can be red on a table-adding PR without blocking
-the deploy that fixes it; the jobs in `ci.yml` are `lint-and-typecheck`,
+freshness check is its own advisory `types-fresh` job (pushes to `main` only, in the
+`production-supabase` environment) that `deploy-supabase` does not wait on, so it can be red after
+a table-adding merge until the types are regenerated; the jobs in `ci.yml` are `lint-and-typecheck`,
 `types-fresh`, `admin-build`, `web-build`, `e2e`, `e2e-signed-in` (advisory), `deno-tests`,
 `deploy-supabase`, `ios-swift-tests` and `ios-app-build`, and `deploy-supabase`
 `needs` `lint-and-typecheck`, `web-build`, `admin-build`, `e2e` and

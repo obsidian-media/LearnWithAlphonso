@@ -37,7 +37,7 @@ const triggers = (on: unknown): string[] =>
   typeof on === "string" ? [on] : Array.isArray(on) ? on : Object.keys(on as object);
 
 describe("CI runs only locked, verified code next to secrets", () => {
-  it("no workflow fetches tsx at run time (bunx/npx tsx bypasses the lockfile)", () => {
+  it("no workflow fetches tsx at run time (bunx/npx tsx skips the lockfile)", () => {
     const hits = workflows.flatMap((w) =>
       codeLines(w.text)
         .filter((l) => /\b(bunx|npx)\s+tsx\b/.test(l))
@@ -85,7 +85,7 @@ describe("CI runs only locked, verified code next to secrets", () => {
     expect(codeLines(bunfig).join("\n")).not.toMatch(/minimumReleaseAgeExcludes\s*=\s*\[\s*"/);
   });
 
-  it("a dependency audit runs on every PR and push", () => {
+  it("dependency advisories are checked on every PR and push", () => {
     const ci = parsed.find((w) => w.file === "ci.yml")!;
     const audit = Object.values(ci.doc.jobs).find((j) =>
       (j.steps ?? []).some((s) => /bun audit --audit-level=high/.test(s.run ?? "")),
@@ -130,6 +130,18 @@ describe("tokens and secrets are scoped", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it("only jobs in the production-supabase environment read the Supabase account token", () => {
+    const outside: string[] = [];
+    for (const w of parsed) {
+      for (const [name, job] of Object.entries(w.doc.jobs)) {
+        if (!/secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(JSON.stringify(job)))
+          continue;
+        if (job.environment !== "production-supabase") outside.push(`${w.file}:${name}`);
+      }
+    }
+    expect(outside).toEqual([]);
   });
 
   it("binary builds stay downloadable for one day at most", () => {
