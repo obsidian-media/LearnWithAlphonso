@@ -350,10 +350,13 @@ describe("podcast quiz (real Postgres)", () => {
       await seed(U1, "2026-11-03", 4);
       await submit(U1, COFFEE, q(COFFEE), 60, "2026-11-03T12:00:00Z"); // banked yesterday
       await db.query("UPDATE public.user_progress SET streak=4, last_active_date='2026-11-03'");
+      // Counted before the replay: the slot table also prunes rows older than two days by the real clock, so a fixed
+      // count would depend on when the test runs.
+      const hitsBefore = await hits();
       const replay = await submit(U1, COFFEE, q(COFFEE)); // nothing to pay today
       expect(replay).toMatchObject({ status: "applied", xpGain: 0 });
       expect(await progress(U1)).toMatchObject({ streak: 5, last_active_date: "2026-11-04" });
-      expect(await hits()).toBe(1); // and still no hourly slot for it
+      expect(await hits()).toBe(hitsBefore); // and still no hourly slot for it
     });
 
     it("a missed day resets the streak, unless a freeze covers exactly one", async () => {
