@@ -129,13 +129,20 @@ struct PlacementView: View {
         }
     }
 
-    private func markerLook(_ state: BandMarkerState) -> (words: String, fill: Color, border: Color, text: Color) {
+    private struct MarkerLook {
+        let words: String
+        let fill: Color
+        let border: Color
+        let text: Color
+    }
+
+    private func markerLook(_ state: BandMarkerState) -> MarkerLook {
         switch state {
-        case .passed: return ("passed", AlphonsoColor.moss, AlphonsoColor.moss, AlphonsoColor.surface)
-        case .skipped: return ("skipped after strong answers", AlphonsoColor.surface, AlphonsoColor.moss, AlphonsoColor.moss)
-        case .current: return ("now", AlphonsoColor.surface, AlphonsoColor.ink, AlphonsoColor.ink)
-        case .missed: return ("not passed", AlphonsoColor.surface, AlphonsoColor.hairline, AlphonsoColor.inkSoft)
-        case .upcoming: return ("not reached", AlphonsoColor.surface, AlphonsoColor.hairline, AlphonsoColor.inkSoft)
+        case .passed: return MarkerLook(words: "passed", fill: AlphonsoColor.moss, border: AlphonsoColor.moss, text: AlphonsoColor.surface)
+        case .skipped: return MarkerLook(words: "skipped after strong answers", fill: AlphonsoColor.surface, border: AlphonsoColor.moss, text: AlphonsoColor.moss)
+        case .current: return MarkerLook(words: "now", fill: AlphonsoColor.surface, border: AlphonsoColor.ink, text: AlphonsoColor.ink)
+        case .missed: return MarkerLook(words: "not passed", fill: AlphonsoColor.surface, border: AlphonsoColor.hairline, text: AlphonsoColor.inkSoft)
+        case .upcoming: return MarkerLook(words: "not reached", fill: AlphonsoColor.surface, border: AlphonsoColor.hairline, text: AlphonsoColor.inkSoft)
         }
     }
 
