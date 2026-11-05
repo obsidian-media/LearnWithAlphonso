@@ -76,7 +76,7 @@ fun QuestionCard(
             is Question.MultipleChoice -> {
                 question.imageKey?.let { vocabImages[it] }?.let { VocabImage(it, height = 160.dp) }
                 question.audioText?.let { audio -> PlayAudioButton { Speech.get(context).speak(audio, course) } }
-                AskingAlphonso(question.prompt)
+                AskingAlphonso(question.prompt, hasMedia = question.audioText != null || question.imageKey?.let { vocabImages[it] } != null)
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.choices[question.answer] == choice, onClick = { onPick(choice) })
                 }
@@ -100,7 +100,7 @@ fun QuestionCard(
             is Question.Listening -> {
                 AlphonsoSectionHeader("Listening")
                 PlayAudioButton { Speech.get(context).speak(question.audioText, course) }
-                AskingAlphonso(question.prompt)
+                AskingAlphonso(question.prompt, hasMedia = true)
                 question.choices.forEach { choice ->
                     ChoiceButton(choice, selected = picked == choice, checked = checked, isCorrectChoice = question.answer == choice, onClick = { onPick(choice) })
                 }

@@ -110,7 +110,7 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         AlphonsoSectionHeader("Speaking")
-        AskingAlphonso(question.prompt)
+        AskingAlphonso(question.prompt, hasMedia = true)
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("YOUR PHRASE", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
             Text(question.answer, style = MaterialTheme.typography.titleLarge, color = palette.ink)

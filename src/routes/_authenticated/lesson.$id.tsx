@@ -523,7 +523,14 @@ function LessonPage() {
               <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
             </div>
           )}
-          <AskingAlphonso prompt={q.prompt} />
+          <AskingAlphonso
+            prompt={q.prompt}
+            hasMedia={
+              q.type === "listening" ||
+              q.type === "speak" ||
+              (q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey])
+            }
+          />
 
           <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
             {q.type === "mc" || q.type === "listening" ? (

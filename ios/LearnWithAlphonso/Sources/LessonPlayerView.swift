@@ -705,7 +705,7 @@ private struct QuestionCard: View {
                     }
                     .buttonStyle(.alphonsoSecondary(fullWidth: false))
                 }
-                AskingAlphonso(prompt: q.prompt)
+                AskingAlphonso(prompt: q.prompt, hasMedia: q.imageKey.flatMap { vocabImages[$0] } != nil || q.audioText != nil)
                 ForEach(q.choices, id: \.self) { choice in
                     AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
                 }
@@ -769,7 +769,7 @@ private struct QuestionCard: View {
                     Label("Play audio", systemImage: "speaker.wave.2.fill")
                 }
                 .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                AskingAlphonso(prompt: q.prompt)
+                AskingAlphonso(prompt: q.prompt, hasMedia: true)
                 ForEach(q.choices, id: \.self) { choice in
                     // `answer` is the choice text, not an index.
                     AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }

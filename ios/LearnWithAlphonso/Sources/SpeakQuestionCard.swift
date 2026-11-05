@@ -54,7 +54,7 @@ struct SpeakQuestionCard: View {
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .tracking(0.4)
                 .foregroundStyle(AlphonsoColor.inkSoft)
-            AskingAlphonso(prompt: question.prompt)
+            AskingAlphonso(prompt: question.prompt, hasMedia: true)
 
             phraseCard
 

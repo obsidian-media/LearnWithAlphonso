@@ -3,22 +3,26 @@ import SwiftUI
 
 /// A question's prompt as Alphonso asking it: his portrait beside a speech bubble (web: `AskingAlphonso`).
 /// The portrait is decorative (the bubble says it all) and is dropped at accessibility text sizes and on a short
-/// phone, where the answer tiles must stay on screen; the bubble then takes the full width. No animation of
+/// phone, with a long prompt on a media card, where the answer tiles must stay on screen; the bubble then takes the full width. No animation of
 /// its own: the portrait's breathing already stops under Reduce Motion.
 struct AskingAlphonso: View {
     let prompt: String
+    /// The card also shows an image, plays audio, or has a listening or speak control above the answers.
+    var hasMedia = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// Three steps by screen height: none on an iPhone SE (667 pt) or smaller or at accessibility text sizes, a 56 pt
-    /// avatar on a mid-size phone, and a real 128 pt figure on a tall one (844 pt and up), where the middle of the
-    /// question screen would otherwise sit empty.
+    /// Three steps (`AskingAlphonsoLayout`, tested in the Kit): none on an iPhone SE (667 pt) or smaller or at
+    /// accessibility text sizes, a 56 pt avatar on a mid-size phone, and a real 128 pt figure above 800 pt (an
+    /// iPhone mini's 812 pt and every 844 pt phone), where the middle of the question screen would otherwise sit
+    /// empty. A long prompt or a media card caps him at the avatar; both remove him.
     private var mascotSize: CGFloat? {
-        guard !dynamicTypeSize.isAccessibilitySize else { return nil }
-        let height = UIScreen.main.bounds.height
-        if height > 800 { return 128 }
-        if height > 667 { return 56 }
-        return nil
+        AskingAlphonsoLayout.portraitSize(
+            screenHeight: UIScreen.main.bounds.height,
+            accessibilitySize: dynamicTypeSize.isAccessibilitySize,
+            promptLength: prompt.count,
+            hasMedia: hasMedia
+        ).map { CGFloat($0) }
     }
 
     var body: some View {

@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.AskingAlphonsoLayout
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 /**
@@ -29,17 +30,13 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
  * has nothing to switch off.
  */
 @Composable
-fun AskingAlphonso(prompt: String, modifier: Modifier = Modifier) {
+fun AskingAlphonso(prompt: String, modifier: Modifier = Modifier, hasMedia: Boolean = false) {
     val palette = AlphonsoColor.palette
     val config = LocalConfiguration.current
-    // Three steps: none at 640 dp and under (a compact phone) or from font scale 1.3 (where "Large" text starts squeezing
-    // the bubble), a 56 dp avatar in the middle, and a 120 dp figure from 720 dp (about a 6.1 in phone and up), where the
-    // middle of the question screen would otherwise sit empty. Only the base Alphonso image exists on Android, no poses.
-    val mascotSize = when {
-        config.fontScale >= 1.3f || config.screenHeightDp <= 640 -> null
-        config.screenHeightDp >= 720 -> 120.dp
-        else -> 56.dp
-    }
+    // Three steps (AskingAlphonsoLayout, tested in core): none at 640 dp and under or from font scale 1.3, a 56 dp avatar
+    // in the middle, a 120 dp figure from 720 dp; a long prompt or a media card caps him at the avatar, both remove him.
+    // Only the base Alphonso image exists on Android, no poses.
+    val mascotSize = AskingAlphonsoLayout.portraitSizeDp(config.screenHeightDp, config.fontScale, prompt.length, hasMedia)?.dp
     val shape = RoundedCornerShape(AlphonsoRadius.lg)
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (mascotSize != null) {

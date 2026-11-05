@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ASK_LONG_PROMPT_CHARS, ASK_SMALL_SIZE } from "./asking-alphonso";
 
 // Alphonso asking the question, iPhone half. The app target only compiles in CI (ios-app-build), so these read
 // the Swift source; each assertion names the property it protects.
@@ -7,7 +8,25 @@ const SRC = "ios/LearnWithAlphonso/Sources";
 const read = (p: string) => readFileSync(`${SRC}/${p}`, "utf8").replace(/\r\n/g, "\n");
 const count = (s: string, needle: string) => s.split(needle).length - 1;
 
+/** Source with all whitespace collapsed, so a guard pins the tokens and not the formatting. */
+const squash = (t: string) => t.replace(/\s+/g, " ").trim();
+/** The text of the first `{ ... }` block after `marker`, braces balanced, whitespace collapsed. */
+function block(src: string, marker: string): string {
+  const start = src.indexOf("{", src.indexOf(marker));
+  expect(start, marker).toBeGreaterThan(-1);
+  let depth = 0;
+  for (let i = start; i < src.length; i++) {
+    if (src[i] === "{") depth++;
+    if (src[i] === "}" && --depth === 0) return squash(src.slice(start, i + 1));
+  }
+  throw new Error(`unbalanced block after ${marker}`);
+}
+
 const view = read("DesignSystem/AskingAlphonso.swift");
+const kit = readFileSync(
+  "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AskingAlphonsoLayout.swift",
+  "utf8",
+).replace(/\r\n/g, "\n");
 const lesson = read("LessonPlayerView.swift");
 const review = read("ReviewQueueView.swift");
 const translate = read("TranslateQuestionCard.swift");
@@ -20,19 +39,48 @@ describe("AskingAlphonso (the prompt as Alphonso's speech bubble)", () => {
     expect(view).toMatch(/MascotTile\([^)]*\)[\s\S]{0,80}\.accessibilityHidden\(true\)/);
   });
 
-  it("drops the portrait at accessibility text sizes and on a short phone, keeping the bubble", () => {
-    expect(view).toContain("dynamicTypeSize.isAccessibilitySize");
-    expect(view).toMatch(/let height = UIScreen\.main\.bounds\.height/);
+  it("hands the size to the Kit's pure function with the real screen height, text size, prompt length and media flag", () => {
+    // The exact call: any change to an argument or the height source changes this text.
+    expect(block(view, "private var mascotSize")).toBe(
+      squash(`{
+        AskingAlphonsoLayout.portraitSize(
+            screenHeight: UIScreen.main.bounds.height,
+            accessibilitySize: dynamicTypeSize.isAccessibilitySize,
+            promptLength: prompt.count,
+            hasMedia: hasMedia
+        ).map { CGFloat($0) }
+      }`),
+    );
     // One flag gates the portrait; the prompt text is outside that branch so it is never hidden.
-    const gate = view.slice(view.indexOf("mascotSize"));
+    const gate = view.slice(view.indexOf("var body: some View"));
     expect(gate).toMatch(
       /if let mascotSize \{[\s\S]*?MascotTile[\s\S]*?\}\s*\n\s*(speechBubble|bubble)/,
     );
   });
 
-  it("is a large figure on a tall phone and a small avatar in the middle", () => {
-    expect(view).toMatch(/height > 800 \{ return 12\d \}/);
-    expect(view).toMatch(/height > 667 \{ return 56 \}/);
+  it("the Kit's size rule is exactly: accessibility drops him, two crowding reasons or a short phone drop him, a tall uncrowded phone gets the figure, otherwise the avatar", () => {
+    expect(block(kit, "public static func portraitSize")).toBe(
+      squash(`{
+        if accessibilitySize { return nil }
+        let crowd = (promptLength > longPromptCharacters ? 1 : 0) + (hasMedia ? 1 : 0)
+        if crowd >= 2 || screenHeight <= noneAtOrBelowHeight { return nil }
+        if screenHeight > largeAboveHeight && crowd == 0 { return largeSize }
+        return smallSize
+      }`),
+    );
+  });
+
+  it("the Kit's thresholds: 667 pt and under drops him, over 800 pt (an 812 pt mini too) is the large figure", () => {
+    expect(kit).toContain("public static let largeAboveHeight: Double = 800");
+    expect(kit).toContain("public static let noneAtOrBelowHeight: Double = 667");
+    expect(kit).toContain("public static let largeSize = 128");
+    expect(kit).toContain(`public static let smallSize = ${ASK_SMALL_SIZE}`);
+    expect(kit).toContain(`public static let longPromptCharacters = ${ASK_LONG_PROMPT_CHARS}`);
+    // The doc comment says what the code does.
+    expect(squash(view.replace(/\/\/\/ ?/g, ""))).toContain(
+      "above 800 pt (an iPhone mini's 812 pt",
+    );
+    expect(view).not.toContain("844 pt and up");
   });
 
   it("wraps a long prompt instead of truncating it", () => {
@@ -46,20 +94,29 @@ describe("AskingAlphonso (the prompt as Alphonso's speech bubble)", () => {
   });
 });
 
+// A multiple choice with an image or audio, a listening card and a speak card carry something above the answers.
+const MC_CALL =
+  "AskingAlphonso(prompt: q.prompt, hasMedia: q.imageKey.flatMap { vocabImages[$0] } != nil || q.audioText != nil)";
+const LISTENING_CALL = "AskingAlphonso(prompt: q.prompt, hasMedia: true)";
+
 describe("every question type asks through Alphonso", () => {
   it("the lesson's multiple choice, fill, reorder and listening cards", () => {
-    expect(count(lesson, "AskingAlphonso(prompt: q.prompt)")).toBe(4);
+    expect(count(lesson, "AskingAlphonso(prompt: q.prompt")).toBe(4);
+    expect(lesson).toContain(MC_CALL);
+    expect(lesson).toContain(LISTENING_CALL);
     expect(lesson).not.toMatch(/Text\(q\.prompt\)\.font\(AlphonsoFont\.display\(22/);
   });
 
   it("review's four cards", () => {
-    expect(count(review, "AskingAlphonso(prompt: q.prompt)")).toBe(4);
+    expect(count(review, "AskingAlphonso(prompt: q.prompt")).toBe(4);
+    expect(review).toContain(MC_CALL);
+    expect(review).toContain(LISTENING_CALL);
     expect(review).not.toMatch(/Text\(q\.prompt\)\.font\(AlphonsoFont\.display\(21/);
   });
 
   it("translate and speak, which draw their own prompt", () => {
     expect(translate).toContain("AskingAlphonso(prompt: question.prompt)");
-    expect(speak).toContain("AskingAlphonso(prompt: question.prompt)");
+    expect(speak).toContain("AskingAlphonso(prompt: question.prompt, hasMedia: true)");
   });
 
   it("the moment exists in the Kit's enum, backed by the shared JSON", () => {
@@ -113,17 +170,43 @@ describe("Android: Alphonso asks the question", () => {
     expect(asking).toMatch(/Image\([\s\S]{0,120}contentDescription = null/);
   });
 
-  it("drops the portrait on a short screen and at large font scales, never the prompt", () => {
-    expect(asking).toMatch(/screenHeightDp\s*<=\s*\d{3}\s*->\s*null/);
-    expect(asking).toMatch(/fontScale\s*>=\s*1\.\d/);
+  it("hands the size to core's pure function with the real screen height, font scale, prompt length and media flag", () => {
+    expect(asking).toContain(
+      "val mascotSize = AskingAlphonsoLayout.portraitSizeDp(config.screenHeightDp, config.fontScale, prompt.length, hasMedia)?.dp",
+    );
+    // The portrait is gated by the one value; the prompt text is outside that branch so it is never hidden.
     expect(asking).toMatch(
       /if \(mascotSize != null\) \{[\s\S]*?Image\([\s\S]*?\}\s*\n\s*Text\(\s*prompt,/,
     );
   });
 
-  it("is a large figure on a tall screen and a small avatar in the middle", () => {
-    expect(asking).toMatch(/screenHeightDp\s*>=\s*7\d\d\s*->\s*1[2-4]\d\.dp/);
-    expect(asking).toMatch(/56\.dp/);
+  const core = readFileSync(
+    "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/AskingAlphonsoLayout.kt",
+    "utf8",
+  ).replace(/\r\n/g, "\n");
+
+  it("core's size rule is exactly: large font or a compact phone or two crowding reasons drop him, a tall uncrowded phone gets the figure, otherwise the avatar", () => {
+    expect(block(core, "fun portraitSizeDp")).toBe(
+      squash(`{
+        val crowd = (if (promptLength > LONG_PROMPT_CHARS) 1 else 0) + (if (hasMedia) 1 else 0)
+        return when {
+            fontScale >= NONE_FROM_FONT_SCALE -> null
+            screenHeightDp <= NONE_AT_OR_BELOW_DP -> null
+            crowd >= 2 -> null
+            screenHeightDp >= LARGE_FROM_DP && crowd == 0 -> LARGE_SIZE_DP
+            else -> SMALL_SIZE_DP
+        }
+      }`),
+    );
+  });
+
+  it("core's thresholds, and the numbers it shares with the web and iPhone rules", () => {
+    expect(core).toContain("const val NONE_AT_OR_BELOW_DP = 640");
+    expect(core).toContain("const val LARGE_FROM_DP = 720");
+    expect(core).toContain("const val NONE_FROM_FONT_SCALE = 1.3f");
+    expect(core).toContain("const val LARGE_SIZE_DP = 120");
+    expect(core).toContain(`const val SMALL_SIZE_DP = ${ASK_SMALL_SIZE}`);
+    expect(core).toContain(`const val LONG_PROMPT_CHARS = ${ASK_LONG_PROMPT_CHARS}`);
   });
 
   it("is static, so Reduce Motion has nothing to switch off", () => {
@@ -133,9 +216,13 @@ describe("Android: Alphonso asks the question", () => {
   });
 
   it("every question type asks through it", () => {
-    expect(questionCard.match(/AskingAlphonso\(question\.prompt\)/g)?.length).toBe(5);
+    expect(questionCard.match(/AskingAlphonso\(question\.prompt[,)]/g)?.length).toBe(5);
+    expect(questionCard).toContain(
+      "AskingAlphonso(question.prompt, hasMedia = question.audioText != null || question.imageKey?.let { vocabImages[it] } != null)",
+    );
+    expect(questionCard).toContain("AskingAlphonso(question.prompt, hasMedia = true)");
     expect(questionCard).not.toContain("private fun Prompt(");
-    expect(speakCard).toContain("AskingAlphonso(question.prompt)");
+    expect(speakCard).toContain("AskingAlphonso(question.prompt, hasMedia = true)");
   });
 });
 
