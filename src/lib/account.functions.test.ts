@@ -31,9 +31,10 @@ vi.mock("@tanstack/react-start", () => ({
 
 const deleteUser = vi.fn();
 const getUserById = vi.fn();
+const getUser = vi.fn();
 const supabaseAdminFrom = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom, auth: { admin: { deleteUser, getUserById } } },
+  supabaseAdmin: { from: supabaseAdminFrom, auth: { getUser, admin: { deleteUser, getUserById } } },
 }));
 
 const accountModule = await import("./account.functions");
@@ -55,10 +56,13 @@ function ctx(
   supabase: ReturnType<typeof createSupabaseMock>,
   claims: Record<string, unknown> = {},
 ) {
-  return { supabase, userId: USER_ID, claims };
+  return { supabase, userId: USER_ID, claims, accessToken: "live-token" };
 }
 
 beforeEach(() => {
+  getUser.mockReset();
+  // The session is live on the auth server unless a test says otherwise.
+  getUser.mockResolvedValue({ data: { user: { id: USER_ID } }, error: null });
   deleteUser.mockReset();
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({}));
@@ -415,6 +419,40 @@ describe("deleteMyAccount", () => {
 // Assumption, verified when written: no migration adds a `user_id` column via
 // ALTER TABLE, and none drops a table, so scanning CREATE TABLE bodies sees
 // every user-scoped table. Re-check that if this ever starts under-reporting.
+describe("account actions need a session the auth server still recognises", () => {
+  const signedOut = () =>
+    getUser.mockResolvedValue({ data: { user: null }, error: { message: "Session not found" } });
+
+  it("refuses to delete the account with a token whose session was signed out", async () => {
+    signedOut();
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({}));
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/^Unauthorized/);
+    expect(deleteUser).not.toHaveBeenCalled();
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(getUser).toHaveBeenCalledWith("live-token");
+  });
+
+  it("refuses to export with a token whose session was signed out", async () => {
+    signedOut();
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({ data: [] }));
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/^Unauthorized/);
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("refuses when the token belongs to a different account than the claims", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "someone-else" } }, error: null });
+    const supabase = createSupabaseMock();
+    await expect(
+      deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
+    ).rejects.toThrow(/^Unauthorized/);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+});
+
 describe("GDPR export table coverage", () => {
   const migrationsDir = path.resolve(import.meta.dirname, "../../supabase/migrations");
   const sql = readdirSync(migrationsDir)

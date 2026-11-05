@@ -138,6 +138,7 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
+    await (await import("./live-session.server")).requireLiveSession(context.accessToken, userId);
     // Tables are parallel; pages within a table are sequential so no capped
     // PostgREST response silently truncates a large account.
     const [userIdRows, otherOwnedRows, profileResult, rlsScopedRows] = await Promise.all([
@@ -355,6 +356,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ confirm: z.literal("DELETE") }).parse(d))
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
+    await (await import("./live-session.server")).requireLiveSession(context.accessToken, userId);
 
     // Remove owned rows first, as the caller, so RLS stays the source of
     // truth. "profiles" is deliberately not deleted here -- its FK to
