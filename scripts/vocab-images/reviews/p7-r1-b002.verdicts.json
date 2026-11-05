@@ -1,0 +1,224 @@
+{
+  "batch": "p7-r1-b002",
+  "pass": "first",
+  "reviewer": "agent:p7-b002",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "envoyer": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "escucha": {
+      "verdict": "approve",
+      "alt": "A laughing woman presses white headphones to her ears outdoors in the sun.",
+      "peopleVisible": true
+    },
+    "estación": {
+      "verdict": "approve",
+      "alt": "A train station platform with a train on each side and a person walking between them.",
+      "peopleVisible": true
+    },
+    "estudiando": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "estudiar": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fauna": {
+      "verdict": "approve",
+      "alt": "Two antelopes graze on a green lawn in front of a thatched shelter.",
+      "peopleVisible": false
+    },
+    "fermer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "fotografía": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "frustré": {
+      "verdict": "approve",
+      "alt": "A man sits at a desk with his head in his hand in front of a laptop showing charts.",
+      "peopleVisible": true
+    },
+    "fuente": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "funeral": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "ingrediente": {
+      "verdict": "approve",
+      "alt": "A baker's floury hands crack an egg into a well of flour, with eggs, tomatoes and spaghetti nearby.",
+      "peopleVisible": true
+    },
+    "installer": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "juez": {
+      "verdict": "approve",
+      "alt": "A judge in a black robe with a chain of office sits at a wooden desk, face out of frame.",
+      "peopleVisible": true
+    },
+    "l'art": {
+      "verdict": "approve",
+      "alt": "Framed landscape paintings hang on a dark grey gallery wall.",
+      "peopleVisible": false
+    },
+    "l'enseignant": {
+      "verdict": "approve",
+      "alt": "A lecturer in a black jumper stands and talks to students seated at tiered desks in a lecture hall.",
+      "peopleVisible": true
+    },
+    "l'entraîneur": {
+      "verdict": "approve",
+      "alt": "A coach blows a whistle while directing play on a football pitch.",
+      "peopleVisible": true
+    },
+    "l'hydratation": {
+      "verdict": "approve",
+      "alt": "Two runners in numbered bibs run on a road while one drinks from a bottle.",
+      "peopleVisible": true
+    },
+    "l'interview": {
+      "verdict": "approve",
+      "alt": "A man in a suit is interviewed by two people holding microphones.",
+      "peopleVisible": true
+    },
+    "l'ordinateur": {
+      "verdict": "approve",
+      "alt": "Two desktop computers with monitors and keyboards stand on a long desk by a window.",
+      "peopleVisible": false
+    },
+    "l'épaule": {
+      "verdict": "approve",
+      "alt": "A hand rests on the bare shoulder of a person in a dark sleeveless top.",
+      "peopleVisible": true
+    },
+    "l'équipe": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la course": {
+      "verdict": "approve",
+      "alt": "Two runners race side by side on a misty road.",
+      "peopleVisible": true
+    },
+    "la forme physique": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la pause": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la presse": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la recherche": {
+      "verdict": "approve",
+      "alt": "A scientist in a protective suit, mask and hair net sits at a microscope in a lab.",
+      "peopleVisible": true
+    },
+    "la signature": {
+      "verdict": "approve",
+      "alt": "A hand signs a document with a fountain pen.",
+      "peopleVisible": true
+    },
+    "la source": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la télécommande": {
+      "verdict": "approve",
+      "alt": "A hand points a white remote control at a television.",
+      "peopleVisible": true
+    },
+    "la vitesse": {
+      "verdict": "approve",
+      "alt": "A car dashboard with a speedometer and rev counter behind the steering wheel.",
+      "peopleVisible": false
+    },
+    "lavo": {
+      "verdict": "approve",
+      "alt": "Soapy hands are rubbed together under a running tap.",
+      "peopleVisible": true
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le chauffeur": {
+      "verdict": "approve",
+      "alt": "A chauffeur in a grey suit opens the door of a black car for a woman on the phone.",
+      "peopleVisible": true
+    },
+    "le client": {
+      "verdict": "approve",
+      "alt": "A customer hands a bank card to a cashier over a checkout counter.",
+      "peopleVisible": true
+    },
+    "le collègue": {
+      "verdict": "approve",
+      "alt": "Colleagues talk around a table with a laptop in a bright office.",
+      "peopleVisible": true
+    },
+    "le colocataire": {
+      "verdict": "approve",
+      "alt": "A woman reads on a yellow sofa while another woman stands in the kitchen of a shared flat.",
+      "peopleVisible": true
+    },
+    "le compositeur": {
+      "verdict": "approve",
+      "alt": "A man writes notes on sheet music beside a keyboard and laptop in a small room.",
+      "peopleVisible": true
+    }
+  }
+}

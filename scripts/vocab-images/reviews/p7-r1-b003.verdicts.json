@@ -1,0 +1,225 @@
+{
+  "batch": "p7-r1-b003",
+  "pass": "first",
+  "reviewer": "agent:p7-b003",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "le conducteur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le contrat": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le coude": {
+      "verdict": "approve",
+      "alt": "A woman in a black T-shirt rests one hand on her bent elbow.",
+      "peopleVisible": true
+    },
+    "le cours": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le cœur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dos": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le dossier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le jeu vidéo": {
+      "verdict": "approve",
+      "alt": "A hand holds a black game controller next to a white one on a white background.",
+      "peopleVisible": true
+    },
+    "le juge": {
+      "verdict": "approve",
+      "alt": "A judge in a black robe with a chain of office sits at a wooden desk, face out of frame.",
+      "peopleVisible": true
+    },
+    "le match": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le nuage": {
+      "verdict": "approve",
+      "alt": "A white cloud floats in a bright blue sky.",
+      "peopleVisible": false
+    },
+    "le parlement": {
+      "verdict": "approve",
+      "alt": "The stone towers of a Gothic-style parliament building under a blue sky.",
+      "peopleVisible": false
+    },
+    "le passager": {
+      "verdict": "approve",
+      "alt": "Passengers sit in rows of seats in an airplane cabin, seen from behind.",
+      "peopleVisible": true
+    },
+    "le patrimoine": {
+      "verdict": "approve",
+      "alt": "Ancient stone columns of a ruined site stand in a dry landscape with mountains behind.",
+      "peopleVisible": false
+    },
+    "le plat principal": {
+      "verdict": "approve",
+      "alt": "A waiter's hand serves two white plates of meat with green beans and sauce.",
+      "peopleVisible": true
+    },
+    "le pourboire": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le public": {
+      "verdict": "approve",
+      "alt": "A large crowd faces a brightly lit concert stage at night.",
+      "peopleVisible": true
+    },
+    "le rangement": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le reportage": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le rugby": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le réalisateur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le réseau": {
+      "verdict": "approve",
+      "alt": "Blue network cables plugged into a network switch.",
+      "peopleVisible": false
+    },
+    "le soldat": {
+      "verdict": "reject",
+      "reasons": [
+        "violence-weapons-disaster-injury"
+      ]
+    },
+    "le studio": {
+      "verdict": "approve",
+      "alt": "A small studio apartment with a bed, a kitchenette and a brick accent wall.",
+      "peopleVisible": false
+    },
+    "le wifi": {
+      "verdict": "approve",
+      "alt": "A white wifi router with four antennas glowing pink and blue.",
+      "peopleVisible": false
+    },
+    "leo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "les déchets plastiques": {
+      "verdict": "approve",
+      "alt": "A green plastic bottle lies in the sand at the edge of the sea.",
+      "peopleVisible": false
+    },
+    "leyendo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "livraison": {
+      "verdict": "approve",
+      "alt": "A courier hands a cardboard parcel to a customer.",
+      "peopleVisible": true
+    },
+    "llamar": {
+      "verdict": "approve",
+      "alt": "A smiling man talks on a mobile phone on a city street.",
+      "peopleVisible": true
+    },
+    "manger": {
+      "verdict": "approve",
+      "alt": "A man in round sunglasses bites into a burger.",
+      "peopleVisible": true
+    },
+    "marinar": {
+      "verdict": "approve",
+      "alt": "A gloved hand mixes pieces of meat in a red marinade in a steel bowl.",
+      "peopleVisible": true
+    },
+    "meublé": {
+      "verdict": "approve",
+      "alt": "A furnished living room with a grey sofa, a round side table, a dining table and a yellow chair beside a kitchen.",
+      "peopleVisible": false
+    },
+    "mitad": {
+      "verdict": "approve",
+      "alt": "An apple cut in half stands on a smooth surface showing its core.",
+      "peopleVisible": false
+    },
+    "música": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "nacimiento": {
+      "verdict": "approve",
+      "alt": "A newborn baby's tiny hand grips an adult's finger.",
+      "peopleVisible": true
+    },
+    "nariz": {
+      "verdict": "approve",
+      "alt": "A close-up of a man's nose and mouth in soft light.",
+      "peopleVisible": true
+    },
+    "nevando": {
+      "verdict": "approve",
+      "alt": "A black street lamp topped with snow stands in front of snowy evergreens as flakes fall.",
+      "peopleVisible": false
+    },
+    "noche": {
+      "verdict": "approve",
+      "alt": "A night sky full of stars with a small moon.",
+      "peopleVisible": false
+    },
+    "ordenar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    }
+  }
+}

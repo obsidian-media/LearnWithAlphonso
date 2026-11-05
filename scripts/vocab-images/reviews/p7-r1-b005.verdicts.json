@@ -1,0 +1,14 @@
+{
+  "batch": "p7-r1-b005",
+  "pass": "first",
+  "reviewer": "agent:p7-b005",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "étudier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}

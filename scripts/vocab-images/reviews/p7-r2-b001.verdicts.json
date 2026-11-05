@@ -1,0 +1,229 @@
+{
+  "batch": "p7-r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p7-b001",
+  "reviewedAt": "2026-11-04",
+  "verdicts": {
+    "acheter": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "aduana": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "alergia": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "almorzar": {
+      "verdict": "approve",
+      "alt": "Several people eat plates of salad and drinks together at a restaurant table.",
+      "peopleVisible": true
+    },
+    "amigo": {
+      "verdict": "approve",
+      "alt": "Two women laugh together over takeaway coffees on an outdoor bench.",
+      "peopleVisible": true
+    },
+    "aniversario": {
+      "verdict": "approve",
+      "alt": "An elderly couple clink champagne glasses in a toast.",
+      "peopleVisible": true
+    },
+    "asustado": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "bailando": {
+      "verdict": "approve",
+      "alt": "A couple dances in a bright room while musicians play behind them.",
+      "peopleVisible": true
+    },
+    "bebo": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "boleto": {
+      "verdict": "approve",
+      "alt": "A hand feeds a small paper ticket into a turnstile reader.",
+      "peopleVisible": true
+    },
+    "buzón": {
+      "verdict": "approve",
+      "alt": "A black metal mailbox is mounted on a white brick wall.",
+      "peopleVisible": false
+    },
+    "compartir": {
+      "verdict": "approve",
+      "alt": "Two young men share a bowl of food at a table.",
+      "peopleVisible": true
+    },
+    "comprar": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "decorar": {
+      "verdict": "approve",
+      "alt": "Hands hang red baubles on a lit Christmas tree.",
+      "peopleVisible": true
+    },
+    "distributeur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "durmiendo": {
+      "verdict": "approve",
+      "alt": "A man sleeps on a sofa with his head on a cushion, in black and white.",
+      "peopleVisible": true
+    },
+    "ebullición": {
+      "verdict": "approve",
+      "alt": "Water boils with bubbles in a saucepan on a gas hob.",
+      "peopleVisible": false
+    },
+    "enviar": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "envoyer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "estudiando": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "estudiar": {
+      "verdict": "approve",
+      "alt": "A woman with glasses reaches for a stack of books at a library desk.",
+      "peopleVisible": true
+    },
+    "fermer": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fier": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "fotografía": {
+      "verdict": "approve",
+      "alt": "A man in a beret takes a photo with a film camera across a cafe table.",
+      "peopleVisible": true
+    },
+    "fuente": {
+      "verdict": "approve",
+      "alt": "A tall tiered fountain sprays water in a green park.",
+      "peopleVisible": false
+    },
+    "funeral": {
+      "verdict": "approve",
+      "alt": "A wooden coffin topped with white roses, in black and white.",
+      "peopleVisible": false
+    },
+    "installer": {
+      "verdict": "approve",
+      "alt": "A bearded man hangs a wire pendant lamp from a white ceiling.",
+      "peopleVisible": true
+    },
+    "l'équipe": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "la colle": {
+      "verdict": "approve",
+      "alt": "A child's hand rubs a purple glue stick over a paper craft.",
+      "peopleVisible": true
+    },
+    "la forme physique": {
+      "verdict": "approve",
+      "alt": "A smiling woman stands among dumbbells and weight racks in a bright gym.",
+      "peopleVisible": true
+    },
+    "la pause": {
+      "verdict": "approve",
+      "alt": "Four older friends sit at an outdoor table with cups of coffee and fresh vegetables.",
+      "peopleVisible": true
+    },
+    "la presse": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "la source": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le conducteur": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    },
+    "le contrat": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le cours": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le cœur": {
+      "verdict": "reject",
+      "reasons": [
+        "off-term"
+      ]
+    },
+    "le dos": {
+      "verdict": "approve",
+      "alt": "A man flexes his arms with his bare muscular back to the camera, in black and white.",
+      "peopleVisible": true
+    },
+    "le dossier": {
+      "verdict": "reject",
+      "reasons": [
+        "brand-logo-or-foreign-text"
+      ]
+    }
+  }
+}
