@@ -31,10 +31,14 @@ describe("3D Alphonso preview: TestFlight and debug builds only", () => {
     expect(channel).toContain("enum BuildChannel");
     expect(channel).toContain('receiptFileName == "sandboxReceipt"');
     expect(channel).toContain("Bundle.main.appStoreReceiptURL?.lastPathComponent");
-    const prop = from(channel, "static var isTestFlightOrDebug: Bool");
-    expect(prop).toMatch(/#if DEBUG\s+return true\s+#else\s+return isTestFlight\(/);
-    // Never a bare `return true` outside the DEBUG branch.
-    expect(prop.replace(/#if DEBUG\s+return true/, "")).not.toMatch(/return true/);
+    // Pin both bodies whole: an extra `|| true`, `|| receiptFileName == nil` or a dropped #if must go red.
+    expect(channel).toMatch(
+      /static func isTestFlight\(receiptFileName: String\?\) -> Bool \{\s*receiptFileName == "sandboxReceipt"\s*\}/,
+    );
+    expect(channel).toMatch(
+      /static var isTestFlightOrDebug: Bool \{\s*#if DEBUG\s*return true\s*#else\s*return isTestFlight\(receiptFileName: Bundle\.main\.appStoreReceiptURL\?\.lastPathComponent\)\s*#endif\s*\}/,
+    );
+    expect(channel.match(/return true/g)).toHaveLength(1);
   });
 
   it("the Practice tab entry is gated by BuildChannel.isTestFlightOrDebug", () => {
@@ -45,14 +49,13 @@ describe("3D Alphonso preview: TestFlight and debug builds only", () => {
   });
 
   it("nothing else in the app opens the preview screen", () => {
-    const hits = readdirSync(SRC)
-      .filter((f) => f.endsWith(".swift") && f !== "Alphonso3DPreviewView.swift")
-      .filter((f) => read(`${SRC}/${f}`).includes("Alphonso3DPreviewView("));
-    expect(hits).toEqual(["ConversationView.swift"]);
-    const dsHits = readdirSync(`${SRC}/DesignSystem`).filter((f) =>
-      read(`${SRC}/DesignSystem/${f}`).includes("Alphonso3DPreviewView("),
-    );
-    expect(dsHits).toEqual([]);
+    const hits = walk(IOS)
+      .filter((p) => p.endsWith(".swift") && !p.endsWith("Alphonso3DPreviewView.swift"))
+      .filter((p) => read(p).includes("Alphonso3DPreviewView"))
+      .map((p) => p.split("\\").join("/"));
+    expect(hits).toEqual([`${SRC}/ConversationView.swift`]);
+    // Exactly one use in the Practice tab, and it is the gated one.
+    expect(practice.match(/Alphonso3DPreviewView/g)).toHaveLength(1);
   });
 });
 
@@ -99,9 +102,26 @@ describe("3D Alphonso preview: the web view", () => {
     );
   });
 
+  it("never navigates away from the bundled page", () => {
+    expect(view).toContain("decidePolicyFor navigationAction: WKNavigationAction");
+    expect(view).toMatch(/url\?\.isFileURL == true\s*&& url\?\.lastPathComponent == "index\.html"/);
+    expect(view).toContain("decisionHandler(allowed ? .allow : .cancel)");
+  });
+
+  it("a hung download ends in the error state, and closing the screen tears the page down", () => {
+    expect(view).toContain("static let stallTimeout: TimeInterval = 45");
+    expect(view).toMatch(/func load\(_ token: Int\) \{[^}]*armTimeout\(\)/);
+    expect(view).toMatch(/static func dismantleUIView[^}]*window\.__teardown/);
+    const page = read(`${IOS}/LearnWithAlphonso/Preview3D/index.html`);
+    expect(page).toContain("window.__teardown = function");
+    expect(page).toContain("renderer.forceContextLoss()");
+    expect(page).toContain("ac.close()");
+    expect(page).toContain("cancelAnimationFrame(rafId)");
+  });
+
   it("shows a native loading state until the page posts ready, and Retry on a failed download", () => {
-    expect(view).toContain('case "ready": onEvent(.ready)');
-    expect(view).toContain('case "error": onEvent(.failed)');
+    expect(view).toContain('case "ready": finish(.ready)');
+    expect(view).toContain('case "error": finish(.failed)');
     expect(view).toContain('Button("Retry")');
     expect(view).toContain("reloadToken += 1");
     const page = read(`${IOS}/LearnWithAlphonso/Preview3D/index.html`);
