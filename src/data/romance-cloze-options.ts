@@ -271,7 +271,26 @@ export const ROMANCE_CLOZE: Record<string, Record<number, ClozeOptions>> = {
     "tu,je,nous",
   ]),
   // ---- Spanish ------------------------------------------------------------------------------
-  esa1p18: parse(["está,hay,tiene"]),
+  // The pack's own answers mix a verb, numbers and parts of the day, so a pooled wrong option read
+  // "Es ___ (midnight): es" or "de la ___ (morning): diez". The clue picks among the time words; the
+  // rest are the learner's errors (la uno, y medio, y mitad, en exacto, de la día).
+  esa1p18: parse([
+    "está,hay,tiene",
+    "uno,dos,tres",
+    "una,tres,doce",
+    "medio,cuarto,mitad",
+    "media,cuarta,diez",
+    "mediodía,tarde,mañana",
+    "medianoche,tarde,mañana",
+    "exacto,media,hora",
+    "media,cuarta,diez",
+    "tarde,noche,día",
+    "mañana,tarde,día",
+    "mañana,noche,día",
+    "dos,veinte,doce",
+    "diez,doce,treinta",
+    "diez,quince,cuarto",
+  ]),
   esa2p4: parse([
     "bonito,bonitos,bonitas",
     "rápida,rápidos,rápidas ~fast",
@@ -331,13 +350,15 @@ export const ROMANCE_CLOZE: Record<string, Record<number, ClozeOptions>> = {
     "Es,Está,Tiene",
     "Es,Está,Tiene",
     "Es,Está,Tiene",
-    "",
-    "",
-    "",
+    // Empty here offered "Está ___ (raining): Hay / hace". The clue picks the weather; the other
+    // forms are the learner's errors after está (llueve, llover, nubes).
+    "nevando,llueve,llover",
+    "lloviendo,nieva,nevar",
+    "soleado,despejado,nubes",
     "Hace,Es,Está",
     "Está,Tiene,Va",
     "Está,Tiene,Va",
-    "",
+    "hace,hay,tiene",
     "Es,Está,Tiene",
     "es,está,tiene",
     "es,está,tiene",

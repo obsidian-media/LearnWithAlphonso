@@ -4576,10 +4576,10 @@
               "type": "mc",
               "prompt": "Es la ___ (one o'clock).",
               "choices": [
-                "cinco",
-                "mañana",
+                "dos",
+                "uno",
                 "una",
-                "medianoche"
+                "tres"
               ],
               "answer": 2,
               "explanation": "\"una\" is correct here. Basic time-telling expressions."
@@ -4589,10 +4589,10 @@
               "type": "fill",
               "prompt": "Son las ___ (two o'clock).",
               "bank": [
-                "noche",
-                "cinco",
+                "una",
+                "doce",
                 "dos",
-                "medianoche"
+                "tres"
               ],
               "answer": "dos",
               "explanation": "\"dos\" is correct here. Basic time-telling expressions."
@@ -4603,9 +4603,9 @@
               "prompt": "Son las tres y ___ (half).",
               "choices": [
                 "media",
-                "medianoche",
-                "noche",
-                "es"
+                "medio",
+                "cuarto",
+                "mitad"
               ],
               "answer": 0,
               "explanation": "\"media\" is correct here. Basic time-telling expressions."
@@ -4615,10 +4615,10 @@
               "type": "fill",
               "prompt": "Son las cuatro y ___ (quarter).",
               "bank": [
+                "cuarta",
+                "media",
                 "diez",
-                "cuarto",
-                "veinte",
-                "medianoche"
+                "cuarto"
               ],
               "answer": "cuarto",
               "explanation": "\"cuarto\" is correct here. Basic time-telling expressions."
@@ -4635,10 +4635,10 @@
               "type": "mc",
               "prompt": "Es ___ (midnight).",
               "choices": [
+                "tarde",
                 "mediodía",
-                "es",
                 "medianoche",
-                "tarde"
+                "mañana"
               ],
               "answer": 2,
               "explanation": "\"medianoche\" is correct here. Basic time-telling expressions."
@@ -4649,7 +4649,7 @@
               "prompt": "Es ___ (noon).",
               "bank": [
                 "mediodía",
-                "una",
+                "mañana",
                 "medianoche",
                 "tarde"
               ],
@@ -4662,9 +4662,9 @@
               "prompt": "Son las cinco en ___ (exactly).",
               "choices": [
                 "punto",
-                "tarde",
-                "una",
-                "mediodía"
+                "exacto",
+                "media",
+                "hora"
               ],
               "answer": 0,
               "explanation": "\"punto\" is correct here. Basic time-telling expressions."
@@ -4674,10 +4674,10 @@
               "type": "fill",
               "prompt": "Son las seis menos ___ (quarter).",
               "bank": [
-                "una",
-                "noche",
-                "cuarto",
-                "dos"
+                "cuarta",
+                "media",
+                "diez",
+                "cuarto"
               ],
               "answer": "cuarto",
               "explanation": "\"cuarto\" is correct here. Basic time-telling expressions."
@@ -4687,10 +4687,10 @@
               "type": "mc",
               "prompt": "Llego a las siete de la ___ (morning).",
               "choices": [
-                "diez",
-                "mediodía",
+                "noche",
+                "tarde",
                 "mañana",
-                "dos"
+                "día"
               ],
               "answer": 2,
               "explanation": "\"mañana\" is correct here. Basic time-telling expressions."
@@ -4707,10 +4707,10 @@
               "type": "mc",
               "prompt": "Ceno a las nueve de la ___ (night).",
               "choices": [
-                "media",
-                "veinte",
+                "tarde",
+                "mañana",
                 "noche",
-                "cuarto"
+                "día"
               ],
               "answer": 2,
               "explanation": "\"noche\" is correct here. Basic time-telling expressions."
@@ -4720,10 +4720,10 @@
               "type": "fill",
               "prompt": "Trabajo por la ___ (afternoon).",
               "bank": [
-                "cuarto",
+                "día",
+                "mañana",
                 "tarde",
-                "media",
-                "cinco"
+                "noche"
               ],
               "answer": "tarde",
               "explanation": "\"tarde\" is correct here. Basic time-telling expressions."
@@ -4735,8 +4735,8 @@
               "choices": [
                 "diez",
                 "dos",
-                "punto",
-                "veinte"
+                "veinte",
+                "doce"
               ],
               "answer": 0,
               "explanation": "\"diez\" is correct here. Basic time-telling expressions."
@@ -4747,9 +4747,9 @@
               "prompt": "Llega a las once y ___ (twenty).",
               "bank": [
                 "diez",
+                "doce",
                 "veinte",
-                "media",
-                "punto"
+                "treinta"
               ],
               "answer": "veinte",
               "explanation": "\"veinte\" is correct here. Basic time-telling expressions."
@@ -4759,10 +4759,10 @@
               "type": "mc",
               "prompt": "El tren sale a la una y ___ (five).",
               "choices": [
-                "mañana",
-                "cuarto",
+                "quince",
+                "diez",
                 "cinco",
-                "es"
+                "cuarto"
               ],
               "answer": 2,
               "explanation": "\"cinco\" is correct here. Basic time-telling expressions."
@@ -11101,9 +11101,9 @@
               "prompt": "Está ___ (raining) ahora.",
               "choices": [
                 "lloviendo",
-                "Hay",
-                "hace",
-                "nevando"
+                "nevando",
+                "llueve",
+                "llover"
               ],
               "answer": 0,
               "explanation": "\"lloviendo\" is correct here. Common weather expressions using hacer/estar/haber."
@@ -11120,10 +11120,10 @@
               "type": "fill",
               "prompt": "Está ___ (snowing) en las montañas.",
               "bank": [
-                "Hace",
                 "lloviendo",
                 "nevando",
-                "Hay"
+                "nieva",
+                "nevar"
               ],
               "answer": "nevando",
               "explanation": "\"nevando\" is correct here. Common weather expressions using hacer/estar/haber."
@@ -11133,10 +11133,10 @@
               "type": "mc",
               "prompt": "Está muy ___ (cloudy) hoy.",
               "choices": [
-                "Hace",
-                "Hay",
+                "despejado",
+                "soleado",
                 "nublado",
-                "lloviendo"
+                "nubes"
               ],
               "answer": 2,
               "explanation": "\"nublado\" is correct here. Common weather expressions using hacer/estar/haber."
@@ -11192,8 +11192,8 @@
               "type": "fill",
               "prompt": "La temperatura ___ (is) de veinte grados.",
               "bank": [
-                "lloviendo",
-                "Hay",
+                "tiene",
+                "hay",
                 "es",
                 "hace"
               ],

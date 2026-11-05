@@ -171,6 +171,19 @@ describe("fill-in packs: a sentence has wrong options written for it", () => {
     expect(missing).toEqual([]);
   });
 
+  it("a pack that has options written for some lines has them for every line", () => {
+    // A line left out falls back to the other answers of its pack. That suits a pack that conjugates
+    // one verb, but not a pack whose answers mix kinds of word: "Es ___ (midnight)" offered "es", and
+    // "Está ___ (raining)" offered "Hay". The bracket exemption above does not catch these lines.
+    const partial: string[] = [];
+    for (const [id, rows] of Object.entries(ROMANCE_CLOZE)) {
+      lines(packs.find((p) => p.id === id)!).forEach(([left], i) => {
+        if (!rows[i]) partial.push(`${id}#${i} ${left}`);
+      });
+    }
+    expect(partial).toEqual([]);
+  });
+
   it("a clue is added only where the line has one authored, and replaces a bracketed word", () => {
     const qs = packQuestions(packs.find((p) => p.id === "esa2p4")!);
     expect(qs[1]!.type === "mc" || qs[1]!.type === "fill").toBe(true);
