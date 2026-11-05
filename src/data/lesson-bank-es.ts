@@ -601,7 +601,7 @@ Yo ___ (enfriar) el postre.|enfrío`,
     data: `more|más
 less|menos
 a lot|mucho
-a little|poco
+little (not much)|poco
 several|varios
 enough|suficiente
 too much|demasiado

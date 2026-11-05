@@ -6013,7 +6013,7 @@
             {
               "id": "esa1p23q3",
               "type": "mc",
-              "prompt": "How do you say \"a little\" in Spanish?",
+              "prompt": "How do you say \"little (not much)\" in Spanish?",
               "choices": [
                 "exactamente",
                 "doble",
@@ -6021,7 +6021,7 @@
                 "varios"
               ],
               "answer": 2,
-              "explanation": "a little → poco. Common quantity words."
+              "explanation": "little (not much) → poco. Common quantity words."
             },
             {
               "id": "esa1p23q4",
