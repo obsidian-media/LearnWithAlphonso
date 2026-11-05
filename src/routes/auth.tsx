@@ -4,13 +4,12 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
+import { safeNextPath } from "../lib/safe-next-path";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
-    typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//")
-      ? { next: s.next }
-      : {},
+    safeNextPath(s.next) ? { next: safeNextPath(s.next) } : {},
   head: () => ({
     meta: [
       { title: "Sign in — Alphonso" },
@@ -39,7 +38,9 @@ function AuthPage() {
   // deep link (e.g. an invite) shouldn't get hijacked into onboarding.
   const afterAuth = useCallback(
     (fallback: string = "/learn") => {
-      if (next) window.location.href = next;
+      // Re-vetted at the sink, not only in validateSearch.
+      const safe = safeNextPath(next);
+      if (safe) window.location.href = safe;
       else navigate({ to: fallback, replace: true });
     },
     [next, navigate],

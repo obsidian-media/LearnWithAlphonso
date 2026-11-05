@@ -144,6 +144,20 @@ describe("sendEmailViaResend", () => {
         vi.fn().mockResolvedValue(new Response("nope", { status: 422 })),
       ),
     ).rejects.toThrow("Resend 422");
+    // The Resend body can echo the recipient and report text: only the status
+    // and Resend's short error name may reach the thrown (logged) message.
+    const leak = new Response(
+      JSON.stringify({
+        name: "validation_error",
+        message: "to: owner@example.com bad report text",
+      }),
+      { status: 422 },
+    );
+    const err = await sendEmailViaResend(
+      { to: "a", subject: "s", text: "t" },
+      vi.fn().mockResolvedValue(leak),
+    ).catch((e: Error) => e);
+    expect((err as Error).message).toBe("Resend 422 (validation_error)");
     vi.stubEnv("RESEND_API_KEY", "");
     await expect(sendEmailViaResend({ to: "a", subject: "s", text: "t" }, vi.fn())).rejects.toThrow(
       "RESEND_API_KEY",

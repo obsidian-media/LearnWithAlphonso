@@ -27,12 +27,18 @@ fun AsyncRemoteImage(url: String, contentDescription: String?, modifier: Modifie
     var bitmap by remember(url) { mutableStateOf(cache[url]) }
     LaunchedEffect(url) {
         if (bitmap != null) return@LaunchedEffect
+        if (!RemoteImagePolicy.isAllowed(url)) return@LaunchedEffect
         bitmap = withContext(Dispatchers.IO) {
             runCatching {
                 val connection = URL(url).openConnection() as HttpURLConnection
                 connection.connectTimeout = 8_000
                 connection.readTimeout = 8_000
-                connection.inputStream.use { BitmapFactory.decodeStream(it) }?.asImageBitmap()
+                // A redirect could leave the allowlisted host; treat it as a failure.
+                connection.instanceFollowRedirects = false
+                if (connection.responseCode != HttpURLConnection.HTTP_OK) return@runCatching null
+                val bytes = connection.inputStream.use { RemoteImagePolicy.readCapped(it) }
+                    ?: return@runCatching null
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
             }.getOrNull()
         }?.also { cache[url] = it }
     }

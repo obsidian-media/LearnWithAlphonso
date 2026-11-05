@@ -67,7 +67,21 @@ export async function sendEmailViaResend(
       text: msg.text,
     }),
   });
-  if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  // Status plus Resend's short error name only. The body can echo the
+  // recipient address and parts of the report text, which is user content
+  // and must not end up in server logs.
+  if (!res.ok) throw new Error(`Resend ${res.status}${await upstreamErrorCode(res)}`);
+}
+
+async function upstreamErrorCode(res: Response): Promise<string> {
+  try {
+    const parsed = (await res.json()) as { name?: unknown };
+    return typeof parsed.name === "string" && /^[a-z0-9_]{1,64}$/i.test(parsed.name)
+      ? ` (${parsed.name})`
+      : "";
+  } catch {
+    return "";
+  }
 }
 
 const json = (body: unknown, status: number) =>
