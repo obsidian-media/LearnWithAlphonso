@@ -116,7 +116,9 @@ rules are applied from what the pack itself says. The code is `src/data/romance-
 - **Fill-in sentences.** A sentence takes its wrong options from `src/data/romance-cloze-options.ts`, written
   for that sentence: the rest of the sentence rules each one out (gender, number, a missing elision, a wrong
   verb form), or a short English clue in brackets does. Where two words fit ("pas", "plus", "jamais" in a
-  negation) the clue is required. A clue never equals the answer.
+  negation) the clue is required. No bracket in the prompt the learner sees equals the answer, and no written
+  wrong option contains it. A pack with options written for some lines has them for every line: a line left
+  out falls back to the pack's other answers, which in a pack of mixed words gave "Es ___ (midnight): es".
 - **Listening.** A wrong choice may not differ from the answer only by words that sound the same
   (`HOMOPHONE_GROUPS`: ces / ses, cou / coup, cima / sima, cocer / coser, rayar / rallar, votar / botar):
   nobody can answer those by ear.
