@@ -24,8 +24,16 @@ internal object RemoteImagePolicy {
             uri.rawUserInfo == null &&
             uri.host == ALLOWED_HOST &&
             (uri.port == -1 || uri.port == 443) &&
-            uri.rawPath?.startsWith(ALLOWED_PATH_PREFIX) == true
+            isVocabImagePath(uri.rawPath)
     }
+
+    // Prefix match plus no dot segments, raw or percent-encoded, so a
+    // "vocab-images/../" path cannot climb out of the bucket.
+    private fun isVocabImagePath(rawPath: String?): Boolean =
+        rawPath != null &&
+            rawPath.startsWith(ALLOWED_PATH_PREFIX) &&
+            !rawPath.contains("..") &&
+            !rawPath.contains("%2e", ignoreCase = true)
 
     /** Reads at most [max] bytes; returns null (never a partial image) if the stream is longer. */
     fun readCapped(input: InputStream, max: Int = MAX_BYTES): ByteArray? {

@@ -22,26 +22,44 @@ function hasForbiddenChar(s: string, allowSpace = false): boolean {
   return false;
 }
 
-export function safeNextPath(value: unknown): string | undefined {
-  if (typeof value !== "string" || value.length === 0 || value.length > 2048) return undefined;
-  if (!value.startsWith("/")) return undefined;
-  if (hasForbiddenChar(value)) return undefined;
+// Raw-string checks: a leading "/" and no forbidden character.
+function looksLikeInAppPath(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= 2048 &&
+    value.startsWith("/") &&
+    !hasForbiddenChar(value)
+  );
+}
+
+// Same checks after one percent-decode; also protocol-relative after
+// decoding ("/%2f..." decodes to "//...").
+function decodesSafely(value: string): boolean {
   let decoded: string;
   try {
     decoded = decodeURIComponent(value);
   } catch {
-    return undefined;
+    return false;
   }
-  if (hasForbiddenChar(decoded, true)) return undefined;
-  // Protocol-relative, raw or after decoding ("/%2f..." decodes to "//...").
-  if (decoded.startsWith("//")) return undefined;
+  return !hasForbiddenChar(decoded, true) && !decoded.startsWith("//");
+}
+
+// Resolves against a fixed origin; returns the path only if it stays there.
+function resolveInApp(value: string): string | undefined {
   let url: URL;
   try {
     url = new URL(value, PROBE_ORIGIN);
   } catch {
     return undefined;
   }
-  if (url.origin !== PROBE_ORIGIN) return undefined;
   const path = url.pathname + url.search + url.hash;
-  return path.startsWith("/") && !path.startsWith("//") ? path : undefined;
+  return url.origin === PROBE_ORIGIN && path.startsWith("/") && !path.startsWith("//")
+    ? path
+    : undefined;
+}
+
+export function safeNextPath(value: unknown): string | undefined {
+  if (!looksLikeInAppPath(value) || !decodesSafely(value)) return undefined;
+  return resolveInApp(value);
 }
