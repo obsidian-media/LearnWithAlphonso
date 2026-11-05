@@ -99,6 +99,12 @@ describe("updateProfile", () => {
     expect(updateChain.calls.find((c) => c.method === "eq")?.args).toEqual(["id", USER_ID]);
   });
 
+  it.each(["fr", "F1", "X", "évil"])("rejects a country that is not two upper-case letters (%s)", async (country) => {
+    const supabase = createSupabaseMock();
+    await expect(updateProfile({ context: ctx(supabase), data: { country } })).rejects.toThrow();
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
   it("sets the display name through confirm_display_name and maps a refusal", async () => {
     const supabase = createSupabaseMock();
     supabase.rpc.mockResolvedValueOnce({
