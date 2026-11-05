@@ -1,5 +1,6 @@
 import type { Course } from "./courses";
 import type { Localized, ScenarioLevel } from "./scenarios";
+import { BATCH2_CAMPAIGNS } from "./campaigns-batch2";
 import { MORE_CAMPAIGNS } from "./campaigns-more";
 
 /**
@@ -150,7 +151,7 @@ const CITY_DAY: Campaign = {
 };
 
 /** Every campaign in catalog order: the original city-day first, then the story campaigns. */
-export const CAMPAIGNS: Campaign[] = [CITY_DAY, ...MORE_CAMPAIGNS];
+export const CAMPAIGNS: Campaign[] = [CITY_DAY, ...MORE_CAMPAIGNS, ...BATCH2_CAMPAIGNS];
 
 /** The raw, all-course record for a campaign id, or undefined. */
 export function getCampaign(id: string): Campaign | undefined {

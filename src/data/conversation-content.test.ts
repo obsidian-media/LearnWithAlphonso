@@ -255,9 +255,10 @@ describe("ALL_SYSTEM_PROMPTS", () => {
     }
     expect(ALL_SYSTEM_PROMPTS.size).toBe(expected.size);
     for (const p of expected) expect(ALL_SYSTEM_PROMPTS.has(p)).toBe(true);
-    // 12 scenarios + 16 campaign scenes (city-day 3, first-week-job 4, doctors-visit 3,
-    // train-trip 3, new-flat 3) = 28 prompts, times 3 courses, all distinct.
-    expect(ALL_SYSTEM_PROMPTS.size).toBe(84);
+    // 12 scenarios + 28 campaign scenes (city-day 3, first-week-job 4, doctors-visit 3,
+    // train-trip 3, new-flat 3, market-day 3, dinner-guest 3, lost-bag 3, refund-return 3)
+    // = 40 prompts, times 3 courses, all distinct.
+    expect(ALL_SYSTEM_PROMPTS.size).toBe(120);
   });
 });
 

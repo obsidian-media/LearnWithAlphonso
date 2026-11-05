@@ -29,11 +29,14 @@ final class ContentStoreTests: XCTestCase {
 
     func testLoadsCampaigns() throws {
         // V4 candidate #4, see docs/superpowers/specs/2026-09-21-
-        // conversation-campaigns-design.md. city-day plus four story campaigns.
+        // conversation-campaigns-design.md. city-day plus eight story campaigns.
         let store = try ContentStore()
         XCTAssertEqual(
             store.campaigns.map(\.id),
-            ["city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat"]
+            [
+                "city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat",
+                "market-day", "dinner-guest", "lost-bag", "refund-return",
+            ]
         )
         for campaign in store.campaigns {
             XCTAssertTrue((3...4).contains(campaign.scenes.count), campaign.id)

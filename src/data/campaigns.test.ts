@@ -41,6 +41,10 @@ describe("story campaigns", () => {
     "doctors-visit": ["doctor-book-phone", "doctor-symptoms", "doctor-pharmacy"],
     "train-trip": ["train-buy-ticket", "train-delay-help", "train-hotel-checkin"],
     "new-flat": ["flat-viewing", "flat-broken-heater", "flat-neighbour"],
+    "market-day": ["market-plan-picnic", "market-buy-food", "market-picnic"],
+    "dinner-guest": ["dinner-arrive", "dinner-table", "dinner-goodbye"],
+    "lost-bag": ["lost-ask-driver", "lost-property-office", "lost-tell-friend"],
+    "refund-return": ["refund-shop", "refund-parcel", "refund-opinion"],
   };
 
   it("ships exactly these campaigns with these scene ids, in this order (ids are stable)", () => {
