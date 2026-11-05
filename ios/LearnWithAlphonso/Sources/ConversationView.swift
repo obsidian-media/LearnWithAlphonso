@@ -115,6 +115,8 @@ private struct ConversationSessionView: View {
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var voice = VoiceSessionController()
+    /// Settings: "Show Alphonso while practising" (default on).
+    @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     /// Notices that are not TutorErrors ("didn't catch that", playback).
     @State private var notice: String?
     // V3 package 3a: adaptive difficulty, per course.
@@ -161,6 +163,13 @@ private struct ConversationSessionView: View {
         .background(AlphonsoColor.surface)
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if showAlphonso {
+                AlphonsoAvatarStage(
+                    voice: voice, replyText: conversation.turns.last(where: { $0.role == "assistant" })?.content,
+                    course: course)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 // The conversation persists across tab switches until this.

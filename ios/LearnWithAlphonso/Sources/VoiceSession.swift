@@ -115,6 +115,15 @@ final class VoiceSessionController {
 
     func isCurrent(_ generation: Int) -> Bool { state.accepts(generation: generation) }
 
+    /// Where the reply audio is, for the talking avatar's lips. nil unless a reply is playing right now.
+    var replyPlayback: (time: TimeInterval, duration: TimeInterval)? {
+        guard let player, player.isPlaying else { return nil }
+        return (player.currentTime, player.duration)
+    }
+
+    /// The microphone level in dBFS while recording, nil otherwise (the avatar raises his brows on loud moments).
+    func inputLevelDBFS() -> Double? { recorder.currentLevel() }
+
     func transcribed(_ generation: Int) { send(.transcribed(generation: generation)) }
 
     func fail(_ generation: Int, _ error: TutorError) { send(.failed(generation: generation, error)) }
