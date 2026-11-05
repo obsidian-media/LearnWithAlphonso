@@ -2334,8 +2334,8 @@ deploy`, both easy to forget (this bit a real session that added several
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
-  2026-11-04 there are 378 web test files (4,558 tests plus 1 skipped, in CI on main after
-  #376), 1,189 Swift Kit tests and 833 Android JVM tests (counted from `@Test`); run `bun run
+  2026-11-05 there are 386 web test files (4,686 tests plus 1 skipped, in CI on main after
+  #391), 1,196 Swift Kit tests and 843 Android JVM tests (counted from `@Test`); run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
@@ -2360,7 +2360,7 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   toast, same reasoning) if that's ever upgraded to real push too — worth
   building once for both rather than twice.
 - **`pickDistractors`/`packQuestions` (content-pack question generation)
-  is duplicated verbatim in both `src/data/lesson-bank.ts` (English) and
+  is duplicated in both `src/data/lesson-bank.ts` (English) and
   `src/data/bank-engine.ts` (the shared engine French/Spanish import) —
   English predates the shared engine and was never consolidated onto
   it.** Found live 2026-09-22 while fixing a real bug in this logic
@@ -2375,7 +2375,10 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   that fix — it changes core content-generation code that all users'
   review-item ids are keyed against (`lessonId:questionId`), so it needs
   its own careful pass confirming lesson/unit id output is byte-for-byte
-  identical before/after, not a rider on an unrelated bug fix.
+  identical before/after, not a rider on an unrelated bug fix. **No longer verbatim since
+  #391 (2026-11-05):** that PR changed the shared engine for French and Spanish (same-class
+  wrong options first, containment and synonym bans, a walk step coprime with the pack size,
+  authored fill-in options), while English `lesson-bank.ts` still walks with a flat step of 7.
 - **Three content-overlap checks, one per pair of sets, and none of them sees
   what the others do.** `curriculum-consistency.test.ts` compares lesson questions
   with each other (within a course); `placement-lesson-overlap.test.ts` compares
@@ -2390,6 +2393,31 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   baseline, so a placement question can be re-authored freely. Editing a pack line
   changes the content behind an id real users hold spaced-repetition state
   against. Where an overlap has to be resolved, the placement side gives way.
+- **Placement is outside the distractor gate, and the adaptive skip can place a learner
+  above what they answered (found on a Limrun run, 2026-11-05; both still open).**
+  The distractor gates (`distractor-gate.test.ts` for English, `romance-options.test.ts` for
+  French and Spanish) cover lesson banks only, so English placement items still carry
+  absurd wrong options (the A1 item `p3c` in `src/data/placement.ts` offers "Good night"
+  among "Nighting" and "Good nightly"); the same text ships in the iOS and Android
+  `placement-en.json` exports. Separately, after a band answered 3/3 `nextAdaptiveBand`
+  skips the next band and `placement.tsx` credits it with a synthetic 2; if the band after
+  the skip then goes 0/3 the test stops and `scorePlacement` still counts the skipped band
+  as passed, so A1 3/3 then B1 0/3 (3 of 6 right) places at B1, although the code comment
+  says the credit is "never the sole basis for the final result" (reproduced by calling
+  the two functions). No test covers a failed band after a skip. iOS and Android show the
+  same "Fast-tracked past" line; their scoring has not been checked.
+- **French and Spanish A1/A2 lesson quality is a first pass, not a clean bill (#391,
+  2026-11-05).** An independent re-measure still found problems in 7% of French and 10% of
+  Spanish questions (down from 40% and 35%). What remains: conjugation drills where the
+  bracket names the verb and only one option is a form of it (`fra2p6` reflexives, several
+  Spanish packs: `Tú ___ (trabajar)`: hablas / trabajas / haces / lees); fill-in explanations
+  that all read "x is correct here" (word cards are derived from that exact string, so
+  rewriting it is its own change); B1 and above and the generated `frga`/`esga` packs; and a
+  few single items the review named (`fra2p14q17` accepts `leur` as well as `notre`; `fra1p15q20`
+  and `esa2p10q14` give the answer away by a trailing "please" or "thanks"). `romance-options.test.ts`
+  checks with the same `optionClass` / `bannedBecause` / `homophoneOnly` tables the engine uses,
+  so a wrong table entry passes silently. The question-variety gate likewise misses a
+  frontable "here" (`a2p16q34`, pre-existing).
 - **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
   abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
   candidate to the answer's own class, so it sorts as a perfect distractor. The
