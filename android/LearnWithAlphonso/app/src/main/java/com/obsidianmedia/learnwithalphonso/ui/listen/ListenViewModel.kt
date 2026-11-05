@@ -35,6 +35,8 @@ data class ListenUiState(
     /** Every episode seen this session, keyed by id, so an offline listing can name what was downloaded. */
     val knownEpisodes: Map<String, PodcastEpisode> = emptyMap(),
     val offline: List<PodcastEpisode>? = null,
+    /** Episodes (of the folders opened so far) that have a quiz; each gets a "Take the quiz" button under its row. */
+    val quizEpisodeIds: Set<String> = emptySet(),
 )
 
 /** Port of ListenView.swift's state: the folder tree, per-folder episodes, search and the offline listing. */
@@ -103,7 +105,9 @@ class ListenViewModel(
             _state.update { it.copy(loadingFolderId = folderId) }
             val episodes = runCatching { client.fetchEpisodes(folderId) }.getOrDefault(emptyList())
             remember(episodes)
-            _state.update { it.copy(episodesByFolder = it.episodesByFolder + (folderId to episodes), loadingFolderId = null) }
+            // Which of them have a quiz. A failed read just means no buttons; it never fails the listing.
+            val withQuiz = runCatching { client.fetchQuizEpisodeIds(episodes.map { it.id }) }.getOrDefault(emptySet())
+            _state.update { it.copy(episodesByFolder = it.episodesByFolder + (folderId to episodes), quizEpisodeIds = it.quizEpisodeIds + withQuiz, loadingFolderId = null) }
         }
     }
 

@@ -74,6 +74,8 @@ class AppContainer(context: Context) {
     private val engine = OkHttp.create { preconfigured = okHttp }
     /** App-lifetime work that outlives any screen: podcast saves, push registration. */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    /** The same app-lifetime scope, for work that must outlive the screen that started it (a podcast quiz submit). */
+    val appLifetimeScope: CoroutineScope get() = appScope
 
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
     val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
