@@ -14,8 +14,10 @@ final class AvatarLipSyncTests: XCTestCase {
     }
 
     func testEveryOpenShapeIsHeldAtLeastTheMinimum() {
+        // 2 s for 48 letter units is about 42 ms a letter, so without thinning "hello" would hold each of its four
+        // shapes for about 52 ms: the minimum hold has to bind here (at 4 s every letter already gets 83 ms).
         let plan = AvatarLipSync.plan(
-            text: "Hello there, how are you doing today my friend?", course: .english, duration: 4.0)
+            text: "Hello there, how are you doing today my friend?", course: .english, duration: 2.0)
         for cue in plan.cues where cue.viseme != .closed {
             XCTAssertGreaterThanOrEqual(cue.end - cue.start, AvatarLipSync.minimumHold - 1e-9, "\(cue)")
         }
