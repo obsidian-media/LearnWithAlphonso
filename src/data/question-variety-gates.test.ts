@@ -72,6 +72,24 @@ describe("reorder sentences have one natural order", () => {
     expect(bad).toEqual([]);
   });
 
+  it("the as...as and comparative lessons reorder a sentence that uses the structure", () => {
+    const reorderOf = (id: string) =>
+      (
+        added.find(({ lesson, q }) => lesson.id === id && q.type === "reorder")?.q as
+          { answer: string } | undefined
+      )?.answer ?? "";
+    for (let n = 1; n <= 5; n++) {
+      expect(reorderOf(`a2p20l${n}`), `a2p20l${n}`).toMatch(/\bas \w+ as\b/i);
+      expect(reorderOf(`a2p3l${n}`), `a2p3l${n}`).toMatch(/\bthan\b/i);
+    }
+  });
+
+  it("a1p9q37 is not a sentence that reads the same the other way round", () => {
+    const hit = added.find(({ q }) => q.id === "a1p9q37")!.q as { answer: string };
+    expect(hit.answer).not.toMatch(/\bmatch/i);
+    expect(movableAdverbial(hit.answer)).toBeNull();
+  });
+
   it("reorder and listening of one lesson never repeat the same sentence", () => {
     for (const { lesson } of lessonsOf(curriculum)) {
       const mine = added.filter((a) => a.lesson === lesson).map((a) => a.q);
