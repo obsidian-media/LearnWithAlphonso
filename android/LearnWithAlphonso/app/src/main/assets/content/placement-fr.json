@@ -406,7 +406,7 @@
     "id": "fp8c",
     "level": "B1",
     "type": "mc",
-    "prompt": "\"Bien que\" est suivi du:",
+    "prompt": "\"Bien que\" est suivi de quel mode ?",
     "choices": [
       "indicatif",
       "subjonctif",
@@ -432,10 +432,10 @@
     "id": "fp10b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Elle a dit qu'elle ___ le rapport avant vendredi.",
+    "prompt": "Elle a promis qu'elle ___ le rapport le lendemain.",
     "choices": [
       "finirait",
-      "finissait",
+      "finira",
       "finit",
       "a fini"
     ],

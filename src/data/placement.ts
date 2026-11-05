@@ -608,6 +608,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
       "It depends on the time available.",
       "That depends how much time there is.",
       "It depends on how much time I have.",
+      "It all depends on how much time I have.",
+      "It all depends on how much time we have.",
       "That depends on how much time I have.",
       "It depends how much time I have.",
     ],

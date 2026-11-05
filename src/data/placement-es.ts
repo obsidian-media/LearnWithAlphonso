@@ -233,7 +233,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     id: "ep10",
     level: "B2",
     type: "mc",
-    prompt: "El informe ___ publicado la próxima semana.",
+    prompt: "El informe ___ publicado en cuanto se hayan revisado las cifras.",
     choices: ["será", "es", "ha sido", "sería"],
     answer: 0,
   },
@@ -257,8 +257,8 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     id: "ep10b",
     level: "B2",
     type: "mc",
-    prompt: "Ella dijo que ___ el informe antes del viernes.",
-    choices: ["terminaría", "terminando", "terminó", "terminaba"],
+    prompt: "Ella prometió que ___ el informe al día siguiente.",
+    choices: ["terminaría", "terminando", "terminó", "terminará"],
     answer: 0,
   },
   {
@@ -363,7 +363,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     type: "mc",
     prompt: "¿Qué oración evita una construcción torpe?",
     choices: [
-      "Caminando hacia la tienda, la lluvia me sorprendió.",
+      "Caminando hacia la tienda, la lluvia cayó con fuerza.",
       "Mientras caminaba hacia la tienda, me sorprendió la lluvia.",
       "Caminando hacia la tienda, el paraguas se mojó.",
       "Yendo hacia la tienda, la lluvia empezó a caer.",
