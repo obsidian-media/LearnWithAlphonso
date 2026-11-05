@@ -23,44 +23,99 @@ const MONTHS =
 const COP = String.raw`(?:\bis|\bare|\bwas|\bwere|\bam|\bbe|\bbeen|'s|'re|'m)`;
 const DET = "the|a|an|my|your|his|her|our|their|this|that|these|those";
 const PLACE_PREP =
-  "in|at|on|near|outside|inside|around|beside|behind|under|over|next to|across from|opposite|across|with|beneath|among|between|along|through|against";
+  "in|at|on|near|outside|inside|around|beside|behind|under|over|next to|across from|opposite|across|with|beneath|among|between|along|through|against|above|below|towards|past";
 /** A place phrase after a full verb ("... in the park"): a copula keeps its one place. */
 const PLACE_RULE = new RegExp(
   String.raw`(?<!${COP} )(?<!${COP} (?:right |just |also |still |not )?)\b(${PLACE_PREP}) (?:(?:${DET}) )?\w+(?: \w+)?$`,
 );
-/** Checked against the lower-case sentence without its final punctuation. */
-const MOVABLE: RegExp[] = [
+/** A relation that reads the same with its two noun phrases swapped ("X is next to Y" / "Y is next to X"). */
+const SYMMETRIC_PREP = "next to|near|beside|opposite|between|close to|across from|far from";
+const SPATIAL_PREP = "under|above|over|behind|below|inside|outside|in front of";
+
+type Rule = { name: string; re: RegExp };
+/** Checked against the lower-case sentence without its final punctuation. Each rule has a fixture only it catches (question-variety-gates.test.ts). */
+export const MOVABLE_RULES: Rule[] = [
   // when
-  /\b(today|tonight|tomorrow|yesterday|now|then|soon|later|already|still|yet|again|instead|suddenly|please)\b/,
-  /\b(before|after|when|while|because|if|until|since|during|although|as soon as)\b/,
-  /(?<!\bthe )\b(this|last|next|every|each) (morning|afternoon|evening|night|weekend|week|year|month|summer|winter|spring|autumn|day|time|sunday|saturday|monday|tuesday|wednesday|thursday|friday)\b/,
-  new RegExp(String.raw`\b(every|each|on) (${DAYS})s?\b`),
-  new RegExp(String.raw`\bin (${MONTHS}|\d{4})\b`),
-  /\bon (rainy|sunny|cold|hot|summer|winter|week|weekend)?\s*(days?|weekdays|weekends|holidays)\b/,
-  /\b(at|in|by) (the )?(night|noon|dawn|midnight|weekends?|the weekend|the morning|the evening|the afternoon|summer|winter|spring|autumn|the end)\b/,
-  /\bat \w+ (o'clock|sharp)\b|\bo'clock\b|\bsharp\b/,
-  /\bat (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/,
-  new RegExp(String.raw`\b(for|on|by) (${DAYS})\b`),
-  /\bfor (\w+ ){1,2}(seconds|minutes|hours|days|weeks|months|years)\b/,
-  /\b(early|late)$/,
-  /\ball (day|night|morning|afternoon|evening|week|year|summer|winter|the time)\b/,
-  /\bfor (breakfast|lunch|dinner|supper|dessert)\b/,
-  /\b(due to|because of)\b/,
+  {
+    name: "time-adverb",
+    re: /\b(today|tonight|tomorrow|yesterday|now|then|soon|later|already|still|yet|again|instead|suddenly|please)\b/,
+  },
+  {
+    name: "time-clause",
+    re: /\b(before|after|when|while|because|if|until|since|during|although|as soon as)\b/,
+  },
+  {
+    name: "this-next-every",
+    re: /(?<!\bthe )\b(this|last|next|each) (morning|afternoon|evening|night|weekend|week|year|month|summer|winter|spring|autumn|day|time)\b/,
+  },
+  { name: "on-day", re: new RegExp(String.raw`\b(on|this|next|last) (${DAYS})s?\b`) },
+  { name: "in-month", re: new RegExp(String.raw`\bin (${MONTHS}|\d{4})\b`) },
+  {
+    name: "on-days",
+    re: /\bon (rainy|sunny|cold|hot|summer|winter|week|weekend)?\s*(days?|weekdays|weekends|holidays)\b/,
+  },
+  {
+    name: "at-night",
+    re: /\b(at|in|by) (the )?(night|noon|dawn|midnight|weekends?|the weekend|the morning|the evening|the afternoon|summer|winter|spring|autumn|the end)\b/,
+  },
+  { name: "oclock", re: /\bo'clock\b|\bsharp\b/ },
+  {
+    name: "at-time",
+    re: /\bat (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/,
+  },
+  { name: "for-day", re: new RegExp(String.raw`\b(for|by) (${DAYS})\b`) },
+  {
+    name: "for-duration",
+    re: /\bfor (\w+ ){1,2}(seconds|minutes|hours|days|weeks|months|years)\b/,
+  },
+  { name: "early-late", re: /\b(early|late)$/ },
+  {
+    name: "all-day",
+    re: /\ball (day|night|morning|afternoon|evening|week|year|summer|winter|the time)\b/,
+  },
+  { name: "for-meal", re: /\bfor (breakfast|lunch|dinner|supper|dessert)\b/ },
+  { name: "due-to", re: /\b(due to|because of)\b/ },
   // how often (always, never, rarely, seldom and hardly ever stay in the middle: fronting them changes the words)
-  /\b(usually|often|sometimes|normally|generally|frequently|regularly|routinely|occasionally|periodically|constantly|continually|repeatedly)\b/,
-  /\b(now and then|from time to time|once|twice|every)\b/,
-  /\b(times|once|twice|per) (a )?(day|week|month|year)\b/,
+  {
+    name: "frequency-adverb",
+    re: /\b(usually|often|sometimes|normally|generally|frequently|regularly|routinely|occasionally|periodically|constantly|continually|repeatedly)\b/,
+  },
+  { name: "frequency-phrase", re: /\b(now and then|from time to time|once|twice|every)\b/ },
+  { name: "times-a", re: /\b(times|once|twice|per) (a )?(day|week|month|year)\b/ },
   // where
-  /\b(nearby|downtown|upstairs|downstairs|abroad|at home|in class|at school|at work|in town|in bed|on tv|in american english|in british english)\b/,
-  PLACE_RULE,
+  {
+    name: "place-adverb",
+    re: /\b(nearby|downtown|upstairs|downstairs|abroad|at home|in class|at school|at work|in town|in bed|on tv|in american english|in british english)\b/,
+  },
+  { name: "place-phrase", re: PLACE_RULE },
   // two clauses that can swap places ("Take an umbrella - it might rain") or a trailing "sorry"
-  /—|,(?! so\b)(?! not\b)|\bsorry$/,
+  { name: "clause-swap", re: /—|,(?! so\b)(?! not\b)|\bsorry$/ },
   // a particle that can sit before or after the object ("try this on", "set up a plan", "rolled up his sleeves")
-  new RegExp(
-    String.raw`\b(try|put|take|turn|switch|let|pick|hand|fill|throw|give|bring|roll|rolled|set|check|write|work|sort)\b (up|down|out|off|on|in|away|back) (${DET}|some|any)\b|\b(try|put|take|turn|switch|let|pick|hand|fill|throw|give|bring|roll|set|check|write|sort) (this|that|these|those|it|them) (up|down|out|off|on|in|away|back)\b|\blet some \w+ in$`,
-  ),
+  {
+    name: "particle",
+    re: new RegExp(
+      String.raw`\b(try|put|take|turn|switch|let|pick|hand|fill|throw|give|bring|roll|rolled|set|check|write|work|sort)\b (up|down|out|off|on|in|away|back) (${DET}|some|any)\b|\b(try|put|take|turn|switch|let|pick|hand|fill|throw|give|bring|roll|set|check|write|sort) (this|that|these|those|it|them) (up|down|out|off|on|in|away|back)\b|\blet some \w+ in$`,
+    ),
+  },
   // a purpose clause ("... to save lives", "... to erase mistakes") can come first
-  /\b(?<!\b(?:want|wants|need|needs|like|likes|love|loves|going|used|have|has|had|ready|able|asked|told|allowed|how|try|tries|trying|forward|rather|about|promise|expect|decided|manage|supposed|time|nice|good|hard|easy|ought|learn|hate|start|begin|enough|too) )to (save|relax|let|stay|erase|help|check|find|see|buy|cook|get|make|share|practise|practice|keep|pay|win|clean|wash|carry|cut|protect|travel|reach|show|stop|watch|erase) /,
+  {
+    name: "purpose-clause",
+    re: /\b(?<!\b(?:want|wants|need|needs|like|likes|love|loves|going|used|have|has|had|ready|able|asked|told|allowed|how|try|tries|trying|forward|rather|about|promise|expect|decided|manage|supposed|time|nice|good|hard|easy|ought|learn|hate|start|begin|enough|too) )to (save|relax|let|stay|erase|help|check|find|see|buy|cook|get|make|share|practise|practice|keep|pay|win|clean|wash|carry|cut|protect|travel|reach|show|stop|watch) /,
+  },
+  // two things the sentence can put either way round: "A is next to B", "A is as big as B", "A is bigger than B", "X and Y", "X but Y"
+  {
+    name: "symmetric-relation",
+    re: new RegExp(String.raw`\b(${SYMMETRIC_PREP})\b|\bas \w+ as\b|\bthan\b|\b(and|but|or)\b`),
+  },
+  // "Gardening is her hobby" / "Her hobby is gardening"
+  { name: "gerund-subject", re: /^\w+ing (is|are|was) / },
+  // "The car park is under the shopping centre": two definite things and a spatial relation
+  {
+    name: "two-things-spatial",
+    re: new RegExp(
+      String.raw`^the [\w ]+? (?:is|are|was|were) (?:just |right )?(?:${SPATIAL_PREP}) the \w+`,
+    ),
+  },
 ];
 const LY_OK = new Set(
   "really friendly lovely lonely ugly silly family lively early only july italy jelly belly bully supply apply reply fly rely assembly butterfly".split(
@@ -68,21 +123,27 @@ const LY_OK = new Set(
   ),
 );
 
-/** The movable adverbial a sentence contains, or null when the sentence has one natural order. */
-export function movableAdverbial(sentence: string): string | null {
+/** The names of the rules a sentence trips (empty: one natural order). */
+export function movableRuleHits(sentence: string): string[] {
   const original = sentence.trim().replace(/[.!?]+$/, "");
   // "How often ...?" is a fixed question phrase, not a movable adverbial.
   const s = original.toLowerCase().replace(/\bhow often\b/g, "how");
+  const hits: string[] = [];
   // "X is Y" with two noun phrases swaps ("The shortest month is February" / "February is the shortest month").
-  if (/ is [A-Z][a-z]+$/.test(original)) return "is " + original.split(" ").pop()!.toLowerCase();
-  for (const re of MOVABLE) {
+  if (/ is [A-Z][a-z]+$/.test(original)) hits.push("is-proper-noun");
+  for (const { name, re } of MOVABLE_RULES) {
     // put/place/bring + object + place keep the one place their verb needs
-    if (re === PLACE_RULE && /^(put|place|bring|hang|leave) /.test(s)) continue;
-    const m = re.exec(s);
-    if (m) return m[0];
+    if (name === "place-phrase" && /^(put|place|bring|hang|leave) /.test(s)) continue;
+    if (re.test(s)) hits.push(name);
   }
-  for (const w of wordsOf(s)) if (/..ly$/.test(w) && !LY_OK.has(w)) return w;
-  return null;
+  if (wordsOf(s).some((w) => /..ly$/.test(w) && !LY_OK.has(w))) hits.push("ly-adverb");
+  return hits;
+}
+
+/** The movable adverbial (or swappable part) a sentence contains, or null when the sentence has one natural order. */
+export function movableAdverbial(sentence: string): string | null {
+  const hits = movableRuleHits(sentence);
+  return hits.length ? hits[0]! : null;
 }
 
 /** Words that sound the same or nearly so but are spelled differently, which the spelling rules above miss. */
@@ -231,3 +292,66 @@ export function listeningChoiceProblems(
 }
 
 export type ListeningQuestion = Extract<Question, { type: "listening" }>;
+
+const IRREGULAR_GROUPS: string[][] = [
+  ["am", "is", "are", "was", "were", "be", "been", "being"],
+  ["do", "does", "did", "done", "doing"],
+  ["have", "has", "had", "having"],
+  ["go", "goes", "went", "gone", "going"],
+  ["take", "takes", "took", "taken", "taking"],
+  ["write", "writes", "wrote", "written", "writing"],
+  ["know", "knows", "knew", "known", "knowing"],
+  ["buy", "buys", "bought", "buying"],
+  ["see", "sees", "saw", "seen", "seeing"],
+  ["swim", "swims", "swam", "swum", "swimming"],
+  ["sit", "sits", "sat", "sitting"],
+  ["get", "gets", "got", "getting"],
+  ["will", "would", "won't", "wouldn't"],
+  ["can", "could"],
+  ["much", "more", "most", "many"],
+  ["good", "better", "best"],
+  ["bad", "worse", "worst"],
+];
+
+/** Two forms of the same word (am/is/are, go/going, tidy/tidies): swapping one for the other is a grammar slip, not a different sentence. */
+export function sameWordForms(a: string, b: string): boolean {
+  const x = a.toLowerCase();
+  const y = b.toLowerCase();
+  if (x === y) return true;
+  if (IRREGULAR_GROUPS.some((g) => g.includes(x) && g.includes(y))) return true;
+  const [s, l] = x.length <= y.length ? [x, y] : [y, x];
+  if (s.length >= 2 && l.startsWith(s) && l.length - s.length <= 3) return true;
+  let p = 0;
+  while (p < s.length && s[p] === l[p]) p++;
+  return p >= 3 && editDistance(x, y) <= 3;
+}
+
+/** True when a wrong choice differs from the answer only by word forms (a grammar error a learner can spot without hearing it). */
+export function isGrammarSlip(answer: string, wrong: string): boolean {
+  const a = wordsOf(answer);
+  const w = wordsOf(wrong);
+  const onlyWrong = w.filter((x) => !a.includes(x));
+  const onlyAnswer = a.filter((x) => !w.includes(x));
+  if (!onlyWrong.length) return false;
+  return onlyWrong.every((x) => onlyAnswer.some((y) => sameWordForms(x, y)));
+}
+
+/** Problems with how a listening question's choices are written: they must look alike. */
+export function choiceFormatProblems(choices: string[]): string[] {
+  const out: string[] = [];
+  const end = (c: string) => /[.?!]$/.exec(c.trim())?.[0] ?? "";
+  if (new Set(choices.map(end)).size > 1) out.push("the choices end in different punctuation");
+  for (const c of choices) {
+    if (/\s[?.!,;]/.test(c)) out.push(`"${c}" has a space before punctuation`);
+    if (/\bcan not\b/i.test(c)) out.push(`"${c}" writes "cannot" as two words`);
+    if (/\s{2,}/.test(c)) out.push(`"${c}" has a double space`);
+  }
+  return out;
+}
+
+/** Why the wrong choices of a listening question can be ruled out by grammar alone (empty: at least one is grammatical). */
+export function grammarOnlyProblems(answer: string, wrongs: string[]): string[] {
+  return wrongs.length && wrongs.every((w) => isGrammarSlip(answer, w))
+    ? ["every wrong choice is a grammar slip, so grammar alone solves it"]
+    : [];
+}

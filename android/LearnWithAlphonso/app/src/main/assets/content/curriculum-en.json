@@ -3266,7 +3266,6 @@
               "acceptableAnswers": [
                 "I buy two boxes of tomatoes.",
                 "I'm buying two boxes of tomatoes.",
-                "I bought two boxes of tomatoes.",
                 "I'll buy two boxes of tomatoes.",
                 "I'm going to buy two boxes of tomatoes."
               ],
@@ -3616,10 +3615,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "It is cold today.",
               "choices": [
-                "It be cold today.",
                 "It are cold today.",
                 "It am cold today.",
-                "It is cold today."
+                "It is cold today.",
+                "It is hot today."
               ],
               "answer": "It is cold today.",
               "explanation": "The audio says \"It is cold today.\""
@@ -3854,10 +3853,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "We are not ready.",
               "choices": [
-                "We be not ready.",
                 "We is not ready.",
                 "We are not ready.",
-                "We am not ready."
+                "We am not ready.",
+                "We are not late."
               ],
               "answer": "We are not ready.",
               "explanation": "The audio says \"We are not ready.\""
@@ -4249,13 +4248,11 @@
               "prompt": "Say that the soup is too hot.",
               "acceptableAnswers": [
                 "The soup is too hot.",
-                "The soup is very hot.",
                 "This soup is too hot.",
                 "The soup is much too hot.",
                 "The soup is too hot to eat.",
                 "That soup is too hot.",
-                "My soup is too hot.",
-                "The soup is really hot."
+                "My soup is too hot."
               ],
               "explanation": "One way to say it: \"The soup is too hot.\""
             }
@@ -4346,29 +4343,27 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "far",
-                "from",
+                "empty",
                 "is",
-                "beach",
-                "The",
-                "here"
+                "box",
+                "The"
               ],
-              "answer": "The beach is far from here",
-              "explanation": "Correct order: \"The beach is far from here.\""
+              "answer": "The box is empty",
+              "explanation": "Correct order: \"The box is empty.\""
             },
             {
               "id": "a1p3q32",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The box is empty.",
+              "audioText": "The beach is far from here.",
               "choices": [
-                "The box is heavy.",
-                "The box is empty.",
-                "The box is slow.",
-                "The box is low."
+                "The beach is far from here.",
+                "The beach is different from here.",
+                "The beach is weak from here.",
+                "The beach is old from here."
               ],
-              "answer": "The box is empty.",
-              "explanation": "The audio says \"The box is empty.\""
+              "answer": "The beach is far from here.",
+              "explanation": "The audio says \"The beach is far from here.\""
             },
             {
               "id": "a1p3q33",
@@ -4727,29 +4722,29 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "the",
-                "under",
-                "table",
+                "on",
+                "exam",
+                "15",
                 "is",
-                "The",
-                "cat"
+                "March",
+                "The"
               ],
-              "answer": "The cat is under the table",
-              "explanation": "Correct order: \"The cat is under the table.\""
+              "answer": "The exam is on 15 March",
+              "explanation": "Correct order: \"The exam is on 15 March.\""
             },
             {
               "id": "a1p4q26",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "I was born in 1998.",
+              "audioText": "The cat is under the table.",
               "choices": [
-                "I was born in 1998.",
-                "I was born in 2008.",
-                "I was born for 1998.",
-                "I was born at 1998."
+                "The cat is behind the table.",
+                "The cat is beside the table.",
+                "The cat is above the table.",
+                "The cat is under the table."
               ],
-              "answer": "I was born in 1998.",
-              "explanation": "The audio says \"I was born in 1998.\""
+              "answer": "The cat is under the table.",
+              "explanation": "The audio says \"The cat is under the table.\""
             },
             {
               "id": "a1p4q27",
@@ -4967,15 +4962,15 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "above",
-                "clouds",
+                "in",
+                "my",
+                "keys",
                 "The",
-                "the",
-                "plane",
-                "flies"
+                "bag",
+                "are"
               ],
-              "answer": "The plane flies above the clouds",
-              "explanation": "Correct order: \"The plane flies above the clouds.\""
+              "answer": "The keys are in my bag",
+              "explanation": "Correct order: \"The keys are in my bag.\""
             },
             {
               "id": "a1p4q32",
@@ -5088,29 +5083,27 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "is",
-                "dog",
-                "behind",
-                "door",
-                "The",
-                "the"
+                "travel",
+                "We",
+                "train",
+                "by"
               ],
-              "answer": "The dog is behind the door",
-              "explanation": "Correct order: \"The dog is behind the door.\""
+              "answer": "We travel by train",
+              "explanation": "Correct order: \"We travel by train.\""
             },
             {
               "id": "a1p4q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "Please come into the room.",
+              "audioText": "The dog is behind the door.",
               "choices": [
-                "Please come past the room.",
-                "Please come across the room.",
-                "Please come into the room.",
-                "Please walk into the room."
+                "The dog is near the door.",
+                "The dog is on the door.",
+                "The dog is behind the door.",
+                "The dog is beside the door."
               ],
-              "answer": "Please come into the room.",
-              "explanation": "The audio says \"Please come into the room.\""
+              "answer": "The dog is behind the door.",
+              "explanation": "The audio says \"The dog is behind the door.\""
             },
             {
               "id": "a1p4q36",
@@ -5239,7 +5232,6 @@
                 "The post office is facing the bank.",
                 "The post office is across the street from the bank.",
                 "The post office is opposite to the bank.",
-                "The post office is in front of the bank.",
                 "The bank is opposite the post office.",
                 "The bank is across from the post office."
               ],
@@ -5370,6 +5362,8 @@
                 "I take a bus to work.",
                 "I take the bus to work.",
                 "I go to work by bus.",
+                "I catch the bus to work.",
+                "I catch a bus to work.",
                 "I go to work on the bus.",
                 "I take the bus to go to work.",
                 "I travel to work by bus.",
@@ -11292,17 +11286,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "three",
-                "sixty-five",
-                "hundred",
                 "days",
-                "and",
-                "year",
+                "week",
+                "seven",
                 "A",
                 "has"
               ],
-              "answer": "A year has three hundred and sixty-five days",
-              "explanation": "Correct order: \"A year has three hundred and sixty-five days.\""
+              "answer": "A week has seven days",
+              "explanation": "Correct order: \"A week has seven days\""
             },
             {
               "id": "a1p14q32",
@@ -12324,16 +12315,12 @@
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
                 "I",
-                "teeth",
-                "and",
                 "wash",
-                "brush",
                 "face",
-                "my",
                 "my"
               ],
-              "answer": "I brush my teeth and wash my face",
-              "explanation": "Correct order: \"I brush my teeth and wash my face\""
+              "answer": "I wash my face",
+              "explanation": "Correct order: \"I wash my face\""
             },
             {
               "id": "a1p16q26",
@@ -13644,10 +13631,8 @@
               "prompt": "Say that the music is too loud.",
               "acceptableAnswers": [
                 "The music is too loud.",
-                "The music is very loud.",
                 "This music is too loud.",
                 "The music is much too loud.",
-                "The music is really loud.",
                 "That music is too loud."
               ],
               "explanation": "One way to say it: \"The music is too loud.\""
@@ -15001,16 +14986,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "house",
-                "station",
-                "my",
-                "metro",
-                "near",
-                "The",
-                "is"
+                "takes",
+                "tram",
+                "the",
+                "She"
               ],
-              "answer": "The metro station is near my house",
-              "explanation": "Correct order: \"The metro station is near my house.\""
+              "answer": "She takes the tram",
+              "explanation": "Correct order: \"She takes the tram\""
             },
             {
               "id": "a1p20q29",
@@ -18953,15 +18935,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "yours",
-                "room",
+                "taller",
+                "brother",
                 "is",
-                "bigger",
-                "than",
                 "My"
               ],
-              "answer": "My room is bigger than yours",
-              "explanation": "Correct order: \"My room is bigger than yours.\""
+              "answer": "My brother is taller",
+              "explanation": "Correct order: \"My brother is taller\""
             },
             {
               "id": "a2p3q26",
@@ -19076,16 +19056,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "further",
-                "than",
-                "park",
                 "is",
-                "the",
                 "The",
-                "shop"
+                "colder",
+                "weather",
+                "getting"
               ],
-              "answer": "The park is further than the shop",
-              "explanation": "Correct order: \"The park is further than the shop.\""
+              "answer": "The weather is getting colder",
+              "explanation": "Correct order: \"The weather is getting colder\""
             },
             {
               "id": "a2p3q29",
@@ -19202,17 +19180,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "plan",
-                "is",
-                "the",
-                "than",
-                "one",
-                "simpler",
-                "This",
-                "old"
+                "are",
+                "Prices",
+                "higher",
+                "getting"
               ],
-              "answer": "This plan is simpler than the old one",
-              "explanation": "Correct order: \"This plan is simpler than the old one.\""
+              "answer": "Prices are getting higher",
+              "explanation": "Correct order: \"Prices are getting higher\""
             },
             {
               "id": "a2p3q32",
@@ -19328,30 +19302,27 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "modern",
-                "more",
-                "than",
-                "mine",
-                "looks",
                 "This",
-                "phone"
+                "test",
+                "easier",
+                "is"
               ],
-              "answer": "This phone looks more modern than mine",
-              "explanation": "Correct order: \"This phone looks more modern than mine.\""
+              "answer": "This test is easier",
+              "explanation": "Correct order: \"This test is easier\""
             },
             {
               "id": "a2p3q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "Be more careful on the stairs.",
+              "audioText": "This phone looks more modern than mine.",
               "choices": [
-                "Be more careful on the road.",
-                "Be more careful on the bridge.",
-                "Be more careful on the bus.",
-                "Be more careful on the stairs."
+                "This phone looks more modern than mine.",
+                "This phone looks more modern than yours.",
+                "This phone looks more expensive than mine.",
+                "This phone looks less modern than mine."
               ],
-              "answer": "Be more careful on the stairs.",
-              "explanation": "The audio says \"Be more careful on the stairs.\""
+              "answer": "This phone looks more modern than mine.",
+              "explanation": "The audio says \"This phone looks more modern than mine.\""
             },
             {
               "id": "a2p3q36",
@@ -19455,17 +19426,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "one",
-                "story",
-                "first",
                 "is",
-                "That",
-                "than",
-                "the",
-                "stranger"
+                "road",
+                "The",
+                "here",
+                "narrower"
               ],
-              "answer": "That story is stranger than the first one",
-              "explanation": "Correct order: \"That story is stranger than the first one.\""
+              "answer": "The road is narrower here",
+              "explanation": "Correct order: \"The road is narrower here.\""
             },
             {
               "id": "a2p3q38",
@@ -19861,9 +19829,9 @@
               "audioText": "Do you have this in a bigger size?",
               "choices": [
                 "Do you have this in a bigger size?",
-                "Do you have this in a bigger style ?",
-                "Do you have this in a bigger shape ?",
-                "Do you have this in a bigger colour ?"
+                "Do you have this in a bigger shape?",
+                "Do you have this in a bigger colour?",
+                "Do you have this in a bigger style?"
               ],
               "answer": "Do you have this in a bigger size?",
               "explanation": "The audio says \"Do you have this in a bigger size?\""
@@ -21108,8 +21076,8 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "We're having dinner at eight.",
               "choices": [
+                "We're having lunch at eight.",
                 "We're have dinner at eight.",
-                "We're had dinner at eight.",
                 "We're has dinner at eight.",
                 "We're having dinner at eight."
               ],
@@ -21226,9 +21194,9 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "He's taking his exam on Friday.",
               "choices": [
-                "He's took his exam on Friday.",
                 "He's takes his exam on Friday.",
                 "He's taking his exam on Friday.",
+                "He's taking his exam on Monday.",
                 "He's take his exam on Friday."
               ],
               "answer": "He's taking his exam on Friday.",
@@ -21349,9 +21317,9 @@
               "audioText": "We are going to need help soon.",
               "choices": [
                 "We am going to need help soon.",
-                "We were going to need help soon.",
                 "We are going to need help soon.",
-                "We is going to need help soon."
+                "We is going to need help soon.",
+                "We are going to need money soon."
               ],
               "answer": "We are going to need help soon.",
               "explanation": "The audio says \"We are going to need help soon.\""
@@ -22086,13 +22054,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "is",
-                "exercise",
-                "Swimming",
-                "good"
+                "kicks",
+                "ball",
+                "He",
+                "the"
               ],
-              "answer": "Swimming is good exercise",
-              "explanation": "Correct order: \"Swimming is good exercise.\""
+              "answer": "He kicks the ball",
+              "explanation": "Correct order: \"He kicks the ball\""
             },
             {
               "id": "a2p8q26",
@@ -22457,16 +22425,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "and",
-                "the",
-                "guitar",
-                "loves",
-                "She",
-                "music",
-                "plays"
+                "her",
+                "hands",
+                "Knitting",
+                "busy",
+                "keeps"
               ],
-              "answer": "She plays the guitar and loves music",
-              "explanation": "Correct order: \"She plays the guitar and loves music.\""
+              "answer": "Knitting keeps her hands busy",
+              "explanation": "Correct order: \"Knitting keeps her hands busy.\""
             },
             {
               "id": "a2p8q35",
@@ -22583,14 +22549,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "Climbing",
-                "but",
-                "is",
-                "hard",
-                "fun"
+                "hits",
+                "the",
+                "ball",
+                "She"
               ],
-              "answer": "Climbing is hard but fun",
-              "explanation": "Correct order: \"Climbing is hard but fun.\""
+              "answer": "She hits the ball",
+              "explanation": "Correct order: \"She hits the ball\""
             },
             {
               "id": "a2p8q38",
@@ -23995,8 +23960,8 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "I'll have the chicken, please.",
               "choices": [
+                "I'll have the fish, please.",
                 "I'll have the chicken, please.",
-                "I'll had the chicken, please.",
                 "I'll has the chicken, please.",
                 "I'll having the chicken, please."
               ],
@@ -24389,13 +24354,11 @@
               "acceptableAnswers": [
                 "The pasta is too salty.",
                 "This pasta is too salty.",
-                "The pasta is very salty.",
                 "The pasta is much too salty.",
                 "The pasta has too much salt.",
                 "My pasta is too salty.",
                 "There is too much salt in the pasta.",
-                "That pasta is too salty.",
-                "The pasta is really salty."
+                "That pasta is too salty."
               ],
               "explanation": "One way to say it: \"The pasta is too salty.\""
             }
@@ -24923,7 +24886,6 @@
                 "Often he is late.",
                 "He is late a lot.",
                 "He is late a lot of the time.",
-                "He is usually late.",
                 "He is late really often."
               ],
               "explanation": "One way to say it: \"He is often late.\""
@@ -25276,16 +25238,12 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "The",
-                "to",
-                "park",
-                "next",
-                "school",
-                "is",
-                "the"
+                "ahead",
+                "straight",
+                "Go"
               ],
-              "answer": "The park is next to the school",
-              "explanation": "Correct order: \"The park is next to the school.\""
+              "answer": "Go straight ahead",
+              "explanation": "Correct order: \"Go straight ahead\""
             },
             {
               "id": "a2p13q26",
@@ -25537,16 +25495,13 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "city",
-                "near",
-                "hotel",
-                "The",
                 "the",
-                "centre",
-                "is"
+                "second",
+                "street",
+                "Take"
               ],
-              "answer": "The hotel is near the city centre",
-              "explanation": "Correct order: \"The hotel is near the city centre.\""
+              "answer": "Take the second street",
+              "explanation": "Correct order: \"Take the second street\""
             },
             {
               "id": "a2p13q32",
@@ -25672,31 +25627,31 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "centre",
+                "round",
+                "here",
                 "the",
-                "shopping",
+                "pharmacy",
                 "The",
-                "car",
                 "is",
-                "under",
-                "park"
+                "from",
+                "corner"
               ],
-              "answer": "The car park is under the shopping centre",
-              "explanation": "Correct order: \"The car park is under the shopping centre.\""
+              "answer": "The pharmacy is round the corner from here",
+              "explanation": "Correct order: \"The pharmacy is round the corner from here.\""
             },
             {
               "id": "a2p13q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The pharmacy is round the corner from here.",
+              "audioText": "The car park is under the shopping centre.",
               "choices": [
-                "The pharmacy is through the corner from here.",
-                "The pharmacy is into the corner from here.",
-                "The pharmacy is over the corner from here.",
-                "The pharmacy is round the corner from here."
+                "The car park is above the shopping centre.",
+                "The car park is behind the shopping centre.",
+                "The car park is beside the shopping centre.",
+                "The car park is under the shopping centre."
               ],
-              "answer": "The pharmacy is round the corner from here.",
-              "explanation": "The audio says \"The pharmacy is round the corner from here.\""
+              "answer": "The car park is under the shopping centre.",
+              "explanation": "The audio says \"The car park is under the shopping centre.\""
             },
             {
               "id": "a2p13q36",
@@ -25797,30 +25752,26 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "nearest",
+                "bridge",
                 "the",
-                "inside",
-                "ATM",
-                "is",
-                "entrance",
-                "The"
+                "Cross"
               ],
-              "answer": "The nearest ATM is inside the entrance",
-              "explanation": "Correct order: \"The nearest ATM is inside the entrance.\""
+              "answer": "Cross the bridge",
+              "explanation": "Correct order: \"Cross the bridge\""
             },
             {
               "id": "a2p13q38",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The bus stop is outside the church.",
+              "audioText": "The nearest ATM is inside the entrance.",
               "choices": [
-                "The bus stop is inside the church.",
-                "The bus stop is between the church.",
-                "The bus stop is in the church.",
-                "The bus stop is outside the church."
+                "The nearest ATM is inside the entrance.",
+                "The nearest ATM is opposite the entrance.",
+                "The nearest ATM is behind the entrance.",
+                "The nearest ATM is outside the entrance."
               ],
-              "answer": "The bus stop is outside the church.",
-              "explanation": "The audio says \"The bus stop is outside the church.\""
+              "answer": "The nearest ATM is inside the entrance.",
+              "explanation": "The audio says \"The nearest ATM is inside the entrance.\""
             },
             {
               "id": "a2p13q39",
@@ -27506,17 +27457,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "the",
-                "close",
-                "neighbourhood",
+                "very",
+                "street",
                 "is",
                 "My",
-                "centre",
-                "to",
-                "city"
+                "quiet"
               ],
-              "answer": "My neighbourhood is close to the city centre",
-              "explanation": "Correct order: \"My neighbourhood is close to the city centre.\""
+              "answer": "My street is very quiet",
+              "explanation": "Correct order: \"My street is very quiet\""
             },
             {
               "id": "a2p16q32",
@@ -27761,17 +27709,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "the",
-                "building",
-                "close",
-                "bus",
-                "is",
-                "My",
-                "stop",
-                "to"
+                "sells",
+                "fruit",
+                "market",
+                "fresh",
+                "The"
               ],
-              "answer": "My building is close to the bus stop",
-              "explanation": "Correct order: \"My building is close to the bus stop.\""
+              "answer": "The market sells fresh fruit",
+              "explanation": "Correct order: \"The market sells fresh fruit\""
             },
             {
               "id": "a2p16q38",
@@ -28142,15 +28087,16 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "above",
+                "are",
+                "by",
                 "the",
-                "village",
-                "floated",
-                "balloon",
+                "children",
+                "playing",
+                "swings",
                 "The"
               ],
-              "answer": "The balloon floated above the village",
-              "explanation": "Correct order: \"The balloon floated above the village.\""
+              "answer": "The children are playing by the swings",
+              "explanation": "Correct order: \"The children are playing by the swings.\""
             },
             {
               "id": "a2p17q32",
@@ -28264,15 +28210,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "café",
-                "the",
+                "to",
+                "children",
                 "The",
-                "opposite",
-                "is",
-                "bank"
+                "school",
+                "walk"
               ],
-              "answer": "The bank is opposite the café",
-              "explanation": "Correct order: \"The bank is opposite the café.\""
+              "answer": "The children walk to school",
+              "explanation": "Correct order: \"The children walk to school\""
             },
             {
               "id": "a2p17q35",
@@ -28386,28 +28331,29 @@
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
                 "The",
-                "forest",
-                "towards",
+                "alongside",
+                "is",
                 "the",
-                "leads",
-                "path"
+                "car",
+                "garage",
+                "parked"
               ],
-              "answer": "The path leads towards the forest",
-              "explanation": "Correct order: \"The path leads towards the forest.\""
+              "answer": "The car is parked alongside the garage",
+              "explanation": "Correct order: \"The car is parked alongside the garage.\""
             },
             {
               "id": "a2p17q38",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "He stood among the crowd, watching.",
+              "audioText": "The path leads towards the forest.",
               "choices": [
-                "He stood among the crowd, watching.",
-                "He stood beside the crowd, watching.",
-                "He stood near the crowd, watching.",
-                "He stood behind the crowd, watching."
+                "The path leads into the forest.",
+                "The path leads towards the forest.",
+                "The path leads through the forest.",
+                "The path leads around the forest."
               ],
-              "answer": "He stood among the crowd, watching.",
-              "explanation": "The audio says \"He stood among the crowd, watching.\""
+              "answer": "The path leads towards the forest.",
+              "explanation": "The audio says \"The path leads towards the forest.\""
             },
             {
               "id": "a2p17q39",
@@ -28897,7 +28843,7 @@
                 "They were swam when the storm began.",
                 "They were swimming when the storm began.",
                 "They were swim when the storm began.",
-                "They were swims when the storm began."
+                "They were sleeping when the storm began."
               ],
               "answer": "They were swimming when the storm began.",
               "explanation": "The audio says \"They were swimming when the storm began.\""
@@ -29282,7 +29228,7 @@
               "audioText": "They could not attend the meeting yesterday.",
               "choices": [
                 "They will not attend the meeting yesterday.",
-                "They can not attend the meeting yesterday.",
+                "They did not attend the meeting yesterday.",
                 "They may not attend the meeting yesterday.",
                 "They could not attend the meeting yesterday."
               ],
@@ -29411,10 +29357,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "He could not swim before he took lessons.",
               "choices": [
+                "He did not swim before he took lessons.",
                 "He could not swim before he took lessons.",
                 "He will not swim before he took lessons.",
-                "He may not swim before he took lessons.",
-                "He can not swim before he took lessons."
+                "He may not swim before he took lessons."
               ],
               "answer": "He could not swim before he took lessons.",
               "explanation": "The audio says \"He could not swim before he took lessons.\""
@@ -29777,30 +29723,28 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "mine",
-                "as",
-                "as",
-                "car",
+                "very",
+                "big",
                 "is",
-                "fast",
-                "His"
+                "room",
+                "This"
               ],
-              "answer": "His car is as fast as mine",
-              "explanation": "Correct order: \"His car is as fast as mine.\""
+              "answer": "This room is very big",
+              "explanation": "Correct order: \"This room is very big\""
             },
             {
               "id": "a2p20q26",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The test was as difficult as I expected.",
+              "audioText": "His car is as fast as mine.",
               "choices": [
-                "The test was as warm as I expected.",
-                "The test was as sweet as I expected.",
-                "The test was as tall as I expected.",
-                "The test was as difficult as I expected."
+                "His car is as loud as mine.",
+                "His car is as old as mine.",
+                "His car is as fast as mine.",
+                "His car is as big as mine."
               ],
-              "answer": "The test was as difficult as I expected.",
-              "explanation": "The audio says \"The test was as difficult as I expected.\""
+              "answer": "His car is as fast as mine.",
+              "explanation": "The audio says \"His car is as fast as mine.\""
             },
             {
               "id": "a2p20q27",
@@ -29900,31 +29844,28 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "book",
-                "good",
-                "the",
-                "as",
-                "as",
-                "was",
-                "The",
-                "film"
+                "bag",
+                "heavy",
+                "Her",
+                "is",
+                "very"
               ],
-              "answer": "The film was as good as the book",
-              "explanation": "Correct order: \"The film was as good as the book.\""
+              "answer": "Her bag is very heavy",
+              "explanation": "Correct order: \"Her bag is very heavy\""
             },
             {
               "id": "a2p20q29",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "Her English is as fluent as her brother's.",
+              "audioText": "The film was as good as the book.",
               "choices": [
-                "Her English is as fluent as her brother's.",
-                "Her English is as weak as her brother's.",
-                "Her English is as poor as her brother's.",
-                "Her English is as basic as her brother's."
+                "The film was as expensive as the book.",
+                "The film was as good as the book.",
+                "The film was as wide as the book.",
+                "The film was as heavy as the book."
               ],
-              "answer": "Her English is as fluent as her brother's.",
-              "explanation": "The audio says \"Her English is as fluent as her brother's.\""
+              "answer": "The film was as good as the book.",
+              "explanation": "The audio says \"The film was as good as the book.\""
             },
             {
               "id": "a2p20q30",
@@ -30022,17 +29963,14 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "one",
                 "This",
-                "is",
+                "looks",
                 "bag",
-                "that",
-                "as",
-                "as",
-                "heavy"
+                "heavy",
+                "very"
               ],
-              "answer": "This bag is as heavy as that one",
-              "explanation": "Correct order: \"This bag is as heavy as that one\""
+              "answer": "This bag looks very heavy",
+              "explanation": "Correct order: \"This bag looks very heavy\""
             },
             {
               "id": "a2p20q32",
@@ -30143,31 +30081,28 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "as",
-                "as",
-                "busy",
-                "road",
-                "motorway",
-                "This",
-                "is",
-                "the"
+                "was",
+                "really",
+                "food",
+                "good",
+                "The"
               ],
-              "answer": "This road is as busy as the motorway",
-              "explanation": "Correct order: \"This road is as busy as the motorway.\""
+              "answer": "The food was really good",
+              "explanation": "Correct order: \"The food was really good\""
             },
             {
               "id": "a2p20q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The city is as peaceful as the countryside.",
+              "audioText": "This road is as busy as the motorway.",
               "choices": [
-                "The city is as noisy as the countryside.",
-                "The city is as peaceful as the countryside.",
-                "The city is as crowded as the countryside.",
-                "The city is as busy as the countryside."
+                "This road is as quiet as the motorway.",
+                "This road is as empty as the motorway.",
+                "This road is as busy as the motorway.",
+                "This road is as clean as the motorway."
               ],
-              "answer": "The city is as peaceful as the countryside.",
-              "explanation": "The audio says \"The city is as peaceful as the countryside.\""
+              "answer": "This road is as busy as the motorway.",
+              "explanation": "The audio says \"This road is as busy as the motorway.\""
             },
             {
               "id": "a2p20q36",
@@ -30267,30 +30202,28 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "Her",
                 "is",
-                "plan",
-                "mine",
-                "as",
-                "as",
-                "simple"
+                "This",
+                "comfortable",
+                "very",
+                "chair"
               ],
-              "answer": "Her plan is as simple as mine",
-              "explanation": "Correct order: \"Her plan is as simple as mine.\""
+              "answer": "This chair is very comfortable",
+              "explanation": "Correct order: \"This chair is very comfortable\""
             },
             {
               "id": "a2p20q38",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "My flat is as small as yours.",
+              "audioText": "Her plan is as simple as mine.",
               "choices": [
-                "My flat is as big as yours.",
-                "My flat is as huge as yours.",
-                "My flat is as small as yours.",
-                "My flat is as large as yours."
+                "Her plan is as simple as yours.",
+                "Her plan is as good as mine.",
+                "Her plan is as simple as mine.",
+                "Her plan is as difficult as mine."
               ],
-              "answer": "My flat is as small as yours.",
-              "explanation": "The audio says \"My flat is as small as yours.\""
+              "answer": "Her plan is as simple as mine.",
+              "explanation": "The audio says \"Her plan is as simple as mine.\""
             },
             {
               "id": "a2p20q39",

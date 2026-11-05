@@ -117,7 +117,10 @@ function listeningQuestion(id: string, s: Sentence, known: Set<string>): Questio
   // Wrong choices must be real, correctly spelled English that sounds clearly different from the
   // answer (question-variety-gate.ts): authored sentences first, then the cloze's own wrong options when they qualify.
   for (const w of [...(LISTENING_EXTRA_WRONGS[s.text] ?? []), ...s.wrongs]) {
-    const key = w.trim();
+    const key = w
+      .trim()
+      .replace(/\s+([?.!,;])/g, "$1")
+      .replace(/\bcan not\b/g, "cannot");
     if (key === s.text || wrongs.includes(key)) continue;
     if (listeningChoiceProblems(s.text, key, known).length) continue;
     wrongs.push(key);

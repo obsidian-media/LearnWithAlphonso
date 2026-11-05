@@ -2,7 +2,7 @@
 
 /** Real, correctly spelled English words the course text does not already contain (wrong listening choices only). */
 export const REVIEWED_WORDS: string[] =
-  "2008 nurses sadder colder darker dirtier coldest august widest longest west train button zip softly gradually thirteen november buys vending".split(
+  "nurses sadder colder darker dirtier coldest august widest longest west train button zip softly gradually thirteen november buys vending".split(
     " ",
   );
 
@@ -12,10 +12,27 @@ export const REVIEWED_WORDS: string[] =
  * a single sentence (so reorder and listening would repeat it).
  */
 export const REORDER_FALLBACK: Record<string, string> = {
+  a2p8l1: "He kicks the ball",
+  a2p8l5: "She hits the ball",
+  a1p20l2: "She takes the tram",
+  a2p3l1: "My brother is taller",
+  a2p3l2: "The weather is getting colder",
+  a2p3l3: "Prices are getting higher",
+  a2p3l4: "This test is easier",
+  a2p13l1: "Go straight ahead",
+  a2p13l3: "Take the second street",
+  a2p13l5: "Cross the bridge",
+  a2p16l3: "My street is very quiet",
+  a2p16l5: "The market sells fresh fruit",
+  a2p17l4: "The children walk to school",
+  a2p20l1: "This room is very big",
+  a2p20l2: "Her bag is very heavy",
+  a2p20l4: "The food was really good",
+  a2p20l5: "This chair is very comfortable",
   a1p6l1: "Where do you live",
   a2p2l5: "They had a great time",
   a2p11l4: "The waiter brings the bill",
-  a2p20l3: "This bag is as heavy as that one",
+  a2p20l3: "This bag looks very heavy",
   a1p5l5: "They throw a big party",
   a1p10l5: "The sun melts the snow",
   a1p14l3: "A week has seven days",
@@ -28,7 +45,7 @@ export const REORDER_FALLBACK: Record<string, string> = {
   a2p19l5: "She could not afford the ticket",
   a2p2l3: "We were playing cards",
   a2p14l4: "I can't manage that day",
-  a1p16l1: "I brush my teeth and wash my face",
+  a1p16l1: "I wash my face",
   a1p16l2: "She cooks dinner for the family",
   a1p16l3: "He reads a book to his son",
   a1p17l2: "The teacher gave us a new worksheet",
@@ -57,6 +74,26 @@ export const REORDER_FALLBACK: Record<string, string> = {
  * by one or two real words that sound clearly different.
  */
 export const LISTENING_EXTRA_WRONGS: Record<string, string[]> = {
+  "They could not attend the meeting yesterday.": ["They did not attend the meeting yesterday."],
+  "He could not swim before he took lessons.": ["He did not swim before he took lessons."],
+  "It is cold today.": ["It is hot today."],
+  "We are not ready.": ["We are not late."],
+  "We're having dinner at eight.": ["We're having lunch at eight."],
+  "He's taking his exam on Friday.": ["He's taking his exam on Monday."],
+  "We are going to need help soon.": ["We are going to need money soon."],
+  "I'll have the chicken, please.": ["I'll have the fish, please."],
+  "They were swimming when the storm began.": ["They were sleeping when the storm began."],
+  "The path leads towards the forest.": ["The path leads around the forest."],
+  "The dog is behind the door.": ["The dog is near the door."],
+  "This phone looks more modern than mine.": [
+    "This phone looks less modern than mine.",
+    "This phone looks more modern than yours.",
+    "This phone looks more expensive than mine.",
+  ],
+  "Her plan is as simple as mine.": [
+    "Her plan is as simple as yours.",
+    "Her plan is as good as mine.",
+  ],
   "The ladder is leaning against the wall.": ["The ladder is leaning against the door."],
   "She knits a hat with wool.": [
     "She knits a scarf with wool.",

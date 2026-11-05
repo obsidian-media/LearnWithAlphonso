@@ -392,6 +392,8 @@ export const TRANSLATE_MORE: Record<string, string[]> = {
     "The bank is across from the post office.",
   ],
   a1p5l1: [
+    "I catch the bus to work.",
+    "I catch a bus to work.",
     "I go to work on the bus.",
     "I take the bus to go to work.",
     "I travel to work by bus.",
@@ -1162,6 +1164,12 @@ export const TRANSLATE_MORE: Record<string, string[]> = {
 
 /** Wordings that said something the idea did not (a different thing, a different meaning, a wrong preposition), by lesson id. */
 export const TRANSLATE_REMOVE: Record<string, string[]> = {
+  a1p3l2: ["The soup is very hot."],
+  a1p18l1: ["The music is very loud.", "The music is really loud."],
+  a2p11l4: ["The pasta is very salty."],
+  a1p1l4: ["I bought two boxes of tomatoes."],
+  a1p4l5: ["The post office is in front of the bank."],
+  a2p12l3: ["He is usually late."],
   a1p12l2: ["My friend works as a nurse in a hospital."],
   a1p13l3: ["There is a chicken in the garden."],
   a1p18l5: ["My bag is full with books."],
