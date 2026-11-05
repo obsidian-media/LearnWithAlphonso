@@ -27,7 +27,7 @@ exclude_paths:
   - "scripts/**"
   # SQL migrations: the SQL rules enabled in Codacy target a different
   # schema convention (RAC_* tables, role-only GRANT). Grants are enforced by
-  # our own CI guards (migration-grants, default-grants).
+  # our own CI guards (migration-grants).
   - "supabase/migrations/**"
   # Prose
   - "docs/**"
