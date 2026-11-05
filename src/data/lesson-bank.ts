@@ -1252,7 +1252,7 @@ Enjoy your ___!|dinner|the main meal in the evening`,
     data: `always|every single time, without exception|every time, without exception|I always brush my teeth at night.
 usually|the great majority of the time|most of the time|I usually walk to work.
 normally|as a rule, under typical conditions|in most normal situations|We normally eat dinner at seven.
-generally|in most cases you'll find|in most cases|It is generally quiet here at night.
+generally|in most cases|in most cases|It is generally quiet here at night.
 frequently|on many separate occasions|very often; many times|He frequently visits his grandmother.
 often|quite a lot, many times|many times; not rarely|She often calls her mother.
 regularly|at fixed, repeated intervals|again and again, at fixed times|I regularly go to the gym.
