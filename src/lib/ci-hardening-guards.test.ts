@@ -1,8 +1,13 @@
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import YAML from "yaml";
+
+// js-yaml is already installed (through eslint); required untyped so no new dependency or type package is needed.
+const { load: parseYaml } = createRequire(import.meta.url)("js-yaml") as {
+  load: (text: string) => unknown;
+};
 
 /**
  * Guards on how CI handles code and secrets. Each one names the property it holds; see docs/security.md.
@@ -25,7 +30,7 @@ type Step = {
 type Job = { environment?: unknown; steps?: Step[]; [k: string]: unknown };
 const parsed = workflows.map((w) => ({
   ...w,
-  doc: YAML.parse(w.text) as { on?: unknown; permissions?: unknown; jobs: Record<string, Job> },
+  doc: parseYaml(w.text) as { on?: unknown; permissions?: unknown; jobs: Record<string, Job> },
 }));
 const codeLines = (text: string) => text.split(/\r?\n/).filter((l) => !/^\s*#/.test(l));
 const triggers = (on: unknown): string[] =>
