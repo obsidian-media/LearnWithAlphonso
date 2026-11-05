@@ -28,8 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -73,7 +73,12 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
             }
             else -> Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 AlphonsoProgressBar(if (state.maxQuestions == 0) 0f else state.step.toFloat() / state.maxQuestions)
-                Text(state.progressLabel, style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                Text(
+                    state.progressLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = palette.inkSoft,
+                    modifier = Modifier.clearAndSetSemantics { contentDescription = state.progressSpokenLabel },
+                )
                 LevelMarkers(state.markers)
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     AlphonsoSectionHeader("Placement test")
@@ -124,7 +129,8 @@ private fun LevelMarkers(markers: List<BandMarker>) {
                     .background(look.fill)
                     .border(1.dp, look.border, CircleShape)
                     .padding(horizontal = 10.dp, vertical = 3.dp)
-                    .semantics { contentDescription = "${m.level}, ${look.words}" },
+                    // clearAndSet, not semantics: otherwise TalkBack also reads the inner "A1" on its own.
+                    .clearAndSetSemantics { contentDescription = "${m.level}, ${look.words}" },
             ) {
                 Text(m.level, fontSize = 10.sp, color = look.text)
             }

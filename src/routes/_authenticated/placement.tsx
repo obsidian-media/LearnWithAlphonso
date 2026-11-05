@@ -12,6 +12,7 @@ import {
   placementFinishedLabel,
   placementMaxQuestions,
   placementProgressLabel,
+  placementProgressSpokenLabel,
   resolveBand,
   scorePlacement,
   type PlacementQuestion,
@@ -374,7 +375,8 @@ function PlacementPage() {
             />
           </div>
           <span className="tnum text-[11px] font-medium text-ink-soft">
-            {placementProgressLabel(step + 1, maxQuestions)}
+            <span aria-hidden="true">{placementProgressLabel(step + 1, maxQuestions)}</span>
+            <span className="sr-only">{placementProgressSpokenLabel(step + 1, maxQuestions)}</span>
           </span>
         </div>
         <ul aria-label="Levels" className="mt-3 flex justify-center gap-1.5">

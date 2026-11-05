@@ -224,6 +224,12 @@ public func placementProgressLabel(questionNumber: Int, max: Int) -> String {
     "Question \(questionNumber) · up to \(max)"
 }
 
+/// What VoiceOver says for the counter: "Question 4, up to 15" (the dot would be read aloud or dropped).
+/// Mirrors placement.ts's `placementProgressSpokenLabel`.
+public func placementProgressSpokenLabel(questionNumber: Int, max: Int) -> String {
+    "Question \(questionNumber), up to \(max)"
+}
+
 /// Finishing before the maximum is a result, not a failure: the exam had what it needed.
 public func placementFinishedLabel(asked: Int) -> String {
     "Placed after \(asked) questions"

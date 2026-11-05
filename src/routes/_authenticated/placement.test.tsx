@@ -354,6 +354,8 @@ describe("Placement test", () => {
   it("shows step progress and disables submit until an answer is picked", () => {
     renderPage();
     expect(screen.getByText("Question 1 · up to 2")).toBeInTheDocument();
+    // screen readers get "Question 1, up to 2", not the dot
+    expect(screen.getByText("Question 1, up to 2")).toHaveClass("sr-only");
     expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
   });
 

@@ -147,6 +147,7 @@ struct PlacementView: View {
             Text(attempt.progressLabel(step: step))
                 .font(AlphonsoFont.sans(11, weight: .medium))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+                .accessibilityLabel(attempt.progressSpokenLabel(step: step))
             levelMarkers
         }
         .padding()

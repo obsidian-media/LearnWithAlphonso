@@ -906,6 +906,11 @@ export function placementProgressLabel(questionNumber: number, max: number): str
   return `Question ${questionNumber} · up to ${max}`;
 }
 
+/** What a screen reader says for the counter: "Question 4, up to 15" (the dot would be read aloud or dropped). */
+export function placementProgressSpokenLabel(questionNumber: number, max: number): string {
+  return `Question ${questionNumber}, up to ${max}`;
+}
+
 /** Finishing before the maximum is a result, not a failure: the exam had what it needed. */
 export function placementFinishedLabel(asked: number): string {
   return `Placed after ${asked} questions`;

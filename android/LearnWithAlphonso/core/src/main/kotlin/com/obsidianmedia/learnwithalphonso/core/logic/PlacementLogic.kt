@@ -163,6 +163,9 @@ fun placementMaxQuestions(bandPool: Map<String, List<PlacementQuestion>>): Int =
 /** "Question 4 · up to 15": the same words on web, iOS and Android. */
 fun placementProgressLabel(questionNumber: Int, max: Int): String = "Question $questionNumber · up to $max"
 
+/** What TalkBack says for the counter: "Question 4, up to 15" (the dot would be read aloud or dropped). */
+fun placementProgressSpokenLabel(questionNumber: Int, max: Int): String = "Question $questionNumber, up to $max"
+
 /** Finishing before the maximum is a result, not a failure: the exam had what it needed. */
 fun placementFinishedLabel(asked: Int): String = "Placed after $asked questions"
 

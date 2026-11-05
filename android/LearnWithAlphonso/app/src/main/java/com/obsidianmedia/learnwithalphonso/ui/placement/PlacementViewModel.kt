@@ -17,6 +17,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.bandMarkers
 import com.obsidianmedia.learnwithalphonso.core.logic.placementFinishedLabel
 import com.obsidianmedia.learnwithalphonso.core.logic.placementMaxQuestions
 import com.obsidianmedia.learnwithalphonso.core.logic.placementProgressLabel
+import com.obsidianmedia.learnwithalphonso.core.logic.placementProgressSpokenLabel
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.core.logic.pickPlacementSet
 import com.obsidianmedia.learnwithalphonso.core.logic.playablePlacementPool
@@ -68,6 +69,7 @@ data class PlacementUiState(
     /** The longest this sitting can get, fixed by the pool: shown from the first question, never growing. */
     val maxQuestions: Int get() = placementMaxQuestions(bandPool)
     val progressLabel: String get() = placementProgressLabel(step + 1, maxQuestions)
+    val progressSpokenLabel: String get() = placementProgressSpokenLabel(step + 1, maxQuestions)
 
     /** "Placed after N questions" when the exam ended before the maximum, else null. */
     val finishedLabel: String? get() = if (total < maxQuestions) placementFinishedLabel(total) else null

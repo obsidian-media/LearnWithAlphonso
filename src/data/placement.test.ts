@@ -11,6 +11,7 @@ import {
   placementFinishedLabel,
   placementMaxQuestions,
   placementProgressLabel,
+  placementProgressSpokenLabel,
   resolveBand,
   scorePlacement,
   type PlacementQuestion,
@@ -433,6 +434,7 @@ describe("the up-front length and the level markers", () => {
   it("uses the same words on every platform", () => {
     expect(placementProgressLabel(4, 15)).toBe("Question 4 · up to 15");
     expect(placementFinishedLabel(9)).toBe("Placed after 9 questions");
+    expect(placementProgressSpokenLabel(4, 15)).toBe("Question 4, up to 15");
   });
 
   it("marks passed, skipped, current, missed and upcoming bands", () => {

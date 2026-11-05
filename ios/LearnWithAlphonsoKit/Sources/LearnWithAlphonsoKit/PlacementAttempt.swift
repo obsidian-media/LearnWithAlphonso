@@ -54,6 +54,11 @@ public struct PlacementAttempt {
         placementProgressLabel(questionNumber: step + 1, max: maxQuestions)
     }
 
+    /// "Question N, up to M" for VoiceOver.
+    public func progressSpokenLabel(step: Int) -> String {
+        placementProgressSpokenLabel(questionNumber: step + 1, max: maxQuestions)
+    }
+
     /// "Placed after N questions" when the exam ended before the maximum, else nil.
     public var finishedLabel: String? {
         shown.count < maxQuestions ? placementFinishedLabel(asked: shown.count) : nil

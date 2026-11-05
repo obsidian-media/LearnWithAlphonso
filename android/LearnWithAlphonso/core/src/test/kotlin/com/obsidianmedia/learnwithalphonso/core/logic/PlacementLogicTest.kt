@@ -305,6 +305,7 @@ class PlacementLogicTest {
     fun `the labels use the same words as web and iOS`() {
         assertEquals("Question 4 · up to 15", placementProgressLabel(4, 15))
         assertEquals("Placed after 9 questions", placementFinishedLabel(9))
+        assertEquals("Question 4, up to 15", placementProgressSpokenLabel(4, 15))
     }
 
     @Test

@@ -561,6 +561,7 @@ final class PlacementLogicTests: XCTestCase {
     func testTheLabelsUseTheSameWordsAsWebAndAndroid() {
         XCTAssertEqual(placementProgressLabel(questionNumber: 4, max: 15), "Question 4 · up to 15")
         XCTAssertEqual(placementFinishedLabel(asked: 9), "Placed after 9 questions")
+        XCTAssertEqual(placementProgressSpokenLabel(questionNumber: 4, max: 15), "Question 4, up to 15")
     }
 
     func testTheCounterSaysUpTo15FromTheFirstQuestionToTheLastWhateverTheExamDoes() {
