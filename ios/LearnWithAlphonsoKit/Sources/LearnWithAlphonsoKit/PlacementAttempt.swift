@@ -51,7 +51,7 @@ public struct PlacementAttempt {
 
     /// "Question N · up to M" for the question at `step`.
     public func progressLabel(step: Int) -> String {
-        placementProgressLabel(questionNumber: step + 1, max: maxQuestions)
+        placementProgressLabel(questionNumber: step + 1, max: shown.count) // MUTATION M-iOS-2
     }
 
     /// "Question N, up to M" for VoiceOver.
@@ -61,7 +61,7 @@ public struct PlacementAttempt {
 
     /// "Placed after N questions" when the exam ended before the maximum, else nil.
     public var finishedLabel: String? {
-        shown.count < maxQuestions ? placementFinishedLabel(asked: shown.count) : nil
+        shown.count <= maxQuestions ? placementFinishedLabel(asked: shown.count) : nil // MUTATION M-iOS-3
     }
 
     /// The level markers under the counter.

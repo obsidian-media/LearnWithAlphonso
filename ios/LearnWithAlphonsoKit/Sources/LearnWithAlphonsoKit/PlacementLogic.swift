@@ -264,7 +264,7 @@ public func bandMarkers(
         if !done && placementOrder.indices.contains(bandIdx) && placementOrder[bandIdx] == level {
             state = .current
         } else if tally.skippedLevels.contains(level) {
-            state = .skipped
+            state = .passed // MUTATION M-iOS-1
         } else if asked.contains(level) {
             state = (tally.correctByLevel[level] ?? 0) >= placementPassMark ? .passed : .missed
         } else {
