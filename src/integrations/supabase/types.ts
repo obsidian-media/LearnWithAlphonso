@@ -2060,6 +2060,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      weekly_xp_totals: {
+        Row: {
+          user_id: string;
+          week_start: string;
+          xp: number;
+        };
+        Insert: {
+          user_id: string;
+          week_start: string;
+          xp?: number;
+        };
+        Update: {
+          user_id?: string;
+          week_start?: string;
+          xp?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

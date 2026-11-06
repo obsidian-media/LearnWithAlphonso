@@ -67,6 +67,8 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   { table: "friend_invite_codes", column: "user_id" },
   { table: "buddy_members", column: "user_id" },
   { table: "lesson_completion_hits", column: "user_id" },
+  // Weekly XP sums kept for the leaderboard (20261105100800); no client read.
+  { table: "weekly_xp_totals", column: "user_id" },
 ] as const;
 
 // Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's
