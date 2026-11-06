@@ -114,9 +114,17 @@ describe("the reminder card does not delay or leak across lessons", () => {
   });
   it("Android: a grant registers for push, and the card buttons can grow", () => {
     expect(android).toContain("pushRegistrar.registerIfAuthorized()");
-    const card = between(android, "if (showReminderCard) {", "if (onNext != null)");
-    expect(card).toContain("heightIn(min = 48.dp)");
+    // Round 6: the card is drawn by LessonStage.kt's LessonReminderCard; its buttons are full width and grow.
+    expect(between(android, "if (showReminderCard) {", "GeneratedPracticeSection(")).toContain(
+      "LessonReminderCard(",
+    );
+    const stage = read(
+      "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/lesson/LessonStage.kt",
+    );
+    const card = between(stage, "fun LessonReminderCard(", "\n}\n");
+    expect(card.match(/heightIn\(min = 48\.dp\)/g)?.length).toBe(2);
     expect(card).not.toContain("fullWidth = false");
+    expect(stage).not.toContain("requestIfUndetermined(");
   });
   it("the manifest no longer claims a first-lesson ask", () => {
     expect(read("android/LearnWithAlphonso/app/src/main/AndroidManifest.xml")).not.toContain(

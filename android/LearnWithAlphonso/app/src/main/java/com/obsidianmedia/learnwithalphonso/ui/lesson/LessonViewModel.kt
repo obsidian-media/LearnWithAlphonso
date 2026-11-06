@@ -6,7 +6,13 @@ import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Lesson
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.logic.ActiveTimer
+import com.obsidianmedia.learnwithalphonso.core.logic.FinishGate
 import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonPreviousBest
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonXp
+import com.obsidianmedia.learnwithalphonso.core.logic.correctAnswerText
+import com.obsidianmedia.learnwithalphonso.core.logic.promptText
 import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationAnswer
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
@@ -65,6 +71,12 @@ data class LessonUiState(
     val outOfHearts: OutOfHeartsModel? = null,
     val buyingHeart: Boolean = false,
     val buyMessage: String? = null,
+    /** The learner's earlier best on this lesson, read when it opens; unknown (offline) promises no XP per answer. */
+    val previousBest: LessonPreviousBest = LessonPreviousBest.Unknown,
+    /** The questions missed this attempt, for the complete screen's review list. */
+    val missed: List<MissedQuestion> = emptyList(),
+    /** The lesson's own time, from Start lesson to the last answer, with the app's background time left out. */
+    val elapsedMs: Long? = null,
 ) {
     val total: Int get() = lesson.questions.size
     val isReinforcing: Boolean get() = activeReinforcement != null
@@ -72,6 +84,9 @@ data class LessonUiState(
     val continueLabel: String get() = if (isReinforcing || pendingReinforcement != null || idx < total - 1) "Continue" else "Finish"
     val lastCheckedCorrect: Boolean? get() = if (!checked) null else translationVerdict?.correct
 }
+
+/** One missed question on the complete screen, to practise again. */
+data class MissedQuestion(val prompt: String, val yours: String, val answer: String)
 
 /**
  * Port of LessonPlayerView.swift's state machine. Reinforcement questions
@@ -101,6 +116,10 @@ class LessonViewModel(
     private var attemptSeed = UUID.randomUUID().toString()
     /** The start-lesson-session token taken when the lesson opened; finish() mints one if none is held. */
     private var sessionToken: String? = null
+    /** The last question's Finish completes the lesson once (a second tap would be a zero-XP replay). */
+    private val finishGate = FinishGate()
+    /** Counts from Start lesson, paused while the app is in the background. */
+    private var timer: ActiveTimer? = null
 
     val vocab: List<VocabItem> get() = deriveVocab(_state.value.lesson, content.vocabImages)
 
@@ -153,6 +172,28 @@ class LessonViewModel(
         } catch (e: Exception) {
             // Best effort: finish() starts a session when none is held.
         }
+        // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
+        val openedFor = _state.value.lesson.id
+        val best = runCatching { client.fetchLessonBest(openedFor, course.code) }
+        if (_state.value.lesson.id != openedFor) return
+        val previous = best.fold(
+            onSuccess = { c -> c?.let { LessonPreviousBest.Best(it) } ?: LessonPreviousBest.FirstTry },
+            onFailure = { LessonPreviousBest.Unknown },
+        )
+        _state.update { it.copy(previousBest = previous) }
+    }
+
+    /** The verdict's "+10 XP": only XP the server will pay, and none for a reinforcement round or a wrong answer. */
+    fun answerXp(): Int? {
+        val s = _state.value
+        if (!s.checked || s.isReinforcing || !isCurrentCorrect()) return null
+        return LessonXp.answerChip(s.correctCount, s.previousBest)
+    }
+
+    /** The app went to the background or came back: the lesson's time counts only while it is in front. */
+    fun onAppVisible(visible: Boolean) {
+        val t = timer ?: return
+        if (visible) t.resume(now()) else t.pause(now())
     }
 
     /** "Use 50 XP for a heart": the same buy_heart_with_xp RPC as web and iOS, then the gate is asked again. */
@@ -177,7 +218,10 @@ class LessonViewModel(
         openSession()
     }
 
-    fun begin() = _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
+    fun begin() {
+        timer = ActiveTimer(now())
+        _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
+    }
     fun startPractice() = _state.update { it.copy(phase = LessonPhase.Quiz) }
     fun pick(value: String?) = _state.update { if (it.checked) it else it.copy(picked = value) }
 
@@ -211,7 +255,7 @@ class LessonViewModel(
         }
         if (s.idx < s.total - 1) {
             _state.update { it.copy(idx = it.idx + 1, picked = null, checked = false, translationVerdict = null) }
-        } else {
+        } else if (finishGate.begin()) {
             viewModelScope.launch { finish() }
         }
     }
@@ -220,6 +264,8 @@ class LessonViewModel(
         val next = nextLessonId ?: return
         val found = content.findLesson(next, course) ?: return
         attemptSeed = UUID.randomUUID().toString()
+        finishGate.reset()
+        timer = null
         _state.value = LessonUiState(found.second)
         openSession()
     }
@@ -248,7 +294,8 @@ class LessonViewModel(
         } else {
             val doingWell = s.idx > 0 && s.correctCount.toDouble() / s.idx >= 0.8
             val reinforcement = pickReinforcementQuestion(siblingQuestions, levelQuestions, doingWell, "$attemptSeed-reinforce-${s.idx}")
-            _state.update { it.copy(answers = answers, pendingReinforcement = reinforcement) }
+            val miss = MissedQuestion(question.promptText, s.picked ?: "", question.correctAnswerText)
+            _state.update { it.copy(answers = answers, pendingReinforcement = reinforcement, missed = it.missed + miss) }
             spendHeart()
         }
     }
@@ -265,8 +312,11 @@ class LessonViewModel(
     }
 
     private suspend fun finish() {
+        val end = now()
+        val elapsed = timer?.elapsedMs(end)
+        timer?.pause(end)
+        _state.update { it.copy(isSubmitting = true, elapsedMs = elapsed) }
         val s = _state.value
-        _state.update { it.copy(isSubmitting = true) }
         try {
             if (!isConnected()) { queueOffline(LessonCompletionError.Offline); return }
             // The same attempt the sync queue makes (LessonCompletionService), so a live finish and a queued one

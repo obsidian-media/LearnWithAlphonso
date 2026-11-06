@@ -8,6 +8,7 @@ import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.PROGRESS_JSON
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonPreviousBest
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.testContent
 import io.ktor.http.HttpStatusCode
@@ -96,6 +97,81 @@ class LessonViewModelTest {
         assertEquals(lesson.questions.map { it.id }, answers.map { it.jsonObject["questionId"]!!.jsonPrimitive.content })
         assertEquals(lesson.questions.size, completeBody["total"]!!.jsonPrimitive.content.toInt())
         assertEquals(lesson.questions.size - 1, v.state.value.correctCount)
+    }
+
+    @Test
+    fun `a second Finish while the completion is in flight completes the lesson once`() = runBlocking {
+        val server = okServer()
+        val v = vm(server)
+        v.begin(); v.startPractice()
+        lesson.questions.forEachIndexed { i, q ->
+            v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }
+            v.continueOrFinish()
+            if (i == lesson.questions.lastIndex) v.continueOrFinish()
+        }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        delay(100)
+        assertEquals(1, server.seen.count { it.path.endsWith("complete-lesson") })
+    }
+
+    @Test
+    fun `a replay shows XP only past the best earlier score, a first try on every right answer`() = runBlocking {
+        val replay = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+                req.path.endsWith("lesson_completions") -> json("""[{"correct":1}]""")
+                else -> json("[]")
+            }
+        }
+        val v = vm(replay)
+        v.onScreenShown()
+        awaitTrue("best read") { v.state.value.previousBest == LessonPreviousBest.Best(1) }
+        v.begin(); v.startPractice()
+        val chips = lesson.questions.take(3).map { q ->
+            v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }
+            v.answerXp().also { v.continueOrFinish() }
+        }
+        assertEquals(listOf(null, 10, 10), chips)
+
+        val first = vm(okServer())
+        first.onScreenShown()
+        awaitTrue("first try") { first.state.value.previousBest == LessonPreviousBest.FirstTry }
+        first.begin(); first.startPractice()
+        first.pick(correctAnswer(lesson.questions[0])); first.check().join()
+        assertEquals(10, first.answerXp())
+    }
+
+    @Test
+    fun `an unreadable history promises no XP, and a wrong answer never shows any`() = runBlocking {
+        val v = vm(okServer(), connected = false)
+        v.begin(); v.startPractice()
+        v.pick(correctAnswer(lesson.questions[0])); v.check().join()
+        assertEquals(LessonPreviousBest.Unknown, v.state.value.previousBest)
+        assertNull(v.answerXp())
+        val w = vm(okServer())
+        w.onScreenShown()
+        awaitTrue("first try") { w.state.value.previousBest == LessonPreviousBest.FirstTry }
+        w.begin(); w.startPractice()
+        w.pick(wrongAnswer(lesson.questions[0])); w.check().join()
+        assertNull(w.answerXp())
+        assertEquals(1, w.state.value.missed.size)
+    }
+
+    @Test
+    fun `the lesson's time leaves out the time the app was in the background`() = runBlocking {
+        var clock = 0L
+        val v = LessonViewModel(
+            lesson, Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(),
+            isConnected = { true }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { clock }, hasAiConsent = { true },
+            ownerUserId = { "u1" },
+        )
+        v.begin(); v.startPractice()
+        clock = 10_000; v.onAppVisible(false)
+        clock = 70_000; v.onAppVisible(true)
+        clock = 80_000
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        assertEquals(20_000L, v.state.value.elapsedMs)
     }
 
     @Test
