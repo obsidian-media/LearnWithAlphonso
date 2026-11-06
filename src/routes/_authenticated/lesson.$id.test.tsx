@@ -105,7 +105,7 @@ function renderPage(consentApi = fakeConsentApi()) {
 }
 
 async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+  await user.click(await screen.findByRole("button", { name: "Start lesson" }));
   await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
 }
 
@@ -138,7 +138,7 @@ describe("out of hearts", () => {
     });
     renderPage();
     expect(await screen.findByRole("dialog", { name: "Out of hearts" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Begin lesson" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start lesson" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Review instead" })).toBeInTheDocument();
   });
 
@@ -151,7 +151,7 @@ describe("out of hearts", () => {
     buyHeartWithXpRemote.mockResolvedValue({ ok: true, hearts: 1, xp: 70, cost: 50 });
     renderPage();
     await user.click(await screen.findByRole("button", { name: "Use 50 XP for a heart" }));
-    expect(await screen.findByRole("button", { name: "Begin lesson" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Start lesson" })).toBeInTheDocument();
     expect(startLessonSession).toHaveBeenCalledTimes(2);
   });
 
@@ -168,7 +168,7 @@ describe("out of hearts", () => {
       });
       await waitFor(() => expect(restoreHeartsRemote).toHaveBeenCalledTimes(1));
       await waitFor(() => expect(startLessonSession).toHaveBeenCalledTimes(2));
-      expect(await screen.findByRole("button", { name: "Begin lesson" })).toBeInTheDocument();
+      expect(await screen.findByRole("button", { name: "Start lesson" })).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
@@ -186,18 +186,69 @@ describe("out of hearts", () => {
 });
 
 describe("Lesson page", () => {
-  it("overview shows the three steps as coloured cards and a chunky Begin lesson button", async () => {
+  it("lesson start is set in the unit's own room, with the unit, the title, the steps and a gold Start button", async () => {
     const { container } = renderPage();
-    const begin = await screen.findByRole("button", { name: "Begin lesson" });
-    // The shared chunky Button: a bottom edge that presses down.
-    expect(begin.className).toContain("active:translate-y-1");
-    const steps = [...container.querySelectorAll<HTMLElement>("[data-step][data-tone]")];
-    expect(steps.map((s) => s.dataset.tone)).toEqual(["coral", "sky", "mint"]);
-    expect(steps.map((s) => s.querySelector("img")?.getAttribute("src"))).toEqual([
-      "/icons3d/books.png",
-      "/icons3d/bullseye.png",
-      "/icons3d/star.png",
-    ]);
+    const start = await screen.findByRole("button", { name: "Start lesson" });
+    // The pressable primary: gold with an edge that presses down.
+    expect(start.className).toContain("bg-[linear-gradient(180deg,var(--c-action-hi)");
+    expect(start.className).toContain("active:translate-y-1");
+    // u1l1 is in unit u1, whose room is the park cafe terrace.
+    expect(container.querySelector("[data-room]")?.getAttribute("data-room")).toBe(
+      "/avatar/scenes/smalltalk.webp",
+    );
+    expect(screen.getByRole("img", { name: "Alphonso, talking" })).toHaveAttribute(
+      "src",
+      "/alphonso/lesson/talk.webp",
+    );
+    expect(screen.getByText("Unit 1 · Everyday Basics")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Saying Hello" })).toBeInTheDocument();
+    const steps = [...container.querySelectorAll<HTMLElement>("[data-step]")];
+    expect(steps.map((s) => s.dataset.step)).toEqual(["words", "practice", "review"]);
+    // Drawn icons, not emoji pictures.
+    expect(container.querySelector("[data-step] img")).toBeNull();
+    expect(container.querySelectorAll("[data-step] svg")).toHaveLength(3);
+  });
+
+  it("lesson start says how long, how many questions and the most XP, from the real lesson and the XP formula", async () => {
+    const { getCourse } = await import("../../data/courses");
+    const { estimateLessonMinutes } = await import("../../lib/lesson-time");
+    const { computeXpGain } = await import("../../lib/progress-math");
+    const { vocabForLesson } = await import("../../data/vocab");
+    const lesson = getCourse("en").curriculum[0].lessons[0];
+    renderPage();
+    await screen.findByRole("button", { name: "Start lesson" });
+    const minutes = estimateLessonMinutes(lesson.questions, vocabForLesson(lesson.id, "en").length);
+    const most = computeXpGain(lesson.questions.length, lesson.questions.length);
+    expect(most).toBe(100);
+    expect(
+      screen.getByText(
+        `About ${minutes} min · ${lesson.questions.length} questions · Up to ${most} XP`,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("a right answer shows the XP it earns; a wrong one shows none", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const right = (await screen.findByText("Exactly!")).closest('[role="status"]') as HTMLElement;
+    expect(within(right).getByText("+10 XP")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(await screen.findByRole("button", { name: ANSWERS[1].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const wrong = (await screen.findByText("Not quite")).closest('[role="status"]') as HTMLElement;
+    expect(within(wrong).queryByText(/XP/)).toBeNull();
+  });
+
+  it("the room changes with the unit: a lesson in another unit stands in that unit's room", async () => {
+    currentLessonId = "u2l1";
+    const { container } = renderPage();
+    await screen.findByRole("button", { name: "Start lesson" });
+    expect(container.querySelector("[data-room]")?.getAttribute("data-room")).toBe(
+      "/avatar/scenes/bedroom.webp",
+    );
   });
 
   it("shows a not-found message for an unknown lesson id", async () => {
@@ -216,9 +267,9 @@ describe("Lesson page", () => {
     currentLessonId = "a1p23l1";
     renderPage();
     // No vocabulary step here: listening answers are whole sentences, which
-    // deriveVocab deliberately skips (see vocab.ts), so "Begin lesson" goes
+    // deriveVocab deliberately skips (see vocab.ts), so "Start lesson" goes
     // straight to the quiz rather than via "Start practice".
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
     expect(screen.getByText("Listening")).toBeInTheDocument();
@@ -239,7 +290,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p23l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     expect(await screen.findByText(/audio is unavailable/i)).toBeInTheDocument();
     expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
@@ -253,7 +304,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p24l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     expect(await screen.findByText("Speaking")).toBeInTheDocument();
     expect(screen.getByText("Say this aloud:")).toBeInTheDocument();
@@ -269,18 +320,18 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p24l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Type the phrase"), "good morning");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("marks a different phrase wrong on a speaking question", async () => {
     const user = userEvent.setup();
     currentLessonId = "a1p24l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Type the phrase"), "good night");
     await user.click(screen.getByRole("button", { name: "Check" }));
@@ -293,7 +344,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p24l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Type the phrase"), "good night");
     await user.click(screen.getByRole("button", { name: "Check" }));
@@ -305,12 +356,13 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p24l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Type the phrase"), "good night");
     await user.click(screen.getByRole("button", { name: "Check" }));
     const feedback = (await screen.findByText("Not quite")).closest('[role="status"]')!;
-    const words = within(feedback as HTMLElement).queryAllByRole("button");
+    const reason = feedback.querySelector<HTMLElement>("[data-verdict-reason]")!;
+    const words = within(reason).queryAllByRole("button");
     expect(words.length).toBeGreaterThan(0);
     await user.click(words[0]);
     expect(screen.getByRole("dialog", { name: /save this word/i })).toBeInTheDocument();
@@ -331,11 +383,11 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p25l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Your answer"), "good morning");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("upgrades a wrong local verdict when the grader accepts the wording", async () => {
@@ -349,11 +401,11 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p25l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("without consent grades a translation locally and never asks the grader", async () => {
@@ -365,7 +417,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p25l1";
     renderPage(fakeConsentApi(null));
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     expect(await screen.findByText("Turn on AI grading")).toBeInTheDocument();
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
@@ -400,7 +452,7 @@ describe("Lesson page", () => {
         fakeConsentApi("2026-10-09T10:00:00Z"),
       ),
     );
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     expect(screen.getByTestId("consent-status")).toHaveTextContent("granted");
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
@@ -419,7 +471,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p25l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Your answer"), "goodbye");
     await user.click(screen.getByRole("button", { name: "Check" }));
@@ -432,7 +484,7 @@ describe("Lesson page", () => {
     const user = userEvent.setup();
     currentLessonId = "a1p25l1";
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
 
     await user.type(screen.getByLabelText("Your answer"), "   ");
     expect(screen.getByRole("button", { name: "Check" })).toBeDisabled();
@@ -443,22 +495,22 @@ describe("Lesson page", () => {
     renderPage();
 
     expect(await screen.findByText("Saying Hello")).toBeInTheDocument();
-    expect(screen.getByText("8 words with examples")).toBeInTheDocument();
-    expect(screen.getByText("8 questions")).toBeInTheDocument();
+    expect(screen.getAllByText("8 new words").length).toBeGreaterThan(0);
+    expect(screen.getByText("8 questions: pick, listen, say it back")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Begin lesson" }));
+    await user.click(screen.getByRole("button", { name: "Start lesson" }));
     expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
     expect(screen.getByText("Good morning.")).toBeInTheDocument(); // a derived vocab term
 
     await user.click(screen.getByRole("button", { name: "Skip to practice" }));
     expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
-    expect(screen.getByText("1/8")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 1 of 8");
   });
 
   it("words to learn come one card at a time: Next word moves on, the last card starts practice", async () => {
     const user = userEvent.setup();
     const { container } = renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
     expect(container.querySelectorAll("[data-vocab-card]")).toHaveLength(1);
     expect(screen.getByText("Good morning.")).toBeInTheDocument();
@@ -479,13 +531,13 @@ describe("Lesson page", () => {
   it("a word with no photo gets a coloured band with the word, and Skip sits on the counter row", async () => {
     const user = userEvent.setup();
     const { container } = renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     const counter = await screen.findByText("Word 1 of 8");
     // "Good morning." has no photo: the band carries the word, in the first tile tone.
     const band = container.querySelector("[data-word-band]");
     expect(band).not.toBeNull();
     expect(band).toHaveTextContent("Good morning.");
-    expect(band?.className).toContain("bg-tile-coral-bg");
+    expect(band?.className).toContain("bg-ds-choice-tint");
     expect(container.querySelector("[data-vocab-card] img[src*='vocab']")).toBeNull();
     expect(counter.parentElement).toContainElement(
       screen.getByRole("button", { name: "Skip to practice" }),
@@ -494,14 +546,14 @@ describe("Lesson page", () => {
     await user.click(screen.getByRole("button", { name: "Next word" }));
     await screen.findByText("Word 2 of 8");
     await waitFor(() =>
-      expect(container.querySelector("[data-word-band]")?.className).toContain("bg-tile-sky-bg"),
+      expect(container.querySelector("[data-word-band]")?.className).toContain("bg-ds-xp-tint"),
     );
   });
 
   it("the arrow keys move through the words too", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();
     await user.keyboard("{ArrowRight}");
     expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
@@ -512,7 +564,7 @@ describe("Lesson page", () => {
   it("the arrow keys still work right after a click on Next word or the speaker, which leaves that button focused", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     await user.click(await screen.findByRole("button", { name: "Next word" }));
     expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
     await user.keyboard("{ArrowRight}");
@@ -525,7 +577,7 @@ describe("Lesson page", () => {
   it("announces card changes: the Word n of N counter is a polite, atomic live region", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     const counter = await screen.findByText("Word 1 of 8");
     expect(counter).toHaveAttribute("aria-live", "polite");
     expect(counter).toHaveAttribute("aria-atomic", "true");
@@ -534,7 +586,7 @@ describe("Lesson page", () => {
   it("the arrow keys leave the words alone while focus is in a field, a button or a dialog, or a modifier is held", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
     await screen.findByText("Word 1 of 8");
 
     const field = document.createElement("input");
@@ -578,21 +630,6 @@ describe("Lesson page", () => {
     expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
   });
 
-  it("Studio Ink keeps the full word list", async () => {
-    const { useTheme } = await import("../../lib/theme");
-    useTheme.setState({ theme: "studio-ink" });
-    try {
-      const user = userEvent.setup();
-      renderPage();
-      await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
-      expect(await screen.findByText("8 words to learn before you practise.")).toBeInTheDocument();
-      expect(screen.queryByText("Word 1 of 8")).not.toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Start practice" })).toBeInTheDocument();
-    } finally {
-      useTheme.setState({ theme: "meadow" });
-    }
-  });
-
   it("grades a correct answer, shows feedback, and advances on Continue", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -600,11 +637,11 @@ describe("Lesson page", () => {
 
     await user.click(screen.getByRole("button", { name: ANSWERS[0].correct }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
-    expect(screen.getByText("2/8")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 2 of 8");
     expect(loseHeartRemote).not.toHaveBeenCalled();
   });
 
@@ -634,7 +671,7 @@ describe("Lesson page", () => {
     await screen.findByText("Nice to ___ you.");
     await user.click(screen.getByRole("button", { name: "meet" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("completes the lesson with server-graded misses and applies the returned progress", async () => {
@@ -662,7 +699,8 @@ describe("Lesson page", () => {
       const text = i === 1 ? ANSWERS[i].wrong : ANSWERS[i].correct;
       await user.click(await screen.findByRole("button", { name: text }));
       await user.click(screen.getByRole("button", { name: "Check" }));
-      const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
+      // A miss is acknowledged with "Got it", a right answer goes on with "Continue".
+      const label = i === ANSWERS.length - 1 ? "Finish" : i === 1 ? "Got it" : "Continue";
       await user.click(screen.getByRole("button", { name: label }));
     }
 
@@ -691,6 +729,73 @@ describe("Lesson page", () => {
     expect(state.completedLessons).toContain("u1l1");
     expect(state.answersByLesson.u1l1).toEqual({ correct: 7, total: 8 });
     expect(state.unlockedAchievements).toContain("xp_100");
+  });
+
+  it("a second tap on Finish while the completion is in flight does not complete the lesson again", async () => {
+    let resolve!: (v: unknown) => void;
+    completeLessonRemote.mockReturnValue(new Promise((r) => (resolve = r)));
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      if (i < ANSWERS.length - 1)
+        await user.click(screen.getByRole("button", { name: "Continue" }));
+    }
+    const finish = screen.getByRole("button", { name: "Finish" });
+    await user.click(finish);
+    await user.click(finish);
+    expect(completeLessonRemote).toHaveBeenCalledTimes(1);
+    resolve({
+      xpGain: 100,
+      correct: 8,
+      newlyUnlocked: [],
+      heartsBonus: null,
+      progress: {
+        xp: 100,
+        streak: 1,
+        longestStreak: 1,
+        lastActiveDate: "2026-09-19",
+        hearts: 5,
+        heartsRefillAt: null,
+        streakFreezes: 0,
+        leagueTier: "bronze",
+      },
+    });
+    expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+  });
+
+  it("the lesson time leaves out the minutes the tab was hidden", async () => {
+    completeLessonRemote.mockRejectedValue(new Error("network down"));
+    let now = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+    let hidden = false;
+    const hiddenProp = vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
+    const setHidden = (h: boolean, at: number) => {
+      now = at;
+      hidden = h;
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+    try {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole("button", { name: "Start lesson" })); // the clock starts at 0
+      await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
+      setHidden(true, 20_000); // 20 s in, the tab is hidden...
+      setHidden(false, 620_000); // ...for ten minutes
+      for (let i = 0; i < ANSWERS.length; i++) {
+        await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+        await user.click(screen.getByRole("button", { name: "Check" }));
+        now = i === ANSWERS.length - 1 ? 645_000 : now; // the last answer, 25 s after coming back
+        const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
+        await user.click(screen.getByRole("button", { name: label }));
+      }
+      expect(await screen.findByLabelText("Time: 0:45")).toBeInTheDocument();
+    } finally {
+      clock.mockRestore();
+      hiddenProp.mockRestore();
+    }
   });
 
   it("shows a graceful finish screen when completion fails", async () => {
@@ -764,22 +869,22 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
     expect(loseHeartRemote).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
 
-    // Continue reveals the reinforcement round, not q2 yet -- progress
+    // Got it reveals the reinforcement round, not q2 yet -- progress
     // stays at 1/8 since it isn't a real question.
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Got it" }));
     expect(await screen.findByText("Quick practice")).toBeInTheDocument();
     expect(screen.getByText("Reinforcement: pick the greeting.")).toBeInTheDocument();
-    expect(screen.getByText("1/8")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 1 of 8");
 
     // Answering it (even wrong) doesn't touch hearts/missed again.
     await user.click(screen.getByRole("button", { name: "Goodbye" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(loseHeartRemote).toHaveBeenCalledTimes(1);
 
-    // Continue past the reinforcement lands on the real next question.
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    // Past the (missed) reinforcement lands on the real next question.
+    await user.click(screen.getByRole("button", { name: "Got it" }));
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
-    expect(screen.getByText("2/8")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 2 of 8");
   });
 
   it("shows no reinforcement round when none is available", async () => {
@@ -790,13 +895,13 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
 
     await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Got it" }));
 
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
     expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
   });
 
-  it("says 'Continue' rather than 'Finish' when a reinforcement is pending on the last question", async () => {
+  it("says 'Got it' rather than 'Finish' when a reinforcement is pending on the last question", async () => {
     pickReinforcementQuestion.mockReturnValue(reinforcementQuestion);
     const user = userEvent.setup();
     renderPage();
@@ -811,7 +916,7 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
     // "Finish" here, but the reinforcement round is still pending.
     await user.click(await screen.findByRole("button", { name: ANSWERS[7].wrong }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Got it" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Finish" })).not.toBeInTheDocument();
   });
 });
@@ -862,7 +967,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("shows a play-audio button and grades a listening mc question normally", async () => {
@@ -875,7 +980,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("assembles and grades a reorder question by tapping tokens in order", async () => {
@@ -894,7 +999,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
     }
     expect(checkButton).toBeEnabled();
     await user.click(checkButton);
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 
   it("marks a reorder question wrong when tapped out of order", async () => {
@@ -923,7 +1028,7 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
       await user.click(screen.getByRole("button", { name: word }));
     }
     await user.click(screen.getByRole("button", { name: "Check" }));
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(await screen.findByText("Exactly!")).toBeInTheDocument();
   });
 });
 
