@@ -14,6 +14,12 @@ import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
 import { HectorInvite } from "../../components/HectorInvite";
+import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
+import { PracticeCall } from "../../components/PracticeCall";
+import { useTheme } from "../../lib/theme";
+import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar/machine";
+import { useAvatarPreference } from "../../lib/avatar/preference";
+import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
@@ -104,6 +110,22 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [course]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
+  const leftRef = useRef(false);
+  // The talking Alphonso: what is being spoken, whether its audio is loading or playing, and what the latest reply
+  // said about the learner's turn (he reacts to it once the reply has been spoken).
+  const [spoken, setSpoken] = useState<string | null>(null);
+  const [voice, setVoice] = useState<"idle" | "loading" | "playing">("idle");
+  const [replyVerdict, setReplyVerdict] = useState<AvatarReplyVerdict>({
+    serial: 0,
+    verdict: "none",
+  });
+  const showAlphonso = useAvatarPreference((s) => s.enabled);
+  const hydrateAvatarPreference = useAvatarPreference((s) => s.hydrate);
+  useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
+  const reducedMotion = useReducedMotion() ?? false;
+  const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
+  const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -112,6 +134,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   const speak = useCallback(
     async (text: string) => {
       if (!ttsOn) return;
+      setSpoken(text);
+      setVoice("loading");
       try {
         const resp = await fetch("/api/tts", {
           method: "POST",
@@ -119,18 +143,35 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           // The server picks this course's native voice.
           body: JSON.stringify({ text, course }),
         });
-        if (!resp.ok) return;
+        if (!resp.ok) {
+          setVoice("idle");
+          return;
+        }
         const blob = await resp.blob();
+        // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
+        if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
         if (audioRef.current) {
           audioRef.current.pause();
         }
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => URL.revokeObjectURL(url);
-        void audio.play().catch(() => {});
+        // A replaced or stopped clip must not flip the avatar back to idle under the clip that replaced it.
+        const settle = () => {
+          if (audioRef.current === audio) setVoice("idle");
+        };
+        audio.onplaying = () => {
+          if (audioRef.current === audio) setVoice("playing");
+        };
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          settle();
+        };
+        audio.onpause = settle;
+        audio.onerror = settle;
+        void audio.play().catch(settle);
       } catch {
-        /* ignore */
+        setVoice("idle");
       }
     },
     [ttsOn, course],
@@ -186,9 +227,11 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
                   : t || "Something went wrong.",
           );
         }
-        const data = (await resp.json()) as { content?: string };
+        const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
         setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        // An older server sends no verdict, which reads as "none".
+        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict: parseVerdict(data.verdict) }));
         void speak(reply);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -208,6 +251,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
     error: captureError,
     start: beginCapture,
     stop: stopRecording,
+    getStream,
   } = useSpeechCapture({
     course,
     onTranscript: (text, confidence) => send(text, confidence ?? undefined),
@@ -222,238 +266,324 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [beginCapture]);
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
+  const avatarPhase: VoicePhase = recording
+    ? { kind: "recording" }
+    : transcribing
+      ? { kind: "transcribing" }
+      : sending || voice === "loading"
+        ? { kind: "thinking" }
+        : voice === "playing"
+          ? { kind: "speaking" }
+          : { kind: "idle" };
 
   useEffect(() => {
+    leftRef.current = false;
     return () => {
+      leftRef.current = true;
       audioRef.current?.pause();
     };
   }, []);
 
-  return (
-    <LessonFrame>
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
-        <Link
-          to="/converse"
-          aria-label="Back"
-          className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+  const hint = (
+    <div className="px-5">
+      <SaveWordHint always />
+    </div>
+  );
+  const conversationLog = (
+    <div
+      ref={scrollRef}
+      role="log"
+      aria-live="polite"
+      aria-label="Conversation"
+      className="flex-1 overflow-y-auto px-5 py-6"
+    >
+      <div className="flex flex-col gap-3">
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            {m.role === "assistant" ? (
+              <div className="flex max-w-[85%] flex-col items-start">
+                <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                  <TappableText text={m.content} course={course} />
+                </div>
+                {!m.opener && (
+                  <AiMessageReport
+                    message={m.content}
+                    surface="conversation"
+                    course={course}
+                    scenarioId={scenario.id}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="flex max-w-[85%] flex-col items-end gap-1">
+                <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                  {m.content}
+                </div>
+                {typeof m.confidence === "number" &&
+                  (() => {
+                    const clarity = clarityLabel(m.confidence);
+                    return (
+                      <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
+                        <span
+                          aria-hidden="true"
+                          className={`size-1.5 rounded-full ${clarity.dotClassName}`}
+                        />
+                        {clarity.label} pronunciation
+                      </span>
+                    );
+                  })()}
+              </div>
+            )}
+          </div>
+        ))}
+        {(sending || transcribing) && (
+          <div className="flex justify-start" role="status">
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
+            </div>
+            <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
+          </div>
+        )}
+        {/* After a few turns, offer to keep going with Hector (hidden for Pro). Once shown it stays mounted, so a
+              later turn neither re-checks Pro nor closes a paywall the learner opened. */}
+        {messages.filter((m) => m.role === "user").length >= 3 && (
+          <HectorInvite source="practice_end_prompt" />
+        )}
+        {(error ?? captureError) && (
+          <div
+            role="alert"
+            className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+          >
+            {error ?? captureError}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+  const composer = (
+    <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send(input);
+        }}
+        className="flex items-end gap-2"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            if (recording) {
+              stopRecording();
+            } else {
+              void startRecording();
+            }
+          }}
+          aria-label={recording ? "Stop recording and send" : "Record a voice message"}
+          aria-pressed={recording}
+          disabled={sending || transcribing}
+          className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
+            recording
+              ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
+              : "bg-moss text-surface hard-shadow"
+          } disabled:opacity-50`}
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+            <rect
+              x="9"
+              y="3"
+              width="6"
+              height="12"
+              rx="3"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
             <path
-              d="M15 6l-6 6 6 6"
+              d="M5 11a7 7 0 0 0 14 0M12 18v3"
               stroke="currentColor"
               strokeWidth="1.8"
               strokeLinecap="round"
+            />
+          </svg>
+        </button>
+        <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void send(input);
+              }
+            }}
+            rows={1}
+            placeholder={recording ? "Listening…" : "Type or tap the mic"}
+            disabled={sending || transcribing || recording}
+            className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={sending || transcribing || !input.trim()}
+          aria-label="Send"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+            <path
+              d="M5 12l14-7-4 7 4 7-14-7z"
+              stroke="currentColor"
+              strokeWidth="1.6"
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xl leading-none">{scenario.emoji}</span>
-            <h1 className="truncate font-display text-[17px] font-semibold text-ink">
-              {scenario.title}
-            </h1>
-          </div>
-          <p className="truncate text-[11px] text-ink-soft/70">{scenario.blurb}</p>
-        </div>
-        <button
-          onClick={() => setTtsOn((v) => !v)}
-          aria-pressed={ttsOn}
-          aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
-          className={`grid size-9 place-items-center rounded-full border transition-colors ${
-            ttsOn
-              ? "border-moss/30 bg-moss/10 text-moss"
-              : "border-hairline bg-surface text-ink-soft/60"
-          }`}
-        >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-            {ttsOn ? (
-              <>
-                <path
-                  d="M4 10v4h4l5 4V6L8 10H4z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </>
-            ) : (
-              <>
-                <path
-                  d="M4 10v4h4l5 4V6L8 10H4z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M17 9l5 6M22 9l-5 6"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </>
-            )}
-          </svg>
         </button>
-      </header>
-      <div className="px-5">
-        <SaveWordHint always />
-      </div>
-
-      <div
-        ref={scrollRef}
-        role="log"
-        aria-live="polite"
-        aria-label="Conversation"
-        className="flex-1 overflow-y-auto px-5 py-6"
+      </form>
+    </div>
+  );
+  const classicHeader = (
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+      <Link
+        to="/converse"
+        aria-label="Back"
+        className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
       >
-        <div className="flex flex-col gap-3">
-          {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              {m.role === "assistant" ? (
-                <div className="flex max-w-[85%] flex-col items-start">
-                  <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                    <TappableText text={m.content} course={course} />
-                  </div>
-                  {!m.opener && (
-                    <AiMessageReport
-                      message={m.content}
-                      surface="conversation"
-                      course={course}
-                      scenarioId={scenario.id}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="flex max-w-[85%] flex-col items-end gap-1">
-                  <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
-                    {m.content}
-                  </div>
-                  {typeof m.confidence === "number" &&
-                    (() => {
-                      const clarity = clarityLabel(m.confidence);
-                      return (
-                        <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
-                          <span
-                            aria-hidden="true"
-                            className={`size-1.5 rounded-full ${clarity.dotClassName}`}
-                          />
-                          {clarity.label} pronunciation
-                        </span>
-                      );
-                    })()}
-                </div>
-              )}
-            </div>
-          ))}
-          {(sending || transcribing) && (
-            <div className="flex justify-start" role="status">
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
-              </div>
-              <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
-            </div>
-          )}
-          {/* After a few turns, offer to keep going with Hector (hidden for Pro). Once shown it stays mounted, so a
-              later turn neither re-checks Pro nor closes a paywall the learner opened. */}
-          {messages.filter((m) => m.role === "user").length >= 3 && (
-            <HectorInvite source="practice_end_prompt" />
-          )}
-          {(error ?? captureError) && (
-            <div
-              role="alert"
-              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
-            >
-              {error ?? captureError}
-            </div>
-          )}
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+          <path
+            d="M15 6l-6 6 6 6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xl leading-none">{scenario.emoji}</span>
+          <h1 className="truncate font-display text-[17px] font-semibold text-ink">
+            {scenario.title}
+          </h1>
         </div>
+        <p className="truncate text-[11px] text-ink-soft/70">{scenario.blurb}</p>
       </div>
-
-      <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void send(input);
-          }}
-          className="flex items-end gap-2"
-        >
-          <button
-            type="button"
-            onClick={() => {
-              if (recording) {
-                stopRecording();
-              } else {
-                void startRecording();
-              }
-            }}
-            aria-label={recording ? "Stop recording and send" : "Record a voice message"}
-            aria-pressed={recording}
-            disabled={sending || transcribing}
-            className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
-              recording
-                ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
-                : "bg-moss text-surface hard-shadow"
-            } disabled:opacity-50`}
-          >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
-              <rect
-                x="9"
-                y="3"
-                width="6"
-                height="12"
-                rx="3"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
+      <button
+        onClick={() => setTtsOn((v) => !v)}
+        aria-pressed={ttsOn}
+        aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
+        className={`grid size-9 place-items-center rounded-full border transition-colors ${
+          ttsOn
+            ? "border-moss/30 bg-moss/10 text-moss"
+            : "border-hairline bg-surface text-ink-soft/60"
+        }`}
+      >
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+          {ttsOn ? (
+            <>
               <path
-                d="M5 11a7 7 0 0 0 14 0M12 18v3"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-          <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(input);
-                }
-              }}
-              rows={1}
-              placeholder={recording ? "Listening…" : "Type or tap the mic"}
-              disabled={sending || transcribing || recording}
-              className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={sending || transcribing || !input.trim()}
-            aria-label="Send"
-            className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
-          >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
-              <path
-                d="M5 12l14-7-4 7 4 7-14-7z"
+                d="M4 10v4h4l5 4V6L8 10H4z"
                 stroke="currentColor"
                 strokeWidth="1.6"
                 strokeLinejoin="round"
               />
-            </svg>
-          </button>
-        </form>
-      </div>
+              <path
+                d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </>
+          ) : (
+            <>
+              <path
+                d="M4 10v4h4l5 4V6L8 10H4z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M17 9l5 6M22 9l-5 6"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+        </svg>
+      </button>
+    </header>
+  );
+
+  if (showAlphonso) {
+    const last = messages[messages.length - 1];
+    const caption =
+      recording || !last
+        ? null
+        : {
+            text: last.content,
+            mine: last.role === "user",
+            spoken: last.role === "assistant" && last.content === spoken,
+          };
+    return (
+      <LessonFrame>
+        <PracticeCall
+          title={scenario.title}
+          scenarioId={scenario.id}
+          dark={darkTheme}
+          avatar={{
+            phase: avatarPhase,
+            replyText: spoken,
+            getAudio: () => audioRef.current,
+            replyVerdict,
+            course,
+            reducedMotion,
+            onModeChange: setAvatarMode,
+          }}
+          mode={avatarMode}
+          caption={caption}
+          recording={recording}
+          talkDisabled={sending || transcribing}
+          onHoldStart={() => {
+            if (captureState !== "idle" || sending) return;
+            // Talking over Alphonso cuts him off, as on a call; his voice must not end up in the recording.
+            audioRef.current?.pause();
+            void startRecording();
+          }}
+          onHoldEnd={() => {
+            if (captureState !== "transcribing") stopRecording();
+          }}
+          onToggle={() => {
+            if (recording) stopRecording();
+            else {
+              audioRef.current?.pause();
+              void startRecording();
+            }
+          }}
+          getStream={getStream}
+          ttsOn={ttsOn}
+          onToggleTts={() => setTtsOn((v) => !v)}
+          error={error ?? captureError}
+          endTo="/converse"
+          messages={messages}
+          reducedMotion={reducedMotion}
+          sheet={
+            <>
+              {hint}
+              {conversationLog}
+              {composer}
+            </>
+          }
+        />
+      </LessonFrame>
+    );
+  }
+
+  return (
+    <LessonFrame>
+      {classicHeader}
+      {hint}
+      {conversationLog}
+      {composer}
     </LessonFrame>
   );
 }
