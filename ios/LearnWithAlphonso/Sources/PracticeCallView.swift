@@ -85,6 +85,7 @@ struct PracticeCallView<Sheet: View>: View {
                     if let extra { extra.padding(.bottom, 10) }
                     caption
                     statePill
+                        .padding(.top, 10)
                     if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus) {
                         Text(line)
                             .font(AlphonsoFont.sans(13, weight: .semiBold))
@@ -94,7 +95,6 @@ struct PracticeCallView<Sheet: View>: View {
                             .padding(.top, 8)
                             .accessibilityAddTraits(.updatesFrequently)
                     }
-                        .padding(.top, 10)
                     controls
                         .padding(.top, 14)
                         .padding(.bottom, 8)
