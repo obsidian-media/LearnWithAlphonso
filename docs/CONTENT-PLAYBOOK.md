@@ -164,6 +164,7 @@ A content change is done when all of these are true:
 - [ ] Every gate in section 5 for the touched content passes locally, ratchets lowered where you fixed something.
 - [ ] `run.ts check` ran on the final content; its report is committed and linked in the PR body; every row is fixed or answered.
 - [ ] The iOS and Android bundles are re-exported and committed.
+- [ ] If an answer key changed: the PR says so, because the server grades lessons from the database tables seeded from these files (`supabase/functions/complete-lesson`), and the owner must run `bun scripts/seed-curriculum-db.ts` (service-role key) after the merge.
 - [ ] A `docs/` or `AGENTS.md` number you changed (counts, ratchets) is updated in the same PR.
 - [ ] The PR title is neutral product language.
 - [ ] CI is green.
@@ -193,6 +194,8 @@ cost. Phases before verification leave US$12 untouched so the measurement is alw
 The ledger lives in `.content-review/ledger.json` and is mirrored to
 `~/.lwa-content-review/ledger.json` (or `CONTENT_REVIEW_LEDGER_MIRROR`); deleting either loses
 nothing, and a missing ledger next to a started run is refused, never recreated empty.
+
+**Where fixes land.** `run.ts route --apply` merges every checked fix into `src/data/review-fixes/<course>.json`, which `src/data/review-fixes.ts` applies at build time to questions, word cards, lesson and unit titles and placement (a fix that matches nothing throws). Campaign, scenario and podcast fixes are listed in `.content-review/manual-fixes.json` and applied in their source files by hand.
 
 **What a fix may change** (`src/lib/content-review/fixes.ts`): not ids, types, option counts or the
 answer's position; the answer only on a reviewed wrong-key ruling; explanations must quote the

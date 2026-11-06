@@ -1,3 +1,4 @@
+import { applyPlacementReviewFixes } from "./review-fixes";
 import type { Level } from "./levels";
 import type { PlacementQuestion } from "./placement";
 
@@ -9,7 +10,7 @@ import type { PlacementQuestion } from "./placement";
  * (base + "b" + "c" variant trios) so Spanish gets real resampling and
  * the same adaptive-band headroom as the other two courses.
  */
-export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
+const PLACEMENT_QUESTIONS_ES_AUTHORED: PlacementQuestion[] = [
   {
     id: "ep1",
     level: "A1",
@@ -405,3 +406,9 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     answer: 1,
   },
 ];
+
+/** The authored pool with the full content review's fixes applied (src/data/review-fixes.ts). */
+export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = applyPlacementReviewFixes(
+  PLACEMENT_QUESTIONS_ES_AUTHORED,
+  "es",
+);

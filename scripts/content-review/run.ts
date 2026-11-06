@@ -549,6 +549,49 @@ function routeCommand() {
       overlayJson(checked.ok.filter((f) => f.id.startsWith(`${course}:`))),
     );
   writeJson(path.join(STATE, "refused.json"), checked.refused);
+  // Kinds the build-time overlay (src/data/review-fixes.ts) applies; the rest (story campaigns,
+  // scenarios, podcast quizzes) are applied by hand from manual-fixes.json.
+  const OVERLAY_KINDS = /:(question|card|lesson-meta|unit-meta|placement):/;
+  const manual = checked.ok.filter((f) => !OVERLAY_KINDS.test(f.id));
+  writeJson(path.join(STATE, "manual-fixes.json"), manual);
+  if (flag("apply")) {
+    for (const course of ["en", "fr", "es"]) {
+      const file = path.resolve("src", "data", "review-fixes", `${course}.json`);
+      const current = readJson<
+        Record<
+          string,
+          { patch: Record<string, string | string[]>; reason: string; keyChange?: boolean }
+        >
+      >(file, {});
+      for (const f of checked.ok.filter(
+        (x) => x.id.startsWith(`${course}:`) && OVERLAY_KINDS.test(x.id),
+      )) {
+        const prev = current[f.id];
+        current[f.id] = {
+          patch: { ...(prev?.patch ?? {}), ...f.patch },
+          // Re-running route is idempotent: a reason already recorded is not appended again.
+          reason:
+            !prev || prev.reason.includes(f.reason)
+              ? (prev?.reason ?? f.reason)
+              : `${prev.reason} / ${f.reason}`,
+          ...(f.keyChange || prev?.keyChange ? { keyChange: true } : {}),
+        };
+      }
+      const sorted = Object.fromEntries(
+        Object.keys(current)
+          .sort()
+          .map((k) => [k, current[k]]),
+      );
+      fs.writeFileSync(
+        file,
+        `${JSON.stringify(sorted, null, 1)}
+`,
+      );
+    }
+    console.log(
+      "Applied to src/data/review-fixes/*.json; re-export the bundles and run the gates.",
+    );
+  }
   const owner = [
     ...routed.owner,
     ...checked.refused.map((r) => ({
