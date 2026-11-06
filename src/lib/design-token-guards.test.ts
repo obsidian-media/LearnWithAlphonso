@@ -19,21 +19,24 @@ import {
  * the baseline equal to the scan makes every removal lower it (bun scripts/design-raw-value-baseline.ts), and
  * every rise a visible edit to design/baselines/*.json.
  */
-describe.each(["web", "ios", "android"] as Platform[])("%s raw-value baseline has no slack", (platform) => {
-  const root = path.resolve(import.meta.dirname, "../..");
+describe.each(["web", "ios", "android"] as Platform[])(
+  "%s raw-value baseline has no slack",
+  (platform) => {
+    const root = path.resolve(import.meta.dirname, "../..");
 
-  it("equals today's counts file for file (lower it with bun scripts/design-raw-value-baseline.ts)", () => {
-    expect(loadBaseline(root, platform)).toEqual(scanPlatform(root, platform));
-  });
+    it("equals today's counts file for file (lower it with bun scripts/design-raw-value-baseline.ts)", () => {
+      expect(loadBaseline(root, platform)).toEqual(scanPlatform(root, platform));
+    });
 
-  it("states its own total", () => {
-    const json = JSON.parse(fs.readFileSync(baselinePath(root, platform), "utf8")) as {
-      total: number;
-      files: Record<string, number>;
-    };
-    expect(json.total).toBe(Object.values(json.files).reduce((a, b) => a + b, 0));
-  });
-});
+    it("states its own total", () => {
+      const json = JSON.parse(fs.readFileSync(baselinePath(root, platform), "utf8")) as {
+        total: number;
+        files: Record<string, number>;
+      };
+      expect(json.total).toBe(Object.values(json.files).reduce((a, b) => a + b, 0));
+    });
+  },
+);
 
 describe("Android's Kotlin guard counts the same things as this one", () => {
   const kt = fs.readFileSync(
