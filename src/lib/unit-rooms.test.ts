@@ -111,6 +111,51 @@ describe("the table", () => {
     ]);
   });
 
+  /**
+   * Keywords match whole words only. Each title here holds a short keyword inside a longer word ("art" in
+   * "Articles" and "Participle", "sport" in "Transport", "tech" in "Technical") or a keyword used in another
+   * sense ("Devices" in a writing unit). Titles marked real are live units; the rest are titles a writer could
+   * add tomorrow. Planned one at a time, so no neighbour moves them.
+   */
+  it.each([
+    ["Articles", "A1", "classroom"],
+    ["Definite Articles", "A1", "classroom"],
+    ["Definite & Indefinite Articles", "A2", "classroom"],
+    ["Past Participle", "A2", "classroom"],
+    ["Parts of Speech", "A1", "classroom"],
+    ["Gerund & Present Participle", "B2", "library"], // real: fr B2
+    ["Scientific & Technical Prose", "C1", "lab"], // real: en C1
+    ["Literary & Narrative Devices", "C1", "gallery"], // real: es C1
+    ["Rhetorical Devices & Style", "C1", "gallery"], // real: fr C1
+    ["Public Transport", "A2", "station"],
+    ["Art & Culture", "B2", "gallery"],
+    ["Arts & Culture", "B2", "gallery"],
+    ["Technology & Devices", "A2", "techshop"],
+  ] as const)("%s (%s) plans %s", (title, level, room) => {
+    expect(planUnitRooms([{ id: "x", level, title }], new Set(ROOM_IDS))[0].planned).toBe(room);
+  });
+
+  it("the live table keeps the participle and technical-prose units in their topic rooms", () => {
+    expect(UNIT_ROOMS["frb2p8u1"]).not.toBe("gallery");
+    expect(UNIT_ROOMS["c1p10u1"]).not.toBe("techshop");
+  });
+
+  it.each([
+    ["Summer Holidays", "A2"],
+    ["At the Beach", "A1"],
+    ["Travel Phrases", "B1"], // real: fr B1
+    ["Environment & Climate Change", "B2"], // real: fr B2
+  ] as const)("%s (%s) goes to the seaside", (title, level) => {
+    expect(planUnitRooms([{ id: "x", level, title }], new Set(ROOM_IDS))[0].planned).toBe(
+      "seaside",
+    );
+  });
+
+  it("the seaside has units in the live table", () => {
+    const seaside = Object.entries(UNIT_ROOMS).filter(([, r]) => r === "seaside");
+    expect(seaside.map(([id]) => id).sort()).toEqual(["frb1p3u1", "frb2p12u1"]);
+  });
+
   it("falls back to a painted room while a planned one is pending, still never repeating a neighbour", () => {
     const plan = planUnitRooms(
       [

@@ -14,55 +14,91 @@
 import { LEVELS, type Level } from "@/data/levels";
 import { PENDING_ROOMS, ROOMS } from "@/data/rooms";
 
-/** [title pattern, ranked rooms]. Copied from the owner-approved spec page, in its order. */
+/**
+ * [title pattern, ranked rooms], from the owner-approved spec page, in its order. Every keyword is a whole word
+ * (`\b` on both sides), because a bare stem matches inside other words: "art" in "Participle", "sport" in
+ * "Transport", "tech" in "Technical". A stem meant to match its family says so with `\w*`.
+ */
 const RULES: [RegExp, string[]][] = [
-  [/listening|minimal pairs/i, ["radio", "room-light", "room-dark"]],
-  [/speaking/i, ["theatre", "smalltalk", "debate"]],
-  [/write it yourself|letter|email|correspondence|writing/i, ["library", "office", "room-dark"]],
-  [/say it your way/i, ["smalltalk", "coffee", "theatre"]],
-  [/greet|everyday|polite|basic conversation|small talk/i, ["smalltalk", "coffee", "room-light"]],
-  [/restaurant|dining|food|drink|eating|drinking/i, ["restaurant", "coffee", "kitchen"]],
-  [/cook|kitchen|recipe|fruit|vegetable/i, ["kitchen", "market"]],
-  [/cloth|wearing|colours & clothes/i, ["returns", "market"]],
-  [/bank|post office|economy|finance/i, ["bank", "office"]],
-  [/interview|cv/i, ["interview", "office"]],
-  [/negotiat|business/i, ["negotiation", "office", "bank"]],
-  [/shopping|money|supermarket|buying|how much|quantif|numbers/i, ["market", "returns", "bank"]],
-  [/hotel|staying/i, ["hotel", "airport"]],
-  [/travel|tourism/i, ["airport", "hotel", "seaside"]],
-  [/transport|vehicles/i, ["station", "directions"]],
+  [/\b(?:listening|minimal pairs)\b/i, ["radio", "room-light", "room-dark"]],
+  [/\bspeaking\b/i, ["theatre", "smalltalk", "debate"]],
   [
-    /direction|places|town|neighbourhood|out & about|out in the world|going places|coming from|arriving|city/i,
+    /\b(?:write it yourself|letters?|e-?mails?|correspondence|writing)\b/i,
+    ["library", "office", "room-dark"],
+  ],
+  [/\bsay it your way\b/i, ["smalltalk", "coffee", "theatre"]],
+  [
+    /\b(?:greet\w*|everyday|polite\w*|basic conversation|small talk)\b/i,
+    ["smalltalk", "coffee", "room-light"],
+  ],
+  [
+    /\b(?:restaurants?|dining|food|drinks?|eating|drinking)\b/i,
+    ["restaurant", "coffee", "kitchen"],
+  ],
+  [/\b(?:cook\w*|kitchens?|recipes?|fruits?|vegetables?)\b/i, ["kitchen", "market"]],
+  [/\b(?:cloth\w*|wearing|colours & clothes)\b/i, ["returns", "market"]],
+  [/\b(?:bank\w*|post office|economy|finance)\b/i, ["bank", "office"]],
+  [/\b(?:interviews?|cvs?)\b/i, ["interview", "office"]],
+  [/\b(?:negotiat\w*|business)\b/i, ["negotiation", "office", "bank"]],
+  [
+    /\b(?:shopping|money|supermarkets?|buying|how much|quantif\w*|numbers)\b/i,
+    ["market", "returns", "bank"],
+  ],
+  [/\b(?:hotels?|staying)\b/i, ["hotel", "airport"]],
+  // The seaside room's brief: holidays, travel phrases, climate.
+  [
+    /\b(?:holidays?|vacations?|beach(?:es)?|seaside|summer|coast\w*|travel phrases)\b/i,
+    ["seaside", "airport", "hotel"],
+  ],
+  [/\b(?:travel\w*|tourism)\b/i, ["airport", "hotel", "seaside"]],
+  [/\b(?:transport\w*|vehicles?)\b/i, ["station", "directions"]],
+  [
+    /\b(?:directions?|places|towns?|neighbourhoods?|out & about|out in the world|going places|coming from|arriving|city)\b/i,
     ["directions", "station", "hotel"],
   ],
-  [/health|doctor|body|medicine|wellness/i, ["doctor", "gym"]],
-  [/sport|fitness|competition|leisure|hobbies|free time|weekend/i, ["gym", "garden", "smalltalk"]],
-  [/appliance|technology|devices|internet|tech/i, ["techshop", "office"]],
+  [/\b(?:health\w*|doctors?|body|medicine|wellness)\b/i, ["doctor", "gym"]],
   [
-    /house|home|household|furniture|rooms|chores|housing|renting|real estate/i,
+    /\b(?:sports?|fitness|competitions?|leisure|hobbies|free time|weekends?)\b/i,
+    ["gym", "garden", "smalltalk"],
+  ],
+  // "Literary & Narrative Devices" and "Rhetorical Devices & Style" are about writing, not gadgets.
+  [
+    /^(?!.*\b(?:literary|rhetoric\w*)\b).*\b(?:appliances?|technology|devices|internet|tech)\b/i,
+    ["techshop", "office"],
+  ],
+  [
+    /\b(?:house\w*|homes?|furniture|rooms|chores|housing|renting|real estate)\b/i,
     ["apartment", "kitchen"],
   ],
-  [/family|people|life events|character|personality/i, ["dining", "smalltalk"]],
-  [/job|profession|occupation|work|office/i, ["office", "interview"]],
+  [/\b(?:family|people|life events|characters?|personality)\b/i, ["dining", "smalltalk"]],
+  [/\b(?:jobs?|profession\w*|occupations?|work(?:ing|place)?|office)\b/i, ["office", "interview"]],
+  [/\bclimate\b/i, ["seaside", "garden"]],
+  // Above the time rule, so "Weather & Seasons" is outdoors rather than in the bedroom.
+  [/\b(?:weather|nature|outdoors|environment\w*|landscapes?|natural)\b/i, ["garden", "seaside"]],
   [
-    /routine|telling time|days|months|seasons|frequency|time expressions|prepositions of time|time & place|time & aspect/i,
+    /\b(?:routines?|telling time|days|months|seasons|frequency|time expressions|prepositions of time|time & place|time & aspect)\b/i,
     ["bedroom", "room-light"],
   ],
-  [/weather|nature|outdoors|environment|climate|landscape|natural/i, ["garden", "seaside"]],
-  [/animal/i, ["farm", "garden"]],
-  [/school|classroom|education|learning/i, ["classroom", "library"]],
-  [/media|news|journalism|reported speech|reporting/i, ["newsroom", "office"]],
-  [/law|legal|crime|justice|civic|rights|administrative/i, ["courtroom", "chamber"]],
-  [/politic|society|government|diplomatic|diplomacy/i, ["chamber", "debate"]],
-  [/art|culture|literary|literature|narrative|rhetoric|style/i, ["gallery", "library", "theatre"]],
-  [/science|scientific|process|trends/i, ["lab", "office"]],
-  [/philosoph|abstract|academic|etymology|nominali|cohesion/i, ["library", "room-dark"]],
-  [/opinion|ideas|agree|debate|suggestion|advice/i, ["debate", "coffee"]],
-  [/feeling|emotion|reaction/i, ["smalltalk", "coffee", "garden"]],
-  [/colou?rs|shapes|sizes|describ|adjectives/i, ["gallery", "returns"]],
-  [/plans|invitation/i, ["coffee", "smalltalk"]],
+  [/\banimals?\b/i, ["farm", "garden"]],
+  [/\b(?:schools?|classrooms?|education|learning)\b/i, ["classroom", "library"]],
+  [/\b(?:media|news|journalism|reported speech|reporting)\b/i, ["newsroom", "office"]],
+  [/\b(?:law|legal|crime|justice|civic|rights|administrative)\b/i, ["courtroom", "chamber"]],
+  [/\b(?:politic\w*|society|government|diplomatic|diplomacy)\b/i, ["chamber", "debate"]],
   [
-    /idiom|register|nuance|connect|hedg|euphemism|collocation|synonym|discourse|false friends|confusable|precision/i,
+    /\b(?:arts?|museums?|painting|gallery|culture|literary|literature|narrative|rhetoric\w*|style)\b/i,
+    ["gallery", "library", "theatre"],
+  ],
+  [/\b(?:science|scientific|process|trends)\b/i, ["lab", "office"]],
+  [
+    /\b(?:philosoph\w*|abstract|academic|etymology|nominali[sz]\w*|cohesion)\b/i,
+    ["library", "room-dark"],
+  ],
+  [/\b(?:opinions?|ideas|agree\w*|debate|suggestions?|advice)\b/i, ["debate", "coffee"]],
+  [/\b(?:feelings?|emotion\w*|reactions?)\b/i, ["smalltalk", "coffee", "garden"]],
+  [/\b(?:colou?rs|shapes|sizes|describ\w*|adjectives)\b/i, ["gallery", "returns"]],
+  [/\b(?:plans|invitations?)\b/i, ["coffee", "smalltalk"]],
+  [
+    /\b(?:idiom\w*|register|nuance\w*|connect\w*|hedg\w*|euphemisms?|collocations?|synonyms?|discourse|false friends|confusable|precision)\b/i,
     ["coffee", "library", "room-dark", "debate"],
   ],
 ];
