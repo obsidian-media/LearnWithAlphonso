@@ -59,7 +59,7 @@ describe("XP the learner is shown is XP the server pays", () => {
   it("lesson start says the honest estimate from the shared timing rules and the formula's maximum", () => {
     const meta = between(player, "private var startMeta: String", "\n    }\n");
     expect(meta).toContain(
-      "LessonArt.timing?.estimateMinutes(questionTypes: lesson.questions.map(\\.typeKey), newWords: vocab.count)",
+      "LessonData.timing?.estimateMinutes(questionTypes: lesson.questions.map(\\.typeKey), newWords: vocab.count)",
     );
     expect(meta).toContain("Up to \\(LessonXP.maxXp(total: total)) XP");
     expect(read("ios/LearnWithAlphonsoKit/Package.swift")).toContain(
@@ -98,7 +98,7 @@ describe("The lesson timer", () => {
 
 describe("The stage", () => {
   it("is the unit's own room from the room map, with Alphonso's five expressions bundled byte for byte", () => {
-    expect(player).toContain("LessonStage.roomID(forUnit: unit?.id, map: LessonArt.roomMap)");
+    expect(player).toContain("LessonStage.roomID(forUnit: unit?.id, map: LessonData.roomMap)");
     expect(read("ios/LearnWithAlphonso/project.yml")).toMatch(
       /- path: AlphonsoLesson\n\s+type: folder\n\s+buildPhase: resources/,
     );

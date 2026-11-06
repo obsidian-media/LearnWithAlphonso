@@ -32,6 +32,10 @@ enum LessonArt {
         image(folder: "AlphonsoLesson", name: expression.rawValue)
     }
 
+}
+
+/// The bundled tables the lesson reads: the unit -> room map and the timing rules. Read once.
+enum LessonData {
     static let roomMap: UnitRoomMap? = try? UnitRoomMap.bundled()
     static let timing: LessonTiming? = try? LessonTiming.bundled()
 }
@@ -413,7 +417,7 @@ struct LessonHUD: View {
 
             HStack(spacing: 6) {
                 DSIconView(icon: .heartSolid, size: 22).foregroundStyle(ds.heart)
-                Text(hearts.map(String.init) ?? "\u{221E}")
+                Text(hearts.map { "\($0)" } ?? "\u{221E}")
                     .dsText(.headline)
                     .monospacedDigit()
                     .foregroundStyle(ds.ink)
@@ -579,7 +583,7 @@ struct LessonTextField: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
-        TextField("", text: $text, prompt: Text(placeholder).foregroundColor(ds.inkFaint), axis: axis)
+        TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(ds.inkFaint), axis: axis)
             .dsText(.answer)
             .foregroundStyle(ds.ink)
             .lineLimit(axis == .vertical ? 2...6 : 1...1)
@@ -1063,13 +1067,15 @@ struct LessonCompleteView<Extras: View>: View {
     @State private var appeared = false
 
     private var tiles: [(kind: LessonRewardTile.Kind, value: String)] {
-        chips.map { chip in
+        var out: [(kind: LessonRewardTile.Kind, value: String)] = chips.map { chip -> (kind: LessonRewardTile.Kind, value: String) in
             switch chip.kind {
-            case .xp: return (.xp, chip.value)
-            case .streak: return (.streak, chip.value)
-            case .accuracy: return (.accuracy, chip.value)
+            case .xp: return (kind: .xp, value: chip.value)
+            case .streak: return (kind: .streak, value: chip.value)
+            case .accuracy: return (kind: .accuracy, value: chip.value)
             }
-        } + (time.map { [(LessonRewardTile.Kind.time, $0)] } ?? [])
+        }
+        if let time { out.append((kind: .time, value: time)) }
+        return out
     }
 
     var body: some View {
@@ -1147,7 +1153,7 @@ struct LessonCompleteView<Extras: View>: View {
                                     Text(item.prompt).dsText(.footnote).foregroundStyle(ds.ink)
                                         .fixedSize(horizontal: false, vertical: true)
                                     (Text("You said ") + Text(item.yours).strikethrough() + Text(" \u{00B7} ")
-                                        + Text(item.answer).foregroundColor(ds.rightInk))
+                                        + Text(item.answer).foregroundStyle(ds.rightInk))
                                         .dsText(.caption)
                                         .foregroundStyle(ds.inkSoft)
                                         .accessibilityLabel("You said \(item.yours). Answer: \(item.answer)")

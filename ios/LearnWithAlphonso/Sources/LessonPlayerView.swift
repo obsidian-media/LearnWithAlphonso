@@ -214,7 +214,7 @@ struct LessonPlayerView: View {
     }
 
     /// The unit's own room from the room map (Alphonso's study by day for a unit it does not know).
-    private var roomID: String { LessonStage.roomID(forUnit: unit?.id, map: LessonArt.roomMap) }
+    private var roomID: String { LessonStage.roomID(forUnit: unit?.id, map: LessonData.roomMap) }
 
     private var unitLine: String {
         guard let unit, let index = contentStore.bundle(for: course).units.firstIndex(where: { $0.id == unit.id }) else {
@@ -225,7 +225,7 @@ struct LessonPlayerView: View {
 
     /// "About 4 min · 8 questions · Up to 100 XP": the minutes from the same rules as the web (lesson-timing.json).
     private var startMeta: String {
-        let minutes = LessonArt.timing?.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: vocab.count) ?? 1
+        let minutes = LessonData.timing?.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: vocab.count) ?? 1
         return "About \(minutes) min \u{00B7} \(total) question\(total == 1 ? "" : "s") \u{00B7} Up to \(LessonXP.maxXp(total: total)) XP"
     }
 
