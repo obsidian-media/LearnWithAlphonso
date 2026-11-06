@@ -11,6 +11,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 const { PracticeCall } = await import("./PracticeCall");
+const { ALPHONSO_KIT, kitFromManifest } = await import("@/lib/avatar/layers");
 
 const base = {
   title: "Ordering a coffee",
@@ -84,30 +85,52 @@ describe("the room", () => {
 
 describe("the character is a parameter", () => {
   const rect = (x: number) => ({ x, y: 0.1, w: 0.2, h: 0.1 });
-  const hector = {
-    id: "hector",
-    displayName: "Hector",
-    basePath: "/hector-kit",
-    rects: {
-      mouth: rect(0.4),
-      brows: rect(0.3),
-      earLeft: rect(0.2),
-      earRight: rect(0.6),
-      glint: rect(0.35),
+  // A kit like the one Hector is expected to have: no ear layers, no glint, and an "eyes" expression group.
+  const hector = kitFromManifest(
+    {
+      layers: {
+        "mouth-ah": rect(0.4),
+        "eyes-neutral": rect(0.3),
+        "eyes-raised": rect(0.3),
+        "eyes-lowered": rect(0.3),
+      },
     },
-    defaultRoom: { light: "/hector-kit/office-light.webp", dark: "/hector-kit/office-dark.webp" },
-  };
+    {
+      id: "hector",
+      displayName: "Hector",
+      basePath: "/hector-kit",
+      expressionPrefix: "eyes",
+      defaultRoom: { light: "/hector-kit/office-light.webp", dark: "/hector-kit/office-dark.webp" },
+    },
+  );
 
-  it("names the character, draws his own folder and places his layers by his own manifest", () => {
-    const { container, getByText, getAllByRole } = render(
+  it("reads optional layers and the expression group from the manifest", () => {
+    expect(hector.rects.earLeft).toBeUndefined();
+    expect(hector.rects.earRight).toBeUndefined();
+    expect(hector.rects.glint).toBeUndefined();
+    expect(hector.rects.expression).toEqual(rect(0.3));
+    expect(hector.expressionFiles).toEqual({
+      neutral: "eyes-neutral.webp",
+      raised: "eyes-raised.webp",
+      lowered: "eyes-lowered.webp",
+    });
+    expect(ALPHONSO_KIT.rects.earLeft).toBeDefined();
+    expect(ALPHONSO_KIT.rects.glint).toBeDefined();
+    expect(ALPHONSO_KIT.expressionFiles.raised).toBe("brows-raised.webp");
+  });
+
+  it("names the character, draws only the layers his kit has, from his own folder", () => {
+    const { container, getByText } = render(
       <PracticeCall {...base} kit={hector} scenarioId="free-talk" dark={false} />,
     );
     expect(getByText("Hector")).toBeInTheDocument();
-    expect(getAllByRole("link", { name: "End the call" })).toHaveLength(1);
     const stage = container.querySelector("[data-testid=alphonso-stage]")!;
-    const imgs = [...stage.querySelectorAll("img")];
-    expect(imgs.length).toBeGreaterThan(10);
-    for (const img of imgs) expect(img.getAttribute("src")).toMatch(/^\/hector-kit\//);
+    const srcs = [...stage.querySelectorAll("img")].map((i) => i.getAttribute("src")!);
+    // base + 6 mouths + 3 expression layers; no ears.
+    expect(srcs).toHaveLength(10);
+    for (const src of srcs) expect(src).toMatch(/^\/hector-kit\//);
+    expect(srcs.some((s) => s.includes("ear-"))).toBe(false);
+    expect(srcs).toContain("/hector-kit/eyes-raised.webp");
     const mouth = stage.querySelector('img[src$="mouth-ah.webp"]') as HTMLImageElement;
     expect(mouth.style.left).toBe("40%");
     expect(room(container)).toBe("/hector-kit/office-light.webp");

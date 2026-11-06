@@ -19,13 +19,19 @@ export type CharacterKit = {
   displayName: string;
   /** Where the kit's files are served from: same-origin, so the CSP's `img-src 'self'` needs no change. */
   basePath: string;
+  /**
+   * `expression` is the group that shows his mood (neutral / raised / lowered): Alphonso's eyebrows, Hector's eyes
+   * behind his goggles. Ears and the glint are optional: a kit without them has no ear twitch or glint.
+   */
   rects: {
     mouth: LayerRect;
-    brows: LayerRect;
-    earLeft: LayerRect;
-    earRight: LayerRect;
-    glint: LayerRect;
+    expression: LayerRect;
+    earLeft?: LayerRect;
+    earRight?: LayerRect;
+    glint?: LayerRect;
   };
+  /** The file of each expression state. */
+  expressionFiles: Record<Brows, string>;
   defaultRoom: DefaultRoom;
 };
 
@@ -34,17 +40,27 @@ type Manifest = { layers: Record<string, LayerRect> };
 /** Builds a kit from its manifest: the layer names are the kit format's (mouth-*, brows-*, ear-*, glint-mask). */
 export function kitFromManifest(
   manifest: Manifest,
-  meta: Pick<CharacterKit, "id" | "displayName" | "basePath" | "defaultRoom">,
+  meta: Pick<CharacterKit, "id" | "displayName" | "basePath" | "defaultRoom"> & {
+    /** The layer-name prefix of the expression group: "brows" for Alphonso. */
+    expressionPrefix?: string;
+  },
 ): CharacterKit {
-  const rect = (name: string): LayerRect => manifest.layers[name];
+  const rect = (name: string): LayerRect | undefined => manifest.layers[name];
+  const { expressionPrefix = "brows", ...rest } = meta;
+  const ears = rect("ear-left-neutral") && rect("ear-right-neutral");
   return {
-    ...meta,
+    ...rest,
     rects: {
-      mouth: rect("mouth-ah"),
-      brows: rect("brows-neutral"),
-      earLeft: rect("ear-left-neutral"),
-      earRight: rect("ear-right-neutral"),
+      mouth: rect("mouth-ah")!,
+      expression: rect(`${expressionPrefix}-neutral`)!,
+      earLeft: ears ? rect("ear-left-neutral") : undefined,
+      earRight: ears ? rect("ear-right-neutral") : undefined,
       glint: rect("glint-mask"),
+    },
+    expressionFiles: {
+      neutral: `${expressionPrefix}-neutral.webp`,
+      raised: `${expressionPrefix}-raised.webp`,
+      lowered: `${expressionPrefix}-lowered.webp`,
     },
   };
 }
@@ -58,12 +74,12 @@ export const ALPHONSO_KIT: CharacterKit = kitFromManifest(manifest, {
 
 export const AVATAR_BASE_PATH = ALPHONSO_KIT.basePath;
 export const MOUTH_RECT = ALPHONSO_KIT.rects.mouth;
-export const BROWS_RECT = ALPHONSO_KIT.rects.brows;
+export const BROWS_RECT = ALPHONSO_KIT.rects.expression;
 export const EAR_RECTS: Record<EarSide, LayerRect> = {
-  left: ALPHONSO_KIT.rects.earLeft,
-  right: ALPHONSO_KIT.rects.earRight,
+  left: ALPHONSO_KIT.rects.earLeft!,
+  right: ALPHONSO_KIT.rects.earRight!,
 };
-export const GLINT_RECT = ALPHONSO_KIT.rects.glint;
+export const GLINT_RECT = ALPHONSO_KIT.rects.glint!;
 
 export const BASE_FILE = "base.webp";
 export const GLINT_MASK_FILE = "glint-mask.webp";
