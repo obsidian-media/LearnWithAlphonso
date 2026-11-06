@@ -99,6 +99,27 @@ describe("updateProfile", () => {
     expect(updateChain.calls.find((c) => c.method === "eq")?.args).toEqual(["id", USER_ID]);
   });
 
+  it("saves one of the 16 animal pictures as the avatar seed", async () => {
+    const supabase = createSupabaseMock();
+    const updateChain = chainable({ data: null, error: null });
+    supabase.from.mockReturnValueOnce(updateChain);
+    await updateProfile({ context: ctx(supabase), data: { avatar_seed: "animal:fox" } });
+    expect(updateChain.calls.find((c) => c.method === "update")?.args[0]).toEqual({
+      avatar_seed: "animal:fox",
+    });
+  });
+
+  it.each(["animal:dragon", "animal:https://x.example/a.png", "<img>", ""])(
+    "refuses an avatar seed that is neither a colour seed nor a listed animal (%s)",
+    async (avatar_seed) => {
+      const supabase = createSupabaseMock();
+      await expect(
+        updateProfile({ context: ctx(supabase), data: { avatar_seed } }),
+      ).rejects.toThrow();
+      expect(supabase.from).not.toHaveBeenCalled();
+    },
+  );
+
   it.each(["fr", "F1", "X", "évil"])(
     "rejects a country that is not two upper-case letters (%s)",
     async (country) => {

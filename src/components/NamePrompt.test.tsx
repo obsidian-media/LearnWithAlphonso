@@ -59,6 +59,18 @@ describe("NamePrompt", () => {
     ).toBeInTheDocument();
   });
 
+  it("waits while the first run is on screen, then asks once it is gone", async () => {
+    const { holdNamePrompt } = await import("../lib/name-prompt-gate");
+    const release = holdNamePrompt();
+    renderPrompt();
+    await settled(1);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    act(() => release());
+    expect(
+      await screen.findByRole("dialog", { name: "What should other learners call you?" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders nothing for a confirmed learner", async () => {
     getNameStatus.mockResolvedValue({ displayName: "Ana", needsPrompt: false, prefill: "Ana" });
     renderPrompt();

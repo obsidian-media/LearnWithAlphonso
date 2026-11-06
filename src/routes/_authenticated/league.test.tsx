@@ -117,4 +117,30 @@ describe("League page", () => {
     expect(screen.getByText("You")).toBeInTheDocument();
     expect(screen.getByText("300 XP")).toBeInTheDocument();
   });
+
+  it("shows a learner's chosen animal, and initials for everyone else", async () => {
+    getLeaderboard.mockResolvedValue([
+      {
+        user_id: "u1",
+        display_name: "Ada",
+        country: null,
+        avatar_seed: "animal:fox",
+        xp: 9,
+        isYou: false,
+      },
+      {
+        user_id: "u2",
+        display_name: "Bo",
+        country: null,
+        avatar_seed: "3fa9c1d2",
+        xp: 8,
+        isYou: false,
+      },
+    ]);
+    renderPage();
+    await screen.findByText("Ada");
+    const fox = document.querySelector('[data-avatar="fox"]');
+    expect(fox?.getAttribute("src")).toBe("/avatars/animals/fox.webp");
+    expect(document.querySelectorAll('[data-avatar="initials"]')).toHaveLength(1);
+  });
 });

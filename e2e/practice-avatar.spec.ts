@@ -34,7 +34,13 @@ async function admin(path: string, init: RequestInit = {}) {
 test.beforeAll(async () => {
   const user = await admin("/auth/v1/admin/users", {
     method: "POST",
-    body: JSON.stringify({ email, password, email_confirm: true }),
+    // "Complete your profile" shows once to a learner without first-run answers; this journey is not about it.
+    body: JSON.stringify({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { learner_profile: { dismissedAt: new Date().toISOString() } },
+    }),
   });
   userId = user.id;
   // AI features need the account's consent; a server role may stamp it.

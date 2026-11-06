@@ -45,7 +45,8 @@ function Privacy() {
       <Section heading="What we collect">
         <Bullets
           items={[
-            "Account details: your email address, how you sign in (email, Apple or Google), and your display name. If you sign in with Apple or Google, we receive the email address they share with us (with Apple this may be a private relay address) and, if they share it, your name. We use your first name only to suggest a display name. Apple shares your given name only the first time you sign in with Apple, so we keep it in your account record for that suggestion. We also store an optional two-letter country code, a randomly generated avatar colour, and your chosen theme.",
+            "Account details: your email address, how you sign in (email, Apple or Google), and your display name. If you sign in with Apple or Google, we receive the email address they share with us (with Apple this may be a private relay address) and, if they share it, your name. We use your first name only to suggest a display name. Apple shares your given name only the first time you sign in with Apple, so we keep it in your account record for that suggestion. We also store your profile picture (one of 16 preset animal pictures you pick in the app, or your initial on a generated colour; you cannot upload a photo), your chosen theme, and, only if you turn on Show my flag on leaderboards, your country as a two-letter code on your public profile.",
+            "About you, when you start: the first name you want Alphonso and Hector to call you (optional), the language you speak, the country you are joining from, why you are learning, how much you think you know, how many minutes a day you want to study, your age range (for example 25–34; we store an age range, never your date of birth), the topics you enjoy (optional), and how you heard about us (optional). Until you create an account these answers stay in your browser; when you do, we save them to your account record. We use them to set up your course, your daily goal and your plan, and to choose topics for practice and conversations. Other learners never see them, except your country flag if you turn it on.",
             "Learning data: lessons completed, quiz and placement answers, XP, streaks, hearts, achievements, league and season standing, team membership and your team’s weekly mission progress (how many lessons you add to it, and the XP it pays out), duel results, your spaced-repetition review items, a learning goal if you set one (the level and date you choose), and any words you choose to save (the word, the sentence you tapped it in, and the meaning and answer choices we generate for it).",
             "Conversation practice: the text of messages you exchange with Hector and in practice scenarios and campaigns, your written answers to translation questions, and audio you record while speaking. These are sent to our AI providers to produce a reply, a transcript or a grade, and are not kept on our servers afterwards. What we do keep from a conversation is described in the Hector section below.",
             "Practice items from your mistakes: after a conversation, our AI looks for mistakes you make often. If it finds one, we save a short practice item to your review queue (a label for the weak spot, a question, answer choices and an explanation) and a record of the type of mistake.",
@@ -110,7 +111,7 @@ function Privacy() {
         <Bullets
           items={[
             "To provide the service: saving your progress and syncing it across devices (performance of our contract with you).",
-            "To operate leaderboards, leagues, friends, teams, duels and study buddies, which show your display name, avatar colour and progress to other signed-in learners, and on leaderboards the country you chose (performance of our contract).",
+            "To operate leaderboards, leagues, friends, teams, duels and study buddies, which show your display name, profile picture and progress to other signed-in learners, and on leaderboards your country flag if you turned it on (performance of our contract).",
             "To run AI features: generating replies, transcribing your speech, grading written answers, writing word meanings and creating practice items from your mistakes (your consent, which you can withdraw at any time).",
             "To manage your subscription and unlock Alphonso Pro (performance of our contract).",
             "To send sign-in codes, password-reset links and other account emails (performance of our contract).",
@@ -131,9 +132,11 @@ function Privacy() {
       <Section heading="What other people can see">
         <p>
           Leaderboards, leagues, friends, teams, duels and study buddies show your display name,
-          avatar colour and progress (such as XP and lesson counts) to other signed-in learners.
-          Leaderboards also show the country you chose, if you set one. Other learners cannot read
-          the rest of your profile.
+          profile picture (the animal you picked, or your initial) and progress (such as XP and
+          lesson counts) to other signed-in learners. Leaderboards also show the country you chose,
+          but only if you turn on Show my flag on leaderboards; it is off unless you do, and you can
+          turn it off in Profile at any time. Other learners cannot read the rest of your profile,
+          including the answers you gave when you started.
         </p>
         <p>
           A team's weekly mission shows every member the team's total progress and your own count of
@@ -314,6 +317,12 @@ function Privacy() {
           applies where local law requires one. We do not knowingly create accounts for them, and
           study buddy matching asks you to confirm you are 13 or older. The app is rated 13+ on the
           App Store.
+        </p>
+        <p>
+          When you start, Alphonso asks your age range. If you choose Under 13, the website stops
+          there: no account is created, nothing you answered is sent to us, the answers are wiped
+          from your browser, and your browser keeps a note of that choice so sign-up stays closed on
+          that device. We store an age range, never your date of birth.
         </p>
         <p>
           Every AI reply follows safety rules written for learners aged 13 and up, is checked

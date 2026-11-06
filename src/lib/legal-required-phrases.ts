@@ -79,6 +79,10 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
     "Neon:",
     "Vercel Web Analytics",
     "Where you came from: if you chose Accept all in the cookie banner",
+    "we store an age range, never your date of birth",
+    "If you choose Under 13, the website stops",
+    "only if you turn on Show my flag on leaderboards",
+    "you cannot upload a photo",
   ],
   "/cookies": [
     SUPPORT_EMAIL,

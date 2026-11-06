@@ -32,7 +32,11 @@ const getWeaknessTrend = vi.fn();
 vi.mock("../../lib/weakness-trend.functions", () => ({ getWeaknessTrend }));
 
 const signOut = vi.fn();
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut } } }));
+const getUser = vi.fn();
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut, getUser } } }));
+
+const saveLearnerProfile = vi.fn();
+vi.mock("../../lib/learner-profile.functions", () => ({ saveLearnerProfile }));
 
 const { withAiConsent } = await import("../../lib/__testutils__/ai-consent");
 const { Route } = await import("./profile");
@@ -64,6 +68,13 @@ beforeEach(() => {
   getWeaknessTrend.mockResolvedValue({ categories: [] });
   signOut.mockReset();
   signOut.mockResolvedValue({ error: null });
+  getUser.mockReset();
+  getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } } });
+  saveLearnerProfile.mockReset();
+  saveLearnerProfile.mockImplementation(async ({ data }: { data: { patch: object } }) => ({
+    showFlag: false,
+    ...data.patch,
+  }));
   useProgress.getState().reset();
   useTheme.setState({ theme: "meadow" });
   Object.defineProperty(global.URL, "createObjectURL", {
@@ -108,28 +119,20 @@ describe("Profile page", () => {
     expect(await screen.findByRole("heading", { name: "Learner" })).toBeInTheDocument();
   });
 
-  it("saves the display name and a normalized country code", async () => {
+  it("saves the display name (the country now comes from the learner profile and its flag switch)", async () => {
     const user = userEvent.setup();
     renderPage();
     const nameInput = await screen.findByLabelText("Display name");
-    // The profile query resolves asynchronously and its effect syncs
-    // `name`/`country` state from it -- wait for that sync before editing,
-    // or a later resolution would clobber the edit.
+    // The profile query resolves asynchronously and its effect syncs `name` from it -- wait for that sync before
+    // editing, or a later resolution would clobber the edit.
     await waitFor(() => expect(nameInput).toHaveValue("Ada"));
-
     await user.clear(nameInput);
     await user.type(nameInput, "Grace");
-    const countryInput = screen.getByLabelText(/Country/);
-    await user.clear(countryInput);
-    await user.type(countryInput, "gbr");
-
     await user.click(screen.getByRole("button", { name: "Save" }));
-
     await waitFor(() =>
-      expect(updateProfile).toHaveBeenCalledWith({
-        data: { display_name: "Grace", country: "GB" },
-      }),
+      expect(updateProfile).toHaveBeenCalledWith({ data: { display_name: "Grace" } }),
     );
+    expect(screen.queryByLabelText(/Country \(ISO/)).toBeNull();
   });
 
   it("says a refused name in words instead of pretending it saved", async () => {
@@ -149,49 +152,87 @@ describe("Profile page", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("says the name saved but the country did not, when only the country failed", async () => {
-    const user = userEvent.setup();
-    updateProfile.mockResolvedValueOnce({ ok: false, error: "server-error", part: "details" });
-    renderPage();
-    const nameInput = await screen.findByLabelText("Display name");
-    await waitFor(() => expect(nameInput).toHaveValue("Ada"));
-    await user.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Your name was saved, but your country wasn't. Try again.",
-    );
-  });
-
-  it("sends undefined for an empty display name and null for an empty country", async () => {
-    getMyProfile.mockResolvedValue({ display_name: "Ada", country: "US", avatar_seed: "a" });
+  it("sends undefined for an empty display name", async () => {
     const user = userEvent.setup();
     renderPage();
     const nameInput = await screen.findByLabelText("Display name");
     await waitFor(() => expect(nameInput).toHaveValue("Ada"));
     await user.clear(nameInput);
-    const countryInput = screen.getByLabelText(/Country/);
-    await user.clear(countryInput);
-
     await user.click(screen.getByRole("button", { name: "Save" }));
-
     await waitFor(() =>
-      expect(updateProfile).toHaveBeenCalledWith({
-        data: { display_name: undefined, country: null },
+      expect(updateProfile).toHaveBeenCalledWith({ data: { display_name: undefined } }),
+    );
+  });
+
+  it("changes the profile picture to one of the 16 animals (no upload)", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByLabelText("Display name");
+    await user.click(screen.getByRole("button", { name: "Change picture" }));
+    const dialog = await screen.findByRole("dialog", { name: "Your profile picture" });
+    expect(within(dialog).getAllByRole("button", { pressed: false }).length).toBeGreaterThanOrEqual(
+      16,
+    );
+    expect(dialog.querySelector("input[type=file]")).toBeNull();
+    await user.click(within(dialog).getByRole("button", { name: "Owl" }));
+    await user.click(within(dialog).getByRole("button", { name: "Save picture" }));
+    await waitFor(() =>
+      expect(updateProfile).toHaveBeenCalledWith({ data: { avatar_seed: "animal:owl" } }),
+    );
+  });
+
+  it("shows the chosen animal in the hero, and initials without one", async () => {
+    getMyProfile.mockResolvedValue({
+      display_name: "Ada",
+      country: null,
+      avatar_seed: "animal:fox",
+    });
+    const first = renderPage();
+    await waitFor(() => expect(document.querySelector('[data-avatar="fox"]')).not.toBeNull());
+    first.unmount();
+    getMyProfile.mockResolvedValue({ display_name: "Ada", country: null, avatar_seed: "3fa9" });
+    renderPage();
+    await screen.findByRole("heading", { name: "Ada" });
+    await waitFor(() => expect(document.querySelector('[data-avatar="initials"]')).not.toBeNull());
+  });
+
+  it("the leaderboard flag is off by default and turning it on saves the learner's country", async () => {
+    getMyProfile.mockResolvedValue({ display_name: "Ada", country: null, avatar_seed: "a" });
+    getUser.mockResolvedValue({
+      data: { user: { id: "u1", user_metadata: { learner_profile: { country: "CA" } } } },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const flag = await screen.findByRole("switch", { name: "Show my flag on leaderboards" });
+    await waitFor(() => expect(flag).not.toBeDisabled());
+    expect(flag).toHaveAttribute("aria-checked", "false");
+    await user.click(flag);
+    await waitFor(() =>
+      expect(saveLearnerProfile).toHaveBeenCalledWith({
+        data: { patch: { showFlag: true, country: "CA" } },
       }),
     );
   });
 
-  it("shuffles the avatar and saves the new seed immediately", async () => {
+  it("a country already on the leaderboard counts as on, and turning it off keeps the country", async () => {
     const user = userEvent.setup();
     renderPage();
-    await screen.findByLabelText("Display name");
+    const flag = await screen.findByRole("switch", { name: "Show my flag on leaderboards" });
+    await waitFor(() => expect(flag).toHaveAttribute("aria-checked", "true"));
+    await user.click(flag);
+    await waitFor(() =>
+      expect(saveLearnerProfile).toHaveBeenCalledWith({
+        data: { patch: { showFlag: false, country: "US" } },
+      }),
+    );
+  });
 
-    await user.click(screen.getByRole("button", { name: "Shuffle avatar color" }));
-
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
-    const call = updateProfile.mock.calls[0][0];
-    expect(call.data).toHaveProperty("avatar_seed");
-    expect(typeof call.data.avatar_seed).toBe("string");
-    expect(call.data.avatar_seed).not.toBe("a");
+  it("links to Edit your answers (Complete your profile, again)", async () => {
+    renderPage();
+    expect(await screen.findByRole("link", { name: "Edit your answers" })).toHaveAttribute(
+      "href",
+      "/complete-profile",
+    );
   });
 
   it("switches theme, persisting it through updateProfile", async () => {
