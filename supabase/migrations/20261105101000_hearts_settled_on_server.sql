@@ -164,6 +164,7 @@ DECLARE
   owed integer;
   take integer := 0;
   changed boolean := false;
+  last_settled timestamptz;
 BEGIN
   IF _user_id IS NULL OR _token_hash IS NULL OR _token_hash !~ '^[0-9a-f]{64}$'
      OR _misses IS NULL OR _misses < 0 OR _misses > 50 OR _since IS NULL
@@ -186,12 +187,20 @@ BEGIN
     RETURN;
   END IF;
 
-  -- The misses this learner's client already paid for during this session.
+  -- The misses this learner's client already paid for during this session. Reports from this session come first.
+  -- A token can be issued after the lesson's own lose_heart calls (minted at finish when the start request failed,
+  -- or re-minted at sync when a queued lesson's token expired), so unclaimed reports from up to 3 hours (the token
+  -- lifetime) before the session start also count, but never ones older than this learner's previous settlement.
+  -- Every report is a heart already deducted, so counting one here can only charge less, never more.
+  SELECT max(s.settled_at) INTO last_settled
+    FROM public.lesson_heart_settlements s WHERE s.user_id = _user_id;
   UPDATE public.heart_loss_reports r SET claimed = true
   WHERE r.id IN (
     SELECT x.id FROM public.heart_loss_reports x
-    WHERE x.user_id = _user_id AND NOT x.claimed AND x.at >= _since
-    ORDER BY x.at
+    WHERE x.user_id = _user_id AND NOT x.claimed
+      AND (x.at >= _since
+           OR (x.at >= _since - interval '3 hours' AND (last_settled IS NULL OR x.at > last_settled)))
+    ORDER BY (x.at >= _since) DESC, x.at
     LIMIT _misses
   );
   GET DIAGNOSTICS reported = ROW_COUNT;

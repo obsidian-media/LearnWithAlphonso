@@ -95,4 +95,73 @@ final class AvatarMachineTests: XCTestCase {
         m.update(phase: .idle, now: 1.2)
         XCTAssertEqual(m.pose(now: 1.3, speech: nil).mouth, .ee)
     }
+
+    // MARK: - reactions from the reply's verdict (after the reply has been spoken)
+
+    private func replyThenSpeak(_ m: inout AvatarMachine, verdict: ReplyVerdict, audio: Bool = true) {
+        m.update(phase: .recording(generation: 1), now: 0)
+        m.update(phase: .transcribing(generation: 1), now: 1)
+        m.update(phase: .thinking(generation: 1), now: 2)
+        m.replyArrived(verdict: verdict)
+        if audio { m.update(phase: .speaking(generation: 1), now: 3) }
+    }
+
+    func testACorrectAnswerGetsAHappyFaceAfterTheReplyIsSpokenNotBefore() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .correct)
+        XCTAssertEqual(m.mode, .speaking)
+        m.update(phase: .idle, now: 9)
+        XCTAssertEqual(m.mode, .reacting(.happy))
+        XCTAssertEqual(m.pose(now: 9.1, speech: nil), AvatarPose(mouth: .ee, brows: .raised))
+        XCTAssertEqual(m.pose(now: 9 + AvatarMachine.reactionDuration + 0.01, speech: nil),
+                       AvatarPose(mouth: .closed, brows: .neutral))
+    }
+
+    func testACorrectedAnswerGetsAnEncouragingFace() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .corrected)
+        m.update(phase: .idle, now: 9)
+        XCTAssertEqual(m.mode, .reacting(.encouraging))
+        XCTAssertEqual(m.pose(now: 9.1, speech: nil), AvatarPose(mouth: .talk, brows: .neutral))
+    }
+
+    func testAnInconclusiveVerdictReactsToNothing() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .inconclusive)
+        m.update(phase: .idle, now: 9)
+        XCTAssertEqual(m.mode, .idle)
+    }
+
+    func testAReplyWithoutAudioReactsWhenTheSessionGoesQuiet() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .correct, audio: false)
+        m.update(phase: .idle, now: 3)
+        XCTAssertEqual(m.mode, .reacting(.happy))
+    }
+
+    func testPressingTalkBeforeTheReplyEndsDropsTheReaction() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .correct)
+        m.update(phase: .recording(generation: 2), now: 4)
+        XCTAssertEqual(m.mode, .listening)
+        m.update(phase: .idle, now: 5)
+        XCTAssertEqual(m.mode, .idle)
+    }
+
+    func testAFailedTurnDropsTheReaction() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .correct)
+        m.update(phase: .failed(.network), now: 4)
+        m.update(phase: .idle, now: 5)
+        XCTAssertEqual(m.mode, .idle)
+    }
+
+    func testAReactionPlaysOnceNotOnEveryLaterIdle() {
+        var m = AvatarMachine()
+        replyThenSpeak(&m, verdict: .correct)
+        m.update(phase: .idle, now: 9)
+        m.update(phase: .recording(generation: 2), now: 20)
+        m.update(phase: .idle, now: 21)
+        XCTAssertEqual(m.mode, .idle)
+    }
 }

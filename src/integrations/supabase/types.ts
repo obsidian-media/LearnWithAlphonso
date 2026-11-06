@@ -440,14 +440,17 @@ export type Database = {
         Row: {
           id: boolean;
           matching_enabled: boolean;
+          open_duels_enabled: boolean;
         };
         Insert: {
           id?: boolean;
           matching_enabled?: boolean;
+          open_duels_enabled?: boolean;
         };
         Update: {
           id?: boolean;
           matching_enabled?: boolean;
+          open_duels_enabled?: boolean;
         };
         Relationships: [];
       };

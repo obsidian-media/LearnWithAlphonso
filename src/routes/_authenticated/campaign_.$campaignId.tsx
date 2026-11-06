@@ -20,6 +20,12 @@ import { sceneIndexOfMessage } from "../../lib/campaign-scene";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
+import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
+import { PracticeCall } from "../../components/PracticeCall";
+import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar/machine";
+import { useAvatarPreference } from "../../lib/avatar/preference";
+import { useTheme } from "../../lib/theme";
+import { useReducedMotion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   component: CampaignChatPageWithSave,
@@ -97,7 +103,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [recording, setRecording] = useState(false);
+  const [recordingState, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ttsOn, setTtsOn] = useState(true);
@@ -132,6 +138,22 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
+  const leftRef = useRef(false);
+  // The call screen: what is being spoken, whether its audio is loading or playing, and what the latest reply said
+  // about the learner's turn (Alphonso reacts to it once the reply has been spoken).
+  const [spoken, setSpoken] = useState<string | null>(null);
+  const [voice, setVoice] = useState<"idle" | "loading" | "playing">("idle");
+  const [replyVerdict, setReplyVerdict] = useState<AvatarReplyVerdict>({
+    serial: 0,
+    verdict: "none",
+  });
+  const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
+  const showAlphonso = useAvatarPreference((st) => st.enabled);
+  const hydrateAvatarPreference = useAvatarPreference((st) => st.hydrate);
+  useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
+  const reducedMotion = useReducedMotion() ?? false;
+  const darkTheme = useTheme((t) => t.theme === "studio-ink");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -144,6 +166,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   const speak = useCallback(
     async (text: string) => {
       if (!ttsOn) return;
+      setSpoken(text);
+      setVoice("loading");
       try {
         const resp = await fetch("/api/tts", {
           method: "POST",
@@ -151,18 +175,35 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           // The server picks this course's native voice.
           body: JSON.stringify({ text, course }),
         });
-        if (!resp.ok) return;
+        if (!resp.ok) {
+          setVoice("idle");
+          return;
+        }
         const blob = await resp.blob();
+        // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
+        if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
         if (audioRef.current) {
           audioRef.current.pause();
         }
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => URL.revokeObjectURL(url);
-        void audio.play().catch(() => {});
+        // A replaced or stopped clip must not flip the avatar back to idle under the clip that replaced it.
+        const settle = () => {
+          if (audioRef.current === audio) setVoice("idle");
+        };
+        audio.onplaying = () => {
+          if (audioRef.current === audio) setVoice("playing");
+        };
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          settle();
+        };
+        audio.onpause = settle;
+        audio.onerror = settle;
+        void audio.play().catch(settle);
       } catch {
-        /* ignore */
+        setVoice("idle");
       }
     },
     [ttsOn, course],
@@ -214,9 +255,11 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
                   : t || "Something went wrong.",
           );
         }
-        const data = (await resp.json()) as { content?: string };
+        const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
         setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        // An older server sends no verdict, which reads as "none".
+        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict: parseVerdict(data.verdict) }));
         void speak(reply);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -318,204 +361,127 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     setRecording(false);
   }, []);
 
+  const avatarPhase: VoicePhase = recordingState
+    ? { kind: "recording" }
+    : transcribing
+      ? { kind: "transcribing" }
+      : sending || voice === "loading"
+        ? { kind: "thinking" }
+        : voice === "playing"
+          ? { kind: "speaking" }
+          : { kind: "idle" };
+
   useEffect(() => {
+    leftRef.current = false;
     return () => {
+      leftRef.current = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
       audioRef.current?.pause();
     };
   }, []);
 
-  return (
-    <LessonFrame>
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
-        <Link
-          to="/converse"
-          aria-label="Back"
-          className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
-        >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-            <path
-              d="M15 6l-6 6 6 6"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xl leading-none">{campaign.emoji}</span>
-            <h1 className="truncate font-display text-[17px] font-semibold text-ink">
-              {campaign.title}
-            </h1>
-          </div>
-          <p className="truncate text-[11px] text-ink-soft/70">
-            {finished
-              ? "Campaign complete"
-              : `Scene ${sceneIndex + 1} of ${campaign.scenes.length} — ${scene.title}`}
-          </p>
-        </div>
-        {!finished && (
-          <button
-            onClick={restartScene}
-            aria-label="Restart this scene"
-            className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-              <path
-                d="M4 4v5h5M20 20v-5h-5M4.5 9A8 8 0 0 1 19 8M19.5 15a8 8 0 0 1-14.5 1"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        )}
-        <button
-          onClick={() => setTtsOn((v) => !v)}
-          aria-pressed={ttsOn}
-          aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
-          className={`grid size-9 place-items-center rounded-full border transition-colors ${
-            ttsOn
-              ? "border-moss/30 bg-moss/10 text-moss"
-              : "border-hairline bg-surface text-ink-soft/60"
-          }`}
-        >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-            {ttsOn ? (
-              <>
-                <path
-                  d="M4 10v4h4l5 4V6L8 10H4z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </>
-            ) : (
-              <>
-                <path
-                  d="M4 10v4h4l5 4V6L8 10H4z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M17 9l5 6M22 9l-5 6"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </>
-            )}
-          </svg>
-        </button>
-      </header>
-      <div className="px-5">
-        <SaveWordHint always />
-      </div>
-
-      <div
-        ref={scrollRef}
-        role="log"
-        aria-live="polite"
-        aria-label="Conversation"
-        className="flex-1 overflow-y-auto px-5 py-6"
-      >
-        <div className="flex flex-col gap-3">
-          {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              {m.role === "assistant" ? (
-                <div className="flex max-w-[85%] flex-col items-start">
-                  <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                    <TappableText text={m.content} course={course} />
-                  </div>
-                  {!m.opener && (
-                    <AiMessageReport
-                      message={m.content}
-                      surface="campaign"
-                      course={course}
-                      campaignId={campaign.id}
-                      sceneIndex={sceneIndexOfMessage(messages, i)}
-                    />
-                  )}
+  const hint = (
+    <div className="px-5">
+      <SaveWordHint always />
+    </div>
+  );
+  const conversationLog = (
+    <div
+      ref={scrollRef}
+      role="log"
+      aria-live="polite"
+      aria-label="Conversation"
+      className="flex-1 overflow-y-auto px-5 py-6"
+    >
+      <div className="flex flex-col gap-3">
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            {m.role === "assistant" ? (
+              <div className="flex max-w-[85%] flex-col items-start">
+                <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                  <TappableText text={m.content} course={course} />
                 </div>
-              ) : (
-                <div className="flex max-w-[85%] flex-col items-end gap-1">
-                  <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
-                    {m.content}
-                  </div>
-                  {typeof m.confidence === "number" &&
-                    (() => {
-                      const clarity = clarityLabel(m.confidence);
-                      return (
-                        <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
-                          <span
-                            aria-hidden="true"
-                            className={`size-1.5 rounded-full ${clarity.dotClassName}`}
-                          />
-                          {clarity.label} pronunciation
-                        </span>
-                      );
-                    })()}
-                </div>
-              )}
-            </div>
-          ))}
-          {(sending || transcribing) && (
-            <div className="flex justify-start" role="status">
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
+                {!m.opener && (
+                  <AiMessageReport
+                    message={m.content}
+                    surface="campaign"
+                    course={course}
+                    campaignId={campaign.id}
+                    sceneIndex={sceneIndexOfMessage(messages, i)}
+                  />
+                )}
               </div>
-              <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
+            ) : (
+              <div className="flex max-w-[85%] flex-col items-end gap-1">
+                <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                  {m.content}
+                </div>
+                {typeof m.confidence === "number" &&
+                  (() => {
+                    const clarity = clarityLabel(m.confidence);
+                    return (
+                      <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
+                        <span
+                          aria-hidden="true"
+                          className={`size-1.5 rounded-full ${clarity.dotClassName}`}
+                        />
+                        {clarity.label} pronunciation
+                      </span>
+                    );
+                  })()}
+              </div>
+            )}
+          </div>
+        ))}
+        {(sending || transcribing) && (
+          <div className="flex justify-start" role="status">
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
             </div>
-          )}
-          {error && (
-            <div
-              role="alert"
-              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
+          </div>
+        )}
+        {error && (
+          <div
+            role="alert"
+            className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+          >
+            {error}
+          </div>
+        )}
+        {canContinue && !finished && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={continueToNextScene}
+              className="hard-shadow rounded-full bg-moss px-5 py-2.5 text-[13px] font-semibold text-surface transition-transform active:scale-[0.98]"
             >
-              {error}
-            </div>
-          )}
-          {canContinue && !finished && (
-            <div className="flex justify-center pt-2">
-              <button
-                onClick={continueToNextScene}
-                className="hard-shadow rounded-full bg-moss px-5 py-2.5 text-[13px] font-semibold text-surface transition-transform active:scale-[0.98]"
-              >
-                {isLastScene
-                  ? "Finish campaign"
-                  : `Continue: ${campaign.scenes[sceneIndex + 1].title} →`}
-              </button>
-            </div>
-          )}
-          {finished && (
-            <div className="flex flex-col items-center gap-3 pt-2 text-center">
-              <p className="text-[15px] font-semibold text-ink">Nice work — campaign complete!</p>
-              <p className="max-w-[280px] text-[13px] text-ink-soft/80">
-                You made it through all {campaign.scenes.length} scenes of {campaign.title}.
-              </p>
-              <Link
-                to="/converse"
-                className="hard-shadow rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-surface"
-              >
-                Back to Practice
-              </Link>
-            </div>
-          )}
-        </div>
+              {isLastScene
+                ? "Finish campaign"
+                : `Continue: ${campaign.scenes[sceneIndex + 1].title} →`}
+            </button>
+          </div>
+        )}
+        {finished && (
+          <div className="flex flex-col items-center gap-3 pt-2 text-center">
+            <p className="text-[15px] font-semibold text-ink">Nice work — campaign complete!</p>
+            <p className="max-w-[280px] text-[13px] text-ink-soft/80">
+              You made it through all {campaign.scenes.length} scenes of {campaign.title}.
+            </p>
+            <Link
+              to="/converse"
+              className="hard-shadow rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-surface"
+            >
+              Back to Practice
+            </Link>
+          </div>
+        )}
       </div>
-
+    </div>
+  );
+  const composer = (
+    <>
       {!finished && (
         <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
           <form
@@ -528,17 +494,19 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
             <button
               type="button"
               onClick={() => {
-                if (recording) {
+                if (recordingState) {
                   stopRecording();
                 } else {
                   void startRecording();
                 }
               }}
-              aria-label={recording ? "Stop recording and send" : "Record a voice message"}
-              aria-pressed={recording}
+              aria-label={
+                recordingState ? "Stop recordingState and send" : "Record a voice message"
+              }
+              aria-pressed={recordingState}
               disabled={sending || transcribing}
               className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
-                recording
+                recordingState
                   ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
                   : "bg-moss text-surface hard-shadow"
               } disabled:opacity-50`}
@@ -572,8 +540,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
                   }
                 }}
                 rows={1}
-                placeholder={recording ? "Listening…" : "Type or tap the mic"}
-                disabled={sending || transcribing || recording}
+                placeholder={recordingState ? "Listening…" : "Type or tap the mic"}
+                disabled={sending || transcribing || recordingState}
                 className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
               />
             </div>
@@ -595,6 +563,202 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           </form>
         </div>
       )}
+    </>
+  );
+  const classicHeader = (
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+      <Link
+        to="/converse"
+        aria-label="Back"
+        className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+      >
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+          <path
+            d="M15 6l-6 6 6 6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xl leading-none">{campaign.emoji}</span>
+          <h1 className="truncate font-display text-[17px] font-semibold text-ink">
+            {campaign.title}
+          </h1>
+        </div>
+        <p className="truncate text-[11px] text-ink-soft/70">
+          {finished
+            ? "Campaign complete"
+            : `Scene ${sceneIndex + 1} of ${campaign.scenes.length} — ${scene.title}`}
+        </p>
+      </div>
+      {!finished && (
+        <button
+          onClick={restartScene}
+          aria-label="Restart this scene"
+          className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+            <path
+              d="M4 4v5h5M20 20v-5h-5M4.5 9A8 8 0 0 1 19 8M19.5 15a8 8 0 0 1-14.5 1"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+      <button
+        onClick={() => setTtsOn((v) => !v)}
+        aria-pressed={ttsOn}
+        aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
+        className={`grid size-9 place-items-center rounded-full border transition-colors ${
+          ttsOn
+            ? "border-moss/30 bg-moss/10 text-moss"
+            : "border-hairline bg-surface text-ink-soft/60"
+        }`}
+      >
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+          {ttsOn ? (
+            <>
+              <path
+                d="M4 10v4h4l5 4V6L8 10H4z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </>
+          ) : (
+            <>
+              <path
+                d="M4 10v4h4l5 4V6L8 10H4z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M17 9l5 6M22 9l-5 6"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+        </svg>
+      </button>
+    </header>
+  );
+
+  if (showAlphonso) {
+    const last = messages[messages.length - 1];
+    const caption =
+      recordingState || !last
+        ? null
+        : {
+            text: last.content,
+            mine: last.role === "user",
+            spoken: last.role === "assistant" && last.content === spoken,
+          };
+    const sceneLine = finished
+      ? campaign.title
+      : `${campaign.title}: scene ${sceneIndex + 1} of ${campaign.scenes.length}`;
+    return (
+      <LessonFrame>
+        <PracticeCall
+          title={sceneLine}
+          // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
+          scenarioId={null}
+          dark={darkTheme}
+          avatar={{
+            phase: avatarPhase,
+            replyText: spoken,
+            getAudio: () => audioRef.current,
+            replyVerdict,
+            course,
+            reducedMotion,
+            onModeChange: setAvatarMode,
+          }}
+          mode={avatarMode}
+          caption={caption}
+          recording={recordingState}
+          talkDisabled={sending || transcribing || finished}
+          onHoldStart={() => {
+            if (recordingState || sending || transcribing || finished) return;
+            // Talking over Alphonso cuts him off, as on a call; his voice must not end up in the recording.
+            audioRef.current?.pause();
+            void startRecording();
+          }}
+          onHoldEnd={() => {
+            if (!transcribing) stopRecording();
+          }}
+          onToggle={() => {
+            if (recordingState) stopRecording();
+            else {
+              audioRef.current?.pause();
+              void startRecording();
+            }
+          }}
+          getStream={() => streamRef.current}
+          ttsOn={ttsOn}
+          onToggleTts={() => setTtsOn((v) => !v)}
+          error={error}
+          endTo="/converse"
+          messages={messages}
+          reducedMotion={reducedMotion}
+          extra={
+            finished ? (
+              <p className="rounded-full bg-black/45 px-4 py-1.5 text-center text-[13px] font-semibold">
+                Nice work, campaign complete!
+              </p>
+            ) : canContinue ? (
+              <button
+                type="button"
+                onClick={continueToNextScene}
+                className="rounded-full bg-white px-5 py-2 text-[13px] font-bold text-[#17241c]"
+              >
+                {isLastScene
+                  ? "Finish campaign"
+                  : `Continue: ${campaign.scenes[sceneIndex + 1].title} \u2192`}
+              </button>
+            ) : null
+          }
+          sheet={
+            <>
+              {!finished && (
+                <button
+                  type="button"
+                  onClick={restartScene}
+                  className="mb-2 self-start rounded-full border border-hairline px-3 py-1.5 text-[13px] font-semibold"
+                >
+                  Restart this scene
+                </button>
+              )}
+              {hint}
+              {conversationLog}
+              {composer}
+            </>
+          }
+        />
+      </LessonFrame>
+    );
+  }
+
+  return (
+    <LessonFrame>
+      {classicHeader}
+      {hint}
+      {conversationLog}
+      {composer}
     </LessonFrame>
   );
 }

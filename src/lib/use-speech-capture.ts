@@ -146,5 +146,7 @@ export function useSpeechCapture({
     };
   }, []);
 
-  return { state, error, failed, canRecord, start, stop, clearError };
+  /** The live microphone stream while recording (for a level meter), otherwise null. */
+  const getStream = useCallback(() => streamRef.current, []);
+  return { state, error, failed, canRecord, start, stop, clearError, getStream };
 }
