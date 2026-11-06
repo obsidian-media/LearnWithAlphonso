@@ -728,6 +728,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // return refreshed snapshot for optimistic apply
     return {
       xpGain,
+      /** Right answers by this server's own grading: the count xpGain was computed from (the complete screen's XP lines). */
+      correct,
       newlyUnlocked,
       heartsBonus,
       progress: {

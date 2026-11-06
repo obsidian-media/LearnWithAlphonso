@@ -9,7 +9,8 @@ describe("empty word meanings and examples are not drawn", () => {
   it("web: every printed meaning and example sits behind its own check", () => {
     const web = read("src/routes/_authenticated/lesson.$id.tsx");
     const printed = [...web.matchAll(/\{v\.(meaning|example)\}/g)];
-    expect(printed.length).toBeGreaterThanOrEqual(4);
+    // The word card prints each once (the Studio Ink word list went with the round-6 lesson).
+    expect(printed.length).toBe(2);
     for (const m of printed) {
       const before = web.slice(Math.max(0, m.index! - 260), m.index);
       expect(before, `{v.${m[1]}} at ${m.index}`).toMatch(new RegExp(`\\{v\\.${m[1]} && \\(?`));
