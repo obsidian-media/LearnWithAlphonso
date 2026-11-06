@@ -3941,8 +3941,8 @@ Ces travaux ont grandement ___ à notre compréhension du sujet.|contribué
 En définitive, cette étude ___ que d'autres recherches sont nécessaires.|suggère
 Il convient de ___ ces résultats à un échantillon plus large.|généraliser
 Cette méthode présente plusieurs ___ par rapport aux approches précédentes.|avantages
-Les résultats obtenus ___ notre hypothèse de départ.|confirment
-Il est nécessaire de ___ ces conclusions dans un contexte plus large.|replacer
+Les résultats obtenus ___ notre hypothèse de départ. (confirm)|confirment
+Il est nécessaire de ___ ces conclusions dans un contexte plus large. (put back)|replacer
 Pour conclure, cette étude ___ un éclairage nouveau sur la question.|apporte`,
   },
   {

@@ -358,7 +358,9 @@ export function packQuestions(pack: Pack): Question[] {
               seed,
               pack.kind === "listening",
               wideWalk,
-              romance && pack.kind === "listening",
+              // Every French and Spanish listening pack, not only A1/A2: the B2 seseo pack offered
+            // "acechar" for "asechar" (found by the review panel, 0.0-ay).
+            /^(fr|es)/.test(pack.id) && pack.kind === "listening",
             );
     const explanation =
       pack.kind === "pair"

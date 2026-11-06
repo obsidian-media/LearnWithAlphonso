@@ -97,7 +97,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     type: "mc",
     prompt: "Este vestido es más ___ que el otro.",
     choices: ["caro", "cara", "caros", "caras"],
-    answer: 1,
+    answer: 0,
   },
   {
     id: "ep6",
