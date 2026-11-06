@@ -51,12 +51,17 @@ describe("mascot call sites", () => {
   it("every web mascot goes through MascotImage, so they all move the same way", () => {
     for (const file of [
       "src/components/MascotBanner.tsx",
-      "src/routes/_authenticated/lesson.$id.tsx",
       "src/routes/_authenticated/listen.tsx",
     ]) {
       const src = readFileSync(file, "utf8");
       expect(src, file).toContain("<MascotImage");
       expect(src, file).not.toMatch(/src=\{mascotArt\(/);
     }
+  });
+
+  it("the lesson uses the realistic kit's expressions in the room, not the old mascot art (round 6)", () => {
+    const src = readFileSync("src/routes/_authenticated/lesson.$id.tsx", "utf8");
+    expect(src).toContain("<LessonRoom");
+    expect(src).not.toMatch(/<MascotImage|\/mascots\/|mascotArt\(/);
   });
 });

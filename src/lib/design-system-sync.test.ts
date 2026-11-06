@@ -47,6 +47,26 @@ describe("design system mirrors are up to date", () => {
     }
   });
 
+  it("a .ds-light screen (lessons) keeps the light values of its palette under night mode", () => {
+    const css = outputs["src/styles/ds-tokens.generated.css"];
+    const block = (selector: string) => {
+      const start = css.indexOf(`${selector} {`);
+      expect(start, selector).toBeGreaterThan(-1);
+      return css.slice(start, css.indexOf("}", start));
+    };
+    const royal = block(':root[data-ds-mode="night"] .ds-light');
+    const meadow = block(':root[data-palette="meadow"][data-ds-mode="night"] .ds-light');
+    for (const [name, hex] of Object.entries(source.tokens.palettes.royal.light)) {
+      const kebab = name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+      expect(royal, name).toContain(`--c-${kebab}: ${hex};`);
+    }
+    for (const [name, hex] of Object.entries(source.tokens.palettes.meadow.light)) {
+      const kebab = name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+      expect(meadow, name).toContain(`--c-${kebab}: ${hex};`);
+    }
+    expect(css).toMatch(/\.ds-light \{\s*color-scheme: light;/);
+  });
+
   it("the meadow night value of every colour reaches each mirror", () => {
     const css = outputs["src/styles/ds-tokens.generated.css"];
     const swift = outputs["ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoDS.generated.swift"];

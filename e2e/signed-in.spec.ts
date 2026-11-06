@@ -111,7 +111,7 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
   await expect(page.getByRole("heading", { name: NAME_ONBOARDING_COPY.title })).toBeHidden();
 
   await page.goto(`/lesson/${LESSON.id}`);
-  await page.getByRole("button", { name: "Begin lesson" }).click();
+  await page.getByRole("button", { name: "Start lesson" }).click();
   // A lesson with vocabulary shows it first; one without goes straight to the first question.
   const startPractice = page.getByRole("button", { name: "Skip to practice" });
   const check = page.getByRole("button", { name: "Check", exact: true });
@@ -121,7 +121,7 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
   for (let i = 0; i < LESSON.questions.length; i++) {
     await answerCurrentQuestion(page);
     await page.getByRole("button", { name: "Check", exact: true }).click();
-    await expect(page.getByText("Correct!")).toBeVisible();
+    await expect(page.getByText("Exactly!")).toBeVisible();
     const last = i === LESSON.questions.length - 1;
     await page.getByRole("button", { name: last ? "Finish" : "Continue", exact: true }).click();
   }

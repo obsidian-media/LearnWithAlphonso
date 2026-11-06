@@ -14,8 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
-import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NativeCaptchaRouteImport } from './routes/native-captcha'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -34,6 +34,7 @@ import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/
 import { Route as ApiAccountDeleteRouteImport } from './routes/api/account-delete'
 import { Route as ApiAccountExportRouteImport } from './routes/api/account-export'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
+import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
@@ -41,12 +42,11 @@ import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-p
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
-import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
-import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
@@ -82,14 +82,14 @@ const CookiesRoute = CookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const NativeCaptchaRoute = NativeCaptchaRouteImport.update({
   id: '/native-captcha',
   path: '/native-captcha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -182,6 +182,11 @@ const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
   path: '/api/analyze-weaknesses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppConfigRoute = ApiAppConfigRouteImport.update({
+  id: '/api/app-config',
+  path: '/api/app-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAppleLinkRoute = ApiAppleLinkRouteImport.update({
   id: '/api/apple-link',
   path: '/api/apple-link',
@@ -217,19 +222,9 @@ const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   path: '/api/learning-goal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAppConfigRoute = ApiAppConfigRouteImport.update({
-  id: '/api/app-config',
-  path: '/api/app-config',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
   id: '/api/pro-offering',
   path: '/api/pro-offering',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSubscriptionLoginRoute = ApiSubscriptionLoginRouteImport.update({
-  id: '/api/subscription-login',
-  path: '/api/subscription-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProStatusRoute = ApiProStatusRouteImport.update({
@@ -245,6 +240,11 @@ const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSubscriptionLoginRoute = ApiSubscriptionLoginRouteImport.update({
+  id: '/api/subscription-login',
+  path: '/api/subscription-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
@@ -308,8 +308,8 @@ export interface FileRoutesByFullPath {
   '/accessibility': typeof AccessibilityRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/privacy': typeof PrivacyRoute
   '/native-captcha': typeof NativeCaptchaRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -328,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
@@ -335,12 +336,11 @@ export interface FileRoutesByFullPath {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
-  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
-  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -357,8 +357,8 @@ export interface FileRoutesByTo {
   '/accessibility': typeof AccessibilityRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/privacy': typeof PrivacyRoute
   '/native-captcha': typeof NativeCaptchaRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -377,6 +377,7 @@ export interface FileRoutesByTo {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
@@ -384,12 +385,11 @@ export interface FileRoutesByTo {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
-  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
-  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -408,8 +408,8 @@ export interface FileRoutesById {
   '/accessibility': typeof AccessibilityRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/privacy': typeof PrivacyRoute
   '/native-captcha': typeof NativeCaptchaRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -428,6 +428,7 @@ export interface FileRoutesById {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
@@ -435,12 +436,11 @@ export interface FileRoutesById {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
-  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
-  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -459,8 +459,8 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/auth'
     | '/cookies'
-    | '/privacy'
     | '/native-captcha'
+    | '/privacy'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -479,6 +479,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/app-config'
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
@@ -486,12 +487,11 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
-    | '/api/app-config'
     | '/api/pro-offering'
-    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
+    | '/api/subscription-login'
     | '/api/tts'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
@@ -508,8 +508,8 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/auth'
     | '/cookies'
-    | '/privacy'
     | '/native-captcha'
+    | '/privacy'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -528,6 +528,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/app-config'
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
@@ -535,12 +536,11 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
-    | '/api/app-config'
     | '/api/pro-offering'
-    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
+    | '/api/subscription-login'
     | '/api/tts'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
@@ -558,8 +558,8 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/auth'
     | '/cookies'
-    | '/privacy'
     | '/native-captcha'
+    | '/privacy'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -578,6 +578,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/app-config'
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
@@ -585,12 +586,11 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
-    | '/api/app-config'
     | '/api/pro-offering'
-    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
+    | '/api/subscription-login'
     | '/api/tts'
     | '/_authenticated/campaign_/$campaignId'
     | '/_authenticated/converse_/$scenarioId'
@@ -609,14 +609,15 @@ export interface RootRouteChildren {
   AccessibilityRoute: typeof AccessibilityRoute
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
-  PrivacyRoute: typeof PrivacyRoute
   NativeCaptchaRoute: typeof NativeCaptchaRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
+  ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiAppleLinkRoute: typeof ApiAppleLinkRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDefineWordRoute: typeof ApiDefineWordRoute
@@ -624,12 +625,11 @@ export interface RootRouteChildren {
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
-  ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
-  ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
+  ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiInternalMaintenanceRoute: typeof ApiInternalMaintenanceRoute
   ApiInternalReportNotifyRoute: typeof ApiInternalReportNotifyRoute
@@ -672,18 +672,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/native-captcha': {
       id: '/native-captcha'
       path: '/native-captcha'
       fullPath: '/native-captcha'
       preLoaderRoute: typeof NativeCaptchaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -812,6 +812,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalyzeWeaknessesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/app-config': {
+      id: '/api/app-config'
+      path: '/api/app-config'
+      fullPath: '/api/app-config'
+      preLoaderRoute: typeof ApiAppConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/apple-link': {
       id: '/api/apple-link'
       path: '/api/apple-link'
@@ -861,25 +868,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLearningGoalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/app-config': {
-      id: '/api/app-config'
-      path: '/api/app-config'
-      fullPath: '/api/app-config'
-      preLoaderRoute: typeof ApiAppConfigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/pro-offering': {
       id: '/api/pro-offering'
       path: '/api/pro-offering'
       fullPath: '/api/pro-offering'
       preLoaderRoute: typeof ApiProOfferingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/subscription-login': {
-      id: '/api/subscription-login'
-      path: '/api/subscription-login'
-      fullPath: '/api/subscription-login'
-      preLoaderRoute: typeof ApiSubscriptionLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pro-status': {
@@ -901,6 +894,13 @@ declare module '@tanstack/react-router' {
       path: '/api/stt'
       fullPath: '/api/stt'
       preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/subscription-login': {
+      id: '/api/subscription-login'
+      path: '/api/subscription-login'
+      fullPath: '/api/subscription-login'
+      preLoaderRoute: typeof ApiSubscriptionLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -1038,14 +1038,15 @@ const rootRouteChildren: RootRouteChildren = {
   AccessibilityRoute: AccessibilityRoute,
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
-  PrivacyRoute: PrivacyRoute,
   NativeCaptchaRoute: NativeCaptchaRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
+  ApiAppConfigRoute: ApiAppConfigRoute,
   ApiAppleLinkRoute: ApiAppleLinkRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDefineWordRoute: ApiDefineWordRoute,
@@ -1053,12 +1054,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
-  ApiAppConfigRoute: ApiAppConfigRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
-  ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiProStatusRoute: ApiProStatusRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
+  ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiInternalMaintenanceRoute: ApiInternalMaintenanceRoute,
   ApiInternalReportNotifyRoute: ApiInternalReportNotifyRoute,
