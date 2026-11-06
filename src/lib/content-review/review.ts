@@ -44,7 +44,7 @@ export const ITEMS_PER_REQUEST: Record<string, number> = {
 };
 
 /** Output allowance per item: a defect entry with a problem and a fix is about 110 tokens. */
-export const OUTPUT_TOKENS_PER_ITEM = 220;
+export const OUTPUT_TOKENS_PER_ITEM = 320;
 
 /** Groups items into requests: one course and one kind per request, in inventory order. */
 export function chunk(items: ReviewItem[], phase: string): Chunk[] {

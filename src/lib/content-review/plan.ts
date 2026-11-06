@@ -35,7 +35,7 @@ export const ASSUME = {
   },
   /** max_tokens per item: the worst case the ledger reserves. */
   maxOut: {
-    review: 220,
+    review: 320,
     mistral: MISTRAL_OUTPUT_TOKENS_PER_ITEM,
     judge: 1_500,
     explanation: 400,

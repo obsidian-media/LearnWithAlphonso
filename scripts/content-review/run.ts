@@ -351,6 +351,80 @@ function worstOf(model: string, reqs: BatchRequest[], batch = true): number {
 
 // ---- Commands -------------------------------------------------------------------------------------------
 
+/**
+ * The second opinion without Mistral's batch API (the owner's account refuses batch jobs with
+ * HTTP 402 until billing is enabled): one synchronous call per request, each reserved at its
+ * FULL-price worst case on the Mistral ledger before it is sent and settled from its usage at the
+ * full listed price. Results go to the same verdict store, so a later batch run skips them.
+ */
+async function submitMistralSync(phase: string, work: PhaseWork, chunks: Chunk[], key: string) {
+  await withLock(path.join(STATE, "run.lock"), async () => {
+    const ledger = openLedger("mistral");
+    const store = Object.fromEntries(loadVerdicts(phase));
+    const raw = readJson<unknown[]>(path.join(STATE, "raw", `${phase}-sync.json`), []);
+    let spent = 0;
+    // --concurrency N: N requests in flight (one process, so reservations stay serialised).
+    const concurrency = Math.max(1, Math.min(8, Number(arg("concurrency", "1")) || 1));
+    let next = 0;
+    let failed: unknown = null;
+    const one = async (c: Chunk) => {
+      const req = buildMistralRequest(c);
+      const worst = worstCaseUsd(work.model, shapeOf(req.body), false);
+      const ref = `${phase}-sync-${c.customId}-${Date.now().toString(36)}`;
+      ledger.reserve(ref, worst, { phase, provider: "mistral", model: work.model });
+      let res: Awaited<ReturnType<typeof sendMistralChat>>;
+      for (let attempt = 1; ; attempt++) {
+        try {
+          res = await sendMistralChat(fetch, key, work.model, req.body);
+          break;
+        } catch (e) {
+          const msg = (e as Error).message;
+          // 429: rate limit (nothing billed); wait longer each time. Anything else stops the run.
+          if (e instanceof RejectedError && /HTTP 429/.test(msg) && attempt < 8) {
+            await new Promise((r) => setTimeout(r, 4000 * attempt));
+            continue;
+          }
+          if (e instanceof RejectedError) ledger.release(ref, `rejected: ${msg}`);
+          else console.error(`${ref}: outcome unknown, reservation KEPT: ${msg}`);
+          writeJson(verdictStore(phase), store);
+          throw e;
+        }
+      }
+      const cost = res.usage ? mistralUsageUsd(work.model, res.usage, false) : worst;
+      spent += cost;
+      ledger.settle(ref, cost);
+      const parsed = parseChunkReply(c, res.text);
+      for (const v of parsed.verdicts) store[v.id] = v;
+      raw.push({
+        customId: c.customId,
+        items: c.items.length,
+        usage: res.usage,
+        missing: parsed.missing.length,
+        text: res.text,
+      });
+      writeJson(verdictStore(phase), store);
+      writeJson(path.join(STATE, "raw", `${phase}-sync.json`), raw);
+      console.log(
+        `${c.customId}: ${parsed.verdicts.length}/${c.items.length}, ${cost.toFixed(4)} (${JSON.stringify(res.usage)}); this run ${spent.toFixed(2)}; mistral remaining ${ledger.status().remainingUsd.toFixed(2)}`,
+      );
+      await new Promise((r) => setTimeout(r, 1500));
+    };
+    await Promise.all(
+      Array.from({ length: concurrency }, async () => {
+        while (!failed && next < chunks.length) {
+          const c = chunks[next++]!;
+          try {
+            await one(c);
+          } catch (e) {
+            failed = e;
+          }
+        }
+      }),
+    );
+    if (failed) throw failed;
+  });
+}
+
 async function submit(phase: string) {
   const items = inventory();
   const work = phaseWork(phase, items);
@@ -377,6 +451,8 @@ async function submit(phase: string) {
       "Refused: CONTENT_REVIEW_APPROVED=yes is not set (the owner approves the run).",
     );
   const key = loadKey(work.provider);
+  if (work.provider === "mistral" && flag("sync"))
+    return submitMistralSync(phase, work, chunks, key);
   await withLock(path.join(STATE, "run.lock"), async () => {
     const ledger = openLedger(work.provider);
     const state = loadState();
@@ -460,6 +536,15 @@ async function collect() {
       const key = loadKey(job.provider);
       const byCustom = new Map(job.chunks.map((c) => [c.customId, c]));
       const texts: { chunk: Chunk; text: string }[] = [];
+      // Raw replies with their usage (git-ignored): the token rates that re-project the plan.
+      const raw: {
+        customId: string;
+        items: number;
+        type: string;
+        usage?: unknown;
+        stop?: string;
+        text?: string;
+      }[] = [];
       let cost = 0;
       if (job.provider === "anthropic") {
         const info = await getBatch(fetch, key, job.remoteId!);
@@ -472,6 +557,17 @@ async function collect() {
         for (const r of await getResults(fetch, key, info)) {
           const c = byCustom.get(r.custom_id);
           if (!c) continue;
+          raw.push({
+            customId: r.custom_id,
+            items: c.items.length,
+            type: r.result.type,
+            usage: r.result.message?.usage,
+            stop: r.result.message?.stop_reason,
+            text:
+              r.result.type === "succeeded"
+                ? resultText(r)
+                : JSON.stringify(r.result.error ?? null),
+          });
           if (r.result.type === "succeeded") {
             cost += anthropicUsageUsd(job.model, r.result.message?.usage ?? {});
             texts.push({ chunk: c, text: resultText(r) });
@@ -500,6 +596,13 @@ async function collect() {
                 messages: 2,
                 maxTokens: maxTokensFor(c, MISTRAL_OUTPUT_TOKENS_PER_ITEM),
               });
+          raw.push({
+            customId: l.customId,
+            items: c.items.length,
+            type: l.text ? "succeeded" : "no-text",
+            usage: l.usage ?? undefined,
+            text: l.text ?? undefined,
+          });
           if (l.text) texts.push({ chunk: c, text: l.text });
         }
       }
@@ -524,6 +627,7 @@ async function collect() {
         }
         writeJson(verdictStore(job.phase), store);
       }
+      writeJson(path.join(STATE, "raw", `${job.ref}.json`), raw);
       ledger.settle(job.ref, cost, `${got} parsed, ${missing} missing`);
       job.status = "collected";
       saveState(state);

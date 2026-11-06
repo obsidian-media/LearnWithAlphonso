@@ -194,6 +194,14 @@ describe("Mistral batch", () => {
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer mk");
   });
 
+  it("asks for low reasoning and greedy sampling the way Mistral accepts it (top_p 1 with temperature 0)", () => {
+    expect(buildMistralRequest(c).body).toMatchObject({
+      temperature: 0,
+      top_p: 1,
+      reasoning_effort: "low",
+    });
+  });
+
   it("reads both OpenAI-style output shapes and skips reasoning chunks", () => {
     const a = parseMistralLine(
       JSON.stringify({
