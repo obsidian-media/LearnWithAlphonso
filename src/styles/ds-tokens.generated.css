@@ -243,6 +243,101 @@
   --c-on-hero: #FFFFFF;
 }
 
+/* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
+.ds-light {
+  color-scheme: light;
+}
+
+:root[data-ds-mode="night"] .ds-light {
+  --c-ink: #141B3D;
+  --c-brand: #1D2B64;
+  --c-choice: #2D47B0;
+  --c-choice-tint: #EEF1FB;
+  --c-choice-edge: #22378C;
+  --c-action: #E6A72A;
+  --c-action-hi: #EDB43F;
+  --c-action-edge: #B07A12;
+  --c-action-text: #8C6410;
+  --c-action-tint: #FCEFCB;
+  --c-on-action: #141B3D;
+  --c-surface: #FBF6EC;
+  --c-sunk: #F4ECDC;
+  --c-card: #FFFFFF;
+  --c-line: #E6DCC6;
+  --c-ink-soft: #5A5873;
+  --c-ink-faint: #9A9384;
+  --c-hero: #1D2B64;
+  --c-on-hero-soft: #D5DBF5;
+  --c-on-hero-kick: #F6D88A;
+  --c-right: #1B7D52;
+  --c-right-ink: #0F5A3B;
+  --c-right-tint: #E2F3E9;
+  --c-right-edge: #0F5A3B;
+  --c-on-right: #FFFFFF;
+  --c-wrong: #C8442F;
+  --c-wrong-ink: #9A2E22;
+  --c-wrong-tint: #FCE5E0;
+  --c-wrong-edge: #8C2B20;
+  --c-on-wrong: #FFFFFF;
+  --c-xp: #E6A72A;
+  --c-xp-edge: #B07A12;
+  --c-xp-text: #8C6410;
+  --c-xp-tint: #FCEFCB;
+  --c-heart: #D93A63;
+  --c-heart-tint: #FCE4EB;
+  --c-heart-text: #9C2346;
+  --c-flame: #D9700F;
+  --c-flame-tint: #FDEBD7;
+  --c-hero-a: #2C3F8F;
+  --c-hero-b: #0E1430;
+  --c-on-hero: #FFFFFF;
+}
+
+:root[data-palette="meadow"][data-ds-mode="night"] .ds-light {
+  --c-ink: #112418;
+  --c-brand: #153C25;
+  --c-choice: #23412F;
+  --c-choice-tint: #EFE6D2;
+  --c-choice-edge: #112418;
+  --c-action: #2F6243;
+  --c-action-hi: #3A7050;
+  --c-action-edge: #1C4129;
+  --c-action-text: #2F6243;
+  --c-action-tint: #E3EEE5;
+  --c-on-action: #FFFFFF;
+  --c-surface: #F5F0E8;
+  --c-sunk: #EDE4D8;
+  --c-card: #FFFFFF;
+  --c-line: #E2D8C8;
+  --c-ink-soft: #4A564D;
+  --c-ink-faint: #9A9384;
+  --c-hero: #153C25;
+  --c-on-hero-soft: #D5DBF5;
+  --c-on-hero-kick: #F6D88A;
+  --c-right: #17834A;
+  --c-right-ink: #0E5A2E;
+  --c-right-tint: #DDF2E3;
+  --c-right-edge: #0E5A2E;
+  --c-on-right: #FFFFFF;
+  --c-wrong: #C8442F;
+  --c-wrong-ink: #9A2E22;
+  --c-wrong-tint: #FCE5E0;
+  --c-wrong-edge: #8C2B20;
+  --c-on-wrong: #FFFFFF;
+  --c-xp: #E6A72A;
+  --c-xp-edge: #B07A12;
+  --c-xp-text: #8C6410;
+  --c-xp-tint: #FCEFCB;
+  --c-heart: #D93A63;
+  --c-heart-tint: #FCE4EB;
+  --c-heart-text: #9C2346;
+  --c-flame: #D9700F;
+  --c-flame-tint: #FDEBD7;
+  --c-hero-a: #3A7050;
+  --c-hero-b: #0B1F13;
+  --c-on-hero: #FFFFFF;
+}
+
 @theme inline {
   --color-ds-ink: var(--c-ink);
   --color-ds-brand: var(--c-brand);

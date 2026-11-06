@@ -1,30 +1,32 @@
 import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
-import { AskingAlphonso } from "../../components/AskingAlphonso";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
-import { Icon3D } from "../../components/Icon3D";
-import { Button } from "../../components/ui/Button";
-import { MascotImage } from "../../components/MascotImage";
 import { PractiseWithHector } from "../../components/PractiseWithHector";
-import { CountUp } from "../../components/Celebration";
-import { LoopingClip } from "../../components/LoopingClip";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
-import { type TileTone, TILE_TONE_CLASSES, tileTone } from "../../lib/tile-tones";
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { LessonFrame } from "../../components/AppShell";
-import { AnswerOption } from "../../components/AnswerOption";
-import { AnswerFeedback } from "../../components/AnswerFeedback";
-import { AnswerVerdictPanel } from "../../components/AnswerVerdictPanel";
-import { WordChip } from "../../components/WordChip";
-import { correctAnswerText } from "../../lib/answer-verdict";
+import { motion, AnimatePresence } from "framer-motion";
+import { LessonScreen } from "../../components/lesson/LessonScreen";
+import { AnswerExplanation } from "../../components/AnswerFeedback";
+import { DsIcon } from "../../components/ds/DsIcon";
+import {
+  AlphonsoBubble,
+  edgeButtonClass,
+  LessonAnswer,
+  LessonChip,
+  LessonHud,
+  LessonRoom,
+  useViewportHeight,
+  VerdictSheet,
+  WordTile,
+} from "../../components/lesson/LessonParts";
+import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
+import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
+import { correctAnswerText, verdictTitle } from "../../lib/answer-verdict";
 import { deckButtonTitle } from "../../lib/vocab-deck";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { VocabImage } from "../../components/VocabImage";
-import { useTheme } from "../../lib/theme";
-import { HeartIcon } from "../../components/icons";
 import { getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
@@ -74,7 +76,6 @@ function LessonPageWithSave() {
 }
 
 function LessonPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
   const course = useProgress((s) => s.course);
@@ -115,6 +116,10 @@ function LessonPage() {
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
   const proStatus = useProStatus();
   const state = useProgress();
+  const viewportHeight = useViewportHeight();
+  const unitNumber = unit ? curriculum.indexOf(unit) + 1 : null;
+  const roomSrc = roomSrcForUnit(unit?.id);
+  const reduceMotion = usePrefersReducedMotion();
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
@@ -168,6 +173,14 @@ function LessonPage() {
     [maybeLesson, attemptSeed],
   );
 
+  // When the verdict sheet rises, the list scrolls the right answer into view above it.
+  useEffect(() => {
+    if (!checked) return;
+    document
+      .querySelector('[data-answer-state="correct"]')
+      ?.scrollIntoView?.({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+  }, [checked, reduceMotion]);
+
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   // The server refuses to start a lesson at 0 hearts. Held here so the page shows the hearts dialog
   // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
@@ -198,19 +211,19 @@ function LessonPage() {
 
   if (!maybeLesson) {
     return (
-      <LessonFrame>
+      <LessonScreen>
         <div className="p-6 text-center">
-          <p className="text-sm text-ink-soft">Lesson not found.</p>
-          <Link to="/learn" className="mt-4 inline-block text-moss underline">
+          <p className="ds-type-footnote text-ds-ink-soft">Lesson not found.</p>
+          <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
             Back to learn
           </Link>
         </div>
-      </LessonFrame>
+      </LessonScreen>
     );
   }
   if (heartsBlock) {
     return (
-      <LessonFrame>
+      <LessonScreen>
         <HeartsModal
           open
           refillAt={heartsBlock.refillAt}
@@ -242,7 +255,7 @@ function LessonPage() {
           }}
           onPracticeInstead={() => navigate({ to: "/review" })}
         />
-      </LessonFrame>
+      </LessonScreen>
     );
   }
   const lesson = maybeLesson;
@@ -402,56 +415,21 @@ function LessonPage() {
       ? translationVerdict.correct
       : deriveAnswerCorrectness(q, submittedAnswer ?? "", course);
 
-  return (
-    <LessonFrame>
-      {/* Above the lesson-complete clip, which is fixed behind the column. */}
-      <div className="relative z-10 px-5 pt-5">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-          <button
-            onClick={() => navigate({ to: "/learn" })}
-            aria-label="Close"
-            className="grid size-8 shrink-0 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
-          >
-            ✕
-          </button>
-          <div className="min-w-0 overflow-hidden rounded-full bg-parchment">
-            <div
-              className="h-2.5 rounded-full bg-gradient-to-b from-moss to-edge-moss shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] transition-all"
-              style={{
-                width: done
-                  ? "100%"
-                  : phase !== "quiz"
-                    ? "0%"
-                    : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
-              }}
-            />
-          </div>
-          <span className="tnum shrink-0 text-[11px] font-medium text-ink-soft">
-            {done
-              ? "Done"
-              : phase === "quiz"
-                ? `${idx + 1}/${total}`
-                : phase === "vocab"
-                  ? "Words"
-                  : "Start"}
-          </span>
-        </div>
-        <div className="mt-3 flex gap-1.5">
-          {(["overview", "vocab", "quiz", "done"] as const).map((s) => {
-            const order = ["overview", "vocab", "quiz", "done"];
-            const current = done ? "done" : phase;
-            const active = order.indexOf(s) <= order.indexOf(current);
-            return (
-              <span
-                key={s}
-                className={`h-1 flex-1 rounded-full ${active ? "bg-ink" : "bg-hairline"}`}
-              />
-            );
-          })}
-        </div>
-      </div>
+  const close = () => navigate({ to: "/learn" });
+  const hud = (progress: number, onLight = false, valueText?: string) => (
+    <LessonHud
+      progress={progress}
+      valueText={valueText}
+      hearts={proStatus.state === "pro" ? null : state.hearts}
+      onClose={close}
+      onLight={onLight}
+    />
+  );
+  const unitLine = unitNumber && unit ? `Unit ${unitNumber} · ${unit.title}` : lesson.subtitle;
 
-      {done ? (
+  if (done) {
+    return (
+      <LessonScreen>
         <FinishScreen
           xp={done.xp}
           unlocked={done.unlocked}
@@ -464,119 +442,160 @@ function LessonPage() {
           missedQs={missedQs}
           lessonId={lesson.id}
           course={course}
+          roomSrc={roomSrc}
         />
-      ) : phase === "overview" ? (
+      </LessonScreen>
+    );
+  }
+  if (phase === "overview") {
+    return (
+      <LessonScreen>
         <OverviewScreen
           title={lesson.title}
-          subtitle={lesson.subtitle}
+          unitLine={unitLine}
           words={vocab.length}
+          wordSample={vocab.slice(0, 3).map((v) => v.term.replace(/[.!?…]+$/, ""))}
           questions={total}
+          roomSrc={roomSrc}
+          hud={hud(0)}
           onStart={() => setPhase(vocab.length > 0 ? "vocab" : "quiz")}
         />
-      ) : phase === "vocab" && vocab.length > 0 ? (
-        <VocabScreen
+      </LessonScreen>
+    );
+  }
+  if (phase === "vocab" && vocab.length > 0) {
+    return (
+      <LessonScreen>
+        <VocabDeckScreen
           items={vocab}
           title={lesson.title}
           subtitle={lesson.subtitle}
           course={course}
+          hud={hud(0, true)}
           onStart={() => setPhase("quiz")}
         />
-      ) : (
-        <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-            {isReinforcing ? "Quick practice" : lesson.subtitle}
-          </p>
-          {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
+      </LessonScreen>
+    );
+  }
+
+  const layout = roomLayout({ viewportHeight, prompt: q.prompt });
+  const expression = lessonExpression({
+    picked: !!submittedAnswer?.trim() || orderPicks.length > 0,
+    verdict: checked ? (answered ? "right" : "wrong") : null,
+  });
+  const hasImage = q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey];
+  const bubbleLabel = isReinforcing
+    ? "Quick practice"
+    : q.type === "listening"
+      ? "Listening"
+      : q.type === "speak"
+        ? "Speaking"
+        : q.type === "translate"
+          ? "Write it yourself"
+          : "Alphonso asks";
+  const voice = canSpeak();
+  // A listening question's button plays what to listen to, in the course's language; any other question's reads the
+  // question itself, which is written in English for every course.
+  const onPlay =
+    q.type === "listening"
+      ? voice
+        ? () => speak(q.audioText, localeForCourse(course))
+        : undefined
+      : voice
+        ? () => speak(q.prompt, localeForCourse("en"))
+        : undefined;
+  const hearAnswer = voice ? () => speak(correctAnswerText(q), localeForCourse(course)) : undefined;
+
+  return (
+    <LessonScreen>
+      <div className="flex flex-1 flex-col">
+        <LessonRoom
+          roomSrc={roomSrc}
+          expression={expression}
+          height={layout.roomHeight}
+          alphonsoWidth={layout.alphonsoWidth}
+          overlay={
+            <div className="absolute inset-x-4 top-4 z-20">
+              {hud((idx + (checked ? 1 : 0)) / total, false, `Question ${idx + 1} of ${total}`)}
+            </div>
+          }
+        />
+        <div className="relative z-[4] flex flex-1 flex-col gap-3.5 px-4 pb-6">
+          <div className={layout.size === "small" ? "-mt-9" : "-mt-11"}>
+            <AlphonsoBubble
+              label={bubbleLabel}
+              onPlay={onPlay}
+              playLabel={q.type === "listening" ? "Play audio" : "Play the question"}
+              compact={layout.size === "small"}
+            >
+              {q.prompt}
+            </AlphonsoBubble>
+          </div>
+
+          {hasImage && q.type === "mc" && q.imageKey && (
             <VocabImage
               url={VOCAB_IMAGES[q.imageKey].url}
               alt=""
-              className="mb-4 h-40 w-full rounded-2xl"
+              className="h-40 w-full rounded-[18px] shadow-[var(--ds-shadow-resting)]"
             />
-          )}
-          {q.type === "listening" && (
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              Listening
-            </p>
-          )}
-          {q.type === "speak" && (
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              Speaking
-            </p>
-          )}
-          {q.type === "translate" && (
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              Write it yourself
-            </p>
-          )}
-          {q.type === "listening" && canSpeak() && (
-            <button
-              type="button"
-              onClick={() => speak(q.audioText, localeForCourse(course))}
-              className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
-            >
-              🔊 Play audio
-            </button>
           )}
           {/* A listening question is unanswerable without audio, so when the
               browser cannot speak, the sentence is shown instead. Guessing
               one-in-four costs a heart; reading it does not. */}
-          {q.type === "listening" && !canSpeak() && (
-            <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
-              <p className="text-xs text-ink-soft">
+          {q.type === "listening" && !voice && (
+            <div className="rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]">
+              <p className="ds-type-caption text-ds-ink-soft">
                 Audio is unavailable on this device. Here is what you would hear:
               </p>
-              <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
+              <p className="mt-1 ds-type-headline text-ds-ink">{q.audioText}</p>
             </div>
           )}
-          <AskingAlphonso
-            prompt={q.prompt}
-            hasMedia={
-              q.type === "listening" ||
-              q.type === "speak" ||
-              (q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey])
-            }
-          />
 
-          <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
+          <div data-answers="">
             {q.type === "mc" || q.type === "listening" ? (
-              q.choices.map((c) => (
-                <AnswerOption
-                  key={c}
-                  label={c}
-                  checked={checked}
-                  isPicked={picked === c}
-                  // mc stores the answer's index, listening its text.
-                  isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
-                  disabled={checked}
-                  onClick={() => setPicked(c)}
-                />
-              ))
+              <div className="grid gap-2">
+                {q.choices.map((c, i) => (
+                  <LessonAnswer
+                    key={c}
+                    index={i}
+                    label={c}
+                    checked={checked}
+                    isPicked={picked === c}
+                    // mc stores the answer's index, listening its text.
+                    isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
+                    disabled={checked}
+                    onClick={() => setPicked(c)}
+                  />
+                ))}
+              </div>
             ) : q.type === "reorder" ? (
               <div>
-                <div className="mb-3 flex min-h-11 flex-wrap gap-2 rounded-2xl border border-dashed border-hairline bg-parchment p-3">
+                <div
+                  data-sentence-slot=""
+                  className="mb-3 flex min-h-[60px] flex-wrap content-start gap-2 rounded-[18px] border-2 border-dashed border-ds-line bg-ds-sunk p-3"
+                >
                   {orderPicks.length === 0 ? (
-                    <span className="text-xs text-ink-soft/60">Tap the words below in order</span>
+                    <span className="self-center ds-type-footnote text-ds-ink-faint">
+                      Tap the words below in order
+                    </span>
                   ) : (
                     orderPicks.map((tokenIdx, position) => (
-                      <button
+                      <WordTile
                         key={`${tokenIdx}-${position}`}
-                        type="button"
+                        word={q.tokens[tokenIdx]}
+                        placed
                         disabled={checked}
                         onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
-                        className="rounded-full bg-ink px-3 py-1.5 text-sm font-medium text-surface"
-                      >
-                        {q.tokens[tokenIdx]}
-                      </button>
+                      />
                     ))
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {q.tokens.map((t, i) =>
                     orderPicks.includes(i) ? null : (
-                      <WordChip
+                      <WordTile
                         key={i}
                         word={t}
-                        picked={false}
                         disabled={checked}
                         onClick={() => setOrderPicks((arr) => [...arr, i])}
                       />
@@ -607,6 +626,8 @@ function LessonPage() {
                 checked={checked}
                 verdict={translationVerdict}
                 showAiGradingOption
+                // The verdict sheet leads with the accepted phrasing; here only the grader's reason.
+                showAcceptedPhrasing={false}
               />
             ) : q.type === "fill" ? (
               <div>
@@ -616,11 +637,12 @@ function LessonPage() {
                   value={picked ?? ""}
                   onChange={(e) => setPicked(e.target.value)}
                   placeholder="Type your answer"
-                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
+                  aria-label="Your answer"
+                  className="w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 ds-type-headline text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
                 />
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {q.bank.map((w) => (
-                    <WordChip
+                    <WordTile
                       key={w}
                       word={w}
                       picked={picked === w}
@@ -632,119 +654,67 @@ function LessonPage() {
               </div>
             ) : null}
           </div>
-
-          {checked ? (
-            <AnswerVerdictPanel
-              correct={answered}
-              correctAnswer={correctAnswerText(q)}
-              explanation={q.explanation}
-              saveCourse={course}
-              question={q}
-              continueLabel={
-                isReinforcing || pendingReinforcement || idx < total - 1 ? "Continue" : "Finish"
-              }
-              onContinue={next}
-            />
-          ) : (
-            <div className="mt-auto pt-6">
-              <button
-                disabled={
-                  checking ||
-                  (q.type === "reorder"
-                    ? orderPicks.length !== q.tokens.length
-                    : // Whitespace is not an answer: gating on the trimmed text
-                      // keeps it out of the score and spends no quota on it.
-                      !picked?.trim())
-                }
-                onClick={() => void checkAnswer()}
-                className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
-              >
-                {checking ? "Checking…" : "Check"}
-              </button>
-            </div>
-          )}
         </div>
-      )}
-    </LessonFrame>
+
+        {checked ? (
+          <VerdictSheet
+            correct={answered}
+            title={answered ? "Exactly!" : verdictTitle(false)}
+            correctAnswer={correctAnswerText(q)}
+            onHearAnswer={hearAnswer}
+            explanation={
+              <AnswerExplanation
+                explanation={q.explanation}
+                saveCourse={course}
+                question={q}
+                className=""
+              />
+            }
+            continueLabel={
+              isReinforcing || pendingReinforcement || idx < total - 1
+                ? answered
+                  ? "Continue"
+                  : "Got it"
+                : "Finish"
+            }
+            onContinue={next}
+          />
+        ) : (
+          <div
+            data-dock=""
+            className="sticky bottom-0 z-20 bg-ds-surface/95 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3"
+          >
+            <button
+              disabled={
+                checking ||
+                (q.type === "reorder"
+                  ? orderPicks.length !== q.tokens.length
+                  : // Whitespace is not an answer: gating on the trimmed text
+                    // keeps it out of the score and spends no quota on it.
+                    !picked?.trim())
+              }
+              onClick={() => void checkAnswer()}
+              className={edgeButtonClass("primary")}
+            >
+              {checking ? "Checking…" : "Check"}
+            </button>
+          </div>
+        )}
+      </div>
+    </LessonScreen>
   );
 }
 
-function VocabScreen({
-  items,
-  title,
-  subtitle,
-  course,
-  onStart,
-}: {
-  items: VocabItem[];
-  title: string;
-  subtitle: string;
-  course: Course;
-  onStart: () => void;
-}) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  if (!isStudioInk) {
-    return (
-      <VocabDeckScreen
-        items={items}
-        title={title}
-        subtitle={subtitle}
-        course={course}
-        onStart={onStart}
-      />
-    );
-  }
-  return (
-    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-        Vocabulary · {subtitle}
-      </p>
-      <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
-      <p className="mt-1.5 text-sm text-ink-soft/80">
-        {items.length} word{items.length === 1 ? "" : "s"} to learn before you practise.
-      </p>
-      <div className="mt-6 divide-y divide-hairline">
-        {items.map((v, i) => (
-          <motion.div
-            key={`${v.term}-${i}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="py-3.5"
-          >
-            {v.image && (
-              <VocabImage url={v.image.url} alt={v.image.alt} className="mb-3 h-32 w-full" />
-            )}
-            <div className="flex items-center gap-2">
-              <p className="font-display text-base font-semibold text-ink">{v.term}</p>
-              <button
-                type="button"
-                onClick={() => speak(v.term, localeForCourse(course))}
-                aria-label={`Play pronunciation for ${v.term}`}
-                className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
-              >
-                🔊
-              </button>
-            </div>
-            {v.meaning && <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>}
-            {v.example && (
-              <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
-                {v.example}
-              </p>
-            )}
-          </motion.div>
-        ))}
-      </div>
-      <div className="mt-auto pt-6">
-        <button
-          onClick={onStart}
-          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
-        >
-          Start practice
-        </button>
-      </div>
-    </div>
-  );
+/** A card colour per word, so a deck without photos still feels illustrated. Tokens only. */
+const WORD_BANDS = [
+  "bg-ds-choice-tint text-ds-brand",
+  "bg-ds-xp-tint text-ds-xp-text",
+  "bg-ds-right-tint text-ds-right-ink",
+  "bg-ds-heart-tint text-ds-heart-text",
+  "bg-ds-flame-tint text-ds-ink",
+] as const;
+function wordBand(index: number): string {
+  return WORD_BANDS[index % WORD_BANDS.length];
 }
 
 /**
@@ -757,12 +727,14 @@ function VocabDeckScreen({
   title,
   subtitle,
   course,
+  hud,
   onStart,
 }: {
   items: VocabItem[];
   title: string;
   subtitle: string;
   course: Course;
+  hud: React.ReactNode;
   onStart: () => void;
 }) {
   const reduceMotion = usePrefersReducedMotion();
@@ -775,9 +747,9 @@ function VocabDeckScreen({
       type="button"
       onClick={() => speak(v.term, localeForCourse(course))}
       aria-label={`Play pronunciation for ${v.term}`}
-      className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-hairline bg-surface text-lg text-ink transition hover:border-ink/30"
+      className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-card text-ds-choice shadow-[inset_0_0_0_1.5px_var(--c-line)]"
     >
-      🔊
+      <DsIcon name="speaker" className="size-5" />
     </button>
   );
 
@@ -802,22 +774,25 @@ function VocabDeckScreen({
   }, [count]);
 
   return (
-    <div className="flex flex-1 flex-col px-5 pb-6 pt-6">
-      <div className="min-w-0">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-          Vocabulary · {subtitle}
-        </p>
-        <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
+    <div className="flex flex-1 flex-col px-4 pb-6 pt-4">
+      {hud}
+      <div className="mt-5 min-w-0">
+        <p className="mb-1 ds-type-overline text-ds-action-text">Vocabulary · {subtitle}</p>
+        <h2 className="ds-type-display text-ds-brand">{title}</h2>
         {/* Skip shares the counter's row: beside the title it crowded long titles. */}
         <div className="mt-1 flex items-center justify-between gap-3">
-          <p aria-live="polite" aria-atomic="true" className="tnum text-sm text-ink-soft/80">
+          <p
+            aria-live="polite"
+            aria-atomic="true"
+            className="ds-type-footnote tabular-nums text-ds-ink-soft"
+          >
             Word {index + 1} of {count}
           </p>
           {count > 1 && (
             <button
               type="button"
               onClick={onStart}
-              className="-mr-3 min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-ink-soft hover:text-ink"
+              className="-mr-3 min-h-11 shrink-0 rounded-full px-3 ds-type-footnote font-bold text-ds-choice"
             >
               Skip to practice
             </button>
@@ -825,7 +800,7 @@ function VocabDeckScreen({
         </div>
       </div>
 
-      <div className="relative mt-6 flex flex-1 flex-col">
+      <div className="relative mt-5 flex flex-1 flex-col">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={index}
@@ -834,45 +809,41 @@ function VocabDeckScreen({
             animate={{ opacity: 1, x: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="relative overflow-hidden rounded-[28px] border-2 border-hairline bg-parchment shadow-[0_6px_0_0_var(--color-hairline)]"
+            className="relative overflow-hidden rounded-[var(--ds-radius-sheet)] bg-ds-card shadow-[var(--ds-shadow-floating)]"
           >
             <img
-              src="/mascots/alphonso-encouraging.png"
+              src="/alphonso/lesson/talk.webp"
               alt=""
-              width={72}
-              height={72}
+              width={64}
+              height={64}
               decoding="async"
-              className="pointer-events-none absolute -right-2 -top-1 z-10 size-[72px] object-contain"
+              className="pointer-events-none absolute -right-1 -top-1 z-10 size-16 rounded-full bg-ds-card bg-cover object-cover object-[center_20%] shadow-[0_0_0_3px_var(--c-card)]"
             />
             {v.image ? (
               <>
                 <VocabImage url={v.image.url} alt={v.image.alt} className="h-44 w-full" />
                 <div className="flex items-center gap-3 px-5 pr-14 pt-4">
-                  <p className="font-display text-[34px] font-bold leading-tight text-ink">
-                    {v.term}
-                  </p>
+                  <p className="ds-type-display-x-l text-ds-brand">{v.term}</p>
                   {speakButton}
                 </div>
               </>
             ) : (
-              // No photo (grammar words never have one): the word itself, large, on a tile colour that
-              // changes card to card, so the deck still feels illustrated.
+              // No photo (grammar words never have one): the word itself, large, on a tint that changes card to
+              // card, so the deck still feels illustrated.
               <div className="p-3 pb-0">
                 <div
                   data-word-band
-                  className={`flex flex-col items-center gap-3 rounded-[22px] px-14 py-6 text-center ${TILE_TONE_CLASSES[tileTone(index)]}`}
+                  className={`flex flex-col items-center gap-3 rounded-[22px] px-16 py-6 text-center ${wordBand(index)}`}
                 >
-                  <p className="text-balance font-display text-[40px] font-bold leading-tight">
-                    {v.term}
-                  </p>
+                  <p className="text-balance ds-type-display-x-l">{v.term}</p>
                   {speakButton}
                 </div>
               </div>
             )}
             <div className="px-5 pb-5 pt-3">
-              {v.meaning && <p className="text-base text-ink-soft">{v.meaning}</p>}
+              {v.meaning && <p className="ds-type-body text-ds-ink-soft">{v.meaning}</p>}
               {v.example && (
-                <p className="mt-3 rounded-2xl bg-surface px-4 py-3 text-[15px] italic text-ink-soft">
+                <p className="mt-3 rounded-[16px] bg-ds-sunk px-4 py-3 ds-type-body italic text-ds-ink">
                   {v.example}
                 </p>
               )}
@@ -884,7 +855,7 @@ function VocabDeckScreen({
           {items.map((it, i) => (
             <span
               key={`${it.term}-${i}`}
-              className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-moss" : "w-2 bg-hairline"}`}
+              className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-ds-action" : "w-2 bg-ds-line"}`}
             />
           ))}
         </div>
@@ -893,7 +864,7 @@ function VocabDeckScreen({
       <div className="mt-auto pt-6">
         <button
           onClick={() => (last ? onStart() : setIndex((i) => i + 1))}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-moss px-6 py-3 font-display text-base font-bold tracking-wide text-surface shadow-[0_4px_0_0_var(--color-edge-moss)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
+          className={edgeButtonClass("primary")}
         >
           {deckButtonTitle(index, count)}
         </button>
@@ -902,71 +873,106 @@ function VocabDeckScreen({
   );
 }
 
+/**
+ * Lesson start, in the unit's room: Alphonso introducing it, the unit and title over the scene, what the lesson
+ * holds, and one gold button.
+ */
 function OverviewScreen({
   title,
-  subtitle,
+  unitLine,
   words,
+  wordSample,
   questions,
+  roomSrc,
+  hud,
   onStart,
 }: {
   title: string;
-  subtitle: string;
+  unitLine: string;
   words: number;
+  wordSample: string[];
   questions: number;
+  roomSrc: string;
+  hud: React.ReactNode;
   onStart: () => void;
 }) {
-  const steps: { label: string; detail: string; emoji: string; tone: TileTone }[] = [
+  const steps = [
+    ...(words > 0
+      ? [
+          {
+            key: "words",
+            icon: "book" as const,
+            label: `${words} new word${words === 1 ? "" : "s"}`,
+            detail: `${wordSample.join(", ")}${words > wordSample.length ? "…" : ""}`,
+          },
+        ]
+      : []),
     {
-      label: "Vocabulary",
-      detail: `${words} word${words === 1 ? "" : "s"} with examples`,
-      emoji: "📚",
-      tone: "coral",
+      key: "practice",
+      icon: "check" as const,
+      label: "Practice",
+      detail: `${questions} question${questions === 1 ? "" : "s"}: pick, listen, say it back`,
     },
-    { label: "Practice", detail: `${questions} questions`, emoji: "🎯", tone: "sky" },
-    { label: "Review", detail: "Anything you miss comes back later", emoji: "⭐", tone: "mint" },
+    {
+      key: "review",
+      icon: "star" as const,
+      label: "Review",
+      detail: "Anything you miss comes back later",
+    },
   ];
   return (
-    <div className="flex flex-1 flex-col px-6 pb-6 pt-6">
-      <div className="mb-4 flex justify-center">
-        <MascotImage moment="emptyState" size={120} tone="mint" alt="" className="card-lift" />
-      </div>
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-        {subtitle}
-      </p>
-      <h2 className="text-balance font-display text-[30px] font-bold leading-tight text-ink">
-        {title}
-      </h2>
-      <div className="mt-5 space-y-3">
+    <div className="flex flex-1 flex-col">
+      <LessonRoom
+        roomSrc={roomSrc}
+        expression="talk"
+        height={340}
+        alphonsoWidth={290}
+        titleScrim
+        overlay={
+          <>
+            <div className="absolute inset-x-4 top-4 z-20">{hud}</div>
+            <div className="absolute inset-x-[18px] bottom-4 z-[5]">
+              <p className="ds-type-overline text-ds-on-hero-kick [text-shadow:0_1px_8px_var(--c-hero-b)]">
+                {unitLine}
+              </p>
+              <h2 className="text-balance ds-type-display-x-l text-ds-on-hero [text-shadow:0_2px_12px_color-mix(in_srgb,var(--c-hero-b)_60%,transparent)]">
+                {title}
+              </h2>
+            </div>
+          </>
+        }
+      />
+      <div className="grid gap-2 px-4 pt-4">
         {steps.map((s) => (
           <div
-            key={s.label}
-            data-step=""
-            data-tone={s.tone}
-            className={`card-lift grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl px-4 py-3.5 ${TILE_TONE_CLASSES[s.tone]}`}
+            key={s.key}
+            data-step={s.key}
+            className="flex items-center gap-3 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-3 py-2.5"
           >
-            <Icon3D emoji={s.emoji} size={36} />
+            <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-ds-choice-tint text-ds-action-text">
+              {s.icon === "star" ? (
+                <DsIcon name="star" className="size-5" />
+              ) : (
+                <DsIcon name={s.icon} className="size-5" />
+              )}
+            </span>
             <span className="min-w-0">
-              <span className="block font-display text-base font-bold">{s.label}</span>
-              <span className="block truncate text-xs opacity-80">{s.detail}</span>
+              <span className="block ds-type-headline text-ds-brand">{s.label}</span>
+              <span className="block truncate ds-type-caption font-semibold text-ds-ink-soft">
+                {s.detail}
+              </span>
             </span>
           </div>
         ))}
       </div>
-      <div className="mt-auto pt-6">
-        <Button fullWidth onClick={onStart}>
-          Begin lesson
-        </Button>
+      <div className="sticky bottom-0 z-20 mt-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+        <button onClick={onStart} className={edgeButtonClass("primary")}>
+          Start lesson
+        </button>
       </div>
     </div>
   );
 }
-
-const CHIP_TITLE = { xp: "XP", streak: "Streak", accuracy: "Accuracy" } as const;
-const CHIP_TONE = {
-  xp: TILE_TONE_CLASSES.sun,
-  streak: TILE_TONE_CLASSES.coral,
-  accuracy: TILE_TONE_CLASSES.mint,
-} as const;
 
 export function FinishScreen({
   xp,
@@ -978,6 +984,7 @@ export function FinishScreen({
   missedQs,
   lessonId,
   course,
+  roomSrc = roomSrcForUnit(undefined),
   saved = true,
   notice,
 }: {
@@ -994,97 +1001,111 @@ export function FinishScreen({
   missedQs: { q: Question; yours: string }[];
   lessonId: string;
   course: string;
+  /** The unit's room: the celebration happens where the lesson did. */
+  roomSrc?: string;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const streak = useProgress((s) => s.streak);
   const reduceMotion = usePrefersReducedMotion();
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
+  // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
+  const [amazed, setAmazed] = useState(!reduceMotion);
+  useEffect(() => {
+    if (reduceMotion) return;
+    const t = window.setTimeout(() => setAmazed(false), 1400);
+    return () => window.clearTimeout(t);
+  }, [reduceMotion]);
+  const headline = total > 0 ? `Nice work! You got ${correct} of ${total}.` : "Nice work!";
   return (
-    <div className="relative flex flex-1 flex-col items-center text-center">
-      {/* The whole celebration is one clip: the stage, confetti cannons, streamers, sweeping spotlights and
-          Alphonso cheering. It fills the screen behind the rewards (fixed to the app column, like the Hector page),
-          framed so Alphonso stands in the top half; the rewards sit on glass over its lower part. Under Reduce
-          Motion its first frame stands still. */}
-      <div
-        data-stage="complete"
-        role="img"
-        aria-label="Alphonso celebrating on the stage"
-        className="pointer-events-none fixed inset-y-0 left-1/2 z-0 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-ink"
+    <div data-stage="complete" className="flex flex-1 flex-col">
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
       >
-        <LoopingClip
-          clip="complete"
-          className="absolute inset-0 h-full w-full object-cover object-[50%_20%]"
+        <LessonRoom
+          roomSrc={roomSrc}
+          expression={amazed ? "wow" : "happy"}
+          height={400}
+          alphonsoWidth={300}
+          glow
+          overlay={
+            <>
+              <Confetti reduce={reduceMotion} />
+              <p className="absolute inset-x-0 top-12 z-[5] text-center ds-type-display-x-l text-ds-on-hero [text-shadow:0_2px_16px_color-mix(in_srgb,var(--c-hero-b)_45%,transparent)]">
+                Lesson complete
+              </p>
+            </>
+          }
         />
-        <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-b from-transparent to-surface/90" />
-      </div>
-      {/* Clear space over the clip, so Alphonso is seen before the card. */}
-      <div aria-hidden="true" className="h-[46svh] shrink-0" />
-      <div className="relative z-10 mx-4 flex w-[calc(100%-2rem)] flex-col items-center rounded-[2rem] border border-white/10 bg-surface/75 px-5 pb-6 pt-5 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-xl">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
-          Lesson complete
-        </p>
-        <h2 className="mt-1 font-display text-[26px] font-bold text-ink">{lessonTitle}</h2>
-        <p className="mt-1 text-sm font-semibold text-ink">Nice work, lesson complete!</p>
+      </motion.div>
+      <div className="relative z-[4] grid gap-3.5 px-4 pb-4">
+        <div className="-mt-9">
+          <AlphonsoBubble
+            label="Alphonso says"
+            compact
+            heading={false}
+            onPlay={canSpeak() ? () => speak(headline, localeForCourse("en")) : undefined}
+            playLabel="Hear Alphonso"
+          >
+            {headline}
+          </AlphonsoBubble>
+        </div>
+        <h2 className="sr-only">{lessonTitle}</h2>
         {notice ? (
-          <p role="status" className="mt-2 text-sm text-ink-soft">
+          <p role="status" className="text-center ds-type-footnote text-ds-ink-soft">
             {notice}
           </p>
         ) : null}
-        <div className="mt-4 flex justify-center gap-2.5">
-          {chips.map((c, i) => (
-            <motion.div
-              key={c.kind}
-              aria-label={`${CHIP_TITLE[c.kind]}: ${c.value}`}
-              role="group"
-              initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.6 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 320, damping: 16, delay: 0.45 + i * 0.15 }}
-              className={`card-lift flex min-w-[84px] flex-col items-center gap-1 rounded-2xl px-3 py-2.5 ${CHIP_TONE[c.kind]}`}
-            >
-              <span aria-hidden="true" className="text-xs font-semibold">
-                {CHIP_TITLE[c.kind]}
-              </span>
-              <Icon3D emoji={c.emoji} size={28} />
-              <span aria-hidden="true" className="tnum font-display text-lg font-bold text-ink">
-                <CountUp value={c.value} animate={!reduceMotion} />
-              </span>
-            </motion.div>
-          ))}
-        </div>
-        <p className="tnum mt-2 text-xs text-ink-soft">
+        <RewardTiles chips={chips} reduce={reduceMotion} />
+        <p className="text-center ds-type-footnote tabular-nums text-ds-ink-soft">
           {correct}/{total} correct
         </p>
         {heartsBonus && (
-          <p className="mt-2 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
-            <HeartIcon className="size-3.5" />
-            {heartsBonus === "streak"
-              ? "Streak milestone: hearts fully refilled"
-              : "Perfect lesson: +1 heart"}
-          </p>
+          <span className="justify-self-center">
+            <LessonChip icon="heart" tone="heart">
+              {heartsBonus === "streak"
+                ? "Streak milestone: hearts fully refilled"
+                : "Perfect lesson: +1 heart"}
+            </LessonChip>
+          </span>
         )}
 
+        <AnimatePresence>
+          {unlocked.length > 0 && (
+            <div className="grid gap-2">
+              {unlocked.map((id, i) => {
+                const a = ACHIEVEMENTS_BY_ID[id];
+                if (!a) return null;
+                return (
+                  <AchievementToast
+                    key={id}
+                    title={a.title}
+                    description={a.description}
+                    index={i}
+                    reduce={reduceMotion}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </AnimatePresence>
+
+        <PractiseWithHector />
+
         {missedQs.length > 0 && (
-          <div
-            className={
-              isStudioInk
-                ? "mt-6 w-full divide-y divide-hairline text-left"
-                : "mt-6 w-full space-y-2 text-left"
-            }
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+          <div className="grid gap-2 text-left">
+            <p className="ds-type-overline text-ds-ink-soft">
               Review · {missedQs.length} to practise again
             </p>
             {missedQs.map(({ q, yours }, i) => (
               <div
                 key={`${q.id}-${i}`}
-                className={
-                  isStudioInk ? "py-3" : "rounded-2xl border border-hairline bg-parchment px-4 py-3"
-                }
+                className="rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]"
               >
-                <p className="text-sm font-medium text-ink">{q.prompt}</p>
-                <p className="mt-1 text-xs text-ink-soft/80">
+                <p className="ds-type-footnote text-ds-ink">{q.prompt}</p>
+                <p className="mt-1 ds-type-caption font-semibold text-ds-ink-soft">
                   You said <span className="line-through">{yours}</span> ·{" "}
-                  <span className="font-semibold text-moss">
+                  <span className="text-ds-right-ink">
                     {q.type === "mc"
                       ? q.choices[q.answer]
                       : q.type === "translate"
@@ -1099,60 +1120,16 @@ export function FinishScreen({
           </div>
         )}
 
-        <AnimatePresence>
-          {unlocked.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={
-                isStudioInk ? "mt-6 w-full divide-y divide-hairline" : "mt-6 w-full space-y-2"
-              }
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-                Achievements unlocked
-              </p>
-              {unlocked.map((id) => {
-                const a = ACHIEVEMENTS_BY_ID[id];
-                if (!a) return null;
-                return (
-                  <div
-                    key={id}
-                    className={
-                      isStudioInk
-                        ? "flex items-center gap-3 py-2 text-left"
-                        : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
-                    }
-                  >
-                    <span className="grid size-8 place-items-center rounded-full bg-ember text-ink-on-ember text-xs">
-                      ★
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-ink">{a.title}</p>
-                      <p className="text-[11px] text-ink-soft">{a.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <GeneratedPracticeSection lessonId={lessonId} course={course} />
-        <div className="mt-3 w-full">
-          <PractiseWithHector />
-        </div>
       </div>
 
       {/* Pinned to the bottom of the screen: the way on is never scrolled out of view. */}
       <div
         data-finish-footer
-        className="sticky bottom-0 z-10 mt-4 w-full bg-gradient-to-t from-surface via-surface/90 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6"
+        className="sticky bottom-0 z-20 mt-auto bg-ds-surface/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-1px_0_var(--c-line)]"
       >
-        <Link
-          to="/learn"
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-ember px-6 py-3 font-display text-base font-bold tracking-wide text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)] transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
-        >
-          Back to path
+        <Link to="/learn" className={edgeButtonClass("primary")}>
+          Continue
         </Link>
       </div>
     </div>
@@ -1215,21 +1192,22 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
 
   if (status !== "ready") {
     return (
-      <div className="mt-8 w-full">
+      <div className="w-full">
         <button
           onClick={() => void generate()}
           disabled={status === "loading"}
-          className="w-full rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:border-ink/30 disabled:opacity-50"
+          className={edgeButtonClass("tertiary")}
         >
           {status === "loading" ? "Writing more practice…" : "Generate more practice"}
+          <DsIcon name="chevron" className="size-5" />
         </button>
         {status === "empty" && (
-          <p className="mt-2 text-center text-xs text-ink-soft">
+          <p className="mt-2 text-center ds-type-caption text-ds-ink-soft">
             Couldn't generate practice for this lesson right now.
           </p>
         )}
         {status === "error" && (
-          <p className="mt-2 text-center text-xs text-ink-soft">
+          <p className="mt-2 text-center ds-type-caption text-ds-ink-soft">
             {errorText ?? "Something went wrong. Try again."}
           </p>
         )}
@@ -1239,7 +1217,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
 
   if (idx >= questions.length) {
     return (
-      <div className="mt-8 w-full rounded-2xl border border-hairline bg-parchment p-4 text-center text-sm text-ink-soft">
+      <div className="w-full rounded-[18px] bg-ds-card p-4 text-center ds-type-footnote text-ds-ink-soft shadow-[var(--ds-shadow-resting)]">
         Nice work — that's all the extra practice for this lesson.
       </div>
     );
@@ -1249,15 +1227,16 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
   const isCorrect = picked === q.answerIndex;
 
   return (
-    <div className="mt-8 w-full text-left">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+    <div className="w-full text-left">
+      <p className="ds-type-overline text-ds-ink-soft">
         Extra practice · {idx + 1}/{questions.length}
       </p>
-      <p className="mt-2 text-base font-medium text-ink">{q.prompt}</p>
-      <div className="mt-3 space-y-2">
+      <p className="mt-2 ds-type-headline text-ds-brand">{q.prompt}</p>
+      <div className="mt-3 grid gap-2">
         {q.choices.map((c, i) => (
-          <AnswerOption
+          <LessonAnswer
             key={i}
+            index={i}
             label={c}
             checked={checked}
             isPicked={picked === i}
@@ -1268,12 +1247,22 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
         ))}
       </div>
       {checked && (
-        <AnswerFeedback
-          correct={isCorrect}
-          headline={isCorrect ? "Nice." : "Not quite."}
-          explanation={q.explanation}
-          saveCourse={course}
-        />
+        <div
+          role="status"
+          data-verdict={isCorrect ? "correct" : "wrong"}
+          className={`mt-3 rounded-[18px] px-4 py-3 ${isCorrect ? "bg-ds-right-tint" : "bg-ds-wrong-tint"}`}
+        >
+          <p
+            className={`ds-type-headline font-extrabold ${isCorrect ? "text-ds-right-ink" : "text-ds-wrong-ink"}`}
+          >
+            {isCorrect ? "Nice." : "Not quite."}
+          </p>
+          <AnswerExplanation
+            explanation={q.explanation}
+            saveCourse={course}
+            className="mt-0.5 ds-type-body text-ds-ink"
+          />
+        </div>
       )}
       <button
         disabled={!checked && picked === null}
@@ -1286,7 +1275,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
           setPicked(null);
           setChecked(false);
         }}
-        className="mt-4 w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
+        className={`mt-4 ${edgeButtonClass("primary")}`}
       >
         {!checked ? "Check" : idx < questions.length - 1 ? "Next" : "Finish practice"}
       </button>
