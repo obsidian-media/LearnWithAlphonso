@@ -18,6 +18,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { issueLessonSessionToken } from "./lesson-session.ts";
 import { heartsGate, heartsGateEnforced, MAX_HEARTS, outOfHeartsBody } from "../_shared/hearts.ts";
+import { heartsUnlimitedFor } from "../_shared/hearts-pro.ts";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
@@ -134,15 +135,20 @@ export async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "Lesson not found" }, 404);
   }
 
-  // No lesson starts at 0 hearts, on any client. The web's startLessonSession server function runs the same
-  // heartsGate. Review and practice never come through here, so they never cost or need hearts.
+  // Alphonso Pro has unlimited hearts. Asked on every start (cached for up to an hour) so lose_heart() also honours
+  // it for the whole lesson; fails closed to "not Pro", which is the hearts economy everyone else has.
+  const unlimited = heartsUnlimitedFor(admin, userId);
+
+  // No lesson starts at 0 hearts, on any client, except for Pro. The web's startLessonSession server function runs
+  // the same heartsGate. Review and practice never come through here, so they never cost or need hearts.
   if (heartsGateEnforced()) {
     const state = await readHearts(admin, userId);
     if (state) {
       const gate = heartsGate(state.hearts, state.heartsRefillAt, Date.now());
-      if (gate.blocked) return jsonResponse(outOfHeartsBody(gate.refillAt), 409);
+      if (gate.blocked && !(await unlimited)) return jsonResponse(outOfHeartsBody(gate.refillAt), 409);
     }
   }
+  await unlimited;
 
   const token = issueLessonSessionToken({ userId, lessonId, course });
   return jsonResponse({ token }, 200);

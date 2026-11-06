@@ -67,6 +67,19 @@ vi.mock("../../lib/review.functions", () => ({ recordMisses }));
 
 vi.mock("../../lib/auth-headers", () => ({ authHeaders: vi.fn().mockResolvedValue({}) }));
 
+// Alphonso Pro status, as /api/pro-status reports it. Free unless a test says otherwise.
+let proState: "loading" | "pro" | "free" | "error" = "free";
+vi.mock("../../lib/use-pro-status", () => ({
+  useProStatus: () => ({
+    state: proState,
+    store: null,
+    trialEligible: false,
+    manageUrl: null,
+    justPaid: false,
+    retry: vi.fn(),
+  }),
+}));
+
 const { Route } = await import("./lesson.$id");
 const { useProgress } = await import("../../lib/progress");
 
@@ -97,6 +110,7 @@ async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
 }
 
 beforeEach(() => {
+  proState = "free";
   canSpeak.mockReturnValue(true);
   currentLessonId = "u1l1";
   navigate.mockClear();
@@ -272,6 +286,19 @@ describe("Lesson page", () => {
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalled();
+  });
+
+  it("a Pro learner's wrong answer costs no heart (unlimited hearts)", async () => {
+    proState = "pro";
+    const user = userEvent.setup();
+    currentLessonId = "a1p24l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Type the phrase"), "good night");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite")).toBeInTheDocument();
+    expect(loseHeartRemote).not.toHaveBeenCalled();
   });
 
   it("lets the learner save a word from the explanation (the page provides the dialog)", async () => {

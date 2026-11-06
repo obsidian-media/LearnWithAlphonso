@@ -129,4 +129,15 @@ final class HeartsEconomyTests: XCTestCase {
         XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 3, heartsRefillAt: nil, now: now), HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: nil))
         XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 0, heartsRefillAt: timer, now: now), HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: timer))
     }
+
+    func testProIsNeverOutOfHearts() {
+        let refill = Date(timeIntervalSince1970: 100)
+        XCTAssertEqual(HeartsEconomy.gate(hearts: 0, heartsRefillAt: refill, now: Date(timeIntervalSince1970: 1), unlimited: true), .open)
+        XCTAssertEqual(HeartsEconomy.gate(hearts: 0, heartsRefillAt: refill, now: Date(timeIntervalSince1970: 1), unlimited: false), .outOfHearts(refillAt: refill))
+    }
+
+    func testOnlyNonProWrongAnswersCostAHeart() {
+        XCTAssertTrue(HeartsEconomy.wrongAnswerCostsHeart(unlimited: false))
+        XCTAssertFalse(HeartsEconomy.wrongAnswerCostsHeart(unlimited: true))
+    }
 }

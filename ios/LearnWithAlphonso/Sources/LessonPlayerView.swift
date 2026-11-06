@@ -475,6 +475,8 @@ struct LessonPlayerView: View {
     /// failed request just means the next real sync corrects the count,
     /// same posture as this file's other fire-and-forget calls.
     private func spendHeartForWrongAnswer() {
+        // Alphonso Pro has unlimited hearts (the server skips Pro too).
+        guard HeartsEconomy.wrongAnswerCostsHeart(unlimited: hectorAccess?.entitlementStore.isPro ?? false) else { return }
         if let cached = syncQueueStore.lastKnownProgress(), cached.hearts > 0 {
             // The last heart also starts the refill timer, so the offline gate can show a countdown.
             let after = HeartsEconomy.afterLosingHeart(
@@ -503,7 +505,8 @@ struct LessonPlayerView: View {
                case let .outOfHearts(refillAt) = HeartsEconomy.gate(
                    hearts: cached.hearts,
                    heartsRefillAt: cached.heartsRefillAt.map { Date(timeIntervalSince1970: $0 / 1000) },
-                   now: Date()) {
+                   now: Date(),
+                   unlimited: hectorAccess?.entitlementStore.isPro ?? false) {
                 block(refillAt: refillAt)
             }
             return

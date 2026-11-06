@@ -1105,3 +1105,65 @@ describe("savePlacementResult", () => {
     ).rejects.toThrow("Could not save placement result");
   });
 });
+
+describe("completeLessonRemote settles the lesson's hearts on the server", () => {
+  const answers = (wrong: number) =>
+    Object.entries({
+      q1: "Good morning.",
+      q2: "meet",
+      q3: "I am fine, thanks.",
+      q4: "Good",
+      q5: "Good night.",
+      q6: "Hey!",
+      q7: "later",
+      q8: "You're welcome.",
+    }).map(([questionId, answer], i) => ({ questionId, answer: i < wrong ? "zzz wrong" : answer }));
+  const call = (wrong: number) =>
+    completeLessonRemote({
+      context: ctx(createSupabaseMock()),
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        answers: answers(wrong),
+        course: "en",
+        sessionToken: issueLessonSessionToken({
+          userId: USER_ID,
+          lessonId: LESSON_ID,
+          course: "en",
+        }),
+      },
+    });
+  const settleArgs = () =>
+    (adminRpc.mock.calls as unknown as [string, Record<string, unknown>][]).find(
+      ([name]) => name === "settle_lesson_hearts",
+    )?.[1];
+
+  afterEach(() => {
+    delete process.env.SERVER_HEARTS;
+  });
+
+  it("passes the server's own miss count, in shadow mode by default", async () => {
+    await call(2);
+    expect(settleArgs()).toMatchObject({ _user_id: USER_ID, _misses: 2, _enforce: false });
+  });
+
+  it("charges only with SERVER_HEARTS=on, and returns the settled hearts", async () => {
+    process.env.SERVER_HEARTS = "on";
+    adminRpc.mockImplementation(async (name?: string) =>
+      name === "apply_lesson_completion"
+        ? { data: { status: "applied" }, error: null }
+        : name === "settle_lesson_hearts"
+          ? { data: [{ hearts: 2, hearts_refill_at: null }], error: null }
+          : { data: [false], error: null },
+    );
+    const result = await call(3);
+    expect(settleArgs()).toMatchObject({ _misses: 3, _enforce: true });
+    expect(result.progress.hearts).toBe(2);
+  });
+
+  it("SERVER_HEARTS=off settles nothing", async () => {
+    process.env.SERVER_HEARTS = "off";
+    await call(1);
+    expect(settleArgs()).toBeUndefined();
+  });
+});

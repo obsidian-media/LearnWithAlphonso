@@ -489,6 +489,9 @@ describe("exportMyData, rows the caller cannot read itself", () => {
       ["buddy_members", "user_id"],
       ["lesson_completion_hits", "user_id"],
       ["weekly_xp_totals", "user_id"],
+      ["heart_loss_reports", "user_id"],
+      ["lesson_heart_settlements", "user_id"],
+      ["hearts_pro_status", "user_id"],
     ]) {
       expect(tables[table], table).toEqual([{ from: table }]);
       expect(calls[table], table).toContainEqual({ method: "eq", args: [column, USER_ID] });

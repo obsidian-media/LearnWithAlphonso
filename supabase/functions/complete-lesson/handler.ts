@@ -33,8 +33,12 @@ import {
   MAX_HEARTS,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
+  type ServerHeartsMode,
+  serverHeartsMode,
   streakHeartMilestoneReached,
 } from "../_shared/hearts.ts";
+import { heartsUnlimitedFor } from "../_shared/hearts-pro.ts";
+import { createHash } from "node:crypto";
 import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
 // instead of trusting a client-claimed missedQuestionIds list. The same
@@ -90,6 +94,10 @@ export type CompleteLessonDeps = {
   consumeCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<boolean>;
   /** Gives back a slot taken for a completion that then failed to save, so the client's retry is not double counted. */
   releaseCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<void>;
+  /** SERVER_HEARTS: whether the lesson's hearts are settled here ("shadow" records only, "on" charges). */
+  heartsMode: () => ServerHeartsMode;
+  /** Alphonso Pro: unlimited hearts. Fails closed (false). */
+  heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean>;
   now: () => Date;
 };
 
@@ -128,8 +136,54 @@ export function liveDeps(): CompleteLessonDeps {
     sendPush: sendPushToUser,
     consumeCompletionSlot,
     releaseCompletionSlot,
+    heartsMode: () => serverHeartsMode(),
+    heartsUnlimited: (admin, userId) => heartsUnlimitedFor(admin, userId),
     now: () => new Date(),
   };
+}
+
+type HeartsSettlement = { hearts: number; heartsRefillAt: number | null };
+
+/**
+ * Settles this lesson session's hearts from the server's own grading (settle_lesson_hearts): misses the app already
+ * reported through lose_heart are not charged again, and the rest are charged only when SERVER_HEARTS=on. Runs after
+ * the completion is saved and never fails it: on any error the hearts stay as the completion left them.
+ */
+async function settleLessonHearts(
+  deps: CompleteLessonDeps,
+  admin: SupabaseClient,
+  userId: string,
+  sessionToken: string,
+  misses: number,
+  sinceMs: number,
+): Promise<HeartsSettlement | null> {
+  const mode = deps.heartsMode();
+  if (mode === "off") return null;
+  try {
+    const pro = await deps.heartsUnlimited(admin, userId);
+    const { data, error } = await admin.rpc("settle_lesson_hearts", {
+      _user_id: userId,
+      _token_hash: createHash("sha256").update(sessionToken).digest("hex"),
+      _misses: misses,
+      _since: new Date(sinceMs).toISOString(),
+      _enforce: mode === "on",
+      _pro: pro,
+    });
+    const row = (Array.isArray(data) ? data[0] : data) as
+      | { hearts?: unknown; hearts_refill_at?: unknown }
+      | null;
+    if (error || !row || typeof row.hearts !== "number") {
+      console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
+      return null;
+    }
+    return {
+      hearts: row.hearts,
+      heartsRefillAt: typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+    };
+  } catch {
+    console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
+    return null;
+  }
 }
 
 export function createCompleteLessonHandler(deps: CompleteLessonDeps): (req: Request) => Promise<Response> {
@@ -450,6 +504,16 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
     return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
   }
+
+  const settled = await settleLessonHearts(
+    deps,
+    admin,
+    userId,
+    sessionToken,
+    missedQuestionIds.length,
+    sessionIssuedAt ?? now.getTime(),
+  );
+  if (settled) heartsResult = settled;
 
   // Real (remote) push for leaderboard "you've been overtaken" -- V4
   // candidate #2 (docs/BACKLOG.md sec 2.1). This function is the one

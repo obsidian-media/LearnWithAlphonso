@@ -75,10 +75,16 @@ public enum HeartsEconomy {
         case outOfHearts(refillAt: Date?)
     }
 
-    public static func gate(hearts: Int, heartsRefillAt: Date?, now: Date) -> GateDecision {
+    /// Alphonso Pro has unlimited hearts: never out of hearts, and a wrong answer costs nothing. The server agrees
+    /// (lose_heart and the lesson settlement skip Pro), so `unlimited` only keeps the app's own display in step.
+    public static func gate(hearts: Int, heartsRefillAt: Date?, now: Date, unlimited: Bool = false) -> GateDecision {
+        if unlimited { return .open }
         let resolved = resolveHeartsRefill(hearts: hearts, heartsRefillAt: heartsRefillAt, now: now)
         return resolved.hearts > 0 ? .open : .outOfHearts(refillAt: resolved.heartsRefillAt)
     }
+
+    /// Whether a wrong answer costs a heart. False for Alphonso Pro (unlimited hearts).
+    public static func wrongAnswerCostsHeart(unlimited: Bool) -> Bool { !unlimited }
 
     /// The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the
     /// refill is due one interval from now, so the offline gate can show a countdown (the server sets the same

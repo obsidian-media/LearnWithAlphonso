@@ -13,6 +13,7 @@ import {
   gainHearts,
   heartsGate,
   heartsGateEnforced,
+  serverHeartsMode,
   outOfHeartsBody,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
@@ -109,4 +110,12 @@ Deno.test("heartsGateEnforced defaults on and only the literal 'false' turns it 
   assertEquals(heartsGateEnforced(() => "true"), true);
   assertEquals(heartsGateEnforced(() => "0"), true);
   assertEquals(heartsGateEnforced(() => "false"), false);
+});
+
+Deno.test("serverHeartsMode defaults to shadow; only 'on' charges and 'off' skips (same as the web copy)", () => {
+  const mode = (v: string | undefined) => serverHeartsMode(() => v);
+  assertEquals(mode(undefined), "shadow");
+  assertEquals(mode("yes"), "shadow");
+  assertEquals(mode(" ON "), "on");
+  assertEquals(mode("off"), "off");
 });

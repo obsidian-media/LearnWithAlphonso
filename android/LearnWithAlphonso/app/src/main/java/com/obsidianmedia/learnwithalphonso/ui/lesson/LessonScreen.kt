@@ -86,6 +86,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             rememberTier = { container.tierCache.lastKnownTier = it },
             hasAiConsent = { container.aiConsent.isGranted },
             ownerUserId = { container.session.userId },
+            isPro = { container.entitlements.isPro },
         )
     }
     val state by vm.state.collectAsState()

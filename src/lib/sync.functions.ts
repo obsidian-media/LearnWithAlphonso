@@ -197,6 +197,10 @@ export const startLessonSession = createServerFn({ method: "POST" })
     // web and iOS share one rule. Returned as a value rather than thrown, because the page needs refillAt for
     // its countdown. A failed hearts read fails OPEN (an economy rule must not lock a learner out).
     const { heartsGateEnforced } = await import("./hearts-gate.server");
+    // Alphonso Pro has unlimited hearts. Asked on every start (cached for up to an hour) so lose_heart() also honours
+    // it for the whole lesson; fails closed to "not Pro".
+    const { heartsUnlimited, liveHeartsServerDeps } = await import("./hearts-server.server");
+    const unlimited = liveHeartsServerDeps().then((deps) => heartsUnlimited(context.userId, deps));
     if (heartsGateEnforced()) {
       const { data: row, error } = await context.supabase
         .from("user_progress")
@@ -209,9 +213,12 @@ export const startLessonSession = createServerFn({ method: "POST" })
           row?.hearts_refill_at ? new Date(row.hearts_refill_at).getTime() : null,
           Date.now(),
         );
-        if (gate.blocked) return { error: "out-of-hearts", refillAt: gate.refillAt };
+        if (gate.blocked && !(await unlimited)) {
+          return { error: "out-of-hearts", refillAt: gate.refillAt };
+        }
       }
     }
+    await unlimited;
     const { issueLessonSessionToken } = await import("./lesson-session.server");
     return {
       token: issueLessonSessionToken({
@@ -265,8 +272,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       throw new Error("Invalid lesson completion payload");
     }
     validateLessonAnswerCoverage(found.lesson, answers);
-    const { verifyLessonSessionToken } = await import("./lesson-session.server");
-    if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
+    const { lessonSessionIssuedAt } = await import("./lesson-session.server");
+    const sessionIssuedAt = lessonSessionIssuedAt(sessionToken, { userId, lessonId, course });
+    if (sessionIssuedAt === null) {
       throw new Error("Invalid or expired lesson session");
     }
 
@@ -525,18 +533,23 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       }
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
-    const {
-      xpGain,
-      streak,
-      longest,
-      freezes,
-      heartsResult,
-      heartsBonus,
-      xp,
-      oldIdx,
-      newIdx,
-      leagueTier,
-    } = applied;
+
+    // Hearts are settled on the server from this grading (same as the complete-lesson Edge Function).
+    const { serverHeartsMode } = await import("./hearts-gate.server");
+    const { settleLessonHearts, liveHeartsServerDeps } = await import("./hearts-server.server");
+    const settled = await settleLessonHearts(
+      {
+        userId,
+        sessionToken,
+        misses: missedQuestionIds.length,
+        sinceMs: sessionIssuedAt,
+        mode: serverHeartsMode(),
+      },
+      await liveHeartsServerDeps(),
+    );
+    const heartsResult = settled ?? applied.heartsResult;
+    const { xpGain, streak, longest, freezes, heartsBonus, xp, oldIdx, newIdx, leagueTier } =
+      applied;
 
     // The lesson is already saved. Nothing below may turn that into an error, and nothing below may write
     // from a failed read: an unreadable unlock list looks like "nothing unlocked yet", which would
