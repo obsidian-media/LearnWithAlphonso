@@ -62,6 +62,29 @@ describe("splitReplyVerdict", () => {
     }
   });
 
+  it("strips a malformed tag whole and gives none", () => {
+    for (const raw of [
+      "Hi\n[[verdict:correct.]]",
+      'Hi\n[[verdict:"correct"]]',
+      "Hi\n[[verdict=correct]]",
+      "Hi\n[[verdict: correct, mostly]]",
+      "Hi\n[[verdict]]",
+    ]) {
+      expect(splitReplyVerdict(raw)).toEqual({ text: "Hi", verdict: "none" });
+    }
+  });
+
+  it("strips a bare opener left by the token cap", () => {
+    expect(splitReplyVerdict("Hi there\n[[").text).toBe("Hi there");
+    expect(splitReplyVerdict("Hi there\n[").text).toBe("Hi there");
+  });
+
+  it("keeps ordinary bracketed text at the end of a reply", () => {
+    expect(splitReplyVerdict("Say it with the verb [venir]").text).toBe(
+      "Say it with the verb [venir]",
+    );
+  });
+
   it("returns empty text for a reply that was only a tag", () => {
     expect(splitReplyVerdict("[[verdict:correct]]")).toEqual({ text: "", verdict: "correct" });
   });
