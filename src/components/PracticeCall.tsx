@@ -45,6 +45,8 @@ type Props = {
   messages: { role: "user" | "assistant"; content: string }[];
   /** The full conversation, its hints and the typed-message box: shown in the bottom sheet. */
   sheet: ReactNode;
+  /** Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption. */
+  extra?: ReactNode;
   reducedMotion: boolean;
 };
 
@@ -85,6 +87,7 @@ export function PracticeCall(props: Props) {
     endTo,
     messages,
     sheet,
+    extra,
     reducedMotion,
   } = props;
   const speaking = mode === "speaking";
@@ -285,6 +288,11 @@ export function PracticeCall(props: Props) {
         </div>
       )}
 
+      {extra && (
+        <div className="absolute inset-x-[18px] bottom-[212px] z-[6] flex justify-center">
+          {extra}
+        </div>
+      )}
       <p
         ref={captionRef}
         aria-live="polite"
