@@ -58,6 +58,8 @@ class AlphonsoTokensSyncTest {
         val roles = mapOf(
             "displayXL" to AlphonsoTokens.Type.displayXL, "display" to AlphonsoTokens.Type.display,
             "title" to AlphonsoTokens.Type.title, "headline" to AlphonsoTokens.Type.headline,
+            "question" to AlphonsoTokens.Type.question, "questionSmall" to AlphonsoTokens.Type.questionSmall,
+            "answer" to AlphonsoTokens.Type.answer,
             "body" to AlphonsoTokens.Type.body, "footnote" to AlphonsoTokens.Type.footnote,
             "caption" to AlphonsoTokens.Type.caption, "overline" to AlphonsoTokens.Type.overline,
             "numeralXL" to AlphonsoTokens.Type.numeralXL, "numeral" to AlphonsoTokens.Type.numeral,
