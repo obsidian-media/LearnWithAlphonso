@@ -21,7 +21,7 @@ import { useSpeechCapture } from "../../lib/use-speech-capture";
 import { PracticeCall } from "../../components/PracticeCall";
 import { HECTOR_KIT } from "../../lib/avatar/layers";
 import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
-import { useAvatarPreference } from "../../lib/avatar/preference";
+import { useStoredAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
@@ -160,9 +160,9 @@ function HectorConversation({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   // The call screen ("Show Alphonso while practising" covers Hector too, so one switch decides).
   const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
-  const showCall = useAvatarPreference((st) => st.enabled);
-  const hydrateAvatarPreference = useAvatarPreference((st) => st.hydrate);
-  useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
+  // Read before the first render (this screen mounts only after the client-side Pro check), so with the setting off
+  // the call never flashes up for a frame.
+  const showCall = useStoredAvatarPreference();
   const reducedMotion = useReducedMotion() ?? false;
   const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
