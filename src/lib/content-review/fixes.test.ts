@@ -379,3 +379,14 @@ describe("numeric fields", () => {
     ).toMatch(/whole number/);
   });
 });
+
+describe("the card example a question makes", () => {
+  it("refuses French spacing before a colon (vocab.test.ts)", async () => {
+    const { exampleRules } = await import("./fixes");
+    expect(exampleRules("Il a deux avantages : vite et bien.", "fr").join()).toMatch(
+      /space before/,
+    );
+    expect(exampleRules("Où est la gare ?", "fr")).toEqual([]);
+    expect(exampleRules("où est-il?", "fr").join()).toMatch(/lowercase/);
+  });
+});

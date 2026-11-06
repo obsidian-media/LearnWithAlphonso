@@ -90,7 +90,7 @@ import {
   route,
   type Ruling,
 } from "../../src/lib/content-review/judge";
-import { answerText, checkFixes, overlayJson } from "../../src/lib/content-review/fixes";
+import { answerText, checkFix, checkFixes, overlayJson } from "../../src/lib/content-review/fixes";
 import {
   blindSample,
   missEstimate,
@@ -779,21 +779,39 @@ function routeCommand() {
   // Rulings on one item from several phases (the judge, then a rewrite) are merged: fix patches
   // combine field by field, the later phase winning a field both set; the lowest confidence and any
   // key change carry over. A later keep or owner never discards an earlier fix.
+  // A later patch that would make a passing fix fail the checks is dropped (the earlier fix stands)
+  // rather than sinking the whole merged fix.
   const latest = new Map<string, Ruling>();
+  const passes = (x: Ruling) => {
+    const it = items.get(x.id);
+    return (
+      !!it &&
+      checkFix(it, {
+        id: x.id,
+        reason: x.reason,
+        patch: { ...(x.patch ?? {}) },
+        keyChange: x.keyChange,
+      }).length === 0
+    );
+  };
+  let droppedLater = 0;
   for (const r of rulings) {
     const prev = latest.get(r.id);
     if (!prev) latest.set(r.id, r);
-    else if (prev.decision === "fix" && r.decision === "fix")
-      latest.set(r.id, {
+    else if (prev.decision === "fix" && r.decision === "fix") {
+      const merged: Ruling = {
         ...r,
         patch: { ...prev.patch, ...r.patch },
         confidence: Math.min(prev.confidence, r.confidence),
         keyChange: prev.keyChange || r.keyChange,
         category: r.keyChange ? r.category : prev.keyChange ? prev.category : r.category,
         reason: `${prev.reason} / ${r.reason}`,
-      });
-    else if (r.decision === "fix" || prev.decision !== "fix") latest.set(r.id, r);
+      };
+      if (!passes(merged) && passes(prev)) droppedLater++;
+      else latest.set(r.id, merged);
+    } else if (r.decision === "fix" || prev.decision !== "fix") latest.set(r.id, r);
   }
+  if (droppedLater) console.log(`Kept the earlier fix where a later patch failed: ${droppedLater}`);
   const second = loadVerdicts("second");
   const routed = route([...latest.values()], (id) => second.get(id)?.verdict === "ok");
   // A word card is authored on the question it comes from, so a card fix and that question's

@@ -287,6 +287,21 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
       if (card) why.push(...englishCard(card, item.level));
     }
   }
+  // The card example a question makes (its authored example, or the prompt with the answer filled
+  // in) must pass vocab.test.ts in every language: no space before , . ; : (nor ? ! in English),
+  // no lowercase start, no bracket hint.
+  if (
+    item.kind === "question" &&
+    ["prompt", "answer", "choices", "bank", "example"].some((k) => k in fix.patch)
+  ) {
+    const card = deriveVocab({
+      id: "x",
+      title: "",
+      subtitle: "",
+      questions: [next as unknown as Question],
+    })[0];
+    if (card?.example) why.push(...exampleRules(card.example, item.course));
+  }
   if (
     item.kind === "card" &&
     typeof fix.patch.meaning === "string" &&
@@ -346,4 +361,14 @@ export function overlayJson(fixes: CheckedFix[]): string {
   for (const f of sorted)
     out[f.id] = { patch: f.patch, reason: f.reason, ...(f.keyChange ? { keyChange: true } : {}) };
   return `${JSON.stringify(out, null, 1)}\n`;
+}
+
+/** vocab.test.ts's example rules (spaced punctuation, lowercase start, bracket hint). */
+export function exampleRules(e: string, lang: string): string[] {
+  const why: string[] = [];
+  if (/\s[,.;:]/.test(e) || (lang === "en" && /\s[?!]/.test(e)))
+    why.push(`the card example has a space before punctuation: "${e}"`);
+  if (/^\p{Ll}/u.test(e)) why.push(`the card example starts lowercase: "${e}"`);
+  if (/\([^)]*\)/.test(e)) why.push(`the card example has a bracket hint: "${e}"`);
+  return why;
 }
