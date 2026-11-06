@@ -57,7 +57,8 @@ struct VocabScreen: View {
                     wordCard(item, index: index)
                         .padding(.horizontal, 2)
                         .padding(.top, 14)
-                        .padding(.bottom, 8)
+                        // Room for the card's shadow: the page view clips at its edge.
+                        .padding(.bottom, AlphonsoDS.Space.s8)
                         // The card keeps its own height, at the top of the page.
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .tag(index)
@@ -150,8 +151,8 @@ struct VocabScreen: View {
             }
             if !item.example.isEmpty {
                 Text(item.example)
+                    .italic() // on the Text, so the role's font keeps it
                     .dsText(.body)
-                    .italic()
                     .foregroundStyle(ds.brand)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, AlphonsoDS.Space.s4)
@@ -241,8 +242,8 @@ struct VocabScreen: View {
                             .dsText(.body)
                             .foregroundStyle(ds.inkSoft)
                         Text(item.example)
+                            .italic() // on the Text, so the role's font keeps it
                             .dsText(.body)
-                            .italic()
                             .foregroundStyle(ds.brand)
                             .padding(.top, AlphonsoDS.Space.s1)
                     }
