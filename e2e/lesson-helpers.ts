@@ -80,9 +80,9 @@ function serverFnBody(result: unknown): string {
 
 /**
  * Answers the lesson's server functions with no backend: a session token, a heart lost, and a saved completion
- * (+20 XP, a 4-day streak), so a whole lesson plays to the celebration.
+ * (+70 XP, what the XP formula pays for 7 of 8 right on a first try, and a 4-day streak), so a whole lesson plays to the celebration.
  */
-export async function fakeLessonServer(page: Page, { streak = 4, xp = 20 } = {}) {
+export async function fakeLessonServer(page: Page, { streak = 4, xp = 70 } = {}) {
   const today = new Date().toISOString().slice(0, 10);
   const answers: Record<string, unknown> = {
     startLessonSession: { token: "fake-session" },

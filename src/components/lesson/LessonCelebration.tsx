@@ -113,13 +113,37 @@ const TILE = {
     tone: "bg-ds-choice",
     tint: "bg-ds-choice-tint text-ds-choice",
   },
+  time: {
+    title: "Time",
+    label: "Time",
+    icon: "clock",
+    solid: false,
+    tone: "bg-ds-brand",
+    tint: "bg-ds-sunk text-ds-brand",
+  },
 } as const;
 
 /** The three reward tiles: a coloured top edge, an icon, a condensed number that counts up, and its name. */
-export function RewardTiles({ chips, reduce }: { chips: LessonRewardChip[]; reduce: boolean }) {
+export function RewardTiles({
+  chips,
+  time = null,
+  reduce,
+}: {
+  chips: LessonRewardChip[];
+  /** The lesson's time, "m:ss", as a fourth tile; null when it is not known. */
+  time?: string | null;
+  reduce: boolean;
+}) {
+  const tiles: { kind: keyof typeof TILE; value: string }[] = [
+    ...chips,
+    ...(time ? [{ kind: "time" as const, value: time }] : []),
+  ];
   return (
-    <div className="grid grid-cols-3 gap-2.5" data-reward-tiles="">
-      {chips.map((c, i) => {
+    <div
+      className={`grid gap-2.5 ${tiles.length === 4 ? "grid-cols-2" : "grid-cols-3"}`}
+      data-reward-tiles=""
+    >
+      {tiles.map((c, i) => {
         const t = TILE[c.kind];
         return (
           <motion.div
@@ -139,7 +163,7 @@ export function RewardTiles({ chips, reduce }: { chips: LessonRewardChip[]; redu
               {t.solid ? (
                 <DsIcon name={t.icon as "bolt" | "flame"} solid className="size-5" />
               ) : (
-                <DsIcon name="target" className="size-5" />
+                <DsIcon name={t.icon as "target" | "clock"} className="size-5" />
               )}
             </span>
             <span aria-hidden="true" className="ds-type-numeral-x-l text-ds-ink">

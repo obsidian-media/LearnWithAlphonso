@@ -411,11 +411,38 @@
   font-variation-settings: "opsz" 24;
 }
 
+.ds-type-question {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 29px;
+  font-stretch: 94%;
+  font-variation-settings: "opsz" 24;
+  letter-spacing: -0.005em;
+}
+
+.ds-type-question-small {
+  font-family: var(--ds-font-display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 25px;
+  font-stretch: 94%;
+  font-variation-settings: "opsz" 20;
+  letter-spacing: -0.005em;
+}
+
 .ds-type-headline {
   font-family: var(--ds-font-body);
   font-weight: 700;
   font-size: 17px;
   line-height: 22px;
+}
+
+.ds-type-answer {
+  font-family: var(--ds-font-body);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
 }
 
 .ds-type-body {

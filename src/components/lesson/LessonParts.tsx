@@ -240,7 +240,7 @@ export function AlphonsoBubble({
       <div className="relative min-w-0 break-words">
         <p className="mb-[3px] mt-0.5 ds-type-overline text-ds-action-text">{label}</p>
         <Text
-          className={`${compact ? "ds-type-headline" : "ds-type-title"} text-pretty text-ds-brand`}
+          className={`${compact ? "ds-type-question-small" : "ds-type-question"} text-pretty text-ds-brand`}
         >
           {children}
         </Text>
@@ -317,11 +317,11 @@ export function LessonAnswer({
       aria-pressed={isPicked}
       data-answer-state={state}
       // Room for the verdict sheet when the right answer is scrolled into view above it.
-      className={`mb-1 scroll-mb-[300px] flex min-h-[58px] w-full items-start gap-3.5 rounded-[var(--ds-radius-control)] border-2 py-[15px] pl-3.5 pr-4 text-left ds-type-headline transition-[transform,box-shadow,background-color,border-color] duration-[var(--ds-duration-select)] ease-[var(--ds-ease-out)] motion-reduce:transition-none ${ANSWER_FACE[state]}`}
+      className={`mb-1 scroll-mb-[300px] flex min-h-[62px] w-full items-start gap-3.5 rounded-[var(--ds-radius-control)] border-2 py-4 pl-4 pr-4 text-left ds-type-answer transition-[transform,box-shadow,background-color,border-color] duration-[var(--ds-duration-select)] ease-[var(--ds-ease-out)] motion-reduce:transition-none ${ANSWER_FACE[state]}`}
     >
       <span
         aria-hidden="true"
-        className={`-mt-[3px] grid size-7 shrink-0 place-items-center rounded-[var(--ds-radius-key)] border-2 ds-type-caption font-extrabold ${ANSWER_KEY[state]}`}
+        className={`-mt-[3px] grid size-[30px] shrink-0 place-items-center rounded-[var(--ds-radius-key)] border-2 ds-type-caption font-extrabold ${ANSWER_KEY[state]}`}
       >
         {state === "correct" ? (
           <DsIcon name="check" className="size-4 [stroke-width:3]" />
@@ -362,7 +362,7 @@ export function WordTile({
       disabled={disabled}
       onClick={onClick}
       aria-pressed={placed ? undefined : picked}
-      className={`mb-1 min-h-11 rounded-[14px] border-2 px-4 py-2 ds-type-headline transition-[transform,box-shadow] duration-[var(--ds-duration-press)] disabled:opacity-60 motion-reduce:transition-none ${face}`}
+      className={`mb-1 min-h-12 rounded-[14px] border-2 px-4 py-2.5 ds-type-answer transition-[transform,box-shadow] duration-[var(--ds-duration-press)] disabled:opacity-60 motion-reduce:transition-none ${face}`}
     >
       {word}
     </button>

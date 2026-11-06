@@ -209,6 +209,39 @@ describe("Lesson page", () => {
     expect(container.querySelectorAll("[data-step] svg")).toHaveLength(3);
   });
 
+  it("lesson start says how long, how many questions and the most XP, from the real lesson and the XP formula", async () => {
+    const { getCourse } = await import("../../data/courses");
+    const { estimateLessonMinutes } = await import("../../lib/lesson-time");
+    const { computeXpGain } = await import("../../lib/progress-math");
+    const { vocabForLesson } = await import("../../data/vocab");
+    const lesson = getCourse("en").curriculum[0].lessons[0];
+    renderPage();
+    await screen.findByRole("button", { name: "Start lesson" });
+    const minutes = estimateLessonMinutes(lesson.questions, vocabForLesson(lesson.id, "en").length);
+    const most = computeXpGain(lesson.questions.length, lesson.questions.length);
+    expect(most).toBe(100);
+    expect(
+      screen.getByText(
+        `About ${minutes} min · ${lesson.questions.length} questions · Up to ${most} XP`,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("a right answer shows the XP it earns; a wrong one shows none", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const right = (await screen.findByText("Exactly!")).closest('[role="status"]') as HTMLElement;
+    expect(within(right).getByText("+10 XP")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(await screen.findByRole("button", { name: ANSWERS[1].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const wrong = (await screen.findByText("Not quite")).closest('[role="status"]') as HTMLElement;
+    expect(within(wrong).queryByText(/XP/)).toBeNull();
+  });
+
   it("the room changes with the unit: a lesson in another unit stands in that unit's room", async () => {
     currentLessonId = "u2l1";
     const { container } = renderPage();

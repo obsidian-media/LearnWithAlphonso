@@ -138,7 +138,9 @@ async function currentQuestion(page: Page, own: Question[]): Promise<Question> {
   );
   const fits = (q: Question) =>
     q.prompt === prompt &&
-    (!("choices" in q) || shown.length === 0 || q.choices.every((c) => shown.includes(c)));
+    (!("choices" in q) || shown.length === 0 || q.choices.every((c) => shown.includes(c))) &&
+    // Sentence-building prompts repeat too: match the word tiles.
+    (!("tokens" in q) || q.tokens.every((t) => shown.includes(t)));
   const q = own.find(fits) ?? ALL_QUESTIONS.find(fits);
   if (!q) throw new Error(`no known question: ${prompt}`);
   return q;

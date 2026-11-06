@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { PractiseWithHector } from "../../components/PractiseWithHector";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonScreen } from "../../components/lesson/LessonScreen";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
@@ -21,6 +21,8 @@ import {
 } from "../../components/lesson/LessonParts";
 import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
+import { XP_PER_RIGHT_ANSWER, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
+import { ActiveTimer, estimateLessonMinutes, formatElapsed } from "../../lib/lesson-time";
 import { correctAnswerText, verdictTitle } from "../../lib/answer-verdict";
 import { deckButtonTitle } from "../../lib/vocab-deck";
 import { SaveWordProvider } from "../../components/SaveWord";
@@ -159,6 +161,8 @@ function LessonPage() {
     saved: boolean;
     /** Set when the server refused the completion as machine-speed (anti-farming.ts); shown calmly, not as an error. */
     notice?: string;
+    /** Time on screen from Start lesson to the last answer. */
+    elapsedMs?: number;
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
@@ -180,6 +184,19 @@ function LessonPage() {
       .querySelector('[data-answer-state="correct"]')
       ?.scrollIntoView?.({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
   }, [checked, reduceMotion]);
+
+  // The lesson's own time, from Start lesson to the last answer, counted only while the tab is visible.
+  const timer = useRef<ActiveTimer | null>(null);
+  useEffect(() => {
+    const onVisibility = () => {
+      const t = timer.current;
+      if (!t) return;
+      if (document.hidden) t.pause(performance.now());
+      else t.resume(performance.now());
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   // The server refuses to start a lesson at 0 hearts. Held here so the page shows the hearts dialog
@@ -360,6 +377,8 @@ function LessonPage() {
       setTranslationVerdict(null);
       return;
     }
+    const elapsedMs = timer.current?.elapsedMs(performance.now());
+    timer.current?.pause(performance.now());
     // Misses are re-derived server-side and enrolled by the same atomic
     // transaction as the completion. A separate fire-and-forget write here
     // could leave review items behind when completion failed.
@@ -398,6 +417,7 @@ function LessonPage() {
         unlocked: res.newlyUnlocked,
         heartsBonus: res.heartsBonus,
         saved: true,
+        elapsedMs,
       });
     } catch (err) {
       setDone({
@@ -406,6 +426,7 @@ function LessonPage() {
         heartsBonus: null,
         saved: false,
         notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined,
+        elapsedMs,
       });
     }
   }
@@ -432,6 +453,7 @@ function LessonPage() {
       <LessonScreen>
         <FinishScreen
           xp={done.xp}
+          elapsedMs={done.elapsedMs}
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
           saved={done.saved}
@@ -456,9 +478,14 @@ function LessonPage() {
           words={vocab.length}
           wordSample={vocab.slice(0, 3).map((v) => v.term.replace(/[.!?…]+$/, ""))}
           questions={total}
+          minutes={estimateLessonMinutes(questions, vocab.length)}
+          maxXp={maxLessonXp(total)}
           roomSrc={roomSrc}
           hud={hud(0)}
-          onStart={() => setPhase(vocab.length > 0 ? "vocab" : "quiz")}
+          onStart={() => {
+            timer.current = new ActiveTimer(performance.now());
+            setPhase(vocab.length > 0 ? "vocab" : "quiz");
+          }}
         />
       </LessonScreen>
     );
@@ -520,7 +547,7 @@ function LessonPage() {
             </div>
           }
         />
-        <div className="relative z-[4] flex flex-1 flex-col gap-3.5 px-4 pb-6">
+        <div className="relative z-[4] flex flex-1 flex-col gap-3 px-4 pb-4">
           <div className={layout.size === "small" ? "-mt-9" : "-mt-11"}>
             <AlphonsoBubble
               label={bubbleLabel}
@@ -553,7 +580,7 @@ function LessonPage() {
 
           <div data-answers="">
             {q.type === "mc" || q.type === "listening" ? (
-              <div className="grid gap-2">
+              <div className="grid gap-1.5">
                 {q.choices.map((c, i) => (
                   <LessonAnswer
                     key={c}
@@ -638,7 +665,7 @@ function LessonPage() {
                   onChange={(e) => setPicked(e.target.value)}
                   placeholder="Type your answer"
                   aria-label="Your answer"
-                  className="w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 ds-type-headline text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
+                  className="w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-4 ds-type-answer text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   {q.bank.map((w) => (
@@ -660,6 +687,8 @@ function LessonPage() {
           <VerdictSheet
             correct={answered}
             title={answered ? "Exactly!" : verdictTitle(false)}
+            // The per-answer part of the server's XP formula; reinforcement rounds earn nothing.
+            xp={answered && !isReinforcing ? `+${XP_PER_RIGHT_ANSWER} XP` : null}
             correctAnswer={correctAnswerText(q)}
             onHearAnswer={hearAnswer}
             explanation={
@@ -883,6 +912,8 @@ function OverviewScreen({
   words,
   wordSample,
   questions,
+  minutes,
+  maxXp,
   roomSrc,
   hud,
   onStart,
@@ -892,6 +923,8 @@ function OverviewScreen({
   words: number;
   wordSample: string[];
   questions: number;
+  minutes: number;
+  maxXp: number;
   roomSrc: string;
   hud: React.ReactNode;
   onStart: () => void;
@@ -925,8 +958,8 @@ function OverviewScreen({
       <LessonRoom
         roomSrc={roomSrc}
         expression="talk"
-        height={340}
-        alphonsoWidth={290}
+        height={380}
+        alphonsoWidth={335}
         titleScrim
         overlay={
           <>
@@ -942,7 +975,10 @@ function OverviewScreen({
           </>
         }
       />
-      <div className="grid gap-2 px-4 pt-4">
+      <p data-lesson-meta="" className="px-[18px] pt-3 ds-type-footnote font-bold text-ds-ink-soft">
+        {`About ${minutes} min · ${questions} question${questions === 1 ? "" : "s"} · Up to ${maxXp} XP`}
+      </p>
+      <div className="grid gap-2 px-4 pt-3">
         {steps.map((s) => (
           <div
             key={s.key}
@@ -985,6 +1021,7 @@ export function FinishScreen({
   lessonId,
   course,
   roomSrc = roomSrcForUnit(undefined),
+  elapsedMs,
   saved = true,
   notice,
 }: {
@@ -1003,6 +1040,8 @@ export function FinishScreen({
   course: string;
   /** The unit's room: the celebration happens where the lesson did. */
   roomSrc?: string;
+  /** The lesson's time on screen, for the Time tile. */
+  elapsedMs?: number;
 }) {
   const streak = useProgress((s) => s.streak);
   const reduceMotion = usePrefersReducedMotion();
@@ -1014,6 +1053,8 @@ export function FinishScreen({
     const t = window.setTimeout(() => setAmazed(false), 1400);
     return () => window.clearTimeout(t);
   }, [reduceMotion]);
+  // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
+  const xpLines = saved ? lessonXpBreakdown({ correct, total, awarded: xp }).lines : [];
   const headline = total > 0 ? `Nice work! You got ${correct} of ${total}.` : "Nice work!";
   return (
     <div data-stage="complete" className="flex flex-1 flex-col">
@@ -1025,8 +1066,8 @@ export function FinishScreen({
         <LessonRoom
           roomSrc={roomSrc}
           expression={amazed ? "wow" : "happy"}
-          height={400}
-          alphonsoWidth={300}
+          height={430}
+          alphonsoWidth={345}
           glow
           overlay={
             <>
@@ -1056,7 +1097,24 @@ export function FinishScreen({
             {notice}
           </p>
         ) : null}
-        <RewardTiles chips={chips} reduce={reduceMotion} />
+        <RewardTiles
+          chips={chips}
+          time={elapsedMs === undefined ? null : formatElapsed(elapsedMs)}
+          reduce={reduceMotion}
+        />
+        {xpLines.length > 1 && (
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {xpLines.map((line) => (
+              <span
+                key={line.kind}
+                data-xp-line={line.xp}
+                className="ds-type-footnote text-ds-ink-soft"
+              >
+                {`${line.label} ${line.xp < 0 ? "−" : "+"}${Math.abs(line.xp)}`}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="text-center ds-type-footnote tabular-nums text-ds-ink-soft">
           {correct}/{total} correct
         </p>

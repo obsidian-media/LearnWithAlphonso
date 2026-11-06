@@ -315,3 +315,67 @@ describe("FinishScreen celebration", () => {
     expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
   });
 });
+
+describe("FinishScreen XP and time", () => {
+  it("shows the lesson's time in m:ss beside the other tiles", () => {
+    render(
+      <FinishScreen
+        xp={70}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={7}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+        elapsedMs={222_000}
+      />,
+    );
+    expect(screen.getByLabelText("Time: 3:42")).toBeInTheDocument();
+    expect(screen.getByLabelText("XP: +70")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accuracy: 88%")).toBeInTheDocument();
+  });
+
+  it("a perfect lesson shows its bonus as its own line, and the lines add up to the XP tile", () => {
+    const { container } = render(
+      <FinishScreen
+        xp={100}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={8}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+        elapsedMs={60_000}
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual(["8 right answers +80", "Perfect lesson +20"]);
+    const sum = lines.reduce((n, l) => n + Number(l.dataset.xpLine), 0);
+    expect(sum).toBe(100);
+  });
+
+  it("a replay that earns nothing says so instead of contradicting the tile", () => {
+    const { container } = render(
+      <FinishScreen
+        xp={0}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={6}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual([
+      "6 right answers +60",
+      "Already earned on an earlier try −60",
+    ]);
+  });
+});

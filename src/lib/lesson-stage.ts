@@ -42,12 +42,18 @@ export type RoomLayout = {
 
 /** Below this height (pt / CSS px) the phone counts as small. */
 export const SMALL_PHONE_HEIGHT = 700;
+/** The HUD's bottom edge in the room (16 from the top, 40 tall). Alphonso's ears must stay below it. */
+export const HUD_BOTTOM = 56;
+/** How far Alphonso sinks below the room's foot, so the bubble cuts him off at the robe. */
+export const ALPHONSO_SINK = 14;
+
 /** A prompt longer than this runs past two lines of the bubble's 22 pt display type. */
 export const LONG_PROMPT_CHARS = 60;
 
 /**
- * The room's size from the spec: 380 with Alphonso 270 wide; 300 and 220 when the question runs past two lines;
- * 224 and 180 on a phone under 700 tall. A height of 0 (server render, before the browser answers) counts as tall.
+ * The room's size: 380 with Alphonso 315 wide; 300 and 255 when the question runs past two lines; 248 and 205 on a
+ * phone under 700 tall. Alphonso is about 17% bigger than the spec's first sizes (owner review), with his ears kept
+ * below the HUD. A height of 0 (server render, before the browser answers) counts as tall.
  */
 export function roomLayout({
   viewportHeight,
@@ -57,8 +63,8 @@ export function roomLayout({
   prompt: string;
 }): RoomLayout {
   if (viewportHeight > 0 && viewportHeight < SMALL_PHONE_HEIGHT)
-    return { size: "small", roomHeight: 224, alphonsoWidth: 180 };
+    return { size: "small", roomHeight: 248, alphonsoWidth: 205 };
   if (prompt.length > LONG_PROMPT_CHARS)
-    return { size: "long", roomHeight: 300, alphonsoWidth: 220 };
-  return { size: "full", roomHeight: 380, alphonsoWidth: 270 };
+    return { size: "long", roomHeight: 300, alphonsoWidth: 255 };
+  return { size: "full", roomHeight: 380, alphonsoWidth: 315 };
 }
