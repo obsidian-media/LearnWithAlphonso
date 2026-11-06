@@ -2071,6 +2071,10 @@ Added 2026-10-12 (#283-#290, #295-#298). `docs/operations.md` is the runbook.
 
 Hearts (#420): the server can own the heart count (migration 20261105101000); it ships in shadow mode and `SERVER_HEARTS` turns enforcement on. Subscriptions (#422): a separate subscription identifier, stored beside the account. Voice input (#417): a budget measured in audio seconds, reserved first and settled after the transcription, tolerant of the deploy order. Reports (#412): kept 90 days after account deletion. Minimum build gate (#421) and a native bot check (#423) are configured later by environment values.
 
+## Voice choice
+
+#433 (2026-11-06). Alphonso and Hector each have a per-language voice, chosen in Settings and free for everyone. The server holds an allow-list of Deepgram Aura-2 voices per language (English 32, Spanish 15, French 2) with defaults (English saturn/hermes, Spanish javier/alvaro, French hector/hector). The choice lives in the auth user's metadata (`user_metadata.voices`) and is validated on the server, so no migration was needed. Previews are static clips under `public/voices/` that the apps stream. Web caches the voice per account (keyed so it cannot leak between accounts). On Android `CharacterKit.layerFiles()` is the single list of kit layer files.
+
 ## Known rough edges
 
 (A full audit is kept locally, gitignored, not in this repo — see the

@@ -94,6 +94,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             }
             AiFeaturesSection(container)
             AvatarSection(container)
+            VoicesSection(container)
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->
                     val p = AlphonsoPalettes.light.getValue(id)

@@ -96,7 +96,7 @@ describe("legal pages share one 'Last updated' date", () => {
   });
 
   // The privacy policy's report-retention sentence (20261105101100) is dated with the change.
-  it("is 5 November 2026", () => {
-    expect(pageText("/privacy")).toMatch(/Last updated 5 November 2026/);
+  it("is 6 November 2026", () => {
+    expect(pageText("/privacy")).toMatch(/Last updated 6 November 2026/);
   });
 });

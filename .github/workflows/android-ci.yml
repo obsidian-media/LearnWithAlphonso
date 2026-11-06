@@ -13,6 +13,8 @@ on:
       - "src/data/**"
       # The avatar parity fixtures the Kotlin tests replay (core AvatarParityTest).
       - "shared/**"
+      # The design system source the Kotlin tokens, icons and raw-value guard are checked against.
+      - "design/**"
       - ".github/workflows/android-ci.yml"
   pull_request:
     paths:
@@ -22,6 +24,8 @@ on:
       - "src/data/**"
       # The avatar parity fixtures the Kotlin tests replay (core AvatarParityTest).
       - "shared/**"
+      # The design system source the Kotlin tokens, icons and raw-value guard are checked against.
+      - "design/**"
       - ".github/workflows/android-ci.yml"
   workflow_dispatch:
 

@@ -19,6 +19,8 @@ public enum Acknowledgements {
     public static let all: [Acknowledgement] = [
         Acknowledgement(name: "RevenueCat (purchases-ios)", licenseName: mit, licenseResource: "RevenueCat-LICENSE", url: "https://github.com/RevenueCat/purchases-ios"),
         Acknowledgement(name: "Baloo 2", licenseName: ofl, licenseResource: "Baloo2-OFL", url: "https://github.com/EkType/Baloo2"),
+        Acknowledgement(name: "Bricolage Grotesque", licenseName: ofl, licenseResource: "BricolageGrotesque-OFL", url: "https://github.com/ateliertriay/bricolage"),
+        Acknowledgement(name: "Figtree", licenseName: ofl, licenseResource: "Figtree-OFL", url: "https://github.com/erikdkennedy/figtree"),
         Acknowledgement(name: "Fraunces", licenseName: ofl, licenseResource: "Fraunces-OFL", url: "https://github.com/undercasetype/Fraunces"),
         Acknowledgement(name: "Geist", licenseName: ofl, licenseResource: "Geist-OFL", url: "https://github.com/vercel/geist-font"),
         Acknowledgement(name: "Instrument Sans", licenseName: ofl, licenseResource: "InstrumentSans-OFL", url: "https://github.com/Instrument/instrument-sans"),

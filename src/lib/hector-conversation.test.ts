@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildHectorMessages,
   buildHectorSystemPrompt,
-  DEEPGRAM_VOICE_BY_COURSE,
-  deepgramVoiceForLanguage,
   normalizeCefr,
   resolveTutorCourse,
   shapeTutorReply,
@@ -92,34 +90,6 @@ describe("buildHectorMessages", () => {
     expect(msgs.some((m) => m.content === tooLong)).toBe(false);
     const lastMessage = msgs[msgs.length - 1];
     expect(lastMessage.content.length).toBe(4000);
-  });
-});
-
-describe("deepgramVoiceForLanguage (native voice per course)", () => {
-  it("pins the exact native voice for each course", () => {
-    expect(DEEPGRAM_VOICE_BY_COURSE).toEqual({
-      en: "aura-2-thalia-en",
-      fr: "aura-2-agathe-fr",
-      es: "aura-2-selena-es",
-    });
-  });
-
-  it("never gives a course a voice from another language", () => {
-    for (const course of ["en", "fr", "es"] as const) {
-      expect(deepgramVoiceForLanguage(course)).toMatch(new RegExp(`^aura-2-[a-z]+-${course}$`));
-    }
-  });
-
-  it("accepts locale-shaped input from older clients", () => {
-    expect(deepgramVoiceForLanguage("fr-FR")).toBe("aura-2-agathe-fr");
-    expect(deepgramVoiceForLanguage("es-419")).toBe("aura-2-selena-es");
-    expect(deepgramVoiceForLanguage("EN")).toBe("aura-2-thalia-en");
-  });
-
-  it("falls back to the English voice for anything else", () => {
-    expect(deepgramVoiceForLanguage("qq")).toBe("aura-2-thalia-en");
-    expect(deepgramVoiceForLanguage("")).toBe("aura-2-thalia-en");
-    expect(deepgramVoiceForLanguage(undefined as unknown as string)).toBe("aura-2-thalia-en");
   });
 });
 

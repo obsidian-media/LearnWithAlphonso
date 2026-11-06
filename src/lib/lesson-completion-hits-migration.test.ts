@@ -9,7 +9,10 @@ const migration = readFileSync(
   path.join(process.cwd(), "supabase/migrations/20261104100100_lesson_completion_hits.sql"),
   "utf8",
 );
-const NOW = Date.parse("2026-11-04T12:00:00Z");
+// Relative to the real clock, not a fixed date: consume_lesson_completion_slot prunes rows older than two days by the
+// database's now(), so hits dated at a fixed day would be deleted the moment they are inserted once that day is two days
+// past, and every count below would silently change meaning. An hour ago, whole seconds, leaves room either side.
+const NOW = Math.floor(Date.now() / 1000) * 1000 - 60 * 60_000;
 
 describe("consume_lesson_completion_slot (real Postgres)", () => {
   let db: PGlite;
@@ -82,6 +85,21 @@ describe("consume_lesson_completion_slot (real Postgres)", () => {
     ]);
     expect(await slot(U1, NOW + 62_000)).toBe(true);
     expect(await slot(U1, NOW + 63_000)).toBe(false);
+  });
+
+  it("prunes this user's hits older than two days by the real clock, and keeps the recent ones", async () => {
+    await db.query(
+      `INSERT INTO public.lesson_completion_hits (user_id, at) VALUES
+         ($1, now() - interval '2 days 1 minute'), ($1, now() - interval '2 days' + interval '1 minute')`,
+      [U1],
+    );
+    expect(await slot(U1, NOW)).toBe(true);
+    const r = await db.query<{ age_min: number }>(
+      "SELECT round(extract(epoch FROM now() - at) / 60)::int age_min FROM public.lesson_completion_hits WHERE user_id = $1 ORDER BY at",
+      [U1],
+    );
+    // The 2-days-and-a-minute row is gone; the one a minute inside the window and the new one stay.
+    expect(r.rows.map((x) => x.age_min)).toEqual([2 * 24 * 60 - 1, 60]);
   });
 
   it("is service-role only", async () => {

@@ -274,6 +274,9 @@ jobs:
       - name: Voice time reservations hold under parallel calls (real Postgres)
         run: bunx vitest run src/lib/stt-audio-budget-concurrency.test.ts
 
+      - name: Minutes spoken add up under parallel calls and go with the account (real Postgres)
+        run: bunx vitest run src/lib/speech-days-concurrency.test.ts
+
       - name: Run the signed-in journey
         run: bunx playwright test e2e/signed-in.spec.ts e2e/practice-avatar.spec.ts --reporter=github,html
 
