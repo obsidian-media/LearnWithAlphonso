@@ -70,6 +70,8 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Build 58: talking Alphonso and placement fixes (2026-11-05, #408, #395, #411; iOS, TestFlight, not submitted).** The Practice speaking session shows an animated Alphonso whose mouth follows the spoken reply (a setting, on by default; the artwork is a small set of layered WebP images). The placement test counts questions as "Question N, up to M" and no longer loses credit for skipped questions. Build 58 also carries the hardening from #407. Not yet run on a device.
+
 **Dependency updates, access and limit hardening, test date fix (2026-11-05, #406, #407, #409).** #406 updates seroval, zod, vite, vitest and jsdom (12 resolved versions; the dependency audit drops from 23 findings to 1 moderate). #407 tightens limits, sessions and access checks across the web app, the database, the apps and CI (seven database migrations, new request limits, stricter database privileges, workflow permissions and environments). #409 fixes a podcast-quiz test that depended on the current date and failed on every branch after 12:00 UTC on 2026-11-05.
 
 **Docs refresh after the 2026-10-17 batch (2026-10-18, #328).** README: Android now has the newer iOS work (AI consent, public-name step, hearts gate, report an AI reply, French and Spanish conversations, offline-sync and podcast-player reliability, save any word), none of it run on a device; save any word is listed on web, iOS and Android, with transcript words saved under the episode's own course; the Pro section mentions the yearly plan picker and iOS hands-free Hector. AGENTS: the signed-in Playwright flow and its CI job, and current test counts (web 3,612, Swift Kit 1,080, Android JVM 758).
