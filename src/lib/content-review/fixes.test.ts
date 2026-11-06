@@ -239,3 +239,24 @@ describe("the judge's rulings", () => {
     expect(r.fixes.map((f) => f.id)).toEqual(["w"]);
   });
 });
+
+describe("word-card fixes follow the English card rules", () => {
+  const card = item("card", { term: "pude", meaning: "", example: "Ayer no pude venir." }, "es");
+
+  it("accepts a short, plain gloss", () => {
+    expect(
+      checkFix(card, { id: card.id, reason: "", patch: { meaning: "I could, I was able to" } }),
+    ).toEqual([]);
+  });
+
+  it("refuses long, bracketed or arrowed glosses, and an example without the term", () => {
+    const why = (patch: Record<string, string>) =>
+      checkFix(card, { id: card.id, reason: "", patch }).join("; ");
+    expect(why({ meaning: "one two three four five six seven eight nine" })).toMatch(
+      /over 8 words/,
+    );
+    expect(why({ meaning: "I could (past)" })).toMatch(/bracket/);
+    expect(why({ meaning: "poder → I could" })).toMatch(/arrow/);
+    expect(why({ example: "Ayer no vine." })).toMatch(/does not use the term/);
+  });
+});

@@ -74,13 +74,15 @@ export function judgeContext(
   ].join("\n");
 }
 
-export type RewriteTask = "explanation" | "cloze-options" | "drill-options";
+export type RewriteTask = "explanation" | "cloze-options" | "drill-options" | "card-meaning";
 
 const REWRITE_INSTRUCTION: Record<RewriteTask, string> = {
   explanation:
     'TASK: each item has a generic explanation. Write a specific one (one or two plain English sentences: the rule or the clue that makes THIS answer right, quoting the answer in double quotes). Return decision "fix" with patch {"explanation": "..."}; touch nothing else unless the item is wrong, in which case fix that too.',
   "cloze-options":
     'TASK: each fill-in item takes its wrong options from other lines of its pack, so they are often another kind of word. Replace them with wrong options of the SAME kind as the answer that a learner might pick and that the sentence rules out (add a short bracketed clue to the prompt where two would fit). Return decision "fix" with patch {"choices"|"bank": [the full list, answer at the same position]} and, if needed, "prompt".',
+  "card-meaning":
+    'TASK: each item is a word card with no English meaning. Write the meaning: at most 8 words of simple, true English for the term AS USED in its example (a conjugated form is glossed as that form, e.g. "pude": "I could, I was able to"), no brackets, no arrows, no blanks, and never the quiz explanation. If the example is wrong or does not use the term, fix it too. Return decision "fix" with patch {"meaning": "..."} (and "example" only if you changed it).',
   "drill-options":
     'TASK: each item conjugates the bracketed verb, but some wrong options are other verbs. Replace every wrong option with another form of the SAME verb in the same tense that the subject rules out. Return decision "fix" with patch {"choices"|"bank": [the full list, answer at the same position]}.',
 };

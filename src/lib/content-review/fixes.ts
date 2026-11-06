@@ -76,6 +76,29 @@ function optionsField(d: Record<string, unknown>): "choices" | "bank" | null {
   return null;
 }
 
+/** The English word-card rules (vocab-meanings.test.ts cardProblems), applied to a card patch. */
+export function cardRules(term: string, patch: Patch): string[] {
+  const why: string[] = [];
+  const words = (t: string) => t.trim().split(/\s+/).filter(Boolean);
+  for (const field of ["meaning", "example"] as const) {
+    const t = patch[field];
+    if (typeof t !== "string") continue;
+    if (!t.trim()) why.push(`the card ${field} is empty`);
+    if (/_{2,}/.test(t)) why.push(`the card ${field} has a blank`);
+    if (/→|->/.test(t)) why.push(`the card ${field} has an arrow`);
+    if (/[()[\]]/.test(t)) why.push(`the card ${field} has a bracket clue`);
+  }
+  if (typeof patch.meaning === "string" && words(patch.meaning).length > 8)
+    why.push("the card meaning is over 8 words");
+  if (
+    typeof patch.example === "string" &&
+    term &&
+    !patch.example.toLowerCase().includes(term.toLowerCase())
+  )
+    why.push("the card example does not use the term");
+  return why;
+}
+
 /** Validates `fix` against `item`. Returns the reasons it is refused; empty means it may be applied. */
 export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   const why: string[] = [];
@@ -178,6 +201,7 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
     if (ans && item.kind === "question" && !e.includes(`"${ans}"`))
       why.push(`the explanation does not quote the answer as "${ans}"`);
   }
+  if (item.kind === "card") why.push(...cardRules(String(item.data.term ?? ""), fix.patch));
   if (
     item.kind === "card" &&
     typeof fix.patch.meaning === "string" &&

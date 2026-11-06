@@ -166,11 +166,22 @@ const RULING_PHASES = new Set([
   "judge-retry",
   "rewrite-explanation",
   "rewrite-cloze",
+  "rewrite-card-meaning",
   "judge2",
   "blind-judge",
 ]);
 /** Rulings in the order route applies them; a later phase's ruling on the same item wins. */
-const ROUTE_PHASES = ["judge", "judge-retry", "rewrite-explanation", "rewrite-cloze", "judge2"];
+const ROUTE_PHASES = [
+  "judge",
+  "judge-retry",
+  "rewrite-card-meaning",
+  "rewrite-explanation",
+  "rewrite-cloze",
+  "judge2",
+];
+/** French and Spanish word cards have no authored meaning at all: a rewrite task, not a judgement. */
+const needsMeaning = (it: ReviewItem) =>
+  it.kind === "card" && it.course !== "en" && !String(it.data.meaning ?? "").trim();
 /**
  * Kinds that get no Mistral second opinion (cost plan trim 3, applied 2026-11-06 because the
  * measured Claude flag rate, 46%, would put the second opinion above Mistral's US$10 cap). Their
@@ -287,7 +298,7 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
       const ids = new Set([...defectIds(claude), ...defectIds(mistral)]);
       for (const it of items) if (it.flags?.includes(FLAG.knownSecondAnswer)) ids.add(it.id);
       return opus(
-        items.filter((it) => ids.has(it.id)),
+        items.filter((it) => ids.has(it.id) && !needsMeaning(it)),
         (c) => judgeSystem(c.course),
         ctx,
       );
@@ -319,6 +330,22 @@ YOUR PREVIOUS PATCH WAS REFUSED: ${why.get(it.id)}. Write a patch that keeps eve
         (it) => `${judgeContext(it, verify, new Map())}
 This item was already fixed once by the review; the fresh re-read above flagged the CURRENT text.`,
       );
+    }
+    case "rewrite-card-meaning": {
+      const list = items.filter(needsMeaning);
+      return {
+        provider: "anthropic",
+        model: MODEL.review,
+        chunks: chunk(todo(list), phase),
+        build: (c) =>
+          buildRequest(c, {
+            model: MODEL.review,
+            effort: "low",
+            system: rewriteSystem(c.course, "card-meaning"),
+            user: userMessage(c, ctx),
+            maxTokens: maxTokensFor(c, ASSUME.maxOut.explanation),
+          }),
+      };
     }
     case "rewrite-explanation": {
       const fixed = loadRulings("judge");
