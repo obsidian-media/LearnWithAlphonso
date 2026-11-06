@@ -17,6 +17,7 @@ import {
   buildIOSAchievementsBundle,
   buildIOSVocabImagesBundle,
   buildIOSPlacementBundle,
+  buildUnitRoomsBundle,
 } from "../src/lib/ios-content-export";
 
 const OUT_DIR = path.resolve(
@@ -45,3 +46,5 @@ writeJSON("vocab-images.json", buildIOSVocabImagesBundle());
 writeJSON("placement-en.json", buildIOSPlacementBundle("en"));
 writeJSON("placement-fr.json", buildIOSPlacementBundle("fr"));
 writeJSON("placement-es.json", buildIOSPlacementBundle("es"));
+// The room behind Alphonso for every unit (design system room plan).
+writeJSON("unit-rooms.json", buildUnitRoomsBundle());

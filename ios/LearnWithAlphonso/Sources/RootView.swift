@@ -272,6 +272,8 @@ struct RootView: View {
             appearanceObserver.start()
         }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
+        // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
+        .alphonsoDesignSystem()
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
             PaywallView(entitlementStore: entitlementStore, source: .hectorTab)

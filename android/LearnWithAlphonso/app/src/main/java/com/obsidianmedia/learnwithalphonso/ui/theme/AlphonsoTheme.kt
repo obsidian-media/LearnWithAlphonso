@@ -43,10 +43,21 @@ private fun colorSchemeFor(p: AlphonsoPalette): ColorScheme {
     )
 }
 
+/** The round-6 design system colours (AlphonsoTokens) for the chosen palette, light or night. */
+val LocalAlphonsoTokens = staticCompositionLocalOf { AlphonsoTokens.royalLight }
+
 @Composable
-fun AlphonsoTheme(themeId: AlphonsoThemeId, systemDark: Boolean, content: @Composable () -> Unit) {
+fun AlphonsoTheme(
+    themeId: AlphonsoThemeId,
+    systemDark: Boolean,
+    paletteId: AlphonsoPaletteId = AlphonsoPaletteId.forTheme(themeId),
+    content: @Composable () -> Unit,
+) {
     val palette = AlphonsoPalettes.resolve(themeId, systemDark)
-    CompositionLocalProvider(LocalAlphonsoPalette provides palette) {
+    CompositionLocalProvider(
+        LocalAlphonsoPalette provides palette,
+        LocalAlphonsoTokens provides AlphonsoTokens.colors(paletteId, systemDark),
+    ) {
         MaterialTheme(colorScheme = colorSchemeFor(palette), typography = alphonsoTypography(palette), content = content)
     }
 }
