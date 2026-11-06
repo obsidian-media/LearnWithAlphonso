@@ -145,7 +145,9 @@ export function AlphonsoAvatar({
 
   useEffect(() => {
     const machine = new AvatarMachine();
-    const idle = new IdleScheduler(seededRandom(BigInt(Math.floor(Math.random() * 2 ** 31))));
+    const idle = new IdleScheduler(
+      seededRandom(BigInt(crypto.getRandomValues(new Uint32Array(1))[0])),
+    );
     // A verdict that was already there when the stage appeared belongs to a turn that is over.
     let handledSerial = live.current.replyVerdict.serial;
     let plan: { key: string; plan: LipSyncPlan } | null = null;
