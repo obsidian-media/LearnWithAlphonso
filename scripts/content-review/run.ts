@@ -300,7 +300,14 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
       const ids = new Set([...defectIds(claude), ...defectIds(mistral)]);
       for (const it of items) if (it.flags?.includes(FLAG.knownSecondAnswer)) ids.add(it.id);
       return opus(
-        items.filter((it) => ids.has(it.id) && !needsMeaning(it)),
+        items.filter(
+          (it) =>
+            ids.has(it.id) &&
+            !needsMeaning(it) &&
+            // --ready: only items whose second opinion is in (or that get none), so the judge can
+            // run in waves while the slow synchronous Mistral pass is still going.
+            (!flag("ready") || SECOND_OPINION_SKIP.has(it.kind) || mistral.has(it.id)),
+        ),
         (c) => judgeSystem(c.course),
         ctx,
       );
