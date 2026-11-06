@@ -2063,6 +2063,14 @@ Added 2026-10-12 (#283-#290, #295-#298). `docs/operations.md` is the runbook.
   types-regeneration workflow pushes with a deploy key the ruleset exempts
   (#296).
 
+## Full-screen call (Practice and Hector)
+
+#416 (web), #418 (iOS), #419 (Android), #425, #426, #429 (2026-11-05 and 2026-11-06). Practice speaking and Hector's Pro conversation render as a full-screen call: call bar with timer, the character at about 128% of the screen width, a live caption, a voice tile for the learner, controls (chat sheet, hold to talk, hang up) and a bottom sheet holding the transcript. The character is a small kit of layered WebP images (a neutral face plus mouth shapes, brows and expressions); lip sync is planned from the reply text over the audio duration, and a reply carries a verdict (right or corrected) that drives reactions. Each scenario maps to one room picture, plus a default study room in light and dark (dark mode dims it); a guard test pins the mapping. The room picture is a background and must never size the layout (#429). Kits: Alphonso and Hector, realistic style (#426).
+
+## Server-side limits added 2026-11-06
+
+Hearts (#420): the server can own the heart count (migration 20261105101000); it ships in shadow mode and `SERVER_HEARTS` turns enforcement on. Subscriptions (#422): a separate subscription identifier, stored beside the account. Voice input (#417): a budget measured in audio seconds, reserved first and settled after the transcription, tolerant of the deploy order. Reports (#412): kept 90 days after account deletion. Minimum build gate (#421) and a native bot check (#423) are configured later by environment values.
+
 ## Known rough edges
 
 (A full audit is kept locally, gitignored, not in this repo — see the
