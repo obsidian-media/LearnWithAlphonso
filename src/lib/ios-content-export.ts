@@ -5,6 +5,8 @@ import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
 import type { PlacementQuestion } from "@/data/placement";
+import { PENDING_ROOMS, ROOMS } from "@/data/rooms";
+import { UNIT_ROOMS } from "@/data/unit-rooms";
 
 export type IOSContentBundle = {
   course: Course;
@@ -73,4 +75,20 @@ export function buildIOSVocabImagesBundle(): Record<string, VocabImage> {
  */
 export function buildIOSPlacementBundle(course: Course): PlacementQuestion[] {
   return getCourse(course).placementPool;
+}
+
+export type UnitRoomsBundle = {
+  /** All 35 rooms; painted is false while the art is still being made (PENDING_ROOMS). */
+  rooms: { id: string; name: string; painted: boolean }[];
+  /** unitId -> roomId: the room behind Alphonso in that unit (always a painted one). */
+  units: Record<string, string>;
+};
+
+/** The room plan (src/data/rooms.ts, src/data/unit-rooms.ts) for the native apps, as unit-rooms.json. */
+export function buildUnitRoomsBundle(): UnitRoomsBundle {
+  const pending = new Set<string>(PENDING_ROOMS);
+  return {
+    rooms: ROOMS.map((r) => ({ id: r.id, name: r.name, painted: !pending.has(r.id) })),
+    units: UNIT_ROOMS,
+  };
 }

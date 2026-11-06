@@ -71,23 +71,32 @@ describe("POST /api/tts", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("uses the default voice model when none is provided", async () => {
+  it("uses Alphonso's English default when no voice or course is provided", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("audio-bytes", { status: 200, headers: { "Content-Type": "audio/mpeg" } }),
     );
     await handler({ request: req({ text: "hello" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(url).toContain(encodeURIComponent("aura-2-thalia-en"));
+    expect(url).toContain(encodeURIComponent("aura-2-saturn-en"));
     expect(url).toContain("mip_opt_out=true");
   });
 
-  it("uses a caller-provided voice model", async () => {
+  it("uses a caller-provided voice that is on the allow-list", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("audio-bytes", { status: 200, headers: { "Content-Type": "audio/mpeg" } }),
     );
-    await handler({ request: req({ text: "hello", voice: "aura-2-zeus-en" }) });
+    await handler({ request: req({ text: "hello", voice: "aura-2-orpheus-en", course: "en" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(url).toContain(encodeURIComponent("aura-2-zeus-en"));
+    expect(url).toContain(encodeURIComponent("aura-2-orpheus-en"));
+  });
+
+  it("refuses a real Aura-2 voice that is not on the allow-list (zeus) and uses the default", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("audio-bytes", { status: 200, headers: { "Content-Type": "audio/mpeg" } }),
+    );
+    await handler({ request: req({ text: "hello", voice: "aura-2-zeus-en", course: "en" }) });
+    const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(String(url)).toContain("model=aura-2-saturn-en");
   });
 
   it("truncates text to 2000 characters before sending upstream", async () => {
@@ -144,47 +153,62 @@ describe("POST /api/tts", () => {
     expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "tts", { route: "tts" });
   });
 
-  it("speaks a French course with the native French voice", async () => {
+  it("speaks a French course with Alphonso's French default", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("mp3", { status: 200 }),
     );
     await handler({ request: req({ text: "Bonjour", course: "fr" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    expect(String(url)).toContain("model=aura-2-agathe-fr");
+    expect(String(url)).toContain("model=aura-2-hector-fr");
     expect(String(url)).toContain("mip_opt_out=true");
   });
 
-  it("speaks a Spanish course with the Latin American voice", async () => {
+  it("speaks a Spanish course with Alphonso's Spanish default", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("mp3", { status: 200 }),
     );
     await handler({ request: req({ text: "Hola", course: "es" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
-    expect(String(url)).toContain("model=aura-2-selena-es");
+    expect(String(url)).toContain("model=aura-2-javier-es");
   });
 
-  it("lets an explicit voice win over course, and ignores an unknown course", async () => {
+  it("refuses a voice from another course's allow-list, and ignores an unknown course", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("mp3", { status: 200 }),
     );
     await handler({ request: req({ text: "x", voice: "aura-2-hector-fr", course: "es" }) });
     await handler({ request: req({ text: "x", course: "de" }) });
+    await handler({ request: req({ text: "x", voice: "aura-2-agathe-fr" }) });
     const urls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(([u]) => String(u));
-    expect(urls[0]).toContain("model=aura-2-hector-fr");
-    expect(urls[1]).toContain("model=aura-2-thalia-en");
+    expect(urls[0]).toContain("model=aura-2-javier-es");
+    expect(urls[1]).toContain("model=aura-2-saturn-en");
+    // A voice-only request (no course) is checked against its own language's list.
+    expect(urls[2]).toContain("model=aura-2-agathe-fr");
   });
 
-  it.each(["aura-asteria-en", "aura-2-thalia-de", "some-premium-model", "aura-2-x-en&model=y"])(
-    "ignores a voice outside the app's voice family (%s) and uses the course voice",
-    async (voice) => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
-        new Response("mp3", { status: 200 }),
-      );
-      await handler({ request: req({ text: "Hola", voice, course: "es" }) });
-      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
-      expect(String(url)).toContain("model=aura-2-selena-es");
-    },
-  );
+  it("uses Hector's default when the caller names Hector and sends no allowed voice", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("mp3", { status: 200 }),
+    );
+    await handler({ request: req({ text: "x", course: "es", character: "hector" }) });
+    const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String(url)).toContain("model=aura-2-alvaro-es");
+  });
+
+  it.each([
+    "aura-asteria-en",
+    "aura-2-thalia-de",
+    "some-premium-model",
+    "aura-2-x-en&model=y",
+    "aura-2-valentina-es",
+  ])("ignores a voice outside the allow-list (%s) and uses the course default", async (voice) => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("mp3", { status: 200 }),
+    );
+    await handler({ request: req({ text: "Hola", voice, course: "es" }) });
+    const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String(url)).toContain("model=aura-2-javier-es");
+  });
 
   it("gives up with a retryable 504 when the speech provider does not answer in time", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
