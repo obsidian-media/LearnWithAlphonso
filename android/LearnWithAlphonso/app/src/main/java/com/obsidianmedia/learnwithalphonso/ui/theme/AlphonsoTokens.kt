@@ -429,8 +429,14 @@ object AlphonsoTokens {
         val display = TextSpec(FontRole.DISPLAY, weight = 800, size = 28, lineHeight = 32, width = 88f, opsz = 28f, tracking = -0.015f, uppercase = false, tnum = false)
         /** The question, sheet verdicts */
         val title = TextSpec(FontRole.DISPLAY, weight = 700, size = 22, lineHeight = 27, width = 100f, opsz = 24f, tracking = 0f, uppercase = false, tnum = false)
+        /** The lesson question in Alphonso's bubble */
+        val question = TextSpec(FontRole.DISPLAY, weight = 800, size = 24, lineHeight = 29, width = 94f, opsz = 24f, tracking = -0.005f, uppercase = false, tnum = false)
+        /** The lesson question on a small phone */
+        val questionSmall = TextSpec(FontRole.DISPLAY, weight = 800, size = 20, lineHeight = 25, width = 94f, opsz = 20f, tracking = -0.005f, uppercase = false, tnum = false)
         /** Answers, buttons (800) */
         val headline = TextSpec(FontRole.BODY, weight = 700, size = 17, lineHeight = 22, width = 100f, opsz = null, tracking = 0f, uppercase = false, tnum = false)
+        /** Lesson answer buttons and word tiles */
+        val answer = TextSpec(FontRole.BODY, weight = 700, size = 18, lineHeight = 24, width = 100f, opsz = null, tracking = 0f, uppercase = false, tnum = false)
         /** Explanations, sheet reasons (600) */
         val body = TextSpec(FontRole.BODY, weight = 500, size = 16, lineHeight = 23, width = 100f, opsz = null, tracking = 0f, uppercase = false, tnum = false)
         /** Meta lines, chip labels */
