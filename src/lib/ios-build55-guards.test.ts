@@ -25,16 +25,17 @@ describe("1. the word card looks good without a photo", () => {
   const vocab = between(lesson, "private struct VocabScreen: View", "struct VocabImageView: View");
   const card = between(lesson, "private func wordCard(", "private var listContent");
 
-  it("a word with no photo gets a coloured band with the word on it, a different tone per card", () => {
+  it("a word with no photo gets a band with the word on it, in the lesson's choice tint (round 6)", () => {
     const words = between(lesson, "private func cardWords(", "private func wordCard(");
     expect(words).toMatch(
       /if let image = item\.image \{[\s\S]*\} else \{\s*wordBand\(item, index: index\)/,
     );
     expect(card).toContain("cardWords(item, index: index)");
     const band = between(lesson, "private func wordBand(", "private func cardWords(");
-    expect(band).toContain("AlphonsoTileTone.allCases[index % AlphonsoTileTone.allCases.count]");
-    expect(band).toContain("tone.background");
-    expect(band).toContain("AlphonsoFont.display(40, weight: .bold)");
+    expect(band).toContain(".dsText(.displayXL)");
+    expect(band).toContain(".foregroundStyle(ds.brand)");
+    expect(band).toContain("ds.choiceTint");
+    expect(band).not.toContain("AlphonsoTileTone");
   });
 
   it("the card is as tall as its words, and only scrolls when they do not fit", () => {

@@ -1,6 +1,11 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
@@ -124,12 +129,22 @@ fun LessonStageQuestion(
 
 @Composable
 private fun Choices(choices: List<String>, right: String?, checked: Boolean, picked: String?, onPick: (String?) -> Unit) {
+    // Once checked, the right answer scrolls into view above the verdict sheet, as on the web.
+    val rightAnswer = remember { BringIntoViewRequester() }
+    LaunchedEffect(checked) {
+        if (checked) {
+            delay(80)
+            rightAnswer.bringIntoView()
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         choices.forEachIndexed { index, choice ->
-            LessonAnswerButton(
-                index, choice, LessonAnswerState.of(checked, picked == choice, choice == right),
-                onClick = { onPick(choice) }, enabled = !checked,
-            )
+            Box(if (choice == right) Modifier.bringIntoViewRequester(rightAnswer) else Modifier) {
+                LessonAnswerButton(
+                    index, choice, LessonAnswerState.of(checked, picked == choice, choice == right),
+                    onClick = { onPick(choice) }, enabled = !checked,
+                )
+            }
         }
     }
 }

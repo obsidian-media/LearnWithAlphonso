@@ -990,6 +990,7 @@ private struct VocabScreen: View {
     let onStart: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.alphonsoDS) private var ds
     @State private var page = 0
 
     var body: some View {
@@ -1008,24 +1009,24 @@ private struct VocabScreen: View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Vocabulary · \(lesson.subtitle)".uppercased())
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
+                    .dsText(.overline)
+                    .foregroundStyle(ds.actionText)
                 Text(lesson.title)
-                    .font(AlphonsoFont.display(24, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.display)
+                    .foregroundStyle(ds.brand)
+                    .accessibilityAddTraits(.isHeader)
                 // Skip shares the counter's row (build 55): beside the title it crowded long titles.
                 HStack {
                     Text("Word \(page + 1) of \(items.count)")
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.inkSoft)
                         .monospacedDigit()
                     Spacer(minLength: 0)
                     if items.count > 1 {
                         Button("Skip to practice", action: onStart)
-                            .font(AlphonsoFont.sans(14, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                            .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.choice)
+                            .frame(minHeight: AlphonsoDS.Space.minTouch)
                     }
                 }
             }
@@ -1047,7 +1048,7 @@ private struct VocabScreen: View {
             HStack(spacing: 6) {
                 ForEach(items.indices, id: \.self) { index in
                     Capsule()
-                        .fill(index == page ? AlphonsoColor.moss : AlphonsoColor.hairline)
+                        .fill(index == page ? ds.xp : ds.line)
                         .frame(width: index == page ? 20 : 8, height: 8)
                 }
             }
@@ -1061,47 +1062,46 @@ private struct VocabScreen: View {
                     onStart()
                 }
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
         }
-        .padding()
-        .background(AlphonsoColor.surface)
+        .padding(AlphonsoDS.Space.s4)
+        .background(ds.surface)
     }
 
     /// The card's picture: 180 pt, smaller on a short screen (an iPhone SE) so the words below it still fit.
     private static var cardImageHeight: CGFloat { min(180, UIScreen.main.bounds.height * 0.2) }
 
-    private func speakButton(_ item: VocabItem, foreground: Color = AlphonsoColor.ink) -> some View {
+    private func speakButton(_ item: VocabItem, foreground: Color? = nil) -> some View {
         Button {
             speak(item.term, course: course)
         } label: {
             Image(systemName: "speaker.wave.2.fill")
                 .font(.body)
                 .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
-                .background(AlphonsoColor.surface, in: Circle())
-                .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
+                .background(ds.card, in: Circle())
+                .overlay(Circle().strokeBorder(ds.line, lineWidth: 2))
         }
         .buttonStyle(.plain)
-        .foregroundStyle(foreground)
+        .foregroundStyle(foreground ?? ds.choice)
         .accessibilityLabel("Play pronunciation for \(item.term)")
     }
 
     /// A word with no photo (grammar words never have one) gets a coloured band with the word itself, large, in
     /// place of the picture: a different tile tone per card so the deck still feels illustrated.
     private func wordBand(_ item: VocabItem, index: Int) -> some View {
-        let tone = AlphonsoTileTone.allCases[index % AlphonsoTileTone.allCases.count]
-        return VStack(spacing: AlphonsoSpacing.sm) {
+        VStack(spacing: AlphonsoDS.Space.s4) {
             Text(item.term)
-                .font(AlphonsoFont.display(40, weight: .bold))
-                .foregroundStyle(tone.ink)
+                .dsText(.displayXL)
+                .foregroundStyle(ds.brand)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.5)
                 .lineLimit(2)
-            speakButton(item, foreground: tone.ink)
+            speakButton(item)
         }
-        .padding(.horizontal, 56)
-        .padding(.vertical, AlphonsoSpacing.md + 4)
+        .padding(.horizontal, AlphonsoDS.Space.s12)
+        .padding(.vertical, AlphonsoDS.Space.s8)
         .frame(maxWidth: .infinity)
-        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg + 4, style: .continuous))
+        .background(ds.choiceTint, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
     }
 
     private func cardWords(_ item: VocabItem, index: Int) -> some View {
@@ -1110,8 +1110,8 @@ private struct VocabScreen: View {
                 VocabImageView(image: image, cardHeight: Self.cardImageHeight)
                 HStack(spacing: AlphonsoSpacing.sm) {
                     Text(item.term)
-                        .font(AlphonsoFont.display(34, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .dsText(.display)
+                        .foregroundStyle(ds.brand)
                         .minimumScaleFactor(0.6)
                         .lineLimit(2)
                     speakButton(item)
@@ -1123,22 +1123,23 @@ private struct VocabScreen: View {
             // Either line can be empty when the lesson data has no real meaning or example for the word.
             if !item.meaning.isEmpty {
                 Text(item.meaning)
-                    .font(AlphonsoFont.sans(16))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.body)
+                    .foregroundStyle(ds.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if !item.example.isEmpty {
                 Text(item.example)
-                    .font(AlphonsoFont.sans(15).italic())
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.body)
+                    .italic()
+                    .foregroundStyle(ds.brand)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, AlphonsoSpacing.md)
-                    .padding(.vertical, AlphonsoSpacing.sm + 2)
+                    .padding(.horizontal, AlphonsoDS.Space.s4)
+                    .padding(.vertical, AlphonsoDS.Space.s3)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AlphonsoColor.surface, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                    .background(ds.sunk, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
             }
         }
-        .padding(AlphonsoSpacing.md + 4)
+        .padding(AlphonsoDS.Space.s3)
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
@@ -1150,21 +1151,21 @@ private struct VocabScreen: View {
             ScrollView { cardWords(item, index: index) }
                 .scrollBounceBehavior(.basedOnSize)
         }
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).strokeBorder(AlphonsoColor.hairline, lineWidth: 2))
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AlphonsoColor.hairline)
-                .offset(y: 6)
-        )
+        .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous))
+        .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
         .overlay(alignment: .topTrailing) {
-            // Decorative: Alphonso peeks over the card's corner.
-            Image("Alphonso-encouraging")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 72, height: 72)
-                .offset(x: 6, y: -14)
-                .accessibilityHidden(true)
+            // Decorative: Alphonso peeks over the card's corner, in a round frame, as on the web.
+            if let face = LessonArt.expression(.talk) {
+                Image(uiImage: face)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 64, height: 64, alignment: .top)
+                    .background(ds.card)
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(ds.card, lineWidth: 3))
+                    .offset(x: AlphonsoDS.Space.s1, y: -AlphonsoDS.Space.s3)
+                    .accessibilityHidden(true)
+            }
         }
         .accessibilityElement(children: .contain)
     }

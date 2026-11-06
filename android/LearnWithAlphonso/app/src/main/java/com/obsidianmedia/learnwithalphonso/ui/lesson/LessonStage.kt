@@ -1,5 +1,13 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontStyle
+import com.obsidianmedia.learnwithalphonso.core.logic.VocabItem
+import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
@@ -53,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
@@ -131,6 +140,7 @@ private val FootnoteType by lazy { AlphonsoTokens.Type.footnote.toTextStyle() }
 private val CaptionType by lazy { AlphonsoTokens.Type.caption.toTextStyle() }
 private val OverlineType by lazy { AlphonsoTokens.Type.overline.toTextStyle() }
 private val DisplayXLType by lazy { AlphonsoTokens.Type.displayXL.toTextStyle() }
+private val DisplayType by lazy { AlphonsoTokens.Type.display.toTextStyle() }
 private val NumeralType by lazy { AlphonsoTokens.Type.numeralXL.toTextStyle() }
 
 /** An overline role is set in capitals by the caller (TextStyle has no text case). */
@@ -281,7 +291,10 @@ fun LessonAnswerButton(index: Int, label: String, state: LessonAnswerState, onCl
         },
         alpha = if (state == LessonAnswerState.DIMMED) 0.48f else 1f, pressable = state == LessonAnswerState.IDLE,
     ) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 62.dp).padding(AlphonsoTokens.Space.s4), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 62.dp).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
+            horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically,
+        ) {
             Box(
                 Modifier.size(30.dp).clip(RoundedCornerShape(AlphonsoTokens.Radius.key)).background(keyFace)
                     .border(2.dp, if (keyFace == ds.card) ds.line else keyFace, RoundedCornerShape(AlphonsoTokens.Radius.key))
@@ -378,7 +391,7 @@ fun LessonRoom(
     val ds = LocalAlphonsoTokens.current
     val reduce = rememberReduceMotion()
     val room = rememberAsset("scenes/$roomId.webp") ?: rememberAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
-    BoxWithConstraints(Modifier.fillMaxWidth().height(height).background(ds.sunk)) {
+    BoxWithConstraints(Modifier.fillMaxWidth().height(height).clipToBounds().background(ds.sunk)) {
         room?.let {
             // "center 38%": the room's focus sits a little above the middle.
             Image(it, contentDescription = null, contentScale = ContentScale.Crop, alignment = BiasAlignment(0f, -0.24f), modifier = Modifier.fillMaxSize())
@@ -855,6 +868,107 @@ fun LessonComplete(
         }
         Box(Modifier.background(ds.surface.copy(alpha = 0.95f)).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3)) {
             LessonEdgeButton(continueLabel, EdgeVariant.PRIMARY, onContinue)
+        }
+    }
+}
+
+// ---------------------------------------------------------------- words to learn
+
+/** "Next word" until the last card, then "Start practice" (the web's vocab-deck.ts, iOS VocabDeck). */
+fun vocabDeckButtonTitle(index: Int, count: Int): String = if (index < count - 1) "Next word" else "Start practice"
+
+/**
+ * Words to learn, one big card at a time (visual round 6): the word, its sound, the meaning and an example, with
+ * Alphonso peeking over the corner. "Next word" moves on, the last card starts practice, Skip goes straight there, and
+ * swiping moves between cards.
+ */
+@Composable
+fun LessonWordDeck(
+    overline: String,
+    title: String,
+    items: List<VocabItem>,
+    hearts: Int?,
+    onClose: () -> Unit,
+    onSpeak: (String) -> Unit,
+    image: @Composable (VocabImageRef) -> Unit,
+    onStart: () -> Unit,
+) {
+    val ds = LocalAlphonsoTokens.current
+    val reduce = rememberReduceMotion()
+    val pager = rememberPagerState { items.size }
+    val scope = rememberCoroutineScope()
+    val page = pager.currentPage
+    val avatar = rememberAsset("lesson/talk.webp")
+    // The pager runs edge to edge so the card's shadow and Alphonso's corner are not clipped; the rest keeps the gutter.
+    val gutter = Modifier.padding(horizontal = AlphonsoTokens.Space.s4)
+    Column(Modifier.fillMaxSize().background(ds.surface)) {
+        Box(gutter.padding(top = AlphonsoTokens.Space.s2)) { LessonHud(0f, hearts, onClose, onLight = true) }
+        Overline(overline, ds.actionText, gutter.padding(top = AlphonsoTokens.Space.s4))
+        Text(title, style = DisplayType, color = ds.brand, modifier = gutter.padding(top = AlphonsoTokens.Space.s1).semantics { heading() })
+        Row(gutter.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1), verticalAlignment = Alignment.CenterVertically) {
+            Text("Word ${page + 1} of ${items.size}", style = FootnoteType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+            if (items.size > 1) {
+                TextButton(onClick = onStart) { Text("Skip to practice", style = FootnoteType, color = ds.choice) }
+            }
+        }
+        HorizontalPager(pager, Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) { index ->
+            val item = items[index]
+            Box(Modifier.fillMaxWidth().padding(start = AlphonsoTokens.Space.s4, end = AlphonsoTokens.Space.s4, top = AlphonsoTokens.Space.s4, bottom = AlphonsoTokens.Space.s6)) {
+                Column(
+                    Modifier.fillMaxWidth()
+                        .shadow(14.dp, RoundedCornerShape(AlphonsoTokens.Radius.sheet), ambientColor = AlphonsoTokens.Elevation.shadowTint, spotColor = AlphonsoTokens.Elevation.shadowTint)
+                        .clip(RoundedCornerShape(AlphonsoTokens.Radius.sheet)).background(ds.card).padding(AlphonsoTokens.Space.s3),
+                    verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                ) {
+                    item.image?.let { image(it) }
+                    Column(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.bubble)).background(ds.choiceTint)
+                            .padding(vertical = AlphonsoTokens.Space.s8, horizontal = AlphonsoTokens.Space.s4),
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s4),
+                    ) {
+                        Text(item.term, style = DisplayXLType, color = ds.brand, textAlign = TextAlign.Center)
+                        Box(
+                            Modifier.size(AlphonsoTokens.Space.s12).clip(CircleShape).background(ds.card).border(2.dp, ds.line, CircleShape)
+                                .clickable(role = Role.Button, onClickLabel = "Hear it") { onSpeak(item.term) }
+                                .semantics { contentDescription = "Hear ${item.term}" },
+                            contentAlignment = Alignment.Center,
+                        ) { DsIcon(R.drawable.ds_speaker, ds.choice) }
+                    }
+                    if (item.meaning.isNotEmpty()) {
+                        Text(item.meaning, style = BodyType, color = ds.inkSoft, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.s2))
+                    }
+                    if (item.example.isNotEmpty()) {
+                        Text(
+                            item.example, style = BodyType.copy(fontStyle = FontStyle.Italic), color = ds.brand,
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.sunk)
+                                .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
+                        )
+                    }
+                }
+                // Alphonso peeks over the card's corner.
+                avatar?.let {
+                    Image(
+                        it, contentDescription = null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter,
+                        modifier = Modifier.align(Alignment.TopEnd).offset(x = AlphonsoTokens.Space.s1, y = -AlphonsoTokens.Space.s2)
+                            .size(64.dp).clip(CircleShape).background(ds.card).border(3.dp, ds.card, CircleShape),
+                    )
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth().clearAndSetSemantics {}, horizontalArrangement = Arrangement.Center) {
+            items.indices.forEach { i ->
+                Box(Modifier.padding(horizontal = 3.dp).size(width = if (i == page) 20.dp else 8.dp, height = 8.dp).clip(CircleShape).background(if (i == page) ds.xp else ds.line))
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Box(gutter.padding(vertical = AlphonsoTokens.Space.s3)) {
+            LessonEdgeButton(vocabDeckButtonTitle(page, items.size), EdgeVariant.PRIMARY, {
+                if (page < items.size - 1) {
+                    scope.launch { if (reduce) pager.scrollToPage(page + 1) else pager.animateScrollToPage(page + 1) }
+                } else {
+                    onStart()
+                }
+            })
         }
     }
 }

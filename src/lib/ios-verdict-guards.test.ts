@@ -152,8 +152,8 @@ describe("words to learn, one card at a time", () => {
   });
 
   it("Alphonso peeks over the card, decorative", () => {
-    expect(vocab).toContain('Image("Alphonso-encouraging")');
-    expect(from(vocab, 'Image("Alphonso-encouraging")').slice(0, 300)).toContain(
+    expect(vocab).toContain("LessonArt.expression(.talk)");
+    expect(from(vocab, "LessonArt.expression(.talk)").slice(0, 600)).toContain(
       ".accessibilityHidden(true)",
     );
   });

@@ -180,9 +180,18 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                             steps, hearts, onClose = onExit, onStart = vm::begin,
                         )
                     }
-                    LessonPhase.Vocab -> Column {
-                        Box(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) { LessonHud(0f, hearts, onExit, onLight = true) }
-                        VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
+                    LessonPhase.Vocab -> if (androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f) {
+                        // At the largest text sizes a fixed card would clip its words, so the words stay one scrolling list.
+                        Column {
+                            Box(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) { LessonHud(0f, hearts, onExit, onLight = true) }
+                            VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
+                        }
+                    } else {
+                        LessonWordDeck(
+                            overline = "Vocabulary \u00B7 ${state.lesson.subtitle}", title = state.lesson.title, items = vm.vocab,
+                            hearts = hearts, onClose = onExit, onSpeak = { Speech.get(context).speak(it, course) },
+                            image = { VocabImage(it, height = 160.dp) }, onStart = vm::startPractice,
+                        )
                     }
                     LessonPhase.Quiz -> QuizStage(vm, state, course, container, roomId, hearts, onExit)
                     is LessonPhase.Finished -> {
