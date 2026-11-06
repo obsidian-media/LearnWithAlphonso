@@ -166,7 +166,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 launch {
                     container.syncCoordinator.triggerSync()
                     runCatching { container.progressClient.fetchProfileTheme(id) }.getOrNull()?.let(container.themeManager::hydrateFromServer)
-                    container.entitlements.login(id)
+                    container.entitlements.login(container.subscriptionLoginId(id))
                     container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
                     container.pushRegistrar.registerIfAuthorized()
                 }

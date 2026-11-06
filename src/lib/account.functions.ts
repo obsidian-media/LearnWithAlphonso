@@ -375,17 +375,16 @@ export async function revokeAppleGrantForUser(
  */
 export async function eraseSubscriberRecord(userId: string): Promise<void> {
   try {
-    const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber, cancelWebSubscription } =
+    const { revenueCatConfigFromEnv, deleteAccountSubscribers, cancelAccountWebSubscriptions } =
       await import("@/lib/revenuecat-entitlement");
     const config = revenueCatConfigFromEnv();
+    // Both ids the account's purchases can be under (its subscription identifier and its account id).
     // Web billing is cancelled before the record is erased: erasing first would leave a card being charged with no
     // account left to manage it from. A failed cancel queues the id and erases nothing; the scheduled retry cancels
     // and then erases.
-    const cancelled = config ? await cancelWebSubscription(config, userId) : "failed";
+    const cancelled = config ? await cancelAccountWebSubscriptions(config, userId) : "failed";
     const outcome =
-      config && cancelled !== "failed"
-        ? await deleteRevenueCatSubscriber(config, userId)
-        : "failed";
+      config && cancelled !== "failed" ? await deleteAccountSubscribers(config, userId) : "failed";
     if (outcome === "erased") return;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin

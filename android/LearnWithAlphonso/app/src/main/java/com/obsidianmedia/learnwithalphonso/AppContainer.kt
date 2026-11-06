@@ -25,6 +25,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
+import com.obsidianmedia.learnwithalphonso.core.net.SubscriptionLogin
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
@@ -76,6 +77,13 @@ class AppContainer(context: Context) {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     /** The same app-lifetime scope, for work that must outlive the screen that started it (a podcast quiz submit). */
     val appLifetimeScope: CoroutineScope get() = appScope
+
+    /**
+     * The id this account gives RevenueCat: its separate subscription identifier (never shown anywhere), or the
+     * account id, which is also the fallback on any failure (SubscriptionLogin).
+     */
+    suspend fun subscriptionLoginId(accountId: String): String =
+        SubscriptionLogin.resolve(BuildConfig.API_BASE_URL, accountId, session.freshAccessToken(), engine)
 
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
     val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)

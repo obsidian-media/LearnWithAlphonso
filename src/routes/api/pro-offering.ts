@@ -37,16 +37,16 @@ async function handle(request: Request): Promise<Response> {
   const plainLink = httpsLinkOrNull(process.env.REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL);
   if (!productId || !trialLink || !plainLink) return unavailable();
 
-  const { revenueCatConfigFromEnv, getSubscriberSummary } =
+  const { revenueCatConfigFromEnv, getAccountSubscriberSummary } =
     await import("@/lib/revenuecat-entitlement");
   const { getWebOffering, buildPurchaseUrl } = await import("@/lib/web-offering.server");
   const config = revenueCatConfigFromEnv();
   if (!config) return unavailable();
   const [offer, summary] = await Promise.all([
     getWebOffering(config, productId),
-    getSubscriberSummary(config, data.user.id),
+    getAccountSubscriberSummary(config, data.user.id),
   ]);
-  if (!offer || summary.status === "unavailable") return unavailable();
+  if (!offer || summary.status === "unavailable" || !summary.loginId) return unavailable();
   // Already Pro (on any store): no checkout, so nobody can pay twice.
   if (summary.status === "active") return Response.json({ error: "already-pro" }, { status: 409 });
 
@@ -62,7 +62,8 @@ async function handle(request: Request): Promise<Response> {
       price: priceHere ? offer.price : null,
       period: offer.period,
       trialDays,
-      purchaseUrl: buildPurchaseUrl(trialDays ? trialLink : plainLink, data.user.id, source),
+      // The purchase lands on the account's subscription identifier, never on its visible account id.
+      purchaseUrl: buildPurchaseUrl(trialDays ? trialLink : plainLink, summary.loginId, source),
     },
     { headers: { "Cache-Control": "no-store" } },
   );
