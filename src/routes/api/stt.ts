@@ -63,6 +63,12 @@ export const Route = createFileRoute("/api/stt")({
         if (declared !== null && declared > budget.maxCallSeconds()) {
           return Response.json({ error: "audio-too-long" }, { status: 413 });
         }
+        // From here the provider may transcribe, and bill, the audio even when no usable answer comes back. So the
+        // upstream call is deliberately NOT tied to the caller's connection (hanging up after the upload must not
+        // skip the charge), and an outcome whose length is unknown (a timeout, an unreadable answer) is charged the
+        // per-call maximum.
+        const chargeUnknownLength = () =>
+          budget.chargeAudioSeconds(supabaseAdmin, access.userId, budget.maxCallSeconds());
         let resp: Response;
         try {
           resp = await fetch(
@@ -74,22 +80,34 @@ export const Route = createFileRoute("/api/stt")({
                 "Content-Type": forwardedContentType,
               },
               body: audioBytes,
-              signal: AbortSignal.any([request.signal, AbortSignal.timeout(STT_TIMEOUT_MS)]),
+              signal: AbortSignal.timeout(STT_TIMEOUT_MS),
             },
           );
-        } catch {
+        } catch (e) {
+          // A timeout means the provider had the audio; a network failure before that (DNS, refused) means it did not.
+          if (e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError")) {
+            await chargeUnknownLength();
+          }
           return Response.json({ error: "transcription-unavailable" }, { status: 504 });
         }
         if (!resp.ok) {
           const t = await resp.text().catch(() => "");
           return upstreamErrorResponse("Deepgram STT", resp.status, t);
         }
-        const data = (await resp.json()) as {
+        type DeepgramReply = {
           results?: {
             channels?: { alternatives?: { transcript?: string; confidence?: number }[] }[];
           };
           metadata?: Record<string, unknown>;
         };
+        let data: DeepgramReply;
+        try {
+          data = (await resp.json()) as DeepgramReply;
+        } catch {
+          // A success status means the audio was transcribed (and billed) even though the answer cannot be read.
+          await chargeUnknownLength();
+          return Response.json({ error: "transcription-unavailable" }, { status: 502 });
+        }
         // Charged after the fact, from the length the provider billed. An over-long recording (a WebM states no
         // length up front) is charged in full and still answered: the cost is already paid, and the budget then
         // stops the rest of the day.

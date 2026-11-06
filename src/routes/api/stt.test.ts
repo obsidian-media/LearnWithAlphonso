@@ -325,6 +325,53 @@ describe("POST /api/stt", () => {
       expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 13 }]);
     });
 
+    it("still charges a caller who hangs up after the upload: the provider call is not tied to their connection", async () => {
+      const caller = new AbortController();
+      const form = new FormData();
+      form.set("file", new Blob(["x".repeat(600)]), "audio.webm");
+      const request = new Request("https://example.com/api/stt", {
+        method: "POST",
+        body: form,
+        signal: caller.signal,
+      });
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+        async (_url: string, init?: RequestInit) => {
+          caller.abort(); // the caller hangs up while the provider is transcribing
+          if (init?.signal?.aborted) throw init.signal.reason; // what a real fetch does
+          return new Response(JSON.stringify({ metadata: { duration: 600 }, results: {} }), {
+            status: 200,
+          });
+        },
+      );
+      await handler({ request });
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 600 }]);
+    });
+
+    it("charges the per-call maximum when the provider times out, since it already had the audio", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new DOMException("timed out", "TimeoutError"),
+      );
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(504);
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 120 }]);
+    });
+
+    it("charges nothing when the provider could not be reached at all", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new TypeError("fetch failed"));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(504);
+      expect(charged()).toEqual([]);
+    });
+
+    it("charges the per-call maximum when a success answer cannot be read", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("not json", { status: 200 }),
+      );
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(502);
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 120 }]);
+    });
+
     it("charges the per-call maximum when the provider reports no length", async () => {
       deepgram();
       await handler({ request: CONSENT_REQUEST() });
