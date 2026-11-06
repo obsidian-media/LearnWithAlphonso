@@ -50,7 +50,7 @@
                 "Bienvenue"
               ],
               "answer": "Bonsoir",
-              "explanation": "good evening → Bonsoir. Core greetings and polite phrases."
+              "explanation": "\"Bonsoir\" is the greeting for the evening. \"Bonjour\" is used during the day."
             },
             {
               "id": "fra1p1q3",
@@ -76,7 +76,7 @@
                 "Oui"
               ],
               "answer": "À bientôt",
-              "explanation": "see you soon → À bientôt. Core greetings and polite phrases."
+              "explanation": "\"À bientôt\" means \"see you soon\": \"bientôt\" means \"soon\", and you say it when you expect to meet again before long."
             }
           ]
         },
@@ -109,7 +109,7 @@
                 "Merci"
               ],
               "answer": "Merci",
-              "explanation": "thank you → Merci. Core greetings and polite phrases."
+              "explanation": "\"Merci\" is the standard way to say \"thank you\" in French, and it works with anyone."
             },
             {
               "id": "fra1p1q7",
@@ -122,7 +122,7 @@
                 "À bientôt"
               ],
               "answer": 0,
-              "explanation": "you're welcome → De rien. Core greetings and polite phrases."
+              "explanation": "\"De rien\" literally means \"it's nothing\" and is the everyday reply when someone says \"merci\"."
             },
             {
               "id": "fra1p1q8",
@@ -135,7 +135,7 @@
                 "Au revoir"
               ],
               "answer": "Excusez-moi",
-              "explanation": "excuse me → Excusez-moi. Core greetings and polite phrases."
+              "explanation": "\"Excusez-moi\" is the polite \"excuse me\" for getting a stranger's attention. It uses the vous form."
             },
             {
               "id": "fra1p1q9",
@@ -148,7 +148,7 @@
                 "Bonne nuit"
               ],
               "answer": 2,
-              "explanation": "sorry → Désolé. Core greetings and polite phrases."
+              "explanation": "\"Désolé\" means \"sorry\" and is used to apologise. A woman writes it \"Désolée\"."
             }
           ]
         },
@@ -168,7 +168,7 @@
                 "Bonjour"
               ],
               "answer": 2,
-              "explanation": "yes → Oui. Core greetings and polite phrases."
+              "explanation": "\"Oui\" is the French word for \"yes\". The other options are greetings or welcomes, not answers to a question."
             },
             {
               "id": "fra1p1q11",
@@ -181,7 +181,7 @@
                 "Non"
               ],
               "answer": "Non",
-              "explanation": "no → Non. Core greetings and polite phrases."
+              "explanation": "\"Non\" is the French word for \"no\", the opposite of \"oui\"."
             },
             {
               "id": "fra1p1q12",
@@ -207,7 +207,7 @@
                 "Je vais bien, merci"
               ],
               "answer": "Je vais bien, merci",
-              "explanation": "I'm fine, thanks → Je vais bien, merci. Core greetings and polite phrases."
+              "explanation": "\"Je vais bien, merci\" literally means \"I am going well, thanks\". French uses the verb aller (to go) to say how you are."
             },
             {
               "id": "fra1p1q14",
@@ -379,7 +379,7 @@
       "lessons": [
         {
           "id": "fra1p2l1",
-          "title": "Numbers 1–100 1",
+          "title": "Numbers 1–100 (Part 1)",
           "subtitle": "Counting in French",
           "questions": [
             {
@@ -451,7 +451,7 @@
         },
         {
           "id": "fra1p2l2",
-          "title": "Numbers 1–100 2",
+          "title": "Numbers 1–100 (Part 2)",
           "subtitle": "Counting in French",
           "questions": [
             {
@@ -523,7 +523,7 @@
         },
         {
           "id": "fra1p2l3",
-          "title": "Numbers 1–100 3",
+          "title": "Numbers 1–100 (Part 3)",
           "subtitle": "Counting in French",
           "questions": [
             {
@@ -595,7 +595,7 @@
         },
         {
           "id": "fra1p2l4",
-          "title": "Numbers 1–100 4",
+          "title": "Numbers 1–100 (Part 4)",
           "subtitle": "Counting in French",
           "questions": [
             {
@@ -648,7 +648,7 @@
                 "dix-neuf"
               ],
               "answer": "dix-neuf",
-              "explanation": "nineteen → dix-neuf. Cardinal numbers from one to a hundred."
+              "explanation": "\"dix-neuf\" is built as dix (ten) + neuf (nine), joined with a hyphen, just like \"dix-huit\" (eighteen)."
             },
             {
               "id": "fra1p2q19",
@@ -661,13 +661,13 @@
                 "seize"
               ],
               "answer": 2,
-              "explanation": "twenty → vingt. Cardinal numbers from one to a hundred."
+              "explanation": "\"vingt\" means twenty. Its final -gt is silent, so it sounds like \"vin\"."
             }
           ]
         },
         {
           "id": "fra1p2l5",
-          "title": "Numbers 1–100 5",
+          "title": "Numbers 1–100 (Part 5)",
           "subtitle": "Counting in French",
           "questions": [
             {
@@ -744,7 +744,7 @@
       "level": "A1",
       "eyebrow": "Unit 3",
       "title": "Family & People",
-      "description": "Talking about people you know — Family members and common people vocabulary.",
+      "description": "Talking about people you know — Family members and everyday words for people.",
       "lessons": [
         {
           "id": "fra1p3l1",
@@ -788,7 +788,7 @@
                 "le professeur"
               ],
               "answer": "la sœur",
-              "explanation": "sister → la sœur. Family members and common people vocabulary."
+              "explanation": "\"la sœur\" means sister. It is feminine, so it takes \"la\", and it is spelled with the joined letters œ."
             },
             {
               "id": "fra1p3q3",
@@ -814,7 +814,7 @@
                 "l'enfant"
               ],
               "answer": "le fils",
-              "explanation": "son → le fils. Family members and common people vocabulary."
+              "explanation": "\"le fils\" means son; the final s is pronounced (\"feess\"). \"l'enfant\" means any child, not specifically a son."
             }
           ]
         },
@@ -830,11 +830,11 @@
               "choices": [
                 "la fille",
                 "le fils",
-                "le mari",
-                "le bébé"
+                "la femme",
+                "la sœur"
               ],
               "answer": 0,
-              "explanation": "daughter → la fille. Family members and common people vocabulary."
+              "explanation": "\"la fille\" means daughter (it also means girl). \"le fils\" is the son and \"la sœur\" is the sister."
             },
             {
               "id": "fra1p3q6",
@@ -847,7 +847,7 @@
                 "le cousin"
               ],
               "answer": "la grand-mère",
-              "explanation": "grandmother → la grand-mère. Family members and common people vocabulary."
+              "explanation": "\"la grand-mère\" means grandmother: grand + mère (mother), joined with a hyphen."
             },
             {
               "id": "fra1p3q7",
@@ -860,7 +860,7 @@
                 "le voisin"
               ],
               "answer": 2,
-              "explanation": "grandfather → le grand-père. Family members and common people vocabulary."
+              "explanation": "\"le grand-père\" means grandfather: grand + père (father). \"la grand-mère\" is the grandmother."
             },
             {
               "id": "fra1p3q8",
@@ -873,7 +873,7 @@
                 "l'épouse"
               ],
               "answer": "la tante",
-              "explanation": "aunt → la tante. Family members and common people vocabulary."
+              "explanation": "\"la tante\" means aunt, the sister of your mother or father."
             },
             {
               "id": "fra1p3q9",
@@ -886,7 +886,7 @@
                 "la grand-mère"
               ],
               "answer": 0,
-              "explanation": "uncle → l'oncle. Family members and common people vocabulary."
+              "explanation": "\"l'oncle\" means uncle. The word is masculine (un oncle), and le becomes l' before the vowel."
             }
           ]
         },
@@ -906,7 +906,7 @@
                 "le professeur"
               ],
               "answer": 0,
-              "explanation": "cousin (male) → le cousin. Family members and common people vocabulary."
+              "explanation": "\"le cousin\" is a male cousin; the masculine form ends in -in, pronounced nasally."
             },
             {
               "id": "fra1p3q11",
@@ -914,12 +914,12 @@
               "prompt": "The French word for \"cousin (female)\" is… ___",
               "bank": [
                 "la cousine",
-                "le fils",
-                "le mari",
-                "le collègue"
+                "le cousin",
+                "la tante",
+                "la sœur"
               ],
               "answer": "la cousine",
-              "explanation": "cousin (female) → la cousine. Family members and common people vocabulary."
+              "explanation": "\"la cousine\" is a female cousin: add -e to le cousin and pronounce the n. \"le cousin\" is the male form."
             },
             {
               "id": "fra1p3q12",
@@ -932,7 +932,7 @@
                 "la mère"
               ],
               "answer": 2,
-              "explanation": "husband → le mari. Family members and common people vocabulary."
+              "explanation": "\"le mari\" means husband. For wife, French usually says la femme."
             },
             {
               "id": "fra1p3q13",
@@ -991,7 +991,7 @@
                 "le fils"
               ],
               "answer": 2,
-              "explanation": "man → l'homme. Family members and common people vocabulary."
+              "explanation": "\"l'homme\" means man; the h is silent, so le becomes l'."
             },
             {
               "id": "fra1p3q17",
@@ -1004,7 +1004,7 @@
                 "le père"
               ],
               "answer": "la femme",
-              "explanation": "woman → la femme. Family members and common people vocabulary."
+              "explanation": "\"la femme\" means woman (and also wife); it is pronounced \"fam\"."
             },
             {
               "id": "fra1p3q18",
@@ -1017,7 +1017,7 @@
                 "l'ami"
               ],
               "answer": 0,
-              "explanation": "child → l'enfant. Family members and common people vocabulary."
+              "explanation": "\"l'enfant\" means child, a boy or a girl; le or la becomes l' before the vowel."
             },
             {
               "id": "fra1p3q19",
@@ -1030,7 +1030,7 @@
                 "l'épouse"
               ],
               "answer": "le bébé",
-              "explanation": "baby → le bébé. Family members and common people vocabulary."
+              "explanation": "\"le bébé\" means \"baby\". The noun is masculine, so it takes \"le\" even when the baby is a girl."
             }
           ]
         },
@@ -1050,7 +1050,7 @@
                 "le garçon"
               ],
               "answer": "le garçon",
-              "explanation": "boy → le garçon. Family members and common people vocabulary."
+              "explanation": "\"le garçon\" means \"boy\". Its counterpart for a girl is \"la fille\"."
             },
             {
               "id": "fra1p3q21",
@@ -1063,7 +1063,7 @@
                 "le professeur"
               ],
               "answer": 0,
-              "explanation": "neighbour → le voisin. Family members and common people vocabulary."
+              "explanation": "\"le voisin\" means \"neighbour\", the person who lives next door. A female neighbour is \"la voisine\"."
             },
             {
               "id": "fra1p3q22",
@@ -1076,7 +1076,7 @@
                 "la femme"
               ],
               "answer": "le collègue",
-              "explanation": "colleague → le collègue. Family members and common people vocabulary."
+              "explanation": "\"le collègue\" means \"colleague\", someone you work with. Note the accent on the first e, and that a woman is \"la collègue\"."
             },
             {
               "id": "fra1p3q23",
@@ -1089,7 +1089,7 @@
                 "le garçon"
               ],
               "answer": 2,
-              "explanation": "teacher → le professeur. Family members and common people vocabulary."
+              "explanation": "\"le professeur\" means \"teacher\", especially in secondary school. In everyday speech people often shorten it to \"le prof\"."
             },
             {
               "id": "fra1p3q24",
@@ -1131,7 +1131,7 @@
                 "marron"
               ],
               "answer": 2,
-              "explanation": "red → rouge. Common colours and clothing items."
+              "explanation": "\"rouge\" means \"red\". It already ends in -e, so it stays the same for masculine and feminine nouns."
             },
             {
               "id": "fra1p4q1",
@@ -1487,7 +1487,7 @@
         {
           "id": "fra1p5l1",
           "title": "Days, Months & Seasons 1",
-          "subtitle": "Talking about time and calendar",
+          "subtitle": "Talking about time and the calendar",
           "questions": [
             {
               "id": "fra1p5q0",
@@ -1500,7 +1500,7 @@
                 "samedi"
               ],
               "answer": "lundi",
-              "explanation": "Monday → lundi. Days of the week, months, and seasons."
+              "explanation": "\"lundi\" means \"Monday\", the first day of the French week. Days of the week take no capital letter in French."
             },
             {
               "id": "fra1p5q1",
@@ -1513,7 +1513,7 @@
                 "jeudi"
               ],
               "answer": 2,
-              "explanation": "Tuesday → mardi. Days of the week, months, and seasons."
+              "explanation": "\"mardi\" means \"Tuesday\", the day after \"lundi\". It is written with a small letter in French."
             },
             {
               "id": "fra1p5q2",
@@ -1526,7 +1526,7 @@
                 "mardi"
               ],
               "answer": "mercredi",
-              "explanation": "Wednesday → mercredi. Days of the week, months, and seasons."
+              "explanation": "\"mercredi\" means \"Wednesday\", the middle of the week. It is written with a small letter in French."
             },
             {
               "id": "fra1p5q3",
@@ -1539,7 +1539,7 @@
                 "mercredi"
               ],
               "answer": 0,
-              "explanation": "Thursday → jeudi. Days of the week, months, and seasons."
+              "explanation": "\"jeudi\" means \"Thursday\", the day after \"mercredi\". It is written with a small letter in French."
             },
             {
               "id": "fra1p5q4",
@@ -1559,7 +1559,7 @@
         {
           "id": "fra1p5l2",
           "title": "Days, Months & Seasons 2",
-          "subtitle": "Talking about time and calendar",
+          "subtitle": "Talking about time and the calendar",
           "questions": [
             {
               "id": "fra1p5q5",
@@ -1631,7 +1631,7 @@
         {
           "id": "fra1p5l3",
           "title": "Days, Months & Seasons 3",
-          "subtitle": "Talking about time and calendar",
+          "subtitle": "Talking about time and the calendar",
           "questions": [
             {
               "id": "fra1p5q10",
@@ -1703,7 +1703,7 @@
         {
           "id": "fra1p5l4",
           "title": "Days, Months & Seasons 4",
-          "subtitle": "Talking about time and calendar",
+          "subtitle": "Talking about time and the calendar",
           "questions": [
             {
               "id": "fra1p5q15",
@@ -1729,7 +1729,7 @@
                 "janvier"
               ],
               "answer": 0,
-              "explanation": "October → octobre. Days of the week, months, and seasons."
+              "explanation": "\"octobre\" means \"October\". Like all French months, it is written with a small letter."
             },
             {
               "id": "fra1p5q17",
@@ -1742,7 +1742,7 @@
                 "novembre"
               ],
               "answer": "novembre",
-              "explanation": "November → novembre. Days of the week, months, and seasons."
+              "explanation": "\"novembre\" means \"November\", the month after \"octobre\". French months are written with a small letter."
             },
             {
               "id": "fra1p5q18",
@@ -1755,7 +1755,7 @@
                 "janvier"
               ],
               "answer": 2,
-              "explanation": "December → décembre. Days of the week, months, and seasons."
+              "explanation": "December is \"décembre\". In French, month names take no capital letter, and note the accent on the é."
             },
             {
               "id": "fra1p5q19",
@@ -1768,14 +1768,14 @@
                 "l'automne"
               ],
               "answer": "le printemps",
-              "explanation": "spring → le printemps. Days of the week, months, and seasons."
+              "explanation": "Spring is \"le printemps\". It is the only season that keeps \"le\", because it starts with a consonant; you say \"au printemps\" for \"in spring\"."
             }
           ]
         },
         {
           "id": "fra1p5l5",
           "title": "Days, Months & Seasons 5",
-          "subtitle": "Talking about time and calendar",
+          "subtitle": "Talking about time and the calendar",
           "questions": [
             {
               "id": "fra1p5q20",
@@ -1788,7 +1788,7 @@
                 "l'été"
               ],
               "answer": "l'été",
-              "explanation": "summer → l'été. Days of the week, months, and seasons."
+              "explanation": "Summer is \"l'été\". \"Le\" shortens to \"l'\" before a vowel, and \"in summer\" is \"en été\"."
             },
             {
               "id": "fra1p5q21",
@@ -1801,7 +1801,7 @@
                 "l'hiver"
               ],
               "answer": 2,
-              "explanation": "autumn → l'automne. Days of the week, months, and seasons."
+              "explanation": "Autumn is \"l'automne\". The \"m\" is silent, so it sounds like \"o-tonn\", and \"in autumn\" is \"en automne\"."
             },
             {
               "id": "fra1p5q22",
@@ -1814,7 +1814,7 @@
                 "l'été"
               ],
               "answer": "l'hiver",
-              "explanation": "winter → l'hiver. Days of the week, months, and seasons."
+              "explanation": "Winter is \"l'hiver\". The h is silent, so \"le\" shortens to \"l'\", and \"in winter\" is \"en hiver\"."
             },
             {
               "id": "fra1p5q23",
@@ -1827,7 +1827,7 @@
                 "ce soir"
               ],
               "answer": 0,
-              "explanation": "today → aujourd'hui. Days of the week, months, and seasons."
+              "explanation": "Today is \"aujourd'hui\". Don't confuse it with \"maintenant\" (now) or \"ce soir\" (tonight)."
             },
             {
               "id": "fra1p5q24",
@@ -1840,7 +1840,7 @@
                 "demain"
               ],
               "answer": "demain",
-              "explanation": "tomorrow → demain. Days of the week, months, and seasons."
+              "explanation": "Tomorrow is \"demain\". Its opposite is \"hier\" (yesterday)."
             }
           ]
         }
@@ -1869,7 +1869,7 @@
                 "la dent"
               ],
               "answer": 0,
-              "explanation": "head → la tête. Common parts of the body."
+              "explanation": "Head is \"la tête\". It is feminine, so it takes \"la\", and the ê has a circumflex."
             },
             {
               "id": "fra1p6q1",
@@ -1882,7 +1882,7 @@
                 "le visage"
               ],
               "answer": "les cheveux",
-              "explanation": "hair → les cheveux. Common parts of the body."
+              "explanation": "Hair on your head is \"les cheveux\". It is plural in French, unlike English; \"un cheveu\" is a single hair."
             },
             {
               "id": "fra1p6q2",
@@ -1895,7 +1895,7 @@
                 "l'épaule"
               ],
               "answer": 2,
-              "explanation": "eye → l'œil. Common parts of the body."
+              "explanation": "Eye is \"l'œil\". Its plural is completely different: \"les yeux\" (eyes)."
             },
             {
               "id": "fra1p6q3",
@@ -2111,7 +2111,7 @@
                 "l'œil"
               ],
               "answer": 0,
-              "explanation": "knee → le genou. Common parts of the body."
+              "explanation": "Knee is \"le genou\". It is masculine, and its plural ends in x: \"les genoux\"."
             },
             {
               "id": "fra1p6q18",
@@ -2124,7 +2124,7 @@
                 "la tête"
               ],
               "answer": "le pied",
-              "explanation": "foot → le pied. Common parts of the body."
+              "explanation": "Foot is \"le pied\". The d is silent, and \"on foot\" is \"à pied\"."
             },
             {
               "id": "fra1p6q19",
@@ -2137,7 +2137,7 @@
                 "le cœur"
               ],
               "answer": 2,
-              "explanation": "skin → la peau. Common parts of the body."
+              "explanation": "\"Skin\" is \"la peau\", a feminine noun. Don't confuse it with \"la poitrine\", which means chest."
             }
           ]
         },
@@ -2157,7 +2157,7 @@
                 "le cou"
               ],
               "answer": 2,
-              "explanation": "face → le visage. Common parts of the body."
+              "explanation": "\"Face\" is \"le visage\". It is masculine even though it ends in -e."
             },
             {
               "id": "fra1p6q21",
@@ -2170,7 +2170,7 @@
                 "le cœur"
               ],
               "answer": "le cœur",
-              "explanation": "heart → le cœur. Common parts of the body."
+              "explanation": "\"Heart\" is \"le cœur\", a masculine noun spelled with the joined letters œ."
             },
             {
               "id": "fra1p6q22",
@@ -2183,7 +2183,7 @@
                 "le bras"
               ],
               "answer": 0,
-              "explanation": "elbow → le coude. Common parts of the body."
+              "explanation": "\"Elbow\" is \"le coude\". \"Le bras\" is the whole arm, not the joint in the middle."
             },
             {
               "id": "fra1p6q23",
@@ -2196,7 +2196,7 @@
                 "le cœur"
               ],
               "answer": "le poignet",
-              "explanation": "wrist → le poignet. Common parts of the body."
+              "explanation": "\"Wrist\" is \"le poignet\", a masculine noun. The final t is silent."
             },
             {
               "id": "fra1p6q24",
@@ -2209,7 +2209,7 @@
                 "le doigt"
               ],
               "answer": 2,
-              "explanation": "chin → le menton. Common parts of the body."
+              "explanation": "\"Chin\" is \"le menton\". \"Le nez\" is the nose, just above it."
             }
           ]
         }
@@ -2238,7 +2238,7 @@
                 "la chaise"
               ],
               "answer": "la maison",
-              "explanation": "house → la maison. Rooms and household vocabulary."
+              "explanation": "\"House\" is \"la maison\", a feminine noun, so you say une maison."
             },
             {
               "id": "fra1p7q1",
@@ -2251,7 +2251,7 @@
                 "le sol"
               ],
               "answer": 0,
-              "explanation": "apartment → l'appartement. Rooms and household vocabulary."
+              "explanation": "\"Apartment\" is \"l'appartement\". The article becomes l' before a vowel. The word is masculine (un appartement) and is spelled with a double p."
             },
             {
               "id": "fra1p7q2",
@@ -2434,7 +2434,7 @@
                 "la salle à manger"
               ],
               "answer": 0,
-              "explanation": "roof → le toit. Rooms and household vocabulary."
+              "explanation": "\"Roof\" is \"le toit\", a masculine noun. The final t is silent."
             }
           ]
         },
@@ -2449,12 +2449,12 @@
               "prompt": "The French word for \"garage\" is… ___",
               "bank": [
                 "le garage",
-                "le lit",
+                "la gare",
                 "la chambre",
                 "le mur"
               ],
               "answer": "le garage",
-              "explanation": "garage → le garage. Rooms and household vocabulary."
+              "explanation": "\"Garage\" is \"le garage\", a masculine noun. Careful: \"la gare\" means train station."
             },
             {
               "id": "fra1p7q16",
@@ -2462,12 +2462,12 @@
               "prompt": "The French word for \"table\" is…",
               "choices": [
                 "la clé",
-                "le toit",
+                "le tableau",
                 "la table",
                 "la salle de bain"
               ],
               "answer": 2,
-              "explanation": "table → la table. Rooms and household vocabulary."
+              "explanation": "\"Table\" is \"la table\", a feminine noun. \"Le tableau\" looks similar but means a painting or a board."
             },
             {
               "id": "fra1p7q17",
@@ -2480,7 +2480,7 @@
                 "la chaise"
               ],
               "answer": "la chaise",
-              "explanation": "chair → la chaise. Rooms and household vocabulary."
+              "explanation": "\"Chair\" is \"la chaise\", a feminine noun. Don't mix it up with \"la porte\", the door."
             },
             {
               "id": "fra1p7q18",
@@ -2493,7 +2493,7 @@
                 "le mur"
               ],
               "answer": 0,
-              "explanation": "bed → le lit. Rooms and household vocabulary."
+              "explanation": "\"le lit\" means bed, the piece of furniture you sleep in. Lit is masculine, so it takes \"le\". Don't confuse it with la chambre, the bedroom."
             },
             {
               "id": "fra1p7q19",
@@ -2506,7 +2506,7 @@
                 "le toit"
               ],
               "answer": "le canapé",
-              "explanation": "sofa → le canapé. Rooms and household vocabulary."
+              "explanation": "\"le canapé\" means sofa (couch). Canapé is masculine, so it takes \"le\"."
             }
           ]
         },
@@ -2526,7 +2526,7 @@
                 "la lampe"
               ],
               "answer": "la lampe",
-              "explanation": "lamp → la lampe. Rooms and household vocabulary."
+              "explanation": "\"la lampe\" means lamp, and it looks almost like the English word. Lampe is feminine, so it takes \"la\"."
             },
             {
               "id": "fra1p7q21",
@@ -2539,7 +2539,7 @@
                 "la cuisine"
               ],
               "answer": 0,
-              "explanation": "mirror → le miroir. Rooms and household vocabulary."
+              "explanation": "\"le miroir\" means mirror, the glass you look at yourself in. Miroir is masculine, so it takes \"le\"."
             },
             {
               "id": "fra1p7q22",
@@ -2552,7 +2552,7 @@
                 "la chambre"
               ],
               "answer": "la clé",
-              "explanation": "key → la clé. Rooms and household vocabulary."
+              "explanation": "\"la clé\" means key, the thing that opens a door. Clé is feminine, so it takes \"la\"."
             },
             {
               "id": "fra1p7q23",
@@ -2565,7 +2565,7 @@
                 "la salle de bain"
               ],
               "answer": 2,
-              "explanation": "shelf → l'étagère. Rooms and household vocabulary."
+              "explanation": "\"l'étagère\" means shelf. Étagère is a feminine noun starting with a vowel, so la becomes l'."
             },
             {
               "id": "fra1p7q24",
@@ -2607,7 +2607,7 @@
                 "écrire"
               ],
               "answer": 2,
-              "explanation": "to eat → manger. High-frequency verbs in their infinitive form."
+              "explanation": "\"manger\" means to eat. It is a regular -er verb, as in Je mange une pomme."
             },
             {
               "id": "fra1p8q1",
@@ -2803,7 +2803,7 @@
                 "manger"
               ],
               "answer": "acheter",
-              "explanation": "to buy → acheter. High-frequency verbs in their infinitive form."
+              "explanation": "\"acheter\" means to buy, as in acheter du pain (to buy bread)."
             }
           ]
         },
@@ -2823,7 +2823,7 @@
                 "attendre"
               ],
               "answer": 0,
-              "explanation": "to sell → vendre. High-frequency verbs in their infinitive form."
+              "explanation": "\"vendre\" means to sell, the opposite of acheter (to buy). Don't confuse it with attendre, which means to wait."
             },
             {
               "id": "fra1p8q16",
@@ -2836,7 +2836,7 @@
                 "aider"
               ],
               "answer": "ouvrir",
-              "explanation": "to open → ouvrir. High-frequency verbs in their infinitive form."
+              "explanation": "\"ouvrir\" means to open, as in ouvrir la porte (to open the door)."
             },
             {
               "id": "fra1p8q17",
@@ -2849,7 +2849,7 @@
                 "aimer"
               ],
               "answer": 2,
-              "explanation": "to close → fermer. High-frequency verbs in their infinitive form."
+              "explanation": "\"fermer\" means to close, the opposite of ouvrir (to open), as in fermer la fenêtre."
             },
             {
               "id": "fra1p8q18",
@@ -2862,7 +2862,7 @@
                 "vouloir"
               ],
               "answer": "regarder",
-              "explanation": "to look → regarder. High-frequency verbs in their infinitive form."
+              "explanation": "\"regarder\" means to look (at) or to watch, as in regarder la télé. It takes no word for at."
             },
             {
               "id": "fra1p8q19",
@@ -2895,7 +2895,7 @@
                 "acheter"
               ],
               "answer": 0,
-              "explanation": "to help → aider. High-frequency verbs in their infinitive form."
+              "explanation": "\"aider\" means \"to help\"; it is a regular -er verb, as in « Je peux t'aider ? »."
             },
             {
               "id": "fra1p8q21",
@@ -2908,7 +2908,7 @@
                 "regarder"
               ],
               "answer": "aimer",
-              "explanation": "to love → aimer. High-frequency verbs in their infinitive form."
+              "explanation": "\"aimer\" means \"to love\", and also \"to like\" for things, as in « J'aime le chocolat »."
             },
             {
               "id": "fra1p8q22",
@@ -2947,7 +2947,7 @@
                 "marcher"
               ],
               "answer": 0,
-              "explanation": "to live → vivre. High-frequency verbs in their infinitive form."
+              "explanation": "\"vivre\" means \"to live\" (to be alive, or to live somewhere), as in « Je vis à Paris »."
             }
           ]
         }
@@ -2976,7 +2976,7 @@
                 "le chien"
               ],
               "answer": "le chien",
-              "explanation": "dog → le chien. Everyday animals, pets and wildlife."
+              "explanation": "\"le chien\" means \"dog\"; it is masculine, so it takes \"le\"."
             },
             {
               "id": "fra1p9q1",
@@ -2989,7 +2989,7 @@
                 "le lapin"
               ],
               "answer": 2,
-              "explanation": "cat → le chat. Everyday animals, pets and wildlife."
+              "explanation": "\"le chat\" means \"cat\"; it is masculine, and the final -t is silent."
             },
             {
               "id": "fra1p9q2",
@@ -3002,7 +3002,7 @@
                 "l'oiseau"
               ],
               "answer": "l'oiseau",
-              "explanation": "bird → l'oiseau. Everyday animals, pets and wildlife."
+              "explanation": "\"l'oiseau\" means \"bird\"; \"le\" becomes \"l'\" before a vowel, and the word is masculine."
             },
             {
               "id": "fra1p9q3",
@@ -3015,7 +3015,7 @@
                 "le poisson"
               ],
               "answer": 0,
-              "explanation": "horse → le cheval. Everyday animals, pets and wildlife."
+              "explanation": "\"le cheval\" means \"horse\"; it is masculine, and the plural is irregular: \"les chevaux\"."
             },
             {
               "id": "fra1p9q4",
@@ -3028,7 +3028,7 @@
                 "la vache"
               ],
               "answer": "la vache",
-              "explanation": "cow → la vache. Everyday animals, pets and wildlife."
+              "explanation": "\"la vache\" means \"cow\"; it is feminine, so it takes \"la\"."
             }
           ]
         },
@@ -3048,7 +3048,7 @@
                 "le tigre"
               ],
               "answer": 2,
-              "explanation": "pig → le cochon. Everyday animals, pets and wildlife."
+              "explanation": "\"le cochon\" means \"pig\"; it is masculine, so it takes \"le\"."
             },
             {
               "id": "fra1p9q6",
@@ -3061,7 +3061,7 @@
                 "la grenouille"
               ],
               "answer": "le mouton",
-              "explanation": "sheep → le mouton. Everyday animals, pets and wildlife."
+              "explanation": "\"le mouton\" means \"sheep\"; it is masculine, so it takes \"le\"."
             },
             {
               "id": "fra1p9q7",
@@ -3074,7 +3074,7 @@
                 "l'éléphant"
               ],
               "answer": 0,
-              "explanation": "hen (chicken) → la poule. Everyday animals, pets and wildlife."
+              "explanation": "\"la poule\" is the live hen (feminine); chicken as meat is \"le poulet\"."
             },
             {
               "id": "fra1p9q8",
@@ -3087,7 +3087,7 @@
                 "la vache"
               ],
               "answer": "le canard",
-              "explanation": "duck → le canard. Everyday animals, pets and wildlife."
+              "explanation": "\"le canard\" means \"duck\"; it is masculine, and the final -d is silent."
             },
             {
               "id": "fra1p9q9",
@@ -3100,7 +3100,7 @@
                 "le chien"
               ],
               "answer": 2,
-              "explanation": "rabbit → le lapin. Everyday animals, pets and wildlife."
+              "explanation": "A rabbit is \"le lapin\" in French. Lapin is a masculine noun, so it takes le; le renard is a fox."
             }
           ]
         },
@@ -3120,7 +3120,7 @@
                 "le tigre"
               ],
               "answer": 2,
-              "explanation": "mouse → la souris. Everyday animals, pets and wildlife."
+              "explanation": "A mouse is \"la souris\" in French. Souris is a feminine noun, so it takes la, unlike most animals in this list."
             },
             {
               "id": "fra1p9q11",
@@ -3133,7 +3133,7 @@
                 "l'araignée"
               ],
               "answer": "le poisson",
-              "explanation": "fish → le poisson. Everyday animals, pets and wildlife."
+              "explanation": "A fish is \"le poisson\" in French. Poisson is masculine and is spelled with a double s, which gives the s sound."
             },
             {
               "id": "fra1p9q12",
@@ -3146,7 +3146,7 @@
                 "l'éléphant"
               ],
               "answer": 0,
-              "explanation": "lion → le lion. Everyday animals, pets and wildlife."
+              "explanation": "A lion is \"le lion\" in French. The spelling is the same as in English, but the word is masculine and ends in a nasal vowel: the n is not pronounced as a separate sound."
             },
             {
               "id": "fra1p9q13",
@@ -3159,7 +3159,7 @@
                 "le tigre"
               ],
               "answer": "le tigre",
-              "explanation": "tiger → le tigre. Everyday animals, pets and wildlife."
+              "explanation": "A tiger is \"le tigre\" in French. Note the -re ending, where English has -er, and the masculine article le."
             },
             {
               "id": "fra1p9q14",
@@ -3172,7 +3172,7 @@
                 "le canard"
               ],
               "answer": 2,
-              "explanation": "bear → l'ours. Everyday animals, pets and wildlife."
+              "explanation": "A bear is \"l'ours\" in French. Ours starts with a vowel, so le shortens to l'."
             }
           ]
         },
@@ -3192,7 +3192,7 @@
                 "le cochon"
               ],
               "answer": "l'éléphant",
-              "explanation": "elephant → l'éléphant. Everyday animals, pets and wildlife."
+              "explanation": "An elephant is \"l'éléphant\" in French. Éléphant starts with a vowel, so le shortens to l'. Note the two accents."
             },
             {
               "id": "fra1p9q16",
@@ -3205,7 +3205,7 @@
                 "la souris"
               ],
               "answer": 0,
-              "explanation": "monkey → le singe. Everyday animals, pets and wildlife."
+              "explanation": "A monkey is \"le singe\" in French. Singe is a masculine noun, so it takes le."
             },
             {
               "id": "fra1p9q17",
@@ -3218,7 +3218,7 @@
                 "l'abeille"
               ],
               "answer": "le loup",
-              "explanation": "wolf → le loup. Everyday animals, pets and wildlife."
+              "explanation": "A wolf is \"le loup\" in French. The final p is silent, and l'ours is a bear."
             },
             {
               "id": "fra1p9q18",
@@ -3231,7 +3231,7 @@
                 "la vache"
               ],
               "answer": 2,
-              "explanation": "fox → le renard. Everyday animals, pets and wildlife."
+              "explanation": "A fox is \"le renard\" in French. Renard is a masculine noun, and its final d is silent."
             },
             {
               "id": "fra1p9q19",
@@ -3244,7 +3244,7 @@
                 "le chat"
               ],
               "answer": "la grenouille",
-              "explanation": "frog → la grenouille. Everyday animals, pets and wildlife."
+              "explanation": "A frog is \"la grenouille\" in French. Grenouille is a feminine noun, so it takes la, and le canard is a duck."
             }
           ]
         },
@@ -3264,7 +3264,7 @@
                 "le serpent"
               ],
               "answer": "le serpent",
-              "explanation": "snake → le serpent. Everyday animals, pets and wildlife."
+              "explanation": "A snake is \"le serpent\" in French. Serpent is a masculine noun, and its final t is silent."
             },
             {
               "id": "fra1p9q21",
@@ -3277,7 +3277,7 @@
                 "le chien"
               ],
               "answer": 2,
-              "explanation": "turtle → la tortue. Everyday animals, pets and wildlife."
+              "explanation": "\"Turtle\" is \"la tortue\". It is a feminine noun, so it takes \"la\" (une tortue)."
             },
             {
               "id": "fra1p9q22",
@@ -3290,7 +3290,7 @@
                 "l'araignée"
               ],
               "answer": "l'abeille",
-              "explanation": "bee → l'abeille. Everyday animals, pets and wildlife."
+              "explanation": "\"Bee\" is \"l'abeille\". It is feminine (une abeille), and \"la\" shortens to \"l'\" before the vowel."
             },
             {
               "id": "fra1p9q23",
@@ -3303,7 +3303,7 @@
                 "l'oiseau"
               ],
               "answer": 0,
-              "explanation": "butterfly → le papillon. Everyday animals, pets and wildlife."
+              "explanation": "\"Butterfly\" is \"le papillon\". It is a masculine noun, so it takes \"le\" (un papillon)."
             },
             {
               "id": "fra1p9q24",
@@ -3316,7 +3316,7 @@
                 "l'araignée"
               ],
               "answer": "l'araignée",
-              "explanation": "spider → l'araignée. Everyday animals, pets and wildlife."
+              "explanation": "\"Spider\" is \"l'araignée\". It is feminine (une araignée), and \"la\" becomes \"l'\" before the vowel."
             }
           ]
         }
@@ -3345,7 +3345,7 @@
                 "le journaliste"
               ],
               "answer": "le médecin",
-              "explanation": "doctor → le médecin. Common jobs and professions."
+              "explanation": "\"Doctor\" is \"le médecin\", the usual word for the profession. You say \"docteur\" mainly when you address a doctor directly."
             },
             {
               "id": "fra1p10q1",
@@ -3358,7 +3358,7 @@
                 "le comptable"
               ],
               "answer": 2,
-              "explanation": "nurse → l'infirmier. Common jobs and professions."
+              "explanation": "\"Nurse\" is \"l'infirmier\" for a man and \"l'infirmière\" for a woman. \"Le\" becomes \"l'\" before the vowel."
             },
             {
               "id": "fra1p10q2",
@@ -3371,7 +3371,7 @@
                 "le dentiste"
               ],
               "answer": "le professeur",
-              "explanation": "teacher (profession) → le professeur. Common jobs and professions."
+              "explanation": "\"Teacher\" as a profession is \"le professeur\", used for secondary school and university teachers. In casual speech people often shorten it to \"le prof\"."
             },
             {
               "id": "fra1p10q3",
@@ -3384,7 +3384,7 @@
                 "le plombier"
               ],
               "answer": 0,
-              "explanation": "engineer → l'ingénieur. Common jobs and professions."
+              "explanation": "\"Engineer\" is \"l'ingénieur\". It is masculine, and \"le\" becomes \"l'\" before the vowel."
             },
             {
               "id": "fra1p10q4",
@@ -3397,7 +3397,7 @@
                 "le médecin"
               ],
               "answer": "l'avocat",
-              "explanation": "lawyer → l'avocat. Common jobs and professions."
+              "explanation": "\"Lawyer\" is \"l'avocat\". Watch out: the same word also means \"avocado\"."
             }
           ]
         },
@@ -3417,7 +3417,7 @@
                 "le journaliste"
               ],
               "answer": 2,
-              "explanation": "police officer → le policier. Common jobs and professions."
+              "explanation": "\"Police officer\" is \"le policier\". A female officer is \"la policière\"."
             },
             {
               "id": "fra1p10q6",
@@ -3430,7 +3430,7 @@
                 "le pompier"
               ],
               "answer": "le pompier",
-              "explanation": "firefighter → le pompier. Common jobs and professions."
+              "explanation": "\"Firefighter\" is \"le pompier\". It comes from \"pompe\" (pump), and firefighters work in \"la caserne des pompiers\" (the fire station)."
             },
             {
               "id": "fra1p10q7",
@@ -3456,7 +3456,7 @@
                 "l'architecte"
               ],
               "answer": "le serveur",
-              "explanation": "waiter → le serveur. Common jobs and professions."
+              "explanation": "\"Waiter\" is \"le serveur\", from the verb \"servir\" (to serve). A waitress is \"la serveuse\"."
             },
             {
               "id": "fra1p10q9",
@@ -3469,7 +3469,7 @@
                 "le médecin"
               ],
               "answer": 2,
-              "explanation": "farmer → l'agriculteur. Common jobs and professions."
+              "explanation": "\"l'agriculteur\" is the person who works the land and raises crops or animals; the article elides to l' because the noun starts with a vowel."
             }
           ]
         },
@@ -3515,7 +3515,7 @@
                 "le scientifique"
               ],
               "answer": 0,
-              "explanation": "\"l'artiste\" means \"artist\"; \"le\" becomes \"l'\" before a vowel, and the word is the same for a man or a woman."
+              "explanation": "artist → l'artiste. Common jobs and professions."
             },
             {
               "id": "fra1p10q13",
@@ -3672,7 +3672,7 @@
                 "l'électricien"
               ],
               "answer": 0,
-              "explanation": "soldier → le soldat. Common jobs and professions."
+              "explanation": "\"le soldat\" is a member of the army; it is a masculine noun and looks close to the English word soldier."
             },
             {
               "id": "fra1p10q24",
@@ -3714,7 +3714,7 @@
                 "quel"
               ],
               "answer": 2,
-              "explanation": "who → qui. Core question words and phrases."
+              "explanation": "\"qui\" asks about a person (who); quel asks which, and quand asks when."
             },
             {
               "id": "fra1p11q1",
@@ -3740,7 +3740,7 @@
                 "quand"
               ],
               "answer": 0,
-              "explanation": "where → où. Core question words and phrases."
+              "explanation": "\"où\" asks about a place (where); the grave accent separates it from ou, which means or."
             },
             {
               "id": "fra1p11q3",
@@ -3753,7 +3753,7 @@
                 "combien"
               ],
               "answer": "quand",
-              "explanation": "when → quand. Core question words and phrases."
+              "explanation": "\"quand\" asks about time (when); où asks where, and combien asks how much or how many."
             },
             {
               "id": "fra1p11q4",
@@ -3766,7 +3766,7 @@
                 "comment"
               ],
               "answer": 2,
-              "explanation": "why → pourquoi. Core question words and phrases."
+              "explanation": "\"pourquoi\" asks for a reason (why); the answer often starts with parce que (because)."
             }
           ]
         },
@@ -3786,7 +3786,7 @@
                 "lequel"
               ],
               "answer": "comment",
-              "explanation": "how → comment. Core question words and phrases."
+              "explanation": "\"comment\" asks about manner (how), as in Comment tu t'appelles ?; est-ce que only turns a sentence into a yes/no question."
             },
             {
               "id": "fra1p11q6",
@@ -3812,7 +3812,7 @@
                 "lesquels"
               ],
               "answer": "combien de",
-              "explanation": "how many → combien de. Core question words and phrases."
+              "explanation": "\"combien de\" asks how many and is followed by a noun with no article, as in « Combien de frères as-tu ? »."
             },
             {
               "id": "fra1p11q8",
@@ -3922,7 +3922,7 @@
             {
               "id": "fra1p11q15",
               "type": "mc",
-              "prompt": "The French word for \"who is it\" is…",
+              "prompt": "The French phrase for \"who is it\" is…",
               "choices": [
                 "qui est-ce",
                 "quel",
@@ -3930,12 +3930,12 @@
                 "combien"
               ],
               "answer": 0,
-              "explanation": "who is it → qui est-ce. Core question words and phrases."
+              "explanation": "\"qui est-ce\" is qui (who) plus est-ce (is it) and asks who a person is, as in Qui est-ce ? C'est ma sœur."
             },
             {
               "id": "fra1p11q16",
               "type": "fill",
-              "prompt": "The French word for \"what is it\" is… ___",
+              "prompt": "The French phrase for \"what is it\" is… ___",
               "bank": [
                 "comment tu t'appelles",
                 "qu'est-ce qui",
@@ -3943,7 +3943,7 @@
                 "quel âge"
               ],
               "answer": "qu'est-ce que c'est",
-              "explanation": "what is it → qu'est-ce que c'est. Core question words and phrases."
+              "explanation": "\"qu'est-ce que c'est\" asks what a thing is, as in Qu'est-ce que c'est ? C'est un livre; qu'est-ce qui alone is not a complete question."
             },
             {
               "id": "fra1p11q17",
@@ -3974,7 +3974,7 @@
             {
               "id": "fra1p11q19",
               "type": "mc",
-              "prompt": "The French word for \"how are you (informal)\" is…",
+              "prompt": "The French phrase for \"how are you (informal)\" is…",
               "choices": [
                 "comment vas-tu",
                 "à quelle distance",
@@ -3982,7 +3982,7 @@
                 "quelle heure"
               ],
               "answer": 0,
-              "explanation": "how are you (informal) → comment vas-tu. Core question words and phrases."
+              "explanation": "\"comment vas-tu\" uses tu, the form you use with a friend or family member; with a stranger you would say comment allez-vous."
             }
           ]
         },
@@ -3994,7 +3994,7 @@
             {
               "id": "fra1p11q20",
               "type": "mc",
-              "prompt": "The French word for \"what's your name (informal)\" is…",
+              "prompt": "The French phrase for \"what's your name (informal)\" is…",
               "choices": [
                 "comment tu t'appelles",
                 "qu'est-ce qui",
@@ -4002,7 +4002,7 @@
                 "qu'est-ce que c'est"
               ],
               "answer": 0,
-              "explanation": "what's your name (informal) → comment tu t'appelles. Core question words and phrases."
+              "explanation": "\"comment tu t'appelles\" literally means how do you call yourself and uses tu, so it is the informal way to ask someone's name."
             },
             {
               "id": "fra1p11q21",
@@ -4279,7 +4279,7 @@
                 "sous"
               ],
               "answer": 0,
-              "explanation": "around → autour de. Common prepositions used to locate things."
+              "explanation": "\"autour de\" means \"around\" in the sense of surrounding something, as in autour de la table (around the table). \"vers\" means towards."
             }
           ]
         },
@@ -4312,7 +4312,7 @@
                 "le long de"
               ],
               "answer": 2,
-              "explanation": "through → à travers. Common prepositions used to locate things."
+              "explanation": "\"à travers\" means \"through\", going from one side to the other, as in à travers la forêt (through the forest)."
             },
             {
               "id": "fra1p12q17",
@@ -4325,7 +4325,7 @@
                 "à travers"
               ],
               "answer": "le long de",
-              "explanation": "along → le long de. Common prepositions used to locate things."
+              "explanation": "\"le long de\" means \"along\", following the length of something, as in le long de la rivière (along the river). \"de\" becomes \"du\" before a masculine noun: le long du mur."
             },
             {
               "id": "fra1p12q18",
@@ -4351,7 +4351,7 @@
                 "chez"
               ],
               "answer": "vers",
-              "explanation": "towards → vers. Common prepositions used to locate things."
+              "explanation": "\"vers\" means \"towards\", showing direction, as in Il marche vers la gare (He walks towards the station)."
             }
           ]
         },
@@ -4384,7 +4384,7 @@
                 "parmi"
               ],
               "answer": 0,
-              "explanation": "from → de. Common prepositions used to locate things."
+              "explanation": "\"de\" means \"from\", as in Je viens de Paris (I come from Paris). It combines with le and les: du, des."
             },
             {
               "id": "fra1p12q22",
@@ -4410,7 +4410,7 @@
                 "derrière"
               ],
               "answer": 2,
-              "explanation": "here → ici. Common prepositions used to locate things."
+              "explanation": "\"ici\" means \"here\", as in Je suis ici (I am here). It is an adverb of place, not a preposition, so no \"de\" follows it."
             },
             {
               "id": "fra1p12q24",
@@ -4465,7 +4465,7 @@
                 "quelle heure est-il ?"
               ],
               "answer": "il est deux heures",
-              "explanation": "it's two o'clock → il est deux heures. Time expressions and everyday time vocabulary."
+              "explanation": "\"il est deux heures\" means \"it's two o'clock\". French uses il est plus the number and heures, which is plural from two onwards."
             },
             {
               "id": "fra1p13q2",
@@ -4504,7 +4504,7 @@
                 "de l'après-midi"
               ],
               "answer": 0,
-              "explanation": "half past two → deux heures et demie. Time expressions and everyday time vocabulary."
+              "explanation": "\"deux heures et demie\" means \"half past two\". French adds et demie (and a half) after the hour."
             }
           ]
         },
@@ -4537,7 +4537,7 @@
                 "trois heures et quart"
               ],
               "answer": 2,
-              "explanation": "quarter to four → quatre heures moins le quart. Time expressions and everyday time vocabulary."
+              "explanation": "\"quatre heures moins le quart\" means \"quarter to four\": French takes the next hour and subtracts a quarter. Trois heures et quart is quarter past three."
             },
             {
               "id": "fra1p13q7",
@@ -4609,7 +4609,7 @@
                 "de l'après-midi"
               ],
               "answer": 2,
-              "explanation": "what time is it? → quelle heure est-il ?. Time expressions and everyday time vocabulary."
+              "explanation": "\"quelle heure est-il ?\" is how you ask \"what time is it?\". The verb and subject swap places (est-il) to form the question."
             },
             {
               "id": "fra1p13q12",
@@ -4622,7 +4622,7 @@
                 "du soir"
               ],
               "answer": "une heure",
-              "explanation": "an hour → une heure. Time expressions and everyday time vocabulary."
+              "explanation": "\"une heure\" means \"an hour\". Heure is feminine, so it takes une."
             },
             {
               "id": "fra1p13q13",
@@ -4635,7 +4635,7 @@
                 "une seconde"
               ],
               "answer": 0,
-              "explanation": "a minute → une minute. Time expressions and everyday time vocabulary."
+              "explanation": "\"une minute\" means \"a minute\". Minute is feminine in French, so it takes une."
             },
             {
               "id": "fra1p13q14",
@@ -4648,7 +4648,7 @@
                 "la nuit"
               ],
               "answer": "une seconde",
-              "explanation": "a second → une seconde. Time expressions and everyday time vocabulary."
+              "explanation": "\"une seconde\" is a second, the smallest unit of time here; \"une minute\" is sixty of them."
             }
           ]
         },
@@ -4668,7 +4668,7 @@
                 "plus tard"
               ],
               "answer": 2,
-              "explanation": "early → tôt. Time expressions and everyday time vocabulary."
+              "explanation": "\"tôt\" means early (Je me lève tôt), while \"bientôt\" means soon."
             },
             {
               "id": "fra1p13q16",
@@ -4681,7 +4681,7 @@
                 "tard"
               ],
               "answer": "tard",
-              "explanation": "late → tard. Time expressions and everyday time vocabulary."
+              "explanation": "\"tard\" means late, the opposite of tôt (early): Je me couche tard."
             },
             {
               "id": "fra1p13q17",
@@ -4694,7 +4694,7 @@
                 "toujours"
               ],
               "answer": 0,
-              "explanation": "now → maintenant. Time expressions and everyday time vocabulary."
+              "explanation": "\"maintenant\" means now, at this moment; \"toujours\" means always."
             },
             {
               "id": "fra1p13q18",
@@ -4707,7 +4707,7 @@
                 "tard"
               ],
               "answer": "bientôt",
-              "explanation": "soon → bientôt. Time expressions and everyday time vocabulary."
+              "explanation": "\"bientôt\" means soon, as in À bientôt! (See you soon!)."
             },
             {
               "id": "fra1p13q19",
@@ -4720,7 +4720,7 @@
                 "il est minuit"
               ],
               "answer": 2,
-              "explanation": "later → plus tard. Time expressions and everyday time vocabulary."
+              "explanation": "\"plus tard\" means later (literally 'more late'), as in À plus tard!"
             }
           ]
         },
@@ -5089,7 +5089,7 @@
                 "la pièce"
               ],
               "answer": "la pièce",
-              "explanation": "coin → la pièce. Everyday shopping and money vocabulary."
+              "explanation": "\"la pièce\" is a coin, while le billet is a paper banknote."
             }
           ]
         },
@@ -5109,7 +5109,7 @@
                 "le supermarché"
               ],
               "answer": "le billet",
-              "explanation": "banknote → le billet. Everyday shopping and money vocabulary."
+              "explanation": "\"le billet\" is a banknote, while la monnaie means change or small coins."
             },
             {
               "id": "fra1p14q21",
@@ -5122,7 +5122,7 @@
                 "pratique"
               ],
               "answer": 2,
-              "explanation": "free (no cost) → gratuit. Everyday shopping and money vocabulary."
+              "explanation": "\"gratuit\" means free of charge, while bon marché only means cheap."
             },
             {
               "id": "fra1p14q22",
@@ -5216,7 +5216,7 @@
                 "le verre"
               ],
               "answer": 0,
-              "explanation": "waitress → la serveuse. Restaurant vocabulary and useful phrases."
+              "explanation": "\"la serveuse\" is a waitress, the feminine of le serveur (waiter)."
             },
             {
               "id": "fra1p15q3",
@@ -5262,7 +5262,7 @@
                 "l'entrée"
               ],
               "answer": "l'entrée",
-              "explanation": "starter → l'entrée. Restaurant vocabulary and useful phrases."
+              "explanation": "\"l'entrée\" is the starter in a French meal, not the main course; the main course is le plat principal."
             },
             {
               "id": "fra1p15q6",
@@ -5541,7 +5541,7 @@
       "level": "A1",
       "eyebrow": "Unit 16",
       "title": "Classroom Objects",
-      "description": "School vocabulary — Everyday classroom and school vocabulary.",
+      "description": "At school — Everyday classroom objects and school words.",
       "lessons": [
         {
           "id": "fra1p16l1",
@@ -5631,7 +5631,7 @@
                 "la leçon"
               ],
               "answer": 0,
-              "explanation": "ruler → la règle. Everyday classroom and school vocabulary."
+              "explanation": "\"la règle\" is a ruler for drawing lines; the same word also means a rule."
             },
             {
               "id": "fra1p16q6",
@@ -5644,7 +5644,7 @@
                 "la chaise"
               ],
               "answer": "le bureau",
-              "explanation": "desk → le bureau. Everyday classroom and school vocabulary."
+              "explanation": "A desk is \"le bureau\", a masculine noun (un bureau). The same word also means \"office\"."
             },
             {
               "id": "fra1p16q7",
@@ -5657,7 +5657,7 @@
                 "le livre"
               ],
               "answer": 2,
-              "explanation": "chair (classroom) → la chaise. Everyday classroom and school vocabulary."
+              "explanation": "A chair is \"la chaise\", a feminine noun (une chaise), used for any chair, not just in the classroom."
             },
             {
               "id": "fra1p16q8",
@@ -5670,7 +5670,7 @@
                 "l'emploi du temps"
               ],
               "answer": "le tableau",
-              "explanation": "board → le tableau. Everyday classroom and school vocabulary."
+              "explanation": "The classroom board is \"le tableau\", a masculine noun. The teacher writes au tableau (on the board)."
             },
             {
               "id": "fra1p16q9",
@@ -5716,7 +5716,7 @@
                 "l'emploi du temps"
               ],
               "answer": "le papier",
-              "explanation": "paper → le papier. Everyday classroom and school vocabulary."
+              "explanation": "Paper is \"le papier\", a masculine noun. A single sheet is une feuille de papier."
             },
             {
               "id": "fra1p16q12",
@@ -5729,7 +5729,7 @@
                 "le livre"
               ],
               "answer": 2,
-              "explanation": "scissors → les ciseaux. Everyday classroom and school vocabulary."
+              "explanation": "Scissors is \"les ciseaux\". Like the English word, it is always plural in French: des ciseaux."
             },
             {
               "id": "fra1p16q13",
@@ -5742,7 +5742,7 @@
                 "la réponse"
               ],
               "answer": "la colle",
-              "explanation": "glue → la colle. Everyday classroom and school vocabulary."
+              "explanation": "Glue is \"la colle\", a feminine noun. It comes from the verb coller (to stick)."
             },
             {
               "id": "fra1p16q14",
@@ -5755,7 +5755,7 @@
                 "le bureau"
               ],
               "answer": 0,
-              "explanation": "calculator → la calculatrice. Everyday classroom and school vocabulary."
+              "explanation": "A calculator is \"la calculatrice\", a feminine noun related to calculer (to calculate)."
             }
           ]
         },
@@ -5775,7 +5775,7 @@
                 "le dictionnaire"
               ],
               "answer": "le dictionnaire",
-              "explanation": "dictionary → le dictionnaire. Everyday classroom and school vocabulary."
+              "explanation": "A dictionary is \"le dictionnaire\", a masculine noun. Note the double n in the French spelling."
             },
             {
               "id": "fra1p16q16",
@@ -5801,7 +5801,7 @@
                 "le dictionnaire"
               ],
               "answer": "l'horloge",
-              "explanation": "clock → l'horloge. Everyday classroom and school vocabulary."
+              "explanation": "A clock is \"l'horloge\". The article elides before the silent h, and the noun is feminine (une horloge)."
             },
             {
               "id": "fra1p16q18",
@@ -5814,7 +5814,7 @@
                 "le sac"
               ],
               "answer": 0,
-              "explanation": "classroom → la salle de classe. Everyday classroom and school vocabulary."
+              "explanation": "A classroom is \"la salle de classe\", literally \"room of class\". It is feminine because salle is feminine."
             },
             {
               "id": "fra1p16q19",
@@ -5873,7 +5873,7 @@
                 "le sac"
               ],
               "answer": "la réponse",
-              "explanation": "answer → la réponse. Everyday classroom and school vocabulary."
+              "explanation": "\"la réponse\" means \"answer\", the reply to une question. It is feminine, so it takes la."
             },
             {
               "id": "fra1p16q23",
@@ -5886,7 +5886,7 @@
                 "la gomme"
               ],
               "answer": 2,
-              "explanation": "lesson → la leçon. Everyday classroom and school vocabulary."
+              "explanation": "\"la leçon\" means \"lesson\". Note the cedilla on the ç, which gives it an s sound, and that the word is feminine."
             },
             {
               "id": "fra1p16q24",
@@ -5910,7 +5910,7 @@
       "level": "A1",
       "eyebrow": "Unit 17",
       "title": "Technology & Devices",
-      "description": "Everyday tech vocabulary — Common technology and device vocabulary.",
+      "description": "Everyday tech — Common devices and technology words.",
       "lessons": [
         {
           "id": "fra1p17l1",
@@ -5928,7 +5928,7 @@
                 "le wifi"
               ],
               "answer": 0,
-              "explanation": "computer → l'ordinateur. Common technology and device vocabulary."
+              "explanation": "\"l'ordinateur\" means \"computer\". It is masculine (un ordinateur), and le becomes l' before the vowel."
             },
             {
               "id": "fra1p17q1",
@@ -5941,7 +5941,7 @@
                 "la souris"
               ],
               "answer": "le téléphone",
-              "explanation": "phone → le téléphone. Common technology and device vocabulary."
+              "explanation": "\"le téléphone\" means \"phone\". It is masculine and spelled with ph and two é accents."
             },
             {
               "id": "fra1p17q2",
@@ -6382,7 +6382,7 @@
                 "voyager"
               ],
               "answer": "cuisiner",
-              "explanation": "to cook (a meal) → cuisiner. Common hobbies and leisure vocabulary."
+              "explanation": "\"cuisiner\" means \"to cook (a meal)\" and comes from la cuisine, the kitchen. It is a regular -er verb: je cuisine."
             },
             {
               "id": "fra1p18q7",
@@ -6395,7 +6395,7 @@
                 "chanter"
               ],
               "answer": 0,
-              "explanation": "to fish → pêcher. Common hobbies and leisure vocabulary."
+              "explanation": "\"pêcher\" means \"to fish\" and is spelled with ê. Don't confuse it with pécher (to sin)."
             },
             {
               "id": "fra1p18q8",
@@ -6408,7 +6408,7 @@
                 "jardiner"
               ],
               "answer": "jardiner",
-              "explanation": "to garden → jardiner. Common hobbies and leisure vocabulary."
+              "explanation": "\"jardiner\" means \"to garden\" and comes from le jardin (the garden). It is a regular -er verb: je jardine."
             },
             {
               "id": "fra1p18q9",
@@ -6493,7 +6493,7 @@
                 "les échecs"
               ],
               "answer": 2,
-              "explanation": "video game → le jeu vidéo. Common hobbies and leisure vocabulary."
+              "explanation": "\"le jeu vidéo\" means \"video game\". In French the word order is reversed (game + video), and the plural is les jeux vidéo."
             }
           ]
         },
@@ -6513,7 +6513,7 @@
                 "la musique"
               ],
               "answer": "le jeu de société",
-              "explanation": "board game → le jeu de société. Common hobbies and leisure vocabulary."
+              "explanation": "\"le jeu de société\" means \"board game\". Word for word it is a \"society game\", a game you play with other people."
             },
             {
               "id": "fra1p18q16",
@@ -6526,7 +6526,7 @@
                 "pêcher"
               ],
               "answer": 0,
-              "explanation": "to collect → collectionner. Common hobbies and leisure vocabulary."
+              "explanation": "\"collectionner\" means \"to collect\" as a hobby (stamps, cards). Note the double n: je collectionne."
             },
             {
               "id": "fra1p18q17",
@@ -6552,7 +6552,7 @@
                 "le puzzle"
               ],
               "answer": 2,
-              "explanation": "hiking → la randonnée. Common hobbies and leisure vocabulary."
+              "explanation": "\"la randonnée\" means \"hiking\" or \"a hike\". It is feminine, and you say faire une randonnée (to go hiking)."
             },
             {
               "id": "fra1p18q19",
@@ -6565,7 +6565,7 @@
                 "le camping"
               ],
               "answer": "le camping",
-              "explanation": "camping → le camping. Common hobbies and leisure vocabulary."
+              "explanation": "\"le camping\" is borrowed from English and means \"camping\". It is masculine, and you say faire du camping."
             }
           ]
         },
@@ -6585,7 +6585,7 @@
                 "le jeu de société"
               ],
               "answer": "les échecs",
-              "explanation": "chess → les échecs. Common hobbies and leisure vocabulary."
+              "explanation": "Chess is \"les échecs\". In French the word is always plural, so it takes \"les\": on joue aux échecs."
             },
             {
               "id": "fra1p18q21",
@@ -6611,7 +6611,7 @@
                 "le temps libre"
               ],
               "answer": "le temps libre",
-              "explanation": "free time → le temps libre. Common hobbies and leisure vocabulary."
+              "explanation": "Free time is \"le temps libre\", literally 'free time'. Do not confuse it with \"le week-end\", which means only Saturday and Sunday."
             },
             {
               "id": "fra1p18q23",
@@ -6624,7 +6624,7 @@
                 "le jeu vidéo"
               ],
               "answer": 0,
-              "explanation": "hobby → le passe-temps. Common hobbies and leisure vocabulary."
+              "explanation": "A hobby is \"le passe-temps\", literally something that 'passes the time'. The other options are particular hobbies, not the word for hobby itself."
             },
             {
               "id": "fra1p18q24",
@@ -6637,7 +6637,7 @@
                 "le jeu vidéo"
               ],
               "answer": "le week-end",
-              "explanation": "weekend → le week-end. Common hobbies and leisure vocabulary."
+              "explanation": "In France the weekend is \"le week-end\", a masculine word borrowed from English and written with a hyphen."
             }
           ]
         }
@@ -6666,7 +6666,7 @@
                 "reconnaissant"
               ],
               "answer": 2,
-              "explanation": "happy → heureux. Common feelings and emotions."
+              "explanation": "Happy is \"heureux\", as in Je suis heureux. A woman says heureuse."
             },
             {
               "id": "fra1p19q1",
@@ -6751,7 +6751,7 @@
                 "confiant"
               ],
               "answer": 0,
-              "explanation": "surprised → surpris. Common feelings and emotions."
+              "explanation": "Surprised is \"surpris\", which looks like the English word. A woman says surprise."
             },
             {
               "id": "fra1p19q7",
@@ -6777,7 +6777,7 @@
                 "calme"
               ],
               "answer": 2,
-              "explanation": "nervous → nerveux. Common feelings and emotions."
+              "explanation": "Nervous is \"nerveux\": English -ous often becomes -eux in French. A woman says nerveuse."
             },
             {
               "id": "fra1p19q9",
@@ -6823,7 +6823,7 @@
                 "surpris"
               ],
               "answer": 0,
-              "explanation": "proud → fier. Common feelings and emotions."
+              "explanation": "Proud is \"fier\", as in Je suis fier de toi. A woman says fière."
             },
             {
               "id": "fra1p19q12",
@@ -6836,7 +6836,7 @@
                 "jaloux"
               ],
               "answer": "jaloux",
-              "explanation": "jealous → jaloux. Common feelings and emotions."
+              "explanation": "Jealous is \"jaloux\", as in Il est jaloux. A woman says jalouse."
             },
             {
               "id": "fra1p19q13",
@@ -6849,7 +6849,7 @@
                 "nerveux"
               ],
               "answer": 2,
-              "explanation": "confused → confus. Common feelings and emotions."
+              "explanation": "Confused is \"confus\" here, but careful: Je suis confus often means 'I'm embarrassed or sorry'. To say you don't understand, French speakers usually say Je suis perdu."
             },
             {
               "id": "fra1p19q14",
@@ -6882,7 +6882,7 @@
                 "inquiet"
               ],
               "answer": 0,
-              "explanation": "relaxed → détendu. Common feelings and emotions."
+              "explanation": "Relaxed is \"détendu\", from se détendre, 'to relax'. A woman says détendue."
             },
             {
               "id": "fra1p19q16",
@@ -6895,7 +6895,7 @@
                 "confiant"
               ],
               "answer": "déçu",
-              "explanation": "disappointed → déçu. Common feelings and emotions."
+              "explanation": "Disappointed is \"déçu\", from décevoir, 'to disappoint'. Triste only means 'sad'."
             },
             {
               "id": "fra1p19q17",
@@ -7386,7 +7386,7 @@
       "level": "A1",
       "eyebrow": "Unit 21",
       "title": "Say It Your Way",
-      "description": "Write the idea in French — Everyday ideas, and more than one wording is right.",
+      "description": "Write the idea in French — Everyday ideas where more than one wording is right.",
       "lessons": [
         {
           "id": "fra1p21l1",
@@ -7458,7 +7458,7 @@
             {
               "id": "fra1p21q5",
               "type": "translate",
-              "prompt": "Ask someone to repeat something.",
+              "prompt": "Politely ask a stranger to repeat something (use vous).",
               "acceptableAnswers": [
                 "Pouvez-vous répéter ?",
                 "Vous pouvez répéter, s'il vous plaît ?",
@@ -7557,9 +7557,12 @@
               "acceptableAnswers": [
                 "Quelle heure est-il ?",
                 "Vous avez l'heure ?",
-                "Il est quelle heure, s'il vous plaît ?"
+                "Il est quelle heure, s'il vous plaît ?",
+                "Quelle heure est-il, s'il vous plaît ?",
+                "Tu as l'heure ?",
+                "Il est quelle heure ?"
               ],
-              "explanation": "One way to say it: \"Quelle heure est-il ?\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Quelle heure est-il ?\" is the standard way to ask the time; \"Vous avez l'heure ?\" is a common polite way to ask a stranger."
             },
             {
               "id": "fra1p21q14",
@@ -7590,7 +7593,7 @@
                 "Je meurs de faim.",
                 "J'ai vraiment faim."
               ],
-              "explanation": "One way to say it: \"J'ai faim.\" Everyday ideas, and more than one wording is right."
+              "explanation": "French says \"J'ai faim.\" (literally 'I have hunger'), using avoir, not être; \"Je meurs de faim.\" means 'I'm starving'."
             },
             {
               "id": "fra1p21q16",
@@ -7601,7 +7604,7 @@
                 "Tu habites où ?",
                 "Où est-ce que vous habitez ?"
               ],
-              "explanation": "One way to say it: \"Où habitez-vous ?\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Où habitez-vous ?\" is the polite vous form for a stranger; with a friend you can say \"Tu habites où ?\"."
             },
             {
               "id": "fra1p21q17",
@@ -7612,7 +7615,7 @@
                 "Je vis à Paris.",
                 "J'habite à Paris, en France."
               ],
-              "explanation": "One way to say it: \"J'habite à Paris.\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"J'habite à Paris.\" uses à because French puts à before the name of a city; je vis à Paris also works."
             },
             {
               "id": "fra1p21q18",
@@ -7634,7 +7637,7 @@
                 "Je suis désolée.",
                 "Toutes mes excuses."
               ],
-              "explanation": "One way to say it: \"Je suis désolé.\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Je suis désolé.\" means 'I'm sorry'; a woman writes désolée, with an extra e, because the adjective agrees with the speaker."
             }
           ]
         },
@@ -7652,7 +7655,7 @@
                 "Passez une bonne journée !",
                 "Je vous souhaite une bonne journée."
               ],
-              "explanation": "One way to say it: \"Bonne journée !\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Bonne journée !\" is what French speakers say when leaving someone during the day, for example in a shop; journée means the whole day."
             },
             {
               "id": "fra1p21q21",
@@ -7663,7 +7666,7 @@
                 "C'est combien ?",
                 "Quel est le prix, s'il vous plaît ?"
               ],
-              "explanation": "One way to say it: \"Combien ça coûte ?\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Combien ça coûte ?\" literally means 'How much does that cost?'; the shorter c'est combien ? is just as common in shops."
             },
             {
               "id": "fra1p21q22",
@@ -7674,7 +7677,7 @@
                 "Mon français n'est pas très bon.",
                 "Je ne parle pas très bien français."
               ],
-              "explanation": "One way to say it: \"Je ne parle pas bien français.\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Je ne parle pas bien français.\" puts ne…pas around the verb parle, and français needs no article after parler."
             },
             {
               "id": "fra1p21q23",
@@ -7685,7 +7688,7 @@
                 "On va prendre un café ?",
                 "Voulez-vous prendre un café avec moi ?"
               ],
-              "explanation": "One way to say it: \"Tu veux prendre un café ?\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Tu veux prendre un café ?\" is the friendly tu form (French says prendre, 'take', a coffee); with someone you call vous, say voulez-vous prendre un café avec moi ?"
             },
             {
               "id": "fra1p21q24",
@@ -7694,9 +7697,9 @@
               "acceptableAnswers": [
                 "Bonne chance !",
                 "Je te souhaite bonne chance !",
-                "Bon courage !"
+                "Je vous souhaite bonne chance !"
               ],
-              "explanation": "One way to say it: \"Bonne chance !\" Everyday ideas, and more than one wording is right."
+              "explanation": "\"Bonne chance !\" is the direct way to wish someone good luck; bon courage ! is different and means 'hang in there'."
             }
           ]
         }
@@ -7736,11 +7739,11 @@
               "choices": [
                 "Le dessous de l'armoire est sale.",
                 "Le dessous de la table est propre.",
-                "Il a acheté du pain.",
+                "Le dessous de la table est sale.",
                 "Le dessus de la table est propre."
               ],
               "answer": "Le dessous de la table est propre.",
-              "explanation": "The audio says \"Le dessous de la table est propre.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous de la table est propre.\" Dessous ('underneath') has the ou sound, as in 'you', while dessus ('top') has the tight French u sound."
             },
             {
               "id": "fra1p22q2",
@@ -7754,7 +7757,7 @@
                 "Le dessus de la table est propre."
               ],
               "answer": "Le dessus de l'armoire est sale.",
-              "explanation": "The audio says \"Le dessus de l'armoire est sale.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessus de l'armoire est sale.\" Dessus ('top') has the tight French u sound, with rounded lips, not the ou sound of dessous ('underneath')."
             },
             {
               "id": "fra1p22q3",
@@ -7764,11 +7767,11 @@
               "choices": [
                 "Le dessous de l'armoire est sale.",
                 "Le dessus de l'armoire est sale.",
-                "Le cou me fait mal.",
+                "Le dessus de la table est sale.",
                 "Le dessous de la table est propre."
               ],
               "answer": "Le dessous de l'armoire est sale.",
-              "explanation": "The audio says \"Le dessous de l'armoire est sale.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous de l'armoire est sale.\" Listen for the vowel: \"dessous\" (underneath) has the 'oo' sound /u/, while \"dessus\" (on top) has the French 'u' sound /y/, made with rounded lips."
             },
             {
               "id": "fra1p22q4",
@@ -7803,7 +7806,7 @@
                 "Ce plat contient du poison."
               ],
               "answer": "Ce plat contient du poison.",
-              "explanation": "The audio says \"Ce plat contient du poison.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Ce plat contient du poison.\" A single s between vowels sounds like 'z', so \"poison\" (poison) has a 'z' sound, while \"poisson\" (fish) has a double s and a hissing 's' sound."
             },
             {
               "id": "fra1p22q6",
@@ -7817,7 +7820,7 @@
                 "Ce plat contient du poison."
               ],
               "answer": "Cette boîte contient du poisson.",
-              "explanation": "The audio says \"Cette boîte contient du poisson.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Cette boîte contient du poisson.\" The double s in \"poisson\" (fish) gives a hissing 's' sound, while \"poison\" (poison) has a single s that sounds like 'z'."
             },
             {
               "id": "fra1p22q7",
@@ -7831,7 +7834,7 @@
                 "Ce plat contient du poison."
               ],
               "answer": "Cette boîte contient du poison.",
-              "explanation": "The audio says \"Cette boîte contient du poison.\" Sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Cette boîte contient du poison.\" A single s between vowels sounds like 'z', so \"poison\" (poison) has a 'z' sound, while \"poisson\" (fish) has a hissing 's' sound."
             },
             {
               "id": "fra1p22q8",
@@ -8113,35 +8116,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bonjour, comment allez-vous ?",
-              "explanation": "Target phrase: \"Bonjour, comment allez-vous ?\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Bonjour, comment allez-vous ?\" This is the polite way to ask 'How are you?', using vous for a stranger, a customer or anyone you address formally."
             },
             {
               "id": "fra1p23q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bonjour, comment vas-tu ?",
-              "explanation": "Target phrase: \"Bonjour, comment vas-tu ?\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Bonjour, comment vas-tu ?\" This means 'How are you?' and uses tu, so say it to a friend, a family member or a child."
             },
             {
               "id": "fra1p23q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Enchanté de vous rencontrer.",
-              "explanation": "Target phrase: \"Enchanté de vous rencontrer.\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Enchanté de vous rencontrer.\" This means 'Pleased to meet you', with vous for polite use. A woman writes \"Enchantée\", which is pronounced the same."
             },
             {
               "id": "fra1p23q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Comment tu t'appelles ?",
-              "explanation": "Target phrase: \"Comment tu t'appelles ?\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Comment tu t'appelles ?\" This is the informal way to ask 'What's your name?', used with friends, children or people your age."
             },
             {
               "id": "fra1p23q4",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je m'appelle Marie.",
-              "explanation": "Target phrase: \"Je m'appelle Marie.\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Je m'appelle Marie.\" This means 'My name is Marie' (literally 'I call myself Marie'). Me shortens to m' before a vowel sound."
             }
           ]
         },
@@ -8155,35 +8158,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'ai faim.",
-              "explanation": "Target phrase: \"J'ai faim.\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"J'ai faim.\" This means 'I'm hungry', but French uses avoir ('to have hunger'), not être."
             },
             {
               "id": "fra1p23q6",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'ai soif.",
-              "explanation": "Target phrase: \"J'ai soif.\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"J'ai soif.\" This means 'I'm thirsty', but French uses avoir ('to have thirst'), not être."
             },
             {
               "id": "fra1p23q7",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je voudrais un café, s'il vous plaît.",
-              "explanation": "Target phrase: \"Je voudrais un café, s'il vous plaît.\" Short everyday phrases to practise saying."
+              "explanation": "Target phrase: \"Je voudrais un café, s'il vous plaît.\" \"Je voudrais\" ('I would like') is the polite way to order, and s'il vous plaît uses vous for a waiter or a shop."
             },
             {
               "id": "fra1p23q8",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Où sont les toilettes ?",
-              "explanation": "Target phrase: \"Où sont les toilettes ?\" Short everyday phrases to practise saying."
+              "explanation": "\"Où sont les toilettes ?\" means \"Where are the toilets?\". \"Toilettes\" is always plural in this phrase, and the -s of \"les\" is silent."
             },
             {
               "id": "fra1p23q9",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Merci beaucoup.",
-              "explanation": "Target phrase: \"Merci beaucoup.\" Short everyday phrases to practise saying."
+              "explanation": "\"Merci beaucoup.\" means \"Thank you very much.\" The final -p of \"beaucoup\" is silent."
             }
           ]
         },
@@ -8197,35 +8200,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "De rien.",
-              "explanation": "Target phrase: \"De rien.\" Short everyday phrases to practise saying."
+              "explanation": "\"De rien.\" means \"You're welcome.\" and is the usual reply to \"merci\". The -n of \"rien\" is not pronounced separately; it makes the vowel nasal."
             },
             {
               "id": "fra1p23q11",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Excusez-moi.",
-              "explanation": "Target phrase: \"Excusez-moi.\" Short everyday phrases to practise saying."
+              "explanation": "\"Excusez-moi.\" means \"Excuse me.\" It is the polite vous form you use with strangers, for example to get someone's attention or to get past."
             },
             {
               "id": "fra1p23q12",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je suis désolé.",
-              "explanation": "Target phrase: \"Je suis désolé.\" Short everyday phrases to practise saying."
+              "explanation": "\"Je suis désolé.\" means \"I'm sorry.\" A woman writes \"désolée\", but both forms sound exactly the same."
             },
             {
               "id": "fra1p23q13",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "À bientôt !",
-              "explanation": "Target phrase: \"À bientôt !\" Short everyday phrases to practise saying."
+              "explanation": "\"À bientôt !\" means \"See you soon!\" You say it when you leave someone you expect to see again soon."
             },
             {
               "id": "fra1p23q14",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bonne journée !",
-              "explanation": "Target phrase: \"Bonne journée !\" Short everyday phrases to practise saying."
+              "explanation": "\"Bonne journée !\" means \"Have a nice day!\" People often say it when leaving a shop or saying goodbye during the day."
             }
           ]
         },
@@ -8239,35 +8242,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Quelle heure est-il ?",
-              "explanation": "Target phrase: \"Quelle heure est-il ?\" Short everyday phrases to practise saying."
+              "explanation": "\"Quelle heure est-il ?\" means \"What time is it?\" Link \"heure\" and \"est\" smoothly, and run \"est-il\" together as \"è-til\"."
             },
             {
               "id": "fra1p23q16",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Il est cinq heures.",
-              "explanation": "Target phrase: \"Il est cinq heures.\" Short everyday phrases to practise saying."
+              "explanation": "\"Il est cinq heures.\" means \"It is five o'clock.\" Pronounce the -q of \"cinq\" and link it to \"heures\"; French uses \"il est\" for telling the time."
             },
             {
               "id": "fra1p23q17",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'habite à Paris.",
-              "explanation": "Target phrase: \"J'habite à Paris.\" Short everyday phrases to practise saying."
+              "explanation": "\"J'habite à Paris.\" means \"I live in Paris.\" \"Je\" becomes \"j'\" before the silent h, and you use \"à\" before a city name."
             },
             {
               "id": "fra1p23q18",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je ne comprends pas.",
-              "explanation": "Target phrase: \"Je ne comprends pas.\" Short everyday phrases to practise saying."
+              "explanation": "\"Je ne comprends pas.\" means \"I don't understand.\" The negation \"ne ... pas\" goes around the verb, and the final -ds of \"comprends\" is silent."
             },
             {
               "id": "fra1p23q19",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Pouvez-vous répéter, s'il vous plaît ?",
-              "explanation": "Target phrase: \"Pouvez-vous répéter, s'il vous plaît ?\" Short everyday phrases to practise saying."
+              "explanation": "\"Pouvez-vous répéter, s'il vous plaît ?\" means \"Can you repeat that, please?\" It is a polite vous question, ideal with teachers, shop staff or strangers."
             }
           ]
         },
@@ -8281,35 +8284,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je suis fatigué.",
-              "explanation": "Target phrase: \"Je suis fatigué.\" Short everyday phrases to practise saying."
+              "explanation": "\"Je suis fatigué.\" means \"I'm tired.\" A woman writes \"fatiguée\" with an extra -e, but it sounds exactly the same."
             },
             {
               "id": "fra1p23q21",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Il fait très beau ce matin.",
-              "explanation": "Target phrase: \"Il fait très beau ce matin.\" Short everyday phrases to practise saying."
+              "explanation": "\"Il fait très beau ce matin.\" means \"The weather is really nice this morning.\" French talks about the weather with \"il fait\"."
             },
             {
               "id": "fra1p23q22",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'ai deux frères.",
-              "explanation": "Target phrase: \"J'ai deux frères.\" Short everyday phrases to practise saying."
+              "explanation": "\"J'ai deux frères.\" means \"I have two brothers.\" Je + ai shortens to \"j'ai\", and the final -s of \"frères\" is silent."
             },
             {
               "id": "fra1p23q23",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je parle un peu français.",
-              "explanation": "Target phrase: \"Je parle un peu français.\" Short everyday phrases to practise saying."
+              "explanation": "\"Je parle un peu français.\" means \"I speak a little French.\" After \"parler\" you can name the language without an article."
             },
             {
               "id": "fra1p23q24",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bonne chance !",
-              "explanation": "Target phrase: \"Bonne chance !\" Short everyday phrases to practise saying."
+              "explanation": "\"Bonne chance !\" means \"Good luck!\" \"Chance\" is feminine, so the adjective is \"bonne\"."
             }
           ]
         }
@@ -8320,7 +8323,7 @@
       "level": "A2",
       "eyebrow": "Unit 1",
       "title": "Common Verbs (je form)",
-      "description": "Present tense, first person — Present-tense \"je\" conjugation of common verbs.",
+      "description": "Present tense, first person — The \"je\" form of common verbs.",
       "lessons": [
         {
           "id": "fra2p1l1",
@@ -8844,7 +8847,7 @@
                 "le vin"
               ],
               "answer": "le beurre",
-              "explanation": "butter → le beurre. Everyday food and drink vocabulary."
+              "explanation": "\"Butter\" in French is \"le beurre\", a masculine noun, as in du beurre sur le pain (butter on bread)."
             },
             {
               "id": "fra2p2q9",
@@ -8857,7 +8860,7 @@
                 "l'orange"
               ],
               "answer": 2,
-              "explanation": "sugar → le sucre. Everyday food and drink vocabulary."
+              "explanation": "\"Sugar\" is \"le sucre\" (masculine). Don't mix it up with le sel, which means salt."
             }
           ]
         },
@@ -9047,7 +9050,7 @@
                 "le fromage"
               ],
               "answer": "le gâteau",
-              "explanation": "cake → le gâteau. Everyday food and drink vocabulary."
+              "explanation": "\"Cake\" is \"le gâteau\". Note the accent on the â and the plural with -x: des gâteaux."
             },
             {
               "id": "fra2p2q23",
@@ -9060,7 +9063,7 @@
                 "l'eau"
               ],
               "answer": 0,
-              "explanation": "juice → le jus. Everyday food and drink vocabulary."
+              "explanation": "\"Juice\" is \"le jus\", with a silent s, as in un jus d'orange (an orange juice)."
             },
             {
               "id": "fra2p2q24",
@@ -9073,7 +9076,7 @@
                 "le petit-déjeuner"
               ],
               "answer": "le petit-déjeuner",
-              "explanation": "breakfast → le petit-déjeuner. Everyday food and drink vocabulary."
+              "explanation": "\"Breakfast\", the morning meal, is \"le petit-déjeuner\". Literally it means a \"small lunch\" (déjeuner = lunch)."
             }
           ]
         }
@@ -9892,7 +9895,7 @@
                 "tard"
               ],
               "answer": 0,
-              "explanation": "grand → petit. Common adjective opposites."
+              "explanation": "Grand means big or tall, so its opposite is \"petit\", meaning small or short."
             },
             {
               "id": "fra2p5q1",
@@ -9905,7 +9908,7 @@
                 "froid"
               ],
               "answer": "froid",
-              "explanation": "chaud → froid. Common adjective opposites."
+              "explanation": "Chaud means hot, so its opposite is \"froid\", meaning cold."
             },
             {
               "id": "fra2p5q2",
@@ -9918,7 +9921,7 @@
                 "petit"
               ],
               "answer": 2,
-              "explanation": "rapide → lent. Common adjective opposites."
+              "explanation": "Rapide means fast, so its opposite is \"lent\", meaning slow (feminine: lente)."
             },
             {
               "id": "fra2p5q3",
@@ -9931,7 +9934,7 @@
                 "usé"
               ],
               "answer": "difficile",
-              "explanation": "facile → difficile. Common adjective opposites."
+              "explanation": "Facile means easy, so its opposite is \"difficile\", meaning difficult. It has the same form for masculine and feminine."
             },
             {
               "id": "fra2p5q4",
@@ -9944,7 +9947,7 @@
                 "lent"
               ],
               "answer": 0,
-              "explanation": "propre → sale. Common adjective opposites."
+              "explanation": "Propre means clean, so its opposite is \"sale\", meaning dirty."
             }
           ]
         },
@@ -9964,7 +9967,7 @@
                 "mou"
               ],
               "answer": "vide",
-              "explanation": "plein → vide. Common adjective opposites."
+              "explanation": "Plein means full, so its opposite is \"vide\", meaning empty, as in un verre vide (an empty glass)."
             },
             {
               "id": "fra2p5q6",
@@ -9977,7 +9980,7 @@
                 "sale"
               ],
               "answer": 2,
-              "explanation": "riche → pauvre. Common adjective opposites."
+              "explanation": "Riche means rich, so its opposite is \"pauvre\", meaning poor."
             },
             {
               "id": "fra2p5q7",
@@ -9990,7 +9993,7 @@
                 "fermé"
               ],
               "answer": "vieux",
-              "explanation": "jeune → vieux. Common adjective opposites."
+              "explanation": "\"vieux\" (old) is the opposite of \"jeune\" (young); its feminine is \"vieille\", and it becomes \"vieil\" before a masculine noun starting with a vowel."
             },
             {
               "id": "fra2p5q8",
@@ -10206,20 +10209,20 @@
                 "laid"
               ],
               "answer": 0,
-              "explanation": "sec → mouillé. Common adjective opposites."
+              "explanation": "\"mouillé\" (wet) is the opposite of \"sec\" (dry), as in \"une serviette mouillée\" (a wet towel)."
             },
             {
               "id": "fra2p5q23",
               "type": "fill",
               "prompt": "The opposite of \"tôt\" in French is… ___",
               "bank": [
-                "vieux",
+                "vite",
                 "tard",
-                "bon marché",
-                "mince"
+                "bientôt",
+                "souvent"
               ],
               "answer": "tard",
-              "explanation": "tôt → tard. Common adjective opposites."
+              "explanation": "\"tard\" (late) is the opposite of \"tôt\" (early); both are adverbs, so they never change form, as in \"Je me couche tard.\""
             },
             {
               "id": "fra2p5q24",
@@ -10642,7 +10645,7 @@
         {
           "id": "fra2p7l1",
           "title": "Aller + Infinitive (Near Future) 1",
-          "subtitle": "Talking about what's about to happen",
+          "subtitle": "Talking about plans and what's going to happen",
           "questions": [
             {
               "id": "fra2p7q0",
@@ -10719,7 +10722,7 @@
         {
           "id": "fra2p7l2",
           "title": "Aller + Infinitive (Near Future) 2",
-          "subtitle": "Talking about what's about to happen",
+          "subtitle": "Talking about plans and what's going to happen",
           "questions": [
             {
               "id": "fra2p7q5",
@@ -10796,7 +10799,7 @@
         {
           "id": "fra2p7l3",
           "title": "Aller + Infinitive (Near Future) 3",
-          "subtitle": "Talking about what's about to happen",
+          "subtitle": "Talking about plans and what's going to happen",
           "questions": [
             {
               "id": "fra2p7q10",
@@ -10873,7 +10876,7 @@
         {
           "id": "fra2p7l4",
           "title": "Aller + Infinitive (Near Future) 4",
-          "subtitle": "Talking about what's about to happen",
+          "subtitle": "Talking about plans and what's going to happen",
           "questions": [
             {
               "id": "fra2p7q15",
@@ -10950,7 +10953,7 @@
         {
           "id": "fra2p7l5",
           "title": "Aller + Infinitive (Near Future) 5",
-          "subtitle": "Talking about what's about to happen",
+          "subtitle": "Talking about plans and what's going to happen",
           "questions": [
             {
               "id": "fra2p7q20",
@@ -13039,7 +13042,7 @@
                 "jusqu'à"
               ],
               "answer": 0,
-              "explanation": "after → après. Common prepositions used to talk about time."
+              "explanation": "\"après\" means \"after\" and comes before the event, as in \"après le dîner\" (after dinner)."
             },
             {
               "id": "fra2p13q2",
@@ -13052,7 +13055,7 @@
                 "il y a"
               ],
               "answer": "pendant",
-              "explanation": "during → pendant. Common prepositions used to talk about time."
+              "explanation": "\"pendant\" means \"during\" and comes before a period of time, as in \"pendant les vacances\" (during the holidays)."
             },
             {
               "id": "fra2p13q3",
@@ -13065,20 +13068,20 @@
                 "après"
               ],
               "answer": 2,
-              "explanation": "since → depuis. Common prepositions used to talk about time."
+              "explanation": "\"depuis\" means \"since\" for a starting point that still continues now, as in \"J'habite ici depuis lundi\" (I've lived here since Monday)."
             },
             {
               "id": "fra2p13q4",
               "type": "fill",
               "prompt": "The French word for \"until\" is… ___",
               "bank": [
-                "tout au long de",
+                "depuis",
                 "jusqu'à",
                 "vers",
-                "le"
+                "avant"
               ],
               "answer": "jusqu'à",
-              "explanation": "until → jusqu'à. Common prepositions used to talk about time."
+              "explanation": "\"jusqu'à\" means \"until\", as in \"jusqu'à midi\" (until noon); with a masculine noun it becomes \"jusqu'au\"."
             }
           ]
         },
@@ -13137,7 +13140,7 @@
                 "à"
               ],
               "answer": "à",
-              "explanation": "at (a time) → à. Common prepositions used to talk about time."
+              "explanation": "\"à\" gives an exact clock time, as in \"à huit heures\" (at eight o'clock); \"vers\" would mean \"around\" a time."
             },
             {
               "id": "fra2p13q9",
@@ -13150,7 +13153,7 @@
                 "depuis"
               ],
               "answer": 0,
-              "explanation": "from…to → de…à. Common prepositions used to talk about time."
+              "explanation": "\"de…à\" marks the start and end of a time span, as in \"de neuf heures à midi\" (from nine to noon)."
             }
           ]
         },
@@ -13183,7 +13186,7 @@
                 "à"
               ],
               "answer": "il y a",
-              "explanation": "ago → il y a. Common prepositions used to talk about time."
+              "explanation": "To say how long ago something happened, French puts \"il y a\" before the length of time: \"il y a deux jours\" means \"two days ago\"."
             },
             {
               "id": "fra2p13q12",
@@ -14160,7 +14163,7 @@
       "level": "A2",
       "eyebrow": "Unit 16",
       "title": "Question Formation",
-      "description": "Est-ce que and inversion — Forming questions with est-ce que and inversion.",
+      "description": "Asking questions — Forming questions with est-ce que and inversion.",
       "lessons": [
         {
           "id": "fra2p16l1",
@@ -14616,7 +14619,7 @@
                 "jamais"
               ],
               "answer": 2,
-              "explanation": "sometimes → parfois. Adverbs and expressions of frequency."
+              "explanation": "\"parfois\" means \"sometimes\"; \"jamais\" is never, \"presque jamais\" is almost never and \"régulièrement\" is regularly."
             },
             {
               "id": "fra2p17q4",
@@ -14701,7 +14704,7 @@
                 "presque toujours"
               ],
               "answer": 0,
-              "explanation": "every month → tous les mois. Adverbs and expressions of frequency."
+              "explanation": "\"tous les mois\" means \"every month\": \"tous les\" plus a plural time word gives \"every\", so \"tous les jours\" would be every day."
             }
           ]
         },
@@ -14721,7 +14724,7 @@
                 "régulièrement"
               ],
               "answer": 0,
-              "explanation": "once → une fois. Adverbs and expressions of frequency."
+              "explanation": "\"une fois\" means one time (once), built from fois (time, occasion), as in « Je vais au cinéma une fois par mois ». \"toujours\" means always and \"tous les jours\" means every day."
             },
             {
               "id": "fra2p17q11",
@@ -14734,7 +14737,7 @@
                 "deux fois"
               ],
               "answer": "deux fois",
-              "explanation": "twice → deux fois. Adverbs and expressions of frequency."
+              "explanation": "\"deux fois\" literally means two times, which is how French says twice, as in « Je l'appelle deux fois par semaine ». The other options are general frequency words, not a count."
             },
             {
               "id": "fra2p17q12",
@@ -14793,7 +14796,7 @@
                 "plusieurs fois"
               ],
               "answer": "régulièrement",
-              "explanation": "regularly → régulièrement. Adverbs and expressions of frequency."
+              "explanation": "\"régulièrement\" is régulier plus the adverb ending -ment, just like regular plus -ly in English. \"rarement\" means rarely, the opposite idea."
             },
             {
               "id": "fra2p17q16",
@@ -14806,7 +14809,7 @@
                 "de temps à autre"
               ],
               "answer": 2,
-              "explanation": "frequently → fréquemment. Adverbs and expressions of frequency."
+              "explanation": "\"fréquemment\" comes from fréquent; adjectives ending in -ent form their adverb with -emment. \"de temps à autre\" means from time to time, which is less often."
             },
             {
               "id": "fra2p17q17",
@@ -15426,7 +15429,7 @@
                 "l'employé"
               ],
               "answer": "le projet",
-              "explanation": "project → le projet. Everyday office and workplace vocabulary."
+              "explanation": "\"le projet\" is the French word for a project and is masculine, as in « Nous travaillons sur un nouveau projet ». \"le rapport\" is a report."
             },
             {
               "id": "fra2p19q9",
@@ -15459,7 +15462,7 @@
                 "les vacances"
               ],
               "answer": 2,
-              "explanation": "report → le rapport. Everyday office and workplace vocabulary."
+              "explanation": "\"le rapport\" is a written report, as in « Je dois finir le rapport ce soir ». \"le courriel\" is an email, not a report."
             },
             {
               "id": "fra2p19q11",
@@ -15472,7 +15475,7 @@
                 "le contrat"
               ],
               "answer": "le contrat",
-              "explanation": "contract → le contrat. Everyday office and workplace vocabulary."
+              "explanation": "\"le contrat\" is a contract. Note the spelling: there is no c before the t, unlike English contract."
             },
             {
               "id": "fra2p19q12",
@@ -15485,7 +15488,7 @@
                 "l'employé"
               ],
               "answer": 0,
-              "explanation": "interview → l'entretien. Everyday office and workplace vocabulary."
+              "explanation": "\"l'entretien\" is the word for a job interview, as in « J'ai un entretien demain ». A media interview is usually une interview."
             },
             {
               "id": "fra2p19q13",
@@ -15498,7 +15501,7 @@
                 "le CV"
               ],
               "answer": "le CV",
-              "explanation": "resume/CV → le CV. Everyday office and workplace vocabulary."
+              "explanation": "\"le CV\" (curriculum vitae) is what French speakers call a résumé, and it is masculine. You send it before an entretien."
             },
             {
               "id": "fra2p19q14",
@@ -15531,7 +15534,7 @@
                 "la pause"
               ],
               "answer": "les vacances",
-              "explanation": "vacation → les vacances. Everyday office and workplace vocabulary."
+              "explanation": "\"les vacances\" means vacation or holidays and is always plural in this sense, as in « Je pars en vacances en août »."
             },
             {
               "id": "fra2p19q16",
@@ -15544,7 +15547,7 @@
                 "la promotion"
               ],
               "answer": 0,
-              "explanation": "break → la pause. Everyday office and workplace vocabulary."
+              "explanation": "\"la pause\" is a short break from work, as in « On fait une pause café ? ». It is feminine."
             },
             {
               "id": "fra2p19q17",
@@ -15557,7 +15560,7 @@
                 "la tâche"
               ],
               "answer": "la tâche",
-              "explanation": "task → la tâche. Everyday office and workplace vocabulary."
+              "explanation": "\"la tâche\" means a task or job to do and is feminine. Keep the circumflex: without it, la tache means a stain."
             },
             {
               "id": "fra2p19q18",
@@ -15583,7 +15586,7 @@
                 "le collègue"
               ],
               "answer": "le client",
-              "explanation": "client → le client. Everyday office and workplace vocabulary."
+              "explanation": "\"Client\" is spelled the same in French, and it is masculine, so it takes \"le\": \"le client\" (a female client is \"la cliente\")."
             }
           ]
         },
@@ -15616,7 +15619,7 @@
                 "la promotion"
               ],
               "answer": 2,
-              "explanation": "computer (at the office) → l'ordinateur. Everyday office and workplace vocabulary."
+              "explanation": "A computer is \"l'ordinateur\"; it is masculine (un ordinateur), and \"le\" becomes \"l'\" before the vowel."
             },
             {
               "id": "fra2p19q22",
@@ -15642,7 +15645,7 @@
                 "démissionner"
               ],
               "answer": 0,
-              "explanation": "to hire → embaucher. Everyday office and workplace vocabulary."
+              "explanation": "\"To hire\" is \"embaucher\"; don't confuse it with its opposite, licencier (to fire)."
             },
             {
               "id": "fra2p19q24",
@@ -15655,7 +15658,7 @@
                 "démissionner"
               ],
               "answer": "démissionner",
-              "explanation": "to resign → démissionner. Everyday office and workplace vocabulary."
+              "explanation": "To leave your job by choice is \"démissionner\" (the noun is la démission, a resignation)."
             }
           ]
         }
@@ -15684,7 +15687,7 @@
                 "la ville"
               ],
               "answer": "la ville",
-              "explanation": "city → la ville. City and public-transport vocabulary."
+              "explanation": "\"City\" or \"town\" is \"la ville\", a feminine noun; the town centre is le centre-ville."
             },
             {
               "id": "fra2p20q1",
@@ -15697,7 +15700,7 @@
                 "le bâtiment"
               ],
               "answer": 2,
-              "explanation": "street → la rue. City and public-transport vocabulary."
+              "explanation": "A street is \"la rue\", a feminine noun, as in « J'habite rue Victor-Hugo »."
             },
             {
               "id": "fra2p20q2",
@@ -15723,7 +15726,7 @@
                 "l'avenue"
               ],
               "answer": 0,
-              "explanation": "square → la place. City and public-transport vocabulary."
+              "explanation": "A town square is \"la place\"; careful, it does not mean \"place\" in the English sense, and a square shape is un carré."
             },
             {
               "id": "fra2p20q4",
@@ -15736,7 +15739,7 @@
                 "la mairie"
               ],
               "answer": "le pont",
-              "explanation": "bridge → le pont. City and public-transport vocabulary."
+              "explanation": "A bridge is \"le pont\", a masculine noun, as in le pont Neuf in Paris."
             }
           ]
         },
@@ -15900,7 +15903,7 @@
                 "le centre-ville"
               ],
               "answer": "le parc",
-              "explanation": "park → le parc. City and public-transport vocabulary."
+              "explanation": "A park is \"le parc\", spelled with a c and masculine; it does not mean a car park, which is un parking."
             },
             {
               "id": "fra2p20q16",
@@ -15913,7 +15916,7 @@
                 "l'arrêt de bus"
               ],
               "answer": 0,
-              "explanation": "library → la bibliothèque. City and public-transport vocabulary."
+              "explanation": "A library is \"la bibliothèque\"; la librairie is a false friend and means a bookshop."
             },
             {
               "id": "fra2p20q17",
@@ -15926,7 +15929,7 @@
                 "l'église"
               ],
               "answer": "l'église",
-              "explanation": "church → l'église. City and public-transport vocabulary."
+              "explanation": "A church is \"l'église\", a feminine noun; \"la\" becomes \"l'\" before the vowel."
             },
             {
               "id": "fra2p20q18",
@@ -16049,9 +16052,10 @@
               "acceptableAnswers": [
                 "Hier, je suis allé au marché.",
                 "Hier, je suis allée au marché.",
-                "Je suis allé au marché hier."
+                "Je suis allé au marché hier.",
+                "Je suis allée au marché hier."
               ],
-              "explanation": "One way to say it: \"Hier, je suis allé au marché.\" Everyday situations, and more than one wording is right."
+              "explanation": "One way to say it: \"Hier, je suis allé au marché.\" Aller takes être in the passé composé, so a woman writes allée, and \"au\" is à + le before marché."
             },
             {
               "id": "fra2p21q1",
@@ -16062,7 +16066,7 @@
                 "Tu as passé un bon week-end ?",
                 "Qu'as-tu fait ce week-end ?"
               ],
-              "explanation": "One way to say it: \"Comment s'est passé ton week-end ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Comment s'est passé ton week-end ?\" literally means \"How did your weekend go?\". It uses \"se passer\" in the passé composé with \"être\", and \"ton\" because you ask a friend."
             },
             {
               "id": "fra2p21q2",
@@ -16073,7 +16077,7 @@
                 "L'été prochain, je pars en voyage.",
                 "Je compte voyager l'été prochain."
               ],
-              "explanation": "One way to say it: \"Je vais voyager l'été prochain.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Je vais voyager l'été prochain.\" uses the near future: \"aller\" in the present plus the infinitive \"voyager\", for a plan you have already made."
             },
             {
               "id": "fra2p21q3",
@@ -16084,7 +16088,7 @@
                 "Ça ne marche pas.",
                 "C'est en panne."
               ],
-              "explanation": "One way to say it: \"C'est cassé.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"C'est cassé.\" means \"It's broken\". \"Cassé\" is the past participle of \"casser\" (to break), used here like an adjective after \"c'est\"."
             },
             {
               "id": "fra2p21q4",
@@ -16095,7 +16099,7 @@
                 "Avez-vous une table pour deux ?",
                 "Je voudrais une table pour deux personnes."
               ],
-              "explanation": "One way to say it: \"Une table pour deux, s'il vous plaît.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Une table pour deux, s'il vous plaît.\" is the usual short request in a restaurant. You use \"s'il vous plaît\" because you are speaking politely to staff."
             }
           ]
         },
@@ -16113,7 +16117,7 @@
                 "J'ai oublié mes clés à la maison.",
                 "Mes clés, je les ai oubliées."
               ],
-              "explanation": "One way to say it: \"J'ai oublié mes clés.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"J'ai oublié mes clés.\" uses the passé composé of \"oublier\" with \"avoir\" for a finished action. Keys are plural, so you say \"mes clés\"."
             },
             {
               "id": "fra2p21q6",
@@ -16124,7 +16128,7 @@
                 "Est-ce que cette place est prise ?",
                 "La place est libre ?"
               ],
-              "explanation": "One way to say it: \"Cette place est-elle libre ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Cette place est-elle libre ?\" means \"Is this seat free?\". French asks either whether a seat is \"libre\" (free) or \"prise\" (taken), and here the subject is inverted to form a more formal question."
             },
             {
               "id": "fra2p21q7",
@@ -16135,7 +16139,7 @@
                 "Avant, j'habitais à Lyon.",
                 "Avant, je vivais à Lyon."
               ],
-              "explanation": "One way to say it: \"J'habitais à Lyon avant.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"J'habitais à Lyon avant.\" uses the imparfait \"habitais\" to describe an ongoing past situation, which matches English \"used to live\"."
             },
             {
               "id": "fra2p21q8",
@@ -16146,7 +16150,7 @@
                 "Ce restaurant est vraiment bon, essaie-le.",
                 "Tu devrais essayer ce restaurant."
               ],
-              "explanation": "One way to say it: \"Je te recommande ce restaurant.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Je te recommande ce restaurant.\" uses \"te\" because you are talking to a friend, and \"recommander\" means \"to recommend\"."
             },
             {
               "id": "fra2p21q9",
@@ -16157,7 +16161,7 @@
                 "Tu as aimé le film ?",
                 "Comment as-tu trouvé le film ?"
               ],
-              "explanation": "One way to say it: \"Qu'est-ce que tu penses du film ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Qu'est-ce que tu penses du film ?\" uses \"penser de\" (to think of). \"De\" plus \"le\" becomes \"du\" before \"film\"."
             }
           ]
         },
@@ -16186,7 +16190,7 @@
                 "Le bus est parti sans moi.",
                 "J'ai manqué le bus."
               ],
-              "explanation": "One way to say it: \"J'ai raté le bus.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"J'ai raté le bus.\" uses the passé composé of \"rater\", the everyday verb for missing a bus or train (\"manquer\" is a little more formal)."
             },
             {
               "id": "fra2p21q12",
@@ -16208,7 +16212,7 @@
                 "Je suis à la recherche d'un travail.",
                 "Je cherche du travail."
               ],
-              "explanation": "One way to say it: \"Je cherche un emploi.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Je cherche un emploi.\" uses \"chercher\" without a preposition: it already means \"to look for\", so never say \"chercher pour\"."
             },
             {
               "id": "fra2p21q14",
@@ -16237,7 +16241,7 @@
                 "Hier, le temps était affreux.",
                 "Le temps était vraiment mauvais hier."
               ],
-              "explanation": "One way to say it: \"Il a fait un temps horrible hier.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Il a fait un temps horrible hier.\" uses the weather expression \"il fait\" in the passé composé, because yesterday's weather is a finished period."
             },
             {
               "id": "fra2p21q16",
@@ -16248,7 +16252,7 @@
                 "On pourrait aller à la plage.",
                 "Allons à la plage !"
               ],
-              "explanation": "One way to say it: \"Et si on allait à la plage ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Et si on allait à la plage ?\" uses si + the imperfect to make a friendly suggestion. \"On pourrait aller à la plage.\" or \"Allons à la plage !\" also work."
             },
             {
               "id": "fra2p21q17",
@@ -16259,7 +16263,7 @@
                 "J'ai déjà pris mon repas.",
                 "J'ai mangé, merci."
               ],
-              "explanation": "One way to say it: \"J'ai déjà mangé.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"J'ai déjà mangé.\" uses the passé composé with \"déjà\" placed between the auxiliary and the past participle to say you have already eaten."
             },
             {
               "id": "fra2p21q18",
@@ -16299,7 +16303,7 @@
                 "Désolée pour le retard.",
                 "Je suis en retard, toutes mes excuses."
               ],
-              "explanation": "One way to say it: \"Désolé pour le retard.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Désolé pour le retard.\" is the everyday way to apologize for being late; a woman writes \"Désolée\" with an extra -e."
             },
             {
               "id": "fra2p21q21",
@@ -16321,7 +16325,7 @@
                 "Avez-vous le mot de passe du wifi ?",
                 "Le wifi, c'est quoi le mot de passe ?"
               ],
-              "explanation": "One way to say it: \"Quel est le mot de passe wifi ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Quel est le mot de passe wifi ?\" uses \"quel\" to ask which specific thing, here the wifi password; \"Avez-vous le mot de passe du wifi ?\" is a polite alternative."
             },
             {
               "id": "fra2p21q23",
@@ -16332,7 +16336,7 @@
                 "Ce soir, je compte réviser.",
                 "J'ai l'intention d'étudier ce soir."
               ],
-              "explanation": "One way to say it: \"Je vais étudier ce soir.\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Je vais étudier ce soir.\" uses the near future (aller + infinitive) for a plan; \"compter\" or \"avoir l'intention de\" + infinitive also express intention."
             },
             {
               "id": "fra2p21q24",
@@ -16343,7 +16347,7 @@
                 "Parlez plus lentement, s'il vous plaît.",
                 "Pourriez-vous ralentir un peu quand vous parlez ?"
               ],
-              "explanation": "One way to say it: \"Pouvez-vous parler plus lentement ?\" Everyday situations, and more than one wording is right."
+              "explanation": "\"Pouvez-vous parler plus lentement ?\" uses pouvoir + infinitive with \"plus lentement\" (more slowly) to make a polite request to someone you address as vous."
             }
           ]
         }
@@ -16555,7 +16559,7 @@
                 "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
               ],
               "answer": "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
-              "explanation": "The audio says \"Nous avons vu la mer depuis la fenêtre de l'hôtel.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Nous avons vu la mer depuis la fenêtre de l'hôtel.\" \"mer\" (sea) and \"mère\" (mother) sound the same, so listen for \"la\" rather than \"sa\" before the noun."
             },
             {
               "id": "fra2p22q13",
@@ -16569,7 +16573,7 @@
                 "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
               ],
               "answer": "Nous avons vu sa mère depuis la fenêtre de l'hôtel.",
-              "explanation": "The audio says \"Nous avons vu sa mère depuis la fenêtre de l'hôtel.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Nous avons vu sa mère depuis la fenêtre de l'hôtel.\" \"mère\" (mother) sounds like \"mer\" (sea), so the clue is \"sa\" instead of \"la\"."
             },
             {
               "id": "fra2p22q14",
@@ -16632,7 +16636,7 @@
                 "Le prix du pain a beaucoup augmenté cette année."
               ],
               "answer": "La taille de ce pin a beaucoup augmenté cette année.",
-              "explanation": "The audio says \"La taille de ce pin a beaucoup augmenté cette année.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"La taille de ce pin a beaucoup augmenté cette année.\" \"pin\" (pine tree) and \"pain\" (bread) sound alike, so listen for \"La taille de ce\" rather than \"Le prix du\"."
             },
             {
               "id": "fra2p22q18",
@@ -16646,7 +16650,7 @@
                 "Elle achète chaque semaine du pain complet."
               ],
               "answer": "Elle achète chaque semaine du pain complet.",
-              "explanation": "The audio says \"Elle achète chaque semaine du pain complet.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Elle achète chaque semaine du pain complet.\" \"du pain complet\" (wholemeal bread) contrasts with \"un jeune pin\" (a young pine), even though pain and pin sound alike."
             },
             {
               "id": "fra2p22q19",
@@ -16660,7 +16664,7 @@
                 "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
               ],
               "answer": "Elle achète chaque semaine un jeune pin.",
-              "explanation": "The audio says \"Elle achète chaque semaine un jeune pin.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Elle achète chaque semaine un jeune pin.\" \"un jeune pin\" (a young pine) differs from \"du pain complet\" in its article and adjective, even though pin and pain sound alike."
             }
           ]
         },
@@ -16709,7 +16713,7 @@
                 "Le mur de la cuisine est peint en vert."
               ],
               "answer": "Le mur de la cuisine est peint en vert.",
-              "explanation": "The audio says \"Le mur de la cuisine est peint en vert.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le mur de la cuisine est peint en vert.\" \"vert\" (green) and \"verre\" (glass) sound the same, so listen for \"peint\" (painted) instead of \"fait\" (made)."
             },
             {
               "id": "fra2p22q23",
@@ -16731,13 +16735,13 @@
               "prompt": "What did you hear?",
               "audioText": "Ces vêtements sont vraiment trop grands.",
               "choices": [
-                "Le cou me fait vraiment mal depuis ce matin.",
+                "Ces vêtements sont vraiment très grands.",
                 "Ces vêtements sont vraiment trop grands.",
-                "Le dessous du carton contient des vêtements d'hiver.",
-                "Le coup me fait vraiment mal depuis ce matin."
+                "Ces vêtements sont vraiment trop gris.",
+                "Ces vêtements sont vraiment trop longs."
               ],
               "answer": "Ces vêtements sont vraiment trop grands.",
-              "explanation": "The audio says \"Ces vêtements sont vraiment trop grands.\" Everyday situations built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Ces vêtements sont vraiment trop grands.\" Listen for \"trop\" (too), not \"très\" (very), and for the nasal vowel in \"grands\", which is not the \"i\" of \"gris\"."
             }
           ]
         }
@@ -16760,35 +16764,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Est-ce que tu es libre ce soir ?",
-              "explanation": "Target phrase: \"Est-ce que tu es libre ce soir ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Est-ce que tu es libre ce soir ?\" Starting with \"Est-ce que\" turns a statement into a yes/no question, and \"tu\" fits asking a friend."
             },
             {
               "id": "fra2p23q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "On peut se voir demain ?",
-              "explanation": "Target phrase: \"On peut se voir demain ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"On peut se voir demain ?\" In everyday speech \"on\" means \"we\", and a rising voice alone makes it a question."
             },
             {
               "id": "fra2p23q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je dois partir maintenant.",
-              "explanation": "Target phrase: \"Je dois partir maintenant.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Je dois partir maintenant.\" \"Devoir\" plus an infinitive means \"to have to\", and the final \"s\" of \"dois\" and \"t\" of \"maintenant\" are silent."
             },
             {
               "id": "fra2p23q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Pouvez-vous m'aider, s'il vous plaît ?",
-              "explanation": "Target phrase: \"Pouvez-vous m'aider, s'il vous plaît ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Pouvez-vous m'aider, s'il vous plaît ?\" Inverting \"vous pouvez\" to \"Pouvez-vous\" gives a polite question for asking a stranger for help."
             },
             {
               "id": "fra2p23q4",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je cherche la gare.",
-              "explanation": "Target phrase: \"Je cherche la gare.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Je cherche la gare.\" \"Chercher\" means \"to look for\" and takes no preposition, so there is no word for \"for\" before \"la gare\"."
             }
           ]
         },
@@ -16802,35 +16806,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "C'est à quelle distance ?",
-              "explanation": "Target phrase: \"C'est à quelle distance ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"C'est à quelle distance ?\" This is a natural spoken way to ask how far away something is, with \"à\" before \"quelle distance\"."
             },
             {
               "id": "fra2p23q6",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Combien ça coûte ?",
-              "explanation": "Target phrase: \"Combien ça coûte ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Combien ça coûte ?\" This is the everyday way to ask a price, and the final \"-te\" of \"coûte\" is pronounced."
             },
             {
               "id": "fra2p23q7",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je voudrais réserver une table.",
-              "explanation": "Target phrase: \"Je voudrais réserver une table.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Je voudrais réserver une table.\" \"Je voudrais\" (I would like) is the polite form to use when booking at a restaurant."
             },
             {
               "id": "fra2p23q8",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Avez-vous une chambre libre ?",
-              "explanation": "Target phrase: \"Avez-vous une chambre libre ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Avez-vous une chambre libre ?\" Inverting to \"Avez-vous\" makes a polite question for a hotel receptionist, and \"libre\" means available."
             },
             {
               "id": "fra2p23q9",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Le train part à quelle heure ?",
-              "explanation": "Target phrase: \"Le train part à quelle heure ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"Le train part à quelle heure ?\" In spoken French \"à quelle heure\" can come at the end of the question, with the voice rising."
             }
           ]
         },
@@ -16844,35 +16848,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'ai besoin d'un médecin.",
-              "explanation": "Target phrase: \"J'ai besoin d'un médecin.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"J'ai besoin d'un médecin.\" \"Avoir besoin de\" means \"to need\", and \"de\" shortens to \"d'\" before \"un\"."
             },
             {
               "id": "fra2p23q11",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je ne me sens pas bien.",
-              "explanation": "Target phrase: \"Je ne me sens pas bien.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Je ne me sens pas bien.\" means \"I don't feel well.\" The reflexive \"me\" sits between \"ne\" and the verb, and the final \"s\" of \"sens\" is silent."
             },
             {
               "id": "fra2p23q12",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Qu'est-ce que tu fais ce week-end ?",
-              "explanation": "Target phrase: \"Qu'est-ce que tu fais ce week-end ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Qu'est-ce que tu fais ce week-end ?\" means \"What are you doing this weekend?\" \"Qu'est-ce que\" is said quickly, like \"kess-kuh\", and \"tu\" suits a friend."
             },
             {
               "id": "fra2p23q13",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je travaille dans un bureau.",
-              "explanation": "Target phrase: \"Je travaille dans un bureau.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Je travaille dans un bureau.\" means \"I work in an office.\" In \"travaille\" the \"ill\" sounds like the English \"y\" and the final \"e\" is silent."
             },
             {
               "id": "fra2p23q14",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'étudie le français depuis deux ans.",
-              "explanation": "Target phrase: \"J'étudie le français depuis deux ans.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"J'étudie le français depuis deux ans.\" means \"I've been studying French for two years.\" French uses the present tense with \"depuis\" for something still going on, and \"deux ans\" is linked with a \"z\" sound."
             }
           ]
         },
@@ -16886,35 +16890,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Nous habitons ici depuis longtemps.",
-              "explanation": "Target phrase: \"Nous habitons ici depuis longtemps.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Nous habitons ici depuis longtemps.\" means \"We have lived here for a long time.\" The present tense goes with \"depuis\", and \"nous habitons\" is linked with a \"z\" sound."
             },
             {
               "id": "fra2p23q16",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Elle arrive dans dix minutes.",
-              "explanation": "Target phrase: \"Elle arrive dans dix minutes.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Elle arrive dans dix minutes.\" means \"She's arriving in ten minutes.\" \"Dans\" plus a time means \"in ... from now\", and \"dix\" before \"minutes\" is said \"dee\"."
             },
             {
               "id": "fra2p23q17",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Il est parti hier soir.",
-              "explanation": "Target phrase: \"Il est parti hier soir.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Il est parti hier soir.\" means \"He left last night.\" \"Partir\" takes \"être\" in the past tense, so you say \"est parti\", and the final \"t\" of \"parti\" is not pronounced."
             },
             {
               "id": "fra2p23q18",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je vais chez le médecin demain.",
-              "explanation": "Target phrase: \"Je vais chez le médecin demain.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Je vais chez le médecin demain.\" means \"I'm going to the doctor's tomorrow.\" Use \"chez\" when you go to a person's place, such as a doctor or a friend."
             },
             {
               "id": "fra2p23q19",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Tu peux venir avec nous ?",
-              "explanation": "Target phrase: \"Tu peux venir avec nous ?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Tu peux venir avec nous ?\" means \"Can you come with us?\" A rising voice at the end turns the sentence into a question, and \"tu\" suits a friend."
             }
           ]
         },
@@ -16928,21 +16932,21 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "C'est une bonne idée.",
-              "explanation": "Target phrase: \"C'est une bonne idée.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"C'est une bonne idée.\" means \"That's a good idea.\" \"Idée\" is feminine, so it takes \"une\" and \"bonne\"."
             },
             {
               "id": "fra2p23q21",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je suis d'accord avec toi.",
-              "explanation": "Target phrase: \"Je suis d'accord avec toi.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Je suis d'accord avec toi.\" means \"I agree with you.\" French uses \"être d'accord\" (to be in agreement), and \"toi\" is the form used after \"avec\"."
             },
             {
               "id": "fra2p23q22",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je ne suis pas d'accord.",
-              "explanation": "Target phrase: \"Je ne suis pas d'accord.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Je ne suis pas d'accord.\" means \"I don't agree.\" The negation \"ne ... pas\" goes around the verb \"suis\"."
             },
             {
               "id": "fra2p23q23",

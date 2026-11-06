@@ -110,6 +110,7 @@ const BASE_PHASES = new Set([
   "review",
   "second",
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-card-meaning",
   "rewrite-explanation",
@@ -189,6 +190,7 @@ const loadRulings = (phase: string) =>
   new Map(Object.entries(readJson<Record<string, Ruling>>(rulingStore(phase), {})));
 const RULING_PHASES = new Set([
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-explanation",
   "rewrite-cloze",
@@ -200,6 +202,7 @@ const RULING_PHASES = new Set([
 /** Rulings in the order route applies them; a later phase's ruling on the same item wins. */
 const ROUTE_PHASES = [
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-card-meaning",
   "rewrite-explanation",
@@ -338,6 +341,16 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
         ctx,
       );
     }
+    case "judge-ok": {
+      // Second pass: the blind sample found most remaining defects on items Sonnet had passed
+      // (they never reached the judge). Opus rules on every item no phase has ruled on yet.
+      const ruled = new Set(ROUTE_PHASES.flatMap((p) => [...loadRulings(p).keys()]));
+      return opus(
+        items.filter((it) => !ruled.has(it.id) && !needsMeaning(it)),
+        (c) => judgeSystem(c.course),
+        ctx,
+      );
+    }
     case "judge-retry": {
       // Fixes the checks refused: the judge tries again, told exactly why.
       const refused = readJson<{ fix: { id: string }; why: string[] }[]>(
@@ -430,14 +443,19 @@ This item was already fixed once by the review; the fresh re-read above flagged 
       return verifyWork;
     }
     case "blind-sonnet":
-      return sonnet(blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`), "verify");
+      return sonnet(
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
+        "verify",
+      );
     case "blind-mistral":
-      return mistralWork(blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`));
+      return mistralWork(
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
+      );
     case "blind-judge": {
       const bs = loadVerdicts("blind-sonnet");
       const bm = loadVerdicts("blind-mistral");
       return opus(
-        blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`),
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
         (c) => judgeSystem(c.course),
         (it) => judgeContext(it, bs, bm),
       );
@@ -1004,7 +1022,7 @@ function gatesCommand() {
   let added = 0;
   for (const raw of out.split("\n")) {
     const line = raw.replace(/^[\s+-]*/, "").trim();
-    if (!line || !/[a-z0-9]l\d+|q\d+/.test(line)) continue;
+    if (!line || !/[a-z0-9]l\d+|q\d+|\bp\d+/.test(line)) continue;
     const found = new Set<string>();
     for (const m of line.matchAll(/\b([a-z0-9]+l\d+)[/:]([a-z0-9]*q\d+)\b/g))
       for (const c of ["en", "fr", "es"]) found.add(`${c}:question:${m[1]}/${m[2]}`);
@@ -1017,6 +1035,11 @@ function gatesCommand() {
       for (const id of bySuffix.get(m[1]!) ?? []) found.add(id);
     // A full review item id ("en:card:a1p11l2/exact: expected ..."), as review-fixes.test.ts prints.
     for (const id of fixed) if (line.includes(`${id}:`) || line.includes(`${id} `)) found.add(id);
+    // A placement question by its bare id ("p63: the prompt contains ...").
+    for (const id of fixed) {
+      const pid = id.split(":placement:")[1];
+      if (pid && new RegExp(`(^|[^\\w])${pid}:`).test(line)) found.add(id);
+    }
     const hits = [...found].filter((id) => fixed.has(id));
     if (!hits.length) {
       if (/expected|✗|×|FAIL/.test(raw) || found.size) unmatched.push(line.slice(0, 200));
@@ -1035,7 +1058,7 @@ function gatesCommand() {
 
 function report() {
   const items = inventory();
-  const blind = blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`);
+  const blind = blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`);
   const bj = loadRulings("blind-judge");
   const judged = blind.filter((it) => bj.has(it.id));
   const defects = judged.filter((it) => bj.get(it.id)!.decision !== "keep").length;
@@ -1220,6 +1243,30 @@ switch (cmd) {
   case "collect":
     await collect();
     break;
+  case "reparse": {
+    // Re-reads a collected job's saved replies (raw/<ref>.json) into its ruling store, for a job
+    // collected while its phase was missing from RULING_PHASES. No API call.
+    const ref = argv[1] ?? "";
+    const job = loadState().jobs.find((j) => j.ref === ref);
+    if (!job || !RULING_PHASES.has(job.phase)) throw new Error(`no collected ruling job ${ref}`);
+    const raw = readJson<{ customId: string; text?: string }[]>(
+      path.join(STATE, "raw", `${ref}.json`),
+      [],
+    );
+    const byCustom = new Map(job.chunks.map((c) => [c.customId, c]));
+    const store = Object.fromEntries(loadRulings(job.phase));
+    let got = 0;
+    for (const r of raw) {
+      const chunk = byCustom.get(r.customId);
+      if (!chunk || !r.text) continue;
+      const p = parseRulings(chunk, r.text);
+      for (const x of p.rulings) store[x.id] = { ...x, at: job.createdAt };
+      got += p.rulings.length;
+    }
+    writeJson(rulingStore(job.phase), store);
+    console.log(`${ref}: ${got} rulings recovered from saved replies.`);
+    break;
+  }
   case "gates":
     gatesCommand();
     break;
