@@ -26,6 +26,9 @@ struct SpeakQuestionCard: View {
     let isConnected: Bool
     let checked: Bool
     @Binding var picked: String?
+    /// In the lesson's room (round 6): Alphonso's bubble shows the prompt and the verdict sheet the reason, so this
+    /// card is the phrase, the microphone and the typing fallback, in the lesson's style.
+    var inStage = false
 
     /// The shared voice engine (permission, recorder, interruptions, stale callbacks after this card leaves).
     @State private var voice = VoiceSessionController()
@@ -50,13 +53,17 @@ struct SpeakQuestionCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-            Text("SPEAKING")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            AskingAlphonso(prompt: question.prompt, hasMedia: true)
+            if inStage {
+                LessonSpeakPhraseCard(phrase: question.answer, onHear: hearPhrase)
+            } else {
+                Text("SPEAKING")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                AskingAlphonso(prompt: question.prompt, hasMedia: true)
 
-            phraseCard
+                phraseCard
+            }
 
             if canCapture {
                 captureControls
@@ -78,7 +85,7 @@ struct SpeakQuestionCard: View {
                     .foregroundStyle(AlphonsoColor.destructive)
             }
 
-            if checked {
+            if checked && !inStage {
                 ExplanationView(
                     question: .speak(question), picked: picked, explanation: question.explanation,
                     course: course)
@@ -114,12 +121,7 @@ struct SpeakQuestionCard: View {
             Text(question.answer)
                 .font(AlphonsoFont.sans(17, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
-            Button {
-                speakCardSynthesizer.stopSpeaking(at: .immediate)
-                let utterance = AVSpeechUtterance(string: question.answer)
-                utterance.voice = SpeechVoice.voice(for: course)
-                speakCardSynthesizer.speak(utterance)
-            } label: {
+            Button(action: hearPhrase) {
                 Label("Hear it first", systemImage: "speaker.wave.2.fill")
             }
             .buttonStyle(.alphonsoSecondary(fullWidth: false))
@@ -129,6 +131,13 @@ struct SpeakQuestionCard: View {
         .background(
             AlphonsoColor.parchment,
             in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+    }
+
+    private func hearPhrase() {
+        speakCardSynthesizer.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: question.answer)
+        utterance.voice = SpeechVoice.voice(for: course)
+        speakCardSynthesizer.speak(utterance)
     }
 
     private var captureControls: some View {
@@ -182,13 +191,18 @@ struct SpeakQuestionCard: View {
                 micUnavailable: micUnavailable, isConnected: isConnected, hasAIConsent: hasAIConsent))
             .font(AlphonsoFont.sans(13))
             .foregroundStyle(AlphonsoColor.inkSoft)
-            TextField(
-                "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 })
-            )
-            .textFieldStyle(.plain)
-            .padding(AlphonsoSpacing.sm)
-            .alphonsoInputBackground()
-            .disabled(checked)
+            if inStage {
+                LessonTextField(placeholder: "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
+                    .disabled(checked)
+            } else {
+                TextField(
+                    "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 })
+                )
+                .textFieldStyle(.plain)
+                .padding(AlphonsoSpacing.sm)
+                .alphonsoInputBackground()
+                .disabled(checked)
+            }
         }
     }
 
