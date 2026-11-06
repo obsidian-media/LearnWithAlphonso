@@ -11,19 +11,26 @@ vi.mock("@/lib/turnstile", async (importOriginal) => ({
 
 // The widget hands over a token per render (resetKey changes render a new one), and null first, like the real one.
 let mounts = 0;
+let widget: "token" | "silent" | "load-failed" = "token";
 vi.mock("@/components/TurnstileWidget", () => ({
   TurnstileWidget: ({
     onToken,
     resetKey,
+    onLoadFailed,
   }: {
     onToken: (t: string | null) => void;
     resetKey: number;
+    onLoadFailed?: () => void;
   }) => {
     useEffect(() => {
       mounts += 1;
       onToken(null);
-      onToken(`token-${resetKey}`);
-    }, [onToken, resetKey]);
+      if (widget === "token") onToken(`token-${resetKey}`);
+      if (widget === "load-failed") {
+        onToken(null);
+        onLoadFailed?.();
+      }
+    }, [onToken, resetKey, onLoadFailed]);
     return <div data-testid="turnstile" />;
   },
 }));
@@ -42,6 +49,7 @@ let android: string[];
 
 beforeEach(() => {
   siteKey = "site-key";
+  widget = "token";
   mounts = 0;
   ios = [];
   android = [];
@@ -56,7 +64,7 @@ afterEach(() => {
 describe("/native-captcha (the apps' bot check page)", () => {
   it("hands each token to the iOS and the Android app", () => {
     render(<Page />);
-    expect(ios).toEqual([{ type: "expired" }, { type: "token", token: "token-0" }]);
+    expect(ios).toEqual([{ type: "token", token: "token-0" }]);
     expect(android.map((j) => JSON.parse(j))).toEqual(ios);
   });
 
@@ -65,6 +73,19 @@ describe("/native-captcha (the apps' bot check page)", () => {
     act(() => w.alphonsoCaptchaReset!());
     expect(mounts).toBe(2);
     expect(ios.at(-1)).toEqual({ type: "token", token: "token-1" });
+  });
+
+  it("says nothing until there is a token, so the app's timeout still covers a check that never loads", () => {
+    widget = "silent";
+    render(<Page />);
+    expect(ios).toEqual([]);
+    expect(android).toEqual([]);
+  });
+
+  it("tells the app there is no bot check when Turnstile cannot load", () => {
+    widget = "load-failed";
+    render(<Page />);
+    expect(ios).toEqual([{ type: "unavailable" }]);
   });
 
   it("without a site key it tells the app there is no bot check, and shows nothing", () => {

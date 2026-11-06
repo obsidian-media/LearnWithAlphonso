@@ -71,6 +71,10 @@ struct BotCheckView: UIViewRepresentable {
         init(model: BotCheckModel) { self.model = model }
 
         func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+            // Only our own page (the top frame on our host) may hand over a token; never a frame inside it.
+            guard message.frameInfo.isMainFrame,
+                  message.frameInfo.securityOrigin.protocol == "https",
+                  message.frameInfo.securityOrigin.host == AppConfig.apiBaseURL.host else { return }
             model.receive(message.body)
         }
 
@@ -78,9 +82,11 @@ struct BotCheckView: UIViewRepresentable {
             _ webView: WKWebView, decidePolicyFor action: WKNavigationAction
         ) async -> WKNavigationActionPolicy {
             // Our page and Cloudflare's challenge frames only; anything else (a link tapped in the widget) is refused.
-            let host = action.request.url?.host
-            let allowed = host == AppConfig.apiBaseURL.host || host == "challenges.cloudflare.com"
-                || action.request.url?.scheme == "about"
+            let url = action.request.url
+            let host = url?.host
+            let allowed = (url?.scheme == "https"
+                && (host == AppConfig.apiBaseURL.host || host == "challenges.cloudflare.com"))
+                || url?.scheme == "about"
             return allowed ? .allow : .cancel
         }
 

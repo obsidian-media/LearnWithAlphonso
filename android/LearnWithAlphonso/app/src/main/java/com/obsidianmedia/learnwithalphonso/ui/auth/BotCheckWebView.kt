@@ -74,8 +74,12 @@ fun BotCheckWebView(state: BotCheckState, pageUrl: String) {
                     object {
                         @JavascriptInterface
                         fun post(json: String) {
-                            // Called on a WebView thread; the state is Compose state, so hop to the main thread.
-                            webView.post { state.receive(json) }
+                            // Called on a WebView thread; the state is Compose state, so hop to the main thread. Only
+                            // while the WebView still shows our own page (https on our host) is a message accepted.
+                            webView.post {
+                                val shown = webView.url?.let(Uri::parse)
+                                if (shown?.scheme == "https" && shown.host == ownHost) state.receive(json)
+                            }
                         }
                     },
                     "AlphonsoCaptcha",
@@ -83,7 +87,8 @@ fun BotCheckWebView(state: BotCheckState, pageUrl: String) {
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                         val host = request.url.host
-                        return !(host == ownHost || host == "challenges.cloudflare.com")
+                        val allowed = request.url.scheme == "https" && (host == ownHost || host == "challenges.cloudflare.com")
+                        return !allowed
                     }
 
                     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
