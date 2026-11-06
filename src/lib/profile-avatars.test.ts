@@ -55,6 +55,10 @@ describe("profile avatars", () => {
     expect(isAllowedAvatarSeed("animal:owl")).toBe(true);
     expect(isAllowedAvatarSeed("animal:dragon")).toBe(false);
     expect(isAllowedAvatarSeed("animal:../../x")).toBe(false);
+    // Arbitrary strings: a URL, markup, or something longer than a seed.
+    expect(isAllowedAvatarSeed("https://evil.example/x.png")).toBe(false);
+    expect(isAllowedAvatarSeed("<img src=x>")).toBe(false);
+    expect(isAllowedAvatarSeed("a".repeat(33))).toBe(false);
   });
 
   it("initials are the fallback", () => {
