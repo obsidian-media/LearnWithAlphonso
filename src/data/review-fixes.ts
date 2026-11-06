@@ -1,8 +1,8 @@
 import type { Unit } from "./curriculum";
 import type { PlacementQuestion } from "./placement";
-import EN from "./review-fixes/en.json";
-import ES from "./review-fixes/es.json";
-import FR from "./review-fixes/fr.json";
+import EN from "./review-fixes/en.json" with { type: "json" };
+import ES from "./review-fixes/es.json" with { type: "json" };
+import FR from "./review-fixes/fr.json" with { type: "json" };
 
 /**
  * Fixes from the full content review (docs/CONTENT-PLAYBOOK.md, section 9), applied on top of the
