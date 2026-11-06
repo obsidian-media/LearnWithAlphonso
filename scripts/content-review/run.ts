@@ -110,6 +110,7 @@ const BASE_PHASES = new Set([
   "review",
   "second",
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-card-meaning",
   "rewrite-explanation",
@@ -200,6 +201,7 @@ const RULING_PHASES = new Set([
 /** Rulings in the order route applies them; a later phase's ruling on the same item wins. */
 const ROUTE_PHASES = [
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-card-meaning",
   "rewrite-explanation",
@@ -338,6 +340,16 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
         ctx,
       );
     }
+    case "judge-ok": {
+      // Second pass: the blind sample found most remaining defects on items Sonnet had passed
+      // (they never reached the judge). Opus rules on every item no phase has ruled on yet.
+      const ruled = new Set(ROUTE_PHASES.flatMap((p) => [...loadRulings(p).keys()]));
+      return opus(
+        items.filter((it) => !ruled.has(it.id) && !needsMeaning(it)),
+        (c) => judgeSystem(c.course),
+        ctx,
+      );
+    }
     case "judge-retry": {
       // Fixes the checks refused: the judge tries again, told exactly why.
       const refused = readJson<{ fix: { id: string }; why: string[] }[]>(
@@ -430,14 +442,19 @@ This item was already fixed once by the review; the fresh re-read above flagged 
       return verifyWork;
     }
     case "blind-sonnet":
-      return sonnet(blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`), "verify");
+      return sonnet(
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
+        "verify",
+      );
     case "blind-mistral":
-      return mistralWork(blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`));
+      return mistralWork(
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
+      );
     case "blind-judge": {
       const bs = loadVerdicts("blind-sonnet");
       const bm = loadVerdicts("blind-mistral");
       return opus(
-        blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`),
+        blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`),
         (c) => judgeSystem(c.course),
         (it) => judgeContext(it, bs, bm),
       );
@@ -1040,7 +1057,7 @@ function gatesCommand() {
 
 function report() {
   const items = inventory();
-  const blind = blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`);
+  const blind = blindSample(items, ASSUME.blindPerCourse, `${SEED}:${arg("blind-seed", "blind")}`);
   const bj = loadRulings("blind-judge");
   const judged = blind.filter((it) => bj.has(it.id));
   const defects = judged.filter((it) => bj.get(it.id)!.decision !== "keep").length;
