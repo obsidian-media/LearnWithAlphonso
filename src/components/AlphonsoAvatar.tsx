@@ -6,7 +6,6 @@ import {
   BROWS_STATES,
   GLINT_MASK_FILE,
   MOUTH_SHAPES,
-  browsFile,
   earFile,
   mouthFile,
   type CharacterKit,
@@ -193,13 +192,14 @@ export function AlphonsoAvatar({
       }
       const pose = machine.pose(t, speech);
       for (const shape of MOUTH_SHAPES) show(mouthFile(shape)!, pose.mouth === shape);
-      for (const brows of BROWS_STATES) show(browsFile(brows), pose.brows === brows);
+      for (const brows of BROWS_STATES) show(kit.expressionFiles[brows], pose.brows === brows);
 
       // Reduced motion stills the body (breathing, sway, ears, glint). Mouth and brows still change: they carry
       // what he is doing.
       const still = now.reducedMotion;
       if (!still) idle.advance(t);
       for (const side of ["left", "right"] as const) {
+        if (!kit.rects.earLeft || !kit.rects.earRight) break;
         const twitching = !still && idle.twitchingEar === side;
         show(earFile(side, true), twitching);
         show(earFile(side, false), !twitching);
@@ -265,15 +265,15 @@ export function AlphonsoAvatar({
             maxWidth: "none",
           }}
         />
-        {layer(earFile("left", false), kit.rects.earLeft, "1")}
-        {layer(earFile("left", true), kit.rects.earLeft, "0")}
-        {layer(earFile("right", false), kit.rects.earRight, "1")}
-        {layer(earFile("right", true), kit.rects.earRight, "0")}
+        {kit.rects.earLeft && layer(earFile("left", false), kit.rects.earLeft, "1")}
+        {kit.rects.earLeft && layer(earFile("left", true), kit.rects.earLeft, "0")}
+        {kit.rects.earRight && layer(earFile("right", false), kit.rects.earRight, "1")}
+        {kit.rects.earRight && layer(earFile("right", true), kit.rects.earRight, "0")}
         {MOUTH_SHAPES.map((shape) => layer(mouthFile(shape)!, kit.rects.mouth, "0"))}
         {BROWS_STATES.map((brows) =>
-          layer(browsFile(brows), kit.rects.brows, brows === "neutral" ? "1" : "0"),
+          layer(kit.expressionFiles[brows], kit.rects.expression, brows === "neutral" ? "1" : "0"),
         )}
-        {maskUrl && (
+        {maskUrl && kit.rects.glint && (
           <div
             ref={glint}
             style={{
