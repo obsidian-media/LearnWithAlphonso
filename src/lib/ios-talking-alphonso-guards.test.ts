@@ -44,14 +44,20 @@ describe("the setting", () => {
     expect(settings).toContain("Show Alphonso while practising");
   });
 
-  it("gates the stage on the Practice speaking screen, so off leaves the screen as it was", () => {
+  it("gates the call on the Practice speaking screen, so off leaves the screen as it was", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
     expect(conversation).toContain(
       "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
     );
-    expect(conversation).toMatch(
-      /\.safeAreaInset\(edge: \.top, spacing: 0\) \{\s*if showAlphonso \{\s*AlphonsoAvatarStage\(/,
+    expect(conversation).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
+    // The classic screen keeps its own navigation bar, mic button and New conversation toolbar item.
+    const classic = conversation.slice(
+      conversation.indexOf("private var classicScreen"),
+      conversation.indexOf("private var callScreen"),
     );
+    expect(classic).toContain("micButton");
+    expect(classic).toContain('Button("New conversation")');
+    expect(classic).not.toContain("PracticeCallView");
   });
 });
 
@@ -98,9 +104,10 @@ describe("Reduce Motion", () => {
       ].sort(),
     );
     expect(view.match(/frame\.swayDegrees = /g)).toHaveLength(1);
-    expect(view).toContain("frame.swayDegrees = AvatarIdleMotion.swayDegrees(at: now)");
+    // The whole line, so nothing voice-driven can be added onto the clock's value.
+    expect(view).toMatch(/^\s*frame\.swayDegrees = AvatarIdleMotion\.swayDegrees\(at: now\)$/m);
     expect(view.match(/frame\.breath = /g)).toHaveLength(1);
-    expect(view).toContain("frame.breath = AvatarIdleMotion.breathScale(at: now)");
+    expect(view).toMatch(/^\s*frame\.breath = AvatarIdleMotion\.breathScale\(at: now\)$/m);
     const idle = code(`${KIT}/AvatarIdle.swift`);
     expect(idle).toContain("static func swayDegrees(at time: TimeInterval) -> Double");
     expect(idle).toContain(
@@ -172,8 +179,8 @@ describe("what he is built from", () => {
     }
   });
 
-  it("is decorative and never takes a touch", () => {
-    const view = code(VIEW);
+  it("is decorative and never takes a touch (the call view that hosts it enforces both)", () => {
+    const view = code(`${APP}/Sources/PracticeCallView.swift`);
     expect(view).toContain(".accessibilityHidden(true)");
     expect(view).toContain(".allowsHitTesting(false)");
   });
@@ -204,5 +211,26 @@ describe("what he is built from", () => {
     const own = [...AVATAR_FILES, `${ART}/manifest.json`];
     for (const f of own)
       expect(read(f), f).not.toMatch(/[A-Za-z]:[\\/](?:Users|Agent|Temp)|\/Users\/|AgentDev/);
+  });
+});
+
+describe("reactions from the reply's verdict", () => {
+  it("reads the verdict in the Practice turn and hands it to the stage", () => {
+    const conversation = code(`${APP}/Sources/ConversationView.swift`);
+    expect(conversation).toContain("client.chatReply(");
+    expect(conversation).toMatch(/verdict: chatReply\.verdict/);
+    expect(conversation).toMatch(/PracticeCallView\([\s\S]*?replyVerdict: replyVerdict/);
+  });
+
+  it("queues the reaction in the machine and plays it only when the session is idle", () => {
+    const machine = code(`${KIT}/AvatarMachine.swift`);
+    expect(machine).toMatch(/case \.correct: pendingReaction = \.happy/);
+    expect(machine).toMatch(/case \.corrected: pendingReaction = \.encouraging/);
+    expect(machine).toMatch(/if case \.idle = phase, let reaction = pendingReaction/);
+  });
+
+  it("adds no voice-driven body motion: the reaction changes the face, never the frame", () => {
+    const view = code(VIEW);
+    expect(view).not.toMatch(/replyVerdict[^\n]*(rotationEffect|offset|scaleEffect)/);
   });
 });

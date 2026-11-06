@@ -110,6 +110,7 @@ private struct ConversationSessionView: View {
     let conversationStore: ConversationStore
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
 
     @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
@@ -117,6 +118,8 @@ private struct ConversationSessionView: View {
     @State private var voice = VoiceSessionController()
     /// Settings: "Show Alphonso while practising" (default on).
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
+    /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
+    @State private var replyVerdict = AvatarReplyVerdict()
     /// Notices that are not TutorErrors ("didn't catch that", playback).
     @State private var notice: String?
     // V3 package 3a: adaptive difficulty, per course.
@@ -125,6 +128,27 @@ private struct ConversationSessionView: View {
     private var key: ConversationKey { .scenario(scenario.id, course: course) }
 
     var body: some View {
+        Group {
+            if showAlphonso { callScreen } else { classicScreen }
+        }
+        .aiDisclosureGate()
+        .onAppear {
+            // Load (or open) this scenario's conversation in this course.
+            // A tab switch returns to the same conversation instead of wiping it.
+            conversation = conversationStore.snapshot(for: key, seededWith: scenario.opener)
+            voice.onCapture = { capture in await handle(capture) }
+            voice.appeared()
+        }
+        .task(id: course) { cefrLevel = await loadCefrLevel() }
+        .onDisappear {
+            voice.disappeared()
+            voice.onCapture = nil
+            analyzeWeaknessesIfNew()
+        }
+    }
+
+    /// The transcript: the whole screen in the classic layout, the body of the sheet in the call.
+    private var transcript: some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -144,6 +168,23 @@ private struct ConversationSessionView: View {
                 }
             }
 
+        }
+    }
+
+    @ViewBuilder
+    private var saveWordHint: some View {
+        if conversation.turns.contains(where: { $0.role == "assistant" }) {
+            Text("Tap any word in a reply to save it.")
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+    }
+
+    /// The setting off: the screen as it was before the call.
+    private var classicScreen: some View {
+        VStack(spacing: 0) {
+            transcript
+
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
                     .font(AlphonsoFont.sans(13))
@@ -151,11 +192,7 @@ private struct ConversationSessionView: View {
                     .padding(.horizontal)
             }
 
-            if conversation.turns.contains(where: { $0.role == "assistant" }) {
-                Text("Tap any word in a reply to save it.")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            }
+            saveWordHint
 
             micButton
                 .padding()
@@ -163,13 +200,6 @@ private struct ConversationSessionView: View {
         .background(AlphonsoColor.surface)
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if showAlphonso {
-                AlphonsoAvatarStage(
-                    voice: voice, replyText: conversation.turns.last(where: { $0.role == "assistant" })?.content,
-                    course: course)
-            }
-        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 // The conversation persists across tab switches until this.
@@ -177,23 +207,37 @@ private struct ConversationSessionView: View {
                     .disabled(voice.isBusy || conversation.turns.count <= 1)
             }
         }
-        .aiDisclosureGate()
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
-        .onAppear {
-            // Load (or open) this scenario's conversation in this course.
-            // A tab switch returns to the same conversation instead of wiping it.
-            conversation = conversationStore.snapshot(for: key, seededWith: scenario.opener)
-            voice.onCapture = { capture in await handle(capture) }
-            voice.appeared()
-        }
-        .task(id: course) { cefrLevel = await loadCefrLevel() }
-        .onDisappear {
-            voice.disappeared()
-            voice.onCapture = nil
-            analyzeWeaknessesIfNew()
-        }
+    }
+
+    /// The setting on (the default): a full-screen call. The transcript, its hint and "New conversation" live in the
+    /// sheet behind the speech-bubble button; the red button ends the call the way Back did.
+    private var callScreen: some View {
+        PracticeCallView(
+            title: scenario.title, scenarioID: scenario.id, voice: voice, course: course,
+            turns: conversation.turns, replyVerdict: replyVerdict,
+            notice: notice,
+            onPress: { if voice.pressBegan() { notice = nil } },
+            onEnd: { dismiss() },
+            sheet: {
+            VStack(spacing: 0) {
+                transcript
+                saveWordHint
+                Button("New conversation") { startNewConversation() }
+                    .font(AlphonsoFont.sans(14, weight: .bold))
+                    .disabled(voice.isBusy || conversation.turns.count <= 1)
+                    .padding(.vertical, 10)
+            }
+            // The save-word sheet opens from inside the conversation sheet, so it is presented from here.
+            .sheet(item: $savingWord) { request in
+                SaveWordSheet(request: request, session: session)
+            }
+            }
+        )
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
     }
 
     // MARK: - Bubbles
@@ -317,10 +361,12 @@ private struct ConversationSessionView: View {
             conversation = snapshot
             voice.transcribed(generation)
 
-            let reply = try await client.chat(
+            let chatReply = try await client.chatReply(
                 messages: snapshot.recentTurns, systemPrompt: scenario.systemPrompt, cefrLevel: cefrLevel, course: courseCode)
+            let reply = chatReply.content
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
             conversation = snapshot
+            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
 
             do {
                 let speech = try await client.synthesizeSpeech(text: reply, course: courseCode)
