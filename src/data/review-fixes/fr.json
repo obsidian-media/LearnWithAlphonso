@@ -5125,9 +5125,9 @@
  },
  "fr:card:frc1p17l3/peut": {
   "patch": {
-   "meaning": "cannot (it is impossible that)"
+   "meaning": "can, is able to (he, she, it)"
   },
-  "reason": "Added a gloss for 'peut' in the negative as logical impossibility."
+  "reason": "Added a gloss for 'peut'. The card is for the verb itself (pouvoir, il/elle form); the negation in 'ne peut pas' belongs to the sentence, not to 'peut'."
  },
  "fr:card:frc1p17l4/dois": {
   "patch": {
