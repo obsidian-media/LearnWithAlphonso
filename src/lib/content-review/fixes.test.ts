@@ -260,3 +260,37 @@ describe("word-card fixes follow the English card rules", () => {
     expect(why({ example: "Ayer no vine." })).toMatch(/does not use the term/);
   });
 });
+
+describe("drill fixes: every wrong option is a form of the bracketed verb", () => {
+  const drill = {
+    ...item("question", {
+      id: "q9",
+      type: "fill",
+      prompt: "Demain, je ___ (parler) à mon patron.",
+      bank: ["parlerai", "mangerai", "finirai"],
+      answer: "parlerai",
+      explanation: "e",
+    }),
+    flags: ["drill-non-form"],
+  };
+
+  it("accepts other forms of the same verb (mutation: drop the drill check)", () => {
+    expect(
+      checkFix(drill, {
+        id: drill.id,
+        reason: "",
+        patch: { bank: ["parlerai", "parleras", "parlerons"] },
+      }),
+    ).toEqual([]);
+  });
+
+  it("refuses another verb", () => {
+    expect(
+      checkFix(drill, {
+        id: drill.id,
+        reason: "",
+        patch: { bank: ["parlerai", "mangeras", "parlerons"] },
+      }).join(),
+    ).toMatch(/not a form of parler/);
+  });
+});

@@ -5,6 +5,7 @@ import { BANK_FR } from "./lesson-bank-fr";
 import { packQuestions, type Pack } from "./bank-engine";
 import { ROMANCE_CLOZE } from "./romance-cloze-options";
 import { isFormOf } from "./conjugation-form-check";
+import { withReviewFix } from "./review-fixes";
 import { CONJUGATION_DRILLS, bracketedVerb, paradigm } from "./romance-conjugation";
 
 // What this guards (docs/distractor-policy.md, "French and Spanish", conjugation drills): a fill-in
@@ -31,7 +32,8 @@ function drills(packs: Pack[]): Drill[] {
     if (p.kind !== "cloze" || /^(fr|es)g/.test(p.id)) continue;
     const inPack: Drill[] = [];
     const lang = p.id.startsWith("fr") ? "fr" : "es";
-    for (const q of packQuestions(p)) {
+    // As learners get them: with the full content review's fixes applied (src/data/review-fixes.ts).
+    for (const q of packQuestions(p).map((x) => withReviewFix(lang, x))) {
       if (q.type !== "mc" && q.type !== "fill") continue;
       const verb = bracketedVerb(q.prompt);
       if (!verb || !INFINITIVE[lang].test(verb)) continue;

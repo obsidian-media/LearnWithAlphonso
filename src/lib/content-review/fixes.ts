@@ -15,7 +15,9 @@
 //   legacy-system-prompts.fixtures.json in the same PR, or /api/chat rejects older builds.
 
 import type { ItemKind, ReviewItem } from "./inventory";
-import { GENERIC_EXPLANATION } from "./gates";
+import { FLAG, GENERIC_EXPLANATION } from "./gates";
+import { isFormOf } from "../../data/conjugation-form-check";
+import { bracketedVerb } from "../../data/romance-conjugation";
 
 export type Patch = Record<string, string | string[]>;
 
@@ -200,6 +202,17 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
     const ans = answerText(next);
     if (ans && item.kind === "question" && !e.includes(`"${ans}"`))
       why.push(`the explanation does not quote the answer as "${ans}"`);
+  }
+  // A conjugation drill: every wrong option is a form of the bracketed verb, decided by the gate's own
+  // spelling check (conjugation-form-check.ts), never by the engine or the model.
+  if (item.flags?.includes(FLAG.drillNonForm) && ("choices" in fix.patch || "bank" in fix.patch)) {
+    const verb = bracketedVerb(String(next.prompt ?? ""));
+    const answer = answerText(next);
+    const options = (next.choices ?? next.bank) as string[];
+    if (!verb) why.push("the drill prompt lost its bracketed verb");
+    else
+      for (const o of options)
+        if (o !== answer && !isFormOf(o, verb)) why.push(`"${o}" is not a form of ${verb}`);
   }
   if (item.kind === "card") why.push(...cardRules(String(item.data.term ?? ""), fix.patch));
   if (

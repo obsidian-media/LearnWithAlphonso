@@ -167,6 +167,7 @@ const RULING_PHASES = new Set([
   "rewrite-explanation",
   "rewrite-cloze",
   "rewrite-card-meaning",
+  "rewrite-drill",
   "judge2",
   "blind-judge",
 ]);
@@ -177,6 +178,7 @@ const ROUTE_PHASES = [
   "rewrite-card-meaning",
   "rewrite-explanation",
   "rewrite-cloze",
+  "rewrite-drill",
   "judge2",
 ];
 /** French and Spanish word cards have no authored meaning at all: a rewrite task, not a judgement. */
@@ -367,6 +369,15 @@ This item was already fixed once by the review; the fresh re-read above flagged 
           }),
       };
     }
+    case "rewrite-drill":
+      // Not the conjugation engine (cost plan): the B1-C1 packs need tenses and moods it does not
+      // have, and several contrast two verbs or tenses on purpose. fixes.ts holds each patch to the
+      // gate's own "is a form of the bracketed verb" check.
+      return opus(
+        items.filter((it) => it.flags?.includes(FLAG.drillNonForm)),
+        (c) => rewriteSystem(c.course, "drill-options"),
+        ctx,
+      );
     case "rewrite-cloze":
       return opus(
         items.filter((it) => it.flags?.includes(FLAG.clozeFromPool)),
@@ -433,8 +444,9 @@ function worstOf(model: string, reqs: BatchRequest[], batch = true): number {
  * FULL-price worst case on the Mistral ledger before it is sent and settled from its usage at the
  * full listed price. Results go to the same verdict store, so a later batch run skips them.
  */
+// Its own lock: it only touches the Mistral ledger and its verdict file, and it runs for hours.
 async function submitMistralSync(phase: string, work: PhaseWork, chunks: Chunk[], key: string) {
-  await withLock(path.join(STATE, "run.lock"), async () => {
+  await withLock(path.join(STATE, "run-mistral.lock"), async () => {
     const ledger = openLedger("mistral");
     const store = Object.fromEntries(loadVerdicts(phase));
     const raw = readJson<unknown[]>(path.join(STATE, "raw", `${phase}-sync.json`), []);
@@ -723,8 +735,24 @@ async function collect() {
 function routeCommand() {
   const items = new Map(inventory().map((it) => [it.id, it]));
   const rulings = ROUTE_PHASES.flatMap((p) => [...loadRulings(p).values()]);
-  // A later ruling on the same item (a rewrite) wins over the judge's.
-  const latest = new Map(rulings.map((r) => [r.id, r]));
+  // Rulings on one item from several phases (the judge, then a rewrite) are merged: fix patches
+  // combine field by field, the later phase winning a field both set; the lowest confidence and any
+  // key change carry over. A later keep or owner never discards an earlier fix.
+  const latest = new Map<string, Ruling>();
+  for (const r of rulings) {
+    const prev = latest.get(r.id);
+    if (!prev) latest.set(r.id, r);
+    else if (prev.decision === "fix" && r.decision === "fix")
+      latest.set(r.id, {
+        ...r,
+        patch: { ...prev.patch, ...r.patch },
+        confidence: Math.min(prev.confidence, r.confidence),
+        keyChange: prev.keyChange || r.keyChange,
+        category: r.keyChange ? r.category : prev.keyChange ? prev.category : r.category,
+        reason: `${prev.reason} / ${r.reason}`,
+      });
+    else if (r.decision === "fix" || prev.decision !== "fix") latest.set(r.id, r);
+  }
   const second = loadVerdicts("second");
   const routed = route([...latest.values()], (id) => second.get(id)?.verdict === "ok");
   const checked = checkFixes(items, routed.fixes);

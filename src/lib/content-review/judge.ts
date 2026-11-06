@@ -84,7 +84,7 @@ const REWRITE_INSTRUCTION: Record<RewriteTask, string> = {
   "card-meaning":
     'TASK: each item is a word card with no English meaning. Write the meaning: at most 8 words of simple, true English for the term AS USED in its example (a conjugated form is glossed as that form, e.g. "pude": "I could, I was able to"), no brackets, no arrows, no blanks, and never the quiz explanation. If the example is wrong or does not use the term, fix it too. Return decision "fix" with patch {"meaning": "..."} (and "example" only if you changed it).',
   "drill-options":
-    'TASK: each item conjugates the bracketed verb, but some wrong options are other verbs. Replace every wrong option with another form of the SAME verb in the same tense that the subject rules out. Return decision "fix" with patch {"choices"|"bank": [the full list, answer at the same position]}.',
+    'TASK: each item conjugates the bracketed verb, but some wrong options are other verbs. Replace every wrong option with a form of the SAME bracketed verb that the subject or the sentence rules out (another person of the same tense; where the lesson contrasts tenses or moods, a form of the same verb in the contrasted tense). Every wrong option must be spelled as a real form of that verb; a patch with any other word is refused. Keep the answer and its position. Return decision "fix" with patch {"choices"|"bank": [the full list, answer at the same position]}.',
 };
 
 export function rewriteSystem(course: Course, task: RewriteTask): string {

@@ -141,3 +141,20 @@ export function applyPlacementReviewFixes(
     throw new Error(`placement review fixes match nothing: ${[...pending].slice(0, 5).join(", ")}`);
   return out;
 }
+
+/**
+ * A pack question as the learner gets it: with its review fix applied. Gates that read the banks
+ * directly (romance-conjugation.test.ts, the review's own flags) use this so a fix counts. Pack
+ * question ids are unique within a course, so the fix is found by its id suffix.
+ */
+export function withReviewFix<Q extends { id: string }>(course: Course, q: Q): Q {
+  const fixes = REVIEW_FIXES[course];
+  const index = (fixIndex[course] ??= new Map(
+    Object.entries(fixes)
+      .filter(([k]) => k.startsWith(`${course}:question:`))
+      .map(([k, f]) => [k.slice(k.lastIndexOf("/") + 1), f]),
+  ));
+  const f = index.get(q.id);
+  return f ? ({ ...q, ...f.patch } as Q) : q;
+}
+const fixIndex: Partial<Record<Course, Map<string, ReviewFix>>> = {};

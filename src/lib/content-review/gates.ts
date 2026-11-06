@@ -15,6 +15,11 @@ import { isFormOf } from "../../data/conjugation-form-check";
 import { ROMANCE_CLOZE } from "../../data/romance-cloze-options";
 import { bracketedVerb } from "../../data/romance-conjugation";
 import type { ReviewItem } from "./inventory";
+import { withReviewFix } from "../../data/review-fixes";
+
+/** The pack's questions as learners get them (review fixes applied). */
+const built = (p: Pack) =>
+  packQuestions(p).map((q) => withReviewFix(p.id.startsWith("fr") ? "fr" : "es", q));
 
 export const FLAG = {
   /** The explanation is the generated '"x" is correct here. <pack note>' (says nothing about this line). */
@@ -59,7 +64,7 @@ export function drillNonFormIds(packs: Pack[]): Set<string> {
     if (p.kind !== "cloze" || /^(fr|es)g/.test(p.id)) continue;
     const lang = p.id.startsWith("fr") ? "fr" : "es";
     const inPack: { id: string; bad: boolean }[] = [];
-    for (const q of packQuestions(p)) {
+    for (const q of built(p)) {
       if (q.type !== "mc" && q.type !== "fill") continue;
       const verb = bracketedVerb(q.prompt);
       if (!verb || !INFINITIVE[lang].test(verb)) continue;
@@ -82,7 +87,7 @@ export function clozeFromPoolIds(packs: Pack[], drills: Set<string>): Set<string
   const out = new Set<string>();
   for (const p of packs) {
     if (p.kind !== "cloze" || /^(fr|es)g/.test(p.id) || ROMANCE_CLOZE[p.id]) continue;
-    const qs = packQuestions(p).filter((q) => q.type === "mc" || q.type === "fill");
+    const qs = built(p).filter((q) => q.type === "mc" || q.type === "fill");
     const answers = new Set(qs.map(answerOf));
     for (const q of qs) {
       if (drills.has(q.id)) continue;
