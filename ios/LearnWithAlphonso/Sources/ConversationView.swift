@@ -117,6 +117,8 @@ private struct ConversationSessionView: View {
     @State private var voice = VoiceSessionController()
     /// Settings: "Show Alphonso while practising" (default on).
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
+    /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
+    @State private var replyVerdict = AvatarReplyVerdict()
     /// Notices that are not TutorErrors ("didn't catch that", playback).
     @State private var notice: String?
     // V3 package 3a: adaptive difficulty, per course.
@@ -167,7 +169,7 @@ private struct ConversationSessionView: View {
             if showAlphonso {
                 AlphonsoAvatarStage(
                     voice: voice, replyText: conversation.turns.last(where: { $0.role == "assistant" })?.content,
-                    course: course)
+                    replyVerdict: replyVerdict, course: course)
             }
         }
         .toolbar {
@@ -317,10 +319,12 @@ private struct ConversationSessionView: View {
             conversation = snapshot
             voice.transcribed(generation)
 
-            let reply = try await client.chat(
+            let chatReply = try await client.chatReply(
                 messages: snapshot.recentTurns, systemPrompt: scenario.systemPrompt, cefrLevel: cefrLevel, course: courseCode)
+            let reply = chatReply.content
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
             conversation = snapshot
+            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
 
             do {
                 let speech = try await client.synthesizeSpeech(text: reply, course: courseCode)
