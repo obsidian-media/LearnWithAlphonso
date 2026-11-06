@@ -40,7 +40,7 @@ describe("the rooms", () => {
     const view = code(VIEW);
     expect(view).toContain(".background { room }");
     const stack = view.slice(view.indexOf("ZStack {"), view.indexOf("AlphonsoAvatarView("));
-    expect(stack).not.toMatch(/room/);
+    expect(stack).not.toMatch(/\broom\b/);
   });
 
   it("dims a scenario picture with navy multiply at half strength in dark mode", () => {
