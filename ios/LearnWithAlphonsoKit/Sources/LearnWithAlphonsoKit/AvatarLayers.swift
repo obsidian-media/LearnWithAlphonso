@@ -52,6 +52,34 @@ public enum AvatarLayers {
         + [AvatarEarSide.left, .right].flatMap { side in [false, true].map { earFile(side, twitching: $0) } }
 }
 
+/// A character the call can show: his name, the bundle folder his art lives in, where his layers go, and his default
+/// room. The viseme, plan and state logic does not know which character it is driving. Alphonso is the only kit
+/// shipped; Hector's will be another value of this type.
+public struct CharacterKit: Equatable, Sendable {
+    public let id: String
+    public let displayName: String
+    /// The bundle folder holding the kit's WebP layers (a folder reference).
+    public let folder: String
+    public let mouthRect: AvatarRect
+    /// The group that shows his mood (neutral / raised / lowered): Alphonso's eyebrows, Hector's eyes behind his
+    /// goggles. Its files are `<expressionPrefix>-neutral|raised|lowered.webp`.
+    public let expressionRect: AvatarRect
+    public let expressionPrefix: String
+    /// Ears and the glint are optional: a kit without them has no ear twitch or glint.
+    public let earLeftRect: AvatarRect?
+    public let earRightRect: AvatarRect?
+    public let glintRect: AvatarRect?
+    public let defaultRoom: CallRoom
+
+    public func expressionFile(_ brows: AvatarBrows) -> String { "\(expressionPrefix)-\(brows.rawValue).webp" }
+
+    public static let alphonso = CharacterKit(
+        id: "alphonso", displayName: "Alphonso", folder: "AlphonsoAvatar",
+        mouthRect: AvatarLayers.mouthRect, expressionRect: AvatarLayers.browsRect, expressionPrefix: "brows",
+        earLeftRect: AvatarLayers.earLeftRect, earRightRect: AvatarLayers.earRightRect,
+        glintRect: AvatarLayers.glintRect, defaultRoom: CallScenes.defaultRoom)
+}
+
 /// The "Show Alphonso while practising" setting. The @AppStorage key and its default live here so the settings
 /// toggle and the Practice screen cannot drift apart.
 public enum AvatarPreference {
