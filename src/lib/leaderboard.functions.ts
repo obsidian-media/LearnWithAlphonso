@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { profileErrorCode } from "./profile-error";
+import { isAllowedAvatarSeed } from "./profile-avatars";
 
 export type LeaderboardEntry = {
   user_id: string;
@@ -60,7 +61,8 @@ export const updateProfile = createServerFn({ method: "POST" })
           .optional()
           .nullable(),
         theme: z.enum(["meadow", "studio-ink", "manuscript", "canopy"]).optional(),
-        avatar_seed: z.string().min(1).max(32).optional(),
+        // A colour seed, or one of the 16 preset animal pictures (profile-avatars.ts). Never a URL.
+        avatar_seed: z.string().min(1).max(32).refine(isAllowedAvatarSeed).optional(),
       })
       .parse(d),
   )

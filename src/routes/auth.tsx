@@ -12,11 +12,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
 import { safeNextPath } from "../lib/safe-next-path";
+import { browserFirstRunStore } from "../lib/first-run";
+import { Under13Stop } from "../components/firstrun/Under13Stop";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
-  validateSearch: (s: Record<string, unknown>): { next?: string } =>
-    safeNextPath(s.next) ? { next: safeNextPath(s.next) } : {},
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: "signup" } => ({
+    ...(safeNextPath(s.next) ? { next: safeNextPath(s.next) } : {}),
+    // The first run's "Continue with email" opens straight on Create your account.
+    ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Alphonso" },
@@ -38,7 +43,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const { next, mode: startMode } = Route.useSearch();
+  // A device that answered Under 13 in the first run cannot make an account here either (BACKLOG 0.0-bd).
+  const [firstRun] = useState(() => browserFirstRunStore());
+  const blocked = firstRun.isBlocked();
   // `fallback` lets signup default somewhere other than /learn (see the
   // signup branch below) while every other caller keeps today's
   // behavior. An explicit `next` always wins over either default -- a
@@ -52,10 +60,13 @@ function AuthPage() {
     },
     [next, navigate],
   );
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">(
+    startMode === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  // The first run's name, if they gave one; the field says it is the public display name, and they can change it.
+  const [displayName, setDisplayName] = useState(() => firstRun.readDraft().name ?? "");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   // Turnstile, only when a site key is configured (src/lib/turnstile.ts). Each token is single-use, so every request
@@ -187,6 +198,8 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
+  if (blocked) return <Under13Stop onOk={() => navigate({ to: "/" })} />;
 
   return (
     <div className="grain min-h-dvh bg-surface text-ink">

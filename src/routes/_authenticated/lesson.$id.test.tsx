@@ -242,6 +242,26 @@ describe("Lesson page", () => {
     expect(within(wrong).queryByText(/XP/)).toBeNull();
   });
 
+  it("a replay shows no XP on a right answer until the learner passes their best earlier score", async () => {
+    // Best earlier try: 2 of 8. The server pays a replay only past that, so the first two right answers earn nothing.
+    useProgress.setState({
+      completedLessons: ["u1l1"],
+      answersByLesson: { u1l1: { correct: 2, total: 8 } },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    const chips: (string | null)[] = [];
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      const sheet = (await screen.findByText("Exactly!")).closest('[role="status"]') as HTMLElement;
+      chips.push(within(sheet).queryByText(/XP/)?.textContent ?? null);
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+    }
+    expect(chips).toEqual([null, null, "+10 XP"]);
+  });
+
   it("the room changes with the unit: a lesson in another unit stands in that unit's room", async () => {
     currentLessonId = "u2l1";
     const { container } = renderPage();
@@ -729,6 +749,41 @@ describe("Lesson page", () => {
     expect(state.completedLessons).toContain("u1l1");
     expect(state.answersByLesson.u1l1).toEqual({ correct: 7, total: 8 });
     expect(state.unlockedAchievements).toContain("xp_100");
+  });
+
+  it("a replay below the best earlier score keeps the best locally, so the next replay's XP chips start from it", async () => {
+    useProgress.setState({
+      completedLessons: ["u1l1"],
+      answersByLesson: { u1l1: { correct: 8, total: 8 } },
+    });
+    completeLessonRemote.mockResolvedValue({
+      xpGain: 0,
+      correct: 7,
+      newlyUnlocked: [],
+      heartsBonus: null,
+      progress: {
+        xp: 100,
+        streak: 1,
+        longestStreak: 1,
+        lastActiveDate: "2026-09-19",
+        hearts: 4,
+        heartsRefillAt: null,
+        streakFreezes: 0,
+        leagueTier: "bronze",
+      },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      const text = i === 1 ? ANSWERS[i].wrong : ANSWERS[i].correct;
+      await user.click(await screen.findByRole("button", { name: text }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      const label = i === ANSWERS.length - 1 ? "Finish" : i === 1 ? "Got it" : "Continue";
+      await user.click(screen.getByRole("button", { name: label }));
+    }
+    await screen.findByLabelText("XP: +0");
+    expect(useProgress.getState().answersByLesson.u1l1).toEqual({ correct: 8, total: 8 });
   });
 
   it("a second tap on Finish while the completion is in flight does not complete the lesson again", async () => {

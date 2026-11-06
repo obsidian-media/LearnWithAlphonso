@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
@@ -156,14 +157,7 @@ function FriendsPage() {
                     : "flex items-center gap-3 rounded-2xl border border-hairline bg-surface p-3.5"
                 }
               >
-                <span
-                  className="grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold text-surface"
-                  style={{
-                    backgroundColor: `hsl(${(f.avatarSeed.charCodeAt(0) * 37) % 360} 40% 45%)`,
-                  }}
-                >
-                  {f.displayName.slice(0, 1).toUpperCase()}
-                </span>
+                <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-10" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-sm font-semibold text-ink">
                     {f.displayName}

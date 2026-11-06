@@ -39,6 +39,8 @@ function Cookies() {
             "Sign-in session: kept in your browser’s local storage so you stay signed in and your progress syncs to your account. Without it the website cannot work.",
             "Sign-in security: a short-lived value used while you sign in with Google, to protect the sign-in from tampering.",
             "Your cookie choice, so we do not ask again on every visit.",
+            "Your answers while you get started: what you tell Alphonso before you create an account stays in your browser until you sign up, then it is saved to your account and removed from your browser.",
+            "If you said you are under 13 when you started, a note of that choice, so sign-up stays closed on this device. It is never sent to us.",
           ]}
         />
       </Section>
