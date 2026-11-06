@@ -69,11 +69,11 @@ abstract class BaseConversationViewModel(
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var analysed = false
-    /** The opener being fetched or spoken, cancelled (which stops its playback) when the learner talks over it. */
+    // The opener being fetched or spoken; a press cancels it, which stops its playback. While it holds the phase
+    // (thinking or speaking), stopping it hands the phase back.
     private var openerJob: Job? = null
     private var openerActive = false
-    /** The opener holds the phase (thinking or speaking), so stopping it hands the phase back. */
-    private var openerClaimed = false
+    private var openerHoldsPhase = false
 
     protected abstract fun systemPrompt(): String
 
@@ -127,7 +127,7 @@ abstract class BaseConversationViewModel(
                 _state.first { it.phase == ConversationPhase.IDLE }
                 val text = pendingOpener ?: return@launch
                 if (engine.phase.value != com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE) return@launch
-                openerClaimed = true
+                openerHoldsPhase = true
                 _state.update { it.copy(phase = ConversationPhase.THINKING) }
                 val voice = alphonsoVoice(course.code)
                 val audio = openerCache.audio(text, voice, course.code) { ai.synthesizeSpeech(text, voice = voice, course = course.code) }
@@ -140,8 +140,8 @@ abstract class BaseConversationViewModel(
             } finally {
                 if (openerActive) {
                     openerActive = false
-                    if (openerClaimed) _state.update { it.copy(phase = ConversationPhase.IDLE) }
-                    openerClaimed = false
+                    if (openerHoldsPhase) _state.update { it.copy(phase = ConversationPhase.IDLE) }
+                    openerHoldsPhase = false
                 }
             }
         }
@@ -153,8 +153,8 @@ abstract class BaseConversationViewModel(
         openerActive = false
         openerJob?.cancel()
         openerJob = null
-        if (openerClaimed) _state.update { it.copy(phase = ConversationPhase.IDLE) }
-        openerClaimed = false
+        if (openerHoldsPhase) _state.update { it.copy(phase = ConversationPhase.IDLE) }
+        openerHoldsPhase = false
     }
 
     private suspend fun sendTurn(text: String, confidence: Double?) {
