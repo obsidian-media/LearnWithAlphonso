@@ -40,6 +40,7 @@ import {
   HARD_CAP_USD,
   Ledger,
   withLock,
+  type CappedProvider,
   type LedgerPaths,
 } from "../../src/lib/content-review/ledger";
 import {
@@ -112,12 +113,21 @@ const SEED = arg("seed", "20261106");
 const KEEP_BACK_USD = 12;
 const VERIFY_PHASES = new Set(["verify", "blind-sonnet", "blind-mistral", "blind-judge"]);
 
-const LEDGER: LedgerPaths = {
-  primary: path.join(STATE, "ledger.json"),
-  mirror:
-    process.env.CONTENT_REVIEW_LEDGER_MIRROR ??
-    path.join(os.homedir(), ".lwa-content-review", "ledger.json"),
+/** One ledger per provider (Anthropic US$99, Mistral US$10; neither borrows from the other). */
+const ledgerPaths = (p: CappedProvider): LedgerPaths => ({
+  primary: path.join(STATE, `ledger-${p}.json`),
+  mirror: path.join(
+    process.env.CONTENT_REVIEW_LEDGER_MIRROR_DIR ?? path.join(os.homedir(), ".lwa-content-review"),
+    `ledger-${p}.json`,
+  ),
   stateDir: STATE,
+  marker: path.join(STATE, `started-${p}`),
+});
+const openLedger = (p: CappedProvider) => Ledger.open(ledgerPaths(p), { provider: p });
+const PROVIDERS: CappedProvider[] = ["anthropic", "mistral"];
+const ledgerLine = (p: CappedProvider) => {
+  const st = openLedger(p).status();
+  return `${p}: settled ${st.settledUsd.toFixed(2)}, open ${st.openUsd.toFixed(2)}, remaining ${st.remainingUsd.toFixed(2)} of ${st.capUsd}`;
 };
 
 // ---- Files ----------------------------------------------------------------------------------------
@@ -245,11 +255,14 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
     case "second": {
       // An item with no Claude verdict goes to Mistral as "flagged": on a half-done review that would
       // send thousands of unreviewed items. Re-submit the review phase until it is (nearly) complete.
-      if (claude.size < items.length * 0.99)
+      // --pilot: only the items the (pilot) review has read, to measure Mistral's cost per item.
+      const pilot = flag("pilot");
+      if (!pilot && claude.size < items.length * 0.99)
         throw new Error(
           `The review phase has verdicts for ${claude.size} of ${items.length} items: finish it (re-submit review) first.`,
         );
-      const s = secondOpinionSet(items, claude, ASSUME.controlRate, SEED);
+      const pool = pilot ? items.filter((it) => claude.has(it.id)) : items;
+      const s = secondOpinionSet(pool, claude, ASSUME.controlRate, SEED);
       return mistralWork([...s.flagged, ...s.control]);
     }
     case "judge": {
@@ -365,7 +378,7 @@ async function submit(phase: string) {
     );
   const key = loadKey(work.provider);
   await withLock(path.join(STATE, "run.lock"), async () => {
-    const ledger = Ledger.open(LEDGER);
+    const ledger = openLedger(work.provider);
     const state = loadState();
     if (phase === "review" && !fs.existsSync(path.join(STATE, "baseline.json"))) {
       writeJson(
@@ -390,7 +403,8 @@ async function submit(phase: string) {
         phase,
         provider: work.provider,
         model: work.model,
-        keepBackUsd: VERIFY_PHASES.has(phase) ? 0 : KEEP_BACK_USD,
+        // The reserve for the final sample lives inside the Anthropic cap only.
+        keepBackUsd: work.provider === "anthropic" && !VERIFY_PHASES.has(phase) ? KEEP_BACK_USD : 0,
       });
       const job: Job = {
         ref,
@@ -441,8 +455,8 @@ async function collect() {
   if (!open.length) return console.log("No open jobs.");
   if (!flag("go")) return console.log(`${open.length} open jobs. Add --go to poll them (no cost).`);
   await withLock(path.join(STATE, "run.lock"), async () => {
-    const ledger = Ledger.open(LEDGER);
     for (const job of open) {
+      const ledger = openLedger(job.provider);
       const key = loadKey(job.provider);
       const byCustom = new Map(job.chunks.map((c) => [c.customId, c]));
       const texts: { chunk: Chunk; text: string }[] = [];
@@ -578,20 +592,14 @@ function report() {
     confirmed,
     passed,
   );
-  const st =
-    fs.existsSync(LEDGER.primary) || fs.existsSync(LEDGER.mirror)
-      ? Ledger.open(LEDGER).status()
-      : null;
+
   console.log(
     `Blind sample: ${defects}/${judged.length} defects, ${(w.rate * 100).toFixed(1)}% (95% CI ${(w.low * 100).toFixed(1)}-${(w.high * 100).toFixed(1)}%).`,
   );
   console.log(
     `Claude miss estimate: ${miss.misses}/${miss.sampled} control items, ${(miss.rate * 100).toFixed(1)}% (95% CI ${(miss.low * 100).toFixed(1)}-${(miss.high * 100).toFixed(1)}%), about ${miss.projectedMissed} of ${passed} passed items.`,
   );
-  if (st)
-    console.log(
-      `Spent $${st.settledUsd.toFixed(2)} settled + $${st.openUsd.toFixed(2)} open of $${st.capUsd}.`,
-    );
+  for (const p of PROVIDERS) console.log(ledgerLine(p));
 }
 
 // ---- The per-PR check (playbook step "Run the panel on what you changed") --------------------------
@@ -740,10 +748,7 @@ switch (cmd) {
     );
     break;
   case "status": {
-    const st = Ledger.open(LEDGER).status();
-    console.log(
-      `Cap $${st.capUsd}; settled $${st.settledUsd.toFixed(2)}; open reservations $${st.openUsd.toFixed(2)} (${st.open.join(", ") || "none"}); remaining $${st.remainingUsd.toFixed(2)}.`,
-    );
+    for (const p of PROVIDERS) console.log(ledgerLine(p));
     for (const j of loadState().jobs)
       console.log(
         `${j.ref} ${j.phase} ${j.provider} ${j.status} reserved $${j.reservedUsd.toFixed(2)}`,

@@ -46,7 +46,7 @@ export const ASSUME = {
 export const MODEL = {
   review: "claude-sonnet-5-5",
   judge: "claude-opus-5-5",
-  mistral: "mistral-large-latest",
+  mistral: "mistral-large-4",
 } as const;
 
 export type PhaseCost = {

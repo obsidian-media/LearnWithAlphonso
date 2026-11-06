@@ -38,7 +38,7 @@ describe("the worst case is an upper bound", () => {
   });
 
   it("is above the expected cost, with or without a cache hit", () => {
-    for (const m of ["claude-sonnet-5-5", "claude-opus-5-5", "mistral-large-latest"]) {
+    for (const m of ["claude-sonnet-5-5", "claude-opus-5-5", "mistral-large-4"]) {
       const worst = worstCaseUsd(m, shape);
       expect(worst).toBeGreaterThan(expectedUsd(m, shape, 600, { cacheHit: true }));
       expect(worst).toBeGreaterThan(expectedUsd(m, shape, 600, { cacheHit: false }));
@@ -91,10 +91,10 @@ describe("actual cost from usage", () => {
 
   it("Mistral batch: half the listed rate", () => {
     expect(
-      mistralUsageUsd("mistral-large-latest", {
+      mistralUsageUsd("mistral-large-4", {
         prompt_tokens: 1_000_000,
         completion_tokens: 1_000_000,
       }),
-    ).toBeCloseTo(4, 6);
+    ).toBeCloseTo(1.4, 6);
   });
 });

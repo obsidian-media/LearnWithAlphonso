@@ -183,13 +183,13 @@ describe("Mistral batch", () => {
 
   it("creates an inline chat-completions job", async () => {
     const f = vi.fn(async () => reply(200, { id: "job1", status: "QUEUED" }));
-    await createMistralJob(f, "mk", "mistral-large-latest", [buildMistralRequest(c)], {
+    await createMistralJob(f, "mk", "mistral-large-4", [buildMistralRequest(c)], {
       phase: "second",
     });
     const [url, init] = f.mock.calls[0]! as unknown as [string, RequestInit];
     expect(url).toBe("https://api.mistral.ai/v1/batch/jobs");
     const body = JSON.parse(String(init.body));
-    expect(body).toMatchObject({ endpoint: "/v1/chat/completions", model: "mistral-large-latest" });
+    expect(body).toMatchObject({ endpoint: "/v1/chat/completions", model: "mistral-large-4" });
     expect(body.requests[0].custom_id).toBe(c.customId);
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer mk");
   });

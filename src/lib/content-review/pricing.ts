@@ -11,9 +11,7 @@
 // applied here, not baked into the table. Sources, checked 2026-11-06:
 //   Anthropic: platform.claude.com/docs (batch-processing: Sonnet 5.5 $1/$5, Opus 5.5 $2/$10 batch;
 //   prompt-caching: 1h write 2x input, read 0.05x input on Sonnet 5.5 and Opus 5.5).
-//   Mistral: docs.mistral.ai batch (50% off). Mistral's own per-token list price for the chosen model
-//   is NOT confirmed from Mistral's pricing page; the table uses an assumed price ABOVE OpenRouter's
-//   listing of mistral-large-4-0 ($0.70/$2.10), so the reservation errs high. Confirm before the run.
+//   Mistral: docs.mistral.ai/models/mistral-large-4 ($0.70/$2.10) and mistral.ai/pricing (batch 50% off).
 
 export type Provider = "anthropic" | "mistral";
 
@@ -46,8 +44,11 @@ export const MODELS = {
     cacheRead: 0.05,
     batch: 0.5,
   },
-  // Assumed, deliberately above the listed price (see the header). Replace with Mistral's own price.
-  "mistral-large-latest": { provider: "mistral", input: 2, output: 6, batch: 0.5 },
+  // Mistral's own model card (docs.mistral.ai/models/mistral-large-4, read 2026-11-06): $0.70 in,
+  // $2.10 out; mistral.ai/pricing: batch is 50% off. The id is from GET /v1/models on the owner's
+  // account (there is no "mistral-large-latest" alias). It always reasons; its reasoning tokens are
+  // counted as output here (the docs do not say otherwise, so the estimate errs high).
+  "mistral-large-4": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
 } as const satisfies Record<string, ModelPrice>;
 export type ModelId = keyof typeof MODELS;
 

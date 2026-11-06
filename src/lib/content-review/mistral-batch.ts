@@ -29,6 +29,8 @@ export function buildMistralRequest(c: Chunk): MistralRequest {
     custom_id: c.customId,
     body: {
       temperature: 0,
+      // Large 4 cannot turn reasoning off; "low" is its lowest level (docs.mistral.ai, reasoning).
+      reasoning_effort: "low",
       max_tokens: maxTokensFor(c, MISTRAL_OUTPUT_TOKENS_PER_ITEM),
       response_format: { type: "json_object" },
       messages: [

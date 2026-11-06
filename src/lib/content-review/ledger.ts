@@ -21,6 +21,13 @@ import path from "node:path";
 /** The owner's cap for the whole job (2026-11-06). Code, not config: nothing at runtime raises it. */
 export const HARD_CAP_USD = 99;
 
+/**
+ * Separate caps per provider (owner, 2026-11-06): Anthropic US$99, Mistral US$10. Each provider has
+ * its own ledger file, bound to it, so one cap can never borrow from the other.
+ */
+export const PROVIDER_CAPS = { anthropic: 99, mistral: 10 } as const;
+export type CappedProvider = keyof typeof PROVIDER_CAPS;
+
 export type LedgerEntry =
   | {
       type: "reserve";
@@ -35,15 +42,22 @@ export type LedgerEntry =
   | { type: "settle"; ref: string; usd: number; at: string; note?: string }
   | { type: "release"; ref: string; at: string; note: string };
 
-export type LedgerFile = { version: 1; capUsd: number; entries: LedgerEntry[] };
+export type LedgerFile = {
+  version: 1;
+  capUsd: number;
+  /** The provider this ledger is bound to; absent on a general (per-PR check) ledger. */
+  provider?: CappedProvider;
+  entries: LedgerEntry[];
+};
 
 export class CapExceededError extends Error {
   constructor(
     readonly wantedUsd: number,
     readonly remainingUsd: number,
+    readonly capUsd: number = HARD_CAP_USD,
   ) {
     super(
-      `Refused: the worst case $${wantedUsd.toFixed(2)} is above the remaining budget $${remainingUsd.toFixed(2)} of the $${HARD_CAP_USD} cap.`,
+      `Refused: the worst case ${wantedUsd.toFixed(2)} is above the remaining budget ${remainingUsd.toFixed(2)} of the ${capUsd} cap.`,
     );
   }
 }
@@ -59,7 +73,8 @@ export type LedgerStatus = {
 
 /** Pure: the status a list of entries implies. */
 export function statusOf(file: LedgerFile): LedgerStatus {
-  const cap = Math.min(HARD_CAP_USD, Number.isFinite(file.capUsd) ? file.capUsd : 0);
+  const hard = file.provider ? PROVIDER_CAPS[file.provider] : HARD_CAP_USD;
+  const cap = Math.min(hard, Number.isFinite(file.capUsd) ? file.capUsd : 0);
   const reserved = new Map<string, number>();
   let settled = 0;
   for (const e of file.entries) {
@@ -117,6 +132,12 @@ export type LedgerPaths = {
   mirror: string;
   /** The run's state directory; a state.json there means a run has started. */
   stateDir: string;
+  /**
+   * A file whose existence means THIS ledger's run has started (default: stateDir/state.json).
+   * The runner writes one per provider when it first reserves, so a provider whose first job comes
+   * later (Mistral after the review) can still start its ledger.
+   */
+  marker?: string;
 };
 
 export class Ledger {
@@ -133,21 +154,35 @@ export class Ledger {
    * `capUsd` sets a NEW ledger's cap (a small per-PR check uses its own ledger and a cap of a few
    * dollars); it never changes an existing file's cap, and no cap exceeds HARD_CAP_USD.
    */
-  static open(paths: LedgerPaths, opts: { capUsd?: number } = {}): Ledger {
+  static open(
+    paths: LedgerPaths,
+    opts: { capUsd?: number; provider?: CappedProvider } = {},
+  ): Ledger {
     const a = readLedger(paths.primary);
     const b = readLedger(paths.mirror);
     let data: LedgerFile;
     if (a && b) data = a.entries.length >= b.entries.length ? a : b;
     else if (a || b) data = (a ?? b)!;
     else {
-      if (fs.existsSync(path.join(paths.stateDir, "state.json")))
+      if (fs.existsSync(paths.marker ?? path.join(paths.stateDir, "state.json")))
         throw new Error(
           "Both ledger files are missing but a run has started (state.json exists). Restore the ledger; it is never recreated empty next to a started run.",
         );
-      const cap = opts.capUsd ?? HARD_CAP_USD;
+      const hard = opts.provider ? PROVIDER_CAPS[opts.provider] : HARD_CAP_USD;
+      const cap = opts.capUsd ?? hard;
       validUsd(cap, "cap");
-      data = { version: 1, capUsd: Math.min(cap, HARD_CAP_USD), entries: [] };
+      data = {
+        version: 1,
+        capUsd: Math.min(cap, hard),
+        ...(opts.provider ? { provider: opts.provider } : {}),
+        entries: [],
+      };
     }
+    // A ledger bound to one provider is never opened as another's (or as an unbound one).
+    if ((data.provider ?? null) !== (opts.provider ?? null))
+      throw new Error(
+        `This ledger belongs to ${data.provider ?? "no provider"}, not ${opts.provider ?? "no provider"}.`,
+      );
     const ledger = new Ledger(paths, data);
     ledger.persist();
     return ledger;
@@ -174,6 +209,10 @@ export class Ledger {
     now = new Date().toISOString(),
   ): LedgerStatus {
     validUsd(usd, `reserve ${ref}`);
+    if (this.data.provider && meta.provider !== this.data.provider)
+      throw new Error(
+        `${ref}: a ${meta.provider} job cannot be booked on the ${this.data.provider} ledger`,
+      );
     const keepBack = meta.keepBackUsd ?? 0;
     validUsd(keepBack, `keep-back for ${ref}`);
     const s = this.status();
@@ -181,10 +220,14 @@ export class Ledger {
     if (this.data.entries.some((e) => e.ref === ref && e.type === "settle"))
       throw new Error(`${ref} was already settled; use a new ref`);
     if (usd > s.remainingUsd - keepBack)
-      throw new CapExceededError(usd, Math.max(0, s.remainingUsd - keepBack));
+      throw new CapExceededError(usd, Math.max(0, s.remainingUsd - keepBack), s.capUsd);
     const { keepBackUsd: _keepBack, ...rest } = meta;
     this.data.entries.push({ type: "reserve", ref, usd, ...rest, at: now });
     this.persist();
+    if (this.paths.marker) {
+      fs.mkdirSync(path.dirname(this.paths.marker), { recursive: true });
+      fs.writeFileSync(this.paths.marker, now);
+    }
     return this.status();
   }
 

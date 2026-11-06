@@ -6,6 +6,7 @@ import {
   CapExceededError,
   HARD_CAP_USD,
   Ledger,
+  PROVIDER_CAPS,
   statusOf,
   withLock,
   type LedgerPaths,
@@ -184,5 +185,64 @@ describe("the run lock", () => {
       await expect(withLock(lock, async () => 1)).rejects.toThrow(/Another content-review runner/);
     });
     expect(fs.existsSync(lock)).toBe(false);
+  });
+});
+
+describe("separate provider caps (Anthropic US$99, Mistral US$10, no borrowing)", () => {
+  const mpaths = () => ({
+    primary: path.join(dir, "state", "ledger-mistral.json"),
+    mirror: path.join(dir, "home", "ledger-mistral.json"),
+    stateDir: path.join(dir, "state"),
+  });
+  const mmeta = { phase: "second", provider: "mistral", model: "mistral-large-4" };
+
+  it("the caps are 99 and 10", () => {
+    expect(PROVIDER_CAPS).toEqual({ anthropic: 99, mistral: 10 });
+  });
+
+  it("Mistral stops at US$10 even with the Anthropic budget untouched (mutation: Mistral at the 99 cap)", () => {
+    Ledger.open(paths, { provider: "anthropic" });
+    const m = Ledger.open(mpaths(), { provider: "mistral" });
+    expect(m.status().capUsd).toBe(10);
+    expect(() => m.reserve("m1", 10.01, mmeta)).toThrow(CapExceededError);
+    expect(() => m.reserve("m1", 10, mmeta)).not.toThrow();
+  });
+
+  it("a Mistral file edited to a larger cap stays at 10 (mutation: trust the bound file's cap)", () => {
+    Ledger.open(mpaths(), { provider: "mistral" });
+    const f = JSON.parse(fs.readFileSync(mpaths().primary, "utf8"));
+    f.capUsd = 99;
+    fs.writeFileSync(mpaths().primary, JSON.stringify(f));
+    fs.writeFileSync(mpaths().mirror, JSON.stringify(f));
+    expect(Ledger.open(mpaths(), { provider: "mistral" }).status().capUsd).toBe(10);
+  });
+
+  it("a job cannot be booked on the other provider's ledger (mutation: drop the provider check)", () => {
+    const a = Ledger.open(paths, { provider: "anthropic" });
+    expect(() => a.reserve("x", 1, mmeta)).toThrow(/cannot be booked/);
+  });
+
+  it("a ledger is never opened as another provider's (mutation: drop the binding check)", () => {
+    Ledger.open(mpaths(), { provider: "mistral" });
+    expect(() => Ledger.open(mpaths(), { provider: "anthropic" })).toThrow(/belongs to mistral/);
+    expect(() => Ledger.open(mpaths())).toThrow(/belongs to mistral/);
+  });
+});
+
+describe("per-provider started marker", () => {
+  it("a provider whose first job comes later can start; once started, a lost ledger is refused", () => {
+    fs.mkdirSync(path.join(dir, "state"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "state", "state.json"), "{}"); // the review already started
+    const m = {
+      primary: path.join(dir, "state", "ledger-mistral.json"),
+      mirror: path.join(dir, "home", "ledger-mistral.json"),
+      stateDir: path.join(dir, "state"),
+      marker: path.join(dir, "state", "started-mistral"),
+    };
+    const l = Ledger.open(m, { provider: "mistral" });
+    l.reserve("m1", 1, { phase: "second", provider: "mistral", model: "x" });
+    fs.rmSync(m.primary);
+    fs.rmSync(m.mirror);
+    expect(() => Ledger.open(m, { provider: "mistral" })).toThrow(/missing but a run has started/);
   });
 });
