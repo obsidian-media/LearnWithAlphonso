@@ -24,6 +24,7 @@ import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
 import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
+import { voiceFor } from "@/lib/voice-prefs";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
@@ -213,7 +214,14 @@ function HectorConversation({
         const resp = await fetch("/api/hector-respond", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ text: trimmed, history, course, cefr_level: cefrLevel }),
+          // Hector's own voice for this course (Settings > Voices), never Alphonso's.
+          body: JSON.stringify({
+            text: trimmed,
+            history,
+            course,
+            cefr_level: cefrLevel,
+            voice: await voiceFor("hector", course),
+          }),
         });
         if (!resp.ok) {
           if (await isAiConsentRequired(resp)) {

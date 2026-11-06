@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
-import { isCourse } from "@/data/courses";
-import { deepgramVoiceForLanguage } from "@/lib/hector-conversation";
-import { voiceLanguage } from "@/lib/podcast-tts";
+import { resolveTtsVoice } from "@/lib/voice-catalog";
 
 /** Speech for the 2,000-character cap streams in a few seconds. */
 const TTS_TIMEOUT_MS = 30_000;
@@ -16,7 +14,7 @@ export const Route = createFileRoute("/api/tts")({
         const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
         const access = await authorizeAiRequest(request, "tts", { route: "tts" });
         if (!access.ok) return access.response;
-        let body: { text?: string; voice?: string; course?: string };
+        let body: { text?: string; voice?: string; course?: string; character?: string };
         try {
           body = await request.json();
         } catch {
@@ -24,19 +22,10 @@ export const Route = createFileRoute("/api/tts")({
         }
         const text = (body.text ?? "").trim();
         if (!text) return Response.json({ error: "text required" }, { status: 400 });
-        // Deepgram's TTS voice ids are full model ids (e.g. "aura-2-thalia-en"),
-        // not short names like OpenAI's "alloy" — callers must pass a Deepgram
-        // model id if overriding the default.
-        // A conversation's course picks its native voice. An explicit `voice` still wins (podcast tooling); no
-        // course keeps the English default every earlier client relies on.
-        // Only the app's own Aura-2 voices (one price tier, en/fr/es); anything else falls back to the course voice.
-        const voice =
-          typeof body.voice === "string" && voiceLanguage(body.voice) ? body.voice : null;
-        const model =
-          voice ||
-          (typeof body.course === "string" && isCourse(body.course)
-            ? deepgramVoiceForLanguage(body.course)
-            : "aura-2-thalia-en");
+        // The learner's chosen voice (Settings > Voices) arrives as `voice`; it is used only when it is on the
+        // allow-list for the conversation's course (src/lib/voice-catalog.ts). Anything else, including an arbitrary
+        // Deepgram model id, falls back to the character's default, so a client cannot pick a pricier model.
+        const model = resolveTtsVoice(body);
         let resp: Response;
         try {
           resp = await fetch(

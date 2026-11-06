@@ -20,6 +20,7 @@ import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.ActiveCourseStore
+import com.obsidianmedia.learnwithalphonso.core.voice.VoicePrefsStore
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
 import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
@@ -116,6 +117,14 @@ class AppContainer(context: Context) {
 
     /** The learner's active course, shared by Learn, Practice and Hector and remembered per account. */
     val activeCourse = ActiveCourseStore(PrefsCourseStore(prefs))
+
+    /** Alphonso's and Hector's voice per course (Settings > Voices): cached here, saved on the account. */
+    val voicePrefs = VoicePrefsStore(
+        read = { prefs.getString(VoicePrefsStore.KEY, null) },
+        write = { value -> prefs.edit().apply { if (value == null) remove(VoicePrefsStore.KEY) else putString(VoicePrefsStore.KEY, value) }.apply() },
+        fetch = { session.fetchVoicePrefs() },
+        save = { session.saveVoicePrefs(it) },
+    )
     /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
     val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
@@ -176,7 +185,7 @@ class AppContainer(context: Context) {
     }
 
     /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
-    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended -> syncCoordinator.clearAccount(ended) }
+    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended -> voicePrefs.clear(); syncCoordinator.clearAccount(ended) }
 
     // ---- Plan 4: podcasts, reminders, push ----
 

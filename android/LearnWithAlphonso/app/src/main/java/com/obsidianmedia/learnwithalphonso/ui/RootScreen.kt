@@ -103,6 +103,8 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
+    // Voice choices made on the web or iOS reach this device's cache, so a call starts with the right voice.
+    LaunchedEffect(signedInUserId) { if (signedInUserId != null) runCatching { container.voicePrefs.hydrate() } }
     // The "Please update" gate: off unless the server sets a minimum, and the app opens normally on any failure.
     var updateRequired by remember { mutableStateOf<AppUpdateGate.Requirement?>(null) }
     LaunchedEffect(Unit) { updateRequired = container.checkAppUpdate() }

@@ -15,8 +15,11 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
     ),
   };
 });
+const sessionUser = vi.hoisted(() => ({ current: { id: "u1" } as Record<string, unknown> }));
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { getSession: async () => ({ data: { session: { user: { id: "u1" } } } }) } },
+  supabase: {
+    auth: { getSession: async () => ({ data: { session: { user: sessionUser.current } } }) },
+  },
 }));
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
@@ -156,7 +159,13 @@ describe("web Hector", () => {
       expect(sent.filter((s) => s.url === "/api/hector-respond")).toHaveLength(2),
     );
     const turns = sent.filter((s) => s.url === "/api/hector-respond").map((s) => s.body);
-    expect(turns[0]).toEqual({ text: "Salut Hector", history: [], course: "fr", cefr_level: "A2" });
+    expect(turns[0]).toEqual({
+      text: "Salut Hector",
+      history: [],
+      course: "fr",
+      cefr_level: "A2",
+      voice: "aura-2-hector-fr",
+    });
     expect(turns[1]).toEqual({
       text: "Ça va bien",
       history: [
@@ -165,8 +174,31 @@ describe("web Hector", () => {
       ],
       course: "fr",
       cefr_level: "A2",
+      voice: "aura-2-hector-fr",
     });
     expect(URL.createObjectURL).toHaveBeenCalled();
+  });
+
+  it("Pro: a turn sends Hector's chosen voice for the course, never Alphonso's", async () => {
+    sessionUser.current = {
+      id: "u1",
+      user_metadata: {
+        voices: { alphonso: { fr: "aura-2-hector-fr" }, hector: { fr: "aura-2-agathe-fr" } },
+      },
+    };
+    try {
+      await renderPage();
+      const box = await screen.findByRole("textbox", { name: "Message Hector" });
+      await waitFor(() => expect(fetchProgress).toHaveBeenCalled());
+      await userEvent.type(box, "Salut Hector{Enter}");
+      await waitFor(() =>
+        expect(sent.filter((s) => s.url === "/api/hector-respond")).toHaveLength(1),
+      );
+      const turn = sent.find((s) => s.url === "/api/hector-respond")!.body as { voice: string };
+      expect(turn.voice).toBe("aura-2-agathe-fr");
+    } finally {
+      sessionUser.current = { id: "u1" };
+    }
   });
 
   it("history sent to the server is capped at 40 messages", async () => {

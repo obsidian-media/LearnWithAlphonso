@@ -166,6 +166,7 @@ struct RootView: View {
                         }
                         await triggerSync()
                         await hydrateThemeFromServer()
+                        await session.hydrateVoicePrefs()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
                         // The same device token after a sign-out and sign-in never fires onChange, so the new
