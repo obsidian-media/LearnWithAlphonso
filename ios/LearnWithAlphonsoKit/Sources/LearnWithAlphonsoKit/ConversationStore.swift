@@ -57,6 +57,14 @@ public struct ConversationSnapshot: Equatable, Sendable {
     /// The turns to send to the model.
     public var recentTurns: [ChatMessage] { Array(turns.suffix(Self.maxTurnsSent)) }
 
+    /// The opening line Alphonso still has to say out loud: the latest turn, when it is one of our own openers (the
+    /// learner has not answered it yet). nil once the learner has spoken, and for a finished campaign.
+    public var pendingOpener: String? {
+        guard !finished, let last = turns.indices.last, openerIndices.contains(last) else { return nil }
+        let text = turns[last].content.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
+
     /// Adds one of our own opening lines (a campaign's next scene) as the latest turn.
     public mutating func appendOpener(_ text: String) {
         turns.append(ChatMessage(role: "assistant", content: text))
