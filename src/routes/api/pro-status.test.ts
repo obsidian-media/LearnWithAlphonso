@@ -5,7 +5,17 @@ vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { auth:
 
 const revenueCatConfigFromEnv = vi.fn();
 const getSubscriberSummary = vi.fn();
-vi.mock("@/lib/revenuecat-entitlement", () => ({ revenueCatConfigFromEnv, getSubscriberSummary }));
+// The routes read the account-level summary (both ids). Here it is the single-id summary plus the id the purchase
+// lands on, which is the account id unless a test says otherwise (as without SUBSCRIPTION_ID_SECRET).
+let loginIdOverride: string | null = null;
+vi.mock("@/lib/revenuecat-entitlement", () => ({
+  revenueCatConfigFromEnv,
+  getAccountSubscriberSummary: async (...args: unknown[]) => {
+    const s = (await getSubscriberSummary(...args)) as { status: string } | undefined;
+    if (!s || s.status === "unavailable") return { ...s, loginId: null };
+    return { ...s, loginId: loginIdOverride ?? args[1] };
+  },
+}));
 
 const { Route } = await import("./pro-status");
 const handler = (
@@ -26,6 +36,7 @@ beforeEach(() => {
   revenueCatConfigFromEnv.mockReset();
   revenueCatConfigFromEnv.mockReturnValue({ secretApiKey: "sk_test" });
   getSubscriberSummary.mockReset();
+  loginIdOverride = null;
 });
 
 describe("GET /api/pro-status", () => {

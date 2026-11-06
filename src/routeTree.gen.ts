@@ -43,6 +43,7 @@ import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respon
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
 import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
+import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
@@ -226,6 +227,11 @@ const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
   path: '/api/pro-offering',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSubscriptionLoginRoute = ApiSubscriptionLoginRouteImport.update({
+  id: '/api/subscription-login',
+  path: '/api/subscription-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProStatusRoute = ApiProStatusRouteImport.update({
   id: '/api/pro-status',
   path: '/api/pro-status',
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
@@ -379,6 +386,7 @@ export interface FileRoutesByTo {
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
@@ -429,6 +437,7 @@ export interface FileRoutesById {
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
+  '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/api/learning-goal'
     | '/api/app-config'
     | '/api/pro-offering'
+    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/api/learning-goal'
     | '/api/app-config'
     | '/api/pro-offering'
+    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
@@ -576,6 +587,7 @@ export interface FileRouteTypes {
     | '/api/learning-goal'
     | '/api/app-config'
     | '/api/pro-offering'
+    | '/api/subscription-login'
     | '/api/pro-status'
     | '/api/review-demo-code'
     | '/api/stt'
@@ -614,6 +626,7 @@ export interface RootRouteChildren {
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
   ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
+  ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
@@ -862,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProOfferingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/subscription-login': {
+      id: '/api/subscription-login'
+      path: '/api/subscription-login'
+      fullPath: '/api/subscription-login'
+      preLoaderRoute: typeof ApiSubscriptionLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pro-status': {
       id: '/api/pro-status'
       path: '/api/pro-status'
@@ -1035,6 +1055,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLearningGoalRoute: ApiLearningGoalRoute,
   ApiAppConfigRoute: ApiAppConfigRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
+  ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiProStatusRoute: ApiProStatusRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,

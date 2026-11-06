@@ -1,0 +1,112 @@
+{
+ "canvas": 1024,
+ "layers": {
+  "base": {
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1
+  },
+  "mouth-half": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "mouth-talk": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "mouth-ah": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "mouth-oh": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "mouth-ee": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "mouth-fv": {
+   "x": 0.255859375,
+   "y": 0.310546875,
+   "w": 0.3740234375,
+   "h": 0.392578125
+  },
+  "eyes-neutral": {
+   "x": 0.25,
+   "y": 0.169921875,
+   "w": 0.44921875,
+   "h": 0.248046875
+  },
+  "eyes-raised": {
+   "x": 0.25,
+   "y": 0.169921875,
+   "w": 0.44921875,
+   "h": 0.248046875
+  },
+  "eyes-lowered": {
+   "x": 0.25,
+   "y": 0.169921875,
+   "w": 0.44921875,
+   "h": 0.248046875
+  }
+ },
+ "expressionPrefix": "eyes",
+ "order": [
+  "base",
+  "mouth-{closed=none|half|talk|ah|oh|ee|fv}",
+  "eyes-{neutral|raised|lowered}"
+ ],
+ "notes": {
+  "closed_mouth": "no mouth layer drawn; the base already shows the closed mouth",
+  "ears": "this kit has no separate ear layers",
+  "expression": "eyes-neutral is the default and is always drawn unless another expression is active",
+  "rects": "x,y,w,h are fractions of the square canvas"
+ },
+ "format": "webp",
+ "alignment_shifts_px": {
+  "mouth-half": [
+   0,
+   0
+  ],
+  "mouth-talk": [
+   0,
+   0
+  ],
+  "mouth-ah": [
+   0,
+   0
+  ],
+  "mouth-oh": [
+   0,
+   0
+  ],
+  "mouth-ee": [
+   0,
+   0
+  ],
+  "mouth-fv": [
+   0,
+   0
+  ],
+  "eyes-raised": [
+   0,
+   0
+  ],
+  "eyes-lowered": [
+   0,
+   0
+  ]
+ }
+}

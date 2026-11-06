@@ -7,6 +7,7 @@
 // Env: REVENUECAT_SECRET_API_KEY (without it nobody is Pro here, which is the behaviour before this existed),
 // REVENUECAT_TEST_PURCHASE_USER_IDS, REVENUECAT_REJECT_SANDBOX.
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHmac } from "node:crypto";
 
 const PRO_ENTITLEMENT_ID = "pro";
 /** A confirmed Pro answer is trusted for an hour (the same window lose_heart() honours). */
@@ -23,7 +24,29 @@ type SubscriberBody = {
   };
 };
 
-export type ProConfig = { secretApiKey: string; testers: string[]; rejectSandbox: boolean };
+export type ProConfig = {
+  secretApiKey: string;
+  testers: string[];
+  rejectSandbox: boolean;
+  /** SUBSCRIPTION_ID_SECRET (same value as on Vercel): purchases can also be under the subscription identifier. */
+  subscriptionIdSecret?: string;
+};
+
+/**
+ * The account's separate subscription identifier. Keep identical to subscriptionAppUserId in
+ * src/lib/revenuecat-entitlement.ts (a test pins both to the same value).
+ */
+export function subscriptionAppUserId(userId: string, secret: string): string {
+  const mac = createHmac("sha256", secret).update(`rc-subscription:${userId}`).digest("hex");
+  return `sub_${mac.slice(0, 32)}`;
+}
+
+/** Every RevenueCat id this account's purchases can be under: the subscription identifier first, then the account id. */
+export function accountAppUserIds(config: ProConfig, userId: string): string[] {
+  return config.subscriptionIdSecret
+    ? [subscriptionAppUserId(userId, config.subscriptionIdSecret), userId]
+    : [userId];
+}
 
 export function proConfigFromEnv(
   get: (k: string) => string | undefined = (k) => Deno.env.get(k),
@@ -34,13 +57,20 @@ export function proConfigFromEnv(
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  return { secretApiKey, testers, rejectSandbox: get("REVENUECAT_REJECT_SANDBOX") === "true" };
+  const idSecret = get("SUBSCRIPTION_ID_SECRET")?.trim();
+  return {
+    secretApiKey,
+    testers,
+    rejectSandbox: get("REVENUECAT_REJECT_SANDBOX") === "true",
+    ...(idSecret && idSecret.length >= 32 ? { subscriptionIdSecret: idSecret } : {}),
+  };
 }
 
 /** True / false from a RevenueCat v1 subscriber body; null when the body is not readable. */
 export function proFromSubscriber(
   body: SubscriberBody,
-  appUserId: string,
+  /** The Supabase account id: the test-purchase list is matched by account id. */
+  accountId: string,
   config: ProConfig,
   now: number,
 ): boolean | null {
@@ -60,7 +90,7 @@ export function proFromSubscriber(
   const purchase = productId
     ? (subs[productId] ?? (Array.isArray(oneTime) ? oneTime.at(-1) : undefined))
     : undefined;
-  if (!purchase || config.testers.includes(appUserId)) return true;
+  if (!purchase || config.testers.includes(accountId)) return true;
   if (purchase.store === "test_store") return false;
   if (config.rejectSandbox && purchase.is_sandbox === true) return false;
   return true;
@@ -101,17 +131,22 @@ export async function heartsUnlimitedFor(
     }
     const config = deps.config();
     if (!config) return false;
-    const res = await deps.fetch(
-      `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`,
-      {
-        headers: { Authorization: `Bearer ${config.secretApiKey}` },
-        signal: AbortSignal.timeout(3000),
-      },
+    // Pro under either id is Pro; an unreadable id with no Pro anywhere is not cached (fails closed).
+    const answers = await Promise.all(
+      accountAppUserIds(config, userId).map(async (id): Promise<boolean | null> => {
+        const res = await deps.fetch(
+          `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(id)}`,
+          {
+            headers: { Authorization: `Bearer ${config.secretApiKey}` },
+            signal: AbortSignal.timeout(3000),
+          },
+        );
+        if (res.status === 404) return false;
+        if (!res.ok) return null;
+        return proFromSubscriber((await res.json()) as SubscriberBody, userId, config, now);
+      }),
     );
-    let pro: boolean | null;
-    if (res.status === 404) pro = false;
-    else if (!res.ok) pro = null;
-    else pro = proFromSubscriber((await res.json()) as SubscriberBody, userId, config, now);
+    const pro = answers.includes(true) ? true : answers.includes(null) ? null : false;
     if (pro === null) return false;
     await admin
       .from("hearts_pro_status")

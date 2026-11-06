@@ -17,11 +17,12 @@ class CharacterKitTest {
     fun `the Alphonso kit reads its layer placement from its manifest`() {
         val kit = alphonso()
         assertEquals("Alphonso", kit.displayName)
-        assertEquals(LayerRect(0.3508771929824561, 0.3684210526315789, 0.27910685805422647, 0.18341307814992025), kit.mouth)
-        assertEquals(0.31100478468899523, kit.expression.x, 0.0)
-        assertEquals(0.23125996810207336, kit.earLeft!!.x, 0.0)
-        assertEquals(0.5055821371610846, kit.earRight!!.x, 0.0)
-        assertEquals(0.24242424242424243, kit.glint!!.y, 0.0)
+        assertEquals(LayerRect(0.2119140625, 0.298828125, 0.4609375, 0.4853515625), kit.mouth)
+        assertEquals(0.2880859375, kit.expression.x, 0.0)
+        // The realistic kit has no ear layers; the glint stays.
+        assertEquals(null, kit.earLeft)
+        assertEquals(null, kit.earRight)
+        assertEquals(0.251953125, kit.glint!!.y, 0.0)
         assertEquals("brows-raised.webp", kit.expressionFile(Brows.RAISED))
     }
 
@@ -36,9 +37,8 @@ class CharacterKitTest {
             add(AvatarLayerFiles.BASE); add(AvatarLayerFiles.GLINT_MASK)
             AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
             Brows.entries.forEach { add(AvatarLayerFiles.brows(it)) }
-            for (side in EarSide.entries) for (t in listOf(false, true)) add(AvatarLayerFiles.ear(side, t))
         }
-        assertEquals(15, wanted.size)
+        assertEquals(11, wanted.size)
         val have = File(assets, "avatar").list()!!.filter { it.endsWith(".webp") }.toSet()
         assertEquals(wanted, have)
     }
@@ -82,5 +82,24 @@ class CharacterKitTest {
         assertEquals(null, kit.glint)
         assertEquals(0.3, kit.expression.x, 0.0)
         assertEquals("eyes-lowered.webp", kit.expressionFile(Brows.LOWERED))
+    }
+
+    @Test
+    fun `Hector's kit - his own folder, eyes as the expression group, no ears and no glint`() {
+        val hectorManifest = File(assets, "hector/manifest.json").readText()
+        val kit = CharacterKit.fromManifest(hectorManifest, "hector", "Hector", "hector", CallScenes.defaultRoom, expressionPrefix = "eyes")
+        assertEquals("Hector", kit.displayName)
+        assertEquals(null, kit.earLeft)
+        assertEquals(null, kit.glint)
+        assertEquals(LayerRect(0.255859375, 0.310546875, 0.3740234375, 0.392578125), kit.mouth)
+        assertEquals(0.25, kit.expression.x, 0.0)
+        assertEquals("eyes-raised.webp", kit.expressionFile(Brows.RAISED))
+        val wanted = buildSet {
+            add(AvatarLayerFiles.BASE)
+            AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
+            Brows.entries.forEach { add(kit.expressionFile(it)) }
+        }
+        assertEquals(wanted, File(assets, "hector").list()!!.filter { it.endsWith(".webp") }.toSet())
+        assertEquals("eyes", kotlinx.serialization.json.Json.parseToJsonElement(hectorManifest).let { (it as kotlinx.serialization.json.JsonObject)["expressionPrefix"] }?.let { (it as kotlinx.serialization.json.JsonPrimitive).content })
     }
 }

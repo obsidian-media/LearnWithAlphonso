@@ -11,7 +11,7 @@ data class LayerRect(val x: Double, val y: Double, val w: Double, val h: Double)
 /**
  * A character the call can show: his name, the assets folder his art lives in, where his layers go (read from that
  * folder's manifest.json), and his default room. The viseme, plan and state logic does not know which character it is
- * driving. Alphonso is the only kit shipped; Hector's will be another value of this type.
+ * driving. Alphonso and Hector are the kits shipped.
  */
 data class CharacterKit(
     val id: String,

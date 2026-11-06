@@ -57,10 +57,10 @@ abstract class BaseConversationViewModel(
     opener: String,
     /** The course the conversation is in: its scenario text, and the language of transcription, replies and speech. */
     protected val course: Course = Course.ENGLISH,
-) : ViewModel() {
+) : ViewModel(), com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation {
     protected val _state = MutableStateFlow(ConversationUiState(turns = listOf(ChatMessage("assistant", opener))))
-    val state: StateFlow<ConversationUiState> = _state.asStateFlow()
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
+    override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
+    override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var analysed = false
 
     protected abstract fun systemPrompt(): String
@@ -80,10 +80,10 @@ abstract class BaseConversationViewModel(
     }
 
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
-    fun micLevelDBFS(): Double? = recorder.levelDBFS()
+    override fun micLevelDBFS(): Double? = recorder.levelDBFS()
 
-    fun pressBegan() { _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
-    fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+    override fun pressBegan() { _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
+    override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
 
     private suspend fun sendTurn(text: String, confidence: Double?) {
         _state.update { s ->

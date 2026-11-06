@@ -363,7 +363,7 @@ const json = (body: unknown, status: number) =>
 async function defaultDeps(): Promise<MaintenanceDeps> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { appleConfigFromEnv, revokeAppleGrant } = await import("./apple-revocation");
-  const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber, cancelWebSubscription } =
+  const { revenueCatConfigFromEnv, deleteAccountSubscribers, cancelAccountWebSubscriptions } =
     await import("./revenuecat-entitlement");
   return {
     db: supabaseAdmin,
@@ -372,8 +372,9 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     appleConfig: () => appleConfigFromEnv(),
     revoke: (config, token) => revokeAppleGrant(config, token),
     revenueCatConfig: () => revenueCatConfigFromEnv(),
-    eraseSubscriber: (config, id) => deleteRevenueCatSubscriber(config, id),
-    cancelWebSubscription: (config, id) => cancelWebSubscription(config, id),
+    // The queued id is the deleted account's id; both of its RevenueCat ids are erased.
+    eraseSubscriber: (config, id) => deleteAccountSubscribers(config, id),
+    cancelWebSubscription: (config, id) => cancelAccountWebSubscriptions(config, id),
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
   };
 }
