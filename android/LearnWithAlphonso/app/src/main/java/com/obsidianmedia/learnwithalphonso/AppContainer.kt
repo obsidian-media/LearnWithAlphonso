@@ -25,7 +25,6 @@ import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
-import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
@@ -37,6 +36,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
+import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.data.AiConsentPrefsCache
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
 import com.obsidianmedia.learnwithalphonso.data.PrefsCourseStore
