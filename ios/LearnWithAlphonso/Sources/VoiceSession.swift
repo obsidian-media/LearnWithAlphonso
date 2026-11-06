@@ -132,7 +132,7 @@ final class VoiceSessionController {
             opener,
             begin: { beginOpener() },
             audio: { text in
-                try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
+                let speech = try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
                     guard let accessToken = await session.freshAccessToken() else {
                         throw URLError(.userAuthenticationRequired)
                     }
@@ -142,6 +142,10 @@ final class VoiceSessionController {
                         refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
                     return try await client.synthesizeSpeech(text: text, voice: voiceID, course: courseCode)
                 }
+                // The call-start sound finishes before his first words.
+                let wait = await SoundEffectsPlayer.shared.callCueRemaining()
+                if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
+                return speech
             },
             play: { audio, generation in play(audio, generation: generation) },
             withoutAudio: { generation in replyWithoutAudio(generation) })

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   SFX_EVENTS,
   SFX_FILES,
@@ -207,6 +207,29 @@ describe("is a voice playing?", () => {
     } finally {
       if (had) g.window = before;
       else delete g.window;
+    }
+  });
+});
+
+describe("waitForCallCue", () => {
+  it("holds the opening line until the call-start sound is over, and not at all otherwise", async () => {
+    vi.useFakeTimers();
+    try {
+      const { playSfx, waitForCallCue } = await import("./sfx");
+      let done = false;
+      void waitForCallCue().then(() => (done = true));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(done).toBe(true);
+
+      expect(playSfx("callStart")).toBe(true);
+      done = false;
+      void waitForCallCue().then(() => (done = true));
+      await vi.advanceTimersByTimeAsync(600);
+      expect(done).toBe(false);
+      await vi.advanceTimersByTimeAsync(200);
+      expect(done).toBe(true);
+    } finally {
+      vi.useRealTimers();
     }
   });
 });

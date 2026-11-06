@@ -80,6 +80,15 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
     /** How long the call-start sound still has to play: a call's opening line waits this long. */
     fun callCueRemainingMs(): Long = gate.callCueRemainingMs()
 
+    init { current = this }
+
+    companion object {
+        @Volatile private var current: SoundEffectsPlayer? = null
+
+        /** The app player's remaining call-start cue (0 before any player exists, e.g. in unit tests). */
+        fun callCueRemainingMs(): Long = current?.callCueRemainingMs() ?: 0L
+    }
+
     private fun rawId(effect: SoundEffect): Int = when (effect) {
         SoundEffect.RIGHT -> R.raw.sfx_right
         SoundEffect.WRONG -> R.raw.sfx_wrong
