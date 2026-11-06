@@ -25,15 +25,18 @@ export function withVerdictInstruction(systemPrompt: string): string {
   return `${systemPrompt.trimEnd()}\n\n${REPLY_VERDICT_INSTRUCTION}`;
 }
 
-const TAG = /\[\[\s*verdict\s*:\s*([A-Za-z]*)\s*\]\]/gi;
-/** A tag the model started and did not finish (a reply cut off by the token cap), or a stray opener. */
-const DANGLING = /\[\[\s*v[a-z]*\s*:?\s*[A-Za-z]*\s*\]?$/i;
+/** Any `[[verdict...]]`, whatever is inside it (a stray quote, a full stop, `=`): all of it is stripped, and only an
+ * exact `:word` inside counts as a verdict. */
+const TAG = /\[\[\s*verdict\b([^[\]]*)\]\]/gi;
+const WORD = /^\s*:\s*([A-Za-z]+)\s*$/;
+/** A tag the model started and did not finish (a reply cut off by the token cap), down to a bare `[[` or `[`. */
+const DANGLING = /(?:\[\[\s*v[a-z]*\b[^[\]]*\]?|\[\[?)\s*$/i;
 
 export function splitReplyVerdict(raw: string): { text: string; verdict: ReplyVerdict } {
   const found: string[] = [];
   let tagAtEnd = false;
-  const withoutTags = raw.replace(TAG, (match: string, word: string, offset: number) => {
-    found.push(word.toLowerCase());
+  const withoutTags = raw.replace(TAG, (match: string, inner: string, offset: number) => {
+    found.push(WORD.exec(inner)?.[1]?.toLowerCase() ?? "");
     if (raw.slice(offset + match.length).trim() === "") tagAtEnd = true;
     return "";
   });
