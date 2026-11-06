@@ -74,7 +74,7 @@ export type HeartsProDeps = {
 
 export const liveHeartsProDeps = (): HeartsProDeps => ({
   config: () => proConfigFromEnv(),
-  fetch: (input, init) => fetch(input, init),
+  fetch: globalThis.fetch.bind(globalThis),
   now: () => Date.now(),
 });
 
