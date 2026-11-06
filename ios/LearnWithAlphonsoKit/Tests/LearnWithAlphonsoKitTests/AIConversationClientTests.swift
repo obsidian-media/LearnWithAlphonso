@@ -42,6 +42,64 @@ final class AIConversationClientTests: XCTestCase {
         XCTAssertEqual(messages, [["role": "user", "content": "hello"]])
     }
 
+    // MARK: - chat verdict (the server tells the avatar whether the learner was right)
+
+    private func chatBody(_ object: [String: Any]) -> @Sendable (URLRequest) async throws -> (Data, URLResponse) {
+        let body = try! JSONSerialization.data(withJSONObject: object)
+        return { request in
+            (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+    }
+
+    private let oneTurn = [ChatMessage(role: "user", content: "hi")]
+
+    func testChatReplyCarriesTheServersVerdict() async throws {
+        for (wire, expected) in [("correct", ReplyVerdict.correct), ("corrected", .corrected), ("none", .inconclusive)] {
+            let client = makeClient(response: chatBody(["content": "Sure", "verdict": wire]))
+            let reply = try await client.chatReply(messages: oneTurn, systemPrompt: nil)
+            XCTAssertEqual(reply, ChatReply(content: "Sure", verdict: expected), wire)
+        }
+    }
+
+    func testChatReplyReadsNoneWhenTheVerdictIsMissingOrNotUnderstood() async throws {
+        for body: [String: Any] in [
+            ["content": "Sure"],
+            ["content": "Sure", "verdict": "wonderful"],
+            ["content": "Sure", "verdict": 7],
+            ["content": "Sure", "verdict": NSNull()],
+        ] {
+            let client = makeClient(response: chatBody(body))
+            let reply = try await client.chatReply(messages: oneTurn, systemPrompt: nil)
+            XCTAssertEqual(reply.verdict, .inconclusive, "\(body)")
+            XCTAssertEqual(reply.content, "Sure")
+        }
+    }
+
+    /// Builds 56-58 read `content` from the reply object and nothing else. This is that decoding, copied, run on the
+    /// body the server now sends: the text must come out whole, with no tag in it.
+    func testTheDecodingShippedInBuilds56To58StillReadsTheNewBody() throws {
+        let serverBody = try JSONSerialization.data(withJSONObject: [
+            "content": "Sure, what size?", "verdict": "corrected",
+        ])
+        let shipped: (Data) throws -> String = { data in
+            guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let content = object["content"] as? String else {
+                throw TutorError.server(message: nil)
+            }
+            return content
+        }
+        let shown = try shipped(serverBody)
+        XCTAssertEqual(shown, "Sure, what size?")
+        XCTAssertFalse(shown.contains("verdict"))
+        XCTAssertFalse(shown.contains("[["))
+    }
+
+    func testPlainChatStillReturnsJustTheTextWhenTheBodyCarriesAVerdict() async throws {
+        let client = makeClient(response: chatBody(["content": "Sure", "verdict": "correct"]))
+        let text = try await client.chat(messages: oneTurn, systemPrompt: nil)
+        XCTAssertEqual(text, "Sure")
+    }
+
     func testChatIncludesCefrLevelWhenProvided() async throws {
         let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
