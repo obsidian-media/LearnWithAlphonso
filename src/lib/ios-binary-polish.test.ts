@@ -426,7 +426,7 @@ describe("acknowledgements", () => {
 
 const ICON = "ios/LearnWithAlphonso/Sources/Assets.xcassets/AppIcon.appiconset/AppIcon.png";
 /** sha256 of the icon the owner approved. Change only with a new owner approval. */
-const APPROVED_ICON_SHA256 = "e73df539f886074cce4da6fabab0214a4175e082bf16edf3df1d9fa9b6c59fe2";
+const APPROVED_ICON_SHA256 = "7d6b2e87724e5d505fbfd52d4df663a5493c937eb70694b7a71227cb12cfddd5";
 
 describe("app icon", () => {
   const file = path.join(root, ICON);

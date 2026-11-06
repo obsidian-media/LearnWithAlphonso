@@ -139,8 +139,9 @@ class SessionManager(
         }
     }
 
-    suspend fun requestCode(email: String) = busy {
-        auth.requestEmailOtp(email.trim())
+    /** `captchaToken`, here and on the password calls below: the bot check's single-use token, or null without one. */
+    suspend fun requestCode(email: String, captchaToken: String? = null) = busy {
+        auth.requestEmailOtp(email.trim(), captchaToken)
         _state.value = AuthState.AwaitingCode(email.trim())
     }
 
@@ -154,19 +155,19 @@ class SessionManager(
         _errorMessage.value = null
     }
 
-    suspend fun signInWithPassword(email: String, password: String) = busy {
-        establish(auth.signInWithPassword(email.trim(), password))
+    suspend fun signInWithPassword(email: String, password: String, captchaToken: String? = null) = busy {
+        establish(auth.signInWithPassword(email.trim(), password, captchaToken))
     }
 
-    suspend fun signUpWithPassword(email: String, password: String, displayName: String, emailRedirectTo: String) = busy {
+    suspend fun signUpWithPassword(email: String, password: String, displayName: String, emailRedirectTo: String, captchaToken: String? = null) = busy {
         val name = displayName.trim().ifEmpty { email.trim().substringBefore('@') }.take(40)
-        val session = auth.signUpWithPassword(email.trim(), password, name, emailRedirectTo)
+        val session = auth.signUpWithPassword(email.trim(), password, name, emailRedirectTo, captchaToken)
         if (session != null) establish(session)
         else _notice.value = "Almost there: check your email and click the confirmation link to activate your account."
     }
 
-    suspend fun resetPassword(email: String, redirectTo: String) = busy {
-        auth.resetPasswordForEmail(email.trim(), redirectTo)
+    suspend fun resetPassword(email: String, redirectTo: String, captchaToken: String? = null) = busy {
+        auth.resetPasswordForEmail(email.trim(), redirectTo, captchaToken)
         _notice.value = "If an account exists for that address, we've sent a link to reset your password. Check your inbox."
     }
 
