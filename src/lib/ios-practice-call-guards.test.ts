@@ -154,8 +154,17 @@ describe("Hector's call", () => {
     expect(hector).toContain("if tutorError == .notEntitled { showPaywall = true }");
   });
   it("keeps hands-free reachable in the call: its switch in the sheet, Pause/Resume and the status line on the call", () => {
-    expect(hector).toContain("handsFreeToggle");
-    expect(hector).toContain("HandsFreeCopy.firstUseTitle");
+    const callScreen = hector.slice(
+      hector.indexOf("private var callScreen"),
+      hector.indexOf("private func endCall"),
+    );
+    // The sheet's own content: the switch must be in it, and so must the first-use note's alert, because a view
+    // under a presented sheet cannot present an alert (the switch would ask for a note that never appears).
+    const sheet = callScreen.slice(callScreen.indexOf("sheet: {"), callScreen.indexOf(".toolbar("));
+    expect(sheet).toMatch(/VStack\(spacing: 0\) \{\s*handsFreeToggle\s*transcript/);
+    expect(sheet).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
+    expect(sheet).toContain("voice.setHandsFree(true)");
+    expect(call).toMatch(/if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/);
     expect(call).toContain("voice.toggleHandsFreePause()");
     expect(call).toContain("HandsFreeCopy.statusLine(voice.handsFreeStatus)");
     expect(call).toContain("HandsFreeCopy.pause");
@@ -172,5 +181,18 @@ describe("Hector's call", () => {
   it("hangs up by stopping the session and offering to call again", () => {
     expect(hector).toContain("private func endCall()");
     expect(hector).toContain('Button("Call again")');
+  });
+  it("gives the bars back once the call has ended, and closes the lesson-complete sheet on hang-up", () => {
+    // The call hides the tab bar and the sheet's Done button; without this the learner is stuck on the tab.
+    expect(hector).toContain(".toolbar(callEnded ? .visible : .hidden, for: .tabBar)");
+    expect(hector).toContain(".toolbar(callEnded ? .visible : .hidden, for: .navigationBar)");
+    expect(hector).not.toMatch(/\.toolbar\(\.hidden, for: \.tabBar\)/);
+    expect(hector).toMatch(/if let onClose \{ onClose\(\) \} else \{ callEnded = true \}/);
+    expect(hector).toMatch(/conversationStore: conversationStore,\s*onClose: onClose/);
+  });
+  it("says on the call when the microphone is off or would not start, as the classic screen does", () => {
+    expect(call).toMatch(/notice \?\? voice\.failure\?\.userMessage\(\) \?\? microphoneMessage/);
+    expect(call).toContain("VoiceCopy.microphoneOff");
+    expect(call).toContain("VoiceCopy.microphoneCouldNotStart");
   });
 });

@@ -24,7 +24,8 @@ struct HectorView: View {
                         session: session,
                         entitlementStore: entitlementStore,
                         course: activeCourse.course,
-                        conversationStore: conversationStore
+                        conversationStore: conversationStore,
+                        onClose: onClose
                     )
                     // A course switch is a fresh Hector
                     // in the new language; each course keeps its own thread.
@@ -53,6 +54,8 @@ private struct HectorConversationView: View {
     let entitlementStore: EntitlementStore
     let course: Course
     let conversationStore: ConversationStore
+    /// Set when Hector is a sheet (from lesson complete): hanging up closes it, since the call hides its Done button.
+    let onClose: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The safety note is shown once per device, before the first time hands-free is turned on.
@@ -191,27 +194,35 @@ private struct HectorConversationView: View {
                         .sheet(item: $savingWord) { request in
                             SaveWordSheet(request: request, session: session)
                         }
+                        // The hands-free switch is in this sheet, and a view under a presented sheet cannot present
+                        // an alert: the first-use safety note is presented from here too.
+                        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
+                            Button(HandsFreeCopy.firstUseConfirm) {
+                                handsFreeNoteSeen = true
+                                voice.setHandsFree(true)
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text(HandsFreeCopy.firstUseBody)
+                        }
                     }
                 )
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
-        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
-            Button(HandsFreeCopy.firstUseConfirm) {
-                handsFreeNoteSeen = true
-                voice.setHandsFree(true)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text(HandsFreeCopy.firstUseBody)
+        // Full screen during the call; once it has ended the bars come back, so the learner can leave the tab.
+        .toolbar(callEnded ? .visible : .hidden, for: .navigationBar)
+        .toolbar(callEnded ? .visible : .hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            // As on the classic screen: a fresh hands-free turn clears the last notice.
+            if new == .listening { notice = nil }
         }
     }
 
     private func endCall() {
         voice.setHandsFree(false)
         voice.disappeared()
-        callEnded = true
+        // As a sheet the call hid its Done button, so hanging up closes it; on the tab it shows "Call ended".
+        if let onClose { onClose() } else { callEnded = true }
     }
 
     private var callEndedView: some View {

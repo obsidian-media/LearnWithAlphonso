@@ -78,7 +78,7 @@ struct PracticeCallView<Sheet: View>: View {
                     }
                     .padding(.top, 8)
                     Spacer(minLength: 0)
-                    if let message = notice ?? voice.failure?.userMessage() {
+                    if let message = notice ?? voice.failure?.userMessage() ?? microphoneMessage {
                         pill(message, color: AlphonsoColor.destructive)
                             .padding(.bottom, 8)
                     }
@@ -105,6 +105,13 @@ struct PracticeCallView<Sheet: View>: View {
         }
         .background(Color.black)
         .sheet(isPresented: $showSheet) { conversationSheet }
+    }
+
+    /// The microphone is off in Settings or would not start: the classic screens say so under the button.
+    private var microphoneMessage: String? {
+        if voice.microphoneUnavailable { return VoiceCopy.microphoneOff }
+        if voice.recorderStartFailed { return VoiceCopy.microphoneCouldNotStart }
+        return nil
     }
 
     // MARK: - Room
