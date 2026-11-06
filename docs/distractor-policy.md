@@ -122,6 +122,17 @@ rules are applied from what the pack itself says. The code is `src/data/romance-
 - **Listening.** A wrong choice may not differ from the answer only by words that sound the same
   (`HOMOPHONE_GROUPS`: ces / ses, cou / coup, cima / sima, cocer / coser, rayar / rallar, votar / botar):
   nobody can answer those by ear.
+- **Conjugation drills.** A line that conjugates a bracketed verb ("Je ___ (parler) français.") offers only other
+  persons of that verb in the same tense (`src/data/romance-conjugation.ts`): "parles / parlons / parlent", never
+  "mange / fais / dors", where the one option that looked like the bracketed verb was the answer. The subject in the
+  sentence rules the other persons out, so every drill line names it. Spanish leaves out vosotros (the course teaches
+  Latin American Spanish). The gate (`romance-conjugation.test.ts`) checks "is a form of this verb" from the spelling
+  alone, not from the engine's paradigms. B1 to C1 drills are not fixed yet; their count may only go down.
+- **Please and thanks.** A phrase answer ending in "s'il vous plaît", "merci", "por favor" or "gracias" is never the
+  only option with that ending, or the English gloss ("Nothing else, thanks") answers it. The pack's own phrases with
+  the same ending come first, then reviewed ones (`POLITE_DECOYS`).
+- **Possessives.** A possessive blank says whose it is ("Nous aimons ___ ville (à nous).") because "notre" and "leur"
+  both make a correct sentence otherwise.
 - **Walk.** The old seeded walk stepped by 7 and so visited only two candidates in a 15-line pack (14 others),
   which gave those questions two wrong options instead of three. A step that does not divide the count fixes it.
 

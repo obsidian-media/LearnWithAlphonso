@@ -234,10 +234,10 @@
               "type": "fill",
               "prompt": "How do you say \"I'm fine, thanks\" in Spanish? ___",
               "bank": [
-                "Por favor",
+                "Buenos días",
+                "Sí, gracias",
                 "Estoy bien, gracias",
-                "Buenas noches",
-                "Lo siento"
+                "No, gracias"
               ],
               "answer": "Estoy bien, gracias",
               "explanation": "I'm fine, thanks → Estoy bien, gracias. Core greetings and polite phrases."
@@ -1206,10 +1206,10 @@
               "type": "fill",
               "prompt": "Yo ___ (hablar) español.",
               "bank": [
-                "leo",
-                "tomo",
-                "empiezo",
-                "hablo"
+                "hablan",
+                "hablas",
+                "hablo",
+                "habla"
               ],
               "answer": "hablo",
               "explanation": "\"hablo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1219,10 +1219,10 @@
               "type": "mc",
               "prompt": "Yo ___ (comer) una manzana.",
               "choices": [
-                "hago",
-                "llego",
+                "come",
+                "comemos",
                 "como",
-                "digo"
+                "comes"
               ],
               "answer": 2,
               "explanation": "\"como\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1233,9 +1233,9 @@
               "prompt": "Yo ___ (tener) un gato.",
               "bank": [
                 "tengo",
-                "vengo",
-                "como",
-                "abro"
+                "tiene",
+                "tienen",
+                "tenemos"
               ],
               "answer": "tengo",
               "explanation": "\"tengo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1246,9 +1246,9 @@
               "prompt": "Yo ___ (estar) cansado.",
               "choices": [
                 "estoy",
-                "hablo",
-                "puedo",
-                "duermo"
+                "estás",
+                "están",
+                "estamos"
               ],
               "answer": 0,
               "explanation": "\"estoy\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1259,9 +1259,9 @@
               "prompt": "Yo ___ (ser) estudiante.",
               "bank": [
                 "soy",
-                "hago",
-                "necesito",
-                "digo"
+                "eres",
+                "es",
+                "son"
               ],
               "answer": "soy",
               "explanation": "\"soy\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1278,10 +1278,10 @@
               "type": "mc",
               "prompt": "Yo ___ (ir) al mercado.",
               "choices": [
-                "como",
-                "abro",
+                "va",
+                "vamos",
                 "voy",
-                "sé"
+                "vas"
               ],
               "answer": 2,
               "explanation": "\"voy\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1291,10 +1291,10 @@
               "type": "fill",
               "prompt": "Yo ___ (hacer) mi tarea.",
               "bank": [
-                "estudio",
                 "hago",
-                "duermo",
-                "puedo"
+                "hace",
+                "hacen",
+                "hacemos"
               ],
               "answer": "hago",
               "explanation": "\"hago\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1305,9 +1305,9 @@
               "prompt": "Yo ___ (querer) un café.",
               "choices": [
                 "quiero",
-                "trabajo",
-                "estoy",
-                "veo"
+                "quieres",
+                "quieren",
+                "queremos"
               ],
               "answer": 0,
               "explanation": "\"quiero\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1317,10 +1317,10 @@
               "type": "fill",
               "prompt": "Yo ___ (poder) ayudarte.",
               "bank": [
-                "sé",
+                "puedes",
                 "puedo",
-                "como",
-                "bebo"
+                "puede",
+                "pueden"
               ],
               "answer": "puedo",
               "explanation": "\"puedo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1330,10 +1330,10 @@
               "type": "mc",
               "prompt": "Yo ___ (saber) la respuesta.",
               "choices": [
-                "estudio",
-                "duermo",
+                "sabe",
+                "sabemos",
                 "sé",
-                "soy"
+                "sabes"
               ],
               "answer": 2,
               "explanation": "\"sé\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1350,10 +1350,10 @@
               "type": "mc",
               "prompt": "Yo ___ (tomar) el autobús.",
               "choices": [
-                "vivo",
-                "hago",
+                "toma",
+                "tomamos",
                 "tomo",
-                "trabajo"
+                "tomas"
               ],
               "answer": 2,
               "explanation": "\"tomo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1363,9 +1363,9 @@
               "type": "fill",
               "prompt": "Yo ___ (ver) el mar.",
               "bank": [
-                "sé",
-                "necesito",
-                "tengo",
+                "ve",
+                "vemos",
+                "ven",
                 "veo"
               ],
               "answer": "veo",
@@ -1377,9 +1377,9 @@
               "prompt": "Yo ___ (venir) mañana.",
               "choices": [
                 "vengo",
-                "soy",
-                "veo",
-                "abro"
+                "vienes",
+                "vienen",
+                "venimos"
               ],
               "answer": 0,
               "explanation": "\"vengo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1390,9 +1390,9 @@
               "prompt": "Yo ___ (decir) la verdad.",
               "bank": [
                 "digo",
-                "hablo",
-                "quiero",
-                "escribo"
+                "dices",
+                "dice",
+                "dicen"
               ],
               "answer": "digo",
               "explanation": "\"digo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1402,10 +1402,10 @@
               "type": "mc",
               "prompt": "Yo ___ (vivir) en Madrid.",
               "choices": [
-                "sé",
-                "tengo",
+                "vive",
+                "vivimos",
                 "vivo",
-                "leo"
+                "vives"
               ],
               "answer": 2,
               "explanation": "\"vivo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1422,10 +1422,10 @@
               "type": "fill",
               "prompt": "Yo ___ (dormir) ocho horas.",
               "bank": [
-                "bebo",
+                "duermen",
                 "duermo",
-                "llego",
-                "voy"
+                "dormimos",
+                "duerme"
               ],
               "answer": "duermo",
               "explanation": "\"duermo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1436,9 +1436,9 @@
               "prompt": "Yo ___ (beber) agua.",
               "choices": [
                 "bebo",
-                "hablo",
-                "quiero",
-                "vivo"
+                "bebes",
+                "beben",
+                "bebemos"
               ],
               "answer": 0,
               "explanation": "\"bebo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1448,10 +1448,10 @@
               "type": "fill",
               "prompt": "Yo ___ (leer) un libro.",
               "bank": [
-                "digo",
-                "estoy",
+                "leen",
+                "lees",
                 "leo",
-                "trabajo"
+                "lee"
               ],
               "answer": "leo",
               "explanation": "\"leo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1461,10 +1461,10 @@
               "type": "mc",
               "prompt": "Yo ___ (escribir) una carta.",
               "choices": [
-                "estudio",
-                "vivo",
+                "escribe",
+                "escribimos",
                 "escribo",
-                "soy"
+                "escribes"
               ],
               "answer": 2,
               "explanation": "\"escribo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1474,9 +1474,9 @@
               "type": "fill",
               "prompt": "Yo ___ (abrir) la puerta.",
               "bank": [
-                "estoy",
-                "tomo",
-                "leo",
+                "abren",
+                "abre",
+                "abrimos",
                 "abro"
               ],
               "answer": "abro",
@@ -1494,10 +1494,10 @@
               "type": "fill",
               "prompt": "Yo ___ (necesitar) tiempo.",
               "bank": [
-                "empiezo",
-                "hago",
-                "digo",
-                "necesito"
+                "necesitamos",
+                "necesitan",
+                "necesito",
+                "necesita"
               ],
               "answer": "necesito",
               "explanation": "\"necesito\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1507,10 +1507,10 @@
               "type": "mc",
               "prompt": "Yo ___ (trabajar) mucho.",
               "choices": [
-                "leo",
-                "tomo",
+                "trabaja",
+                "trabajamos",
                 "trabajo",
-                "hablo"
+                "trabajas"
               ],
               "answer": 2,
               "explanation": "\"trabajo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1520,10 +1520,10 @@
               "type": "fill",
               "prompt": "Yo ___ (estudiar) español.",
               "bank": [
-                "trabajo",
-                "soy",
-                "estudio",
-                "veo"
+                "estudian",
+                "estudia",
+                "estudias",
+                "estudio"
               ],
               "answer": "estudio",
               "explanation": "\"estudio\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1534,9 +1534,9 @@
               "prompt": "Yo ___ (llegar) tarde.",
               "choices": [
                 "llego",
-                "puedo",
-                "duermo",
-                "estudio"
+                "llegas",
+                "llegan",
+                "llegamos"
               ],
               "answer": 0,
               "explanation": "\"llego\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -1546,10 +1546,10 @@
               "type": "fill",
               "prompt": "Yo ___ (empezar) ahora.",
               "bank": [
-                "leo",
-                "tomo",
+                "empieza",
+                "empezamos",
                 "empiezo",
-                "estoy"
+                "empiezan"
               ],
               "answer": "empiezo",
               "explanation": "\"empiezo\" is correct here. Present-tense \"yo\" conjugation of common verbs."
@@ -5608,9 +5608,9 @@
               "prompt": "Yo ___ (cortar) las verduras.",
               "choices": [
                 "corto",
-                "bato",
-                "enciendo",
-                "frío"
+                "cortas",
+                "cortan",
+                "cortamos"
               ],
               "answer": 0,
               "explanation": "\"corto\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5620,10 +5620,10 @@
               "type": "fill",
               "prompt": "Yo ___ (mezclar) los ingredientes.",
               "bank": [
+                "mezclan",
+                "mezclamos",
                 "mezclo",
-                "añado",
-                "enfrío",
-                "aso"
+                "mezcla"
               ],
               "answer": "mezclo",
               "explanation": "\"mezclo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5633,10 +5633,10 @@
               "type": "mc",
               "prompt": "Yo ___ (hervir) el agua.",
               "choices": [
-                "revuelvo",
-                "pelo",
+                "hierve",
+                "hervimos",
                 "hiervo",
-                "corto"
+                "hierves"
               ],
               "answer": 2,
               "explanation": "\"hiervo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5646,10 +5646,10 @@
               "type": "fill",
               "prompt": "Yo ___ (freír) el pescado.",
               "bank": [
-                "lavo",
                 "frío",
-                "pico",
-                "mido"
+                "fríe",
+                "fríes",
+                "fríen"
               ],
               "answer": "frío",
               "explanation": "\"frío\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5660,9 +5660,9 @@
               "prompt": "Yo ___ (hornear) un pastel.",
               "choices": [
                 "horneo",
-                "exprimo",
-                "enfrío",
-                "añado"
+                "horneas",
+                "hornean",
+                "horneamos"
               ],
               "answer": 0,
               "explanation": "\"horneo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5679,10 +5679,10 @@
               "type": "fill",
               "prompt": "Yo ___ (lavar) los platos.",
               "bank": [
+                "lavamos",
                 "lavo",
-                "frío",
-                "pelo",
-                "revuelvo"
+                "lavan",
+                "lava"
               ],
               "answer": "lavo",
               "explanation": "\"lavo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5692,10 +5692,10 @@
               "type": "mc",
               "prompt": "Yo ___ (verter) la leche.",
               "choices": [
-                "mido",
-                "cuelo",
+                "vierte",
+                "vertemos",
                 "vierto",
-                "horneo"
+                "viertes"
               ],
               "answer": 2,
               "explanation": "\"vierto\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5705,10 +5705,10 @@
               "type": "fill",
               "prompt": "Yo ___ (añadir) sal a la sopa.",
               "bank": [
-                "rallo",
-                "mezclo",
-                "añado",
-                "sirvo"
+                "añades",
+                "añaden",
+                "añade",
+                "añado"
               ],
               "answer": "añado",
               "explanation": "\"añado\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5719,9 +5719,9 @@
               "prompt": "Yo ___ (calentar) la comida.",
               "choices": [
                 "caliento",
-                "bato",
-                "enciendo",
-                "hiervo"
+                "calientas",
+                "calientan",
+                "calentamos"
               ],
               "answer": 0,
               "explanation": "\"caliento\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5731,10 +5731,10 @@
               "type": "fill",
               "prompt": "Yo ___ (servir) la cena.",
               "bank": [
-                "rallo",
-                "mezclo",
-                "caliento",
-                "sirvo"
+                "sirve",
+                "sirven",
+                "sirvo",
+                "sirves"
               ],
               "answer": "sirvo",
               "explanation": "\"sirvo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5751,10 +5751,10 @@
               "type": "fill",
               "prompt": "Yo ___ (probar) la salsa.",
               "bank": [
-                "pico",
-                "horneo",
-                "mido",
-                "pruebo"
+                "pruebas",
+                "pruebo",
+                "prueba",
+                "prueban"
               ],
               "answer": "pruebo",
               "explanation": "\"pruebo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5764,10 +5764,10 @@
               "type": "mc",
               "prompt": "Yo ___ (pelar) las papas.",
               "choices": [
-                "revuelvo",
-                "pruebo",
+                "pela",
+                "pelamos",
                 "pelo",
-                "corto"
+                "pelas"
               ],
               "answer": 2,
               "explanation": "\"pelo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5778,9 +5778,9 @@
               "prompt": "Yo ___ (picar) la cebolla.",
               "bank": [
                 "pico",
-                "vierto",
-                "aso",
-                "enfrío"
+                "pican",
+                "pica",
+                "picamos"
               ],
               "answer": "pico",
               "explanation": "\"pico\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5791,9 +5791,9 @@
               "prompt": "Yo ___ (batir) los huevos.",
               "choices": [
                 "bato",
-                "pico",
-                "enciendo",
-                "hiervo"
+                "bates",
+                "baten",
+                "batimos"
               ],
               "answer": 0,
               "explanation": "\"bato\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5804,9 +5804,9 @@
               "prompt": "Yo ___ (asar) el pollo.",
               "bank": [
                 "aso",
-                "mezclo",
-                "rallo",
-                "caliento"
+                "asa",
+                "asan",
+                "asas"
               ],
               "answer": "aso",
               "explanation": "\"aso\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5823,10 +5823,10 @@
               "type": "mc",
               "prompt": "Yo ___ (colar) la pasta.",
               "choices": [
-                "mido",
-                "aso",
+                "cuela",
+                "colamos",
                 "cuelo",
-                "horneo"
+                "cuelas"
               ],
               "answer": 2,
               "explanation": "\"cuelo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5836,9 +5836,9 @@
               "type": "fill",
               "prompt": "Yo ___ (rallar) el queso.",
               "bank": [
-                "pruebo",
-                "revuelvo",
-                "frío",
+                "rallan",
+                "rallamos",
+                "ralla",
                 "rallo"
               ],
               "answer": "rallo",
@@ -5850,9 +5850,9 @@
               "prompt": "Yo ___ (exprimir) un limón.",
               "choices": [
                 "exprimo",
-                "rallo",
-                "enfrío",
-                "vierto"
+                "exprimes",
+                "exprimen",
+                "exprimimos"
               ],
               "answer": 0,
               "explanation": "\"exprimo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5862,10 +5862,10 @@
               "type": "fill",
               "prompt": "Yo ___ (revolver) el arroz.",
               "bank": [
-                "pico",
-                "lavo",
                 "revuelvo",
-                "enciendo"
+                "revuelve",
+                "revuelven",
+                "revuelves"
               ],
               "answer": "revuelvo",
               "explanation": "\"revuelvo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5875,10 +5875,10 @@
               "type": "mc",
               "prompt": "Yo ___ (tapar) la olla.",
               "choices": [
-                "mezclo",
-                "revuelvo",
+                "tapa",
+                "tapamos",
                 "tapo",
-                "caliento"
+                "tapas"
               ],
               "answer": 2,
               "explanation": "\"tapo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5895,10 +5895,10 @@
               "type": "mc",
               "prompt": "Yo ___ (encender) la estufa.",
               "choices": [
-                "sirvo",
-                "hiervo",
+                "enciende",
+                "encendemos",
                 "enciendo",
-                "rallo"
+                "enciendes"
               ],
               "answer": 2,
               "explanation": "\"enciendo\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5908,10 +5908,10 @@
               "type": "fill",
               "prompt": "Yo ___ (apagar) el horno.",
               "bank": [
+                "apagan",
                 "apago",
-                "lavo",
-                "cuelo",
-                "unto"
+                "apagamos",
+                "apaga"
               ],
               "answer": "apago",
               "explanation": "\"apago\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5922,9 +5922,9 @@
               "prompt": "Yo ___ (medir) la harina.",
               "choices": [
                 "mido",
-                "corto",
-                "añado",
-                "aso"
+                "mides",
+                "miden",
+                "medimos"
               ],
               "answer": 0,
               "explanation": "\"mido\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -5934,9 +5934,9 @@
               "type": "fill",
               "prompt": "Yo ___ (untar) mantequilla en el pan.",
               "bank": [
-                "bato",
-                "frío",
-                "enciendo",
+                "untan",
+                "unta",
+                "untas",
                 "unto"
               ],
               "answer": "unto",
@@ -5947,10 +5947,10 @@
               "type": "mc",
               "prompt": "Yo ___ (enfriar) el postre.",
               "choices": [
-                "bato",
-                "vierto",
+                "enfría",
+                "enfriamos",
                 "enfrío",
-                "enciendo"
+                "enfrías"
               ],
               "answer": 2,
               "explanation": "\"enfrío\" is correct here. Present-tense \"yo\" conjugation of common cooking verbs."
@@ -6470,9 +6470,9 @@
               "prompt": "How do you say \"Speak slowly, please\" in Spanish? ___",
               "bank": [
                 "Habla despacio, por favor",
+                "Espera un momento, por favor",
                 "Cuánto tiempo sin verte",
-                "Siéntete como en casa",
-                "¿Qué significa eso?"
+                "Habla más alto, por favor"
               ],
               "answer": "Habla despacio, por favor",
               "explanation": "Speak slowly, please → Habla despacio, por favor. Common small-talk and reaction phrases."
@@ -8681,10 +8681,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (hablar) con mi madre.",
               "bank": [
-                "pedí",
+                "hablaron",
+                "habló",
                 "hablé",
-                "quise",
-                "tuve"
+                "hablaste"
               ],
               "answer": "hablé",
               "explanation": "\"hablé\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8694,10 +8694,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (comer) en un restaurante.",
               "choices": [
-                "busqué",
-                "vine",
+                "comió",
+                "comimos",
                 "comí",
-                "hablé"
+                "comiste"
               ],
               "answer": 2,
               "explanation": "\"comí\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8708,9 +8708,9 @@
               "prompt": "Ayer yo ___ (vivir) una gran aventura.",
               "bank": [
                 "viví",
-                "vi",
-                "compré",
-                "traje"
+                "vivieron",
+                "vivió",
+                "vivimos"
               ],
               "answer": "viví",
               "explanation": "\"viví\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8721,9 +8721,9 @@
               "prompt": "Ayer yo ___ (ir) al cine.",
               "choices": [
                 "fui",
-                "di",
-                "estuve",
-                "pedí"
+                "fuiste",
+                "fueron",
+                "fuimos"
               ],
               "answer": 0,
               "explanation": "\"fui\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8733,9 +8733,9 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (ser) muy feliz.",
               "bank": [
-                "pedí",
-                "hice",
-                "estuve",
+                "fueron",
+                "fue",
+                "fuiste",
                 "fui"
               ],
               "answer": "fui",
@@ -8753,10 +8753,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (tener) una reunión.",
               "choices": [
-                "pedí",
-                "estuve",
+                "tuvo",
+                "tuvimos",
                 "tuve",
-                "fui"
+                "tuviste"
               ],
               "answer": 2,
               "explanation": "\"tuve\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8767,9 +8767,9 @@
               "prompt": "Ayer yo ___ (hacer) la cena.",
               "bank": [
                 "hice",
-                "busqué",
-                "vine",
-                "fui"
+                "hizo",
+                "hicimos",
+                "hicieron"
               ],
               "answer": "hice",
               "explanation": "\"hice\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8780,9 +8780,9 @@
               "prompt": "Ayer yo ___ (ver) una película.",
               "choices": [
                 "vi",
-                "empecé",
-                "compré",
-                "hice"
+                "viste",
+                "vieron",
+                "vimos"
               ],
               "answer": 0,
               "explanation": "\"vi\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8793,9 +8793,9 @@
               "prompt": "Ayer yo ___ (dar) un regalo.",
               "bank": [
                 "di",
-                "tuve",
-                "puse",
-                "escribí"
+                "dio",
+                "dieron",
+                "diste"
               ],
               "answer": "di",
               "explanation": "\"di\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8805,10 +8805,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (decir) la verdad.",
               "choices": [
-                "comí",
-                "leí",
+                "dijo",
+                "dijimos",
                 "dije",
-                "di"
+                "dijiste"
               ],
               "answer": 2,
               "explanation": "\"dije\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8825,10 +8825,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (poder) terminar el trabajo.",
               "choices": [
-                "tuve",
-                "viajé",
+                "pudo",
+                "pudimos",
                 "pude",
-                "puse"
+                "pudiste"
               ],
               "answer": 2,
               "explanation": "\"pude\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8839,9 +8839,9 @@
               "prompt": "Ayer yo ___ (venir) temprano.",
               "bank": [
                 "vine",
-                "compré",
-                "empecé",
-                "dije"
+                "viniste",
+                "vino",
+                "vinieron"
               ],
               "answer": "vine",
               "explanation": "\"vine\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8852,9 +8852,9 @@
               "prompt": "Ayer yo ___ (querer) descansar.",
               "choices": [
                 "quise",
-                "hablé",
-                "vi",
-                "estuve"
+                "quisiste",
+                "quisieron",
+                "quisimos"
               ],
               "answer": 0,
               "explanation": "\"quise\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8865,9 +8865,9 @@
               "prompt": "Ayer yo ___ (poner) la mesa.",
               "bank": [
                 "puse",
-                "vine",
-                "leí",
-                "comí"
+                "pusimos",
+                "puso",
+                "pusieron"
               ],
               "answer": "puse",
               "explanation": "\"puse\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8877,10 +8877,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (traer) el postre.",
               "choices": [
-                "comí",
-                "leí",
+                "trajo",
+                "trajimos",
                 "traje",
-                "di"
+                "trajiste"
               ],
               "answer": 2,
               "explanation": "\"traje\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8897,10 +8897,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (estar) en casa.",
               "bank": [
-                "tuve",
-                "quise",
-                "escribí",
-                "estuve"
+                "estuviste",
+                "estuvieron",
+                "estuve",
+                "estuvo"
               ],
               "answer": "estuve",
               "explanation": "\"estuve\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8911,9 +8911,9 @@
               "prompt": "Ayer yo ___ (llegar) a tiempo.",
               "choices": [
                 "llegué",
-                "dormí",
-                "fui",
-                "pude"
+                "llegaste",
+                "llegaron",
+                "llegamos"
               ],
               "answer": 0,
               "explanation": "\"llegué\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8923,10 +8923,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (empezar) el proyecto.",
               "bank": [
+                "empezó",
                 "empecé",
-                "pedí",
-                "vi",
-                "traje"
+                "empezamos",
+                "empezaron"
               ],
               "answer": "empecé",
               "explanation": "\"empecé\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8936,10 +8936,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (buscar) mis llaves.",
               "choices": [
-                "puse",
-                "hice",
+                "buscó",
+                "buscamos",
                 "busqué",
-                "dormí"
+                "buscaste"
               ],
               "answer": 2,
               "explanation": "\"busqué\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8949,10 +8949,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (leer) el periódico.",
               "bank": [
-                "hablé",
-                "empecé",
+                "leíste",
+                "leyeron",
                 "leí",
-                "vi"
+                "leyó"
               ],
               "answer": "leí",
               "explanation": "\"leí\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8969,10 +8969,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (escribir) un correo.",
               "bank": [
-                "vine",
-                "comí",
-                "escribí",
-                "busqué"
+                "escribimos",
+                "escribieron",
+                "escribió",
+                "escribí"
               ],
               "answer": "escribí",
               "explanation": "\"escribí\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8982,10 +8982,10 @@
               "type": "mc",
               "prompt": "Ayer yo ___ (dormir) muy bien.",
               "choices": [
-                "tuve",
-                "viajé",
+                "durmió",
+                "dormimos",
                 "dormí",
-                "quise"
+                "dormiste"
               ],
               "answer": 2,
               "explanation": "\"dormí\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -8995,10 +8995,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (pedir) ayuda.",
               "bank": [
+                "pidieron",
                 "pedí",
-                "dije",
-                "compré",
-                "llegué"
+                "pidió",
+                "pediste"
               ],
               "answer": "pedí",
               "explanation": "\"pedí\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -9009,9 +9009,9 @@
               "prompt": "Ayer yo ___ (viajar) a Madrid.",
               "choices": [
                 "viajé",
-                "escribí",
-                "fui",
-                "pude"
+                "viajaste",
+                "viajaron",
+                "viajamos"
               ],
               "answer": 0,
               "explanation": "\"viajé\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -9021,10 +9021,10 @@
               "type": "fill",
               "prompt": "Ayer yo ___ (comprar) un regalo.",
               "bank": [
-                "traje",
-                "dormí",
-                "vi",
-                "compré"
+                "compramos",
+                "compré",
+                "compraron",
+                "compró"
               ],
               "answer": "compré",
               "explanation": "\"compré\" is correct here. Simple past (\"yo\" form) of common regular and irregular verbs."
@@ -9576,10 +9576,10 @@
               "type": "mc",
               "prompt": "La profesora es ___ (kind).",
               "choices": [
-                "amada",
+                "simpático",
                 "amables",
                 "amable",
-                "amados"
+                "simpáticos"
               ],
               "answer": 2,
               "explanation": "\"amable\" is correct here. Adjectives agree in gender and number with the noun they describe."
@@ -10085,10 +10085,10 @@
               "type": "fill",
               "prompt": "Tú ___ (hablar) muy bien español.",
               "bank": [
-                "bebes",
-                "hablas",
-                "empiezas",
-                "vas"
+                "habla",
+                "hablan",
+                "hablamos",
+                "hablas"
               ],
               "answer": "hablas",
               "explanation": "\"hablas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10098,10 +10098,10 @@
               "type": "mc",
               "prompt": "Tú ___ (comer) mucha fruta.",
               "choices": [
-                "sabes",
-                "tienes",
+                "come",
+                "comemos",
                 "comes",
-                "lees"
+                "como"
               ],
               "answer": 2,
               "explanation": "\"comes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10111,10 +10111,10 @@
               "type": "fill",
               "prompt": "Tú ___ (vivir) en Madrid.",
               "bank": [
-                "eres",
+                "viven",
                 "vives",
-                "dices",
-                "estudias"
+                "vive",
+                "vivo"
               ],
               "answer": "vives",
               "explanation": "\"vives\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10125,9 +10125,9 @@
               "prompt": "Tú ___ (tener) razón.",
               "choices": [
                 "tienes",
-                "hablas",
-                "quieres",
-                "duermes"
+                "tengo",
+                "tienen",
+                "tenemos"
               ],
               "answer": 0,
               "explanation": "\"tienes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10138,9 +10138,9 @@
               "prompt": "Tú ___ (ser) muy amable.",
               "bank": [
                 "eres",
-                "vives",
-                "sabes",
-                "trabajas"
+                "somos",
+                "es",
+                "son"
               ],
               "answer": "eres",
               "explanation": "\"eres\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10157,10 +10157,10 @@
               "type": "mc",
               "prompt": "Tú ___ (estar) cansado.",
               "choices": [
-                "dices",
-                "haces",
+                "está",
+                "estamos",
                 "estás",
-                "estudias"
+                "estoy"
               ],
               "answer": 2,
               "explanation": "\"estás\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10170,9 +10170,9 @@
               "type": "fill",
               "prompt": "Tú ___ (ir) a la escuela.",
               "bank": [
-                "escribes",
-                "quieres",
-                "hablas",
+                "van",
+                "voy",
+                "va",
                 "vas"
               ],
               "answer": "vas",
@@ -10184,9 +10184,9 @@
               "prompt": "Tú ___ (hacer) la tarea.",
               "choices": [
                 "haces",
-                "eres",
-                "ves",
-                "juegas"
+                "hago",
+                "hacen",
+                "hacemos"
               ],
               "answer": 0,
               "explanation": "\"haces\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10196,10 +10196,10 @@
               "type": "fill",
               "prompt": "Tú ___ (querer) un café.",
               "bank": [
-                "haces",
-                "llegas",
+                "queremos",
                 "quieres",
-                "duermes"
+                "quieren",
+                "quiere"
               ],
               "answer": "quieres",
               "explanation": "\"quieres\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10209,10 +10209,10 @@
               "type": "mc",
               "prompt": "Tú ___ (poder) ayudarme.",
               "choices": [
-                "comes",
-                "juegas",
+                "puede",
+                "podemos",
                 "puedes",
-                "quieres"
+                "puedo"
               ],
               "answer": 2,
               "explanation": "\"puedes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10229,10 +10229,10 @@
               "type": "mc",
               "prompt": "Tú ___ (saber) la respuesta.",
               "choices": [
-                "escribes",
-                "tomas",
+                "sabe",
+                "sabemos",
                 "sabes",
-                "hablas"
+                "sé"
               ],
               "answer": 2,
               "explanation": "\"sabes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10243,9 +10243,9 @@
               "prompt": "Tú ___ (tomar) el autobús.",
               "bank": [
                 "tomas",
-                "ves",
-                "eres",
-                "llegas"
+                "toma",
+                "toman",
+                "tomo"
               ],
               "answer": "tomas",
               "explanation": "\"tomas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10256,9 +10256,9 @@
               "prompt": "Tú ___ (ver) la película.",
               "choices": [
                 "ves",
-                "vienes",
-                "trabajas",
-                "vives"
+                "veo",
+                "ven",
+                "vemos"
               ],
               "answer": 0,
               "explanation": "\"ves\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10268,10 +10268,10 @@
               "type": "fill",
               "prompt": "Tú ___ (venir) a la fiesta.",
               "bank": [
-                "dices",
-                "pides",
-                "vienes",
-                "vas"
+                "viene",
+                "vienen",
+                "venimos",
+                "vienes"
               ],
               "answer": "vienes",
               "explanation": "\"vienes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10281,10 +10281,10 @@
               "type": "mc",
               "prompt": "Tú ___ (decir) la verdad.",
               "choices": [
-                "llegas",
-                "duermes",
+                "dice",
+                "decimos",
                 "dices",
-                "eres"
+                "digo"
               ],
               "answer": 2,
               "explanation": "\"dices\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10301,10 +10301,10 @@
               "type": "fill",
               "prompt": "Tú ___ (dormir) bien.",
               "bank": [
-                "quieres",
-                "bebes",
+                "duermo",
+                "duerme",
                 "duermes",
-                "comes"
+                "duermen"
               ],
               "answer": "duermes",
               "explanation": "\"duermes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10315,9 +10315,9 @@
               "prompt": "Tú ___ (beber) agua.",
               "choices": [
                 "bebes",
-                "lees",
-                "pides",
-                "vas"
+                "bebo",
+                "beben",
+                "bebemos"
               ],
               "answer": 0,
               "explanation": "\"bebes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10327,10 +10327,10 @@
               "type": "fill",
               "prompt": "Tú ___ (leer) el periódico.",
               "bank": [
-                "escribes",
-                "sabes",
-                "tienes",
-                "lees"
+                "leen",
+                "leemos",
+                "lees",
+                "lee"
               ],
               "answer": "lees",
               "explanation": "\"lees\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10340,10 +10340,10 @@
               "type": "mc",
               "prompt": "Tú ___ (escribir) una carta.",
               "choices": [
-                "comes",
-                "juegas",
+                "escribe",
+                "escribimos",
                 "escribes",
-                "quieres"
+                "escribo"
               ],
               "answer": 2,
               "explanation": "\"escribes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10353,10 +10353,10 @@
               "type": "fill",
               "prompt": "Tú ___ (jugar) al fútbol.",
               "bank": [
-                "ves",
                 "juegas",
-                "trabajas",
-                "estás"
+                "juegan",
+                "juega",
+                "juego"
               ],
               "answer": "juegas",
               "explanation": "\"juegas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10373,10 +10373,10 @@
               "type": "fill",
               "prompt": "Tú ___ (trabajar) mucho.",
               "bank": [
-                "hablas",
+                "trabajo",
+                "trabajan",
                 "trabajas",
-                "haces",
-                "lees"
+                "trabaja"
               ],
               "answer": "trabajas",
               "explanation": "\"trabajas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10386,10 +10386,10 @@
               "type": "mc",
               "prompt": "Tú ___ (estudiar) español.",
               "choices": [
-                "vienes",
-                "vas",
+                "estudia",
+                "estudiamos",
                 "estudias",
-                "trabajas"
+                "estudio"
               ],
               "answer": 2,
               "explanation": "\"estudias\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10399,10 +10399,10 @@
               "type": "fill",
               "prompt": "Tú ___ (llegar) tarde.",
               "bank": [
-                "juegas",
-                "vives",
-                "llegas",
-                "puedes"
+                "llegan",
+                "llega",
+                "llegamos",
+                "llegas"
               ],
               "answer": "llegas",
               "explanation": "\"llegas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10413,9 +10413,9 @@
               "prompt": "Tú ___ (empezar) el proyecto.",
               "choices": [
                 "empiezas",
-                "quieres",
-                "duermes",
-                "llegas"
+                "empiezo",
+                "empiezan",
+                "empezamos"
               ],
               "answer": 0,
               "explanation": "\"empiezas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -10425,10 +10425,10 @@
               "type": "fill",
               "prompt": "Tú ___ (pedir) ayuda.",
               "bank": [
-                "vienes",
-                "tienes",
+                "pide",
+                "piden",
                 "pides",
-                "trabajas"
+                "pido"
               ],
               "answer": "pides",
               "explanation": "\"pides\" is correct here. Present-tense \"tú\" conjugation of common verbs."
@@ -11325,10 +11325,10 @@
               "type": "mc",
               "prompt": "How do you say \"The check, please\" in Spanish?",
               "choices": [
+                "Agua, por favor",
                 "Mesa para dos, por favor",
-                "Quisiera...",
                 "La cuenta, por favor",
-                "¿Me da el menú?"
+                "Quisiera..."
               ],
               "answer": 2,
               "explanation": "The check, please → La cuenta, por favor. Common restaurant phrases."
@@ -11360,8 +11360,8 @@
               "choices": [
                 "Mesa para dos, por favor",
                 "La cuenta, por favor",
-                "¿Tienen opciones vegetarianas?",
-                "Quisiera..."
+                "Agua, por favor",
+                "¿Tienen opciones vegetarianas?"
               ],
               "answer": 0,
               "explanation": "Table for two, please → Mesa para dos, por favor. Common restaurant phrases."
@@ -11456,10 +11456,10 @@
               "type": "mc",
               "prompt": "How do you say \"Water, please\" in Spanish?",
               "choices": [
-                "Nada más, gracias",
-                "Estaba delicioso",
+                "Mesa para dos, por favor",
+                "La cuenta, por favor",
                 "Agua, por favor",
-                "Buen provecho"
+                "Estaba delicioso"
               ],
               "answer": 2,
               "explanation": "Water, please → Agua, por favor. Common restaurant phrases."
@@ -11471,8 +11471,8 @@
               "bank": [
                 "Nada más, gracias",
                 "Estaba delicioso",
-                "Buen provecho",
-                "Agua, por favor"
+                "Muy rico, gracias",
+                "Un poco más, gracias"
               ],
               "answer": "Nada más, gracias",
               "explanation": "Nothing else, thanks → Nada más, gracias. Common restaurant phrases."
@@ -12673,7 +12673,7 @@
             {
               "id": "esa2p16q9",
               "type": "fill",
-              "prompt": "Ellos van a ___ (to do) una fiesta.",
+              "prompt": "Ellos van a ___ (to throw) una fiesta.",
               "bank": [
                 "haciendo",
                 "hacer",
@@ -13001,10 +13001,10 @@
               "type": "mc",
               "prompt": "Yo ___ (poner) la mesa todos los días.",
               "choices": [
-                "conozco",
-                "valgo",
+                "pone",
+                "ponemos",
                 "pongo",
-                "traigo"
+                "pones"
               ],
               "answer": 2,
               "explanation": "\"pongo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13014,10 +13014,10 @@
               "type": "fill",
               "prompt": "Yo ___ (salir) de casa a las ocho.",
               "bank": [
-                "caigo",
+                "salen",
+                "sales",
                 "salgo",
-                "pongo",
-                "conduzco"
+                "sale"
               ],
               "answer": "salgo",
               "explanation": "\"salgo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13028,9 +13028,9 @@
               "prompt": "Yo ___ (traer) el postre a la fiesta.",
               "choices": [
                 "traigo",
-                "doy",
-                "valgo",
-                "conozco"
+                "traes",
+                "traen",
+                "traemos"
               ],
               "answer": 0,
               "explanation": "\"traigo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13040,9 +13040,9 @@
               "type": "fill",
               "prompt": "Yo ___ (conducir) al trabajo.",
               "bank": [
-                "caigo",
-                "traigo",
-                "hago",
+                "conducen",
+                "conducimos",
+                "conduce",
                 "conduzco"
               ],
               "answer": "conduzco",
@@ -13053,10 +13053,10 @@
               "type": "mc",
               "prompt": "Yo ___ (conocer) a mucha gente aquí.",
               "choices": [
-                "veo",
-                "salgo",
+                "conoce",
+                "conocemos",
                 "conozco",
-                "hago"
+                "conoces"
               ],
               "answer": 2,
               "explanation": "\"conozco\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13073,10 +13073,10 @@
               "type": "fill",
               "prompt": "Yo ___ (caer) bien a mis compañeros.",
               "bank": [
+                "cae",
                 "caigo",
-                "pongo",
-                "valgo",
-                "doy"
+                "caen",
+                "caes"
               ],
               "answer": "caigo",
               "explanation": "\"caigo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13087,9 +13087,9 @@
               "prompt": "Yo ___ (valer) la pena para este equipo.",
               "choices": [
                 "valgo",
-                "conduzco",
-                "salgo",
-                "veo"
+                "vales",
+                "valen",
+                "valemos"
               ],
               "answer": 0,
               "explanation": "\"valgo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13099,9 +13099,9 @@
               "type": "fill",
               "prompt": "Yo ___ (hacer) ejercicio cada mañana.",
               "bank": [
-                "pongo",
-                "traigo",
-                "doy",
+                "hacen",
+                "hacemos",
+                "hace",
                 "hago"
               ],
               "answer": "hago",
@@ -13112,10 +13112,10 @@
               "type": "mc",
               "prompt": "Yo ___ (dar) consejos a mis amigos.",
               "choices": [
-                "conozco",
-                "valgo",
+                "da",
+                "damos",
                 "doy",
-                "traigo"
+                "das"
               ],
               "answer": 2,
               "explanation": "\"doy\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -13125,10 +13125,10 @@
               "type": "fill",
               "prompt": "Yo ___ (ver) las noticias por la noche.",
               "bank": [
+                "ves",
                 "veo",
-                "caigo",
-                "salgo",
-                "conduzco"
+                "ve",
+                "ven"
               ],
               "answer": "veo",
               "explanation": "\"veo\" is correct here. Verbs with an irregular \"yo\" form in the present tense."
@@ -15521,9 +15521,9 @@
               "type": "fill",
               "prompt": "Nosotros ___ (empezar) el proyecto mañana.",
               "bank": [
-                "preferimos",
-                "construimos",
-                "freímos",
+                "empiezas",
+                "empiezo",
+                "empiezan",
                 "empezamos"
               ],
               "answer": "empezamos",
@@ -15535,9 +15535,9 @@
               "prompt": "Nosotros ___ (terminar) el trabajo a las cinco.",
               "choices": [
                 "terminamos",
-                "concluimos",
-                "perdemos",
-                "cerramos"
+                "termino",
+                "terminan",
+                "termina"
               ],
               "answer": 0,
               "explanation": "\"terminamos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15548,9 +15548,9 @@
               "prompt": "Nosotros ___ (entender) la lección.",
               "bank": [
                 "entendemos",
-                "incluimos",
-                "mostramos",
-                "terminamos"
+                "entiendes",
+                "entienden",
+                "entiende"
               ],
               "answer": "entendemos",
               "explanation": "\"entendemos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15560,10 +15560,10 @@
               "type": "mc",
               "prompt": "Nosotros ___ (pensar) viajar pronto.",
               "choices": [
-                "dormimos",
-                "reímos",
+                "piensas",
+                "piensa",
                 "pensamos",
-                "recordamos"
+                "pienso"
               ],
               "answer": 2,
               "explanation": "\"pensamos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15573,10 +15573,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (perder) el autobús a veces.",
               "bank": [
-                "recordamos",
-                "huimos",
                 "perdemos",
-                "dormimos"
+                "pierdo",
+                "pierden",
+                "pierdes"
               ],
               "answer": "perdemos",
               "explanation": "\"perdemos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15594,9 +15594,9 @@
               "prompt": "Nosotros ___ (encontrar) las llaves.",
               "choices": [
                 "encontramos",
-                "construimos",
-                "freímos",
-                "pedimos"
+                "encuentro",
+                "encuentran",
+                "encuentra"
               ],
               "answer": 0,
               "explanation": "\"encontramos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15606,10 +15606,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (dormir) ocho horas.",
               "bank": [
-                "sonreímos",
+                "duerme",
+                "duermen",
                 "dormimos",
-                "seguimos",
-                "conseguimos"
+                "duermes"
               ],
               "answer": "dormimos",
               "explanation": "\"dormimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15619,10 +15619,10 @@
               "type": "mc",
               "prompt": "Nosotros ___ (pedir) ayuda cuando la necesitamos.",
               "choices": [
-                "terminamos",
-                "incluimos",
+                "pides",
+                "pide",
                 "pedimos",
-                "repetimos"
+                "pido"
               ],
               "answer": 2,
               "explanation": "\"pedimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15632,10 +15632,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (seguir) las instrucciones.",
               "bank": [
-                "pedimos",
-                "destruimos",
-                "seguimos",
-                "empezamos"
+                "sigo",
+                "siguen",
+                "sigues",
+                "seguimos"
               ],
               "answer": "seguimos",
               "explanation": "\"seguimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15646,9 +15646,9 @@
               "prompt": "Nosotros ___ (repetir) la pregunta.",
               "choices": [
                 "repetimos",
-                "perdemos",
-                "mostramos",
-                "incluimos"
+                "repito",
+                "repiten",
+                "repite"
               ],
               "answer": 0,
               "explanation": "\"repetimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15666,9 +15666,9 @@
               "prompt": "Nosotros ___ (preferir) el té al café.",
               "choices": [
                 "preferimos",
-                "concluimos",
-                "pensamos",
-                "cerramos"
+                "prefiero",
+                "prefieren",
+                "prefiere"
               ],
               "answer": 0,
               "explanation": "\"preferimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15679,9 +15679,9 @@
               "prompt": "Nosotros ___ (cerrar) la tienda a las nueve.",
               "bank": [
                 "cerramos",
-                "construimos",
-                "freímos",
-                "repetimos"
+                "cierran",
+                "cierras",
+                "cierro"
               ],
               "answer": "cerramos",
               "explanation": "\"cerramos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15691,10 +15691,10 @@
               "type": "mc",
               "prompt": "Nosotros ___ (mostrar) el camino a los turistas.",
               "choices": [
-                "encontramos",
-                "reímos",
+                "muestras",
+                "muestra",
                 "mostramos",
-                "recordamos"
+                "muestro"
               ],
               "answer": 2,
               "explanation": "\"mostramos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15704,9 +15704,9 @@
               "type": "fill",
               "prompt": "Nosotros ___ (recordar) su cumpleaños.",
               "bank": [
-                "cerramos",
-                "incluimos",
-                "terminamos",
+                "recuerda",
+                "recuerdas",
+                "recuerdan",
                 "recordamos"
               ],
               "answer": "recordamos",
@@ -15718,9 +15718,9 @@
               "prompt": "Nosotros ___ (volver) a casa tarde.",
               "choices": [
                 "volvemos",
-                "construimos",
-                "freímos",
-                "dormimos"
+                "vuelvo",
+                "vuelven",
+                "vuelve"
               ],
               "answer": 0,
               "explanation": "\"volvemos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15737,10 +15737,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (conseguir) boletos para el concierto.",
               "bank": [
+                "consiguen",
                 "conseguimos",
-                "mostramos",
-                "huimos",
-                "encontramos"
+                "consigo",
+                "consigues"
               ],
               "answer": "conseguimos",
               "explanation": "\"conseguimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15750,10 +15750,10 @@
               "type": "mc",
               "prompt": "Nosotros ___ (elegir) el mejor restaurante.",
               "choices": [
-                "terminamos",
-                "incluimos",
+                "eliges",
+                "elige",
                 "elegimos",
-                "seguimos"
+                "elijo"
               ],
               "answer": 2,
               "explanation": "\"elegimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15763,10 +15763,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (construir) una casa nueva.",
               "bank": [
-                "sonreímos",
-                "pedimos",
-                "construimos",
-                "volvemos"
+                "construyes",
+                "construyen",
+                "construye",
+                "construimos"
               ],
               "answer": "construimos",
               "explanation": "\"construimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15777,9 +15777,9 @@
               "prompt": "Nosotros ___ (destruir) los documentos viejos.",
               "choices": [
                 "destruimos",
-                "mostramos",
-                "huimos",
-                "entendemos"
+                "destruyo",
+                "destruyen",
+                "destruye"
               ],
               "answer": 0,
               "explanation": "\"destruimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15789,10 +15789,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (incluir) a todos en el plan.",
               "bank": [
+                "incluyo",
+                "incluyen",
                 "incluimos",
-                "conseguimos",
-                "terminamos",
-                "seguimos"
+                "incluyes"
               ],
               "answer": "incluimos",
               "explanation": "\"incluimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15810,9 +15810,9 @@
               "prompt": "Nosotros ___ (huir) del peligro.",
               "bank": [
                 "huimos",
-                "volvemos",
-                "pedimos",
-                "sonreímos"
+                "huyen",
+                "huyes",
+                "huye"
               ],
               "answer": "huimos",
               "explanation": "\"huimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15823,9 +15823,9 @@
               "prompt": "Nosotros ___ (concluir) la reunión temprano.",
               "choices": [
                 "concluimos",
-                "huimos",
-                "pensamos",
-                "preferimos"
+                "concluyo",
+                "concluyen",
+                "concluye"
               ],
               "answer": 0,
               "explanation": "\"concluimos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15835,10 +15835,10 @@
               "type": "fill",
               "prompt": "Nosotros ___ (sonreír) mucho.",
               "bank": [
-                "mostramos",
+                "sonrío",
+                "sonríen",
                 "sonreímos",
-                "encontramos",
-                "incluimos"
+                "sonríes"
               ],
               "answer": "sonreímos",
               "explanation": "\"sonreímos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15848,10 +15848,10 @@
               "type": "mc",
               "prompt": "Nosotros ___ (reír) con sus chistes.",
               "choices": [
-                "terminamos",
-                "destruimos",
+                "ríes",
+                "ríe",
                 "reímos",
-                "seguimos"
+                "río"
               ],
               "answer": 2,
               "explanation": "\"reímos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
@@ -15861,9 +15861,9 @@
               "type": "fill",
               "prompt": "Nosotros ___ (freír) las papas.",
               "bank": [
-                "destruimos",
-                "terminamos",
-                "cerramos",
+                "fríes",
+                "fríen",
+                "fríe",
                 "freímos"
               ],
               "answer": "freímos",
