@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import LearnWithAlphonsoKit
 
 /// The three themes the web app defines in `src/styles.css` (`meadow`
 /// default, `studio-ink`, `manuscript`) -- iOS now mirrors all three, not
@@ -330,6 +331,17 @@ public final class AlphonsoThemeManager {
     }
 
     private static let storageKey = "alphonso.theme"
+    private static let paletteStorageKey = "alphonso.palette"
+
+    /// The palette the user picked, if any (visual round 6). `nil` until they pick one.
+    private var chosenPalette: DSPaletteID?
+
+    /// The design system palette (`AlphonsoDS`): the user's pick, or until then the one closest to their theme
+    /// (Meadow stays Meadow, the other three become Royal). Read by `AlphonsoDS.current` and the
+    /// `\.alphonsoDS` environment value; today's screens do not read it yet.
+    public var paletteID: DSPaletteID {
+        chosenPalette ?? DSPaletteID.forTheme(themeID.rawValue)
+    }
 
     private init() {
         if let saved = UserDefaults.standard.string(forKey: Self.storageKey),
@@ -338,6 +350,15 @@ public final class AlphonsoThemeManager {
         } else {
             themeID = .canopy
         }
+        chosenPalette = UserDefaults.standard.string(forKey: Self.paletteStorageKey).flatMap(DSPaletteID.init(rawValue:))
+    }
+
+    /// Sets the palette locally, stored next to the theme. Same guard as `setTheme`: an `@Observable` setter
+    /// notifies on every assignment, so a same-value write would re-render for nothing.
+    public func setPalette(_ id: DSPaletteID) {
+        guard id != chosenPalette else { return }
+        chosenPalette = id
+        UserDefaults.standard.set(id.rawValue, forKey: Self.paletteStorageKey)
     }
 
     /// Sets the theme locally (instant, persisted for next launch via

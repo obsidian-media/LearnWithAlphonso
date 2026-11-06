@@ -18,6 +18,7 @@ import { AttributionBridge } from "../components/AttributionBridge";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
 import { useTheme } from "../lib/theme";
+import { PALETTE_BOOT_SCRIPT } from "../lib/palette";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
@@ -143,6 +144,8 @@ function RootShell({ children }: { children: ReactNode }) {
             __html: `(function(){try{var t=localStorage.getItem("theme")||"canopy";if(t==="studio-ink"||t==="manuscript"||t==="canopy")document.documentElement.dataset.theme=t;}catch(e){}})();`,
           }}
         />
+        {/* The design system palette (src/lib/palette.ts), set before first paint for the same reason. */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: PALETTE_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
