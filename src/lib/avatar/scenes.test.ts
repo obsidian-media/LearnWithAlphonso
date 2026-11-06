@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SCENARIOS } from "@/data/scenarios";
-import { DEFAULT_SCENE, SCENARIO_SCENE_IDS, sceneArt } from "./scenes";
+import { DEFAULT_SCENE, EVENING_OVERLAY, SCENARIO_SCENE_IDS, sceneArt } from "./scenes";
 
 const root = path.resolve(import.meta.dirname, "../../..");
 
@@ -11,8 +11,17 @@ describe("the room behind Alphonso", () => {
     expect([...SCENARIO_SCENE_IDS].sort()).toEqual(SCENARIOS.map((s) => s.id).sort());
   });
 
-  it("falls back to the default study room for a scenario without art, a campaign scene, or nothing", () => {
-    for (const id of [...SCENARIO_SCENE_IDS, "city-day", "free-talk", "", null, undefined])
+  it("gives every scenario its own image, and the file exists", () => {
+    for (const s of SCENARIOS) {
+      const art = sceneArt(s.id);
+      expect(art.id, s.id).toBe(s.id);
+      expect(art.dimInDark, s.id).toBe(true);
+      expect(fs.existsSync(path.join(root, "public", art.light)), art.light).toBe(true);
+    }
+  });
+
+  it("falls back to the default study room for a campaign scene, free talk, an unknown id or nothing", () => {
+    for (const id of ["city-day", "free-talk", "", "new-scenario", null, undefined])
       expect(sceneArt(id).id, String(id)).toBe(DEFAULT_SCENE);
   });
 
@@ -25,6 +34,10 @@ describe("the room behind Alphonso", () => {
       dimInDark: true,
     });
     expect(sceneArt("doctor", new Set(["coffee"])).id).toBe(DEFAULT_SCENE);
+  });
+
+  it("dims a scenario image with navy #16203c at 50% in dark mode", () => {
+    expect(EVENING_OVERLAY).toBe("rgba(22, 32, 60, 0.5)");
   });
 
   it("gives the default room its own evening image", () => {

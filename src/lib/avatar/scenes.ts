@@ -18,8 +18,8 @@ export const SCENARIO_SCENE_IDS = [
   "debate",
 ] as const;
 
-/** Scenario ids whose own image has been added. None yet: every call uses the default room until they are. */
-const SCENES_WITH_ART: ReadonlySet<string> = new Set<string>([]);
+/** Scenario ids that have their own image in public/avatar/scenes/. A scenario missing here gets the default room. */
+const SCENES_WITH_ART: ReadonlySet<string> = new Set<string>(SCENARIO_SCENE_IDS);
 
 export const DEFAULT_SCENE = "room";
 const BASE = "/avatar/scenes";
@@ -50,5 +50,5 @@ export function sceneArt(
   };
 }
 
-/** The evening overlay on a scenario image in dark mode: navy, multiplied, about 45%. */
-export const EVENING_OVERLAY = "rgba(20, 30, 70, 0.45)";
+/** The evening overlay on a scenario image in dark mode: navy #16203c, multiplied, at 50%. */
+export const EVENING_OVERLAY = "rgba(22, 32, 60, 0.5)";
