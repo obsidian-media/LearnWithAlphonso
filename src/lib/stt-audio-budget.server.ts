@@ -2,9 +2,12 @@ import { nextUtcMidnight, quotaFailureResponse } from "./ai-quota-response";
 
 /**
  * Daily voice time for /api/stt (20261105100900). The 120-calls-a-day limit counts calls; this counts what a call
- * costs: seconds of audio. Before a call the route refuses when the day's seconds are spent; after it, the route adds
- * the length the speech provider reports. Check and charge are separate steps, so a burst of parallel calls can
- * finish a little past the budget; the 10-a-minute limit and the 1 MB upload cap bound that.
+ * costs: seconds of audio.
+ *
+ * Before the provider call the route RESERVES the per-call maximum, atomically and only if the day's total stays within
+ * the budget, so parallel calls cannot overrun it. Afterwards it SETTLES the reservation to the length the provider
+ * reports. A timeout or an unreadable success answer keeps the reservation (the provider had the audio); a provider that
+ * could not be reached, or that answered with an error, is refunded in full.
  */
 
 /** 20 minutes of transcribed speech a day, far above a day of lessons and tutor turns. */
@@ -24,7 +27,8 @@ export const dailyAudioSeconds = () =>
   envSeconds("STT_DAILY_AUDIO_SECONDS", DEFAULT_DAILY_AUDIO_SECONDS);
 export const maxCallSeconds = () => envSeconds("STT_MAX_CALL_SECONDS", DEFAULT_MAX_CALL_SECONDS);
 
-type RpcResult = { data: unknown; error: { message: string } | null };
+type RpcError = { message: string; code?: string };
+type RpcResult = { data: unknown; error: RpcError | null };
 export type BudgetDb = { rpc: (fn: never, args: never) => PromiseLike<RpcResult> };
 const call = (db: BudgetDb, fn: string, args: Record<string, unknown>) =>
   (db.rpc as unknown as (f: string, a: Record<string, unknown>) => PromiseLike<RpcResult>)(
@@ -32,23 +36,52 @@ const call = (db: BudgetDb, fn: string, args: Record<string, unknown>) =>
     args,
   );
 
-/** null = go ahead. Otherwise the response to send: the same 429 the daily call limit uses, or a 500. */
-export async function audioBudgetRefusal(
+/**
+ * The web app deploys at the same moment the migrations are applied, so for a few minutes this code can run against a
+ * database without the budget functions. PostgREST reports that as PGRST202, Postgres as 42883.
+ */
+const notDeployedYet = (e: RpcError) => e.code === "PGRST202" || e.code === "42883";
+let warnedNotDeployed = false;
+
+/** The day the seconds were booked on and how many; null when the budget is not in force (not deployed yet). */
+export type Reservation = { day: string; seconds: number } | null;
+
+export async function reserveAudioSeconds(
   db: BudgetDb,
   userId: string,
   now: Date = new Date(),
-): Promise<Response | null> {
-  const { data, error } = await call(db, "stt_audio_seconds_used", { _user_id: userId });
-  if (error || typeof data !== "number") {
-    return Response.json({ error: "Could not verify your usage." }, { status: 500 });
-  }
+): Promise<{ ok: true; reservation: Reservation } | { ok: false; response: Response }> {
+  const seconds = maxCallSeconds();
   const budget = dailyAudioSeconds();
-  if (data < budget) return null;
-  return quotaFailureResponse({
-    status: 429,
-    message: `Daily voice time limit reached (${Math.round(budget / 60)} min/day). Try again tomorrow.`,
-    resetsAt: nextUtcMidnight(now),
+  const { data, error } = await call(db, "reserve_stt_audio_seconds", {
+    _user_id: userId,
+    _seconds: seconds,
+    _budget: budget,
   });
+  if (error) {
+    if (notDeployedYet(error)) {
+      if (!warnedNotDeployed) {
+        warnedNotDeployed = true;
+        console.warn("[stt] voice time budget not in the database yet; serving without it");
+      }
+      return { ok: true, reservation: null };
+    }
+    return {
+      ok: false,
+      response: Response.json({ error: "Could not verify your usage." }, { status: 500 }),
+    };
+  }
+  if (typeof data !== "string") {
+    return {
+      ok: false,
+      response: quotaFailureResponse({
+        status: 429,
+        message: `Daily voice time limit reached (${Math.round(budget / 60)} min/day). Try again tomorrow.`,
+        resetsAt: nextUtcMidnight(now),
+      }),
+    };
+  }
+  return { ok: true, reservation: { day: data, seconds } };
 }
 
 /** Whole seconds to charge: the provider's length rounded up, or the per-call maximum when it gives none. */
@@ -63,15 +96,23 @@ export function chargeableSeconds(providerDuration: unknown): number {
   return maxCallSeconds();
 }
 
-/** Never throws: the learner already has the transcript, and a failed write must not take it away. */
-export async function chargeAudioSeconds(db: BudgetDb, userId: string, seconds: number) {
+/** Moves a reservation to `actualSeconds` (0 = full refund). Never throws: a failed write must not cost the answer. */
+export async function settleAudioSeconds(
+  db: BudgetDb,
+  userId: string,
+  reservation: Reservation,
+  actualSeconds: number,
+) {
+  if (!reservation || actualSeconds === reservation.seconds) return;
   try {
-    const { error } = await call(db, "add_stt_audio_seconds", {
+    const { error } = await call(db, "settle_stt_audio_seconds", {
       _user_id: userId,
-      _seconds: seconds,
+      _day: reservation.day,
+      _reserved: reservation.seconds,
+      _actual: actualSeconds,
     });
-    if (error) console.error("[stt] could not record voice time:", error.message);
+    if (error) console.error("[stt] could not settle voice time:", error.message);
   } catch (e) {
-    console.error("[stt] could not record voice time:", e instanceof Error ? e.message : e);
+    console.error("[stt] could not settle voice time:", e instanceof Error ? e.message : e);
   }
 }

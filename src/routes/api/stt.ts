@@ -23,9 +23,6 @@ export const Route = createFileRoute("/api/stt")({
         const access = await authorizeAiRequest(request, "stt", { route: "stt" });
         if (!access.ok) return access.response;
         const budget = await import("@/lib/stt-audio-budget.server");
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const refusal = await budget.audioBudgetRefusal(supabaseAdmin, access.userId);
-        if (refusal) return refusal;
         const inForm = await request.formData().catch(() => null);
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {
@@ -63,12 +60,16 @@ export const Route = createFileRoute("/api/stt")({
         if (declared !== null && declared > budget.maxCallSeconds()) {
           return Response.json({ error: "audio-too-long" }, { status: 413 });
         }
+        // Reserve the per-call maximum first: atomic, so parallel calls cannot pass the day's budget together.
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const reserved = await budget.reserveAudioSeconds(supabaseAdmin, access.userId);
+        if (!reserved.ok) return reserved.response;
+        const settle = (seconds: number) =>
+          budget.settleAudioSeconds(supabaseAdmin, access.userId, reserved.reservation, seconds);
         // From here the provider may transcribe, and bill, the audio even when no usable answer comes back. So the
         // upstream call is deliberately NOT tied to the caller's connection (hanging up after the upload must not
-        // skip the charge), and an outcome whose length is unknown (a timeout, an unreadable answer) is charged the
-        // per-call maximum.
-        const chargeUnknownLength = () =>
-          budget.chargeAudioSeconds(supabaseAdmin, access.userId, budget.maxCallSeconds());
+        // skip the charge), and an outcome whose length is unknown (a timeout, an unreadable answer) keeps the
+        // reservation of the per-call maximum.
         let resp: Response;
         try {
           resp = await fetch(
@@ -85,12 +86,14 @@ export const Route = createFileRoute("/api/stt")({
           );
         } catch (e) {
           // A timeout means the provider had the audio; a network failure before that (DNS, refused) means it did not.
-          if (e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError")) {
-            await chargeUnknownLength();
-          }
+          const timedOut =
+            e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError");
+          if (!timedOut) await settle(0);
           return Response.json({ error: "transcription-unavailable" }, { status: 504 });
         }
         if (!resp.ok) {
+          // An error answer means no transcription: refund.
+          await settle(0);
           const t = await resp.text().catch(() => "");
           return upstreamErrorResponse("Deepgram STT", resp.status, t);
         }
@@ -104,18 +107,13 @@ export const Route = createFileRoute("/api/stt")({
         try {
           data = (await resp.json()) as DeepgramReply;
         } catch {
-          // A success status means the audio was transcribed (and billed) even though the answer cannot be read.
-          await chargeUnknownLength();
+          // A success status means the audio was transcribed (and billed) even though the answer cannot be read:
+          // the reservation stands.
           return Response.json({ error: "transcription-unavailable" }, { status: 502 });
         }
-        // Charged after the fact, from the length the provider billed. An over-long recording (a WebM states no
-        // length up front) is charged in full and still answered: the cost is already paid, and the budget then
-        // stops the rest of the day.
-        await budget.chargeAudioSeconds(
-          supabaseAdmin,
-          access.userId,
-          budget.chargeableSeconds(data.metadata?.duration),
-        );
+        // Settled to the length the provider billed. An over-long recording (a WebM states no length up front) is
+        // charged in full and still answered: the cost is already paid, and the budget then stops the rest of the day.
+        await settle(budget.chargeableSeconds(data.metadata?.duration));
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),

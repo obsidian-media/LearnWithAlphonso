@@ -271,6 +271,9 @@ jobs:
             echo "LESSON_SESSION_SECRET=$(openssl rand -hex 32)"
           } >> "$GITHUB_ENV"
 
+      - name: Voice time reservations hold under parallel calls (real Postgres)
+        run: bunx vitest run src/lib/stt-audio-budget-concurrency.test.ts
+
       - name: Run the signed-in journey
         run: bunx playwright test e2e/signed-in.spec.ts --reporter=github,html
 
