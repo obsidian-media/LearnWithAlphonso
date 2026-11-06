@@ -104,9 +104,10 @@ describe("Reduce Motion", () => {
       ].sort(),
     );
     expect(view.match(/frame\.swayDegrees = /g)).toHaveLength(1);
-    expect(view).toContain("frame.swayDegrees = AvatarIdleMotion.swayDegrees(at: now)");
+    // The whole line, so nothing voice-driven can be added onto the clock's value.
+    expect(view).toMatch(/^\s*frame\.swayDegrees = AvatarIdleMotion\.swayDegrees\(at: now\)$/m);
     expect(view.match(/frame\.breath = /g)).toHaveLength(1);
-    expect(view).toContain("frame.breath = AvatarIdleMotion.breathScale(at: now)");
+    expect(view).toMatch(/^\s*frame\.breath = AvatarIdleMotion\.breathScale\(at: now\)$/m);
     const idle = code(`${KIT}/AvatarIdle.swift`);
     expect(idle).toContain("static func swayDegrees(at time: TimeInterval) -> Double");
     expect(idle).toContain(

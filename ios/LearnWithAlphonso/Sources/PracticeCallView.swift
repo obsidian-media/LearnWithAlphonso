@@ -198,7 +198,8 @@ struct PracticeCallView<Sheet: View>: View {
     private var caption: some View {
         if let caption = CallCaptionRules.caption(turns: turns, isRecording: voice.isRecording) {
             let words = caption.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
-            TimelineView(.animation(minimumInterval: 1.0 / 15.0)) { _ in
+            // Ticks only while his words are lighting up with the audio; a still caption costs no frames.
+            TimelineView(.animation(minimumInterval: 1.0 / 15.0, paused: !wordsFollowAudio(caption))) { _ in
                 let lit = litWords(count: words.count, caption: caption)
                 words.enumerated().reduce(Text("")) { text, item in
                     text + Text(item.element + " ")
@@ -207,6 +208,9 @@ struct PracticeCallView<Sheet: View>: View {
                 }
                 .font(AlphonsoFont.sans(19, weight: .bold))
                 .multilineTextAlignment(.center)
+                // At most four lines on screen, so a long reply never climbs over his mouth on a small phone. The
+                // whole text is in the VoiceOver label and in the sheet.
+                .lineLimit(4)
                 .shadow(color: .black.opacity(0.55), radius: 4, y: 1)
                 .frame(maxWidth: .infinity)
             }
@@ -218,6 +222,11 @@ struct PracticeCallView<Sheet: View>: View {
         } else {
             Color.clear.frame(height: 1)
         }
+    }
+
+    private func wordsFollowAudio(_ caption: CallCaption) -> Bool {
+        guard !caption.mine, case .speaking = voice.phase else { return false }
+        return true
     }
 
     /// Words light up with the audio while he speaks the caption; otherwise the whole caption is lit.

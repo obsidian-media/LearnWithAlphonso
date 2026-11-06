@@ -58,6 +58,29 @@ describe("accessibility", () => {
   it("keeps the hold-to-talk button on screen: the avatar square is held to 72% of the height", () => {
     expect(view).toContain("min(1.28 * width, 0.72 * height)");
   });
+  it("holds the caption to four lines, so a long reply cannot climb over his mouth", () => {
+    const caption = view.slice(
+      view.indexOf("private var caption"),
+      view.indexOf("private var statePill"),
+    );
+    expect(caption).toMatch(/\.lineLimit\(4\)/);
+  });
+});
+
+describe("performance", () => {
+  const view = code(VIEW);
+  it("the caption's timeline is paused unless his words are following the audio", () => {
+    const caption = view.slice(
+      view.indexOf("private var caption"),
+      view.indexOf("private var statePill"),
+    );
+    expect(caption).toMatch(
+      /TimelineView\(\.animation\([^)]*paused: !wordsFollowAudio\(caption\)\)/,
+    );
+  });
+  it("the You tile's meter is paused unless the learner is recording", () => {
+    expect(view).toMatch(/TimelineView\(\.animation\([^)]*paused: !recording\)\)/);
+  });
 });
 
 describe("campaign conversations", () => {
