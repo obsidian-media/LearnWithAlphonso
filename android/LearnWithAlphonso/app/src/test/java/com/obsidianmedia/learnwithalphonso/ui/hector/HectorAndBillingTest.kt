@@ -36,10 +36,10 @@ import org.junit.Test
 class HectorAndBillingTest {
     @get:Rule val main = MainDispatcherRule()
 
-    private fun server(tutorError: Boolean = false, hang: Boolean = false, practice: String = """{"questions":[{"prompt":"p1","choices":["a","b"],"answerIndex":0,"explanation":"e"},{"prompt":"p2","choices":["c","d"],"answerIndex":1,"explanation":"e2"}]}""") = FakeServer { req ->
+    private fun server(tutorError: Boolean = false, hang: Boolean = false, slowTutor: Boolean = false, practice: String = """{"questions":[{"prompt":"p1","choices":["a","b"],"answerIndex":0,"explanation":"e"},{"prompt":"p2","choices":["c","d"],"answerIndex":1,"explanation":"e2"}]}""") = FakeServer { req ->
         when {
             req.path.endsWith("/api/stt") -> json("""{"text":"hello hector"}""")
-            req.path.endsWith("/api/hector-respond") -> if (tutorError) json("""{"error":"tutor-unavailable","detail":"tutor is resting"}""", HttpStatusCode.ServiceUnavailable) else json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Hello! Ready to practise?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
+            req.path.endsWith("/api/hector-respond") -> if (slowTutor) { delay(600); json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Late reply","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""") } else if (tutorError) json("""{"error":"tutor-unavailable","detail":"tutor is resting"}""", HttpStatusCode.ServiceUnavailable) else json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Hello! Ready to practise?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
             req.path.endsWith("/api/generate-practice") -> { if (hang) delay(5_000); json(practice) }
             req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B2"}]""")
             req.path.endsWith("weakness_events") -> json("""[{"category":"past-tense","event_type":"detected","created_at":"2026-09-01T00:00:00+00:00"}]""")
@@ -91,6 +91,23 @@ class HectorAndBillingTest {
         assertEquals(4, bodies[1]["history"]!!.jsonArray.size)
         assertEquals(listOf(3, 3), played)
         assertEquals("dev-1", s.seen.first { it.path.endsWith("/api/hector-respond") }.headers["X-Alphonso-Device-Id"])
+    }
+
+    @Test
+    fun `a reply that arrives after hang-up is kept in the transcript but never played`() = runBlocking {
+        val s = server(slowTutor = true)
+        val played = ArrayList<Int>()
+        val v = HectorViewModel(InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { b -> played.add(b.size); true })
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("thinking") { v.state.value.phase == ConversationPhase.THINKING }
+        v.hangUp()
+        awaitTrue("reply") { v.state.value.turns.size == 2 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals("Late reply", v.state.value.turns.last().content)
+        assertEquals("nothing is spoken after the call ended", emptyList<Int>(), played)
+        // Calling again: the next turn speaks as usual.
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("next turn") { v.state.value.turns.size == 4 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(listOf(3), played)
     }
 
     @Test

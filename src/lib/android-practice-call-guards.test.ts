@@ -58,6 +58,11 @@ describe("the call screen", () => {
     expect((screen.match(/clearAndSetSemantics \{\}/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(screen).toMatch(/modifier = Modifier\.offset[^\n]*clearAndSetSemantics \{\}/);
   });
+  it("announces the state pill (Listening / Thinking / Speaking) as a polite live region", () => {
+    expect(screen).toContain(
+      "clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }",
+    );
+  });
   it("labels the three call buttons and the sheet", () => {
     for (const label of ["Hold to talk", "Show the conversation", "End the call", "Back to call"])
       expect(screen).toContain(`"${label}"`);
@@ -178,6 +183,10 @@ describe("Hector's call", () => {
     expect(hector).toContain("HoldToTalkButton(");
     expect(hector).toContain("AiConsentGate(container)");
     expect(hector).toContain("AiReportStatusHost(container.aiReports)");
+  });
+  it("hangs up with a token, so a reply still on its way is never spoken after the call ended", () => {
+    expect(hector).toContain("onEnd = { vm.hangUp(); playback.stop(); callEnded = true }");
+    expect(hector).toMatch(/if \(live\) reply\.audioBytes\(\)/);
   });
   it("loads his kit from his own folder with the eyes expression group", () => {
     const kit = code(`${CALL}/AlphonsoKit.kt`);

@@ -199,7 +199,7 @@ internal fun PracticeCallScreen(
             }
             extra?.let { Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)) { it() } }
             Caption(vm, playback, mode, recording)
-            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics {}.padding(horizontal = 10.dp, vertical = 2.dp)) {
+            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
             }
             Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = onEnd)

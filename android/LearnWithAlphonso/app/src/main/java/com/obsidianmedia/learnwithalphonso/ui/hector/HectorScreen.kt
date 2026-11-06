@@ -151,11 +151,14 @@ class HectorViewModel(
     fun historyForTutor(): List<ChatMessage> = listOfNotNull(memoryContext) + _state.value.turns
 
     private suspend fun sendTurn(text: String) {
+        val call = callGeneration
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
             val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel)
-            _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = ConversationPhase.SPEAKING) }
-            reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
+            // A reply that comes back after the learner hung up joins the transcript but is never spoken.
+            val live = call == callGeneration
+            _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = if (live) ConversationPhase.SPEAKING else it.phase) }
+            if (live) reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
             _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
@@ -164,6 +167,15 @@ class HectorViewModel(
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
     fun onLeave() = engine.cancel()
+
+    /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
+    @Volatile private var callGeneration = 0
+
+    /** The red button: cancel any recording, and silence a reply that is still on its way. */
+    fun hangUp() {
+        callGeneration++
+        engine.cancel()
+    }
 
     public override fun onCleared() {
         engine.tearDown()
@@ -283,7 +295,7 @@ private fun HectorConversation(container: AppContainer) {
                 PracticeCallScreen(
                     kit = remember { hectorKit(context) }, title = "Your AI tutor", scenarioId = "hector", course = course,
                     vm = vm, playback = playback, reducedMotion = systemMotionReduced(context),
-                    onEnd = { vm.onLeave(); playback.stop(); callEnded = true },
+                    onEnd = { vm.hangUp(); playback.stop(); callEnded = true },
                     talkLabel = "Hold to talk to Hector",
                     statusHost = { AiReportStatusHost(container.aiReports) },
                     transcript = { HectorTranscript(container, vm, Modifier) },
