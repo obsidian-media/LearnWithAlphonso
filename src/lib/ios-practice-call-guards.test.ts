@@ -34,6 +34,15 @@ describe("the rooms", () => {
     expect(app).toMatch(/- path: AlphonsoScenes\n\s+type: folder\n\s+buildPhase: resources/);
   });
 
+  it("draws the room as a background, so the fill-scaled picture cannot widen the call's layout", () => {
+    // Found on a simulator: with the room inside the ZStack, the stack took the picture's aspect (about 483 pt on a
+    // 402 pt screen) and the call bar, the "You" tile and the caption were cut off at both edges.
+    const view = code(VIEW);
+    expect(view).toContain(".background { room }");
+    const stack = view.slice(view.indexOf("ZStack {"), view.indexOf("AlphonsoAvatarView("));
+    expect(stack).not.toMatch(/\broom\b/);
+  });
+
   it("dims a scenario picture with navy multiply at half strength in dark mode", () => {
     const view = code(VIEW);
     expect(view).toContain("blendMode(.multiply)");

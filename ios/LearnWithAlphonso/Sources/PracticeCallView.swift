@@ -59,8 +59,9 @@ struct PracticeCallView<Sheet: View>: View {
             // The square is held to 72% of the height, so on a short phone the caption and controls stay clear of
             // his mouth.
             let side = min(1.28 * width, 0.72 * height)
+            // The room is a background, not a ZStack child: a scaledToFill image inside the stack would size the
+            // stack to the picture's aspect and push the call bar, tiles and caption off both screen edges.
             ZStack {
-                room
                 AlphonsoAvatarView(
                     voice: voice, replyText: turns.last(where: { $0.role == "assistant" })?.content,
                     replyVerdict: replyVerdict, course: course, kit: kit, onModeChange: { mode = $0 }
@@ -103,6 +104,7 @@ struct PracticeCallView<Sheet: View>: View {
             }
             .frame(width: width, height: height)
         }
+        .background { room }
         .background(Color.black)
         .sheet(isPresented: $showSheet) { conversationSheet }
     }
