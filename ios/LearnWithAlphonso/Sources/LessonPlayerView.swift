@@ -99,6 +99,21 @@ struct LessonPlayerView: View {
     // attempt" still holds when this same view instance moves on to the
     // next lesson rather than being freshly created.
     @State private var attemptSeed = UUID().uuidString
+    /// The learner's earlier best on this lesson, read when it opens. A replay pays only past it, so the verdict's
+    /// "+10 XP" starts from it; unknown (offline) promises nothing.
+    @State private var previousBest: LessonPreviousBest = .unknown
+    /// The last question's Finish completes the lesson once.
+    @State private var finishGate = FinishGate()
+    /// The lesson's own time, from Start lesson to the last answer, counted only while the app is in front.
+    @State private var lessonTimer: ActiveTimer?
+    @State private var finishedElapsed: TimeInterval?
+    /// The questions missed this attempt, for the complete screen's review list.
+    @State private var missed: [LessonMissedItem] = []
+    /// A word has been placed in a word-order question.
+    @State private var reorderStarted = false
+    @State private var showPromotionOverlay = false
+    /// Flips once the complete screen appears; the success haptic is keyed to it.
+    @State private var celebrated = false
 
     private var total: Int { lesson.questions.count }
     private var vocab: [VocabItem] { deriveVocab(lesson: lesson, images: contentStore.vocabImages) }
@@ -176,6 +191,13 @@ struct LessonPlayerView: View {
         // issue), but a real doc/code mismatch worth closing now that
         // it's been pointed out rather than leaving the comment wrong.
         attemptSeed = UUID().uuidString
+        previousBest = .unknown
+        finishGate.reset()
+        lessonTimer = nil
+        finishedElapsed = nil
+        missed = []
+        reorderStarted = false
+        celebrated = false
     }
 
     private func practiseWithHector() {
@@ -183,43 +205,69 @@ struct LessonPlayerView: View {
         if hectorAccess.entitlementStore.isPro { showingHector = true } else { showingHectorPaywall = true }
     }
 
-    var body: some View {
-        Group {
-            if let result {
-                FinishView(
-                    result: result, correct: correctCount, total: total, contentStore: contentStore,
-                    isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session,
-                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil,
-                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector,
-                    showReminderCard: showReminderCard,
-                    onRemindMe: { Task { await acceptReminders() } },
-                    onNotNow: declineReminders
-                )
-            } else if let queuedOffline {
-                OfflineFinishView(
-                    pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
-                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
-                    onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector)
-            } else if let completionFailure {
-                LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
-            } else if total == 0 {
-                ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
-            } else {
-                switch phase {
-                case .overview:
-                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total, previewImages: vocab.prefix(3).compactMap(\.image)) {
-                        phase = vocab.isEmpty ? .quiz : .vocab
-                    }
-                case .vocab:
-                    VocabScreen(lesson: lesson, items: vocab, course: course) { phase = .quiz }
-                case .quiz:
-                    quizBody
-                }
-            }
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// Hearts for the HUD: nil (shown as ∞) for Alphonso Pro.
+    private var hudHearts: Int? {
+        if hectorAccess?.entitlementStore.isPro ?? false { return nil }
+        return syncQueueStore.lastKnownProgress()?.hearts ?? HeartsEconomy.maxHearts
+    }
+
+    /// The unit's own room from the room map (Alphonso's study by day for a unit it does not know).
+    private var roomID: String { LessonStage.roomID(forUnit: unit?.id, map: LessonArt.roomMap) }
+
+    private var unitLine: String {
+        guard let unit, let index = contentStore.bundle(for: course).units.firstIndex(where: { $0.id == unit.id }) else {
+            return lesson.subtitle
         }
+        return "Unit \(index + 1) \u{00B7} \(unit.title)"
+    }
+
+    /// "About 4 min · 8 questions · Up to 100 XP": the minutes from the same rules as the web (lesson-timing.json).
+    private var startMeta: String {
+        let minutes = LessonArt.timing?.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: vocab.count) ?? 1
+        return "About \(minutes) min \u{00B7} \(total) question\(total == 1 ? "" : "s") \u{00B7} Up to \(LessonXP.maxXp(total: total)) XP"
+    }
+
+    private var startSteps: [LessonStartStep] {
+        var steps: [LessonStartStep] = []
+        let words = vocab
+        if !words.isEmpty {
+            let sample = words.prefix(3).map { $0.term.trimmingCharacters(in: CharacterSet(charactersIn: ".!?\u{2026}")) }
+            steps.append(LessonStartStep(
+                id: "words", icon: .book, label: "\(words.count) new word\(words.count == 1 ? "" : "s")",
+                detail: sample.joined(separator: ", ") + (words.count > sample.count ? "\u{2026}" : "")))
+        }
+        steps.append(LessonStartStep(
+            id: "practice", icon: .check, label: "Practice",
+            detail: "\(total) question\(total == 1 ? "" : "s"): pick, listen, say it back"))
+        steps.append(LessonStartStep(id: "review", icon: .star, label: "Review", detail: "Anything you miss comes back later"))
+        return steps
+    }
+
+    /// The stage covers the whole screen (its own HUD closes it); a plain result screen keeps the navigation bar.
+    private var onStage: Bool { result != nil || (queuedOffline == nil && completionFailure == nil && total > 0) }
+
+    private func startLesson() {
+        lessonTimer = ActiveTimer(now: ProcessInfo.processInfo.systemUptime)
+        phase = vocab.isEmpty ? .quiz : .vocab
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            stage(topInset: proxy.safeAreaInsets.top)
+        }
+        .lessonLightScope()
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(onStage ? .hidden : .visible, for: .navigationBar)
+        .toolbar(onStage ? .hidden : .visible, for: .tabBar)
         .task(id: lesson.id) { await openLessonSession() }
+        // The lesson's time counts only while the app is in front.
+        .onChange(of: scenePhase) { _, newPhase in
+            let now = ProcessInfo.processInfo.systemUptime
+            if newPhase == .active { lessonTimer?.resume(now: now) } else { lessonTimer?.pause(now: now) }
+        }
         // "Practise with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
         .sheet(isPresented: $showingHector) {
             if let hectorAccess {
@@ -278,121 +326,232 @@ struct LessonPlayerView: View {
         }
     }
 
+    @ViewBuilder
+    private func stage(topInset: CGFloat) -> some View {
+        if let result {
+            completeScreen(result: result, topInset: topInset)
+        } else if let queuedOffline {
+            OfflineFinishView(
+                pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
+                onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
+                onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector)
+        } else if let completionFailure {
+            LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
+        } else if total == 0 {
+            ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
+        } else {
+            switch phase {
+            case .overview:
+                LessonStartView(
+                    roomID: roomID, unitLine: unitLine, title: lesson.title, meta: startMeta, steps: startSteps,
+                    hearts: hudHearts, topInset: topInset, onClose: { dismiss() }, onStart: startLesson)
+            case .vocab:
+                VStack(spacing: 0) {
+                    LessonHUD(progress: 0, hearts: hudHearts, onLight: true, onClose: { dismiss() })
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    VocabScreen(lesson: lesson, items: vocab, course: course) { phase = .quiz }
+                }
+                .lessonSurface()
+            case .quiz:
+                quizBody(topInset: topInset)
+            }
+        }
+    }
+
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// The question scrolls; Check and the verdict panel are pinned above the tab bar. A tall question (an image,
-    /// four tiles, Alphonso's tip) plus the panel is taller than an iPhone SE's screen, and before this the column
-    /// did not scroll, so Continue could land under the tab bar. At accessibility text sizes the same layout holds.
-    private var quizBody: some View {
-        ScrollView {
-            quizContent
+    /// Has the learner started answering? Alphonso listens (neutral) from the first pick or placed word.
+    private var hasStartedAnswer: Bool {
+        !(picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || reorderStarted
+    }
+
+    /// The verdict's "+10 XP": only XP the server will pay (a replay pays past the best earlier score only), and none
+    /// for a reinforcement round.
+    private var answerXP: Int? {
+        guard checked, lastAnswerCorrect, !isReinforcing else { return nil }
+        return LessonXP.answerChip(rightSoFar: correctCount, previousBest: previousBest)
+    }
+
+    /// The question in the unit's room: the room and HUD on top, Alphonso's bubble over his robe, the answers below.
+    /// It scrolls; Check and the verdict sheet are pinned at the foot. The right answer scrolls into view above the
+    /// sheet. At accessibility text sizes the same layout holds.
+    private func quizBody(topInset: CGFloat) -> some View {
+        let question = currentQuestion
+        let layout = LessonStage.layout(viewportHeight: Double(UIScreen.main.bounds.height), prompt: question.prompt)
+        let expression = LessonStage.expression(picked: hasStartedAnswer, verdict: checked ? lastAnswerCorrect : nil)
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    LessonRoomView(
+                        roomID: roomID, expression: expression, height: CGFloat(layout.roomHeight),
+                        alphonsoWidth: CGFloat(layout.alphonsoWidth), topInset: topInset
+                    ) {
+                        LessonHUD(
+                            progress: Double(idx + (checked ? 1 : 0)) / Double(max(1, total)), hearts: hudHearts,
+                            valueText: "Question \(idx + 1) of \(total)", onClose: { dismiss() })
+                            .padding(.horizontal, 16)
+                            .padding(.top, topInset + 16)
+                    }
+                    // .id() forces a fresh QuestionCard (and its reorder @State)
+                    // per question -- without it, SwiftUI would keep reusing the
+                    // same view identity across questions and a reorder question's
+                    // tapped-token state would leak into the next question.
+                    //
+                    // 2026-09-30 whole-codebase audit: question ids are only
+                    // unique WITHIN a lesson, so a reinforcement question pulled
+                    // from a sibling lesson can share the missed question's id;
+                    // isReinforcing strictly alternates main/reinforcement, so
+                    // folding it in disambiguates every real transition.
+                    QuestionCard(
+                        question: question, course: course, vocabImages: contentStore.vocabImages, session: session,
+                        lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked,
+                        isReinforcing: isReinforcing, compact: layout.size == .small, picked: $picked,
+                        translationVerdict: $translationVerdict, reorderStarted: $reorderStarted)
+                        .id("\(isReinforcing ? "reinforce" : "main")-\(questionID(question))")
+                        .padding(.horizontal, 16)
+                        .padding(.top, layout.size == .small ? -36 : -44)
+                        .padding(.bottom, 16)
+                }
+            }
+            .ignoresSafeArea(edges: .top)
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: checked) { _, isChecked in
+                guard isChecked else { return }
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) {
+                    proxy.scrollTo(QuestionCard.correctAnswerID, anchor: .center)
+                }
+            }
         }
-        .scrollDismissesKeyboard(.interactively)
-        .safeAreaInset(edge: .bottom) {
-            quizControls
-                .padding(.horizontal)
-                .padding(.vertical, AlphonsoSpacing.sm)
-                .background(AlphonsoColor.surface)
-        }
-        .background(AlphonsoColor.surface)
-        // The verdict panel announces the verdict itself; the explanation under the question stays quiet.
+        .safeAreaInset(edge: .bottom, spacing: 0) { quizControls }
+        .lessonSurface()
+        // The verdict sheet announces the verdict itself; the explanation inside it stays quiet.
         .environment(\.verdictAnnouncedByPanel, true)
-        .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.85), value: checked)
+        .animation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.38, dampingFraction: 0.86), value: checked)
     }
 
-    private var quizContent: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-            AlphonsoProgressBar(progress: total == 0 ? 0 : Double(idx) / Double(total))
-            Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
-                .font(AlphonsoFont.sans(13, weight: .medium))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-
-            // .id() forces a fresh QuestionCard (and its reorder @State)
-            // per question -- without it, SwiftUI would keep reusing the
-            // same view identity across questions and a reorder question's
-            // tapped-token state would leak into the next question.
-            //
-            // 2026-09-30 whole-codebase audit: question ids are only
-            // unique WITHIN a lesson (LessonReinforcement.swift's own doc
-            // comment), not globally -- every lesson independently
-            // numbers its own questions "q1", "q2"... A reinforcement
-            // question is pulled from a SIBLING lesson
-            // (siblingQuestions/levelQuestions), so its raw id can
-            // collide with the missed question's id it's replacing (both
-            // "q3", say), and questionID() alone wouldn't have changed
-            // identity for that transition -- the exact leak this .id()
-            // exists to prevent. isReinforcing strictly alternates
-            // main/reinforcement (recordAnswer's `guard !isReinforcing`
-            // means a reinforcement answer never queues another
-            // reinforcement), so folding it in disambiguates every real
-            // transition without needing content-wide unique ids.
-            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
-                .id("\(isReinforcing ? "reinforce" : "main")-\(questionID(currentQuestion))")
-
-        }
-        .padding()
-    }
-
-    /// Check, or the verdict panel once checked: pinned below the scrolling question.
+    /// Check, or the verdict sheet once checked: pinned below the scrolling question.
     @ViewBuilder
     private var quizControls: some View {
-            if isSubmitting {
-                ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
-            } else if isCheckingTranslation {
-                ProgressView("Checking...").tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
-            } else if !checked {
-                Button("Check") {
-                    // Every other type grades synchronously. A translation has
-                    // to settle first, because the curated phrasings are only a
-                    // floor and the second opinion that can lift them is a
-                    // network call -- scoring before it lands would record a
-                    // miss the learner is then told they did not make.
-                    if case .translate = currentQuestion {
-                        isCheckingTranslation = true
-                        Task {
-                            await settleTranslationVerdict()
-                            isCheckingTranslation = false
-                            checked = true
-                            recordAnswer()
-                        }
-                    } else {
+        if isSubmitting {
+            ProgressView().frame(maxWidth: .infinity, minHeight: 64).lessonSurface()
+        } else if isCheckingTranslation {
+            ProgressView("Checking...").frame(maxWidth: .infinity, minHeight: 64).lessonSurface()
+        } else if !checked {
+            Button("Check") {
+                // Every other type grades synchronously. A translation has
+                // to settle first, because the curated phrasings are only a
+                // floor and the second opinion that can lift them is a
+                // network call -- scoring before it lands would record a
+                // miss the learner is then told they did not make.
+                if case .translate = currentQuestion {
+                    isCheckingTranslation = true
+                    Task {
+                        await settleTranslationVerdict()
+                        isCheckingTranslation = false
                         checked = true
                         recordAnswer()
                     }
-                }
-                    .buttonStyle(.alphonsoPrimary)
-                    // Whitespace is not an answer.
-                    .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            } else {
-                AnswerVerdictPanel(
-                    correct: lastAnswerCorrect,
-                    correctAnswer: AnswerVerdict.correctAnswer(for: currentQuestion),
-                    continueTitle: isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish"
-                ) {
-                    if let pendingReinforcement {
-                        activeReinforcement = pendingReinforcement
-                        self.pendingReinforcement = nil
-                        picked = nil
-                        checked = false
-                        translationVerdict = nil
-                        return
-                    }
-                    if activeReinforcement != nil {
-                        activeReinforcement = nil
-                        // falls through: finishing a reinforcement round
-                        // still needs to advance below.
-                    }
-                    if idx < total - 1 {
-                        idx += 1
-                        picked = nil
-                        checked = false
-                    } else {
-                        Task { await finish() }
-                    }
+                } else {
+                    checked = true
+                    recordAnswer()
                 }
             }
+            .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
+            // Whitespace is not an answer.
+            .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .lessonSurface()
+        } else {
+            LessonVerdictSheet(
+                correct: lastAnswerCorrect,
+                title: lastAnswerCorrect ? "Exactly!" : AnswerVerdict.title(correct: false),
+                xp: answerXP,
+                correctAnswer: AnswerVerdict.correctAnswer(for: currentQuestion),
+                onHearAnswer: { speak(AnswerVerdict.correctAnswer(for: currentQuestion), course: course) },
+                continueTitle: isReinforcing || pendingReinforcement != nil || idx < total - 1
+                    ? (lastAnswerCorrect ? "Continue" : "Got it") : "Finish",
+                onContinue: advance
+            ) {
+                ExplanationView(
+                    question: currentQuestion, picked: picked, explanation: currentQuestion.explanationText,
+                    course: course, correctOverride: translationVerdict?.correct, inSheet: true)
+            }
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom))
+        }
     }
 
+    /// Continue, Got it or Finish. Finish completes the lesson once: a second tap while the completion is in flight
+    /// would be a zero-XP replay (FinishGate).
+    private func advance() {
+        if let pendingReinforcement {
+            activeReinforcement = pendingReinforcement
+            self.pendingReinforcement = nil
+            picked = nil
+            reorderStarted = false
+            checked = false
+            translationVerdict = nil
+            return
+        }
+        if activeReinforcement != nil {
+            activeReinforcement = nil
+            // falls through: finishing a reinforcement round
+            // still needs to advance below.
+        }
+        if idx < total - 1 {
+            idx += 1
+            picked = nil
+            reorderStarted = false
+            checked = false
+            translationVerdict = nil
+        } else if finishGate.begin() {
+            Task { await finish() }
+        }
+    }
+
+    /// Lesson complete in the unit's room. The XP lines use the server's own count of right answers.
+    private func completeScreen(result: LessonCompletionResult, topInset: CGFloat) -> some View {
+        let achievements = result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
+        let headline = total > 0 ? "\(LessonFinishCopy.headline(correct: correctCount, total: total)) You got \(correctCount) of \(total)." : LessonFinishCopy.good
+        return LessonCompleteView(
+            roomID: roomID,
+            headline: headline,
+            chips: LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correctCount, total: total),
+            time: finishedElapsed.map(formatElapsed),
+            xpLines: LessonXP.breakdown(correct: result.correct ?? correctCount, total: total, awarded: result.xpGain),
+            correct: correctCount,
+            total: total,
+            heartsBonus: result.heartsBonus,
+            achievements: achievements,
+            missed: missed,
+            topInset: topInset,
+            onHearHeadline: { speak(headline, course: .english) },
+            continueTitle: nextLessonID != nil ? "Continue to next lesson" : "Back to Learn",
+            onContinue: { if nextLessonID != nil { continueToNextLesson() } else { dismiss() } }
+        ) {
+            if showReminderCard {
+                LessonReminderCard(onRemindMe: { Task { await acceptReminders() } }, onNotNow: declineReminders)
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
+            }
+            if hectorAccess != nil {
+                Button("Practise with Hector", action: practiseWithHector)
+                    .buttonStyle(LessonEdgeButtonStyle(variant: .secondary))
+            }
+            GeneratedPracticeSection(lessonID: lesson.id, course: course, session: session)
+        }
+        .sensoryFeedback(.success, trigger: celebrated)
+        .onAppear {
+            showPromotionOverlay = isLeaguePromotion
+            celebrated = true
+        }
+        .fullScreenCover(isPresented: $showPromotionOverlay) {
+            LeaguePromotionOverlay(tier: result.progress.leagueTier) {
+                showPromotionOverlay = false
+            }
+        }
+    }
     /// The verdict the panel shows: a translation's settled grade when there is one (it may come from the AI
     /// grader), otherwise the local match. The same rule recordAnswer scores by.
     private var lastAnswerCorrect: Bool {
@@ -435,6 +594,9 @@ struct LessonPlayerView: View {
         if correct {
             correctCount += 1
         } else {
+            missed.append(LessonMissedItem(
+                id: "\(questionID(question))-\(missed.count)", prompt: question.prompt, yours: picked ?? "",
+                answer: AnswerVerdict.correctAnswer(for: question)))
             // 2026-09-30 whole-codebase audit: a wrong answer never spent
             // a heart on iOS at all -- confirmed by grepping the entire
             // app target for `loseHeart`, finding zero call sites outside
@@ -520,6 +682,15 @@ struct LessonPlayerView: View {
         } catch {
             // Best-effort: finish() starts a session itself when none is held.
         }
+        // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
+        let openedFor = lesson.id
+        do {
+            let best = try await client.fetchLessonBest(lessonID: lesson.id, course: course.wireCode)
+            guard lesson.id == openedFor else { return }
+            previousBest = best.map(LessonPreviousBest.best) ?? .firstTry
+        } catch {
+            previousBest = .unknown
+        }
     }
 
     private func block(refillAt: Date?) {
@@ -528,6 +699,9 @@ struct LessonPlayerView: View {
     }
 
     private func finish() async {
+        let now = ProcessInfo.processInfo.systemUptime
+        finishedElapsed = lessonTimer?.elapsed(now: now)
+        lessonTimer?.pause(now: now)
         isSubmitting = true
         defer { isSubmitting = false }
         guard session.accessToken != nil else {
@@ -669,7 +843,12 @@ private func speak(_ text: String, course: Course) {
 
 private let questionCardSpeechSynthesizer = AVSpeechSynthesizer()
 
+/// One question in the unit's room: Alphonso's bubble with the prompt (and a play button), any picture, and the
+/// answers in the lesson's style. Mechanics unchanged from before the redesign.
 private struct QuestionCard: View {
+    /// The right answer's scroll target, so it can be brought into view above the verdict sheet.
+    static let correctAnswerID = "lesson-correct-answer"
+
     let question: Question
     let course: Course
     let vocabImages: [String: VocabImageRef]
@@ -681,10 +860,14 @@ private struct QuestionCard: View {
     let lessonId: String
     let isConnected: Bool
     let checked: Bool
+    let isReinforcing: Bool
+    /// A phone under 700 pt tall: the smaller question type.
+    let compact: Bool
     @Binding var picked: String?
     /// Settled by the player before it scores -- see settledTranslationVerdict.
     @Binding var translationVerdict: TranslationVerdict?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// True once a word is placed in a sentence, so Alphonso starts listening before the sentence is complete.
+    @Binding var reorderStarted: Bool
 
     // "reorder" questions accumulate tapped token *indices* (not values,
     // since a sentence can repeat a word) -- reset automatically per
@@ -692,241 +875,111 @@ private struct QuestionCard: View {
     // as the web's identical pattern in lesson.$id.tsx.
     @State private var orderPicks: [Int] = []
 
+    private var bubbleLabel: String {
+        if isReinforcing { return "Quick practice" }
+        switch question {
+        case .listening: return "Listening"
+        case .speak: return "Speaking"
+        case .translate: return "Write it yourself"
+        default: return "Alphonso asks"
+        }
+    }
+
     var body: some View {
-        Group {
+        VStack(alignment: .leading, spacing: 12) {
+            bubble
             switch question {
             case .multipleChoice(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
                     VocabImageView(image: image, cardHeight: 160, decorative: true)
                 }
-                if let audioText = q.audioText {
-                    Button {
-                        speak(audioText, course: course)
-                    } label: {
-                        Label("Play audio", systemImage: "speaker.wave.2.fill")
-                    }
-                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                }
-                AskingAlphonso(prompt: q.prompt, hasMedia: q.imageKey.flatMap { vocabImages[$0] } != nil || q.audioText != nil)
-                ForEach(q.choices, id: \.self) { choice in
-                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
-                }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
-        case .fillInBlank(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                AskingAlphonso(prompt: q.prompt)
-                TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
-                    .textFieldStyle(.plain)
-                    .padding(AlphonsoSpacing.sm)
-                    .alphonsoInputBackground()
+                choices(q.choices, rightChoice: q.choices.indices.contains(q.answer) ? q.choices[q.answer] : nil)
+            case .listening(let q):
+                // `answer` is the choice text, not an index.
+                choices(q.choices, rightChoice: q.answer)
+            case .fillInBlank(let q):
+                LessonTextField(placeholder: "Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                     .disabled(checked)
                 if !q.bank.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(q.bank, id: \.self) { word in
-                                Button(word) { picked = word }
-                                    .buttonStyle(.alphonsoWordChip(picked: picked == word))
-                                    .disabled(checked)
-                                    // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
-                                    .padding(.bottom, 4)
-                            }
+                    LessonFlowLayout {
+                        ForEach(q.bank, id: \.self) { word in
+                            LessonWordTile(word: word, picked: picked == word) { picked = word }
+                                .disabled(checked)
                         }
                     }
                 }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
+            case .reorder(let q):
+                sentenceSlot(tokens: q.tokens)
+                LessonFlowLayout {
+                    ForEach(Array(q.tokens.enumerated()), id: \.offset) { i, token in
+                        if !orderPicks.contains(i) {
+                            LessonWordTile(word: token) { orderPicks.append(i) }
+                                .disabled(checked)
+                        }
+                    }
                 }
-            }
-        case .reorder(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                AskingAlphonso(prompt: q.prompt)
-                assembledArea(tokens: q.tokens)
-                tokenPool(tokens: q.tokens)
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
+                .onChange(of: orderPicks) {
+                    reorderStarted = !orderPicks.isEmpty
+                    // `picked` stays nil (Check disabled, same generic gate as
+                    // mc/fill) until every token has been placed -- matches the
+                    // web's `orderPicks.length !== q.tokens.length` gate.
+                    picked = orderPicks.count == q.tokens.count
+                        ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
+                        : nil
                 }
-            }
-            .onChange(of: orderPicks) {
-                // `picked` stays nil (Check disabled, same generic gate as
-                // mc/fill) until every token has been placed -- matches the
-                // web's `orderPicks.length !== q.tokens.length` gate.
-                picked = orderPicks.count == q.tokens.count
-                    ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
-                    : nil
-            }
-        case .listening(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                // Audio-led and labelled, so it does not read as an ordinary
-                // multiple choice that happens to have a speaker button.
-                Text("LISTENING")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                Button {
-                    speak(q.audioText, course: course)
-                } label: {
-                    Label("Play audio", systemImage: "speaker.wave.2.fill")
-                }
-                .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                AskingAlphonso(prompt: q.prompt, hasMedia: true)
-                ForEach(q.choices, id: \.self) { choice in
-                    // `answer` is the choice text, not an index.
-                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }
-                }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course, surface: .lesson)
+                    verdict: $translationVerdict, course: course, surface: .lesson, inStage: true)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,
-                    isConnected: isConnected, checked: checked, picked: $picked)
+                    isConnected: isConnected, checked: checked, picked: $picked, inStage: true)
             }
         }
-        // Drives ExplanationView's AlphonsoTipCard .transition -- without
-        // an explicit animation tied to `checked`, the card would just pop
-        // in instantly instead of sliding in from the trailing edge. nil
-        // under Reduced Motion: AlphonsoTipCard's own transition already
-        // drops to a plain opacity fade in that case, and a spring on the
-        // surrounding container would still animate its relayout/resize
-        // otherwise.
-        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
-    private func assembledArea(tokens: [String]) -> some View {
-        HStack {
-            if orderPicks.isEmpty {
-                Text("Tap the words below in order")
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            } else {
-                ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
-                    Button(tokens[tokenIdx]) {
-                        orderPicks.remove(at: position)
-                    }
-                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
+    private var bubble: some View {
+        let onPlay: () -> Void
+        let playLabel: String
+        if case .listening(let q) = question {
+            // A listening question's button plays what to listen to, in the course's language.
+            onPlay = { speak(q.audioText, course: course) }
+            playLabel = "Play audio"
+        } else if case .multipleChoice(let q) = question, let audioText = q.audioText {
+            onPlay = { speak(audioText, course: course) }
+            playLabel = "Play audio"
+        } else {
+            // Any other question's button reads the question itself, which is written in English for every course.
+            onPlay = { speak(question.prompt, course: .english) }
+            playLabel = "Play the question"
+        }
+        return AlphonsoBubbleView(label: bubbleLabel, text: question.prompt, onPlay: onPlay, playLabel: playLabel, compact: compact)
+    }
+
+    private func choices(_ choices: [String], rightChoice: String?) -> some View {
+        VStack(spacing: 6) {
+            ForEach(Array(choices.enumerated()), id: \.offset) { index, choice in
+                let isRight = choice == rightChoice
+                LessonAnswerButton(
+                    index: index, label: choice,
+                    state: LessonAnswerState.of(checked: checked, isPicked: picked == choice, isRight: isRight)
+                ) { picked = choice }
+                .disabled(checked)
+                .id(isRight ? Self.correctAnswerID : "choice-\(index)")
+            }
+        }
+    }
+
+    /// The sentence being built: a dashed well with the placed words, solid robe blue; tap one to take it back.
+    private func sentenceSlot(tokens: [String]) -> some View {
+        LessonSentenceSlot(isEmpty: orderPicks.isEmpty) {
+            ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
+                LessonWordTile(word: tokens[tokenIdx], placed: true) { orderPicks.remove(at: position) }
                     .disabled(checked)
-                }
-            }
-            Spacer()
-        }
-        .frame(minHeight: 44)
-        .padding(AlphonsoSpacing.sm)
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-    }
-
-    // Horizontal scroll rather than a wrapping layout -- same tradeoff
-    // this file already made for fill-in-blank's word bank just above,
-    // kept consistent rather than introducing a custom Layout for this
-    // one case.
-    private func tokenPool(tokens: [String]) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
-                    if !orderPicks.contains(i) {
-                        Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.alphonsoWordChip(picked: false))
-                            .disabled(checked)
-                            // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
-                            .padding(.bottom, 4)
-                    }
-                }
             }
         }
-    }
-}
-
-private struct OverviewScreen: View {
-    let lesson: Lesson
-    let wordCount: Int
-    let questionCount: Int
-    /// Up to 3 of this lesson's vocab images, shown as a small teaser
-    /// before the user commits to starting -- genuinely optional polish
-    /// (docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
-    /// feature 2"), not core functionality; an empty array just means no
-    /// thumbnails render, same as today.
-    let previewImages: [VocabImageRef]
-    let onStart: () -> Void
-
-    var body: some View {
-        // TestFlight feedback (2026-09-29, with a screenshot): "the button
-        // to start a lesson will be buried underneath [the podcast mini-
-        // bar]." This screen is pushed via LessonBrowserView's
-        // NavigationStack, and the mini-bar's safeAreaInset is reserved
-        // by the tab ROOT (see PodcastMiniBar.swift's own "Applied to
-        // each tab's ROOT CONTENT" comment, which already flagged itself
-        // as unverified on hardware) -- it does not extend to a pushed
-        // destination's own layout, so a Spacer()-pinned-to-bottom button
-        // here had nothing stopping it from landing exactly where the
-        // mini-bar sits. Fixed by making the button part of the normal
-        // scrolling content instead of pinned to the absolute bottom --
-        // reachable by construction regardless of what other chrome is on
-        // screen, rather than depending on safe-area propagation across a
-        // navigation push boundary.
-        ScrollView {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                MascotTile(moment: .emptyState, size: 120, tone: .mint)
-                    .alphonsoLift()
-                    .frame(maxWidth: .infinity)
-                    .accessibilityHidden(true)
-                Text(lesson.subtitle.uppercased())
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
-                Text(lesson.title)
-                    .font(AlphonsoFont.display(32, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
-
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
-                    overviewStep(emoji: "\u{1F4DA}", tone: .coral, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
-                    if !previewImages.isEmpty {
-                        HStack(spacing: 8) {
-                            ForEach(previewImages, id: \.url) { image in
-                                VocabImageView(image: image, thumbnailSize: 44)
-                            }
-                        }
-                        .padding(.leading, AlphonsoSpacing.md)
-                    }
-                    overviewStep(emoji: "\u{1F3AF}", tone: .sky, label: "Practice", detail: "\(questionCount) questions")
-                    overviewStep(emoji: "\u{2B50}", tone: .mint, label: "Review", detail: "Anything you miss comes back later")
-                }
-
-                Button("Begin lesson", action: onStart)
-                    .buttonStyle(.alphonsoPrimary)
-                    .padding(.top, AlphonsoSpacing.sm)
-            }
-            .padding()
-        }
-        .background(AlphonsoColor.surface)
-    }
-
-    /// One step as a coloured card with a 3D icon. The icon is decorative; the label carries the meaning.
-    private func overviewStep(emoji: String, tone: AlphonsoTileTone, label: String, detail: String) -> some View {
-        HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Icon3DView(emoji: emoji, size: 36)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(AlphonsoFont.display(17, weight: .bold))
-                Text(detail)
-                    .font(AlphonsoFont.sans(12))
-                    .opacity(0.8)
-            }
-            Spacer(minLength: 0)
-        }
-        .foregroundStyle(tone.ink)
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .padding(.vertical, 12)
-        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
-        .alphonsoLift()
-        .accessibilityElement(children: .combine)
+        .id(Self.correctAnswerID)
     }
 }
 
@@ -1230,179 +1283,6 @@ struct VocabImageView: View {
     }
 }
 
-private struct FinishView: View {
-    let result: LessonCompletionResult
-    let correct: Int
-    let total: Int
-    let contentStore: ContentStore
-    let isLeaguePromotion: Bool
-    let lessonID: String
-    let course: Course
-    let session: Session
-    /// TestFlight feedback (2026-09-29): "there is no way to continue to
-    /// the next lesson ... without going back to the main menu." Nil (no
-    /// button) at the end of a CEFR band -- see LessonPlayerView's
-    /// nextLessonID doc comment for why that's deliberate.
-    let onContinueToNextLesson: (() -> Void)?
-    /// Opens Hector (or the paywall) from the happiest moment. Nil hides the button.
-    let onPractiseWithHector: (() -> Void)?
-    /// The in-app reminder card (from the 2nd completed lesson). The system dialog only follows "Remind me".
-    let showReminderCard: Bool
-    let onRemindMe: () -> Void
-    let onNotNow: () -> Void
-
-    @State private var showPromotionOverlay = false
-    /// Flips once on appear; the success haptic is keyed to it.
-    @State private var celebrated = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    @Environment(\.dismiss) private var dismiss
-
-    /// Clear space over the clip before the card starts, so Alphonso is seen first.
-    private static var clipWindow: CGFloat { UIScreen.main.bounds.height * 0.34 }
-
-    private var unlockedAchievements: [Achievement] {
-        result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: AlphonsoSpacing.md) {
-                // The title sits on glass, over the clip.
-                Text("Lesson complete")
-                    .font(AlphonsoFont.display(21, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                    .padding(.horizontal, AlphonsoSpacing.md)
-                    .padding(.vertical, AlphonsoSpacing.sm)
-                    .alphonsoGlass(radius: AlphonsoRadius.xl)
-
-                // Clear space: the clip behind shows Alphonso here, before the card.
-                Color.clear
-                    .frame(height: Self.clipWindow)
-                    .accessibilityElement()
-                    .accessibilityLabel("Alphonso celebrating on the stage")
-                    .accessibilityAddTraits(.isImage)
-
-                VStack(spacing: AlphonsoSpacing.md) {
-                    Text(LessonFinishCopy.headline(correct: correct, total: total))
-                        .font(AlphonsoFont.display(24, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.ink)
-                        .multilineTextAlignment(.center)
-                    HStack(spacing: 10) {
-                        ForEach(Array(LessonRewards.chips(xp: result.xpGain, streak: result.progress.streak, correct: correct, total: total).enumerated()), id: \.offset) { index, chip in
-                            LessonRewardChipView(chip: chip, index: index)
-                                .springEntrance(delay: reduceMotion ? 0 : 0.15 + Double(index) * 0.12)
-                        }
-                    }
-                    Text("\(correct)/\(total) correct")
-                        .font(AlphonsoFont.sans(13))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    if let bonus = result.heartsBonus {
-                        Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
-                            .font(AlphonsoFont.sans(13, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.ember)
-                    }
-                    if !unlockedAchievements.isEmpty {
-                        VStack(spacing: AlphonsoSpacing.sm + 4) {
-                            Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
-                                .font(AlphonsoFont.sans(13, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
-                                ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
-                                    AchievementBadgeView(achievement: achievement, unlocked: true)
-                                        .springEntrance(delay: Double(index) * 0.15)
-                                }
-                            }
-                        }
-                        .padding(.top, 8)
-                    }
-
-                    if showReminderCard {
-                        VStack(spacing: AlphonsoSpacing.sm) {
-                            Text(ReminderPromptCopy.title)
-                                .font(AlphonsoFont.sans(15, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                                .accessibilityAddTraits(.isHeader)
-                            Text(ReminderPromptCopy.body)
-                                .font(AlphonsoFont.sans(13))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                                .multilineTextAlignment(.center)
-                            ViewThatFits(in: .horizontal) {
-                                HStack(spacing: AlphonsoSpacing.sm) {
-                                    Button(ReminderPromptCopy.decline, action: onNotNow)
-                                        .buttonStyle(.alphonsoSecondary)
-                                    Button(ReminderPromptCopy.accept, action: onRemindMe)
-                                        .buttonStyle(.alphonsoPrimary)
-                                }
-                                VStack(spacing: AlphonsoSpacing.sm) {
-                                    Button(ReminderPromptCopy.accept, action: onRemindMe)
-                                        .buttonStyle(.alphonsoPrimary)
-                                    Button(ReminderPromptCopy.decline, action: onNotNow)
-                                        .buttonStyle(.alphonsoSecondary)
-                                }
-                            }
-                        }
-                        .padding(.top, 8)
-                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
-                    }
-
-                    if let onPractiseWithHector {
-                        Button("Practise with Hector", action: onPractiseWithHector)
-                            .buttonStyle(.alphonsoSecondary)
-                    }
-
-                    GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
-                }
-                .padding(AlphonsoSpacing.md)
-                .frame(maxWidth: .infinity)
-                .alphonsoGlass()
-                .springEntrance()
-            }
-            .padding()
-        }
-        .scrollContentBackground(.hidden)
-        // The whole celebration is one looping clip (the stage, confetti cannons, streamers, sweeping spotlights and
-        // Alphonso cheering), filling the screen behind the card with Alphonso in the top half. A fade into the
-        // surface at the bottom keeps the card's text readable. Under Reduce Motion the clip's first frame stands
-        // still. Decorative here: the clear window above carries its label.
-        .background {
-            ZStack(alignment: .bottom) {
-                ClipBackdrop(clip: .complete, verticalAnchor: 0.2)
-                    .ignoresSafeArea()
-                LinearGradient(colors: [.clear, AlphonsoColor.surface.opacity(0.92)], startPoint: .top, endPoint: .bottom)
-                    .frame(height: UIScreen.main.bounds.height * 0.55)
-                    .ignoresSafeArea(edges: .bottom)
-            }
-            .background(AlphonsoColor.ink)
-            .accessibilityHidden(true)
-        }
-        // Pinned above the tab bar: the way on never scrolls out of view, even on an iPhone SE.
-        .safeAreaInset(edge: .bottom) {
-            Group {
-                if let onContinueToNextLesson {
-                    Button("Continue to next lesson", action: onContinueToNextLesson)
-                } else {
-                    Button("Back to Learn") { dismiss() }
-                }
-            }
-            .buttonStyle(.alphonsoEmber)
-            .padding(.horizontal)
-            .padding(.vertical, AlphonsoSpacing.sm)
-            .background(.ultraThinMaterial)
-        }
-        .sensoryFeedback(.success, trigger: celebrated)
-        .onAppear {
-            showPromotionOverlay = isLeaguePromotion
-            celebrated = true
-        }
-        .fullScreenCover(isPresented: $showPromotionOverlay) {
-            LeaguePromotionOverlay(tier: result.progress.leagueTier) {
-                showPromotionOverlay = false
-            }
-        }
-    }
-}
-
 /// V3 pkg 4b -- "generative sentence content." On-demand extra practice a
 /// learner can do immediately after finishing a lesson -- entirely
 /// ephemeral (view-local state only), never touching XP/hearts/review
@@ -1685,70 +1565,4 @@ struct HectorAccess {
     let entitlementStore: EntitlementStore
     let activeCourse: ActiveCourseModel
     let conversationStore: ConversationStore
-}
-
-/// One reward on the lesson-complete screen: a 3D icon, the value and its name, in a chunky bordered card.
-private struct LessonRewardChipView: View {
-    let chip: LessonRewardChip
-    /// Its place in the row; later chips start counting a little later, as they pop in.
-    var index: Int = 0
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    /// Flips once the chip appears; the number counts up from 0 to its value while it does.
-    @State private var reached = false
-
-    /// XP and streak count up; accuracy is shown as it is.
-    private var split: (prefix: String, number: Int, suffix: String)? {
-        chip.kind != .accuracy ? RewardCountUp.split(chip.value) : nil
-    }
-
-    private var title: String {
-        switch chip.kind {
-        case .xp: return "XP"
-        case .streak: return "Streak"
-        case .accuracy: return "Accuracy"
-        }
-    }
-
-    private var tone: AlphonsoTileTone {
-        switch chip.kind {
-        case .xp: return .sun
-        case .streak: return .coral
-        case .accuracy: return .mint
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .foregroundStyle(tone.ink)
-            Icon3DView(emoji: chip.emoji, size: 28)
-            Group {
-                if let split {
-                    CountingText(
-                        number: Double(reduceMotion || reached ? split.number : 0),
-                        prefix: split.prefix,
-                        suffix: split.suffix
-                    )
-                } else {
-                    Text(chip.value)
-                }
-            }
-            .font(AlphonsoFont.display(18, weight: .bold))
-            .foregroundStyle(AlphonsoColor.ink)
-        }
-        .frame(minWidth: 84)
-        .padding(.vertical, 10)
-        .background(tone.background, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
-        .alphonsoLift()
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeOut(duration: RewardCountUp.duration).delay(0.15 + Double(index) * 0.12)) {
-                reached = true
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(chip.value)")
-    }
 }

@@ -57,6 +57,11 @@ targets:
       - path: AlphonsoScenes
         type: folder
         buildPhase: resources
+      # Alphonso's five lesson expressions (talk, neutral, happy, hmm, wow), the same WebP cut-outs as the web's
+      # public/alphonso/lesson, read by name at run time (LessonStageViews).
+      - path: AlphonsoLesson
+        type: folder
+        buildPhase: resources
       # Hector's kit for the same call: base, six mouths, three eyes layers (no ears, no glint) plus manifest.json.
       - path: HectorAvatar
         type: folder

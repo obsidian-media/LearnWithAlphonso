@@ -6,7 +6,7 @@ export type Scene = "complete" | "hector" | "learn" | "listen" | "practice" | "p
 export type Figure = "alphonso-proud" | "alphonso-waving" | "hector-waving";
 
 /** A short looping video of a whole scene with its character in it, made from a scene + figure first frame. */
-export type Clip = "complete" | "hector" | "learn";
+export type Clip = "hector" | "learn";
 
 export const SCENES = data.scenes as Scene[];
 export const CLIPS = data.clips as Clip[];

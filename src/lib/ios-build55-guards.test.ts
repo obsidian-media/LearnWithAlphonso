@@ -55,13 +55,8 @@ describe("1. the word card looks good without a photo", () => {
   });
 });
 
-describe("2. lesson complete shows the rewards above the pinned button", () => {
-  it("the clear window over the clip is a third of the screen, not almost half", () => {
-    expect(lesson).toMatch(
-      /static var clipWindow: CGFloat \{ UIScreen\.main\.bounds\.height \* 0\.34 \}/,
-    );
-  });
-});
+// 2. (the clip window over lesson complete) is gone with the clip: lesson complete is drawn in code in the unit's
+// room since visual round 6 (ios-lesson-room-guards.test.ts).
 
 describe("3. the wrong-answer panel is softer, and never the colour of a right answer", () => {
   const theme = read("DesignSystem/AlphonsoTheme.swift");
@@ -98,17 +93,36 @@ describe("3. the wrong-answer panel is softer, and never the colour of a right a
 });
 
 describe("4. word chips keep their bottom edge", () => {
-  it.each([
-    ["lesson", lesson],
-    ["review", review],
-  ])("the %s word bank and reorder pool leave room for the 4 pt edge", (_n, file) => {
-    expect(from(file, "Button(word) { picked = word }").slice(0, 500)).toContain(
-      ".padding(.bottom, 4)",
+  it("the lesson's word tiles carry their edge in their own style, with room for it below", () => {
+    // Since round 6 the lesson draws LessonWordTile (LessonStageViews.swift): the edge sits under the face and the
+    // style pads the tile by the edge's height, so a wrapping row never clips it.
+    const stage = read("LessonStageViews.swift");
+    const pressable = between(
+      stage,
+      "private struct LessonPressableStyle",
+      "struct LessonAnswerButton",
     );
-    expect(from(file, "Button(token) { orderPicks.append(i) }").slice(0, 500)).toContain(
-      ".padding(.bottom, 4)",
+    expect(pressable).toContain(
+      ".background(alignment: .top) { shape.fill(edge).offset(y: edgeHeight) }",
     );
+    expect(pressable).toContain(".padding(.bottom, edgeHeight)");
+    expect(lesson).toContain(
+      "LessonWordTile(word: word, picked: picked == word) { picked = word }",
+    );
+    expect(lesson).toContain("LessonWordTile(word: token) { orderPicks.append(i) }");
   });
+
+  it.each([["review", review]])(
+    "the %s word bank and reorder pool leave room for the 4 pt edge",
+    (_n, file) => {
+      expect(from(file, "Button(word) { picked = word }").slice(0, 500)).toContain(
+        ".padding(.bottom, 4)",
+      );
+      expect(from(file, "Button(token) { orderPicks.append(i) }").slice(0, 500)).toContain(
+        ".padding(.bottom, 4)",
+      );
+    },
+  );
 });
 
 describe("5. the scene follows the scroll, so Learn's greeting bubble fades", () => {

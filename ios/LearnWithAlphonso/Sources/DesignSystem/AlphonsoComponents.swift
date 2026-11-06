@@ -711,8 +711,12 @@ struct ExplanationView: View {
     /// come from the server's AI grader. Without this the card would show the
     /// "not quite" styling over an answer the learner was just told was right.
     var correctOverride: Bool? = nil
+    /// Inside the lesson's verdict sheet (round 6): the sheet already says right or wrong with Alphonso's face, so
+    /// this is only the one-line why, in the body type, with no tip card and no second announcement.
+    var inSheet = false
 
     @Environment(\.saveWordHandler) private var saveWordHandler
+    @Environment(\.alphonsoDS) private var ds
     /// The lesson and review set this: their verdict panel announces the verdict, and a second post in the same
     /// frame would cut it off.
     @Environment(\.verdictAnnouncedByPanel) private var verdictAnnouncedByPanel
@@ -750,7 +754,9 @@ struct ExplanationView: View {
 
     private var explanationContent: some View {
         Group {
-            if isCorrect {
+            if inSheet {
+                correctCaption
+            } else if isCorrect {
                 correctCaption
                     // Same reasoning as AlphonsoTipCard's label below: a
                     // sighted learner reads "no Alphonso popup" as "you got
@@ -767,7 +773,7 @@ struct ExplanationView: View {
         // navigating to this exact element, which "does it work without
         // looking at the screen" needs to not require.
         .onAppear {
-            guard !verdictAnnouncedByPanel else { return }
+            guard !verdictAnnouncedByPanel, !inSheet else { return }
             UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
         }
     }
@@ -778,14 +784,14 @@ struct ExplanationView: View {
     private var correctCaption: some View {
         if let saveCourse, let saveWordHandler {
             TappableText(
-                text: explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
+                text: explanation, color: inSheet ? ds.ink : AlphonsoColor.inkSoft, course: saveCourse,
                 mode: .lesson(course: saveCourse, spans: courseSpans), onSave: saveWordHandler
             )
-            .font(AlphonsoFont.sans(13))
+            .font(inSheet ? AlphonsoDS.font(.body) : AlphonsoFont.sans(13))
         } else {
             Text(explanation)
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .font(inSheet ? AlphonsoDS.font(.body) : AlphonsoFont.sans(13))
+                .foregroundStyle(inSheet ? ds.ink : AlphonsoColor.inkSoft)
         }
     }
 }

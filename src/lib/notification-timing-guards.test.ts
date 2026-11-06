@@ -35,6 +35,8 @@ const callsIn = (files: string[], re: RegExp) =>
     .sort();
 
 const ios = read("ios/LearnWithAlphonso/Sources/LessonPlayerView.swift");
+/** The lesson-complete parts (round 6), where the reminder card itself is drawn. */
+const iosStage = read("ios/LearnWithAlphonso/Sources/LessonStageViews.swift");
 const android = read(
   "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/lesson/LessonScreen.kt",
 );
@@ -51,7 +53,12 @@ describe("iOS: no cold notification prompt after a lesson", () => {
     const accept = between(ios, "private func acceptReminders", "\n    }\n");
     expect(accept).toContain("requestAuthorization()");
     expect(ios).toContain("ReminderPromptPolicy.shouldShowCard(");
-    expect(ios).toContain("ReminderPromptCopy.accept");
+    expect(iosStage).toContain("ReminderPromptCopy.accept");
+    // The card's buttons call only the player's handlers: Remind me asks, Not now records.
+    expect(ios).toContain(
+      "LessonReminderCard(onRemindMe: { Task { await acceptReminders() } }, onNotNow: declineReminders)",
+    );
+    expect(iosStage).not.toContain("requestAuthorization(");
     expect(ios).toContain("recordNotNow(");
   });
 });
@@ -98,11 +105,12 @@ describe("the reminder card does not delay or leak across lessons", () => {
     expect(decide).toMatch(/lesson\.id == decidingFor/);
   });
   it("iOS: the card is accessible and animates only without Reduce Motion", () => {
-    const card = between(ios, "if showReminderCard {", "if let onPractiseWithHector");
+    const shown = between(ios, "if showReminderCard {", "if hectorAccess != nil");
+    expect(shown).toContain(".transition(reduceMotion ? .opacity :");
+    const card = between(iosStage, "struct LessonReminderCard: View", "\n}\n");
     expect(card).toContain(".isHeader");
     expect(card).toContain("ViewThatFits");
-    expect(card).toContain(".transition(");
-    expect(ios).toContain("Announcement(");
+    expect(card).toContain("Announcement(");
   });
   it("Android: a grant registers for push, and the card buttons can grow", () => {
     expect(android).toContain("pushRegistrar.registerIfAuthorized()");
