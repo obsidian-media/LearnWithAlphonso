@@ -167,6 +167,8 @@ struct SettingsView: View {
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
+                VoicesSettingsSection(session: session)
+
                 Section {
                     if aiConsent.status == .unavailable {
                         // The setting could not be read: say so and offer a retry, never a switch that reads "off".

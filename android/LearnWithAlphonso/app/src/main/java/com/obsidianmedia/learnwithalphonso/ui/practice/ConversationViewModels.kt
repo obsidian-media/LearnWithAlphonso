@@ -57,6 +57,8 @@ abstract class BaseConversationViewModel(
     opener: String,
     /** The course the conversation is in: its scenario text, and the language of transcription, replies and speech. */
     protected val course: Course = Course.ENGLISH,
+    /** Alphonso's chosen voice for a course (Settings > Voices); null lets the server pick the default. */
+    private val alphonsoVoice: (String) -> String? = { null },
 ) : ViewModel(), com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation {
     protected val _state = MutableStateFlow(ConversationUiState(turns = listOf(ChatMessage("assistant", opener))))
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
@@ -100,7 +102,7 @@ abstract class BaseConversationViewModel(
                 it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
             }
             onReply(reply)
-            val audio = ai.synthesizeSpeech(reply, course = course.code)
+            val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)
             if (!player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
@@ -136,7 +138,8 @@ class ScenarioConversationViewModel(
     val scenario: Scenario,
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
     course: Course = Course.ENGLISH,
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course) {
+    alphonsoVoice: (String) -> String? = { null },
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course, alphonsoVoice) {
     override fun systemPrompt(): String = scenario.systemPrompt
 }
 
@@ -147,7 +150,8 @@ class CampaignConversationViewModel(
     val campaign: Campaign,
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
     course: Course = Course.ENGLISH,
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course) {
+    alphonsoVoice: (String) -> String? = { null },
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course, alphonsoVoice) {
     private val _campaign = MutableStateFlow(CampaignProgress())
     val campaignState: StateFlow<CampaignProgress> = _campaign.asStateFlow()
 

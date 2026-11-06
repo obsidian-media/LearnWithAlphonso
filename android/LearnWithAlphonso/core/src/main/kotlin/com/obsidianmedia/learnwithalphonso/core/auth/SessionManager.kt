@@ -6,6 +6,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.PkceChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthError
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
+import com.obsidianmedia.learnwithalphonso.core.voice.VoicePrefs
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -64,6 +67,18 @@ class SessionManager(
 
     /** The current token without refreshing; SupabaseHttp's 401 retry calls freshAccessToken(force = true). */
     fun currentAccessToken(): String? = (_state.value as? AuthState.SignedIn)?.session?.accessToken
+
+    /** The account's voice choices (auth user_metadata.voices), or null when unreadable (the cache then stands). */
+    suspend fun fetchVoicePrefs(): VoicePrefs? {
+        val token = freshAccessToken() ?: return null
+        return runCatching { VoicePrefs.fromJson(auth.fetchUserMetadata(token)[VoicePrefs.METADATA_KEY]) }.getOrNull()
+    }
+
+    /** Saves the voice choices on the account. Throws when signed out or the save fails. */
+    suspend fun saveVoicePrefs(prefs: VoicePrefs) {
+        val token = freshAccessToken() ?: throw SupabaseAuthError.InvalidPayload()
+        auth.updateUserMetadata(token, buildJsonObject { put(VoicePrefs.METADATA_KEY, prefs.toJson()) })
+    }
 
     /** The names in the signed-in account's auth record, or null when unreadable (the prompt then just has no prefill). */
     suspend fun fetchUserNames(): AuthUserNames? {
