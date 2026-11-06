@@ -190,6 +190,7 @@ const loadRulings = (phase: string) =>
   new Map(Object.entries(readJson<Record<string, Ruling>>(rulingStore(phase), {})));
 const RULING_PHASES = new Set([
   "judge",
+  "judge-ok",
   "judge-retry",
   "rewrite-explanation",
   "rewrite-cloze",
@@ -1242,6 +1243,30 @@ switch (cmd) {
   case "collect":
     await collect();
     break;
+  case "reparse": {
+    // Re-reads a collected job's saved replies (raw/<ref>.json) into its ruling store, for a job
+    // collected while its phase was missing from RULING_PHASES. No API call.
+    const ref = argv[1] ?? "";
+    const job = loadState().jobs.find((j) => j.ref === ref);
+    if (!job || !RULING_PHASES.has(job.phase)) throw new Error(`no collected ruling job ${ref}`);
+    const raw = readJson<{ customId: string; text?: string }[]>(
+      path.join(STATE, "raw", `${ref}.json`),
+      [],
+    );
+    const byCustom = new Map(job.chunks.map((c) => [c.customId, c]));
+    const store = Object.fromEntries(loadRulings(job.phase));
+    let got = 0;
+    for (const r of raw) {
+      const chunk = byCustom.get(r.customId);
+      if (!chunk || !r.text) continue;
+      const p = parseRulings(chunk, r.text);
+      for (const x of p.rulings) store[x.id] = { ...x, at: job.createdAt };
+      got += p.rulings.length;
+    }
+    writeJson(rulingStore(job.phase), store);
+    console.log(`${ref}: ${got} rulings recovered from saved replies.`);
+    break;
+  }
   case "gates":
     gatesCommand();
     break;
