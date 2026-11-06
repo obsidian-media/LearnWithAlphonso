@@ -18,6 +18,12 @@ import { hectorMoment, hectorStatus, hectorStatusLabel } from "../../lib/hector-
 import { fetchProgress } from "../../lib/sync.functions";
 import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
+import { PracticeCall } from "../../components/PracticeCall";
+import { HECTOR_KIT } from "../../lib/avatar/layers";
+import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
+import { useAvatarPreference } from "../../lib/avatar/preference";
+import { useTheme } from "../../lib/theme";
+import { useReducedMotion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
@@ -151,6 +157,13 @@ function HectorConversation({
   const [cefrLevel, setCefrLevel] = useState<string>("");
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // The call screen ("Show Alphonso while practising" covers Hector too, so one switch decides).
+  const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
+  const showCall = useAvatarPreference((st) => st.enabled);
+  const hydrateAvatarPreference = useAvatarPreference((st) => st.hydrate);
+  useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
+  const reducedMotion = useReducedMotion() ?? false;
+  const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
   useEffect(() => {
     let cancelled = false;
@@ -244,52 +257,14 @@ function HectorConversation({
     error: captureError,
     start: beginCapture,
     stop: stopRecording,
+    getStream,
   } = useSpeechCapture({ course, onTranscript: (t) => send(t) });
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
   const status = hectorStatus({ recording, transcribing, sending, speaking });
 
-  return (
-    <LessonFrame>
-      <SceneBackdrop scene="hector" focus="50% 30%" />
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[17px] font-semibold text-ink">Hector</h1>
-          <p className="truncate text-[11px] text-ink-soft/70">{PAYWALL_COPY.mascotMessage}</p>
-        </div>
-        <ManageSubscription pro={pro} />
-      </header>
-      <section
-        aria-label="Hector"
-        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
-      >
-        <MascotImage
-          moment={hectorMoment(status)}
-          size={messages.length === 0 ? 132 : 76}
-          tone="sky"
-          radius={messages.length === 0 ? 32 : 22}
-          alt="Hector"
-          className="card-lift"
-        />
-        <div className="min-w-0 space-y-1.5">
-          <p className="font-display text-2xl font-bold text-ink">Your tutor</p>
-          {status ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-ink card-lift">
-              <span
-                aria-hidden="true"
-                className={`size-2 rounded-full ${
-                  status === "listening"
-                    ? "animate-pulse bg-ember motion-reduce:animate-none"
-                    : "bg-moss"
-                }`}
-              />
-              {hectorStatusLabel(status)}
-            </span>
-          ) : (
-            <p className="text-xs text-ink-soft/70">Type or tap the mic to start talking.</p>
-          )}
-        </div>
-      </section>
+  const hintAndLog = (
+    <>
       <div className="relative z-10 mx-4 mt-3 rounded-2xl bg-surface/85 px-3 backdrop-blur-md">
         <SaveWordHint always />
       </div>
@@ -334,56 +309,178 @@ function HectorConversation({
           )}
         </div>
       </div>
-      <div className="sticky bottom-0 z-20 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void send(input);
+    </>
+  );
+  const composer = (
+    <div className="sticky bottom-0 z-20 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send(input);
+        }}
+        className="flex items-end gap-2"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            if (recording) stopRecording();
+            else void beginCapture();
           }}
-          className="flex items-end gap-2"
+          aria-label={recording ? "Stop recording and send" : "Record a voice message"}
+          aria-pressed={recording}
+          disabled={sending || transcribing}
+          className={`grid size-11 shrink-0 place-items-center rounded-full ${
+            recording ? "bg-ember text-ink-on-ember" : "bg-moss text-surface"
+          } disabled:opacity-50`}
         >
-          <button
-            type="button"
-            onClick={() => {
-              setError(null);
-              if (recording) stopRecording();
-              else void beginCapture();
+          <span aria-hidden="true">🎙</span>
+        </button>
+        <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+          <textarea
+            aria-label="Message Hector"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void send(input);
+              }
             }}
-            aria-label={recording ? "Stop recording and send" : "Record a voice message"}
-            aria-pressed={recording}
-            disabled={sending || transcribing}
-            className={`grid size-11 shrink-0 place-items-center rounded-full ${
-              recording ? "bg-ember text-ink-on-ember" : "bg-moss text-surface"
-            } disabled:opacity-50`}
-          >
-            <span aria-hidden="true">🎙</span>
-          </button>
-          <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
-            <textarea
-              aria-label="Message Hector"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(input);
-                }
-              }}
-              rows={1}
-              placeholder={recording ? "Listening…" : "Type or tap the mic"}
-              disabled={sending || transcribing || recording}
-              className="max-h-32 w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={!input.trim() || sending}
-            className="rounded-full bg-ember px-4 py-2.5 text-sm font-semibold text-ink-on-ember disabled:opacity-50"
-          >
-            Send
-          </button>
-        </form>
-      </div>
+            rows={1}
+            placeholder={recording ? "Listening…" : "Type or tap the mic"}
+            disabled={sending || transcribing || recording}
+            className="max-h-32 w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={!input.trim() || sending}
+          className="rounded-full bg-ember px-4 py-2.5 text-sm font-semibold text-ink-on-ember disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
+    </div>
+  );
+  const classicTop = (
+    <>
+      <SceneBackdrop scene="hector" focus="50% 30%" />
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-[17px] font-semibold text-ink">Hector</h1>
+          <p className="truncate text-[11px] text-ink-soft/70">{PAYWALL_COPY.mascotMessage}</p>
+        </div>
+        <ManageSubscription pro={pro} />
+      </header>
+      <section
+        aria-label="Hector"
+        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
+      >
+        <MascotImage
+          moment={hectorMoment(status)}
+          size={messages.length === 0 ? 132 : 76}
+          tone="sky"
+          radius={messages.length === 0 ? 32 : 22}
+          alt="Hector"
+          className="card-lift"
+        />
+        <div className="min-w-0 space-y-1.5">
+          <p className="font-display text-2xl font-bold text-ink">Your tutor</p>
+          {status ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-ink card-lift">
+              <span
+                aria-hidden="true"
+                className={`size-2 rounded-full ${
+                  status === "listening"
+                    ? "animate-pulse bg-ember motion-reduce:animate-none"
+                    : "bg-moss"
+                }`}
+              />
+              {hectorStatusLabel(status)}
+            </span>
+          ) : (
+            <p className="text-xs text-ink-soft/70">Type or tap the mic to start talking.</p>
+          )}
+        </div>
+      </section>
+    </>
+  );
+
+  const avatarPhase: VoicePhase = recording
+    ? { kind: "recording" }
+    : transcribing
+      ? { kind: "transcribing" }
+      : sending
+        ? { kind: "thinking" }
+        : speaking
+          ? { kind: "speaking" }
+          : { kind: "idle" };
+
+  if (showCall) {
+    const last = messages[messages.length - 1];
+    const lastReply = [...messages].reverse().find((m) => m.role === "assistant");
+    const caption =
+      recording || !last
+        ? null
+        : { text: last.content, mine: last.role === "user", spoken: last.role === "assistant" };
+    return (
+      <LessonFrame>
+        <PracticeCall
+          kit={HECTOR_KIT}
+          title={PAYWALL_COPY.mascotMessage}
+          scenarioId="hector"
+          dark={darkTheme}
+          avatar={{
+            phase: avatarPhase,
+            replyText: lastReply?.content ?? null,
+            getAudio: () => audioRef.current,
+            // /api/hector-respond returns no verdict, so Hector does not react to right or wrong answers.
+            replyVerdict: { serial: 0, verdict: "none" },
+            course,
+            reducedMotion,
+            onModeChange: setAvatarMode,
+          }}
+          mode={avatarMode}
+          caption={caption}
+          recording={recording}
+          talkDisabled={sending || transcribing}
+          onHoldStart={() => {
+            setError(null);
+            if (captureState === "idle" && !sending) void beginCapture();
+          }}
+          onHoldEnd={() => {
+            if (captureState !== "transcribing") stopRecording();
+          }}
+          onToggle={() => {
+            setError(null);
+            if (recording) stopRecording();
+            else void beginCapture();
+          }}
+          getStream={getStream}
+          error={error ?? captureError}
+          endTo="/learn"
+          messages={messages}
+          reducedMotion={reducedMotion}
+          sheet={
+            <>
+              <div className="mb-2">
+                <ManageSubscription pro={pro} />
+              </div>
+              {hintAndLog}
+              {composer}
+            </>
+          }
+        />
+      </LessonFrame>
+    );
+  }
+
+  return (
+    <LessonFrame>
+      {classicTop}
+      {hintAndLog}
+      {composer}
     </LessonFrame>
   );
 }

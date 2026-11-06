@@ -3,7 +3,7 @@ import UIKit
 import QuartzCore
 import LearnWithAlphonsoKit
 
-/// The talking 2D Alphonso at the top of the Practice speaking screen, "on a video call". He listens while the
+/// The talking 2D Alphonso in the full-screen Practice call (PracticeCallView). He listens while the
 /// learner holds the button, thinks while the reply is made, and talks with lip sync while it plays. The logic
 /// (mouth shapes, timing, state, idle life) is the Kit's Avatar* files; this file only draws it.
 ///
@@ -15,14 +15,15 @@ import LearnWithAlphonsoKit
 private enum AvatarArt {
     private static var cache: [String: UIImage] = [:]
 
-    static func image(_ file: String) -> UIImage? {
-        if let hit = cache[file] { return hit }
-        let path = Bundle.main.bundlePath + "/AlphonsoAvatar/" + file
+    static func image(_ file: String, folder: String) -> UIImage? {
+        let cacheKey = folder + "/" + file
+        if let hit = cache[cacheKey] { return hit }
+        let path = Bundle.main.bundlePath + "/" + folder + "/" + file
         guard let loaded = UIImage(contentsOfFile: path) else { return nil }
         // contentsOfFile only maps the file; the WebP would otherwise decode lazily at first draw (and again if
         // the system purges the decode). Decode now, once, and cache the bitmap.
         let image = loaded.preparingForDisplay() ?? loaded
-        cache[file] = image
+        cache[cacheKey] = image
         return image
     }
 }
@@ -55,10 +56,11 @@ private final class AvatarDriver {
     /// nil until the first frame: a verdict that was already there when the stage appeared (the setting turned on
     /// after a reply) belongs to a turn that is over, so it is not reacted to.
     private var handledVerdictSerial: Int?
+    private var lastMode: AvatarMode = .idle
 
     func frame(
         voice: VoiceSessionController, replyText: String?, replyVerdict: AvatarReplyVerdict, course: Course,
-        reduceMotion: Bool
+        reduceMotion: Bool, onModeChange: ((AvatarMode) -> Void)?
     ) -> AvatarFrame {
         let now = CACurrentMediaTime() - origin
         if handledVerdictSerial == nil { handledVerdictSerial = replyVerdict.serial }
@@ -68,6 +70,12 @@ private final class AvatarDriver {
             machine.replyArrived(verdict: replyVerdict.verdict)
         }
         machine.update(phase: voice.phase, now: now)
+        if machine.mode != lastMode {
+            lastMode = machine.mode
+            let mode = machine.mode
+            // Never change state while a view is being evaluated.
+            DispatchQueue.main.async { onModeChange?(mode) }
+        }
         if voice.isRecording, let level = voice.inputLevelDBFS() {
             machine.heard(levelDBFS: level, now: now)
         }
@@ -96,29 +104,15 @@ private final class AvatarDriver {
     }
 }
 
-/// The stage: sized from the screen so a small phone keeps room for the transcript and the talk button.
-struct AlphonsoAvatarStage: View {
-    let voice: VoiceSessionController
-    let replyText: String?
-    var replyVerdict = AvatarReplyVerdict()
-    let course: Course
-
-    var body: some View {
-        AlphonsoAvatarView(voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course)
-            .containerRelativeFrame(.vertical) { length, _ in min(max(length * 0.2, 88), 170) }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 4)
-            .background(AlphonsoColor.surface)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-    }
-}
-
 struct AlphonsoAvatarView: View {
     let voice: VoiceSessionController
     let replyText: String?
     let replyVerdict: AvatarReplyVerdict
     let course: Course
+    /// Who to draw: his art folder and layer placement. Alphonso unless told otherwise.
+    var kit: CharacterKit = .alphonso
+    /// Told when his mode changes (idle, listening, thinking, speaking, a reaction): the call's state pill.
+    var onModeChange: ((AvatarMode) -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -128,38 +122,39 @@ struct AlphonsoAvatarView: View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: scenePhase != .active)) { _ in
             let frame = driver.frame(
                 voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course,
-                reduceMotion: reduceMotion)
-            AvatarLayersView(frame: frame)
+                reduceMotion: reduceMotion, onModeChange: onModeChange)
+            AvatarLayersView(frame: frame, kit: kit)
         }
     }
 }
 
-/// The 15 layers placed from the manifest rects, in the manifest's draw order.
+/// The kit's layers placed from its manifest rects, in draw order: base, ears (if any), mouth, expression, glint (if any).
 @MainActor
 private struct AvatarLayersView: View {
     let frame: AvatarFrame
+    let kit: CharacterKit
 
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             ZStack(alignment: .topLeading) {
                 layer(AvatarLayers.baseFile, AvatarRect(x: 0, y: 0, w: 1, h: 1), side)
-                ear(.left, twitching: frame.leftEarTwitch, side)
-                ear(.right, twitching: frame.rightEarTwitch, side)
+                if kit.earLeftRect != nil { ear(.left, twitching: frame.leftEarTwitch, side) }
+                if kit.earRightRect != nil { ear(.right, twitching: frame.rightEarTwitch, side) }
                 ForEach(AvatarViseme.allCases.filter { $0 != .closed }, id: \.self) { shape in
                     if let file = AvatarLayers.mouthFile(shape) {
-                        layer(file, AvatarLayers.mouthRect, side)
+                        layer(file, kit.mouthRect, side)
                             .opacity(frame.pose.mouth == shape ? 1 : 0)
                     }
                 }
                 .animation(.linear(duration: 0.055), value: frame.pose.mouth)
                 ForEach(AvatarBrows.allCases, id: \.self) { brows in
-                    layer(AvatarLayers.browsFile(brows), AvatarLayers.browsRect, side)
+                    layer(kit.expressionFile(brows), kit.expressionRect, side)
                         .opacity(frame.pose.brows == brows ? 1 : 0)
                 }
                 .animation(.easeInOut(duration: 0.14), value: frame.pose.brows)
-                if let progress = frame.glint {
-                    glint(progress: progress, side)
+                if let progress = frame.glint, let glintRect = kit.glintRect {
+                    glint(progress: progress, rect: glintRect, side)
                 }
             }
             .frame(width: side, height: side, alignment: .topLeading)
@@ -169,18 +164,17 @@ private struct AvatarLayersView: View {
         }
     }
 
-    private func ear(_ side: AvatarEarSide, twitching: Bool, _ canvas: CGFloat) -> some View {
-        let rect = side == .left ? AvatarLayers.earLeftRect : AvatarLayers.earRightRect
-        return ZStack(alignment: .topLeading) {
+    private func ear(_ side: AvatarEarSide, twitching: Bool, _ canvas: CGFloat) -> AnyView {
+        guard let rect = side == .left ? kit.earLeftRect : kit.earRightRect else { return AnyView(EmptyView()) }
+        return AnyView(ZStack(alignment: .topLeading) {
             layer(AvatarLayers.earFile(side, twitching: false), rect, canvas).opacity(twitching ? 0 : 1)
             layer(AvatarLayers.earFile(side, twitching: true), rect, canvas).opacity(twitching ? 1 : 0)
         }
-        .animation(.linear(duration: 0.05), value: twitching)
+        .animation(.linear(duration: 0.05), value: twitching))
     }
 
     /// A soft diagonal band of light across the lenses; the glint mask (white = lens) keeps it off the rest.
-    private func glint(progress: Double, _ canvas: CGFloat) -> some View {
-        let rect = AvatarLayers.glintRect
+    private func glint(progress: Double, rect: AvatarRect, _ canvas: CGFloat) -> some View {
         let width = canvas * rect.w
         let height = canvas * rect.h
         return ZStack {
@@ -195,7 +189,7 @@ private struct AvatarLayersView: View {
         .frame(width: width, height: height)
         .clipped()
         .mask {
-            if let mask = AvatarArt.image(AvatarLayers.glintMaskFile) {
+            if let mask = AvatarArt.image(AvatarLayers.glintMaskFile, folder: kit.folder) {
                 Image(uiImage: mask).resizable().luminanceToAlpha()
             }
         }
@@ -204,7 +198,7 @@ private struct AvatarLayersView: View {
 
     @ViewBuilder
     private func layer(_ file: String, _ rect: AvatarRect, _ canvas: CGFloat) -> some View {
-        if let image = AvatarArt.image(file) {
+        if let image = AvatarArt.image(file, folder: kit.folder) {
             Image(uiImage: image)
                 .resizable()
                 .frame(width: canvas * rect.w, height: canvas * rect.h)

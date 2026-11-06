@@ -44,14 +44,20 @@ describe("the setting", () => {
     expect(settings).toContain("Show Alphonso while practising");
   });
 
-  it("gates the stage on the Practice speaking screen, so off leaves the screen as it was", () => {
+  it("gates the call on the Practice speaking screen, so off leaves the screen as it was", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
     expect(conversation).toContain(
       "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
     );
-    expect(conversation).toMatch(
-      /\.safeAreaInset\(edge: \.top, spacing: 0\) \{\s*if showAlphonso \{\s*AlphonsoAvatarStage\(/,
+    expect(conversation).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
+    // The classic screen keeps its own navigation bar, mic button and New conversation toolbar item.
+    const classic = conversation.slice(
+      conversation.indexOf("private var classicScreen"),
+      conversation.indexOf("private var callScreen"),
     );
+    expect(classic).toContain("micButton");
+    expect(classic).toContain('Button("New conversation")');
+    expect(classic).not.toContain("PracticeCallView");
   });
 });
 
@@ -98,9 +104,10 @@ describe("Reduce Motion", () => {
       ].sort(),
     );
     expect(view.match(/frame\.swayDegrees = /g)).toHaveLength(1);
-    expect(view).toContain("frame.swayDegrees = AvatarIdleMotion.swayDegrees(at: now)");
+    // The whole line, so nothing voice-driven can be added onto the clock's value.
+    expect(view).toMatch(/^\s*frame\.swayDegrees = AvatarIdleMotion\.swayDegrees\(at: now\)$/m);
     expect(view.match(/frame\.breath = /g)).toHaveLength(1);
-    expect(view).toContain("frame.breath = AvatarIdleMotion.breathScale(at: now)");
+    expect(view).toMatch(/^\s*frame\.breath = AvatarIdleMotion\.breathScale\(at: now\)$/m);
     const idle = code(`${KIT}/AvatarIdle.swift`);
     expect(idle).toContain("static func swayDegrees(at time: TimeInterval) -> Double");
     expect(idle).toContain(
@@ -118,10 +125,15 @@ describe("the art", () => {
   const expectedWebp = Object.keys(manifest.layers).map((n) => `${n}.webp`);
 
   it("ships every layer in the manifest, plus the manifest, and nothing else", () => {
-    expect(expectedWebp).toHaveLength(15);
+    expect(expectedWebp).toHaveLength(11);
     expect([...files].sort()).toEqual([...expectedWebp, "manifest.json"].sort());
     for (const f of expectedWebp)
       expect(fs.statSync(path.join(root, ART, f)).size, f).toBeGreaterThan(100);
+  });
+
+  it("has no ear layers: the realistic kit is one base, six mouths, three brows and the glint mask", () => {
+    expect(files.some((f) => f.startsWith("ear-"))).toBe(false);
+    expect(Object.keys(manifest.layers).some((n) => n.startsWith("ear-"))).toBe(false);
   });
 
   it("is a folder reference in the app target's resources", () => {
@@ -156,9 +168,26 @@ describe("the art", () => {
     };
     rect("mouth-ah", "mouthRect");
     rect("brows-neutral", "browsRect");
-    rect("ear-left-neutral", "earLeftRect");
-    rect("ear-right-neutral", "earRightRect");
     rect("glint-mask", "glintRect");
+  });
+
+  it("places Hector with his own manifest's rectangles, and gives him no glint or ears", () => {
+    const hectorManifest = JSON.parse(read(`${APP}/HectorAvatar/manifest.json`)) as typeof manifest;
+    const layers = code(`${KIT}/AvatarLayers.swift`);
+    const hector = layers.slice(layers.indexOf("static let hector = CharacterKit("));
+    const block = hector.slice(0, hector.indexOf("defaultRoom:"));
+    for (const [name, id] of [
+      ["mouth-ah", "mouthRect"],
+      ["eyes-neutral", "expressionRect"],
+    ] as const) {
+      const r = hectorManifest.layers[name];
+      expect(block, name).toMatch(
+        new RegExp(`${id}: AvatarRect\\(x: ${r.x}, y: ${r.y}, w: ${r.w}, h: ${r.h}\\)`),
+      );
+    }
+    expect(block).toMatch(/expressionPrefix: "eyes"/);
+    expect(block).toMatch(/glintRect: nil/);
+    expect(block).toMatch(/earLeftRect: nil, earRightRect: nil/);
   });
 });
 
@@ -172,8 +201,8 @@ describe("what he is built from", () => {
     }
   });
 
-  it("is decorative and never takes a touch", () => {
-    const view = code(VIEW);
+  it("is decorative and never takes a touch (the call view that hosts it enforces both)", () => {
+    const view = code(`${APP}/Sources/PracticeCallView.swift`);
     expect(view).toContain(".accessibilityHidden(true)");
     expect(view).toContain(".allowsHitTesting(false)");
   });
@@ -212,7 +241,7 @@ describe("reactions from the reply's verdict", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
     expect(conversation).toContain("client.chatReply(");
     expect(conversation).toMatch(/verdict: chatReply\.verdict/);
-    expect(conversation).toMatch(/AlphonsoAvatarStage\([\s\S]*?replyVerdict: replyVerdict/);
+    expect(conversation).toMatch(/PracticeCallView\([\s\S]*?replyVerdict: replyVerdict/);
   });
 
   it("queues the reaction in the machine and plays it only when the session is idle", () => {

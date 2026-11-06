@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "../../lib/__testutils__/ai-consent";
 
@@ -55,6 +55,8 @@ class FakeAudio {
 }
 
 beforeEach(() => {
+  // The existing tests cover the classic screen; the call screen has its own describe below.
+  localStorage.setItem("showAlphonsoWhilePractising", "false");
   useProgress.setState({ course: "fr" });
   Element.prototype.scrollTo = vi.fn();
   fetchProgress.mockReset();
@@ -288,5 +290,83 @@ describe("web Hector in his library", () => {
     const { container } = await renderPage();
     await screen.findByLabelText("Message Hector");
     expect(container.querySelector('[data-scene="hector"]')).not.toBeNull();
+  });
+});
+
+describe("web Hector as a full-screen call (the setting on, the default)", () => {
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+  });
+
+  async function renderCall() {
+    await renderPage();
+    await screen.findByTestId("call-caption");
+  }
+
+  it("is a call with Hector in his own kit, hidden from assistive technology", async () => {
+    await renderCall();
+    expect(screen.getByText("Hector")).toBeInTheDocument();
+    const stage = screen.getByTestId("alphonso-stage");
+    expect(stage).toHaveAttribute("aria-hidden", "true");
+    for (const img of stage.querySelectorAll("img"))
+      expect(img.getAttribute("src")).toMatch(/^\/hector\//);
+    expect(stage.querySelector('img[src$="eyes-lowered.webp"]')).not.toBeNull();
+    expect(stage.querySelector('img[src*="ear-"]')).toBeNull();
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/learn");
+    // Hector has no voice mute and never did.
+    expect(screen.queryByRole("button", { name: /Mute voice/ })).toBeNull();
+  });
+
+  it("keeps the typed message, the transcript, the report button and the subscription link in the sheet", async () => {
+    await renderCall();
+    await userEvent.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    const box = within(sheet).getByRole("textbox", { name: "Message Hector" });
+    await userEvent.type(box, "Salut Hector{Enter}");
+    expect(await within(sheet).findByText(/Comment ça va/)).toBeInTheDocument();
+    expect(within(sheet).getByRole("button", { name: /Report/i })).toBeInTheDocument();
+    // App Store Pro: told where to manage it.
+    expect(within(sheet).getByText(/iPhone/i)).toBeInTheDocument();
+    // The call itself shows Hector's reply as the live caption.
+    await userEvent.click(within(sheet).getByRole("button", { name: "Back to call" }));
+    expect(screen.getByTestId("call-caption")).toHaveTextContent("Comment ça va");
+  });
+
+  it("Hector does not react to right or wrong: his endpoint returns no verdict", async () => {
+    await renderCall();
+    await userEvent.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    await userEvent.type(
+      within(sheet).getByRole("textbox", { name: "Message Hector" }),
+      "Salut{Enter}",
+    );
+    await within(sheet).findByText(/Comment ça va/);
+    await new Promise((r) => setTimeout(r, 200));
+    const stage = screen.getByTestId("alphonso-stage");
+    // No reaction mouth or raised eyes is ever shown while idle after a reply.
+    expect(stage.querySelector('img[src$="mouth-ee.webp"]') as HTMLImageElement).toHaveStyle({
+      opacity: "0",
+    });
+    // The rendered check above cannot see a reaction that jsdom never plays out, so pin the source too: the verdict
+    // handed to the call is a constant "none" that no reply ever bumps.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const source = fs.readFileSync(path.join(import.meta.dirname, "hector.tsx"), "utf8");
+    expect(source).toContain('replyVerdict: { serial: 0, verdict: "none" }');
+    expect(source).not.toMatch(/verdict: "(correct|corrected)"/);
+  });
+
+  it("Pro gating is unchanged: a free learner still sees the paywall, not the call", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    expect(screen.queryByTestId("call-caption")).toBeNull();
+  });
+
+  it("with the setting off it is the classic screen, mascot and status pill included", async () => {
+    localStorage.setItem("showAlphonsoWhilePractising", "false");
+    await renderPage();
+    await screen.findByLabelText("Message Hector");
+    expect(screen.queryByTestId("alphonso-stage")).toBeNull();
   });
 });

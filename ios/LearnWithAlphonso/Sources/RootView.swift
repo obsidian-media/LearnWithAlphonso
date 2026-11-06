@@ -46,6 +46,9 @@ struct RootView: View {
     /// True once checkOnboarding has finished for the current account (the Learn tab's placement banner waits for it).
     @State private var onboardingChecked = false
     @State private var nameOnboarding: DisplayNameOnboarding?
+    /// Set when the server says this build is below the lowest one it still supports (AppUpdateGate). Nil (the app
+    /// opens normally) unless the owner sets a minimum, and on any failure to ask.
+    @State private var updateRequired: AppUpdateGate.Requirement?
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -224,6 +227,15 @@ struct RootView: View {
                     }
                 }
             }
+        }
+        .overlay {
+            if let updateRequired { UpdateRequiredView(requirement: updateRequired) }
+        }
+        .task {
+            updateRequired = await AppUpdateGate.check(
+                baseURL: AppConfig.apiBaseURL,
+                currentBuild: AppUpdateGate.build(
+                    fromBundleVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String))
         }
         .task {
             await session.restoreSession()

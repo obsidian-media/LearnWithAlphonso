@@ -15,6 +15,7 @@ import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as NativeCaptchaRouteImport } from './routes/native-captcha'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -40,6 +41,7 @@ import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-p
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
+import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
@@ -83,6 +85,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NativeCaptchaRoute = NativeCaptchaRouteImport.update({
+  id: '/native-captcha',
+  path: '/native-captcha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -210,6 +217,11 @@ const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   path: '/api/learning-goal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppConfigRoute = ApiAppConfigRouteImport.update({
+  id: '/api/app-config',
+  path: '/api/app-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
   id: '/api/pro-offering',
   path: '/api/pro-offering',
@@ -297,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -322,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -344,6 +358,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -369,6 +384,7 @@ export interface FileRoutesByTo {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -393,6 +409,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -418,6 +435,7 @@ export interface FileRoutesById {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/app-config': typeof ApiAppConfigRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -442,6 +460,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -467,6 +486,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/app-config'
     | '/api/pro-offering'
     | '/api/subscription-login'
     | '/api/pro-status'
@@ -489,6 +509,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -514,6 +535,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/app-config'
     | '/api/pro-offering'
     | '/api/subscription-login'
     | '/api/pro-status'
@@ -537,6 +559,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -562,6 +585,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/app-config'
     | '/api/pro-offering'
     | '/api/subscription-login'
     | '/api/pro-status'
@@ -586,6 +610,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   PrivacyRoute: typeof PrivacyRoute
+  NativeCaptchaRoute: typeof NativeCaptchaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -599,6 +624,7 @@ export interface RootRouteChildren {
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
+  ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
@@ -651,6 +677,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/native-captcha': {
+      id: '/native-captcha'
+      path: '/native-captcha'
+      fullPath: '/native-captcha'
+      preLoaderRoute: typeof NativeCaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -828,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLearningGoalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/app-config': {
+      id: '/api/app-config'
+      path: '/api/app-config'
+      fullPath: '/api/app-config'
+      preLoaderRoute: typeof ApiAppConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pro-offering': {
       id: '/api/pro-offering'
       path: '/api/pro-offering'
@@ -999,6 +1039,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   PrivacyRoute: PrivacyRoute,
+  NativeCaptchaRoute: NativeCaptchaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
@@ -1012,6 +1053,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
+  ApiAppConfigRoute: ApiAppConfigRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiProStatusRoute: ApiProStatusRoute,

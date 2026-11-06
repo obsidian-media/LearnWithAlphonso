@@ -218,6 +218,8 @@ REVENUECAT_WEB_PRODUCT_ID      # RevenueCat id of the Web Billing Pro product (p
 REVENUECAT_WEB_PURCHASE_LINK   # Web Purchase Link with the trial (https://pay.rev.cat/<token>)
 REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL # required: link with no trial, for learners who already had Pro
 DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
+STT_DAILY_AUDIO_SECONDS        # optional: daily voice seconds per learner (default 1200)
+STT_MAX_CALL_SECONDS           # optional: longest single recording in seconds (default 120)
 LESSON_SESSION_SECRET          # signs lesson-session tokens (also an Edge Function secret)
 ```
 

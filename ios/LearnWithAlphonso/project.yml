@@ -47,9 +47,18 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      # The talking 2D Alphonso in Practice speaking: 15 WebP layers plus manifest.json, a folder reference read
+      # The talking 2D Alphonso in Practice speaking: 11 WebP layers plus manifest.json, a folder reference read
       # by path at run time (AlphonsoAvatarView). WebP decodes through UIImage on iOS 14 and later.
       - path: AlphonsoAvatar
+        type: folder
+        buildPhase: resources
+      # The rooms behind Alphonso in the Practice call: one WebP per scenario id plus room-light/room-dark, read by
+      # name at run time (PracticeCallView).
+      - path: AlphonsoScenes
+        type: folder
+        buildPhase: resources
+      # Hector's kit for the same call: base, six mouths, three eyes layers (no ears, no glint) plus manifest.json.
+      - path: HectorAvatar
         type: folder
         buildPhase: resources
       - path: Sources

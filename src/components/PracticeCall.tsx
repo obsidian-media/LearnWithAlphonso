@@ -37,8 +37,9 @@ type Props = {
   /** A keyboard or assistive-technology activation, which has no hold: starts, then stops, the recording. */
   onToggle: () => void;
   getStream: () => MediaStream | null;
-  ttsOn: boolean;
-  onToggleTts: () => void;
+  /** The voice mute control in the call bar. Omit both for a screen with no mute (Hector always speaks). */
+  ttsOn?: boolean;
+  onToggleTts?: () => void;
   error: string | null;
   /** The screen the red hang-up button leads to. */
   endTo: string;
@@ -211,41 +212,43 @@ export function PracticeCall(props: Props) {
             <span>{title}</span>
           </span>
         </div>
-        <button
-          type="button"
-          onClick={onToggleTts}
-          aria-pressed={ttsOn}
-          aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
-          className="ml-auto grid size-8 place-items-center rounded-full"
-          style={{ background: GLASS }}
-        >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
-            <path
-              d="M4 10v4h4l5 4V6L8 10H4z"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinejoin="round"
-            />
-            {ttsOn ? (
+        {onToggleTts && (
+          <button
+            type="button"
+            onClick={onToggleTts}
+            aria-pressed={ttsOn}
+            aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
+            className="grid size-8 place-items-center rounded-full"
+            style={{ background: GLASS }}
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
               <path
-                d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
+                d="M4 10v4h4l5 4V6L8 10H4z"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            ) : (
-              <path
-                d="M17 9l5 6M22 9l-5 6"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
-        </button>
+              {ttsOn ? (
+                <path
+                  d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path
+                  d="M17 9l5 6M22 9l-5 6"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
+          </button>
+        )}
         <span
           data-testid="call-timer"
-          className="rounded-full px-2.5 py-[3px] text-[13px] font-bold"
+          className="ml-auto rounded-full px-2.5 py-[3px] text-[13px] font-bold"
           style={{ background: GLASS, fontVariantNumeric: "tabular-nums" }}
         >
           {formatClock(seconds)}

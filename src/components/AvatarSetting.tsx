@@ -32,8 +32,9 @@ export function AvatarSetting() {
         </button>
       </div>
       <p className="mt-2 text-xs text-ink-soft">
-        Alphonso appears at the top of a speaking conversation and moves his mouth as he talks. It
-        is only a picture: the conversation text below is the same either way.
+        Alphonso, and Hector on his tab, fill the screen in a speaking conversation and move their
+        mouths as they talk. It is only a picture: the conversation text below is the same either
+        way.
       </p>
     </section>
   );
