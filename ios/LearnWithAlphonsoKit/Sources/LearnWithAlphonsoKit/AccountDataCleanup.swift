@@ -27,7 +27,9 @@ public enum AccountCacheKeys {
     public static let leagueTier = "lastKnownLeagueTier"
     public static let nudgeCooldowns = "nudgeCooldowns"
     public static let deadLetterDismissals = DeadLetterDismissals.key
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals]
+    /// The account's voice choices (VoicePrefsCache); the account copy restores them on the next sign-in.
+    public static let voicePrefs = VoicePrefsCache.key
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs]
 }
 
 public struct AccountLocalCaches {

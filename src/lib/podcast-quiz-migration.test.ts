@@ -15,6 +15,12 @@ const U1 = "00000000-0000-4000-8000-000000000001";
 const U2 = "00000000-0000-4000-8000-000000000002";
 const AT = "2026-11-04T12:00:00Z";
 const DAY = "2026-11-04";
+// Anything that reads lesson_completion_hits, or relies on a slot still being counted, runs at RECENT instead of AT:
+// consume_lesson_completion_slot prunes rows older than two days by the database's real now(), so a hit dated AT is
+// deleted the moment it is inserted once AT is two days past, and those assertions would fail or pass vacuously.
+// AT stays for the day and streak logic, which needs fixed calendar dates and never reads the hits table.
+const RECENT_MS = Math.floor(Date.now() / 1000) * 1000 - 60 * 60_000; // an hour ago, whole seconds
+const RECENT = new Date(RECENT_MS).toISOString();
 
 describe("podcast quiz seed migration", () => {
   it("is exactly what the generator builds from src/data/podcast-quizzes.ts", () => {
@@ -171,10 +177,11 @@ describe("podcast quiz (real Postgres)", () => {
   });
 
   it("pays nothing for the same or a lower score, keeps the best, and uses no hourly slot", async () => {
-    await submit(U1, COFFEE, answersFor(COFFEE, 1));
+    await submit(U1, COFFEE, answersFor(COFFEE, 1), 60, RECENT);
     const before = await hits();
-    const same = await submit(U1, COFFEE, answersFor(COFFEE, 1));
-    const lower = await submit(U1, COFFEE, answersFor(COFFEE, 5));
+    expect(before).toBe(1); // the paying submission did take a slot, so "unchanged" below means something
+    const same = await submit(U1, COFFEE, answersFor(COFFEE, 1), 60, RECENT);
+    const lower = await submit(U1, COFFEE, answersFor(COFFEE, 5), 60, RECENT);
     expect(same).toMatchObject({ status: "applied", xpGain: 0 });
     expect(lower).toMatchObject({ status: "applied", xpGain: 0, bestCorrect: 6 });
     expect(await hits()).toBe(before);
@@ -210,8 +217,10 @@ describe("podcast quiz (real Postgres)", () => {
   });
 
   it("shares the hourly ceiling: an improving submission over the limit is refused and writes nothing", async () => {
-    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1)).toMatchObject({ status: "applied" });
-    const refused = await submit(U1, "au-cafe", answersFor("au-cafe", 0), 1);
+    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1, RECENT)).toMatchObject({
+      status: "applied",
+    });
+    const refused = await submit(U1, "au-cafe", answersFor("au-cafe", 0), 1, RECENT);
     expect(refused).toEqual({ status: "rate-limited" });
     expect(await xp(U1, "fr")).toBe(0);
     const awards = await db.query<{ n: number }>(
@@ -221,8 +230,8 @@ describe("podcast quiz (real Postgres)", () => {
   });
 
   it("still answers a zero-gain replay when the learner is at the ceiling", async () => {
-    await submit(U1, COFFEE, answersFor(COFFEE, 0), 1);
-    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1)).toMatchObject({
+    await submit(U1, COFFEE, answersFor(COFFEE, 0), 1, RECENT);
+    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1, RECENT)).toMatchObject({
       status: "applied",
       xpGain: 0,
     });
@@ -231,9 +240,11 @@ describe("podcast quiz (real Postgres)", () => {
   it("counts against the same ceiling lessons use (consume_lesson_completion_slot)", async () => {
     await db.query("SELECT public.consume_lesson_completion_slot($1::uuid,$2::timestamptz,1)", [
       U1,
-      AT,
+      RECENT,
     ]);
-    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1)).toEqual({ status: "rate-limited" });
+    expect(await submit(U1, COFFEE, answersFor(COFFEE, 0), 1, RECENT)).toEqual({
+      status: "rate-limited",
+    });
   });
 
   it("rejects a submission that is not exactly one answer per question, changing nothing", async () => {
@@ -251,13 +262,16 @@ describe("podcast quiz (real Postgres)", () => {
       const r = await db
         .query<{ r: Record<string, unknown> }>(
           "SELECT public.submit_podcast_quiz($1::uuid,$2::uuid,$3::jsonb,$4::timestamptz,NULL,60) AS r",
-          [U1, E[COFFEE], JSON.stringify(answers), AT],
+          [U1, E[COFFEE], JSON.stringify(answers), RECENT],
         )
         .catch(() => ({ rows: [{ r: { status: "raised" } }] }));
       expect(["invalid", "raised"]).toContain(r.rows[0]!.r.status);
     }
     expect(await xp(U1, "en")).toBe(0);
     expect(await hits()).toBe(0);
+    // Not vacuous: a valid submission at the same instant does take a slot.
+    await submit(U1, COFFEE, good, 60, RECENT);
+    expect(await hits()).toBe(1);
   });
 
   it("an out-of-range or negative choice is just wrong, never an error and never a win", async () => {
@@ -350,13 +364,11 @@ describe("podcast quiz (real Postgres)", () => {
       await seed(U1, "2026-11-03", 4);
       await submit(U1, COFFEE, q(COFFEE), 60, "2026-11-03T12:00:00Z"); // banked yesterday
       await db.query("UPDATE public.user_progress SET streak=4, last_active_date='2026-11-03'");
-      // Counted before the replay: the slot table also prunes rows older than two days by the real clock, so a fixed
-      // count would depend on when the test runs.
-      const hitsBefore = await hits();
       const replay = await submit(U1, COFFEE, q(COFFEE)); // nothing to pay today
       expect(replay).toMatchObject({ status: "applied", xpGain: 0 });
       expect(await progress(U1)).toMatchObject({ streak: 5, last_active_date: "2026-11-04" });
-      expect(await hits()).toBe(hitsBefore); // and still no hourly slot for it
+      // That a 0-XP replay takes no hourly slot is asserted on the real clock in "pays nothing for the same or a lower
+      // score": these fixed dates are pruned from the slot table on insert, so a count here could not fail.
     });
 
     it("a missed day resets the streak, unless a freeze covers exactly one", async () => {
@@ -411,18 +423,24 @@ describe("podcast quiz (real Postgres)", () => {
     });
 
     it("counts the hourly slot at the clamped instant, as lessons do", async () => {
-      await submit(U1, COFFEE, q(COFFEE), 60, AT, "2026-11-04T10:00:00Z");
+      const iso = (ms: number) => new Date(ms).toISOString();
+      // Within the 3-hour window the claimed instant is kept; older than it, the slot lands at RECENT - 3 hours.
+      await submit(U1, COFFEE, q(COFFEE), 60, RECENT, iso(RECENT_MS - 2 * 3600_000));
+      await submit(U1, "au-cafe", q("au-cafe"), 60, RECENT, iso(RECENT_MS - 9 * 3600_000));
       const r = await db.query<{ at: string }>(
-        "SELECT at::text FROM public.lesson_completion_hits",
+        "SELECT at::text FROM public.lesson_completion_hits ORDER BY at",
       );
-      expect(new Date(r.rows[0]!.at).toISOString()).toBe("2026-11-04T10:00:00.000Z");
+      expect(r.rows.map((x) => new Date(x.at).toISOString())).toEqual([
+        iso(RECENT_MS - 3 * 3600_000),
+        iso(RECENT_MS - 2 * 3600_000),
+      ]);
     });
 
     it("a refused submission (rate limit) changes neither XP, streak nor day", async () => {
-      await submit(U1, COFFEE, q(COFFEE), 1);
+      await submit(U1, COFFEE, q(COFFEE), 1, RECENT);
       await db.query("DELETE FROM public.user_progress");
       await db.query("DELETE FROM public.activity_days");
-      const refused = await submit(U1, "au-cafe", q("au-cafe"), 1);
+      const refused = await submit(U1, "au-cafe", q("au-cafe"), 1, RECENT);
       expect(refused).toEqual({ status: "rate-limited" });
       expect(await progress(U1)).toBeUndefined();
       expect(await days(U1)).toEqual([]);

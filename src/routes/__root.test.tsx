@@ -299,6 +299,16 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(invalidateQueries).not.toHaveBeenCalled();
   });
 
+  it("forgets the signed-out account's cached voice choices on SIGNED_OUT", async () => {
+    localStorage.setItem("alphonso.voicePrefs.v1", '{"hector":{"es":"aura-2-celeste-es"}}');
+    getSession.mockResolvedValue({ data: { session: null } });
+    render(<RootComponent />);
+    await waitFor(() => expect(onAuthStateChange).toHaveBeenCalled());
+    const handler = onAuthStateChange.mock.calls[0]![0] as (e: string) => void;
+    handler("SIGNED_OUT");
+    expect(localStorage.getItem("alphonso.voicePrefs.v1")).toBeNull();
+  });
+
   it("refetches on SIGNED_IN rather than resetting", async () => {
     getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
     fetchProgress.mockResolvedValue({ xp: 1 });

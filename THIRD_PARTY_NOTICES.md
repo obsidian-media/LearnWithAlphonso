@@ -27,6 +27,10 @@ imported by application code, and a guard test
 
 The 3D icons (`public/icons3d/`, the iOS and Android icon sets; 30 on the web) are a curated subset of Microsoft's Fluent Emoji 3D set, MIT licensed. The licence text is kept at `assets/fluent-3d/LICENSE` and the source PNGs in `assets/fluent-3d/source/`. Added with the visual refresh (#341).
 
+## Bricolage Grotesque and Figtree (shipped)
+
+The design system's two faces (visual round 6): Bricolage Grotesque (display and numerals) and Figtree (body), both from google/fonts under the SIL Open Font License 1.1. One variable file each ships in the iOS app (`ios/LearnWithAlphonso/Sources/Fonts/`), the Android app (`res/font/`) and on the web as WOFF (`public/fonts/`), and each place keeps the OFL text next to the font (`*-OFL.txt`; Android's are in `android/LearnWithAlphonso/fonts-licenses/`). `src/lib/design-fonts.test.ts` checks all of it.
+
 ## Wiktionary extracts (check-only, not committed)
 
 `scripts/check-wiktionary.ts` reads the kaikki.org extracts of Wiktionary (CC BY-SA 4.0)

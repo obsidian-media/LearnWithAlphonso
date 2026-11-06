@@ -354,6 +354,24 @@ final class Session {
         }
     }
 
+    /// Pulls the account's voice choices (auth user_metadata.voices) into the device cache, at sign-in and when
+    /// Settings opens, so a choice made on another device is used here. A failed read keeps the cache.
+    func hydrateVoicePrefs() async {
+        guard let token = await freshAccessToken(),
+              let metadata = try? await authClient.fetchUserMetadata(accessToken: token) else { return }
+        VoicePrefsCache().save(VoicePrefs(json: metadata[VoicePrefs.metadataKey]))
+    }
+
+    /// Saves one voice choice to the account, then the device cache. Throws without changing either on failure.
+    func saveVoiceChoice(_ character: VoiceCharacter, course: String, voice id: String) async throws -> VoicePrefs {
+        guard let token = await freshAccessToken() else { throw SupabaseAuthError.invalidPayload }
+        let cache = VoicePrefsCache()
+        let next = cache.load().with(character, course: course, voice: id)
+        try await authClient.updateUserMetadata(accessToken: token, json: [VoicePrefs.metadataKey: next.jsonObject])
+        cache.save(next)
+        return next
+    }
+
     /// Prefill source for the name prompt (Google full_name/name/given_name, or Apple's saved given_name).
     func fetchUserNames() async -> AuthUserNames? {
         guard let token = await freshAccessToken() else { return nil }
