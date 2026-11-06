@@ -249,7 +249,7 @@ struct LessonPlayerView: View {
     private var onStage: Bool { result != nil || (queuedOffline == nil && completionFailure == nil && total > 0) }
 
     private func startLesson() {
-        lessonTimer = ActiveTimer(now: ProcessInfo.processInfo.systemUptime)
+        lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
         phase = vocab.isEmpty ? .quiz : .vocab
     }
 
@@ -265,7 +265,7 @@ struct LessonPlayerView: View {
         .task(id: lesson.id) { await openLessonSession() }
         // The lesson's time counts only while the app is in front.
         .onChange(of: scenePhase) { _, newPhase in
-            let now = ProcessInfo.processInfo.systemUptime
+            let now = Date().timeIntervalSince1970
             if newPhase == .active { lessonTimer?.resume(now: now) } else { lessonTimer?.pause(now: now) }
         }
         // "Practise with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
@@ -699,7 +699,7 @@ struct LessonPlayerView: View {
     }
 
     private func finish() async {
-        let now = ProcessInfo.processInfo.systemUptime
+        let now = Date().timeIntervalSince1970
         finishedElapsed = lessonTimer?.elapsed(now: now)
         lessonTimer?.pause(now: now)
         isSubmitting = true

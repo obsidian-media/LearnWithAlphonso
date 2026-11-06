@@ -82,7 +82,7 @@ describe("Finish runs once", () => {
 describe("The lesson timer", () => {
   it("starts at Start lesson, pauses while the app is in the background, and stops at Finish", () => {
     expect(between(player, "private func startLesson()", "\n    }\n")).toContain(
-      "lessonTimer = ActiveTimer(now: ProcessInfo.processInfo.systemUptime)",
+      "lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)",
     );
     const phase = from(player, ".onChange(of: scenePhase)").slice(0, 300);
     expect(phase).toContain(
