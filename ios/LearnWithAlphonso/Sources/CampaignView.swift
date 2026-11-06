@@ -213,8 +213,8 @@ private struct CampaignSessionView: View {
             notice: notice,
             onPress: { if conversation.finished { return }; if voice.pressBegan() { notice = nil } },
             onEnd: { dismiss() },
-            extra: callExtra
-        ) {
+            extra: callExtra,
+            sheet: {
             VStack(spacing: 0) {
                 if !conversation.finished {
                     Button("Restart scene") { restartScene() }
@@ -229,7 +229,8 @@ private struct CampaignSessionView: View {
             .sheet(item: $savingWord) { request in
                 SaveWordSheet(request: request, session: session)
             }
-        }
+            }
+        )
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
     }

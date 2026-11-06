@@ -220,8 +220,8 @@ private struct ConversationSessionView: View {
             turns: conversation.turns, replyVerdict: replyVerdict,
             notice: notice,
             onPress: { if voice.pressBegan() { notice = nil } },
-            onEnd: { dismiss() }
-        ) {
+            onEnd: { dismiss() },
+            sheet: {
             VStack(spacing: 0) {
                 transcript
                 saveWordHint
@@ -234,7 +234,8 @@ private struct ConversationSessionView: View {
             .sheet(item: $savingWord) { request in
                 SaveWordSheet(request: request, session: session)
             }
-        }
+            }
+        )
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
     }
