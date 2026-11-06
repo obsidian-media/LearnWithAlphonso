@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "5 November 2026"; // same date on all four legal pages
+const UPDATED = "6 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -55,6 +55,7 @@ function Privacy() {
             "Purchases: whether you hold an active Alphonso Pro subscription, where you bought it, and its status and renewal dates. We never receive or store your card details. Apple, Google Play on Android, or Stripe for a subscription bought on our website, handles payment.",
             "Notifications: if you enable push notifications, a device token so we can send them. It is used for nothing else.",
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
+            "Speaking time: a daily total of how many seconds you spoke in practice, so we can show your progress. We keep only the number, never the audio or what you said, until you delete your account.",
             "Where you came from: if you chose Accept all in the cookie banner and arrived through a link that carries campaign tags (utm_source, utm_medium, utm_campaign), those tags and the time you arrived, saved once when you create your account. For this we do not store your IP address, device, browser or the page you came from.",
             "Technical data: request logs and error reports needed to keep the service running and secure, including IP address, device or browser type, and the time and address of each request.",
             "Crash and error reports: if the app or website crashes or hits an unexpected error, a report is sent to Sentry with the technical details of the fault (the error message, a stack trace, the app version, your device model and operating system or browser, and the page or screen). Reports are not linked to your account, carry no email address, name or sign-in token (we remove them before sending), and include no screenshots or screen recordings. The iPhone and Android apps send them from released builds only.",
