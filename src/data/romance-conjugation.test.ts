@@ -69,6 +69,12 @@ describe("the gate's own form check", () => {
     expect(isFormOf("tengo", "hablar")).toBe(false);
     expect(isFormOf("mange", "parler")).toBe(false);
     expect(isFormOf("fais", "dormir")).toBe(false);
+    // Stems that start with the same consonants: the vowels tell the verbs apart.
+    expect(isFormOf("pudo", "pedir")).toBe(false);
+    expect(isFormOf("pidió", "pedir")).toBe(true);
+    expect(isFormOf("parlons", "prendre")).toBe(false);
+    expect(isFormOf("porte", "parler")).toBe(false);
+    expect(isFormOf("estoy", "ser")).toBe(false);
   });
 });
 
@@ -136,8 +142,10 @@ describe("B1 to C1 conjugation drills (not fixed yet: the count may only go down
   it("drills offering a wrong option that is not a form of the bracketed verb", () => {
     const found = drills(b1c1);
     const bad = found.filter((d) => nonForms(d).length > 0).length;
-    // 2026-11-06: 477 of the 507 drill questions this detector finds. Lower this number when you fix some; never raise it.
-    expect(bad).toBeLessThanOrEqual(477);
+    // 2026-11-06: 490 of the 507 drill questions this detector finds (477 before the form check
+    // compared vowels: it had read "estoy" as a form of ser). Lower this number when you fix some;
+    // never raise it.
+    expect(bad).toBeLessThanOrEqual(490);
   });
 });
 
