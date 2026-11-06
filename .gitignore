@@ -162,3 +162,5 @@ android/LearnWithAlphonso/app/google-services.json
 
 # FR/ES review panel raw replies and samples (scripts/content-panel/run.ts); the summary is committed under docs/
 .content-panel/
+# Full content review state: ledger, jobs, raw replies, verdicts, local key config (scripts/content-review/run.ts)
+.content-review/

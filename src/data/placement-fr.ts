@@ -1,8 +1,9 @@
+import { applyPlacementReviewFixes } from "./review-fixes";
 import type { Level } from "./levels";
 import type { PlacementQuestion } from "./placement";
 
 /** French placement test, same 3-questions-per-band structure as placement.ts. */
-export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
+const PLACEMENT_QUESTIONS_FR_AUTHORED: PlacementQuestion[] = [
   {
     id: "fp1",
     level: "A1",
@@ -408,5 +409,11 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
     answer: 1,
   },
 ];
+
+/** The authored pool with the full content review's fixes applied (src/data/review-fixes.ts). */
+export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = applyPlacementReviewFixes(
+  PLACEMENT_QUESTIONS_FR_AUTHORED,
+  "fr",
+);
 
 export const PLACEMENT_ORDER_FR: Level[] = ["A1", "A2", "B1", "B2", "C1"];

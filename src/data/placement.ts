@@ -1,3 +1,4 @@
+import { applyPlacementReviewFixes } from "./review-fixes";
 import type { Level } from "./levels";
 
 /**
@@ -39,7 +40,7 @@ export type PlacementQuestion = { id: string; level: Level } & (
  * retaken test still progresses A1 -> C1 even though the specific
  * questions shown differ each time.
  */
-export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
+const PLACEMENT_QUESTIONS_AUTHORED: PlacementQuestion[] = [
   {
     id: "p1",
     level: "A1",
@@ -637,6 +638,12 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     ],
   },
 ];
+
+/** The authored pool with the full content review's fixes applied (src/data/review-fixes.ts). */
+export const PLACEMENT_QUESTIONS: PlacementQuestion[] = applyPlacementReviewFixes(
+  PLACEMENT_QUESTIONS_AUTHORED,
+  "en",
+);
 
 export const PLACEMENT_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1"];
 
