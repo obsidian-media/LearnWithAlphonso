@@ -34,7 +34,7 @@
       "drinks",
       "drinking",
       "drink",
-      "drank"
+      "is drinking"
     ],
     "answer": 2
   },
@@ -302,7 +302,7 @@
     "id": "p9b",
     "level": "B1",
     "type": "mc",
-    "prompt": "You ___ smoke in here, it's not allowed.",
+    "prompt": "You ___ smoke in here. It's not allowed.",
     "choices": [
       "don't have to",
       "mustn't",
