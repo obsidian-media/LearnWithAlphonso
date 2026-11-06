@@ -63,9 +63,10 @@ describe("shared save-word spans fixture", () => {
       const arrowPlain = Object.values(fixture[name]).filter((e) =>
         e.pieces.some(([t, c], i) => c === 0 && t.endsWith("→ ") && e.pieces[i + 1]?.[1] === 1),
       );
-      // A floor so the check above runs on real cases: about 90 per course after the 2026-11-06
-      // content review rewrote many arrow-style lines (it was over 100 before).
-      expect(arrowPlain.length).toBeGreaterThan(50);
+      // A floor so the check above runs on real cases. Measured after the 2026-11-06 content review,
+      // which rewrote the generic "English → French" explanations as prose: French 91 (was 1,125),
+      // Spanish 127 (was 1,435). Raise it if the count grows; never lower it below the real count.
+      expect(arrowPlain.length).toBeGreaterThan(90);
     });
   }
 });
