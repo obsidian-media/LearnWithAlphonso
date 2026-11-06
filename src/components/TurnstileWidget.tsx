@@ -42,10 +42,13 @@ export function TurnstileWidget({
   siteKey,
   onToken,
   resetKey,
+  onLoadFailed,
 }: {
   siteKey: string;
   onToken: (token: string | null) => void;
   resetKey: number;
+  /** Turnstile's script could not be loaded (blocked or offline). */
+  onLoadFailed?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -64,11 +67,14 @@ export function TurnstileWidget({
           "error-callback": () => onToken(null),
         });
       })
-      .catch(() => onToken(null));
+      .catch(() => {
+        onToken(null);
+        if (!cancelled) onLoadFailed?.();
+      });
     return () => {
       cancelled = true;
       if (turnstile && id) turnstile.remove(id);
     };
-  }, [siteKey, onToken, resetKey]);
+  }, [siteKey, onToken, resetKey, onLoadFailed]);
   return <div ref={ref} className="flex justify-center" />;
 }

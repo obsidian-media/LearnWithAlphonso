@@ -62,6 +62,9 @@ export function makeFakeSupabase(state: FakeSupabaseState) {
       if (name === "consume_ai_rate_limit" || name === "consume_ai_quota") {
         return { data: [{ allowed: true, used: 1 }], error: null };
       }
+      // Voice time (20261105100900): every reservation fits.
+      if (name === "reserve_stt_audio_seconds") return { data: "2026-11-05", error: null };
+      if (name === "settle_stt_audio_seconds") return { data: null, error: null };
       if (name === "ai_output_blocked") {
         return { data: (args?._texts ?? []).map(() => false), error: null };
       }

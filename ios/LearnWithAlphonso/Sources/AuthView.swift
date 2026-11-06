@@ -119,7 +119,11 @@ struct AuthView: View {
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .submitLabel(.send)
-                .onSubmit { Task { await session.requestCode() } }
+                .onSubmit { if session.botCheck.canSend { Task { await session.requestCode() } } }
+
+            // Bot check (Cloudflare Turnstile, usually no tap needed). Apple and Google sign-in never need it.
+            BotCheckView(model: session.botCheck)
+                .frame(height: 70)
 
             Button {
                 Task { await session.requestCode() }
@@ -131,7 +135,7 @@ struct AuthView: View {
                 }
             }
             .buttonStyle(.alphonsoPrimary)
-            .disabled(session.isBusy || !session.emailFlow.canSendCode)
+            .disabled(session.isBusy || !session.emailFlow.canSendCode || !session.botCheck.canSend)
             .accessibilityLabel(session.isBusy ? "Sending code" : "Send code")
         }
     }
@@ -181,8 +185,12 @@ struct AuthView: View {
                     Task { await session.resendCode() }
                 }
                 .buttonStyle(.alphonsoSecondary)
-                .disabled(session.isBusy || remaining > 0)
+                .disabled(session.isBusy || remaining > 0 || !session.botCheck.canSend)
             }
+
+            // A resend needs its own single-use bot-check token.
+            BotCheckView(model: session.botCheck)
+                .frame(height: 70)
 
             Button(AuthCopy.useDifferentEmail) {
                 session.useDifferentEmail()

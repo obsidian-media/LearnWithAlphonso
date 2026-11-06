@@ -72,6 +72,25 @@ class SupabaseAuthClientTest {
     }
 
     @Test
+    fun `the four email requests carry the bot-check token only when there is one`() = runTest {
+        val seen = ArrayList<String>()
+        val client = SupabaseAuthClient("https://x.supabase.co", "pk", engine { p, _, b, _ -> seen.add("$p $b"); sessionJson to HttpStatusCode.OK }) { now }
+        client.requestEmailOtp("a@b.c", "tok1")
+        client.signInWithPassword("a@b.c", "pw", "tok2")
+        client.signUpWithPassword("a@b.c", "pw", "Ana", "x", "tok3")
+        client.resetPasswordForEmail("a@b.c", "x", "tok4")
+        assertEquals("""/auth/v1/otp {"email":"a@b.c","create_user":true,"gotrue_meta_security":{"captcha_token":"tok1"}}""", seen[0])
+        assertEquals("""/auth/v1/token {"email":"a@b.c","password":"pw","gotrue_meta_security":{"captcha_token":"tok2"}}""", seen[1])
+        assertTrue(seen[2].endsWith(""""gotrue_meta_security":{"captcha_token":"tok3"}}"""), seen[2])
+        assertEquals("""/auth/v1/recover {"email":"a@b.c","gotrue_meta_security":{"captcha_token":"tok4"}}""", seen[3])
+        seen.clear()
+        client.requestEmailOtp("a@b.c", "")
+        client.resetPasswordForEmail("a@b.c", "x", null)
+        assertEquals("""/auth/v1/otp {"email":"a@b.c","create_user":true}""", seen[0])
+        assertEquals("""/auth/v1/recover {"email":"a@b.c"}""", seen[1])
+    }
+
+    @Test
     fun `server errors carry GoTrue's message`() = runTest {
         val client = SupabaseAuthClient("https://x.supabase.co", "pk", engine { _, _, _, _ -> """{"error_description":"Invalid login credentials"}""" to HttpStatusCode.BadRequest }) { now }
         val error = runCatching { client.signInWithPassword("a", "b") }.exceptionOrNull() as SupabaseAuthError.Server
