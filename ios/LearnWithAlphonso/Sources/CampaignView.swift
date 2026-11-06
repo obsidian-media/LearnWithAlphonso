@@ -72,6 +72,11 @@ private struct CampaignSessionView: View {
     let conversationStore: ConversationStore
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
+    /// Settings: "Show Alphonso while practising" (default on).
+    @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
+    /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
+    @State private var replyVerdict = AvatarReplyVerdict()
 
     @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
@@ -98,6 +103,26 @@ private struct CampaignSessionView: View {
     }
 
     var body: some View {
+        Group {
+            if showAlphonso { callScreen } else { classicScreen }
+        }
+        .aiDisclosureGate()
+        .tint(AlphonsoColor.moss)
+        .onAppear {
+            conversation = conversationStore.snapshot(for: key, seededWith: campaign.scenes[0].opener)
+            voice.onCapture = { capture in await handle(capture) }
+            voice.appeared()
+        }
+        .task(id: course) { cefrLevel = await loadCefrLevel() }
+        .onDisappear {
+            voice.disappeared()
+            voice.onCapture = nil
+            analyzeWeaknessesIfNew()
+        }
+    }
+
+    /// The transcript with the scene's Continue button or completion card at its end.
+    private var transcript: some View {
         VStack(spacing: 0) {
             if !conversation.finished {
                 Text("Scene \(sceneIndex + 1) of \(campaign.scenes.count) — \(scene.title)")
@@ -129,6 +154,23 @@ private struct CampaignSessionView: View {
                     }
                 }
             }
+        }
+    }
+
+    private var saveWordHint: some View {
+        Group {
+            if turns.contains(where: { $0.role == "assistant" }) {
+                Text("Tap any word in a reply to save it.")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+        }
+    }
+
+    /// The setting off: the screen as it was before the call.
+    private var classicScreen: some View {
+        VStack(spacing: 0) {
+            transcript
 
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
@@ -138,22 +180,16 @@ private struct CampaignSessionView: View {
             }
 
             if !conversation.finished {
-                if turns.contains(where: { $0.role == "assistant" }) {
-                    Text("Tap any word in a reply to save it.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
+                saveWordHint
                 micButton.padding()
             }
         }
         .background(AlphonsoColor.surface)
         .navigationTitle(campaign.title)
         .navigationBarTitleDisplayMode(.inline)
-        .aiDisclosureGate()
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
-        .tint(AlphonsoColor.moss)
         .toolbar {
             if !conversation.finished {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -164,17 +200,64 @@ private struct CampaignSessionView: View {
                 }
             }
         }
-        .onAppear {
-            conversation = conversationStore.snapshot(for: key, seededWith: campaign.scenes[0].opener)
-            voice.onCapture = { capture in await handle(capture) }
-            voice.appeared()
+    }
+
+    /// The setting on (the default): the full-screen call, in the default study room. Continue sits on the call;
+    /// the transcript, its hint and "Restart scene" are in the sheet.
+    private var callScreen: some View {
+        PracticeCallView(
+            title: conversation.finished
+                ? campaign.title : "\(campaign.title): scene \(sceneIndex + 1) of \(campaign.scenes.count)",
+            scenarioID: campaign.id, voice: voice, course: course,
+            turns: turns, replyVerdict: replyVerdict,
+            notice: notice,
+            onPress: { if conversation.finished { return }; if voice.pressBegan() { notice = nil } },
+            onEnd: { dismiss() },
+            extra: callExtra,
+            sheet: {
+            VStack(spacing: 0) {
+                if !conversation.finished {
+                    Button("Restart scene") { restartScene() }
+                        .font(AlphonsoFont.sans(14, weight: .bold))
+                        .disabled(voice.isBusy)
+                        .padding(.vertical, 6)
+                }
+                transcript
+                saveWordHint
+            }
+            // The save-word sheet opens from inside the conversation sheet, so it is presented from here.
+            .sheet(item: $savingWord) { request in
+                SaveWordSheet(request: request, session: session)
+            }
+            }
+        )
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+    }
+
+    private var callExtra: AnyView? {
+        if conversation.finished {
+            return AnyView(
+                Text("Nice work, campaign complete!")
+                    .font(AlphonsoFont.sans(13, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14).padding(.vertical, 6)
+                    .background(.black.opacity(0.45), in: Capsule()))
         }
-        .task(id: course) { cefrLevel = await loadCefrLevel() }
-        .onDisappear {
-            voice.disappeared()
-            voice.onCapture = nil
-            analyzeWeaknessesIfNew()
+        if canContinue {
+            return AnyView(
+                Button {
+                    continueToNextScene()
+                } label: {
+                    Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) \u{2192}")
+                        .font(AlphonsoFont.sans(13, weight: .bold))
+                        .foregroundStyle(Color(red: 0.09, green: 0.14, blue: 0.11))
+                        .padding(.horizontal, 20).padding(.vertical, 9)
+                        .background(.white, in: Capsule())
+                }
+                .disabled(voice.isBusy))
         }
+        return nil
     }
 
     private var continueButton: some View {
@@ -290,10 +373,12 @@ private struct CampaignSessionView: View {
             conversation = snapshot
             voice.transcribed(generation)
 
-            let reply = try await client.chat(
+            let chatReply = try await client.chatReply(
                 messages: snapshot.recentTurns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode)
+            let reply = chatReply.content
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
             conversation = snapshot
+            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
 
             do {
                 let speech = try await client.synthesizeSpeech(text: reply, course: courseCode)
