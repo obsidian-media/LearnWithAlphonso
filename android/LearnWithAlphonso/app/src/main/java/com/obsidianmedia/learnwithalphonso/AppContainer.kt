@@ -36,6 +36,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
+import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.data.AiConsentPrefsCache
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
 import com.obsidianmedia.learnwithalphonso.data.PrefsCourseStore
@@ -189,4 +190,8 @@ class AppContainer(context: Context) {
         prefs = prefs,
         scope = appScope,
     )
+
+    /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */
+    suspend fun checkAppUpdate(): AppUpdateGate.Requirement? =
+        if (BuildConfig.DEBUG) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
 }
