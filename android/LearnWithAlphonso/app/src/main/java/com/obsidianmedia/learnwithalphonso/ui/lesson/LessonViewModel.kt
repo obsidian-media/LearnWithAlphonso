@@ -17,7 +17,6 @@ import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationAnswer
 import com.obsidianmedia.learnwithalphonso.core.logic.TranslationGradingPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.VocabItem
-import com.obsidianmedia.learnwithalphonso.core.logic.computeXpGain
 import com.obsidianmedia.learnwithalphonso.core.logic.deriveVocab
 import com.obsidianmedia.learnwithalphonso.core.logic.isAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.core.logic.pickReinforcementQuestion
@@ -354,7 +353,9 @@ class LessonViewModel(
     private suspend fun queueOffline(reason: LessonCompletionError) {
         val s = _state.value
         val pending = PendingLessonCompletion(
-            s.lesson.id, s.total, s.answers, course.code, now(), computeXpGain(s.correctCount, s.total),
+            s.lesson.id, s.total, s.answers, course.code, now(),
+            // A known earlier best caps it at what the replay rule pays (0 when this try is no better).
+            LessonXp.queuedEstimate(s.correctCount, s.total, s.previousBest),
             ownerUserId = ownerUserId(), sessionToken = sessionToken,
         )
         syncStore.appendLessonCompletion(pending)

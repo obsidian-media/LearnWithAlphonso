@@ -42,6 +42,19 @@ object LessonXp {
         LessonPreviousBest.Unknown -> null
     }
 
+    /**
+     * What a completion queued for a later sync can pay, for "Up to +N XP once it syncs". A replay pays only past the
+     * best earlier score, so a known best caps it (0 when this try is no better); unknown history falls back to this
+     * attempt's full value, which "Up to" covers.
+     */
+    fun queuedEstimate(correct: Int, total: Int, previousBest: LessonPreviousBest): Int = when (previousBest) {
+        is LessonPreviousBest.Best -> {
+            val best = previousBest.correct
+            max(0, computeXpGain(max(best, correct), total) - computeXpGain(best, total))
+        }
+        else -> computeXpGain(correct, total)
+    }
+
     enum class Kind { ANSWERS, PERFECT, EARLIER, REGRADED }
 
     data class Line(val kind: Kind, val label: String, val xp: Int) {

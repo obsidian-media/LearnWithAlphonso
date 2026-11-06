@@ -54,6 +54,19 @@ class LessonFlowTest {
     }
 
     @Test
+    fun `a queued completion never promises more than the replay pays`() {
+        val total = 8
+        for (best in 0..total) for (correct in 0..total) {
+            val paid = computeLessonReplayXp(best to computeXpGain(best, total), correct, total).xpGain
+            assertEquals(paid, LessonXp.queuedEstimate(correct, total, LessonPreviousBest.Best(best)), "best $best, correct $correct")
+        }
+        // A perfect best: a queued replay pays nothing, so it promises nothing.
+        assertEquals(0, LessonXp.queuedEstimate(8, 8, LessonPreviousBest.Best(8)))
+        assertEquals(70, LessonXp.queuedEstimate(7, 8, LessonPreviousBest.FirstTry))
+        assertEquals(70, LessonXp.queuedEstimate(7, 8, LessonPreviousBest.Unknown))
+    }
+
+    @Test
     fun `the XP lines add up to the server's award and name each part`() {
         val cases = listOf(
             Triple(null, 7, 8), Triple(null, 8, 8), Triple(null, 0, 8), Triple(5 to 50, 8, 8),

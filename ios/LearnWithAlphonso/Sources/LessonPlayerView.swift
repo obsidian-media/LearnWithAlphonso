@@ -765,7 +765,8 @@ struct LessonPlayerView: View {
             answers: answers,
             course: course.wireCode,
             queuedAt: Date(),
-            optimisticXpEstimate: computeXpGain(correct: correctCount, total: total),
+            // A known earlier best caps it at what the replay rule pays (0 when this try is no better).
+            optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest),
             ownerUserID: session.userID,
             sessionToken: sessionToken
         )

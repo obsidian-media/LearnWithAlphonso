@@ -37,6 +37,16 @@ public enum LessonXP {
         }
     }
 
+    /// What a completion queued for a later sync can pay, for "Up to +N XP once it syncs". A replay pays only past
+    /// the best earlier score, so a known best caps it (0 when this try is no better); unknown history falls back to
+    /// this attempt's full value, which "Up to" covers.
+    public static func queuedEstimate(correct: Int, total: Int, previousBest: LessonPreviousBest) -> Int {
+        let full = computeXpGain(correct: correct, total: total)
+        guard case .best(let best) = previousBest else { return full }
+        let bestXp = computeXpGain(correct: max(best, correct), total: total)
+        return max(0, bestXp - computeXpGain(correct: best, total: total))
+    }
+
     public struct Line: Equatable, Sendable {
         public enum Kind: String, Sendable { case answers, perfect, earlier, regraded }
         public let kind: Kind

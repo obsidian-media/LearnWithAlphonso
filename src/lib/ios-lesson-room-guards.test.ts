@@ -56,6 +56,14 @@ describe("XP the learner is shown is XP the server pays", () => {
     expect(from(stage, "if xpLines.count > 1 {").slice(0, 300)).toContain("Text(line.text)");
   });
 
+  it("a completion queued for later sync promises no more than the replay pays (the Kit's queuedEstimate)", () => {
+    const queue = between(player, "private func queueOffline(", "\n    }\n");
+    expect(queue).toContain(
+      "optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest)",
+    );
+    expect(queue).not.toContain("computeXpGain(");
+  });
+
   it("lesson start says the honest estimate from the shared timing rules and the formula's maximum", () => {
     const meta = between(player, "private var startMeta: String", "\n    }\n");
     expect(meta).toContain(

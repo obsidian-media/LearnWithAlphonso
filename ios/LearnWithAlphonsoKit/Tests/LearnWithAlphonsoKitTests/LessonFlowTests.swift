@@ -51,6 +51,22 @@ final class LessonFlowTests: XCTestCase {
         }
     }
 
+    /// A queued completion's "Up to +N" never exceeds what the server's replay rule pays once it syncs.
+    func testAQueuedCompletionNeverPromisesMoreThanTheReplayPays() {
+        let total = 8
+        for best in 0...total {
+            for correct in 0...total {
+                let paid = award(existing: (best, computeXpGain(correct: best, total: total)), correct: correct, total: total)
+                XCTAssertEqual(LessonXP.queuedEstimate(correct: correct, total: total, previousBest: .best(best)), paid,
+                               "best \(best), correct \(correct)")
+            }
+        }
+        // A perfect best: a queued replay pays nothing, so it promises nothing.
+        XCTAssertEqual(LessonXP.queuedEstimate(correct: 8, total: 8, previousBest: .best(8)), 0)
+        XCTAssertEqual(LessonXP.queuedEstimate(correct: 7, total: 8, previousBest: .firstTry), 70)
+        XCTAssertEqual(LessonXP.queuedEstimate(correct: 7, total: 8, previousBest: .unknown), 70)
+    }
+
     func testStartsUpToIsTheFormulasMaximum() {
         XCTAssertEqual(LessonXP.maxXp(total: 8), 100)
         XCTAssertEqual(LessonXP.maxXp(total: 5), computeXpGain(correct: 5, total: 5))

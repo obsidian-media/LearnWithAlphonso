@@ -350,7 +350,9 @@ private fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, to
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
         Text("☁️", style = MaterialTheme.typography.displayMedium, modifier = Modifier.clearAndSetSemantics {})
         Text(message, style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
-        Text("~+$estimate XP (estimated)", style = MaterialTheme.typography.headlineMedium, color = palette.ember)
+        // "Up to", as on iOS: a replay earns only past its best, which this screen may not know offline.
+        Text("Up to +$estimate XP once it syncs", style = MaterialTheme.typography.headlineMedium, color = palette.ember, textAlign = TextAlign.Center)
+        Text("A lesson you've already finished only earns XP for a better score.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
         Text("$correct/$total correct", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
     }
 }
