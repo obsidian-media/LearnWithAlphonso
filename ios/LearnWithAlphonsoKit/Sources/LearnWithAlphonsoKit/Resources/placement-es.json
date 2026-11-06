@@ -328,7 +328,7 @@
     "id": "ep8c",
     "level": "B1",
     "type": "mc",
-    "prompt": "Me preguntó ___ estaba listo.",
+    "prompt": "Me preguntó ___ yo estaba listo.",
     "choices": [
       "que",
       "si",
@@ -406,10 +406,10 @@
     "id": "ep11b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Manera más formal de decir \"mucho crecimiento\":",
+    "prompt": "¿Cuál es la manera más formal de decir \"mucho crecimiento\"?",
     "choices": [
       "un montón de crecimiento",
-      "mucho crecimiento",
+      "muchísimo crecimiento",
       "un crecimiento sustancial",
       "bastante crecimiento"
     ],
