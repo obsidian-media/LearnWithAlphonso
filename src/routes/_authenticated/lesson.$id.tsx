@@ -31,6 +31,7 @@ import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { canSpeak, speak } from "../../lib/speech";
 import { useProgress } from "../../lib/progress";
+import { useProStatus } from "../../lib/use-pro-status";
 import {
   buyHeartWithXpRemote,
   completeLessonRemote,
@@ -112,6 +113,7 @@ function LessonPage() {
 
   const applyCompletion = useProgress((s) => s.applyCompletion);
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
+  const proStatus = useProStatus();
   const state = useProgress();
 
   const [idx, setIdx] = useState(0);
@@ -294,8 +296,11 @@ function LessonPage() {
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissedQs((m) => [...m, { q, yours: submittedAnswer }]);
-      loseHeartLocal();
-      void loseHeartRemote();
+      // Alphonso Pro has unlimited hearts (the server agrees: lose_heart and the lesson settlement skip Pro).
+      if (proStatus.state !== "pro") {
+        loseHeartLocal();
+        void loseHeartRemote();
+      }
       // "Doing well" skews the reinforcement pool wider (see
       // pickReinforcementQuestion's doc comment) -- based on accuracy
       // over prior questions this attempt, not counting this miss.

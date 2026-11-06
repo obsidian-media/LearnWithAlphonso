@@ -50,10 +50,15 @@ object HeartsEconomy {
      * The same rule as src/lib/hearts.ts's heartsGate and the start-lesson-session edge function. Used only
      * OFFLINE, against the cached progress; online the server's 409 is the rule.
      */
-    fun gate(hearts: Int, heartsRefillAt: Long?, now: Long): GateDecision {
+    fun gate(hearts: Int, heartsRefillAt: Long?, now: Long, unlimited: Boolean = false): GateDecision {
+        // Alphonso Pro has unlimited hearts; the server agrees (lose_heart and the lesson settlement skip Pro).
+        if (unlimited) return GateDecision.Open
         val resolved = resolveHeartsRefill(hearts, heartsRefillAt, now)
         return if (resolved.hearts > 0) GateDecision.Open else GateDecision.OutOfHearts(resolved.heartsRefillAt)
     }
+
+    /** Whether a wrong answer costs a heart. False for Alphonso Pro (unlimited hearts). */
+    fun wrongAnswerCostsHeart(unlimited: Boolean): Boolean = !unlimited
 
     /**
      * The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the

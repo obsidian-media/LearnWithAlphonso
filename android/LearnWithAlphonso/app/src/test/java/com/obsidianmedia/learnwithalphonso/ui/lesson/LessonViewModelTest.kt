@@ -11,6 +11,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.testContent
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -29,10 +30,10 @@ class LessonViewModelTest {
     private val lesson = testContent.findLesson("u1l1", Course.ENGLISH)!!.second
     private var tier: String? = "bronze"
 
-    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1") = LessonViewModel(
+    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1", pro: Boolean = false) = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
         isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
-        ownerUserId = { owner },
+        ownerUserId = { owner }, isPro = { pro },
     )
 
     private suspend fun playThrough(v: LessonViewModel) {
@@ -298,6 +299,20 @@ class LessonViewModelTest {
             .map { Json.parseToJsonElement(it.body).jsonObject["sessionToken"]!!.jsonPrimitive.content }
         assertEquals("the held token first, then one fresh token", listOf("t1", "t2"), sent)
         assertEquals("nothing queued", 0, store.completions.size)
+    }
+
+    @Test
+    fun `a Pro learner's wrong answer spends no heart, locally or on the server`() = runBlocking {
+        val server = okServer()
+        val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 4, null, 0, "bronze")) }
+        val v = vm(server, store, pro = true)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0]))
+        v.check().join()
+        awaitTrue("checked") { v.state.value.checked }
+        delay(200)
+        assertEquals(0, server.seen.count { it.path.endsWith("lose_heart") })
+        assertEquals(4, store.lastKnownProgress()!!.hearts)
     }
 
     @Test

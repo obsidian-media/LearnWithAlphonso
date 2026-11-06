@@ -72,6 +72,14 @@ class HeartsEconomyTest {
     }
 
     @Test
+    fun `Pro is never out of hearts and its wrong answers cost nothing`() {
+        assertEquals(HeartsEconomy.GateDecision.Open, HeartsEconomy.gate(0, now + 60_000, now, unlimited = true))
+        assertEquals(HeartsEconomy.GateDecision.OutOfHearts(now + 60_000), HeartsEconomy.gate(0, now + 60_000, now, unlimited = false))
+        assertEquals(true, HeartsEconomy.wrongAnswerCostsHeart(unlimited = false))
+        assertEquals(false, HeartsEconomy.wrongAnswerCostsHeart(unlimited = true))
+    }
+
+    @Test
     fun `losing the last heart starts the refill timer once`() {
         assertEquals(HeartsState(2, null), HeartsEconomy.afterLosingHeart(3, null, now))
         assertEquals(HeartsState(0, now + HeartsEconomy.HEART_REFILL_MS), HeartsEconomy.afterLosingHeart(1, null, now))

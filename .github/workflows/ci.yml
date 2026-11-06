@@ -350,7 +350,7 @@ jobs:
         working-directory: supabase/functions/complete-lesson
         run: |
           deno check index.ts
-          deno test handler.test.ts
+          deno test handler.test.ts ../_shared/hearts-pro.test.ts
 
       # Same shape as the complete-lesson handler test: fake dependencies, plus a type-check of the deployed entry point.
       - name: Test the complete-podcast-quiz handler

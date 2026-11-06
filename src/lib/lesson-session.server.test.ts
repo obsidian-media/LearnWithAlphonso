@@ -1,5 +1,9 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { issueLessonSessionToken, verifyLessonSessionToken } from "./lesson-session.server";
+import {
+  issueLessonSessionToken,
+  lessonSessionIssuedAt,
+  verifyLessonSessionToken,
+} from "./lesson-session.server";
 
 beforeAll(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret-do-not-use-in-prod";
@@ -57,5 +61,18 @@ describe("lesson session tokens", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("lessonSessionIssuedAt", () => {
+  it("returns the signed issue time of a valid token, and null for one that does not verify", () => {
+    const before = Date.now();
+    const token = issueLessonSessionToken(claim);
+    const iat = lessonSessionIssuedAt(token, claim);
+    expect(iat).not.toBeNull();
+    expect(iat!).toBeGreaterThanOrEqual(before);
+    expect(iat!).toBeLessThanOrEqual(Date.now());
+    expect(lessonSessionIssuedAt(token, { ...claim, userId: "user-2" })).toBeNull();
+    expect(lessonSessionIssuedAt("x.y", claim)).toBeNull();
   });
 });

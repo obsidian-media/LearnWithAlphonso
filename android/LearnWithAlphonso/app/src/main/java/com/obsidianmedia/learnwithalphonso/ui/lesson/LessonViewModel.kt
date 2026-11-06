@@ -93,6 +93,8 @@ class LessonViewModel(
     private val hasAiConsent: () -> Boolean,
     /** The signed-in account, recorded on a queued completion so another account never syncs it. */
     private val ownerUserId: () -> String? = { null },
+    /** Alphonso Pro: unlimited hearts, so no heart is spent and the offline gate never blocks. */
+    private val isPro: () -> Boolean = { false },
 ) : ViewModel() {
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
@@ -139,7 +141,7 @@ class LessonViewModel(
         sessionToken = null
         if (!isConnected()) {
             val cached = syncStore.lastKnownProgress() ?: return
-            val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now())
+            val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now(), unlimited = isPro())
             _state.update { it.copy(outOfHearts = (decision as? HeartsEconomy.GateDecision.OutOfHearts)?.let { d -> OutOfHeartsModel(d.refillAt) }) }
             return
         }
@@ -252,6 +254,7 @@ class LessonViewModel(
     }
 
     private fun spendHeart() {
+        if (!HeartsEconomy.wrongAnswerCostsHeart(unlimited = isPro())) return
         viewModelScope.launch {
             syncStore.lastKnownProgress()?.takeIf { it.hearts > 0 }?.let {
                 val after = HeartsEconomy.afterLosingHeart(it.hearts, it.heartsRefillAt?.toLong(), now())

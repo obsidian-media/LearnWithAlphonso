@@ -28,7 +28,15 @@ class FakeDb {
   from(table: string) {
     return new Query(this, table);
   }
+  settleCalls: Record<string, unknown>[] = [];
+  /** What settle_lesson_hearts answers. Default: not modelled (an error), so the completion's own hearts stand. */
+  settleResult: { data: unknown; error: unknown } = { data: null, error: { message: "not modelled" } };
   rpc(name: string, args: Record<string, unknown>) {
+    // The hearts settlement is recorded on its own, so the completion's rpcCalls stay exactly the save.
+    if (name === "settle_lesson_hearts") {
+      this.settleCalls.push(args);
+      return Promise.resolve(this.settleResult);
+    }
     this.rpcCalls.push({ name, args });
     // Like the real apply_lesson_completion: an applied save writes the completion row the later reads see.
     if (
@@ -172,6 +180,8 @@ function setup(
     slotError?: boolean;
     /** Each call is a different lesson: the fake does not remember completions, so none is an XP-less replay. */
     fresh?: boolean;
+    heartsMode?: "off" | "shadow" | "on";
+    pro?: boolean;
   } = {},
 ) {
   const db = new FakeDb();
@@ -224,6 +234,8 @@ function setup(
       if (i >= 0) slots.splice(i, 1);
       return Promise.resolve();
     },
+    heartsMode: () => opts.heartsMode ?? "shadow",
+    heartsUnlimited: () => Promise.resolve(opts.pro ?? false),
     now: () => opts.now ?? NOW,
   };
   return {
@@ -734,4 +746,72 @@ Deno.test("completionInstantMs clamps a claim into [session start, now]", () => 
   assertEquals(completionInstantMs(undefined, issued, now), now);
   assertEquals(completionInstantMs("garbage", issued, now), now);
   assertEquals(completionInstantMs("2026-10-17T11:00:00Z", null, now), now);
+});
+
+// ---- Hearts settled on the server (settle_lesson_hearts) ----
+
+Deno.test("the lesson's hearts are settled once per session from the server's own grading", async () => {
+  const { handler, db } = setup({ heartsMode: "on" });
+  db.settleResult = { data: [{ hearts: 4, hearts_refill_at: null, charged: 1, settled_now: true }], error: null };
+  const json = await (await handler(post(body(["a", "c"])))).json(); // q2 missed
+  assertEquals(db.settleCalls.length, 1);
+  const args = db.settleCalls[0];
+  assertEquals(args._misses, 1);
+  assertEquals(args._enforce, true);
+  assertEquals(args._pro, false);
+  assertEquals(args._user_id, USER);
+  // The token is never stored, only its SHA-256 (of "tok").
+  assertEquals(args._token_hash, "1a7674eb4ee78df7e1ac439a93c3fa8e3c945784d4dec9fd8e3011738b2f1d62");
+  // Counted from the signed session start, not from the client.
+  assertEquals(args._since, new Date(NOW.getTime() - 60 * 60 * 1000).toISOString());
+  assertEquals(json.progress.hearts, 4);
+});
+
+Deno.test("misses are counted by the server's grading, not by anything the client says", async () => {
+  const { handler, db } = setup({ heartsMode: "on" });
+  await handler(post(body(["b", "c"]))); // both wrong
+  assertEquals(db.settleCalls[0]._misses, 2);
+});
+
+Deno.test("shadow mode (the default) settles without charging", async () => {
+  const { handler, db } = setup();
+  await handler(post(body(["b", "c"])));
+  assertEquals(db.settleCalls[0]._enforce, false);
+});
+
+Deno.test("SERVER_HEARTS=off skips the settlement entirely", async () => {
+  const { handler, db } = setup({ heartsMode: "off" });
+  await handler(post(body(["b", "c"])));
+  assertEquals(db.settleCalls.length, 0);
+});
+
+Deno.test("Pro learners are settled as unlimited", async () => {
+  const { handler, db } = setup({ heartsMode: "on", pro: true });
+  await handler(post(body(["b", "c"])));
+  assertEquals(db.settleCalls[0]._pro, true);
+});
+
+Deno.test("a completion that was not saved settles nothing", async () => {
+  const { handler, db } = setup({ heartsMode: "on" });
+  db.rpcResult = { data: { status: "conflict" }, error: null };
+  const res = await handler(post(body(["b", "c"])));
+  assertEquals(res.status, 503);
+  assertEquals(db.settleCalls.length, 0);
+});
+
+Deno.test("a failed settlement never fails the saved lesson", async () => {
+  const { handler, db } = setup({ heartsMode: "on" });
+  db.tables.user_progress = [{
+    user_id: USER,
+    streak: 0,
+    longest_streak: 0,
+    last_active_date: null,
+    hearts: 3,
+    hearts_refill_at: null,
+    streak_freezes: 0,
+    updated_at: "t0",
+  }];
+  const res = await handler(post(body(["b", "c"])));
+  assertEquals(res.status, 200);
+  assertEquals((await res.json()).progress.hearts, 3);
 });
