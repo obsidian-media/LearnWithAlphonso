@@ -61,15 +61,21 @@ public struct CharacterKit: Equatable, Sendable {
     /// The bundle folder holding the kit's WebP layers (a folder reference).
     public let folder: String
     public let mouthRect: AvatarRect
-    public let browsRect: AvatarRect
-    public let earLeftRect: AvatarRect
-    public let earRightRect: AvatarRect
-    public let glintRect: AvatarRect
+    /// The group that shows his mood (neutral / raised / lowered): Alphonso's eyebrows, Hector's eyes behind his
+    /// goggles. Its files are `<expressionPrefix>-neutral|raised|lowered.webp`.
+    public let expressionRect: AvatarRect
+    public let expressionPrefix: String
+    /// Ears and the glint are optional: a kit without them has no ear twitch or glint.
+    public let earLeftRect: AvatarRect?
+    public let earRightRect: AvatarRect?
+    public let glintRect: AvatarRect?
     public let defaultRoom: CallRoom
+
+    public func expressionFile(_ brows: AvatarBrows) -> String { "\(expressionPrefix)-\(brows.rawValue).webp" }
 
     public static let alphonso = CharacterKit(
         id: "alphonso", displayName: "Alphonso", folder: "AlphonsoAvatar",
-        mouthRect: AvatarLayers.mouthRect, browsRect: AvatarLayers.browsRect,
+        mouthRect: AvatarLayers.mouthRect, expressionRect: AvatarLayers.browsRect, expressionPrefix: "brows",
         earLeftRect: AvatarLayers.earLeftRect, earRightRect: AvatarLayers.earRightRect,
         glintRect: AvatarLayers.glintRect, defaultRoom: CallScenes.defaultRoom)
 }

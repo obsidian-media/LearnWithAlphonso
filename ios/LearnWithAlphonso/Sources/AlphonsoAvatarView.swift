@@ -139,8 +139,8 @@ private struct AvatarLayersView: View {
             let side = min(proxy.size.width, proxy.size.height)
             ZStack(alignment: .topLeading) {
                 layer(AvatarLayers.baseFile, AvatarRect(x: 0, y: 0, w: 1, h: 1), side)
-                ear(.left, twitching: frame.leftEarTwitch, side)
-                ear(.right, twitching: frame.rightEarTwitch, side)
+                if kit.earLeftRect != nil { ear(.left, twitching: frame.leftEarTwitch, side) }
+                if kit.earRightRect != nil { ear(.right, twitching: frame.rightEarTwitch, side) }
                 ForEach(AvatarViseme.allCases.filter { $0 != .closed }, id: \.self) { shape in
                     if let file = AvatarLayers.mouthFile(shape) {
                         layer(file, kit.mouthRect, side)
@@ -149,12 +149,12 @@ private struct AvatarLayersView: View {
                 }
                 .animation(.linear(duration: 0.055), value: frame.pose.mouth)
                 ForEach(AvatarBrows.allCases, id: \.self) { brows in
-                    layer(AvatarLayers.browsFile(brows), kit.browsRect, side)
+                    layer(kit.expressionFile(brows), kit.expressionRect, side)
                         .opacity(frame.pose.brows == brows ? 1 : 0)
                 }
                 .animation(.easeInOut(duration: 0.14), value: frame.pose.brows)
-                if let progress = frame.glint {
-                    glint(progress: progress, side)
+                if let progress = frame.glint, let glintRect = kit.glintRect {
+                    glint(progress: progress, rect: glintRect, side)
                 }
             }
             .frame(width: side, height: side, alignment: .topLeading)
@@ -164,18 +164,17 @@ private struct AvatarLayersView: View {
         }
     }
 
-    private func ear(_ side: AvatarEarSide, twitching: Bool, _ canvas: CGFloat) -> some View {
-        let rect = side == .left ? kit.earLeftRect : kit.earRightRect
-        return ZStack(alignment: .topLeading) {
+    private func ear(_ side: AvatarEarSide, twitching: Bool, _ canvas: CGFloat) -> AnyView {
+        guard let rect = side == .left ? kit.earLeftRect : kit.earRightRect else { return AnyView(EmptyView()) }
+        return AnyView(ZStack(alignment: .topLeading) {
             layer(AvatarLayers.earFile(side, twitching: false), rect, canvas).opacity(twitching ? 0 : 1)
             layer(AvatarLayers.earFile(side, twitching: true), rect, canvas).opacity(twitching ? 1 : 0)
         }
-        .animation(.linear(duration: 0.05), value: twitching)
+        .animation(.linear(duration: 0.05), value: twitching))
     }
 
     /// A soft diagonal band of light across the lenses; the glint mask (white = lens) keeps it off the rest.
-    private func glint(progress: Double, _ canvas: CGFloat) -> some View {
-        let rect = kit.glintRect
+    private func glint(progress: Double, rect: AvatarRect, _ canvas: CGFloat) -> some View {
         let width = canvas * rect.w
         let height = canvas * rect.h
         return ZStack {

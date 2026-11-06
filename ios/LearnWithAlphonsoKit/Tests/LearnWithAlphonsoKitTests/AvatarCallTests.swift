@@ -95,4 +95,18 @@ final class AvatarCallTests: XCTestCase {
         XCTAssertEqual(CallScenes.room(for: "free-talk", fallback: office), office)
         XCTAssertEqual(CallScenes.room(for: "coffee", fallback: office), CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
     }
+
+    func testAKitWithoutEarsOrGlintAndWithAnEyesExpressionGroup() {
+        let eyes = AvatarRect(x: 0.3, y: 0.2, w: 0.2, h: 0.1)
+        let kit = CharacterKit(
+            id: "hector", displayName: "Hector", folder: "HectorAvatar", mouthRect: eyes, expressionRect: eyes,
+            expressionPrefix: "eyes", earLeftRect: nil, earRightRect: nil, glintRect: nil,
+            defaultRoom: CallRoom(light: "office-light", dark: "office-dark", dimInDark: false))
+        XCTAssertNil(kit.earLeftRect)
+        XCTAssertNil(kit.glintRect)
+        XCTAssertEqual(kit.expressionFile(.raised), "eyes-raised.webp")
+        XCTAssertEqual(CharacterKit.alphonso.expressionFile(.lowered), "brows-lowered.webp")
+        XCTAssertNotNil(CharacterKit.alphonso.earLeftRect)
+        XCTAssertNotNil(CharacterKit.alphonso.glintRect)
+    }
 }
