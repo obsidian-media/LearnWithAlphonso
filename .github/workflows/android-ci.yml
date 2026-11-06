@@ -11,6 +11,8 @@ on:
       - "scripts/export-android-content.ts"
       - "src/lib/ios-content-export.ts"
       - "src/data/**"
+      # The avatar parity fixtures the Kotlin tests replay (core AvatarParityTest).
+      - "shared/**"
       - ".github/workflows/android-ci.yml"
   pull_request:
     paths:
@@ -18,6 +20,8 @@ on:
       - "scripts/export-android-content.ts"
       - "src/lib/ios-content-export.ts"
       - "src/data/**"
+      # The avatar parity fixtures the Kotlin tests replay (core AvatarParityTest).
+      - "shared/**"
       - ".github/workflows/android-ci.yml"
   workflow_dispatch:
 
