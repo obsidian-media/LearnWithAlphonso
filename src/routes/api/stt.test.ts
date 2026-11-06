@@ -9,6 +9,8 @@ vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 // Voice time budget (20261105100900), with the service role: reserve the per-call maximum before the provider call
 // (atomically, as the database function does), then settle to the provider's length. `secondsUsed` is the day's total.
 let secondsUsed = 0;
+// Minutes spoken (20261106100000): the day's total of transcribed learner speech.
+let secondsSpoken = 0;
 const DAY = "2026-11-05";
 type RpcReply = { data: string | null; error: { message: string; code?: string } | null };
 type RpcArgs = {
@@ -28,6 +30,10 @@ async function realRpc(fn: string, args: RpcArgs): Promise<RpcReply> {
   if (fn === "settle_stt_audio_seconds") {
     secondsUsed = Math.max(0, secondsUsed - args._reserved! + args._actual!);
     return { data: null, error: null };
+  }
+  if (fn === "add_speech_seconds") {
+    secondsSpoken += args._seconds!;
+    return { data: DAY, error: null };
   }
   throw new Error(`unexpected rpc ${fn}`);
 }
@@ -58,6 +64,7 @@ beforeEach(() => {
   adminRpc.mockReset();
   adminRpc.mockImplementation(realRpc);
   secondsUsed = 0;
+  secondsSpoken = 0;
   delete process.env.STT_DAILY_AUDIO_SECONDS;
   delete process.env.STT_MAX_CALL_SECONDS;
   blockedRpc.mockClear();
@@ -505,6 +512,113 @@ describe("POST /api/stt", () => {
         .mockImplementationOnce(async () => ({ data: null, error: { message: "down" } }));
       const res = await handler({ request: CONSENT_REQUEST() });
       expect(res.status).toBe(200);
+    });
+  });
+  describe("minutes spoken", () => {
+    const answer = (body: unknown, status = 200) =>
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+        async () => new Response(JSON.stringify(body), { status }),
+      );
+    const said = (transcript: string, duration?: number) => ({
+      metadata: duration === undefined ? {} : { duration },
+      results: { channels: [{ alternatives: [{ transcript }] }] },
+    });
+    const recorded = () =>
+      adminRpc.mock.calls.filter(([name]) => name === "add_speech_seconds").map(([, a]) => a);
+
+    it("records the settled length of a successful transcription, not the reserved maximum", async () => {
+      answer(said("bonjour", 12.2));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(recorded()).toEqual([{ _user_id: "user-1", _seconds: 13 }]);
+      expect(secondsSpoken).toBe(13);
+      expect(secondsUsed).toBe(13); // the same number the budget settled to
+    });
+
+    it("adds up across transcriptions", async () => {
+      answer(said("one", 3));
+      await handler({ request: CONSENT_REQUEST() });
+      answer(said("two", 4.5));
+      await handler({ request: CONSENT_REQUEST() });
+      expect(secondsSpoken).toBe(8);
+    });
+
+    it("records nothing when no words were heard", async () => {
+      answer(said("   ", 6));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      answer({ metadata: { duration: 6 }, results: {} });
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(recorded()).toEqual([]);
+    });
+
+    it("records nothing when the provider reports no length (the budget keeps a ceiling, not speech)", async () => {
+      answer(said("hello"));
+      await handler({ request: CONSENT_REQUEST() });
+      expect(secondsUsed).toBe(120);
+      expect(recorded()).toEqual([]);
+    });
+
+    it("records nothing for a failed, timed-out or unreadable transcription", async () => {
+      answer({ error: "bad" }, 502);
+      await handler({ request: CONSENT_REQUEST() });
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new DOMException("timed out", "TimeoutError"),
+      );
+      await handler({ request: CONSENT_REQUEST() });
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("not json", { status: 200 }),
+      );
+      await handler({ request: CONSENT_REQUEST() });
+      expect(recorded()).toEqual([]);
+    });
+
+    it("records nothing for audio the budget or the size limit refused", async () => {
+      secondsUsed = 1081;
+      answer(said("hi", 5));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(429);
+      secondsUsed = 0;
+      expect(
+        (await handler({ request: reqWithFile(new Blob([new Uint8Array(1_000_001)])) })).status,
+      ).toBe(413);
+      expect(recorded()).toEqual([]);
+    });
+
+    it("records nothing without consent", async () => {
+      authorizeAiRequest.mockResolvedValue({
+        ok: false,
+        response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+      });
+      answer(said("hi", 5));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(403);
+      expect(recorded()).toEqual([]);
+    });
+
+    it("still returns the transcript when recording fails, and logs it", async () => {
+      answer(said("hi", 5));
+      const err = vi.spyOn(console, "error").mockImplementation(() => {});
+      adminRpc.mockImplementation(async (fn: string, args: RpcArgs) =>
+        fn === "add_speech_seconds"
+          ? { data: null, error: { message: "down" } }
+          : realRpc(fn, args),
+      );
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ text: "hi" });
+      expect(err.mock.calls.some(([m]) => String(m).includes("speech seconds"))).toBe(true);
+      err.mockRestore();
+    });
+
+    it("stays quiet while the function is not deployed yet", async () => {
+      answer(said("hi", 5));
+      const err = vi.spyOn(console, "error").mockImplementation(() => {});
+      adminRpc.mockImplementation(async (fn: string, args: RpcArgs) =>
+        fn === "add_speech_seconds"
+          ? { data: null, error: { code: "PGRST202", message: "Could not find the function" } }
+          : realRpc(fn, args),
+      );
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(err).not.toHaveBeenCalled();
+      err.mockRestore();
     });
   });
 });
