@@ -301,7 +301,9 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   const restartScene = useCallback(() => {
     setMessages((m) => m.slice(0, sceneAnchor + 1));
     setError(null);
-  }, [sceneAnchor]);
+    // The scene starts over, so Alphonso says its opener again (from the cache: no second /api/tts charge).
+    void speak(scene.opener, { opener: true });
+  }, [sceneAnchor, scene.opener, speak]);
 
   const startRecording = useCallback(async () => {
     setError(null);

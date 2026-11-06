@@ -74,6 +74,7 @@ abstract class BaseConversationViewModel(
     private var openerJob: Job? = null
     private var openerActive = false
     private var openerHoldsPhase = false
+    private var openerToken = 0
 
     protected abstract fun systemPrompt(): String
 
@@ -122,6 +123,7 @@ abstract class BaseConversationViewModel(
     fun speakOpener() {
         if (pendingOpener == null || openerActive) return
         openerActive = true
+        val token = ++openerToken
         openerJob = viewModelScope.launch {
             try {
                 _state.first { it.phase == ConversationPhase.IDLE }
@@ -138,7 +140,9 @@ abstract class BaseConversationViewModel(
             } catch (_: Exception) {
                 // The line is already on screen: a missing voice is not an error to show.
             } finally {
-                if (openerActive) {
+                // Only the current opener hands the phase back: one that was stopped (a press, leaving) may finish
+                // after a newer opener started, and must not clear that one's flags.
+                if (openerActive && openerToken == token) {
                     openerActive = false
                     if (openerHoldsPhase) _state.update { it.copy(phase = ConversationPhase.IDLE) }
                     openerHoldsPhase = false

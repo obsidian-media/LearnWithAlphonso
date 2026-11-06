@@ -191,6 +191,27 @@ describe("Campaign chat page", () => {
     expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[0].opener);
   });
 
+  it("restarting the scene says its opener again, from the cache", async () => {
+    const user = userEvent.setup();
+    const created = URL.createObjectURL as unknown as ReturnType<typeof vi.fn>;
+    await renderPage();
+    await sendAndAwaitReply(user, "hello there", "Reply 1");
+    const ttsBodies = () =>
+      (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+        .filter(([u]) => String(u).includes("/api/tts"))
+        .map(([, init]) => JSON.parse((init as RequestInit).body as string).text);
+    await waitFor(() =>
+      expect([...ttsBodies()].sort()).toEqual([campaign.scenes[0].opener, "Reply 1"].sort()),
+    );
+    const before = created.mock.calls.length;
+
+    await user.click(screen.getByRole("button", { name: "Restart this scene" }));
+
+    // Played again (a new clip), without a third /api/tts request.
+    await waitFor(() => expect(created.mock.calls.length).toBe(before + 1));
+    expect(ttsBodies()).toHaveLength(2);
+  });
+
   it("shows a completion state after finishing the last scene", async () => {
     const user = userEvent.setup();
     await renderPage();

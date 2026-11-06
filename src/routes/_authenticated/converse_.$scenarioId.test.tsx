@@ -702,6 +702,24 @@ describe("Converse call screen (setting on, the default)", () => {
     expect(tts).toHaveLength(1);
   });
 
+  it("a voice changed in Settings fetches the opener again, in the new voice", async () => {
+    const withVoice = (id: string) =>
+      getSession.mockResolvedValue({
+        data: { session: { user: { user_metadata: { voices: { alphonso: { en: id } } } } } },
+      });
+    withVoice("aura-2-thalia-en");
+    const first = await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(1));
+    first.unmount();
+    withVoice("aura-2-apollo-en");
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(2));
+    const voices = (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+      .filter(([u]) => String(u).includes("/api/tts"))
+      .map(([, init]) => JSON.parse((init as RequestInit).body as string).voice);
+    expect(voices).toEqual(["aura-2-thalia-en", "aura-2-apollo-en"]);
+  });
+
   it("talking over Alphonso cuts his voice off, so it is not recorded", async () => {
     await renderCall();
     await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
