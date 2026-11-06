@@ -45,6 +45,9 @@ public struct AvatarMachine: Sendable {
     private var lastPhase: VoicePhase?
     private var browsRaisedUntil: TimeInterval = -.infinity
     private var reactionUntil: TimeInterval = -.infinity
+    /// The reaction waiting for the reply to finish. Set when the reply arrives, played when the voice session goes
+    /// quiet after it, dropped if the learner presses talk first or the turn fails.
+    private var pendingReaction: AvatarReaction?
 
     public init() {}
 
@@ -61,6 +64,31 @@ public struct AvatarMachine: Sendable {
         }
         mode = next
         if next != .listening { browsRaisedUntil = -.infinity }
+        // The reaction comes after the reply has been spoken (or shown, when it has no audio): the session is
+        // quiet again and the reply was a real answer. Any other move (a new press, a failure) drops it.
+        if case .idle = phase, let reaction = pendingReaction {
+            pendingReaction = nil
+            react(reaction, now: now)
+        } else if !Self.replyIsInFlight(phase) {
+            pendingReaction = nil
+        }
+    }
+
+    private static func replyIsInFlight(_ phase: VoicePhase) -> Bool {
+        switch phase {
+        case .transcribing, .thinking, .speaking: return true
+        case .idle, .requestingPermission, .recording, .failed: return false
+        }
+    }
+
+    /// The reply's verdict about the learner's last turn. Call once, when the reply arrives (the session is thinking).
+    /// Right gets a happy face, corrected an encouraging one, anything else nothing.
+    public mutating func replyArrived(verdict: ReplyVerdict) {
+        switch verdict {
+        case .correct: pendingReaction = .happy
+        case .corrected: pendingReaction = .encouraging
+        case .inconclusive: pendingReaction = nil
+        }
     }
 
     /// A moment of the learner's voice while they hold the button.
@@ -69,8 +97,8 @@ public struct AvatarMachine: Sendable {
         browsRaisedUntil = now + Self.loudBrowHold
     }
 
-    /// A short reaction to the learner's answer. Nothing in the app calls this yet: the reply data does not say
-    /// whether the learner was right.
+    /// A short reaction to the learner's answer. The app does not call this directly: `replyArrived(verdict:)`
+    /// queues it for when the reply has finished.
     public mutating func react(_ reaction: AvatarReaction, now: TimeInterval) {
         mode = .reacting(reaction)
         reactionUntil = now + Self.reactionDuration
