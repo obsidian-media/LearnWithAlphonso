@@ -15,3 +15,9 @@ internal fun alphonsoKit(context: Context): CharacterKit {
 /** The person turned system animations off (animator duration scale 0): idle motion stops. */
 internal fun systemMotionReduced(context: Context): Boolean =
     ReducedMotion.isReduced(Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f))
+
+/** Hector's kit, read from its manifest in assets/hector: no ears, no glint, an `eyes-*` expression group. */
+internal fun hectorKit(context: Context): CharacterKit {
+    val manifest = context.assets.open("hector/manifest.json").bufferedReader().use { it.readText() }
+    return CharacterKit.fromManifest(manifest, "hector", "Hector", "hector", CallScenes.defaultRoom, expressionPrefix = "eyes")
+}

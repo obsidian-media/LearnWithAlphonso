@@ -113,3 +113,64 @@ describe("campaign conversations", () => {
     for (const c of CAMPAIGNS) expect(kit, c.id).not.toContain(`"${c.id}"`);
   });
 });
+
+describe("Hector's call", () => {
+  const hector = code(`${APP}/Sources/HectorView.swift`);
+  const call = code(`${APP}/Sources/PracticeCallView.swift`);
+  it("is the same call with his own kit, controlled by the same setting", () => {
+    expect(hector).toContain("@AppStorage(AvatarPreference.key)");
+    expect(hector).toMatch(/if showCall \{ callScreen \} else \{ classicScreen \}/);
+    expect(hector).toContain("kit: .hector");
+    expect(
+      code("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AvatarLayers.swift"),
+    ).toContain('folder: "HectorAvatar"');
+  });
+  it("bundles his kit folder", () => {
+    const app = yamlTarget(read(`${APP}/project.yml`), "LearnWithAlphonso");
+    expect(app).toMatch(/- path: HectorAvatar\n\s+type: folder\n\s+buildPhase: resources/);
+    const files = fs.readdirSync(path.join(root, APP, "HectorAvatar")).sort();
+    expect(files).toEqual(
+      [
+        "base",
+        ...["half", "talk", "ah", "oh", "ee", "fv"].map((m) => `mouth-${m}`),
+        ...["neutral", "raised", "lowered"].map((e) => `eyes-${e}`),
+      ]
+        .map((n) => `${n}.webp`)
+        .concat("manifest.json")
+        .sort(),
+    );
+  });
+  it("keeps the classic screen, Pro gating and the paywall exactly where they were", () => {
+    const classic = hector.slice(
+      hector.indexOf("private var classicScreen"),
+      hector.indexOf("private var callScreen"),
+    );
+    expect(classic).toContain("hero");
+    expect(classic).toContain("micButton");
+    expect(classic).not.toContain("PracticeCallView");
+    // Pro gating lives in HectorView, outside the conversation screen, and is untouched.
+    expect(hector).toContain("if !entitlementStore.isPro");
+    expect(hector).toContain("source: .hectorRefused");
+    expect(hector).toContain("if tutorError == .notEntitled { showPaywall = true }");
+  });
+  it("keeps hands-free reachable in the call: its switch in the sheet, Pause/Resume and the status line on the call", () => {
+    expect(hector).toContain("handsFreeToggle");
+    expect(hector).toContain("HandsFreeCopy.firstUseTitle");
+    expect(call).toContain("voice.toggleHandsFreePause()");
+    expect(call).toContain("HandsFreeCopy.statusLine(voice.handsFreeStatus)");
+    expect(call).toContain("HandsFreeCopy.pause");
+  });
+  it("shows no reactions: his endpoint returns no verdict, so the verdict never changes", () => {
+    const callScreen = hector.slice(
+      hector.indexOf("private var callScreen"),
+      hector.indexOf("private func endCall"),
+    );
+    expect(callScreen).toContain("replyVerdict: replyVerdict");
+    expect(hector).toMatch(/private let replyVerdict = AvatarReplyVerdict\(\)/);
+    expect(hector).not.toMatch(/replyVerdict = AvatarReplyVerdict\(serial/);
+  });
+  it("hangs up by stopping the session and offering to call again", () => {
+    expect(hector).toContain("private func endCall()");
+    expect(hector).toContain('Button("Call again")');
+  });
+});

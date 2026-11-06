@@ -155,6 +155,8 @@ struct SettingsView: View {
                     }
                     .tint(AlphonsoColor.moss)
                     .accessibilityIdentifier("showAlphonsoToggle")
+                } footer: {
+                    Text("Alphonso, and Hector on his tab, fill the screen in a speaking conversation. Off keeps the classic screen.")
                 } header: {
                     Text("Practice")
                         .font(AlphonsoFont.sans(12, weight: .semiBold))

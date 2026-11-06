@@ -16,6 +16,8 @@ const ASSETS = "android/LearnWithAlphonso/app/src/main/assets";
 const CALL =
   "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/call";
 const IOS_ART = "ios/LearnWithAlphonso/AlphonsoAvatar";
+const HECTOR =
+  "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/hector";
 
 describe("the rooms", () => {
   it("has a picture for every scenario in src/data/scenarios.ts, so a new scenario cannot ship without one", () => {
@@ -118,21 +120,12 @@ describe("the setting", () => {
       ),
     ).toContain("AvatarSection(container)");
   });
-  it("leaves the classic Hector screen alone", () => {
-    const hector = fs
-      .readdirSync(
-        path.join(
-          root,
-          "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/hector",
-        ),
-      )
-      .map((f) =>
-        read(
-          `android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/hector/${f}`,
-        ),
-      )
-      .join("\n");
-    expect(hector).not.toContain("PracticeCallScreen");
+  it("covers Hector's call too: the same setting gates it", () => {
+    const hector = code(`${HECTOR}/HectorScreen.kt`);
+    expect(hector).toContain(
+      "container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)",
+    );
+    expect(hector).toMatch(/if \(showCall\) \{[\s\S]*?PracticeCallScreen\(/);
   });
 });
 
@@ -159,5 +152,55 @@ describe("campaign conversations", () => {
     expect(call).toContain("vm::continueToNextScene");
     expect(call).toContain("vm::restartScene");
     expect(call).toContain("TranscriptList(");
+  });
+});
+
+describe("Hector's call", () => {
+  const hector = code(`${HECTOR}/HectorScreen.kt`);
+  it("bundles his kit, the same art as iOS", () => {
+    const dir = path.join(root, ASSETS, "hector");
+    const files = fs.readdirSync(dir).sort();
+    expect(files).toEqual(
+      fs.readdirSync(path.join(root, "ios/LearnWithAlphonso/HectorAvatar")).sort(),
+    );
+    expect(files.some((f) => f.startsWith("ear-") || f.startsWith("glint"))).toBe(false);
+    for (const f of files)
+      expect(
+        fs
+          .readFileSync(path.join(dir, f))
+          .equals(fs.readFileSync(path.join(root, "ios/LearnWithAlphonso/HectorAvatar", f))),
+        f,
+      ).toBe(true);
+  });
+  it("uses his own kit and label, and keeps the classic screen for the setting off", () => {
+    expect(hector).toContain("hectorKit(context)");
+    expect(hector).toContain('talkLabel = "Hold to talk to Hector"');
+    expect(hector).toContain("HoldToTalkButton(");
+    expect(hector).toContain("AiConsentGate(container)");
+    expect(hector).toContain("AiReportStatusHost(container.aiReports)");
+  });
+  it("loads his kit from his own folder with the eyes expression group", () => {
+    const kit = code(`${CALL}/AlphonsoKit.kt`);
+    expect(kit).toContain('"hector/manifest.json"');
+    expect(kit).toMatch(
+      /fromManifest\(manifest, "hector", "Hector", "hector", CallScenes\.defaultRoom, expressionPrefix = "eyes"\)/,
+    );
+  });
+  it("keeps Pro gating outside the conversation", () => {
+    expect(hector).toContain(
+      "if (entitlement.isPro) HectorConversation(container) else PaywallScreen(container)",
+    );
+  });
+  it("shows no reactions: his endpoint returns no verdict", () => {
+    expect(hector).toContain("ConversationUiState(openerIndices = emptySet())");
+    expect(hector).not.toMatch(/verdictSerial\s*=\s*it\.verdictSerial \+ 1/);
+  });
+  it("keeps the report buttons and the save-word hint in the sheet transcript", () => {
+    const transcript = hector.slice(
+      hector.indexOf("private fun HectorTranscript"),
+      hector.indexOf("private fun HectorConversation"),
+    );
+    expect(transcript).toContain("ReportableAiMessage(");
+    expect(transcript).toContain("SaveWordHintLine(");
   });
 });
