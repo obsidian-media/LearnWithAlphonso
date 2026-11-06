@@ -1004,7 +1004,7 @@ function gatesCommand() {
   let added = 0;
   for (const raw of out.split("\n")) {
     const line = raw.replace(/^[\s+-]*/, "").trim();
-    if (!line || !/[a-z0-9]l\d+|q\d+/.test(line)) continue;
+    if (!line || !/[a-z0-9]l\d+|q\d+|\bp\d+/.test(line)) continue;
     const found = new Set<string>();
     for (const m of line.matchAll(/\b([a-z0-9]+l\d+)[/:]([a-z0-9]*q\d+)\b/g))
       for (const c of ["en", "fr", "es"]) found.add(`${c}:question:${m[1]}/${m[2]}`);
@@ -1017,6 +1017,11 @@ function gatesCommand() {
       for (const id of bySuffix.get(m[1]!) ?? []) found.add(id);
     // A full review item id ("en:card:a1p11l2/exact: expected ..."), as review-fixes.test.ts prints.
     for (const id of fixed) if (line.includes(`${id}:`) || line.includes(`${id} `)) found.add(id);
+    // A placement question by its bare id ("p63: the prompt contains ...").
+    for (const id of fixed) {
+      const pid = id.split(":placement:")[1];
+      if (pid && new RegExp(`(^|[^\\w])${pid}:`).test(line)) found.add(id);
+    }
     const hits = [...found].filter((id) => fixed.has(id));
     if (!hits.length) {
       if (/expected|✗|×|FAIL/.test(raw) || found.size) unmatched.push(line.slice(0, 200));
