@@ -2038,7 +2038,7 @@
               "answer": 1,
               "explanation": "\"It tends to be true.\" hedges the claim because \"tends to\" allows for exceptions, while the other options state it with full certainty.",
               "term": "tends to",
-              "meaning": "is often the case; usually",
+              "meaning": "usually does or happens",
               "example": "It tends to rain here in May."
             },
             {
@@ -2075,7 +2075,7 @@
               ],
               "answer": 1,
               "explanation": "This is a first conditional about a real possibility: if + present (\"rains\"), then will + base verb, so \"will stay\".",
-              "meaning": "is going to remain there",
+              "meaning": "is going to remain in a place",
               "example": "We will stay inside if it rains."
             },
             {
@@ -2134,7 +2134,7 @@
                 "although"
               ],
               "answer": 1,
-              "explanation": "\"Unless you hurry\" = \"if you don't hurry\".",
+              "explanation": "\"Unless\" means \"if not\": \"Unless you hurry\" is the same as \"if you don't hurry\".",
               "term": "unless",
               "meaning": "if not",
               "example": "Unless you hurry, you will miss it."
@@ -2150,7 +2150,7 @@
                 "needn't"
               ],
               "answer": "wouldn't",
-              "explanation": "Third conditional: would(n't) have + past participle.",
+              "explanation": "\"If we'd left\" talks about an unreal past, so the result uses the third conditional: \"wouldn't\" + have + past participle.",
               "meaning": "the short form of would not",
               "example": "I wouldn't do that if I were you."
             }
@@ -2177,11 +2177,11 @@
               "choices": [
                 "Hey!",
                 "Dear Ms Patel,",
-                "Yo team",
-                "Hi hi"
+                "Hiya,",
+                "Hi there,"
               ],
               "answer": 1,
-              "explanation": "\"Dear + title + surname\" is formal.",
+              "explanation": "To a stranger in a formal email, use Dear + title + surname: \"Dear Ms Patel,\". The other openers are friendly and informal.",
               "meaning": "a formal way to start an email",
               "example": "Dear Ms Patel, I am writing about the job."
             },
@@ -2196,7 +2196,7 @@
                 "attachments"
               ],
               "answer": "attached",
-              "explanation": "Fixed phrase: \"please find attached\".",
+              "explanation": "The fixed email phrase is \"please find [something] attached\", so the past participle \"attached\" describes the report.",
               "meaning": "joined to an email as a file",
               "example": "Please find the report attached."
             },
@@ -2205,13 +2205,13 @@
               "type": "mc",
               "prompt": "Softest way to chase a reply:",
               "choices": [
-                "Answer me.",
+                "Why haven't you replied yet?",
                 "Just following up on my last email.",
-                "You ignored me.",
-                "Reply now!"
+                "I need an answer today.",
+                "Please reply immediately."
               ],
               "answer": 1,
-              "explanation": "\"Following up\" is neutral and professional.",
+              "explanation": "\"Just following up on my last email.\" reminds the reader gently without blaming them or making demands.",
               "term": "following up",
               "meaning": "asking again about an earlier message",
               "example": "I am following up on my last email."
@@ -2227,7 +2227,7 @@
                 "be hearing"
               ],
               "answer": "hearing",
-              "explanation": "\"Look forward to\" + -ing.",
+              "explanation": "In \"look forward to\", \"to\" is a preposition, so it is followed by the -ing form: \"hearing\".",
               "term": "hear from",
               "meaning": "to get news from someone",
               "example": "I look forward to hearing from you."
@@ -2237,14 +2237,14 @@
               "type": "mc",
               "prompt": "Best formal sign-off:",
               "choices": [
-                "Cheers mate",
+                "Cheers,",
                 "Kind regards,",
-                "Later",
-                "Bye bye"
+                "See you soon,",
+                "Love,"
               ],
               "answer": 1,
-              "explanation": "\"Kind regards\" suits professional email.",
-              "meaning": "a polite way to end a letter",
+              "explanation": "\"Kind regards,\" is polite and professional; the other sign-offs are only for friends or family.",
+              "meaning": "a polite way to end an email",
               "example": "Thank you again. Kind regards, Anna."
             },
             {
@@ -2280,7 +2280,7 @@
                 "Listen to me."
               ],
               "answer": 1,
-              "explanation": "\"May I jump in?\" is polite and common.",
+              "explanation": "\"Sorry, may I jump in here?\" apologises and asks permission before interrupting, so it is polite.",
               "term": "jump in",
               "meaning": "to join a talk by interrupting",
               "example": "May I jump in here for a moment?"
@@ -2296,7 +2296,7 @@
                 "elaborating"
               ],
               "answer": "elaborate",
-              "explanation": "Modal + base verb.",
+              "explanation": "After the modal \"could you\", we need the base verb: \"elaborate\".",
               "meaning": "to give more details",
               "example": "Could you elaborate on that point?"
             },
@@ -2327,7 +2327,7 @@
                 "end"
               ],
               "answer": "sum",
-              "explanation": "\"To sum up\" introduces a summary.",
+              "explanation": "The fixed phrase \"to sum up\" introduces a summary, so the verb is \"sum\"; \"add up\", \"put up\" and \"end up\" mean something else.",
               "term": "sum up",
               "meaning": "to give the main points at the end",
               "example": "To sum up, we agreed on three actions."
@@ -2343,7 +2343,7 @@
                 "Repeat!"
               ],
               "answer": 0,
-              "explanation": "Restating shows active listening.",
+              "explanation": "\"So, if I've understood correctly…\" introduces a restatement of the speaker's idea so they can confirm it.",
               "meaning": "a polite way to check you understood",
               "example": "So, if I've understood correctly, we start Monday."
             },
@@ -2389,7 +2389,7 @@
                 "It has build in 1920."
               ],
               "answer": 1,
-              "explanation": "be + past participle.",
+              "explanation": "The active verb \"built\" is past simple, so the passive uses \"was\" + past participle: \"It was built in 1920.\"",
               "term": "It was built in 1920.",
               "meaning": "a sentence showing the passive form",
               "example": "It was built in 1920."
@@ -2420,7 +2420,7 @@
                 "To give an order"
               ],
               "answer": 1,
-              "explanation": "The passive can hide or de-emphasise the agent.",
+              "explanation": "\"Mistakes were made\" never says who made them, so the passive is used \"To avoid naming the agent\".",
               "term": "Mistakes were made",
               "meaning": "a passive sentence hiding who did it",
               "example": "Mistakes were made, but nobody said who."
@@ -2451,7 +2451,7 @@
                 "Signatures were collected."
               ],
               "answer": 1,
-              "explanation": "Active = subject performs the action.",
+              "explanation": "In \"The manager signed the report.\" the subject (the manager) does the action; the other sentences use be + past participle, so they are passive.",
               "meaning": "a sentence where the subject does the action",
               "example": "The manager signed the report."
             },
@@ -2467,7 +2467,7 @@
               ],
               "answer": "believed",
               "explanation": "Impersonal passive: \"it is believed that…\".",
-              "meaning": "accepted as true by many people",
+              "meaning": "thought to be true",
               "example": "It is widely believed that sleep aids memory."
             }
           ]
@@ -2518,7 +2518,7 @@
                 "Conclude"
               ],
               "answer": 0,
-              "explanation": "It sets two facts side by side.",
+              "explanation": "\"Whereas\" joins two facts that differ, as in \"He likes tea, whereas she likes coffee\", so it is used to \"Compare two contrasting facts\".",
               "term": "Whereas",
               "meaning": "used to compare two different facts",
               "example": "He likes tea, whereas she likes coffee."
@@ -2551,7 +2551,7 @@
               "answer": 0,
               "explanation": "\"Consequently\" = as a result.",
               "meaning": "as a result",
-              "example": "Consequently, the shop closed."
+              "example": "Sales fell sharply. Consequently, the shop closed."
             },
             {
               "id": "q6",
@@ -31268,7 +31268,7 @@
                 "assume control"
               ],
               "answer": 2,
-              "explanation": "give up → stop trying. Phrasal verbs rarely mean the sum of their parts.",
+              "explanation": "\"give up\" means \"stop trying\": when you give up, you stop making an effort, usually because something feels too hard.",
               "term": "give up",
               "meaning": "stop trying to do something",
               "example": "I never give up on my dreams."
@@ -31284,7 +31284,7 @@
                 "postpone"
               ],
               "answer": "take care of",
-              "explanation": "look after → take care of. Phrasal verbs rarely mean the sum of their parts.",
+              "explanation": "\"Look after\" someone or something means you \"take care of\" them, for example a child, a pet or a house.",
               "term": "look after",
               "meaning": "to take care of someone or something",
               "example": "She looks after her little brother."
@@ -31387,7 +31387,7 @@
                 "discover"
               ],
               "answer": "raise a topic",
-              "explanation": "bring up → raise a topic. Phrasal verbs rarely mean the sum of their parts.",
+              "explanation": "When you \"bring up\" a subject, you start talking about it, so it means \"raise a topic\".",
               "term": "bring up",
               "meaning": "to start talking about a subject",
               "example": "Don't bring up that subject again."
@@ -31403,7 +31403,7 @@
                 "wait"
               ],
               "answer": 2,
-              "explanation": "call off → cancel. Phrasal verbs rarely mean the sum of their parts.",
+              "explanation": "If you \"call off\" an event such as a match or meeting, you decide it will not happen, so it means \"cancel\".",
               "term": "call off",
               "meaning": "to decide an event will not happen",
               "example": "They called off the match because of rain."
@@ -31419,7 +31419,7 @@
                 "postpone"
               ],
               "answer": "find by chance",
-              "explanation": "come across → find by chance. Phrasal verbs rarely mean the sum of their parts.",
+              "explanation": "If you \"come across\" something, you find it without looking for it, so it means \"find by chance\".",
               "term": "come across",
               "meaning": "to meet or find by chance",
               "example": "You may come across old photos there."
@@ -31477,7 +31477,7 @@
               "explanation": "\"look into\" means \"investigate\": you study a problem to find the cause, as in 'Police will look into the crime.'",
               "term": "look into",
               "meaning": "to study a problem to learn the cause",
-              "example": "Police will look into the crime."
+              "example": "The police will look into the crime."
             },
             {
               "id": "b1p1q13",
@@ -31714,7 +31714,7 @@
               "answer": "will",
               "explanation": "'If it rains' uses the present simple for a likely future event, so the result clause takes \"will\". 'Would' is for unreal situations, and 'am' and 'worked' do not fit before 'stay'.",
               "meaning": "shows a likely result in the future",
-              "example": "If it rains, we will stay home."
+              "example": "If it rains, we will stay at home."
             },
             {
               "id": "b1p2q1",
@@ -31729,7 +31729,7 @@
               "answer": 0,
               "explanation": "The result clause 'I'd visit' (would) shows this is an unreal, imagined situation, so the 'if' clause needs the past form \"were\". 'Would' and 'will' cannot follow 'if' here, and 'is' does not match 'we'.",
               "meaning": "a form of be for unreal situations",
-              "example": "If we were closer, I'd visit more."
+              "example": "If the weather were better, we'd go out more."
             },
             {
               "id": "b1p2q2",
@@ -32299,7 +32299,7 @@
               "answer": "can't",
               "explanation": "\"can't\" shows you are sure it is not true, and 'he's abroad' is the reason. 'Should' or 'would' would not express this certainty.",
               "meaning": "shows you are sure it is not true",
-              "example": "That can't be John, he's abroad."
+              "example": "That can't be John – he's abroad."
             },
             {
               "id": "b1p3q11",
@@ -32329,7 +32329,7 @@
               "answer": "must",
               "explanation": "\"must\" expresses a strong conclusion, and 'I saw it' is the evidence. 'Can' does not work in a positive deduction, and 'ought' needs 'to'.",
               "meaning": "shows you are sure something is true",
-              "example": "It must be true; I saw it."
+              "example": "She must be tired; she's been working all day."
             },
             {
               "id": "b1p3q13",
@@ -32463,7 +32463,7 @@
               "answer": 2,
               "explanation": "\"would\" is used in \"would rather\" to say what you prefer. \"Can\", \"can't\" and \"ought\" do not form this expression.",
               "meaning": "shows what you prefer to do",
-              "example": "I would rather stay home."
+              "example": "I would rather stay at home."
             },
             {
               "id": "b1p3q21",
@@ -32829,7 +32829,7 @@
               ],
               "answer": "never",
               "explanation": "\"never\" fits between \"We've\" and \"been\" to say we have not visited Greece at any time in our lives; \"ever\" is not used in a positive statement like this, and \"yet\" goes at the end of the sentence.",
-              "meaning": "at no time in your life",
+              "meaning": "at no time; not ever",
               "example": "We've never been to Greece."
             },
             {
@@ -33001,7 +33001,7 @@
                 "mind"
               ],
               "answer": 0,
-              "explanation": "meet a ___ (finish on time) → deadline. Collocations make speech sound natural.",
+              "explanation": "We say \"meet a deadline\" when we finish work by the time it is due, so \"deadline\" matches the clue (finish on time).",
               "meaning": "the time by which work must be done",
               "example": "We must meet the deadline on Friday."
             },
@@ -33017,7 +33017,7 @@
               ],
               "answer": "meeting",
               "explanation": "You \"attend a meeting\" when you go to it as part of your work, so \"meeting\" is the word that fits.",
-              "meaning": "an event where people talk about work",
+              "meaning": "when people come together to discuss something",
               "example": "The meeting starts at ten."
             },
             {
@@ -33054,7 +33054,7 @@
               ],
               "answer": "agreement",
               "explanation": "When both sides accept a deal they \"reach an agreement\", so \"agreement\" is the word that fits.",
-              "meaning": "a decision that people both accept",
+              "meaning": "a decision that two or more people accept",
               "example": "They reached an agreement last night."
             },
             {
@@ -33157,7 +33157,7 @@
             {
               "id": "b1p5q12",
               "type": "fill",
-              "prompt": "Which word completes \"keep in ___\"? ___",
+              "prompt": "Complete the phrase (stay in contact): keep in ___",
               "bank": [
                 "conversation",
                 "problem",
@@ -33165,7 +33165,7 @@
                 "touch"
               ],
               "answer": "touch",
-              "explanation": "keep in ___ → touch. Collocations make speech sound natural.",
+              "explanation": "The fixed phrase is \"keep in touch\", which means to stay in contact with someone, so the answer is \"touch\".",
               "term": "keep in touch",
               "meaning": "to stay in contact",
               "example": "Let's keep in touch."
@@ -33210,7 +33210,7 @@
             {
               "id": "b1p5q15",
               "type": "mc",
-              "prompt": "Which word completes \"change your ___\"?",
+              "prompt": "Which word completes \"change your ___ (decide differently)\"?",
               "choices": [
                 "mind",
                 "presentation",
@@ -33218,7 +33218,7 @@
                 "meeting"
               ],
               "answer": 0,
-              "explanation": "change your ___ → mind. Collocations make speech sound natural.",
+              "explanation": "\"Change your mind\" means to make a different decision, so \"mind\" matches the clue (decide differently).",
               "meaning": "your thoughts and ideas",
               "example": "I can't get that idea out of my mind."
             },
@@ -33308,7 +33308,7 @@
             {
               "id": "b1p5q21",
               "type": "fill",
-              "prompt": "Which word completes \"take a ___ (rest)\"? ___",
+              "prompt": "Complete the phrase (rest): take a ___",
               "bank": [
                 "idea",
                 "salary",
@@ -33316,7 +33316,7 @@
                 "presentation"
               ],
               "answer": "break",
-              "explanation": "take a ___ (rest) → break. Collocations make speech sound natural.",
+              "explanation": "We say \"take a break\" for a short rest from work, so \"break\" matches the clue (rest).",
               "meaning": "a short rest from work",
               "example": "Let's take a break now."
             },
@@ -33332,7 +33332,7 @@
               ],
               "answer": 2,
               "explanation": "You \"share an idea\" when you tell others a thought or plan, so \"idea\" is right.",
-              "meaning": "a thought or plan that you tell others",
+              "meaning": "a thought or plan about what to do",
               "example": "He shared his idea with us."
             },
             {
@@ -33374,7 +33374,7 @@
       "level": "B1",
       "eyebrow": "Unit 8",
       "title": "Relative Clauses",
-      "description": "Who, which, that, whose — Use who for people, which for things, whose for possession.",
+      "description": "Who, which, that, whose — Use who for people, which for things, that for either (only in defining clauses), and whose for possession.",
       "lessons": [
         {
           "id": "b1p6l1",
@@ -33603,7 +33603,7 @@
               "answer": "whose",
               "explanation": "\"whose\" is correct here. Use who for people, which for things, whose for possession.",
               "meaning": "used to show who owns something",
-              "example": "The room whose window is broken is locked."
+              "example": "The boy whose bike was stolen called the police."
             },
             {
               "id": "b1p6q14",
@@ -33909,7 +33909,7 @@
               ],
               "answer": 2,
               "explanation": "\"guesthouse\" is right because \"stayed in a small ___\" needs a place to sleep. \"directions\" and \"attraction\" are not places to stay, and a \"stopover\" is a break in a journey, not a building.",
-              "meaning": "a small cheap place to stay",
+              "meaning": "a small family-run place to stay",
               "example": "We stayed in a small guesthouse near the beach."
             },
             {
@@ -34171,7 +34171,7 @@
               ],
               "answer": 0,
               "explanation": "\"booked\" fits because a flight with no seats left is \"fully booked\", which is why passengers have to wait on standby.",
-              "meaning": "having no places left",
+              "meaning": "reserved by people in advance",
               "example": "The flight was fully booked."
             },
             {
@@ -34225,13 +34225,13 @@
               "type": "fill",
               "prompt": "Noun form of \"happy\": ___",
               "bank": [
-                "confidence",
-                "sympathy",
-                "relief",
+                "happyness",
+                "happiment",
+                "happity",
                 "happiness"
               ],
               "answer": "happiness",
-              "explanation": "happy → happiness. Emotion adjectives and their matching nouns.",
+              "explanation": "Add \"-ness\" to make the noun, and change the \"y\" to \"i\": happy becomes \"happiness\".",
               "meaning": "the feeling of being happy",
               "example": "Her happiness was clear to everyone."
             },
@@ -34255,13 +34255,13 @@
               "type": "fill",
               "prompt": "Noun form of \"angry\": ___",
               "bank": [
-                "pride",
-                "suspicion",
-                "disappointment",
+                "angerness",
+                "angriment",
+                "angrity",
                 "anger"
               ],
               "answer": "anger",
-              "explanation": "angry → anger. Emotion adjectives and their matching nouns.",
+              "explanation": "The noun is \"anger\", with no suffix: it is the base word, and \"angry\" is the adjective made from it.",
               "meaning": "a strong feeling of being very annoyed",
               "example": "He shouted in anger."
             },
@@ -34271,27 +34271,27 @@
               "prompt": "Noun form of \"anxious\":",
               "choices": [
                 "anxiety",
-                "curiosity",
-                "loneliness",
-                "satisfaction"
+                "anxiosity",
+                "anxiousment",
+                "anxiation"
               ],
               "answer": 0,
-              "explanation": "anxious → anxiety. Emotion adjectives and their matching nouns.",
+              "explanation": "The usual noun from \"anxious\" is \"anxiety\": the \"-ious\" ending changes to \"-iety\".",
               "meaning": "a worried feeling about what may happen",
-              "example": "She felt anxiety before the exam."
+              "example": "She always suffers from anxiety before exams."
             },
             {
               "id": "b1p8q4",
               "type": "fill",
               "prompt": "Noun form of \"excited\": ___",
               "bank": [
-                "gratitude",
-                "shame",
+                "excitness",
+                "excitance",
                 "excitement",
-                "anxiety"
+                "excitity"
               ],
               "answer": "excitement",
-              "explanation": "excited → excitement. Emotion adjectives and their matching nouns.",
+              "explanation": "Add \"-ment\" to the verb \"excite\" to make the noun \"excitement\".",
               "meaning": "a strong happy feeling about something coming",
               "example": "The children jumped with excitement."
             }
@@ -34313,9 +34313,9 @@
                 "excitement"
               ],
               "answer": 2,
-              "explanation": "proud → pride. Emotion adjectives and their matching nouns.",
+              "explanation": "The noun from \"proud\" is irregular: we say \"pride\", not \"proudness\", as in \"She takes pride in her work.\"",
               "meaning": "a feeling of being pleased with yourself",
-              "example": "He felt pride in his work."
+              "example": "He takes great pride in his work."
             },
             {
               "id": "b1p8q6",
@@ -34358,7 +34358,7 @@
                 "satisfaction"
               ],
               "answer": "nervousness",
-              "explanation": "nervous → nervousness. Emotion adjectives and their matching nouns.",
+              "explanation": "Add -ness to the adjective \"nervous\" to make the noun \"nervousness\".",
               "meaning": "a feeling of being worried and tense",
               "example": "He couldn't hide his nervousness."
             },
@@ -34395,7 +34395,7 @@
                 "excitement"
               ],
               "answer": 2,
-              "explanation": "embarrassed → embarrassment. Emotion adjectives and their matching nouns.",
+              "explanation": "Take the -ed off \"embarrassed\" and add -ment to make the noun \"embarrassment\".",
               "meaning": "a feeling of being shy or ashamed",
               "example": "He blushed with embarrassment."
             },
@@ -34425,7 +34425,7 @@
                 "anger"
               ],
               "answer": 0,
-              "explanation": "disappointed → disappointment. Emotion adjectives and their matching nouns.",
+              "explanation": "Take the -ed off \"disappointed\" and add -ment to make the noun \"disappointment\".",
               "meaning": "an unhappy feeling when things go badly",
               "example": "He couldn't hide his disappointment."
             },
@@ -34440,7 +34440,7 @@
                 "loneliness"
               ],
               "answer": "confusion",
-              "explanation": "confused → confusion. Emotion adjectives and their matching nouns.",
+              "explanation": "Take the -d off \"confused\" to get the verb \"confuse\", then change the final -e to -ion to make the noun \"confusion\".",
               "meaning": "a state of not understanding clearly",
               "example": "There was confusion at the airport."
             },
@@ -34477,9 +34477,9 @@
                 "jealousy"
               ],
               "answer": "frustration",
-              "explanation": "frustrated → frustration. Emotion adjectives and their matching nouns.",
+              "explanation": "Take the -ed off \"frustrated\", drop the final e and add -ion to make the noun \"frustration\".",
               "meaning": "an angry feeling when you cannot succeed",
-              "example": "His frustration grew as the printer failed."
+              "example": "His frustration grew as the printer kept jamming."
             },
             {
               "id": "b1p8q16",
@@ -34492,7 +34492,7 @@
                 "satisfaction"
               ],
               "answer": 0,
-              "explanation": "lonely → loneliness. Emotion adjectives and their matching nouns.",
+              "explanation": "Change the y in \"lonely\" to i and add -ness to make the noun \"loneliness\".",
               "meaning": "the sad feeling of being alone",
               "example": "She felt loneliness in the big city."
             },
@@ -34559,7 +34559,7 @@
                 "relief"
               ],
               "answer": "boredom",
-              "explanation": "bored → boredom. Emotion adjectives and their matching nouns.",
+              "explanation": "Take the -d off \"bored\" to get \"bore\", then add -dom to make the noun \"boredom\".",
               "meaning": "the feeling of having nothing interesting to do",
               "example": "Boredom made him fall asleep."
             },
@@ -34589,7 +34589,7 @@
                 "disappointment"
               ],
               "answer": "suspicion",
-              "explanation": "suspicious → suspicion. Emotion adjectives and their matching nouns.",
+              "explanation": "Change the -ous ending of \"suspicious\" to -on to make the noun \"suspicion\", as in \"He looked at me with suspicion.\"",
               "meaning": "a feeling that someone may have done wrong",
               "example": "He looked at the stranger with suspicion."
             },
@@ -34604,7 +34604,7 @@
                 "jealousy"
               ],
               "answer": 0,
-              "explanation": "satisfied → satisfaction. Emotion adjectives and their matching nouns.",
+              "explanation": "\"Satisfied\" comes from the verb \"satisfy\"; change -y to -action to make the noun \"satisfaction\".",
               "meaning": "the pleasure of getting what you wanted",
               "example": "She felt great satisfaction when she finished the marathon."
             },
@@ -34619,7 +34619,7 @@
                 "sympathy"
               ],
               "answer": "sympathy",
-              "explanation": "sympathetic → sympathy. Emotion adjectives and their matching nouns.",
+              "explanation": "Replace the -etic ending of \"sympathetic\" with -y to make the noun \"sympathy\".",
               "meaning": "a feeling of care for someone who suffers",
               "example": "She showed sympathy for her friend."
             }
@@ -34848,7 +34848,7 @@
               ],
               "answer": "allowance",
               "explanation": "\"allowance\" is correct here. Intermediate vocabulary for managing money.",
-              "meaning": "a fixed amount of money you may spend",
+              "meaning": "an amount of money you are given regularly",
               "example": "I get a small weekly allowance."
             },
             {
@@ -35013,7 +35013,7 @@
               "answer": 2,
               "explanation": "\"account\" is correct here. Intermediate vocabulary for managing money.",
               "meaning": "an arrangement at a bank to keep money",
-              "example": "We opened a joint account together."
+              "example": "We opened a joint account at our local bank."
             },
             {
               "id": "b1p9q23",
@@ -35200,7 +35200,7 @@
               ],
               "answer": 0,
               "explanation": "The sentence needs a base verb meaning to put new trees in the ground, so \"plant\" fits. Cutting trees would harm the planet, not help it.",
-              "meaning": "to put a seed in the soil",
+              "meaning": "to put something in the ground to grow",
               "example": "We should plant more trees."
             },
             {
@@ -35297,7 +35297,7 @@
               ],
               "answer": "conserve",
               "explanation": "'Instead of wasting it' tells us we should use water carefully so it lasts, which is what \"conserve\" means. Polluting water is the opposite of that, and we do not say 'spend water' or 'change water' for using it carefully.",
-              "meaning": "to use carefully so it lasts",
+              "meaning": "to use something carefully so that it lasts",
               "example": "We should conserve water."
             }
           ]
@@ -35492,7 +35492,7 @@
               ],
               "answer": "degree",
               "explanation": "\"degree\" is correct here. B1-level vocabulary for talking about education.",
-              "meaning": "a university title you get after study",
+              "meaning": "a qualification you get from a university",
               "example": "She has a degree in biology."
             },
             {
@@ -35553,7 +35553,7 @@
               "answer": "top",
               "explanation": "\"top\" is an adjective meaning highest, and it fits before \"mark\" to describe a score of ninety percent; \"distinction\" is a noun and cannot describe a mark here.",
               "meaning": "the best or highest",
-              "example": "She got the top mark in class."
+              "example": "She got the top mark in the class."
             }
           ]
         },
@@ -35574,7 +35574,7 @@
               ],
               "answer": 0,
               "explanation": "Someone who leaves school early does not receive the certificate showing they finished, and that certificate is a \"diploma\".",
-              "meaning": "a paper that shows you finished a course",
+              "meaning": "a certificate that shows you finished a course",
               "example": "He never got his diploma."
             },
             {
@@ -35604,7 +35604,7 @@
               ],
               "answer": 2,
               "explanation": "\"final\" fits because an exam at the end of term is the last one; \"due\", \"registered\" and \"absent\" do not describe an exam in this way.",
-              "meaning": "the last one; coming at the end",
+              "meaning": "last; coming at the end",
               "example": "We have a final exam in June."
             },
             {
@@ -35882,7 +35882,7 @@
               "answer": "chemistry",
               "explanation": "\"chemistry\" is a school subject, and the sentence is about subjects he passed or must repeat. \"distinction\", \"tutoring\" and \"degree\" are not subjects.",
               "meaning": "the science of what substances are made of",
-              "example": "He failed chemistry and must repeat it."
+              "example": "He failed chemistry and has to retake it."
             }
           ]
         }
@@ -35943,7 +35943,7 @@
               "answer": 0,
               "explanation": "\"fell\" means unemployment went down, and \"steadily\" shows a smooth, continuous change. \"rose\" is the opposite and \"fluctuated\" means it went up and down, which is not steady.",
               "meaning": "went down; the past of fall",
-              "example": "Unemployment fell steadily this year."
+              "example": "Unemployment fell steadily last year."
             },
             {
               "id": "b1p12q3",
@@ -36078,7 +36078,7 @@
               "answer": "grow",
               "explanation": "\"grow\" fits because 'reaching ten million' shows the population getting bigger. 'Shrink' and 'fall' go the opposite way, and 'remain' would mean no change.",
               "meaning": "to get bigger in size or number",
-              "example": "The population will grow over the decade."
+              "example": "The population will grow over the next decade."
             },
             {
               "id": "b1p12q11",
@@ -36107,8 +36107,8 @@
               ],
               "answer": "decline",
               "explanation": "\"decline\" means a slow fall, which matches \"steady\" and the cleaner air. \"Rise\" and \"surge\" would mean more pollution.",
-              "meaning": "a slow fall in number or quality",
-              "example": "There is a steady decline in pollution."
+              "meaning": "a gradual fall in number, amount or quality",
+              "example": "There has been a steady decline in pollution."
             },
             {
               "id": "b1p12q13",
@@ -36123,7 +36123,7 @@
               "answer": 2,
               "explanation": "\"shrank\" means became smaller, which matches the country selling less abroad. \"Grew\" means the opposite, and \"risen\" would need \"have\".",
               "meaning": "became smaller",
-              "example": "Exports shrank by ten percent."
+              "example": "Exports shrank by ten per cent."
             },
             {
               "id": "b1p12q14",
@@ -36347,7 +36347,7 @@
               ],
               "answer": 2,
               "explanation": "A \"CV\" is the document you attach to a job application email. The other options are not things you can attach.",
-              "meaning": "a short paper listing your work and studies",
+              "meaning": "a short document listing your work and studies",
               "example": "My CV is attached to this email."
             },
             {
@@ -36661,7 +36661,7 @@
               ],
               "answer": "communication",
               "explanation": "\"communication\" is the skill that can be \"written and spoken\", so it is the only word that fits \"excellent ___ skills\" here.",
-              "meaning": "the ability to share ideas clearly",
+              "meaning": "sharing ideas and information with other people",
               "example": "I have good communication skills."
             },
             {
@@ -36753,7 +36753,7 @@
                 "keep everything neat and planned"
               ],
               "answer": 0,
-              "explanation": "generous → share what they have with others. Personality adjectives matched to typical behaviour.",
+              "explanation": "Generous people are happy to give, so they \"share what they have with others\"; envy, ambition and tidiness describe other personality traits.",
               "term": "generous",
               "meaning": "happy to give and share",
               "example": "She is generous with her time."
@@ -36769,7 +36769,7 @@
                 "make mistakes without noticing"
               ],
               "answer": "refuse to change their mind",
-              "explanation": "stubborn → refuse to change their mind. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"stubborn\" person keeps the same opinion even when others give good reasons, so they \"refuse to change their mind\".",
               "term": "stubborn",
               "meaning": "unwilling to change your mind",
               "example": "My dad is very stubborn."
@@ -36785,7 +36785,7 @@
                 "put a lot of effort into tasks"
               ],
               "answer": 2,
-              "explanation": "honest → always tell the truth. Personality adjectives matched to typical behaviour.",
+              "explanation": "An \"honest\" person does not lie or hide things, so they \"always tell the truth\".",
               "term": "honest",
               "meaning": "always telling the truth",
               "example": "He is an honest man."
@@ -36801,7 +36801,7 @@
                 "avoid doing work"
               ],
               "answer": "always do what they promise",
-              "explanation": "reliable → always do what they promise. Personality adjectives matched to typical behaviour.",
+              "explanation": "You can trust a \"reliable\" person to keep their word, so they \"always do what they promise\".",
               "term": "reliable",
               "meaning": "able to be trusted to do things",
               "example": "She is a reliable friend."
@@ -36843,7 +36843,7 @@
               "explanation": "A patient person can wait without getting annoyed, so they \"stay calm while waiting\".",
               "term": "patient",
               "meaning": "able to wait calmly",
-              "example": "Be patient, the bus is coming."
+              "example": "Be patient – the bus is coming."
             },
             {
               "id": "b1p14q6",
@@ -36856,7 +36856,7 @@
                 "enjoy meeting new people"
               ],
               "answer": 2,
-              "explanation": "curious → ask a lot of questions. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"curious\" person wants to learn and find things out, so they \"ask a lot of questions\".",
               "term": "curious",
               "meaning": "wanting to learn and know things",
               "example": "My son is very curious."
@@ -36888,7 +36888,7 @@
                 "change mood suddenly and often"
               ],
               "answer": 0,
-              "explanation": "shy → feel nervous meeting new people. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"shy\" person is uncomfortable with people they don't know, so they \"feel nervous meeting new people\".",
               "term": "shy",
               "meaning": "nervous with new people",
               "example": "He is shy at parties."
@@ -36904,7 +36904,7 @@
                 "believe in their own abilities"
               ],
               "answer": "enjoy meeting new people",
-              "explanation": "outgoing → enjoy meeting new people. Personality adjectives matched to typical behaviour.",
+              "explanation": "An \"outgoing\" person is sociable and confident with others, so they \"enjoy meeting new people\".",
               "term": "outgoing",
               "meaning": "friendly and fond of meeting people",
               "example": "She is outgoing and friendly."
@@ -36927,7 +36927,7 @@
                 "always do what they promise"
               ],
               "answer": "make mistakes without noticing",
-              "explanation": "careless → make mistakes without noticing. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"careless\" person doesn't pay enough attention, so they \"make mistakes without noticing\".",
               "term": "careless",
               "meaning": "not paying enough attention",
               "example": "A careless driver caused the crash."
@@ -36943,7 +36943,7 @@
                 "not boast about achievements"
               ],
               "answer": 2,
-              "explanation": "organised → keep everything neat and planned. Personality adjectives matched to typical behaviour.",
+              "explanation": "An \"organised\" person plans ahead and keeps things tidy, so they \"keep everything neat and planned\".",
               "term": "organised",
               "meaning": "good at planning and keeping things in order",
               "example": "She is very organised."
@@ -36959,7 +36959,7 @@
                 "avoid doing work"
               ],
               "answer": "avoid doing work",
-              "explanation": "lazy → avoid doing work. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"lazy\" person doesn't want to make an effort, so they \"avoid doing work\".",
               "term": "lazy",
               "meaning": "not wanting to work",
               "example": "He is too lazy to cook."
@@ -36991,7 +36991,7 @@
                 "share what they have with others"
               ],
               "answer": "think mainly of themselves",
-              "explanation": "selfish → think mainly of themselves. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"selfish\" person cares about their own needs and not other people's, so they \"think mainly of themselves\".",
               "term": "selfish",
               "meaning": "caring only about yourself",
               "example": "Don't be so selfish!"
@@ -37014,7 +37014,7 @@
                 "feel envious of others"
               ],
               "answer": 2,
-              "explanation": "kind → treat others with care. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"kind\" person is gentle and helpful towards people, so they \"treat others with care\".",
               "term": "kind",
               "meaning": "caring and good to others",
               "example": "He is kind to animals."
@@ -37030,7 +37030,7 @@
                 "enjoy meeting new people"
               ],
               "answer": "think they are better than others",
-              "explanation": "arrogant → think they are better than others. Personality adjectives matched to typical behaviour.",
+              "explanation": "An \"arrogant\" person is too proud of themselves, so they \"think they are better than others\".",
               "term": "arrogant",
               "meaning": "too proud of yourself",
               "example": "An arrogant boss is hard to like."
@@ -37046,7 +37046,7 @@
                 "come up with original ideas"
               ],
               "answer": 0,
-              "explanation": "modest → not boast about achievements. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"modest\" person doesn't talk proudly about their own success, so they tend to \"not boast about achievements\".",
               "term": "modest",
               "meaning": "not boasting about yourself",
               "example": "He is modest about his success."
@@ -37062,7 +37062,7 @@
                 "stay happy and positive"
               ],
               "answer": "stay happy and positive",
-              "explanation": "cheerful → stay happy and positive. Personality adjectives matched to typical behaviour.",
+              "explanation": "\"Cheerful\" means happy and in a good mood, so a cheerful person tends to \"stay happy and positive\".",
               "term": "cheerful",
               "meaning": "happy and positive",
               "example": "She is cheerful every morning."
@@ -37078,7 +37078,7 @@
                 "share what they have with others"
               ],
               "answer": 2,
-              "explanation": "moody → change mood suddenly and often. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"moody\" person's feelings go up and down without warning, so they tend to \"change mood suddenly and often\".",
               "term": "moody",
               "meaning": "having feelings that change quickly, often bad-tempered",
               "example": "My brother is moody and often sulks."
@@ -37101,7 +37101,7 @@
                 "work hard to achieve big goals"
               ],
               "answer": 2,
-              "explanation": "loyal → stay faithful to friends. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"loyal\" person supports their friends and doesn't let them down, so they tend to \"stay faithful to friends\".",
               "term": "loyal",
               "meaning": "faithful to friends",
               "example": "A loyal friend never leaves you."
@@ -37117,7 +37117,7 @@
                 "feel nervous meeting new people"
               ],
               "answer": "feel envious of others",
-              "explanation": "jealous → feel envious of others. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"jealous\" person is unhappy when others have things they want, so they tend to \"feel envious of others\".",
               "term": "jealous",
               "meaning": "unhappy because someone has what you want",
               "example": "He gets jealous easily."
@@ -37149,7 +37149,7 @@
                 "come up with original ideas"
               ],
               "answer": "come up with original ideas",
-              "explanation": "creative → come up with original ideas. Personality adjectives matched to typical behaviour.",
+              "explanation": "A \"creative\" person uses their imagination to make new things, so they tend to \"come up with original ideas\".",
               "term": "creative",
               "meaning": "good at making original things",
               "example": "He is a creative designer."
@@ -37165,7 +37165,7 @@
                 "share what they have with others"
               ],
               "answer": 2,
-              "explanation": "tactless → say things without thinking of others' feelings. Personality adjectives matched to typical behaviour.",
+              "explanation": "\"Tact\" is the skill of not upsetting people, so a \"tactless\" person tends to \"say things without thinking of others' feelings\".",
               "term": "tactless",
               "meaning": "careless about others' feelings",
               "example": "His tactless joke upset her."
@@ -37827,7 +37827,7 @@
               "answer": "hasn't",
               "explanation": "\"He's finished\" means he has finished (present perfect), so the negative tag repeats \"has\": \"hasn't\" he?",
               "meaning": "the short form of has not",
-              "example": "He's finished, hasn't he?"
+              "example": "He's finished his homework, hasn't he?"
             }
           ]
         },
@@ -38706,7 +38706,7 @@
               ],
               "answer": "alcohol",
               "explanation": "You drink \"alcohol\", and drinking too much of it is unhealthy. Flexibility, vitamin and weights are not things you drink.",
-              "meaning": "a drink like beer or wine",
+              "meaning": "drinks such as beer and wine",
               "example": "Too much alcohol is unhealthy."
             },
             {
@@ -38895,7 +38895,7 @@
               "answer": "hurricane",
               "explanation": "A \"hurricane\" is a huge storm that forms over warm ocean water; a drought, an earthquake or ice does not form as a storm over a warm sea.",
               "meaning": "a violent storm with strong winds",
-              "example": "Scientists track the approaching hurricane."
+              "example": "Scientists are tracking the approaching hurricane."
             },
             {
               "id": "b1p19q3",
@@ -39299,7 +39299,7 @@
               "answer": 0,
               "explanation": "Preheating comes after mixing but before baking, so it is the \"next\" step, not the first or the last.",
               "meaning": "coming after this one",
-              "example": "The next step is to preheat."
+              "example": "The next step is to preheat the oven."
             },
             {
               "id": "b1p20q2",
@@ -39329,7 +39329,7 @@
               "answer": 2,
               "explanation": "The mixture is runny, so you \"pour\" it, letting it flow from the bowl into the tin.",
               "meaning": "to make liquid flow out of a container",
-              "example": "Pour it into the tin."
+              "example": "Pour the mixture into the tin."
             },
             {
               "id": "b1p20q4",
@@ -39426,7 +39426,7 @@
               "answer": 0,
               "explanation": "\"final\" is correct because it means last, and \"After everything else is done\" shows cutting is the last stage. \"First\", \"initial\" and \"early\" all refer to the start.",
               "meaning": "coming at the end",
-              "example": "The final stage is cutting."
+              "example": "The final stage is cutting the cake."
             }
           ]
         },
@@ -39447,7 +39447,7 @@
               ],
               "answer": 0,
               "explanation": "\"wash\" is correct because we wash our hands with soap and water before preparing something. \"Wash your hands\" is the standard phrase for this.",
-              "meaning": "to clean with water and soap",
+              "meaning": "to clean something with water, often with soap",
               "example": "Wash your hands first."
             },
             {
@@ -39478,7 +39478,7 @@
               "answer": 2,
               "explanation": "\"turn\" is correct because \"turn off\" is the phrasal verb meaning to stop a machine or its power. The other words do not form a phrasal verb with \"off\" in this sense.",
               "term": "turn off",
-              "meaning": "to stop a machine or light",
+              "meaning": "to make a machine or light stop working",
               "example": "Turn off the power."
             },
             {
@@ -39509,7 +39509,7 @@
               "answer": 0,
               "explanation": "\"last\" is correct because \"At the very end\" shows this is the final step, and \"the last thing you do\" is the natural phrase. \"Initial\" means first and \"following\" means next.",
               "meaning": "coming at the end",
-              "example": "The last thing is to check results."
+              "example": "The last thing is to check the results."
             }
           ]
         },
@@ -39613,7 +39613,7 @@
               "answer": "verify",
               "explanation": "\"verify\" is correct because before finishing you check that everything is right, and you check it twice. \"Decorate\", \"pour\" and \"fit\" do not mean checking.",
               "meaning": "to make sure something is right",
-              "example": "Verify everything twice."
+              "example": "Verify all the measurements before you continue."
             },
             {
               "id": "b1p20q21",
@@ -39684,7 +39684,7 @@
       "level": "B1",
       "eyebrow": "Unit 23",
       "title": "Listening: Opinions & Explanations",
-      "description": "Opinions and explanations — Opinions and explanations in closely-matched pairs.",
+      "description": "Listen carefully — Tell apart opinions and explanations that sound very similar.",
       "lessons": [
         {
           "id": "b1p21l1",
@@ -39703,7 +39703,7 @@
                 "If I'd known, I would've waited."
               ],
               "answer": "I'd rather work from home on Fridays.",
-              "explanation": "The audio says \"I'd rather work from home on Fridays.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"I'd rather work from home on Fridays.\" Listen for the day at the end: it is Fridays, not Mondays."
             },
             {
               "id": "b1p21q1",
@@ -39717,7 +39717,7 @@
                 "If I'd known, I would've waited."
               ],
               "answer": "I'd rather work from home on Mondays.",
-              "explanation": "The audio says \"I'd rather work from home on Mondays.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"I'd rather work from home on Mondays.\" Listen for the day at the end: it is Mondays, not Fridays."
             },
             {
               "id": "b1p21q2",
@@ -39913,7 +39913,7 @@
                 "If I'd known, I would've waited."
               ],
               "answer": "I'm not entirely convinced by that argument.",
-              "explanation": "The audio says \"I'm not entirely convinced by that argument.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"I'm not entirely convinced by that argument.\" The last word is \"argument\", not \"explanation\"."
             }
           ]
         },
@@ -39934,7 +39934,7 @@
                 "I'm not entirely convinced by that argument."
               ],
               "answer": "I'm not entirely convinced by that explanation.",
-              "explanation": "The audio says \"I'm not entirely convinced by that explanation.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"I'm not entirely convinced by that explanation.\" The last word is \"explanation\", not \"argument\"."
             },
             {
               "id": "b1p21q16",
@@ -39948,7 +39948,7 @@
                 "It depends on how much time we've got."
               ],
               "answer": "She's been learning Japanese since March.",
-              "explanation": "The audio says \"She's been learning Japanese since March.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"She's been learning Japanese since March.\" Listen for the month: it is March, not May."
             },
             {
               "id": "b1p21q17",
@@ -39962,7 +39962,7 @@
                 "She's been learning Japanese since March."
               ],
               "answer": "She's been learning Japanese since May.",
-              "explanation": "The audio says \"She's been learning Japanese since May.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"She's been learning Japanese since May.\" Listen for the month: \"May\" ends in a vowel sound, while \"March\" ends in a \"ch\" sound."
             },
             {
               "id": "b1p21q18",
@@ -39976,7 +39976,7 @@
                 "I'd rather work from home on Mondays."
               ],
               "answer": "We ought to leave a little earlier.",
-              "explanation": "The audio says \"We ought to leave a little earlier.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"We ought to leave a little earlier.\" The last word is \"earlier\" (sooner), not \"later\"."
             },
             {
               "id": "b1p21q19",
@@ -39990,7 +39990,7 @@
                 "It depends on how much money we've got."
               ],
               "answer": "We ought to leave a little later.",
-              "explanation": "The audio says \"We ought to leave a little later.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"We ought to leave a little later.\" The last word is \"later\", not \"earlier\"; it starts with an \"l\" sound."
             }
           ]
         },
@@ -40011,7 +40011,7 @@
                 "She's been learning Japanese since May."
               ],
               "answer": "He admitted that he'd made a mistake.",
-              "explanation": "The audio says \"He admitted that he'd made a mistake.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"He admitted that he'd made a mistake.\" The verb is \"admitted\" (said it was true), not \"denied\" (said it wasn't)."
             },
             {
               "id": "b1p21q21",
@@ -40025,7 +40025,7 @@
                 "I found the ending rather disappointing."
               ],
               "answer": "He denied that he'd made a mistake.",
-              "explanation": "The audio says \"He denied that he'd made a mistake.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"He denied that he'd made a mistake.\" The verb is \"denied\" (said it wasn't true), not \"admitted\"."
             },
             {
               "id": "b1p21q22",
@@ -40039,7 +40039,7 @@
                 "It depends on how much money we've got."
               ],
               "answer": "It depends on how much time we've got.",
-              "explanation": "The audio says \"It depends on how much time we've got.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"It depends on how much time we've got.\" Listen after \"how much\": the word is \"time\", not \"money\"."
             },
             {
               "id": "b1p21q23",
@@ -40053,7 +40053,7 @@
                 "It depends on how much money we've got."
               ],
               "answer": "It depends on how much money we've got.",
-              "explanation": "The audio says \"It depends on how much money we've got.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"It depends on how much money we've got.\" Listen after \"how much\": the word is \"money\", not \"time\"."
             },
             {
               "id": "b1p21q24",
@@ -40067,7 +40067,7 @@
                 "I found the ending rather disappointing."
               ],
               "answer": "I found the ending rather disappointing.",
-              "explanation": "The audio says \"I found the ending rather disappointing.\" Opinions and explanations in closely-matched pairs."
+              "explanation": "The audio says \"I found the ending rather disappointing.\" Here \"rather\" means \"quite\", which is different from \"I'd rather\" (I prefer) in the other options."
             }
           ]
         }
@@ -40090,28 +40090,28 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I think the other option makes more sense.",
-              "explanation": "Target phrase: \"I think the other option makes more sense.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"I think the other option makes more sense.\" Use \"makes more sense\" to say politely that one choice is more logical than another."
             },
             {
               "id": "b1p22q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Personally, I would handle it differently.",
-              "explanation": "Target phrase: \"Personally, I would handle it differently.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"Personally, I would handle it differently.\" Starting with \"Personally,\" shows this is just your own opinion, which makes disagreeing sound softer."
             },
             {
               "id": "b1p22q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "The main problem is the cost.",
-              "explanation": "Target phrase: \"The main problem is the cost.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"The main problem is the cost.\" Use \"The main problem is...\" to name the most important reason against something."
             },
             {
               "id": "b1p22q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "It depends on how much time we have.",
-              "explanation": "Target phrase: \"It depends on how much time we have.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"It depends on how much time we have.\" Use \"It depends on...\" when your answer changes with a condition. Note the preposition is \"on\"."
             },
             {
               "id": "b1p22q4",
@@ -40318,13 +40318,13 @@
             {
               "id": "b1p23q1",
               "type": "translate",
-              "prompt": "Say the answer depends on the time available.",
+              "prompt": "Say that your answer will change with how much time you have.",
               "acceptableAnswers": [
                 "It depends how much time we have.",
                 "It depends on the time available.",
                 "That depends how much time there is."
               ],
-              "explanation": "One way to say it: \"It depends how much time we have.\" Opinions, reasons and comparisons, written in your own words."
+              "explanation": "One way to say it: \"It depends how much time we have.\" \"It depends (on) + how much…\" says that your answer changes with something, here the amount of time."
             },
             {
               "id": "b1p23q2",
@@ -40340,7 +40340,7 @@
             {
               "id": "b1p23q3",
               "type": "translate",
-              "prompt": "Say you would handle it differently.",
+              "prompt": "Say that you would not do it the same way.",
               "acceptableAnswers": [
                 "I would handle it differently.",
                 "Personally, I'd do it another way.",
@@ -40384,7 +40384,7 @@
               "acceptableAnswers": [
                 "We could try a different approach.",
                 "Perhaps we should try another way.",
-                "Let us try a different approach."
+                "Let's try a different approach."
               ],
               "explanation": "One way to say it: \"We could try a different approach.\" Opinions, reasons and comparisons, written in your own words."
             },
@@ -40442,21 +40442,21 @@
             {
               "id": "b1p23q11",
               "type": "translate",
-              "prompt": "Play down how large a gap appears.",
+              "prompt": "Say the difference is not as big as it looks.",
               "acceptableAnswers": [
                 "The difference is smaller than it looks.",
                 "The gap is smaller than it seems.",
-                "It is a smaller difference than it appears."
+                "The difference isn't as big as it looks."
               ],
               "explanation": "One way to say it: \"The difference is smaller than it looks.\" Opinions, reasons and comparisons, written in your own words."
             },
             {
               "id": "b1p23q12",
               "type": "translate",
-              "prompt": "Urge realism about a plan.",
+              "prompt": "Say that we need to be realistic about the plan.",
               "acceptableAnswers": [
                 "We need to be realistic about this.",
-                "Let us be realistic here.",
+                "Let's be realistic here.",
                 "We should be realistic about it."
               ],
               "explanation": "One way to say it: \"We need to be realistic about this.\" Opinions, reasons and comparisons, written in your own words."
@@ -40555,13 +40555,13 @@
             {
               "id": "b1p23q20",
               "type": "translate",
-              "prompt": "Say on the whole the changes have helped.",
+              "prompt": "Say that, on the whole, the changes have helped.",
               "acceptableAnswers": [
                 "On the whole, the changes have helped.",
                 "Overall, the changes helped.",
                 "By and large the changes have helped."
               ],
-              "explanation": "One way to say it: \"On the whole, the changes have helped.\" Opinions, reasons and comparisons, written in your own words."
+              "explanation": "\"On the whole, the changes have helped.\" uses \"on the whole\" (or \"overall\" or \"by and large\") to give a general opinion while allowing for some exceptions."
             },
             {
               "id": "b1p23q21",
@@ -40583,7 +40583,7 @@
                 "You have a point, though I do not agree.",
                 "I take your point, but I disagree."
               ],
-              "explanation": "One way to say it: \"That is a fair point, but I still disagree.\" Opinions, reasons and comparisons, written in your own words."
+              "explanation": "\"That is a fair point, but I still disagree.\" first accepts the other person's point, then uses \"but\" to keep your own view."
             },
             {
               "id": "b1p23q23",
@@ -40829,7 +40829,7 @@
               ],
               "answer": 2,
               "explanation": "\"Now\" shows the action is in progress, so the present continuous passive needs \"is being analysed\", with \"is\" agreeing with \"The data\".",
-              "meaning": "a form of be used with being",
+              "meaning": "a present form of be, used in passives",
               "example": "The data is being analysed now."
             },
             {
@@ -41168,7 +41168,7 @@
               "answer": "historical",
               "explanation": "\"historical\" means about or set in the past, as in a novel set in Victorian times; \"historic\" means important in history.",
               "meaning": "connected with past events",
-              "example": "She writes historical novels."
+              "example": "She loves reading historical novels."
             },
             {
               "id": "b2p2q8",
@@ -41558,7 +41558,7 @@
               "answer": 2,
               "explanation": "Poor planning is the cause of the failure, and \"due to\" introduces a cause before a noun phrase.",
               "meaning": "because of; caused by",
-              "example": "The plan failed due to poor planning."
+              "example": "The flight was delayed due to bad weather."
             },
             {
               "id": "b2p3q6",
@@ -41977,7 +41977,7 @@
               ],
               "answer": "making",
               "explanation": "\"Admit\" is followed by an -ing form, so the sentence needs \"making\": \"He admitted making the mistake\".",
-              "meaning": "the -ing form used after admit",
+              "meaning": "the -ing form of make, used after admit",
               "example": "He admitted making the mistake."
             },
             {
@@ -42314,7 +42314,7 @@
               ],
               "answer": "heavy",
               "explanation": "In English, strong rain is \"heavy\" rain; we do not say strong rain or big rain.",
-              "meaning": "large and strong in amount",
+              "meaning": "large in amount or very strong",
               "example": "Heavy rain fell all night."
             },
             {
@@ -42604,14 +42604,14 @@
                 "firm"
               ],
               "answer": 0,
-              "explanation": "___ apology (sincere) → heartfelt. Advanced fluency lives in collocation.",
+              "explanation": "\"heartfelt\" means deeply and honestly felt, so \"heartfelt apology\" is the natural phrase for a sincere apology; the other words do not go with \"apology\".",
               "meaning": "showing deep and honest feeling",
               "example": "She offered a heartfelt apology."
             },
             {
               "id": "b2p5q19",
               "type": "fill",
-              "prompt": "Which word pairs with \"___ effort (concentrated)\"? ___",
+              "prompt": "Complete the collocation (planned and done together): ___ effort",
               "bank": [
                 "strict",
                 "concerted",
@@ -42619,8 +42619,8 @@
                 "striking"
               ],
               "answer": "concerted",
-              "explanation": "___ effort (concentrated) → concerted. Advanced fluency lives in collocation.",
-              "meaning": "done together with great effort",
+              "explanation": "\"concerted\" means planned and done together by several people, and \"a concerted effort\" is a fixed collocation.",
+              "meaning": "planned and done together by several people",
               "example": "It needs a concerted effort."
             }
           ]
@@ -42642,7 +42642,7 @@
               ],
               "answer": "complete",
               "explanation": "We say a \"complete\" failure for something that failed totally; \"heartfelt\", \"strict\" and \"fierce\" do not collocate with \"failure\".",
-              "meaning": "total; with nothing missing",
+              "meaning": "total; in every way",
               "example": "The plan was a complete failure."
             },
             {
@@ -42663,7 +42663,7 @@
             {
               "id": "b2p5q22",
               "type": "fill",
-              "prompt": "Which word pairs with \"___ resemblance (close)\"? ___",
+              "prompt": "Complete the collocation (very noticeable): ___ resemblance",
               "bank": [
                 "high",
                 "striking",
@@ -42671,7 +42671,7 @@
                 "heavy"
               ],
               "answer": "striking",
-              "explanation": "___ resemblance (close) → striking. Advanced fluency lives in collocation.",
+              "explanation": "\"striking\" means very noticeable, and \"a striking resemblance\" is the usual way to say two people or things look strongly alike.",
               "meaning": "very noticeable, often in a surprising way",
               "example": "There is a striking resemblance between them."
             },
@@ -42876,7 +42876,7 @@
               "answer": "loss",
               "explanation": "The noun of \"lose\" is \"loss\"; it does not follow a regular suffix rule, so learn the pair lose → loss.",
               "meaning": "the state of no longer having something",
-              "example": "The loss of his job was a shock."
+              "example": "The loss of his job was a big shock."
             }
           ]
         },
@@ -42913,7 +42913,7 @@
               "answer": 0,
               "explanation": "Add -th to \"grow\" to make the noun \"growth\".",
               "meaning": "the process of getting bigger",
-              "example": "There was strong growth last year."
+              "example": "The economy saw strong growth last year."
             },
             {
               "id": "b2p6q12",
@@ -42928,7 +42928,7 @@
               "answer": "knowledge",
               "explanation": "The noun of \"know\" is \"knowledge\": you add the unusual ending -ledge, so learn it as a set word.",
               "meaning": "facts and skills you have learned",
-              "example": "He has great knowledge of history."
+              "example": "He has a good knowledge of history."
             },
             {
               "id": "b2p6q13",
@@ -43197,7 +43197,7 @@
               ],
               "answer": 0,
               "explanation": "\"whether\" is correct here. Reported speech shifts tense back and changes time and place words.",
-              "meaning": "used to report a question with doubt",
+              "meaning": "used like 'if' to report a yes/no question",
               "example": "She wondered whether I had finished."
             },
             {
@@ -43483,7 +43483,7 @@
               "answer": "out",
               "explanation": "The phrasal verb point out means to draw attention to something, so \"out\" completes pointed out the flaw.",
               "term": "point out",
-              "meaning": "to show something by talking about it",
+              "meaning": "to make someone notice a fact",
               "example": "She pointed out the flaw in the plan."
             },
             {
@@ -43688,7 +43688,7 @@
               "answer": "promise",
               "explanation": "We \"keep a promise\" when we do what we said we would do, so \"promise\" is right. We make a decision, ask a question and face a challenge.",
               "meaning": "a statement that you will do something",
-              "example": "She always keeps a promise."
+              "example": "She always keeps her promises."
             },
             {
               "id": "b2p8q8",
@@ -43696,12 +43696,12 @@
               "prompt": "Complete: \"run a ___\"",
               "choices": [
                 "business",
-                "concern",
-                "patience",
-                "news"
+                "decision",
+                "mistake",
+                "photo"
               ],
               "answer": 0,
-              "explanation": "run a → business. Natural English depends on the right partner word.",
+              "explanation": "The verb \"run\" goes with \"business\": to run a business means to manage a company. We make a decision, make a mistake and take a photo.",
               "meaning": "a company that sells goods or services",
               "example": "He runs a small business."
             },
@@ -43739,7 +43739,7 @@
               ],
               "answer": "agreement",
               "explanation": "We \"reach an agreement\" when people finally accept the same decision, so \"agreement\" is right. You make an effort and take an interest.",
-              "meaning": "a decision that people both accept",
+              "meaning": "a decision or arrangement that everyone involved accepts",
               "example": "They reached an agreement last night."
             },
             {
@@ -44026,7 +44026,7 @@
               "answer": "admitted",
               "explanation": "A patient taken into hospital is \"admitted\" to it; the other words do not fit 'was ___ to hospital'.",
               "meaning": "accepted into hospital as a patient",
-              "example": "He was admitted after the accident."
+              "example": "He was admitted to hospital after the accident."
             },
             {
               "id": "b2p9q3",
@@ -44174,7 +44174,7 @@
               ],
               "answer": "twisted",
               "explanation": "Hurting an ankle with a sudden turning movement while playing football is described by \"twisted\"; the other verbs don't take 'his ankle' with this meaning.",
-              "meaning": "turned and hurt by a sudden movement",
+              "meaning": "hurt a joint by turning it suddenly",
               "example": "He twisted his ankle."
             },
             {
@@ -44639,7 +44639,7 @@
               "answer": 0,
               "explanation": "The gap needs a verb after 'The website', and \"crashes\" means suddenly stops working, which is what happens when too many users log in. The other options are nouns.",
               "meaning": "suddenly stops working",
-              "example": "The website crashes if too many log in."
+              "example": "The website crashes if too many people log in."
             }
           ]
         },
@@ -44849,7 +44849,7 @@
               "answer": "compromise",
               "explanation": "\"compromise\" is correct here. B2-level vocabulary for meetings and negotiations.",
               "meaning": "an agreement where each side gives something up",
-              "example": "Both sides made a compromise."
+              "example": "Both sides reached a compromise."
             },
             {
               "id": "b2p11q2",
@@ -44872,7 +44872,7 @@
               "prompt": "We're hoping to ___ a long-term partnership.",
               "bank": [
                 "head",
-                "through",
+                "settle",
                 "build",
                 "lay off"
               ],
@@ -45110,7 +45110,7 @@
               ],
               "answer": 0,
               "explanation": "After \"will\" you need a bare verb, and only \"vote\" is followed by \"on\" here. We \"discuss\", \"approve\" or \"reject\" a proposal with no \"on\".",
-              "meaning": "to choose by raising a hand or ballot",
+              "meaning": "to formally choose by hand or ballot",
               "example": "The board will vote tomorrow."
             },
             {
@@ -45450,7 +45450,7 @@
               "answer": 0,
               "explanation": "A judge dismisses a case when there is not enough proof, so \"evidence\" fits \"lack of ___\"; a verdict, sentence or theft is not something a case can lack.",
               "meaning": "facts that show something is true",
-              "example": "The judge dismissed it for lack of evidence."
+              "example": "The judge dismissed the case for lack of evidence."
             },
             {
               "id": "b2p12q13",
@@ -45735,7 +45735,7 @@
               ],
               "answer": 2,
               "explanation": "\"debate\" is correct here. B2-level vocabulary for discussing politics and social issues.",
-              "meaning": "a formal talk where views are argued",
+              "meaning": "a discussion where people argue different views",
               "example": "The plan sparked a heated debate."
             }
           ]
@@ -45938,7 +45938,7 @@
               "answer": "talks",
               "explanation": "\"talks\" is right because treaties are signed after lengthy talks, meaning negotiations between sides. \"Lengthy\" with a plural gap needs a plural noun like \"talks\".",
               "meaning": "conversations to reach an agreement",
-              "example": "The president signed after lengthy talks."
+              "example": "The deal was signed after lengthy talks."
             },
             {
               "id": "b2p13q17",
@@ -46387,7 +46387,7 @@
               "answer": 0,
               "explanation": "Curators choose art that challenges how people see the world, so \"perception\" is the noun that collocates with 'challenge' here.",
               "meaning": "the way you see and understand things",
-              "example": "Art can change our perception."
+              "example": "Art can change our perception of the world."
             },
             {
               "id": "b2p14q19",
@@ -46468,7 +46468,7 @@
               ],
               "answer": 2,
               "explanation": "'Critical acclaim' means strong praise from critics, which a debut can win; \"acclaim\" is the only noun that fits this collocation.",
-              "meaning": "strong praise from critics",
+              "meaning": "strong public praise",
               "example": "The pianist won critical acclaim."
             },
             {
@@ -46513,7 +46513,7 @@
                 "to feel slightly ill"
               ],
               "answer": 0,
-              "explanation": "to be on the ball → to be alert and quick to understand. Common B2-level idioms and fixed expressions.",
+              "explanation": "Someone who is \"on the ball\" notices things quickly and reacts fast, so the idiom means \"to be alert and quick to understand\".",
               "term": "to be on the ball",
               "meaning": "to be alert and quick to understand",
               "example": "You need to be on the ball today."
@@ -46648,7 +46648,7 @@
                 "to happen unexpectedly"
               ],
               "answer": 0,
-              "explanation": "to keep an eye on → to watch carefully. Common B2-level idioms and fixed expressions.",
+              "explanation": "If you keep your eye on something, you keep looking at it so nothing goes wrong, so the idiom means \"to watch carefully\".",
               "term": "to keep an eye on",
               "meaning": "to watch carefully",
               "example": "Please remember to keep an eye on my bag."
@@ -46687,7 +46687,7 @@
                 "to ease tension in a social situation"
               ],
               "answer": "to be very easy",
-              "explanation": "to be a piece of cake → to be very easy. Common B2-level idioms and fixed expressions.",
+              "explanation": "Eating a piece of cake takes no effort, so \"to be a piece of cake\" means \"to be very easy\".",
               "term": "to be a piece of cake",
               "meaning": "to be very easy",
               "example": "The test should be a piece of cake to do."
@@ -46703,10 +46703,10 @@
                 "to be alert and quick to understand"
               ],
               "answer": 2,
-              "explanation": "to spill the beans → to reveal a secret. Common B2-level idioms and fixed expressions.",
+              "explanation": "Spilling the beans lets out what was hidden inside, so the idiom means \"to reveal a secret\".",
               "term": "to spill the beans",
               "meaning": "to reveal a secret",
-              "example": "Try not to spill the beans about it."
+              "example": "Try not to spill the beans about the surprise party."
             },
             {
               "id": "b2p15q12",
@@ -46715,11 +46715,11 @@
               "bank": [
                 "to not appreciate something properly",
                 "to reveal a secret",
-                "to be in trouble",
+                "to travel together",
                 "to be in the same difficult situation"
               ],
               "answer": "to be in the same difficult situation",
-              "explanation": "to be in the same boat → to be in the same difficult situation. Common B2-level idioms and fixed expressions.",
+              "explanation": "People \"in the same boat\" share the same problem, so the idiom means \"to be in the same difficult situation\". It is not about literally travelling together.",
               "term": "to be in the same boat",
               "meaning": "to share the same difficult situation",
               "example": "We seem to be in the same boat."
@@ -46735,7 +46735,7 @@
                 "to happen unexpectedly"
               ],
               "answer": 0,
-              "explanation": "to give someone the benefit of the doubt → to trust them despite uncertainty. Common B2-level idioms and fixed expressions.",
+              "explanation": "You let the doubt work in the other person's favour, so the idiom means \"to trust them despite uncertainty\".",
               "term": "to give someone the benefit of the doubt",
               "meaning": "to trust someone despite some doubt",
               "example": "Sometimes it's kind to give someone the benefit of the doubt."
@@ -46777,7 +46777,7 @@
               "explanation": "\"Cold feet\" is the nervousness that stops you just before a big step, so the idiom means \"to become nervous about doing something\", e.g. \"He got cold feet before the wedding.\"",
               "term": "to get cold feet",
               "meaning": "to become nervous before doing something",
-              "example": "She tends to get cold feet before a big talk."
+              "example": "She tends to get cold feet before a big speech."
             },
             {
               "id": "b2p15q16",
@@ -46925,7 +46925,7 @@
                 "to start again from the beginning"
               ],
               "answer": 2,
-              "explanation": "to keep your chin up → to stay positive during hard times. Common B2-level idioms and fixed expressions.",
+              "explanation": "Holding your head up is the opposite of looking down sadly, so \"to keep your chin up\" means \"to stay positive during hard times\".",
               "term": "to keep your chin up",
               "meaning": "to stay positive in hard times",
               "example": "Try to keep your chin up."
@@ -46939,7 +46939,7 @@
       "level": "B2",
       "eyebrow": "Unit 17",
       "title": "Cause & Effect",
-      "description": "Connectors for reasons and results — B2-level connectors matched to how they signal cause or effect.",
+      "description": "Connectors for reasons and results — B2-level words that show cause or effect.",
       "lessons": [
         {
           "id": "b2p16l1",
@@ -46975,7 +46975,7 @@
               "answer": 2,
               "explanation": "\"because of\" is followed by a noun or noun phrase (\"because of the rain\"), so it is used to \"introduce a noun reason\". \"Because\" on its own is followed by a full clause.",
               "term": "because of",
-              "meaning": "used to introduce a noun reason",
+              "meaning": "used before a noun to give a reason",
               "example": "We stayed home because of the rain."
             },
             {
@@ -47181,7 +47181,7 @@
               "answer": "give a positive reason for something",
               "explanation": "\"Thanks to\" introduces a cause that led to a good result, as in \"We won thanks to your help\", so it is used to \"give a positive reason for something\".",
               "term": "thanks to",
-              "meaning": "used to give a good reason for something",
+              "meaning": "because of, usually something good",
               "example": "We won thanks to your help."
             },
             {
@@ -47218,7 +47218,7 @@
                 "introduce the consequence of an action"
               ],
               "answer": "introduce a reason that affects a decision",
-              "explanation": "in view of → introduce a reason that affects a decision. B2-level connectors matched to how they signal cause or effect.",
+              "explanation": "\"In view of\" is followed by a noun giving the fact that leads to a choice (In view of the risks, we waited), so it is used to \"introduce a reason that affects a decision\".",
               "term": "in view of",
               "meaning": "to give a reason that affects a decision",
               "example": "In view of the risks, we waited."
@@ -47250,7 +47250,7 @@
                 "introduce an obvious reason, informal"
               ],
               "answer": "introduce a formal result",
-              "explanation": "as a consequence → introduce a formal result. B2-level connectors matched to how they signal cause or effect.",
+              "explanation": "\"As a consequence\" starts the clause that says what happened as a result, in a formal style, so it is used to \"introduce a formal result\".",
               "term": "as a consequence",
               "meaning": "used to introduce a formal result",
               "example": "As a consequence, the shop closed."
@@ -47269,7 +47269,7 @@
               "explanation": "\"Accordingly\" begins a clause saying what happened as a sensible result of the situation just described, so it is used to \"show a result that logically follows\".",
               "term": "accordingly",
               "meaning": "used to show a result that follows logically",
-              "example": "The weather turned; accordingly, we changed plans."
+              "example": "The weather turned; accordingly, we changed our plans."
             },
             {
               "id": "b2p16q19",
@@ -47332,15 +47332,15 @@
               "prompt": "The connector \"in light of\" is used to… ___",
               "bank": [
                 "introduce an obvious reason, informal",
-                "show what caused something, formal",
+                "introduce a contrast with what was said before",
                 "introduce a reason based on new information",
                 "link an event to its outcome, mid-sentence"
               ],
               "answer": "introduce a reason based on new information",
-              "explanation": "in light of → introduce a reason based on new information. B2-level connectors matched to how they signal cause or effect.",
+              "explanation": "\"In light of\" suggests that new facts throw light on a situation and change our view, so it is used to \"introduce a reason based on new information\".",
               "term": "in light of",
               "meaning": "to give a reason based on new facts",
-              "example": "In light of the news, we changed plans."
+              "example": "In light of the news, we changed our plans."
             },
             {
               "id": "b2p16q23",
@@ -47353,10 +47353,10 @@
                 "introduce a reason based on new information"
               ],
               "answer": 0,
-              "explanation": "stemming from → show that something originates from a cause. B2-level connectors matched to how they signal cause or effect.",
+              "explanation": "A stem is where a plant grows from, so \"stemming from\" is used to \"show that something originates from a cause\".",
               "term": "stemming from",
               "meaning": "used to show where a problem comes from",
-              "example": "Problems stemming from a lack of money grew."
+              "example": "The club faced problems stemming from a lack of money."
             },
             {
               "id": "b2p16q24",
@@ -47369,10 +47369,10 @@
                 "introduce a noun reason, formal"
               ],
               "answer": "show what set off a sudden reaction or event",
-              "explanation": "triggered by → show what set off a sudden reaction or event. B2-level connectors matched to how they signal cause or effect.",
+              "explanation": "\"Triggered by\" names the thing that suddenly set something off, as in \"The alarm was triggered by smoke\", so it is used to \"show what set off a sudden reaction or event\".",
               "term": "triggered by",
-              "meaning": "to show what set off a sudden event",
-              "example": "Panic triggered by the noise spread."
+              "meaning": "set off or caused suddenly",
+              "example": "The fire was triggered by a spark."
             }
           ]
         }
@@ -47388,7 +47388,7 @@
         {
           "id": "b2p17l1",
           "title": "Phrasal Verbs II 1",
-          "subtitle": "Meaning match, everyday phrasal verbs",
+          "subtitle": "Meaning match: everyday phrasal verbs",
           "questions": [
             {
               "id": "b2p17q0",
@@ -47827,7 +47827,7 @@
       "level": "B2",
       "eyebrow": "Unit 19",
       "title": "Mixed Conditionals",
-      "description": "Past, present, and unreal combinations — B2-level mixed conditional structures.",
+      "description": "Mixing past and present — B2-level unreal conditionals that combine different times.",
       "lessons": [
         {
           "id": "b2p18l1",
@@ -48010,7 +48010,7 @@
               ],
               "answer": 0,
               "explanation": "The past condition (\"had saved money\") leads to a present result (\"now\"), so we use \"would\" + base verb: they would be able to travel today.",
-              "meaning": "shows what could be true now",
+              "meaning": "shows an imagined result in the present",
               "example": "If they had saved, they would be able to go."
             },
             {
@@ -48205,7 +48205,7 @@
               "answer": "had",
               "explanation": "A third conditional if-clause needs the past perfect, so \"had\" + known matches 'would have left'.",
               "meaning": "a helper verb for the past perfect",
-              "example": "If I had known, I would have left earlier."
+              "example": "If I had known, I wouldn't be so surprised now."
             },
             {
               "id": "b2p18q23",
@@ -48429,7 +48429,7 @@
               ],
               "answer": "had",
               "explanation": "A regret about the past takes the past perfect, so \"had\" goes before 'never said'. 'Had been' would need a participle after it, not 'said'.",
-              "meaning": "a helper verb for a regret",
+              "meaning": "a helper verb for a past regret",
               "example": "I wish I had never said that."
             },
             {
@@ -48571,7 +48571,7 @@
               ],
               "answer": 2,
               "explanation": "A regret about the past needs the past perfect, and \"studied\" is the participle, so \"had\" completes \"had studied\".",
-              "meaning": "a helper verb for a regret",
+              "meaning": "a helper verb for a past regret",
               "example": "If only I had studied medicine."
             }
           ]
@@ -48782,8 +48782,8 @@
               ],
               "answer": 2,
               "explanation": "You \"roll\" pastry out to make it flat and thin, which is what \"out thinly\" describes.",
-              "meaning": "to flatten dough with a flat tool",
-              "example": "Roll the pastry thinly."
+              "meaning": "to flatten dough with a round pin",
+              "example": "Roll out the pastry thinly."
             },
             {
               "id": "b2p20q7",
@@ -49603,7 +49603,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "We will need far more evidence than that.",
-              "explanation": "Target phrase: \"We will need far more evidence than that.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"We will need far more evidence than that.\" Put the stress on \"far\" to sound firmly unconvinced, and say the whole sentence in one breath."
             }
           ]
         },
@@ -49645,7 +49645,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Given the circumstances, that seems reasonable.",
-              "explanation": "Target phrase: \"Given the circumstances, that seems reasonable.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Given the circumstances, that seems reasonable.\" \"Given the circumstances\" is an introductory phrase meaning \"considering the situation\", so pause briefly at the comma before the main clause."
             }
           ]
         },
@@ -49673,7 +49673,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "What matters most is that it actually works.",
-              "explanation": "Target phrase: \"What matters most is that it actually works.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"What matters most is that it actually works.\" The \"What … is that …\" pattern puts the emphasis on the final idea, so stress \"actually works\"."
             },
             {
               "id": "b2p22q23",
@@ -49687,7 +49687,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Had we acted sooner, this could have been avoided.",
-              "explanation": "Target phrase: \"Had we acted sooner, this could have been avoided.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Had we acted sooner, this could have been avoided.\" \"Had we acted\" is a formal way of saying \"If we had acted\", so pause briefly at the comma before the result clause."
             }
           ]
         }
@@ -49714,7 +49714,7 @@
                 "Had I known, I would have spoken up.",
                 "I would have said something if I had known."
               ],
-              "explanation": "One way to say it: \"If I had known, I would have said something.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"If I had known, I would have said something.\" This is a third conditional: \"if\" + past perfect, then \"would have\" + past participle, for an imagined past."
             },
             {
               "id": "b2p23q1",
@@ -49725,7 +49725,7 @@
                 "The reaction was what surprised me most.",
                 "It was the reaction that surprised me most."
               ],
-              "explanation": "One way to say it: \"What surprised me most was the reaction.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"What surprised me most was the reaction.\" Starting with \"What … was\" focuses attention on the reaction; \"It was the reaction that …\" does the same job."
             },
             {
               "id": "b2p23q2",
@@ -49747,7 +49747,7 @@
                 "The issue is the timing rather than the price.",
                 "It's less about price than timing."
               ],
-              "explanation": "One way to say it: \"It is not so much the price as the timing.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"It is not so much the price as the timing.\" \"Not so much X as Y\" says that Y matters more than X."
             },
             {
               "id": "b2p23q4",
@@ -49798,7 +49798,7 @@
                 "A good argument can be made for waiting.",
                 "There are strong reasons to wait."
               ],
-              "explanation": "One way to say it: \"There is a strong case for waiting.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"There is a strong case for waiting.\" \"A case for\" + -ing means good arguments in favour of doing something."
             },
             {
               "id": "b2p23q8",
@@ -49809,7 +49809,7 @@
                 "I tend to think it was a mistake.",
                 "My feeling is that it was a mistake."
               ],
-              "explanation": "One way to say it: \"I am inclined to think it was a mistake.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"I am inclined to think it was a mistake.\" \"Inclined to think\" gives a cautious opinion, softer than \"I think\"."
             },
             {
               "id": "b2p23q9",
@@ -49849,7 +49849,7 @@
                 "I accept that, but I remain unconvinced.",
                 "Fair enough, though I still have reservations."
               ],
-              "explanation": "One way to say it: \"I take your point, although I still have doubts.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"I take your point, although I still have doubts.\" \"I take your point\" concedes politely, and \"although\" introduces the doubt you keep."
             },
             {
               "id": "b2p23q12",
@@ -49871,7 +49871,7 @@
                 "It was far simpler than we thought.",
                 "In the end it was simpler than expected."
               ],
-              "explanation": "One way to say it: \"It turned out to be much simpler than expected.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"It turned out to be much simpler than expected.\" \"Turn out to be\" says how something proved to be in the end, and \"simpler than expected\" compares that result with what you thought."
             },
             {
               "id": "b2p23q14",
@@ -49880,9 +49880,9 @@
               "acceptableAnswers": [
                 "The whole process took longer than planned.",
                 "It took longer than we had planned.",
-                "The process ran over schedule."
+                "The process ran behind schedule."
               ],
-              "explanation": "One way to say it: \"The whole process took longer than planned.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"The whole process took longer than planned.\" \"Longer than planned\" shortens \"longer than we had planned\", and \"ran behind schedule\" means the same thing."
             }
           ]
         },
@@ -49900,7 +49900,7 @@
                 "I don't think that follows.",
                 "That does not necessarily follow."
               ],
-              "explanation": "One way to say it: \"I am not sure that follows.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"I am not sure that follows.\" Here \"follow\" means to be a logical result, so this politely questions someone's reasoning."
             },
             {
               "id": "b2p23q16",
@@ -49978,13 +49978,13 @@
             {
               "id": "b2p23q22",
               "type": "translate",
-              "prompt": "Say that acting sooner would have avoided it.",
+              "prompt": "Say that acting sooner would have prevented it.",
               "acceptableAnswers": [
                 "Had we acted sooner, this could have been avoided.",
                 "If we had acted earlier, this would not have happened.",
                 "Acting sooner would have prevented this."
               ],
-              "explanation": "One way to say it: \"Had we acted sooner, this could have been avoided.\" Multi-clause ideas, written in your own words."
+              "explanation": "One way to say it: \"Had we acted sooner, this could have been avoided.\" Inverted \"Had we acted\" is a formal way to say \"If we had acted\" in a third conditional about a missed chance in the past."
             },
             {
               "id": "b2p23q23",
