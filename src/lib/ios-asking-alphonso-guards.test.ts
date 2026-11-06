@@ -100,11 +100,19 @@ const MC_CALL =
 const LISTENING_CALL = "AskingAlphonso(prompt: q.prompt, hasMedia: true)";
 
 describe("every question type asks through Alphonso", () => {
-  it("the lesson's multiple choice, fill, reorder and listening cards", () => {
-    expect(count(lesson, "AskingAlphonso(prompt: q.prompt")).toBe(4);
-    expect(lesson).toContain(MC_CALL);
-    expect(lesson).toContain(LISTENING_CALL);
-    expect(lesson).not.toMatch(/Text\(q\.prompt\)\.font\(AlphonsoFont\.display\(22/);
+  it("the lesson asks every question type through Alphonso's bubble in the unit's room (round 6)", () => {
+    // One bubble for all six types, over Alphonso in the room; the speak and translate cards skip their own prompt
+    // there (inStage), so the question is never asked twice.
+    expect(lesson).not.toContain("AskingAlphonso(");
+    expect(count(lesson, "AlphonsoBubbleView(label: bubbleLabel, text: question.prompt")).toBe(1);
+    expect(lesson).toContain("surface: .lesson, inStage: true)");
+    expect(lesson).toMatch(/SpeakQuestionCard\([\s\S]{0,200}inStage: true\)/);
+    expect(translate).toMatch(
+      /if inStage \{[\s\S]{0,300}\} else \{[\s\S]{0,300}AskingAlphonso\(prompt: question\.prompt\)/,
+    );
+    expect(speak).toMatch(
+      /if inStage \{[\s\S]{0,200}\} else \{[\s\S]{0,300}AskingAlphonso\(prompt: question\.prompt, hasMedia: true\)/,
+    );
   });
 
   it("review's four cards", () => {

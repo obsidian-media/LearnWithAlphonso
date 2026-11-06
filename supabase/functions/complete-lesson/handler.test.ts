@@ -3,10 +3,7 @@
 import { assert, assertEquals } from "jsr:@std/assert@1";
 import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  type CompleteLessonDeps,
-  createCompleteLessonHandler,
-} from "./handler.ts";
+import { type CompleteLessonDeps, createCompleteLessonHandler } from "./handler.ts";
 import { computeXpGain } from "./progress-math.ts";
 
 type Row = Record<string, unknown>;
@@ -30,7 +27,10 @@ class FakeDb {
   }
   settleCalls: Record<string, unknown>[] = [];
   /** What settle_lesson_hearts answers. Default: not modelled (an error), so the completion's own hearts stand. */
-  settleResult: { data: unknown; error: unknown } = { data: null, error: { message: "not modelled" } };
+  settleResult: { data: unknown; error: unknown } = {
+    data: null,
+    error: { message: "not modelled" },
+  };
   rpc(name: string, args: Record<string, unknown>) {
     // The hearts settlement is recorded on its own, so the completion's rpcCalls stay exactly the save.
     if (name === "settle_lesson_hearts") {
@@ -104,7 +104,7 @@ class Query {
         if (f.op === "in") return (f.val as unknown[]).includes(v);
         if (f.op === "gt") return (v as number) > (f.val as number);
         return (v as number) <= (f.val as number);
-      })
+      }),
     );
   }
   private result() {
@@ -114,13 +114,10 @@ class Query {
     if (this.table === "lessons") {
       // The handler scopes the lesson to the claimed course through the units join ("units.course").
       const l = this.db.lesson;
-      const match = l &&
+      const match =
+        l &&
         this.filters.every((f) =>
-          f.col === "id"
-            ? f.val === l.id
-            : f.col === "units.course"
-            ? f.val === l.course
-            : false
+          f.col === "id" ? f.val === l.id : f.col === "units.course" ? f.val === l.course : false,
         );
       return { data: match ? l : null, error: null, count: null };
     }
@@ -136,10 +133,7 @@ class Query {
       error: r.error,
     });
   }
-  then<T>(
-    resolve: (v: ReturnType<Query["result"]>) => T,
-    reject?: (e: unknown) => T,
-  ) {
+  then<T>(resolve: (v: ReturnType<Query["result"]>) => T, reject?: (e: unknown) => T) {
     return Promise.resolve(this.result()).then(resolve, reject);
   }
 }
@@ -191,19 +185,20 @@ function setup(
     units: { level_id: "A2" },
     questions: QUESTIONS,
   };
-  db.tables.achievements = [{
-    id: "first_lesson",
-    category: "lessons",
-    threshold: 1,
-  }];
+  db.tables.achievements = [
+    {
+      id: "first_lesson",
+      category: "lessons",
+      threshold: 1,
+    },
+  ];
   db.recordCompletions = !opts.fresh;
   const pushes: string[] = [];
   const tokenClaims: Row[] = [];
   const consentReads: string[] = [];
   const slots: number[] = [];
   const deps: CompleteLessonDeps = {
-    authenticate: () =>
-      Promise.resolve(opts.auth ?? { userId: USER, userClient: db.client() }),
+    authenticate: () => Promise.resolve(opts.auth ?? { userId: USER, userClient: db.client() }),
     admin: () => db.client(),
     translateQuotaCheck: () => () => Promise.resolve(true),
     hasAiConsent: (_admin, userId) => {
@@ -269,14 +264,24 @@ Deno.test(
   async () => {
     const now = new Date("2026-10-18T00:20:00Z");
     const { db, handler } = setup({ now });
-    db.tables.user_progress = [{
-      user_id: USER, streak: 4, longest_streak: 4, last_active_date: "2026-10-16",
-      hearts: 5, hearts_refill_at: null, streak_freezes: 0, updated_at: "2026-10-16T12:00:00Z",
-    }];
-    const res = await handler(post({
-      ...body(["a", "d"]),
-      completedAt: "2026-10-17T23:55:00.000Z",
-    }));
+    db.tables.user_progress = [
+      {
+        user_id: USER,
+        streak: 4,
+        longest_streak: 4,
+        last_active_date: "2026-10-16",
+        hearts: 5,
+        hearts_refill_at: null,
+        streak_freezes: 0,
+        updated_at: "2026-10-16T12:00:00Z",
+      },
+    ];
+    const res = await handler(
+      post({
+        ...body(["a", "d"]),
+        completedAt: "2026-10-17T23:55:00.000Z",
+      }),
+    );
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
     assertEquals((db.rpcCalls[0].args._next as Row).streak, 5);
@@ -289,14 +294,24 @@ Deno.test(
     // The learner already trained online today (2026-10-18); the offline lesson from yesterday syncs afterwards.
     const now = new Date("2026-10-18T09:00:00Z");
     const { db, handler } = setup({ now, sessionAgeMs: 24 * 60 * 60 * 1000 });
-    db.tables.user_progress = [{
-      user_id: USER, streak: 7, longest_streak: 9, last_active_date: "2026-10-18",
-      hearts: 5, hearts_refill_at: null, streak_freezes: 0, updated_at: "2026-10-18T08:00:00Z",
-    }];
-    const res = await handler(post({
-      ...body(["a", "d"]),
-      completedAt: "2026-10-17T22:00:00.000Z",
-    }));
+    db.tables.user_progress = [
+      {
+        user_id: USER,
+        streak: 7,
+        longest_streak: 9,
+        last_active_date: "2026-10-18",
+        hearts: 5,
+        hearts_refill_at: null,
+        streak_freezes: 0,
+        updated_at: "2026-10-18T08:00:00Z",
+      },
+    ];
+    const res = await handler(
+      post({
+        ...body(["a", "d"]),
+        completedAt: "2026-10-17T22:00:00.000Z",
+      }),
+    );
     assertEquals(res.status, 200);
     const next = db.rpcCalls[0].args._next as Row;
     assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
@@ -311,10 +326,12 @@ Deno.test(
     // Session issued 2026-10-17T23:20 (setup: now - 1 h). A claim days earlier lands on the session's day.
     const now = new Date("2026-10-18T00:20:00Z");
     const { db, handler } = setup({ now });
-    const res = await handler(post({
-      ...body(["a", "d"]),
-      completedAt: "2026-10-10T12:00:00.000Z",
-    }));
+    const res = await handler(
+      post({
+        ...body(["a", "d"]),
+        completedAt: "2026-10-10T12:00:00.000Z",
+      }),
+    );
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
   },
@@ -326,44 +343,56 @@ Deno.test(
     // Both native clients dead-letter a 400, so a fast clock must never produce one.
     const now = new Date("2026-10-18T00:20:00Z");
     const { db, handler } = setup({ now });
-    const res = await handler(post({
-      ...body(["a", "d"]),
-      completedAt: "2026-10-18T00:20:07.000Z",
-    }));
+    const res = await handler(
+      post({
+        ...body(["a", "d"]),
+        completedAt: "2026-10-18T00:20:07.000Z",
+      }),
+    );
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
   },
 );
 
-Deno.test("a completion right after its session was minted is accepted (offline queue and 3 h re-mint do exactly this)", async () => {
-  // LessonCompletionService mints a token and completes immediately when a queued lesson has none, so the session is
-  // ~100 ms old. A per-question speed floor would refuse every such lesson and the client would lose it.
-  const { db, handler } = setup({ sessionAgeMs: 100 });
-  const res = await handler(post(body(["a", "d"])));
-  assertEquals(res.status, 200);
-  assertEquals(db.rpcCalls.length, 1);
-  const queued = setup({ sessionAgeMs: 100 });
-  const replay = await queued.handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:59:00.000Z" }));
-  assertEquals(replay.status, 200);
-});
+Deno.test(
+  "a completion right after its session was minted is accepted (offline queue and 3 h re-mint do exactly this)",
+  async () => {
+    // LessonCompletionService mints a token and completes immediately when a queued lesson has none, so the session is
+    // ~100 ms old. A per-question speed floor would refuse every such lesson and the client would lose it.
+    const { db, handler } = setup({ sessionAgeMs: 100 });
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls.length, 1);
+    const queued = setup({ sessionAgeMs: 100 });
+    const replay = await queued.handler(
+      post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:59:00.000Z" }),
+    );
+    assertEquals(replay.status, 200);
+  },
+);
 
 Deno.test("an already-recorded completion replayed (no XP gain) uses no slot", async () => {
   const { db, handler, slots } = setup({ slotLimit: 1 });
-  db.tables.lesson_completions = [{ user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 }];
+  db.tables.lesson_completions = [
+    { user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 },
+  ];
   assertEquals((await handler(post(body(["a", "d"])))).status, 200);
   assertEquals((await handler(post(body(["a", "d"])))).status, 200);
   assertEquals(slots.length, 0);
 });
 
-Deno.test("a save that then fails gives its slot back, so the client's retry is not double counted", async () => {
-  const { db, handler, slots } = setup({ slotLimit: 1 });
-  db.rpcResult = { data: { status: "conflict" }, error: null };
-  assertEquals((await handler(post(body(["a", "d"])))).status, 503);
-  assertEquals(slots.length, 0);
-  db.rpcResult = { data: { status: "applied" }, error: null };
-  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
-  assertEquals(slots.length, 1);
-});
+Deno.test(
+  "a save that then fails gives its slot back, so the client's retry is not double counted",
+  async () => {
+    const { db, handler, slots } = setup({ slotLimit: 1 });
+    db.rpcResult = { data: { status: "conflict" }, error: null };
+    assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+    assertEquals(slots.length, 0);
+    db.rpcResult = { data: { status: "applied" }, error: null };
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals(slots.length, 1);
+  },
+);
 
 Deno.test("a guard that cannot run fails open: the lesson still saves", async () => {
   const { handler } = setup({ slotError: true });
@@ -501,7 +530,10 @@ Deno.test(
     const res = await handler(post(body(["a", "c"])));
     assertEquals(res.status, 200);
     assertEquals(db.rpcCalls[0].args._missed_question_ids, ["q2"]);
-    assertEquals((await res.json()).xpGain, computeXpGain(1, 2));
+    const json = await res.json();
+    assertEquals(json.xpGain, computeXpGain(1, 2));
+    // The count the award was computed from, so the apps' XP lines use the server's grading, not their own.
+    assertEquals(json.correct, 1);
   },
 );
 
@@ -520,10 +552,7 @@ Deno.test("a replay pays only the improvement over the best earlier score", asyn
   const res = await handler(post(body(["a", "d"])));
   const json = await res.json();
   assertEquals(json.xpGain, computeXpGain(2, 2) - computeXpGain(1, 2));
-  assertEquals(
-    (db.rpcCalls[0].args._expected as Row).completion_xp,
-    computeXpGain(1, 2),
-  );
+  assertEquals((db.rpcCalls[0].args._expected as Row).completion_xp, computeXpGain(1, 2));
 });
 
 Deno.test("a perfect lesson below full hearts earns one heart", async () => {
@@ -579,11 +608,13 @@ Deno.test(
   "the promotion count is the larger of the stored counter and the saved promotion events",
   async () => {
     const { db, handler } = setup();
-    db.tables.achievements = [{
-      id: "league_promote_3",
-      category: "league",
-      threshold: 3,
-    }];
+    db.tables.achievements = [
+      {
+        id: "league_promote_3",
+        category: "league",
+        threshold: 3,
+      },
+    ];
     db.tables.user_achievements = [];
     db.tables.friend_activity_events = [1, 2, 3].map((i) => ({
       id: i,
@@ -601,16 +632,20 @@ Deno.test(
   "a friend passed on the leaderboard gets an overtake push; a push failure never fails the save",
   async () => {
     const { db, handler, pushes } = setup();
-    db.tables.friendships = [{
-      user_id: USER,
-      friend_id: "friend-1",
-      status: "accepted",
-    }];
-    db.tables.language_progress = [{
-      user_id: "friend-1",
-      language: "fr",
-      xp: 1,
-    }];
+    db.tables.friendships = [
+      {
+        user_id: USER,
+        friend_id: "friend-1",
+        status: "accepted",
+      },
+    ];
+    db.tables.language_progress = [
+      {
+        user_id: "friend-1",
+        language: "fr",
+        xp: 1,
+      },
+    ];
     const res = await handler(post(body(["a", "d"])));
     assertEquals(res.status, 200);
     assertEquals(pushes, ["friend-1"]);
@@ -627,19 +662,23 @@ Deno.test(
 
 Deno.test("a stored promotion counter larger than the saved events is kept", async () => {
   const { db, handler } = setup();
-  db.tables.achievements = [{
-    id: "league_promote_3",
-    category: "league",
-    threshold: 3,
-  }];
+  db.tables.achievements = [
+    {
+      id: "league_promote_3",
+      category: "league",
+      threshold: 3,
+    },
+  ];
   db.tables.user_achievements = [
     { user_id: USER, achievement_id: "league_promote_3", progress: 5 },
   ];
-  db.tables.friend_activity_events = [{
-    id: 1,
-    user_id: USER,
-    event_type: "league_promotion",
-  }];
+  db.tables.friend_activity_events = [
+    {
+      id: 1,
+      user_id: USER,
+      event_type: "league_promotion",
+    },
+  ];
   await handler(post(body(["a", "d"])));
   assertEquals(db.upserts[0].rows[0].progress, 5);
 });
@@ -660,10 +699,7 @@ Deno.test("hearts refill against the injected clock, not the machine clock", asy
       updated_at: "t0",
     },
   ];
-  assertEquals(
-    (await (await handler(post(body(["a", "c"])))).json()).progress.hearts,
-    5,
-  );
+  assertEquals((await (await handler(post(body(["a", "c"])))).json()).progress.hearts, 5);
 
   const later = setup();
   later.db.tables.user_progress = [
@@ -678,11 +714,7 @@ Deno.test("hearts refill against the injected clock, not the machine clock", asy
       updated_at: "t0",
     },
   ];
-  assertEquals(
-    (await (await later.handler(post(body(["a", "c"])))).json()).progress
-      .hearts,
-    0,
-  );
+  assertEquals((await (await later.handler(post(body(["a", "c"])))).json()).progress.hearts, 0);
 });
 
 Deno.test(
@@ -750,28 +782,40 @@ Deno.test("completionInstantMs clamps a claim into [session start, now]", () => 
 
 // ---- Hearts settled on the server (settle_lesson_hearts) ----
 
-Deno.test("the lesson's hearts are settled once per session from the server's own grading", async () => {
-  const { handler, db } = setup({ heartsMode: "on" });
-  db.settleResult = { data: [{ hearts: 4, hearts_refill_at: null, charged: 1, settled_now: true }], error: null };
-  const json = await (await handler(post(body(["a", "c"])))).json(); // q2 missed
-  assertEquals(db.settleCalls.length, 1);
-  const args = db.settleCalls[0];
-  assertEquals(args._misses, 1);
-  assertEquals(args._enforce, true);
-  assertEquals(args._pro, false);
-  assertEquals(args._user_id, USER);
-  // The token is never stored, only its SHA-256 (of "tok").
-  assertEquals(args._token_hash, "1a7674eb4ee78df7e1ac439a93c3fa8e3c945784d4dec9fd8e3011738b2f1d62");
-  // Counted from the signed session start, not from the client.
-  assertEquals(args._since, new Date(NOW.getTime() - 60 * 60 * 1000).toISOString());
-  assertEquals(json.progress.hearts, 4);
-});
+Deno.test(
+  "the lesson's hearts are settled once per session from the server's own grading",
+  async () => {
+    const { handler, db } = setup({ heartsMode: "on" });
+    db.settleResult = {
+      data: [{ hearts: 4, hearts_refill_at: null, charged: 1, settled_now: true }],
+      error: null,
+    };
+    const json = await (await handler(post(body(["a", "c"])))).json(); // q2 missed
+    assertEquals(db.settleCalls.length, 1);
+    const args = db.settleCalls[0];
+    assertEquals(args._misses, 1);
+    assertEquals(args._enforce, true);
+    assertEquals(args._pro, false);
+    assertEquals(args._user_id, USER);
+    // The token is never stored, only its SHA-256 (of "tok").
+    assertEquals(
+      args._token_hash,
+      "1a7674eb4ee78df7e1ac439a93c3fa8e3c945784d4dec9fd8e3011738b2f1d62",
+    );
+    // Counted from the signed session start, not from the client.
+    assertEquals(args._since, new Date(NOW.getTime() - 60 * 60 * 1000).toISOString());
+    assertEquals(json.progress.hearts, 4);
+  },
+);
 
-Deno.test("misses are counted by the server's grading, not by anything the client says", async () => {
-  const { handler, db } = setup({ heartsMode: "on" });
-  await handler(post(body(["b", "c"]))); // both wrong
-  assertEquals(db.settleCalls[0]._misses, 2);
-});
+Deno.test(
+  "misses are counted by the server's grading, not by anything the client says",
+  async () => {
+    const { handler, db } = setup({ heartsMode: "on" });
+    await handler(post(body(["b", "c"]))); // both wrong
+    assertEquals(db.settleCalls[0]._misses, 2);
+  },
+);
 
 Deno.test("shadow mode (the default) settles without charging", async () => {
   const { handler, db } = setup();
@@ -801,16 +845,18 @@ Deno.test("a completion that was not saved settles nothing", async () => {
 
 Deno.test("a failed settlement never fails the saved lesson", async () => {
   const { handler, db } = setup({ heartsMode: "on" });
-  db.tables.user_progress = [{
-    user_id: USER,
-    streak: 0,
-    longest_streak: 0,
-    last_active_date: null,
-    hearts: 3,
-    hearts_refill_at: null,
-    streak_freezes: 0,
-    updated_at: "t0",
-  }];
+  db.tables.user_progress = [
+    {
+      user_id: USER,
+      streak: 0,
+      longest_streak: 0,
+      last_active_date: null,
+      hearts: 3,
+      hearts_refill_at: null,
+      streak_freezes: 0,
+      updated_at: "t0",
+    },
+  ];
   const res = await handler(post(body(["b", "c"])));
   assertEquals(res.status, 200);
   assertEquals((await res.json()).progress.hearts, 3);

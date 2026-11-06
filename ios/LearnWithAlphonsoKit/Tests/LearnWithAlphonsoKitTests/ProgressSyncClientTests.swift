@@ -851,6 +851,37 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(ids, [])
     }
 
+    // MARK: - fetchLessonBest (round 6: per-answer XP on a replay)
+
+    func testFetchLessonBestReadsTheLessonsCompletionRow() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["correct": 6]])
+        }
+        let best = try await client.fetchLessonBest(lessonID: "u1l1", course: "en")
+        XCTAssertEqual(best, 6)
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/lesson_completions"))
+        XCTAssertTrue(request.url!.query!.contains("lesson_id=eq.u1l1"))
+        XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
+        XCTAssertTrue(request.url!.query!.contains("select=correct"))
+    }
+
+    func testFetchLessonBestIsNilForALessonNeverCompleted() async throws {
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [[String: Any]]) }
+        let best = try await client.fetchLessonBest(lessonID: "u1l1", course: "en")
+        XCTAssertNil(best)
+    }
+
+    func testCompletionResultCarriesTheServersCount() throws {
+        let json = #"{"xpGain":60,"correct":7,"newlyUnlocked":[],"heartsBonus":null,"progress":{"xp":160,"streak":1,"longestStreak":1,"lastActiveDate":"2026-11-06","hearts":5,"heartsRefillAt":null,"streakFreezes":0,"leagueTier":"bronze"}}"#
+        let result = try JSONDecoder().decode(LessonCompletionResult.self, from: Data(json.utf8))
+        XCTAssertEqual(result.correct, 7)
+        let older = try JSONDecoder().decode(LessonCompletionResult.self, from: Data(json.replacingOccurrences(of: #""correct":7,"#, with: "").utf8))
+        XCTAssertNil(older.correct)
+    }
+
     // MARK: - fetchPlacementTakenAt (iOS placement exam)
 
     func testFetchPlacementTakenAtReturnsTheTimestamp() async throws {

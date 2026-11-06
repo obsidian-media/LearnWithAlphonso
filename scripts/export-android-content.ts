@@ -10,6 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import lessonTiming from "../src/data/lesson-timing.json";
 import {
   buildIOSContentBundle,
   buildIOSScenariosBundle,
@@ -48,3 +49,5 @@ writeJSON("placement-fr.json", buildIOSPlacementBundle("fr"));
 writeJSON("placement-es.json", buildIOSPlacementBundle("es"));
 // The room behind Alphonso for every unit (design system room plan).
 writeJSON("unit-rooms.json", buildUnitRoomsBundle());
+// How long a lesson takes, for lesson start's "About N min" (src/lib/lesson-time.ts reads the same file).
+writeJSON("lesson-timing.json", lessonTiming);
