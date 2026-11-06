@@ -713,7 +713,7 @@ async function collect() {
         const store = Object.fromEntries(loadRulings(job.phase));
         for (const t of texts) {
           const p = parseRulings(t.chunk, t.text);
-          for (const r of p.rulings) store[r.id] = r;
+          for (const r of p.rulings) store[r.id] = { ...r, at: job.createdAt };
           got += p.rulings.length;
           missing += p.missing.length;
         }
@@ -741,7 +741,13 @@ async function collect() {
 
 function routeCommand() {
   const items = new Map(inventory().map((it) => [it.id, it]));
-  const rulings = ROUTE_PHASES.flatMap((p) => [...loadRulings(p).values()]);
+  // In the order they were made (phase order breaks ties and covers rulings from before `at`):
+  // a rewrite submitted before a judge wave must not override that wave's later fix.
+  const rulings = ROUTE_PHASES.flatMap((p, phaseIndex) =>
+    [...loadRulings(p).values()].map((r) => ({ r, phaseIndex })),
+  )
+    .sort((a, b) => (a.r.at ?? "").localeCompare(b.r.at ?? "") || a.phaseIndex - b.phaseIndex)
+    .map((x) => x.r);
   // Rulings on one item from several phases (the judge, then a rewrite) are merged: fix patches
   // combine field by field, the later phase winning a field both set; the lowest confidence and any
   // key change carry over. A later keep or owner never discards an earlier fix.

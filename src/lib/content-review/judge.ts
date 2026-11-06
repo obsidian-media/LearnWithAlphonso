@@ -19,6 +19,8 @@ export type Ruling = {
   reason: string;
   patch?: Patch;
   keyChange?: boolean;
+  /** When the request was submitted (set on collect): rulings merge in this order. */
+  at?: string;
 };
 
 /**
