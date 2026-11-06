@@ -358,6 +358,27 @@ describe("FinishScreen XP and time", () => {
     expect(sum).toBe(100);
   });
 
+  it("the XP lines use the server's own count of right answers, so a re-grade is never called an earlier try", () => {
+    // This screen counted 8 of 8; the server's grading counted 7 and paid 70 on a first try.
+    const { container } = render(
+      <FinishScreen
+        xp={70}
+        awardedCorrect={7}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={8}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual([]);
+    expect(container.textContent).not.toMatch(/earlier try|Perfect lesson/);
+  });
+
   it("a replay that earns nothing says so instead of contradicting the tile", () => {
     const { container } = render(
       <FinishScreen

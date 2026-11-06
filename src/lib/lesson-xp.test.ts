@@ -45,12 +45,24 @@ describe("lesson XP, shown per answer", () => {
       const b = lessonXpBreakdown({ correct: c.correct, total: c.total, awarded });
       expect(shownTotal(b)).toBe(awarded);
       expect(b.total).toBe(awarded);
+      // The sum alone cannot fail: a reconciling line absorbs any gap. So pin the parts too. The right-answers line
+      // is exactly the "+N XP" the verdict sheet showed per right answer, and a first try needs no reconciling line
+      // at all: per-answer XP plus the perfect bonus IS the award.
+      expect(b.lines[0]).toMatchObject({ kind: "answers", xp: c.correct * XP_PER_RIGHT_ANSWER });
+      if (c.existing === null)
+        expect(b.lines.map((l) => l.kind)).toEqual(
+          c.correct === c.total ? ["answers", "perfect"] : ["answers"],
+        );
     });
   }
 
-  it("still adds up when the server's own grading counted more right answers than this screen", () => {
-    const b = lessonXpBreakdown({ correct: 6, total: 8, awarded: 70 });
+  it("still adds up when a replay tops up a best score paid less than it is worth today", () => {
+    // An older completion row: 7 right but paid nothing. A 2-right replay pays the whole best (70), above its own 20.
+    const awarded = computeLessonReplayXp({ correct: 7, xpEarned: 0 }, 2, 8).xpGain;
+    expect(awarded).toBe(70);
+    const b = lessonXpBreakdown({ correct: 2, total: 8, awarded });
     expect(shownTotal(b)).toBe(70);
+    expect(b.lines.at(-1)).toMatchObject({ kind: "regraded", xp: 50 });
   });
 
   it("names the parts: right answers, the perfect bonus, and XP already earned on an earlier try", () => {

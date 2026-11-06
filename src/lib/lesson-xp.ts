@@ -21,8 +21,9 @@ export type XpLine = {
 };
 
 /**
- * The complete screen's XP lines for `correct` of `total`, given what the server actually `awarded`. The difference
- * between the formula and the award is XP already earned on an earlier try of this lesson (the replay rule).
+ * The complete screen's XP lines for `correct` of `total`, given what the server actually `awarded`. Pass the
+ * server's own count of right answers (completeLessonRemote returns it): then the only difference between the
+ * formula and the award is the replay rule, i.e. XP already earned on an earlier try of this lesson.
  */
 export function lessonXpBreakdown({
   correct,
@@ -49,11 +50,12 @@ export function lessonXpBreakdown({
       label: "Already earned on an earlier try",
       xp: awarded - formula,
     });
-  // The server re-grades every answer itself; if it counted more right than this screen did, its count wins.
+  // With the server's own count, an award above the formula is a replay topping up a best score that was paid
+  // less than it is worth today (an older completion row); never hidden, so the lines still add up.
   if (awarded > formula)
     lines.push({
       kind: "regraded",
-      label: "More right answers on the server's grading",
+      label: "Topped up to your best score",
       xp: awarded - formula,
     });
   return { lines, total: lines.reduce((sum, l) => sum + l.xp, 0) };

@@ -156,6 +156,8 @@ function LessonPage() {
   const [activeReinforcement, setActiveReinforcement] = useState<Question | null>(null);
   const [done, setDone] = useState<{
     xp: number;
+    /** The server's own count of right answers, which `xp` was computed from. */
+    awardedCorrect?: number;
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
     saved: boolean;
@@ -187,6 +189,9 @@ function LessonPage() {
 
   // The lesson's own time, from Start lesson to the last answer, counted only while the tab is visible.
   const timer = useRef<ActiveTimer | null>(null);
+  // Set by the last question's Finish: a second tap while the completion is in flight must not complete the lesson
+  // again (the second call would be a zero-XP replay, and whichever answer landed last would set the screen).
+  const finishing = useRef(false);
   useEffect(() => {
     const onVisibility = () => {
       const t = timer.current;
@@ -377,6 +382,8 @@ function LessonPage() {
       setTranslationVerdict(null);
       return;
     }
+    if (finishing.current) return;
+    finishing.current = true;
     const elapsedMs = timer.current?.elapsedMs(performance.now());
     timer.current?.pause(performance.now());
     // Misses are re-derived server-side and enrolled by the same atomic
@@ -414,6 +421,7 @@ function LessonPage() {
       });
       setDone({
         xp: res.xpGain,
+        awardedCorrect: res.correct,
         unlocked: res.newlyUnlocked,
         heartsBonus: res.heartsBonus,
         saved: true,
@@ -453,6 +461,7 @@ function LessonPage() {
       <LessonScreen>
         <FinishScreen
           xp={done.xp}
+          awardedCorrect={done.awardedCorrect}
           elapsedMs={done.elapsedMs}
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
@@ -1012,6 +1021,7 @@ function OverviewScreen({
 
 export function FinishScreen({
   xp,
+  awardedCorrect,
   unlocked,
   heartsBonus,
   lessonTitle,
@@ -1026,6 +1036,8 @@ export function FinishScreen({
   notice,
 }: {
   xp: number;
+  /** The server's count of right answers behind `xp`; the XP lines use it, so a re-grade is never called a replay. */
+  awardedCorrect?: number;
   unlocked: string[];
   heartsBonus: "streak" | "perfect" | null;
   /** False when the completion did not reach the server: then no streak is shown, since none was confirmed. */
@@ -1054,7 +1066,9 @@ export function FinishScreen({
     return () => window.clearTimeout(t);
   }, [reduceMotion]);
   // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
-  const xpLines = saved ? lessonXpBreakdown({ correct, total, awarded: xp }).lines : [];
+  const xpLines = saved
+    ? lessonXpBreakdown({ correct: awardedCorrect ?? correct, total, awarded: xp }).lines
+    : [];
   const headline = total > 0 ? `Nice work! You got ${correct} of ${total}.` : "Nice work!";
   return (
     <div data-stage="complete" className="flex flex-1 flex-col">

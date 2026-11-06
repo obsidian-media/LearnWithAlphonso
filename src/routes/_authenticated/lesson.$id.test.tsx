@@ -731,6 +731,73 @@ describe("Lesson page", () => {
     expect(state.unlockedAchievements).toContain("xp_100");
   });
 
+  it("a second tap on Finish while the completion is in flight does not complete the lesson again", async () => {
+    let resolve!: (v: unknown) => void;
+    completeLessonRemote.mockReturnValue(new Promise((r) => (resolve = r)));
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      if (i < ANSWERS.length - 1)
+        await user.click(screen.getByRole("button", { name: "Continue" }));
+    }
+    const finish = screen.getByRole("button", { name: "Finish" });
+    await user.click(finish);
+    await user.click(finish);
+    expect(completeLessonRemote).toHaveBeenCalledTimes(1);
+    resolve({
+      xpGain: 100,
+      correct: 8,
+      newlyUnlocked: [],
+      heartsBonus: null,
+      progress: {
+        xp: 100,
+        streak: 1,
+        longestStreak: 1,
+        lastActiveDate: "2026-09-19",
+        hearts: 5,
+        heartsRefillAt: null,
+        streakFreezes: 0,
+        leagueTier: "bronze",
+      },
+    });
+    expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+  });
+
+  it("the lesson time leaves out the minutes the tab was hidden", async () => {
+    completeLessonRemote.mockRejectedValue(new Error("network down"));
+    let now = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+    let hidden = false;
+    const hiddenProp = vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
+    const setHidden = (h: boolean, at: number) => {
+      now = at;
+      hidden = h;
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+    try {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole("button", { name: "Start lesson" })); // the clock starts at 0
+      await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
+      setHidden(true, 20_000); // 20 s in, the tab is hidden...
+      setHidden(false, 620_000); // ...for ten minutes
+      for (let i = 0; i < ANSWERS.length; i++) {
+        await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+        await user.click(screen.getByRole("button", { name: "Check" }));
+        now = i === ANSWERS.length - 1 ? 645_000 : now; // the last answer, 25 s after coming back
+        const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
+        await user.click(screen.getByRole("button", { name: label }));
+      }
+      expect(await screen.findByLabelText("Time: 0:45")).toBeInTheDocument();
+    } finally {
+      clock.mockRestore();
+      hiddenProp.mockRestore();
+    }
+  });
+
   it("shows a graceful finish screen when completion fails", async () => {
     completeLessonRemote.mockRejectedValue(new Error("network down"));
     const user = userEvent.setup();
