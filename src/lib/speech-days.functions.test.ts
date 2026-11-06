@@ -109,10 +109,13 @@ describe("getSpeechHistory", () => {
     }
   });
 
-  it("fails loudly instead of showing zero minutes when the read fails", async () => {
-    const { context } = ctx(null, { message: "permission denied" });
-    await expect(getSpeechHistory({ data: { days: 7 }, context })).rejects.toThrow(
-      /minutes spoken/,
-    );
+  it("fails loudly, without leaking the database message, instead of showing zero minutes", async () => {
+    const { context } = ctx(null, { message: "permission denied for table speech_days" });
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const failure = getSpeechHistory({ data: { days: 7 }, context });
+    // A stable code for the browser; the database's own message goes only to the server log.
+    await expect(failure).rejects.toThrow("getSpeechHistory: request-failed");
+    await expect(failure).rejects.not.toThrow(/speech_days/);
+    log.mockRestore();
   });
 });

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { publicError } from "./public-error";
 
 /**
  * Minutes spoken, for the Profile (20261106100000_speech_days.sql). Reads the signed-in learner's own rows through
@@ -51,6 +52,6 @@ export const getSpeechHistory = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .gte("day", window[0]!)
       .order("day", { ascending: true });
-    if (error) throw new Error(`Could not load minutes spoken: ${error.message}`);
+    if (error) throw publicError("getSpeechHistory", error);
     return speechHistory((rows ?? []) as { day: string; speech_seconds: number }[], data.days, now);
   });
