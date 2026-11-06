@@ -229,9 +229,28 @@ public final class SupabaseAuthClient: Sendable {
         )
     }
 
+    /// The signed-in user's whole user_metadata object (GET /auth/v1/user). Voice choices live under `voices`.
+    public func fetchUserMetadata(accessToken: String) async throws -> [String: Any] {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("auth/v1/user"))
+        request.httpMethod = "GET"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw SupabaseAuthError.invalidPayload
+        }
+        return object["user_metadata"] as? [String: Any] ?? [:]
+    }
+
     /// Merges `data` into the user's user_metadata (GoTrue PUT /auth/v1/user). Apple's given name is saved here,
     /// because Apple sends it only on the very first authorization.
     public func updateUserMetadata(accessToken: String, _ data: [String: String]) async throws {
+        try await updateUserMetadata(accessToken: accessToken, json: data)
+    }
+
+    /// Same merge, for a JSON value such as the `voices` object (GoTrue merges top-level keys).
+    public func updateUserMetadata(accessToken: String, json data: [String: Any]) async throws {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("auth/v1/user"))
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

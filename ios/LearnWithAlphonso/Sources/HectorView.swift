@@ -523,7 +523,9 @@ private struct HectorConversationView: View {
                 text: text,
                 course: courseCode,
                 cefrLevel: cefrLevel,
-                history: (memoryContext.map { [$0] } ?? []) + priorTurns
+                history: (memoryContext.map { [$0] } ?? []) + priorTurns,
+                // Hector's own voice for this course (Settings > Voices), never Alphonso's.
+                voice: VoicePrefsCache().voice(.hector, course: courseCode)
             )
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply.reply), to: key)
             conversation = snapshot

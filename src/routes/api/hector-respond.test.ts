@@ -401,7 +401,7 @@ describe("POST /api/hector-respond course plumbing", () => {
     return fetchMock;
   }
 
-  it("builds the French prompt at the sent level and speaks with the French voice", async () => {
+  it("builds the French prompt at the sent level and speaks with Hector's French default", async () => {
     const fetchMock = mockUpstream();
     const res = await handler({
       request: req({ text: "Salut", course: "fr", cefr_level: "B1", history: [] }),
@@ -411,18 +411,64 @@ describe("POST /api/hector-respond course plumbing", () => {
     const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
     expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("fr", "B1"));
     const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
-    expect(String(ttsCall[0])).toContain("model=aura-2-agathe-fr");
+    expect(String(ttsCall[0])).toContain("model=aura-2-hector-fr");
     expect(String(ttsCall[0])).toContain("mip_opt_out=true");
     const json = await res.json();
     expect(json.language).toBe("fr");
-    expect(json.tts_model).toBe("aura-2-agathe-fr");
+    expect(json.tts_model).toBe("aura-2-hector-fr");
   });
 
-  it("uses the Latin American Spanish voice for the Spanish course", async () => {
+  it("uses Hector's Spanish default for the Spanish course", async () => {
     const fetchMock = mockUpstream("¡Hola!");
     await handler({ request: req({ text: "Hola", course: "es", cefr_level: "a2" }) });
     const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
-    expect(String(ttsCall[0])).toContain("model=aura-2-selena-es");
+    expect(String(ttsCall[0])).toContain("model=aura-2-alvaro-es");
+  });
+
+  it("speaks with the Hector voice the client sends when it is on the course's allow-list", async () => {
+    const fetchMock = mockUpstream("¡Hola!");
+    const res = await handler({
+      request: req({ text: "Hola", course: "es", voice: "aura-2-celeste-es" }),
+    });
+    const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
+    expect(String(ttsCall[0])).toContain("model=aura-2-celeste-es");
+    expect((await res.json()).tts_model).toBe("aura-2-celeste-es");
+  });
+
+  it.each(["aura-2-zeus-en", "aura-2-thalia-en", "aura-2-valentina-es", "premium-model", 42])(
+    "refuses a voice off the Spanish allow-list (%s) and uses Hector's default",
+    async (voice) => {
+      const fetchMock = mockUpstream("¡Hola!");
+      await handler({ request: req({ text: "Hola", course: "es", voice }) });
+      const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
+      expect(String(ttsCall[0])).toContain("model=aura-2-alvaro-es");
+    },
+  );
+
+  it("uses the Hector voice saved on the account when the client sends none (older builds)", async () => {
+    getUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: {
+            voices: {
+              hector: { en: "aura-2-orpheus-en", es: "aura-2-zeus-en" },
+              alphonso: { en: "aura-2-luna-en" },
+            },
+          },
+        },
+      },
+      error: null,
+    });
+    const fetchMock = mockUpstream("Hi!");
+    await handler({ request: req({ text: "hello", course: "en" }) });
+    await handler({ request: req({ text: "hola", course: "es" }) });
+    const ttsUrls = fetchMock.mock.calls
+      .filter(([u]) => String(u).includes("deepgram"))
+      .map(([u]) => String(u));
+    // Hector's saved English choice, never Alphonso's; a saved voice off the list falls back to the default.
+    expect(ttsUrls[0]).toContain("model=aura-2-orpheus-en");
+    expect(ttsUrls[1]).toContain("model=aura-2-alvaro-es");
   });
 
   it("keeps a build that sends language 'en' and no course or level on English", async () => {
@@ -431,7 +477,7 @@ describe("POST /api/hector-respond course plumbing", () => {
     const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("openrouter.ai"))!;
     const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
     expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("en", ""));
-    expect((await res.json()).tts_model).toBe("aura-2-thalia-en");
+    expect((await res.json()).tts_model).toBe("aura-2-hermes-en");
   });
 
   it("falls back to the course's own fallback line when a reply is blocked", async () => {
