@@ -58,7 +58,7 @@ export type Verdict = {
 
 // ---- Items --------------------------------------------------------------------------------------
 
-function renderQuestion(q: Question): string {
+export function renderQuestion(q: Question): string {
   const lines = [`type: ${q.type}`];
   if (q.type === "mc") {
     lines.push(`prompt: ${q.prompt}`);
@@ -81,7 +81,7 @@ function renderQuestion(q: Question): string {
   return lines.join("\n");
 }
 
-function renderPlacement(q: PlacementQuestion): string {
+export function renderPlacement(q: PlacementQuestion): string {
   if (q.type === "mc")
     return [
       "type: mc (placement test)",

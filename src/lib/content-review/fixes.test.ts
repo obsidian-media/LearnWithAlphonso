@@ -1,0 +1,392 @@
+import { describe, expect, it } from "vitest";
+import { fullInventory, type ReviewItem } from "./inventory";
+import { answerText, checkFix, checkFixes, overlayJson } from "./fixes";
+import { parseRulings, route } from "./judge";
+import { chunk } from "./review";
+
+const item = (
+  kind: ReviewItem["kind"],
+  data: Record<string, unknown>,
+  course: ReviewItem["course"] = "fr",
+): ReviewItem => ({
+  id: `${course}:${kind}:x/${String(data.id ?? 1)}`,
+  course,
+  kind,
+  level: "A2",
+  source: "x",
+  text: "t",
+  hash: "h",
+  data,
+});
+
+const mc = item("question", {
+  id: "q1",
+  type: "mc",
+  prompt: "Je ___ (parler) français.",
+  choices: ["parles", "parle", "parlons", "parlent"],
+  answer: 1,
+  explanation: '"parle" is correct here. Present tense.',
+});
+const fill = item("question", {
+  id: "q2",
+  type: "fill",
+  prompt: "Il ___ là.",
+  bank: ["est", "es", "sont"],
+  answer: "est",
+  explanation: "e",
+});
+const translate = item("question", {
+  id: "q3",
+  type: "translate",
+  prompt: "Say hi",
+  acceptableAnswers: ["Salut", "Bonjour"],
+  explanation: "e",
+});
+
+describe("what a fix may change", () => {
+  it("accepts a new wrong option with the answer kept at its position", () => {
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { choices: ["parles", "parle", "parlez", "parlent"] },
+      }),
+    ).toEqual([]);
+  });
+
+  it("refuses moving the answer (the index would point at another word)", () => {
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { choices: ["parle", "parles", "parlons", "parlent"] },
+      }).join(),
+    ).toMatch(/answer changes/);
+  });
+
+  it("refuses a changed option count", () => {
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { choices: ["parles", "parle", "parlons"] },
+      }).join(),
+    ).toMatch(/3 entries/);
+  });
+
+  it("refuses duplicate options and an option equal to the answer", () => {
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { choices: ["parles", "parle", "Parle", "parlent"] },
+      }).join(),
+    ).toMatch(/same|equals the answer/);
+  });
+
+  it("refuses a changed key unless it is a reviewed key change", () => {
+    const p = { bank: ["es", "est", "sont"], answer: "es" };
+    expect(checkFix(fill, { id: fill.id, reason: "", patch: p }).join()).toMatch(
+      /without a reviewed key change/,
+    );
+    expect(checkFix(fill, { id: fill.id, reason: "", patch: p, keyChange: true })).toEqual([]);
+  });
+
+  it("a fill answer must be in its bank", () => {
+    expect(
+      checkFix(fill, { id: fill.id, reason: "", patch: { bank: ["es", "sont", "suis"] } }).join(),
+    ).toMatch(/not among the options/);
+  });
+
+  it("keeps exactly one blank", () => {
+    expect(
+      checkFix(mc, { id: mc.id, reason: "", patch: { prompt: "Je parle français." } }).join(),
+    ).toMatch(/0 blanks/);
+  });
+
+  it("refuses ids, types and fields that do not exist", () => {
+    const why = checkFix(mc, {
+      id: mc.id,
+      reason: "",
+      patch: { id: "q9", type: "fill", level: "C1" },
+    }).join();
+    expect(why).toMatch(/"id" may not/);
+    expect(why).toMatch(/"type" may not/);
+  });
+
+  it("an explanation is specific and quotes the answer (save-word spans read the quotes)", () => {
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { explanation: '"parle" is correct here. x' },
+      }).join(),
+    ).toMatch(/generic/);
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { explanation: "With je, parler ends in -e." },
+      }).join(),
+    ).toMatch(/quote the answer/);
+    expect(
+      checkFix(mc, {
+        id: mc.id,
+        reason: "",
+        patch: { explanation: 'With "je", parler takes "parle".' },
+      }),
+    ).toEqual([]);
+  });
+
+  it("translate: the first accepted answer is the canonical one", () => {
+    expect(
+      checkFix(translate, {
+        id: translate.id,
+        reason: "",
+        patch: { acceptableAnswers: ["Bonjour", "Salut"] },
+      }).join(),
+    ).toMatch(/first accepted/);
+    expect(
+      checkFix(translate, {
+        id: translate.id,
+        reason: "",
+        patch: { acceptableAnswers: ["Salut", "Bonjour", "Coucou"] },
+      }),
+    ).toEqual([]);
+  });
+
+  it("English conversation prompts are frozen; others need the legacy prompt kept", () => {
+    const en = item("scenario", { title: "t", blurb: "b", opener: "o", systemPrompt: "s" }, "en");
+    expect(checkFix(en, { id: en.id, reason: "", patch: { systemPrompt: "new" } }).join()).toMatch(
+      /frozen/,
+    );
+    const fr = item("scenario", { title: "t", blurb: "b", opener: "o", systemPrompt: "s" }, "fr");
+    const r = checkFixes(new Map([[fr.id, fr]]), [
+      { id: fr.id, reason: "", patch: { systemPrompt: "nouveau" } },
+    ]);
+    expect(r.ok[0]?.needsLegacyPrompt).toBe(true);
+  });
+
+  it("one fix per item, and unknown ids are refused", () => {
+    const r = checkFixes(new Map([[mc.id, mc]]), [
+      { id: mc.id, reason: "", patch: { prompt: "Je ___ (parler) bien français." } },
+      { id: mc.id, reason: "", patch: { prompt: "Tu ___ (parler)." } },
+      { id: "nope", reason: "", patch: { prompt: "x" } },
+    ]);
+    expect(r.ok).toHaveLength(1);
+    expect(r.refused.map((x) => x.why[0])).toEqual([
+      "a second fix for the same item",
+      "unknown item id",
+    ]);
+  });
+
+  it("the overlay is sorted by id (stable diffs)", () => {
+    const json = overlayJson([
+      { id: "fr:b", patch: { prompt: "x" }, reason: "r" },
+      { id: "fr:a", patch: { prompt: "y" }, reason: "r" },
+    ]);
+    expect(Object.keys(JSON.parse(json))).toEqual(["fr:a", "fr:b"]);
+  });
+});
+
+describe("the judge's rulings", () => {
+  const c = chunk([mc, fill], "judge")[0]!;
+
+  it("a fix without a patch is not a ruling (the item stays missing)", () => {
+    const r = parseRulings(
+      c,
+      '{"items":[{"key":"i1","decision":"fix","confidence":0.9},{"key":"i2","decision":"keep","confidence":0.9,"reason":"fine"}]}',
+    );
+    expect(r.rulings.map((x) => x.decision)).toEqual(["keep"]);
+    expect(r.missing).toEqual([mc.id]);
+  });
+
+  it("routes: confident fixes are applied, low-confidence and 'owner' go to the owner list", () => {
+    const routed = route([
+      { id: "a", decision: "fix", confidence: 0.9, reason: "", patch: { prompt: "x" } },
+      { id: "b", decision: "fix", confidence: 0.45, reason: "", patch: { prompt: "x" } },
+      { id: "c", decision: "owner", confidence: 0.9, reason: "" },
+      { id: "d", decision: "keep", confidence: 0.9, reason: "" },
+    ]);
+    expect(routed.fixes.map((f) => f.id)).toEqual(["a"]);
+    expect(routed.owner.map((o) => o.id)).toEqual(["b", "c"]);
+    expect(routed.kept).toEqual(["d"]);
+  });
+
+  it("a key change applies only as a wrong key, at >= 0.8, with Mistral not saying ok (mutation: drop the guard)", () => {
+    const k = (id: string, confidence: number, category = "wrong-key") => ({
+      id,
+      decision: "fix" as const,
+      confidence,
+      reason: "",
+      patch: { answer: "x" },
+      keyChange: true,
+      category,
+    });
+    const routed = route(
+      [k("a", 0.9, "naturalness"), k("b", 0.9), k("c", 0.75), k("d", 0.95)],
+      (id) => id === "d",
+    );
+    expect(routed.fixes.map((f) => [f.id, f.keyChange ?? false])).toEqual([["b", true]]);
+    expect(routed.owner.map((o) => o.id)).toEqual(["a", "c", "d"]);
+    expect(routed.keyChanges).toEqual({ applied: 1, listed: 3 });
+  });
+
+  it("wording fixes still apply from 0.5", () => {
+    const r = route([
+      { id: "w", decision: "fix", confidence: 0.5, reason: "", patch: { prompt: "p" } },
+    ]);
+    expect(r.fixes.map((f) => f.id)).toEqual(["w"]);
+  });
+});
+
+describe("word-card fixes follow the English card rules", () => {
+  const card = item("card", { term: "pude", meaning: "", example: "Ayer no pude venir." }, "es");
+
+  it("accepts a short, plain gloss", () => {
+    expect(
+      checkFix(card, { id: card.id, reason: "", patch: { meaning: "I could, I was able to" } }),
+    ).toEqual([]);
+  });
+
+  it("refuses long, bracketed or arrowed glosses, and an example without the term", () => {
+    const why = (patch: Record<string, string>) =>
+      checkFix(card, { id: card.id, reason: "", patch }).join("; ");
+    expect(why({ meaning: "one two three four five six seven eight nine" })).toMatch(
+      /over 8 words/,
+    );
+    expect(why({ meaning: "I could [past]" })).toMatch(/bracket/);
+    expect(why({ meaning: "poder → I could" })).toMatch(/arrow/);
+    expect(why({ example: "Ayer no vine." })).toMatch(/does not use the term/);
+  });
+});
+
+describe("drill fixes: every wrong option is a form of the bracketed verb", () => {
+  const drill = {
+    ...item("question", {
+      id: "q9",
+      type: "fill",
+      prompt: "Demain, je ___ (parler) à mon patron.",
+      bank: ["parlerai", "mangerai", "finirai"],
+      answer: "parlerai",
+      explanation: "e",
+    }),
+    flags: ["drill-non-form"],
+  };
+
+  it("accepts other forms of the same verb (mutation: drop the drill check)", () => {
+    expect(
+      checkFix(drill, {
+        id: drill.id,
+        reason: "",
+        patch: { bank: ["parlerai", "parleras", "parlerons"] },
+      }),
+    ).toEqual([]);
+  });
+
+  it("refuses another verb", () => {
+    expect(
+      checkFix(drill, {
+        id: drill.id,
+        reason: "",
+        patch: { bank: ["parlerai", "mangeras", "parlerons"] },
+      }).join(),
+    ).toMatch(/not a form of parler/);
+  });
+});
+
+describe("French and Spanish card glosses may carry a grammar note", () => {
+  const es = item("card", { term: "cansado", meaning: "", example: "Estoy cansado." }, "es");
+  const en = item("card", { term: "tired", meaning: "", example: "I am tired." }, "en");
+  it("allows (masculine) in a Spanish gloss, not in an English one", () => {
+    expect(
+      checkFix(es, { id: es.id, reason: "", patch: { meaning: "tired (masculine)" } }),
+    ).toEqual([]);
+    expect(
+      checkFix(en, { id: en.id, reason: "", patch: { meaning: "sleepy (adjective)" } }).join(),
+    ).toMatch(/bracket/);
+  });
+  it("still refuses square brackets and counts 8 words outside the note", () => {
+    expect(checkFix(es, { id: es.id, reason: "", patch: { meaning: "tired [m]" } }).join()).toMatch(
+      /bracket/,
+    );
+    expect(
+      checkFix(es, {
+        id: es.id,
+        reason: "",
+        patch: { meaning: "a b c d e f g h i (note)" },
+      }).join(),
+    ).toMatch(/over 8/);
+  });
+});
+
+describe("earlier reviewed English fixes (question-fixes.ts)", () => {
+  it("refuses a patch that drops their wrong options or rewrites their prompt", async () => {
+    const { QUESTION_FIXES } = await import("../../data/question-fixes");
+    const [key, earlier] = Object.entries(QUESTION_FIXES).find(([, f]) => f.wrong && f.prompt)!;
+    const it = fullInventory().find((x) => x.id === `en:question:${key}`)!;
+    const opts = (it.data.choices ?? it.data.bank) as string[];
+    const answer = String(answerText(it.data));
+    const swapped = opts.map((o) => (o === earlier.wrong![0] ? `${o}x` : o));
+    const field = it.data.choices ? "choices" : "bank";
+    expect(checkFix(it, { id: it.id, reason: "", patch: { [field]: swapped } }).join()).toMatch(
+      /earlier reviewed/,
+    );
+    expect(
+      checkFix(it, { id: it.id, reason: "", patch: { prompt: `${it.data.prompt} (x)` } }).join(),
+    ).toMatch(/earlier reviewed/);
+    expect(answer).toBeTruthy();
+  });
+});
+
+describe("a multiple-choice answer named as text", () => {
+  const mc = item(
+    "question",
+    {
+      type: "mc",
+      prompt: "Il ___ là.",
+      choices: ["était", "avait", "allait"],
+      answer: 0,
+      explanation: 'It is "était".',
+    },
+    "fr",
+  );
+  it("becomes the option's position, and an unknown text is refused", () => {
+    const ok = { id: mc.id, reason: "", patch: { answer: "était" } as Record<string, unknown> };
+    expect(checkFix(mc, ok as never)).toEqual([]);
+    expect(ok.patch.answer).toBe(0);
+    expect(checkFix(mc, { id: mc.id, reason: "", patch: { answer: "est" } }).join()).toMatch(
+      /not one of the choices/,
+    );
+  });
+});
+
+describe("numeric fields", () => {
+  const mc = item(
+    "question",
+    {
+      type: "mc",
+      prompt: "Il ___ là.",
+      choices: ["était", "avait"],
+      answer: 0,
+      explanation: 'It is "était".',
+    },
+    "fr",
+  );
+  it("an mc answer must stay a whole number", () => {
+    expect(
+      checkFix(mc, { id: mc.id, reason: "", patch: { answer: ["0"] } as never }).join(),
+    ).toMatch(/whole number/);
+  });
+});
+
+describe("the card example a question makes", () => {
+  it("refuses French spacing before a colon (vocab.test.ts)", async () => {
+    const { exampleRules } = await import("./fixes");
+    expect(exampleRules("Il a deux avantages : vite et bien.", "fr").join()).toMatch(
+      /space before/,
+    );
+    expect(exampleRules("Où est la gare ?", "fr")).toEqual([]);
+    expect(exampleRules("où est-il?", "fr").join()).toMatch(/lowercase/);
+  });
+});

@@ -1,8 +1,9 @@
 import type { Level } from "./levels";
 import type { Lesson, Question, Unit } from "./curriculum";
 import { generatedUnitsEs } from "./lesson-bank-es";
+import { applyReviewFixes } from "./review-fixes";
 
-export const curriculumEs: Unit[] = generatedUnitsEs();
+export const curriculumEs: Unit[] = applyReviewFixes(generatedUnitsEs(), "es");
 
 export type QuestionRef = { lessonId: string; unitId: string; level: Level; question: Question };
 
