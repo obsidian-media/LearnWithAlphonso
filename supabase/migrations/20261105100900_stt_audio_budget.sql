@@ -35,16 +35,11 @@ BEGIN
   IF _seconds > _budget THEN
     RETURN NULL;
   END IF;
-  -- MUTATION CHECK (temporary): read, then write, not atomic.
-  IF COALESCE((SELECT u.count FROM public.ai_usage u
-       WHERE u.user_id = _user_id AND u.day = current_date AND u.kind = 'stt_seconds'), 0) + _seconds > _budget THEN
-    RETURN NULL;
-  END IF;
-  PERFORM pg_sleep(0.05);
   INSERT INTO public.ai_usage AS u (user_id, day, kind, count)
   VALUES (_user_id, current_date, 'stt_seconds', _seconds)
   ON CONFLICT (user_id, day, kind) DO UPDATE
     SET count = u.count + EXCLUDED.count, updated_at = now()
+    WHERE u.count + EXCLUDED.count <= _budget
   RETURNING u.day INTO booked;
   RETURN booked;
 END;
