@@ -41,6 +41,8 @@ struct PracticeCallView<Sheet: View>: View {
     let notice: String?
     let onPress: () -> Void
     let onEnd: () -> Void
+    /// Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption.
+    var extra: AnyView?
     @ViewBuilder let sheet: () -> Sheet
 
     @Environment(\.colorScheme) private var colorScheme
@@ -78,6 +80,7 @@ struct PracticeCallView<Sheet: View>: View {
                         pill(message, color: AlphonsoColor.destructive)
                             .padding(.bottom, 8)
                     }
+                    if let extra { extra.padding(.bottom, 10) }
                     caption
                     statePill
                         .padding(.top, 10)

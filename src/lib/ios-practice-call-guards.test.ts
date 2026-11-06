@@ -59,3 +59,34 @@ describe("accessibility", () => {
     expect(view).toContain("min(1.28 * width, 0.72 * height)");
   });
 });
+
+describe("campaign conversations", () => {
+  const campaign = code(`${APP}/Sources/CampaignView.swift`);
+  it("use the call too, in the default study room, and keep the classic screen when the setting is off", () => {
+    expect(campaign).toContain("@AppStorage(AvatarPreference.key)");
+    expect(campaign).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
+    expect(campaign).toContain("scenarioID: campaign.id");
+    const classic = campaign.slice(
+      campaign.indexOf("private var classicScreen"),
+      campaign.indexOf("private var callScreen"),
+    );
+    expect(classic).toContain("micButton");
+    expect(classic).toContain('Button("Restart scene"');
+    expect(classic).not.toContain("PracticeCallView");
+  });
+  it("keeps Continue, Restart scene and the transcript reachable in the call", () => {
+    const call = campaign.slice(campaign.indexOf("private var callScreen"));
+    expect(call).toContain("continueToNextScene()");
+    expect(call).toContain('Button("Restart scene")');
+    expect(call).toContain("transcript");
+  });
+  it("sends the reply's verdict to the avatar", () => {
+    expect(campaign).toContain("client.chatReply(");
+    expect(campaign).toMatch(/verdict: chatReply\.verdict/);
+  });
+  it("no campaign id has a picture of its own, so a campaign gets the default room", async () => {
+    const { CAMPAIGNS } = await import("@/data/campaigns");
+    const kit = code("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AvatarCall.swift");
+    for (const c of CAMPAIGNS) expect(kit, c.id).not.toContain(`"${c.id}"`);
+  });
+});
