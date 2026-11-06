@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { DsIcon } from "../ds/DsIcon";
-import { EXAMPLE_CALLS, PRO_PAYWALL_COPY, savingBadge } from "@/lib/paywall-copy";
+import { PRO_PAYWALL_COPY, exampleCallFor, savingBadge } from "@/lib/paywall-copy";
 import { perMonthLine, type PaywallPlan } from "@/lib/paywall-plans";
 import type { Course } from "@/data/courses";
 
@@ -149,7 +149,7 @@ function HectorDot() {
 
 /** One real-looking moment: Hector remembering last week's mistake. Labelled as an example, honestly. */
 export function ExampleCall({ course }: { course: Course }) {
-  const call = EXAMPLE_CALLS[course];
+  const call = exampleCallFor(course);
   const bubble = "ds-type-caption max-w-[86%] rounded-[14px] px-2.5 py-[7px]";
   return (
     <figure

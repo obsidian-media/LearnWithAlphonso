@@ -185,6 +185,30 @@ export const WELCOME_OPENERS: Record<"en" | "fr" | "es", readonly string[]> = {
   ],
 };
 
+/** The example call for a course, by a typed switch rather than a computed key. */
+export function exampleCallFor(course: "en" | "fr" | "es"): ExampleCall {
+  switch (course) {
+    case "es":
+      return EXAMPLE_CALLS.es;
+    case "fr":
+      return EXAMPLE_CALLS.fr;
+    default:
+      return EXAMPLE_CALLS.en;
+  }
+}
+
+/** The welcome openers for a course, by a typed switch rather than a computed key. */
+export function welcomeOpenersFor(course: "en" | "fr" | "es"): readonly string[] {
+  switch (course) {
+    case "es":
+      return WELCOME_OPENERS.es;
+    case "fr":
+      return WELCOME_OPENERS.fr;
+    default:
+      return WELCOME_OPENERS.en;
+  }
+}
+
 /** The first name to pin on the Pro card, or null for a generated Learner-XXXX handle or no name. */
 export function cardFirstName(displayName: string | null | undefined): string | null {
   const name = displayName?.trim() ?? "";

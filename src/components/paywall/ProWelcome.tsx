@@ -1,5 +1,5 @@
 import type { Course } from "@/data/courses";
-import { PRO_WELCOME_COPY, WELCOME_OPENERS } from "@/lib/paywall-copy";
+import { PRO_WELCOME_COPY, welcomeOpenersFor } from "@/lib/paywall-copy";
 import { Confetti } from "../lesson/LessonCelebration";
 import { edgeButtonClass } from "../lesson/LessonParts";
 import { HECTOR_HAPPY_SRC, WELCOME_ROOM_SRC } from "./PaywallParts";
@@ -57,7 +57,7 @@ export function ProWelcome({
             {PRO_WELCOME_COPY.openersTitle}
           </h2>
           <ul aria-labelledby="pro-welcome-openers" className="m-0 grid list-none gap-1.5 p-0">
-            {WELCOME_OPENERS[course].map((line) => (
+            {welcomeOpenersFor(course).map((line) => (
               <li
                 key={line}
                 className="ds-type-footnote rounded-[10px] bg-ds-choice-tint px-2.5 py-1.5 font-bold text-ds-ink"
