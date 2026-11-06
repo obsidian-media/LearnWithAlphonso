@@ -573,31 +573,34 @@ export type Database = {
       };
       content_reports: {
         Row: {
+          account_deleted_at: string | null;
           context: Json | null;
           created_at: string;
           id: string;
           kind: string;
           reason: string;
           reported: string | null;
-          reporter: string;
+          reporter: string | null;
         };
         Insert: {
+          account_deleted_at?: string | null;
           context?: Json | null;
           created_at?: string;
           id?: string;
           kind?: string;
           reason: string;
           reported?: string | null;
-          reporter?: string;
+          reporter?: string | null;
         };
         Update: {
+          account_deleted_at?: string | null;
           context?: Json | null;
           created_at?: string;
           id?: string;
           kind?: string;
           reason?: string;
           reported?: string | null;
-          reporter?: string;
+          reporter?: string | null;
         };
         Relationships: [];
       };

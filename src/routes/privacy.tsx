@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "4 November 2026"; // same date on all four legal pages
+const UPDATED = "5 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -244,9 +244,9 @@ function Privacy() {
           store the block so that it works on every device.
         </p>
         <p>
-          Reports, and the actions we take on them, are kept for as long as the accounts involved
-          exist, so we can deal with repeated abuse. Deleting your account deletes the reports you
-          made and the blocks you set.
+          Reports, and the actions we take on them, are kept while the accounts involved exist, and
+          for up to 90 days after one of them is deleted, so we can deal with repeated abuse.
+          Deleting your account deletes the blocks you set.
         </p>
       </Section>
 
@@ -254,8 +254,9 @@ function Privacy() {
         <p>
           We keep your account data for as long as your account exists. When you delete your
           account, your data is removed immediately from our live systems and is purged from routine
-          backups within 30 days. Request logs held by Vercel are kept only for the limited period
-          its service retains them.
+          backups within 30 days. Reports about content are kept for up to 90 days after an account
+          is deleted, for safety, without any personal profile data. Request logs held by Vercel are
+          kept only for the limited period its service retains them.
         </p>
       </Section>
 

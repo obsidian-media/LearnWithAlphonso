@@ -776,9 +776,12 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
 export type AdminReport = {
   id: string;
   kind: "user" | "team_name" | "ai_response";
-  reporterId: string;
+  /** Null once the reporter's account is deleted (the report is kept for 90 days, see accountDeletedAt). */
+  reporterId: string | null;
   reporterName: string;
+  /** Null for an AI-response report, and once the reported account is deleted. */
   reportedId: string | null;
+  /** Null only for an AI-response report, which names no account. */
   reportedName: string | null;
   reason: string;
   /** The report's own detail (team_id, or an AI reply's source/course/message); JSON so it crosses the server boundary. */
@@ -787,6 +790,8 @@ export type AdminReport = {
   /** The team's current name, so the admin sees what they are renaming or disbanding; null if it is gone. */
   teamName: string | null;
   createdAt: string;
+  /** When an account on this report was deleted; the maintenance sweep removes the report 90 days later. */
+  accountDeletedAt: string | null;
 };
 
 const LEGACY_TEAM_REASON = /^team_name:([0-9a-f-]{36}):/i;
@@ -812,13 +817,16 @@ export function teamIdForReport(report: { reason: string; context: unknown }): s
  * both reference auth.users, and profiles.id also references auth.users,
  * but there is no FK between content_reports and profiles directly for
  * PostgREST to embed across.
+ *
+ * A report outlives a deleted account for 90 days (20261105101100): its reporter or reported id is then NULL and
+ * account_deleted_at is set, so that side shows as "(deleted account)" and no lookup is made for it.
  */
 export const adminListReports = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }): Promise<AdminReport[]> => {
     const { data: reports, error } = await context.supabaseAdmin
       .from("content_reports")
-      .select("id, kind, reporter, reported, reason, context, created_at")
+      .select("id, kind, reporter, reported, reason, context, created_at, account_deleted_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     if (!reports || reports.length === 0) return [];
@@ -828,12 +836,17 @@ export const adminListReports = createServerFn({ method: "GET" })
         reports.flatMap((r) => [r.reporter, r.reported]).filter((id): id is string => !!id),
       ),
     ];
-    const { data: profiles, error: profilesError } = await context.supabaseAdmin
-      .from("profiles")
-      .select("id, display_name")
-      .in("id", userIds);
-    if (profilesError) throw new Error(profilesError.message);
-    const nameById = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+    const nameById = new Map<string, string>();
+    if (userIds.length > 0) {
+      const { data: profiles, error: profilesError } = await context.supabaseAdmin
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", userIds);
+      if (profilesError) throw new Error(profilesError.message);
+      for (const p of profiles ?? []) nameById.set(p.id, p.display_name);
+    }
+    const nameOf = (id: string | null) =>
+      (id ? nameById.get(id) : undefined) ?? "(deleted account)";
 
     const teamIds = [
       ...new Set(
@@ -856,24 +869,26 @@ export const adminListReports = createServerFn({ method: "GET" })
       id: r.id,
       kind: r.kind as AdminReport["kind"],
       reporterId: r.reporter,
-      reporterName: nameById.get(r.reporter) ?? "(deleted account)",
+      reporterName: nameOf(r.reporter),
       reportedId: r.reported,
-      reportedName: r.reported ? (nameById.get(r.reported) ?? "(deleted account)") : null,
+      reportedName: r.kind === "ai_response" ? null : nameOf(r.reported),
       reason: r.reason,
       context: (r.context as { [key: string]: Json | undefined } | null) ?? null,
       teamId: teamIdForReport({ reason: r.reason, context: r.context }),
       teamName:
         teamNameById.get(teamIdForReport({ reason: r.reason, context: r.context }) ?? "") ?? null,
       createdAt: r.created_at,
+      accountDeletedAt: r.account_deleted_at ?? null,
     }));
   });
 
 /**
  * The heaviest action on a report: delete the reported account (lighter
  * ones -- reset the name, rename or disband a team, dismiss -- are below).
- * content_reports.reported REFERENCES auth.users ON DELETE CASCADE, so
- * deleting the account also removes every report against them from the
- * queue. An AI-response report names no account and is refused. Revokes the Apple grant first, same as self-service
+ * The reports against them stay in the queue for 90 days with the account
+ * shown as "(deleted account)" (content_reports.reported is ON DELETE SET
+ * NULL since 20261105101100); dismiss them when done. An AI-response report
+ * names no account and is refused, as is a report whose account is already gone. Revokes the Apple grant first, same as self-service
  * deleteMyAccount, because Apple requires that on any account deletion
  * regardless of who initiates it -- see revokeAppleGrantForUser's own
  * doc comment for why it lives in account.functions.ts and is reused
@@ -888,8 +903,9 @@ export const adminListReports = createServerFn({ method: "GET" })
  * issues DELETEs as the caller, whose RLS grants don't cover every
  * table (see account.functions.test.ts's "only tries to delete rows the
  * caller's own RLS role can delete"). Every user-scoped table has
- * ON DELETE CASCADE from auth.users, so an admin acting as service_role
- * needs nothing pre-deleted for auth.admin.deleteUser to clean it all up.
+ * ON DELETE CASCADE from auth.users (content_reports alone is SET NULL, kept
+ * for moderation), so an admin acting as service_role needs nothing
+ * pre-deleted for auth.admin.deleteUser to clean it all up.
  */
 export const adminDeleteReportedUser = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
