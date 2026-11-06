@@ -626,6 +626,37 @@ describe("Converse call screen (setting on, the default)", () => {
     expect(lastRecorder?.state).toBe("inactive");
   });
 
+  it("talking over Alphonso cuts his voice off, so it is not recorded", async () => {
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    const opener = audioInstances[audioInstances.length - 1];
+    expect(opener.pause).not.toHaveBeenCalled();
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Hold to talk" }));
+    expect(opener.pause).toHaveBeenCalled();
+  });
+
+  it("a voice that finishes loading after the learner hung up is never played", async () => {
+    let release: (r: Response) => void = () => {};
+    global.fetch = vi.fn((input: RequestInfo | URL) => {
+      if (String(input).includes("/api/tts")) return new Promise<Response>((r) => (release = r));
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    }) as typeof fetch;
+    const { unmount } = await renderCall();
+    await waitFor(() =>
+      expect(
+        (global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([u]) =>
+          String(u).includes("/api/tts"),
+        ),
+      ).toBe(true),
+    );
+    unmount();
+    await act(async () => {
+      release(new Response(new Blob(["audio"]), { status: 200 }));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(audioInstances).toHaveLength(0);
+  });
+
   it("a keyboard or screen-reader activation (a click with no pointer) toggles recording", async () => {
     await renderCall();
     const talk = screen.getByRole("button", { name: "Hold to talk" });

@@ -110,6 +110,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [course]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
+  const leftRef = useRef(false);
   // The talking Alphonso: what is being spoken, whether its audio is loading or playing, and what the latest reply
   // said about the learner's turn (he reacts to it once the reply has been spoken).
   const [spoken, setSpoken] = useState<string | null>(null);
@@ -146,6 +148,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           return;
         }
         const blob = await resp.blob();
+        // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
+        if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
         if (audioRef.current) {
           audioRef.current.pause();
@@ -273,7 +277,9 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           : { kind: "idle" };
 
   useEffect(() => {
+    leftRef.current = false;
     return () => {
+      leftRef.current = true;
       audioRef.current?.pause();
     };
   }, []);
@@ -538,14 +544,20 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           recording={recording}
           talkDisabled={sending || transcribing}
           onHoldStart={() => {
-            if (captureState === "idle" && !sending) void startRecording();
+            if (captureState !== "idle" || sending) return;
+            // Talking over Alphonso cuts him off, as on a call; his voice must not end up in the recording.
+            audioRef.current?.pause();
+            void startRecording();
           }}
           onHoldEnd={() => {
             if (captureState !== "transcribing") stopRecording();
           }}
           onToggle={() => {
             if (recording) stopRecording();
-            else void startRecording();
+            else {
+              audioRef.current?.pause();
+              void startRecording();
+            }
           }}
           getStream={getStream}
           ttsOn={ttsOn}

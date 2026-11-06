@@ -71,6 +71,27 @@ describe("the room", () => {
     expect(dark.queryByTestId("evening-overlay")).toBeNull();
   });
 
+  it("gives a conversation with no scenario (a campaign) the default room", () => {
+    const { container } = render(<PracticeCall {...base} scenarioId={null} dark={false} />);
+    expect(room(container)).toBe("/avatar/scenes/room-light.webp");
+  });
+
+  it("holds the caption to four lines, so a long reply cannot climb over his mouth", () => {
+    const long = Array.from({ length: 80 }, (_, i) => `word${i}`).join(" ");
+    const { getByTestId } = render(
+      <PracticeCall
+        {...base}
+        scenarioId="coffee"
+        dark={false}
+        caption={{ text: long, mine: false, spoken: false }}
+      />,
+    );
+    const caption = getByTestId("call-caption");
+    expect(caption.firstElementChild).toHaveClass("line-clamp-4");
+    // Clamped on screen only: the live region still holds every word.
+    expect(caption).toHaveTextContent("word79");
+  });
+
   it("marks the live dot red only while he speaks", () => {
     const quiet = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
     expect(quiet.getByTestId("live-dot")).toHaveAttribute("data-live", "false");

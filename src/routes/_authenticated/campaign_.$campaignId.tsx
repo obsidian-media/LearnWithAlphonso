@@ -138,6 +138,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
+  const leftRef = useRef(false);
   // The call screen: what is being spoken, whether its audio is loading or playing, and what the latest reply said
   // about the learner's turn (Alphonso reacts to it once the reply has been spoken).
   const [spoken, setSpoken] = useState<string | null>(null);
@@ -178,6 +180,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           return;
         }
         const blob = await resp.blob();
+        // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
+        if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
         if (audioRef.current) {
           audioRef.current.pause();
@@ -368,7 +372,9 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           : { kind: "idle" };
 
   useEffect(() => {
+    leftRef.current = false;
     return () => {
+      leftRef.current = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
       audioRef.current?.pause();
     };
@@ -670,7 +676,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
       <LessonFrame>
         <PracticeCall
           title={sceneLine}
-          scenarioId={campaign.id}
+          // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
+          scenarioId={null}
           dark={darkTheme}
           avatar={{
             phase: avatarPhase,
@@ -686,14 +693,20 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           recording={recordingState}
           talkDisabled={sending || transcribing || finished}
           onHoldStart={() => {
-            if (!recordingState && !sending && !transcribing && !finished) void startRecording();
+            if (recordingState || sending || transcribing || finished) return;
+            // Talking over Alphonso cuts him off, as on a call; his voice must not end up in the recording.
+            audioRef.current?.pause();
+            void startRecording();
           }}
           onHoldEnd={() => {
             if (!transcribing) stopRecording();
           }}
           onToggle={() => {
             if (recordingState) stopRecording();
-            else void startRecording();
+            else {
+              audioRef.current?.pause();
+              void startRecording();
+            }
           }}
           getStream={() => streamRef.current}
           ttsOn={ttsOn}

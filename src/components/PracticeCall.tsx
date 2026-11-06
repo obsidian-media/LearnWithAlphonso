@@ -22,7 +22,8 @@ type Props = {
   title: string;
   /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
   kit?: CharacterKit;
-  scenarioId: string;
+  /** The scenario whose room is shown; null (a campaign, free talk) gets the character's default room. */
+  scenarioId: string | null;
   dark: boolean;
   avatar: Omit<ComponentProps<typeof AlphonsoAvatar>, "className">;
   caption: CallCaption | null;
@@ -306,7 +307,9 @@ export function PracticeCall(props: Props) {
           color: caption?.mine ? "#c9f5dc" : "#fff",
         }}
       >
-        <span>
+        {/* At most four lines on screen, so a long reply never climbs over his mouth. The whole text is still in
+            the live region and in the conversation sheet. */}
+        <span className="line-clamp-4">
           {words.map((w, i) => (
             <span key={`${caption?.text}-${i}`} data-w style={{ transition: "opacity .12s" }}>
               {w}{" "}
