@@ -271,6 +271,9 @@ jobs:
             echo "LESSON_SESSION_SECRET=$(openssl rand -hex 32)"
           } >> "$GITHUB_ENV"
 
+      - name: Voice time reservations hold under parallel calls (real Postgres)
+        run: bunx vitest run src/lib/stt-audio-budget-concurrency.test.ts
+
       - name: Run the signed-in journey
         run: bunx playwright test e2e/signed-in.spec.ts e2e/practice-avatar.spec.ts --reporter=github,html
 
@@ -350,7 +353,7 @@ jobs:
         working-directory: supabase/functions/complete-lesson
         run: |
           deno check index.ts
-          deno test handler.test.ts
+          deno test handler.test.ts ../_shared/hearts-pro.test.ts
 
       # Same shape as the complete-lesson handler test: fake dependencies, plus a type-check of the deployed entry point.
       - name: Test the complete-podcast-quiz handler

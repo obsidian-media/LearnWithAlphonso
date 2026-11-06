@@ -42,6 +42,25 @@ final class SupabaseAuthClientTests: XCTestCase {
         XCTAssertEqual(payload["create_user"] as? Bool, true)
     }
 
+    func testRequestEmailOTPCarriesTheBotCheckTokenOnlyWhenThereIsOne() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.response(for: request.url!, body: [:])
+        }
+
+        try await client.requestEmailOTP(email: "learner@example.com", captchaToken: "tok-1")
+        var payload = try JSONSerialization.jsonObject(with: XCTUnwrap(captured.value?.httpBody)) as! [String: Any]
+        XCTAssertEqual((payload["gotrue_meta_security"] as? [String: Any])?["captcha_token"] as? String, "tok-1")
+
+        for none in [nil, ""] as [String?] {
+            try await client.requestEmailOTP(email: "learner@example.com", captchaToken: none)
+            payload = try JSONSerialization.jsonObject(with: XCTUnwrap(captured.value?.httpBody)) as! [String: Any]
+            XCTAssertNil(payload["gotrue_meta_security"])
+            XCTAssertEqual(Set(payload.keys), ["email", "create_user"])
+        }
+    }
+
     func testRequestEmailOTPThrowsOnAServerError() async {
         let client = makeClient { request in
             self.response(for: request.url!, body: ["msg": "rate limited"], status: 429)

@@ -72,3 +72,19 @@ describe("CookieConsent", () => {
     expect(panel).toHaveClass("border-t");
   });
 });
+
+describe("the apps' bot-check page", () => {
+  afterEach(() => window.history.replaceState(null, "", "/"));
+
+  it("never shows the cookie banner inside the apps' bot-check web view", () => {
+    window.history.replaceState(null, "", "/native-captcha");
+    render(<CookieConsent />);
+    expect(screen.queryByRole("dialog", { name: "Cookie choices" })).toBeNull();
+  });
+
+  it("still shows it everywhere else", () => {
+    window.history.replaceState(null, "", "/auth");
+    render(<CookieConsent />);
+    expect(screen.getByRole("dialog", { name: "Cookie choices" })).toBeInTheDocument();
+  });
+});

@@ -69,6 +69,11 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   { table: "lesson_completion_hits", column: "user_id" },
   // Weekly XP sums kept for the leaderboard (20261105100800); no client read.
   { table: "weekly_xp_totals", column: "user_id" },
+  // Hearts settled on the server (20261105101000): heart losses the app reported, each lesson's settlement, and the
+  // cached Pro answer that gives unlimited hearts. No client read.
+  { table: "heart_loss_reports", column: "user_id" },
+  { table: "lesson_heart_settlements", column: "user_id" },
+  { table: "hearts_pro_status", column: "user_id" },
 ] as const;
 
 // Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's

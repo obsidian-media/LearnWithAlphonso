@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
 import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingStep
+import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
 import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
 import kotlinx.coroutines.CancellationException
@@ -102,9 +103,16 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     }
     // The account's AI consent follows whoever is signed in (a choice made on the web or iOS counts here).
     LaunchedEffect(signedInUserId) { container.aiConsent.refresh() }
+    // The "Please update" gate: off unless the server sets a minimum, and the app opens normally on any failure.
+    var updateRequired by remember { mutableStateOf<AppUpdateGate.Requirement?>(null) }
+    LaunchedEffect(Unit) { updateRequired = container.checkAppUpdate() }
+
+    val gate = updateRequired
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {
         when {
+            // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.
+            gate != null -> UpdateRequiredScreen(gate)
             isRestoring -> Unit
             state !is AuthState.SignedIn -> AuthScreen(container)
             else -> SignedInApp(container, pendingInviteCode, onInviteConsumed)
