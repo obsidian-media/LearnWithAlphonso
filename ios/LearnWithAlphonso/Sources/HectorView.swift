@@ -225,8 +225,9 @@ private struct HectorConversationView: View {
             }
             .buttonStyle(.alphonsoPrimary)
         }
+        .padding(AlphonsoSpacing.lg)
+        .alphonsoGlass(radius: AlphonsoRadius.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AlphonsoColor.surface)
     }
 
     /// The hands-free switch, with its once-per-device safety note.
