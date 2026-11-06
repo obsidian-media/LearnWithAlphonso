@@ -18,6 +18,9 @@ interface RecorderPort {
     fun elapsedMillis(): Long?
     suspend fun stop(): ByteArray?
     fun cancelIfRecording()
+
+    /** The microphone level in dBFS while recording, null when unknown (the call's "You" tile shows resting bars). */
+    fun levelDBFS(): Double? = null
 }
 
 enum class TurnPhase { IDLE, REQUESTING_MIC, RECORDING, TRANSCRIBING }

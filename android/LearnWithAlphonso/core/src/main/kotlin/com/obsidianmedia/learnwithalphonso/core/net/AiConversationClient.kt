@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
@@ -40,6 +41,9 @@ sealed class AiConversationError(message: String) : Exception(message) {
     class Timeout : AiConversationError("The request took too long")
 }
 
+/** One conversation reply: the text to show and speak, and the server's verdict on the learner's turn. */
+data class ChatReply(val content: String, val verdict: ReplyVerdict)
+
 /**
  * Port of AIConversationClient.swift: chat, speech synthesis, speech to text,
  * weakness analysis and generated practice over the web app's API routes.
@@ -47,7 +51,14 @@ sealed class AiConversationError(message: String) : Exception(message) {
 class AiConversationClient(private val http: ApiHttp) {
     private val json = ContentJson.json
 
-    suspend fun chat(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null): String {
+    suspend fun chat(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null): String =
+        chatReply(messages, systemPrompt, cefrLevel, course).content
+
+    /**
+     * The same call as [chat], keeping the server's `verdict` about the learner's last turn (the talking avatar reacts
+     * to it). An older server sends no verdict, which reads as [ReplyVerdict.NONE].
+     */
+    suspend fun chatReply(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null): ChatReply {
         val body = buildJsonObject {
             putJsonArray("messages") { messages.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
             if (systemPrompt != null) put("systemPrompt", systemPrompt)
@@ -62,7 +73,8 @@ class AiConversationClient(private val http: ApiHttp) {
             first
         }
         val obj = objectOf(response)
-        return obj.str("content") ?: throw AiConversationError.InvalidPayload()
+        val content = obj.str("content") ?: throw AiConversationError.InvalidPayload()
+        return ChatReply(content, ReplyVerdict.fromWire(obj.str("verdict")))
     }
 
     /** `course` picks the course's native voice; an explicit `voice` still wins. */
