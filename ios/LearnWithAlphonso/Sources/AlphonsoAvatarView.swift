@@ -128,7 +128,7 @@ struct AlphonsoAvatarView: View {
     }
 }
 
-/// The 15 layers placed from the manifest rects, in the manifest's draw order.
+/// The kit's layers placed from its manifest rects, in draw order: base, ears (if any), mouth, expression, glint (if any).
 @MainActor
 private struct AvatarLayersView: View {
     let frame: AvatarFrame

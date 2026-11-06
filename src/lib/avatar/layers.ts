@@ -13,7 +13,7 @@ export type DefaultRoom = { light: string; dark: string };
 /**
  * A character the call can show: his name, where his art folder is served from, the placement of his layers (read
  * from that folder's manifest.json), and his default room. The viseme, plan and state logic does not know which
- * character it is driving. Alphonso is the only kit shipped; Hector's will be another value of this type.
+ * character it is driving. Alphonso and Hector are the kits shipped.
  */
 export type CharacterKit = {
   id: string;

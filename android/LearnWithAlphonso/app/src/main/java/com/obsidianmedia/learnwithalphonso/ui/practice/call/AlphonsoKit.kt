@@ -6,7 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.avatar.CallScenes
 import com.obsidianmedia.learnwithalphonso.core.avatar.CharacterKit
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReducedMotion
 
-/** The Alphonso kit, read from its manifest in assets/avatar. The only kit shipped; Hector's will be another. */
+/** The Alphonso kit, read from its manifest in assets/avatar. Hector.s is [hectorKit]. */
 internal fun alphonsoKit(context: Context): CharacterKit {
     val manifest = context.assets.open("avatar/manifest.json").bufferedReader().use { it.readText() }
     return CharacterKit.fromManifest(manifest, "alphonso", "Alphonso", "avatar", CallScenes.defaultRoom)
