@@ -231,3 +231,22 @@ describe("reactions from the reply's verdict", () => {
     expect(mouthShown(container)).toEqual([]);
   });
 });
+
+describe("the mode it reports (for the call's state pill)", () => {
+  it("reports each change once: thinking, speaking, then the reaction after the reply", () => {
+    const modes: string[] = [];
+    const onModeChange = (m: string) => modes.push(m);
+    const { rerender } = render(view({ onModeChange }));
+    tick();
+    rerender(view({ onModeChange, phase: { kind: "thinking" } }));
+    tick();
+    tick();
+    const verdict: AvatarReplyVerdict = { serial: 1, verdict: "correct" };
+    rerender(view({ onModeChange, phase: { kind: "thinking" }, replyVerdict: verdict }));
+    rerender(view({ onModeChange, phase: { kind: "speaking" }, replyVerdict: verdict }));
+    tick();
+    rerender(view({ onModeChange, phase: idle, replyVerdict: verdict }));
+    tick();
+    expect(modes).toEqual(["thinking", "speaking", "reacting:happy"]);
+  });
+});

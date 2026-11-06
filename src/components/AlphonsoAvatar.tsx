@@ -19,6 +19,7 @@ import { IdleScheduler, breathScale, seededRandom, swayDegrees } from "@/lib/ava
 import { lipSyncPlan, type LipSyncPlan } from "@/lib/avatar/lipsync";
 import {
   AvatarMachine,
+  type AvatarMode,
   type ReplyVerdict,
   type SpeechPosition,
   type VoicePhase,
@@ -74,6 +75,8 @@ type Props = {
   course: Course;
   /** The visitor prefers reduced motion: breathing, sway, ears and glint stop; mouth and brows still change. */
   reducedMotion: boolean;
+  /** Called when the avatar's mode changes (idle, listening, thinking, speaking, a reaction): drives the state pill. */
+  onModeChange?: (mode: AvatarMode) => void;
   /** Size and place the stage. The layout is the caller's: the stage fills a square of whatever size it is given. */
   className?: string;
 };
@@ -93,11 +96,28 @@ export function AlphonsoAvatar({
   replyVerdict,
   course,
   reducedMotion,
+  onModeChange,
   className = "mx-auto aspect-square h-[clamp(88px,20dvh,170px)]",
 }: Props) {
-  const live = useRef({ phase, replyText, getAudio, replyVerdict, course, reducedMotion });
+  const live = useRef({
+    phase,
+    replyText,
+    getAudio,
+    replyVerdict,
+    course,
+    reducedMotion,
+    onModeChange,
+  });
   useEffect(() => {
-    live.current = { phase, replyText, getAudio, replyVerdict, course, reducedMotion };
+    live.current = {
+      phase,
+      replyText,
+      getAudio,
+      replyVerdict,
+      course,
+      reducedMotion,
+      onModeChange,
+    };
   });
 
   const body = useRef<HTMLDivElement>(null);
@@ -141,6 +161,7 @@ export function AlphonsoAvatar({
     };
     let raf = 0;
     let last = 0;
+    let lastMode: AvatarMode = "idle";
 
     const frame = () => {
       raf = requestAnimationFrame(frame);
@@ -154,6 +175,10 @@ export function AlphonsoAvatar({
         machine.replyArrived(now.replyVerdict.verdict);
       }
       machine.update(now.phase, t);
+      if (machine.mode !== lastMode) {
+        lastMode = machine.mode;
+        now.onModeChange?.(lastMode);
+      }
 
       let speech: SpeechPosition | null = null;
       if (now.phase.kind === "speaking" && now.replyText) {
