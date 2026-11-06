@@ -122,23 +122,6 @@ export function buildHectorMessages(
   ];
 }
 
-/**
- * Native Deepgram Aura-2 voice per course, from Deepgram's published voice list:
- * agathe is French (fr-fr); selena is Latin American Spanish (es-419), matching
- * the Latin American content. Never map a course to another language's voice.
- */
-export const DEEPGRAM_VOICE_BY_COURSE: Readonly<Record<Course, string>> = {
-  en: "aura-2-thalia-en",
-  fr: "aura-2-agathe-fr",
-  es: "aura-2-selena-es",
-};
-
-export function deepgramVoiceForLanguage(language: string): string {
-  const code =
-    typeof language === "string" ? (language.trim().toLowerCase().split("-")[0] ?? "") : "";
-  return isCourse(code) ? DEEPGRAM_VOICE_BY_COURSE[code] : DEEPGRAM_VOICE_BY_COURSE.en;
-}
-
 /** The `TutorReply` shape the iOS client decodes (snake_case, exact). */
 export type TutorReplyPayload = {
   request_id: string;

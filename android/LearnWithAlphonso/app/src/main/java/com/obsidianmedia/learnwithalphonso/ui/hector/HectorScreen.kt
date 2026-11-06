@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.hector
 
+import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -114,6 +115,8 @@ class HectorViewModel(
     private val sessionId: String = UUID.randomUUID().toString(),
     /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
     val course: Course = Course.ENGLISH,
+    /** Hector's own chosen voice for a course (Settings > Voices), never Alphonso's; null lets the server decide. */
+    private val hectorVoice: (String) -> String? = { null },
 ) : ViewModel(), CallConversation {
     // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
@@ -154,7 +157,7 @@ class HectorViewModel(
         val call = callGeneration
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
-            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel)
+            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel, voice = hectorVoice(course.code))
             // A reply that comes back after the learner hung up joins the transcript but is never spoken.
             val live = call == callGeneration
             _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = if (live) ConversationPhase.SPEAKING else it.phase) }
@@ -272,7 +275,7 @@ private fun HectorConversation(container: AppContainer) {
     // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
     val course by container.activeCourse.course.collectAsState()
     val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course)
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course, hectorVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Hector, c) })
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
