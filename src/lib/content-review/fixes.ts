@@ -24,7 +24,7 @@ import type { Level } from "../../data/levels";
 import { deriveVocab } from "../../data/vocab";
 import { QUESTION_FIXES } from "../../data/question-fixes";
 
-export type Patch = Record<string, string | string[]>;
+export type Patch = Record<string, string | string[] | number>;
 
 export type ProposedFix = {
   id: string;

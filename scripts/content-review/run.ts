@@ -796,6 +796,22 @@ function routeCommand() {
   }
   const second = loadVerdicts("second");
   const routed = route([...latest.values()], (id) => second.get(id)?.verdict === "ok");
+  // A word card is authored on the question it comes from, so a card fix and that question's
+  // meaning/example fix write the same fields; the overlay applies the card fix last. The card fix
+  // wins, and the question fix drops those fields (and goes if nothing else is left).
+  const cardFixed = new Set(routed.fixes.filter((f) => f.id.includes(":card:")).map((f) => f.id));
+  routed.fixes = routed.fixes.flatMap((f) => {
+    if (!f.id.includes(":question:") || !("meaning" in f.patch || "example" in f.patch)) return [f];
+    const it = items.get(f.id);
+    if (!it) return [f];
+    const lesson = f.id.slice(f.id.indexOf(":question:") + 10).split("/")[0];
+    const term = String(it.data.term ?? answerText(it.data) ?? "")
+      .trim()
+      .toLowerCase();
+    if (!cardFixed.has(`${it.course}:card:${lesson}/${term}`)) return [f];
+    const { meaning: _m, example: _e, ...rest } = f.patch;
+    return Object.keys(rest).length ? [{ ...f, patch: rest }] : [];
+  });
   const checked = checkFixes(items, routed.fixes);
   // A key change gives the question's word card a new term: a card fix written for the old term
   // would land on the new card with the wrong meaning. Drop it; the new card is re-read in verify.
@@ -845,7 +861,7 @@ function routeCommand() {
       const current = readJson<
         Record<
           string,
-          { patch: Record<string, string | string[]>; reason: string; keyChange?: boolean }
+          { patch: Record<string, string | string[] | number>; reason: string; keyChange?: boolean }
         >
       >(file, {});
       // route already merged every ruling on an item, so its fix replaces the overlay entry; an

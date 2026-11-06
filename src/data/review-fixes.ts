@@ -17,10 +17,10 @@ import FR from "./review-fixes/fr.json";
  * Every entry was checked by src/lib/content-review/fixes.ts before it was written here: ids, types,
  * option counts and the answer's position never change, and the answer only on a reviewed wrong-key
  * ruling. The files are written by `run.ts route`; do not hand-edit them without re-running the
- * checks. An entry that matches nothing throws, so a stale fix cannot sit here silently.
+ * checks. An entry that matches nothing is recorded in REVIEW_FIXES_UNMATCHED, which review-fixes.test.ts holds empty.
  */
 export type ReviewFix = {
-  patch: Record<string, string | string[]>;
+  patch: Record<string, string | string[] | number>;
   reason: string;
   keyChange?: boolean;
 };
