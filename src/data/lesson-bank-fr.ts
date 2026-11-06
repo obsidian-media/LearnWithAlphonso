@@ -810,7 +810,7 @@ const A2: Pack[] = [
     note: 'Present-tense "je" conjugation of common verbs.',
     data: `Je ___ (parler) français.|parle
 Je ___ (manger) une pomme.|mange
-Je ___ (avoir) un chat.|ai
+J'___ (avoir) un chat.|ai
 Je ___ (être) fatigué.|suis
 Je ___ (aller) au marché.|vais
 Je ___ (faire) mes devoirs.|fais
@@ -825,10 +825,10 @@ Je ___ (finir) mon travail.|finis
 Je ___ (dormir) huit heures.|dors
 Je ___ (boire) de l'eau.|bois
 Je ___ (lire) un livre.|lis
-Je ___ (écrire) une lettre.|écris
+J'___ (écrire) un message à mon frère.|écris
 Je ___ (partir) à midi.|pars
 Je ___ (mettre) la table.|mets
-Je ___ (attendre) le train.|attends
+J'___ (attendre) le train.|attends
 Je ___ (vendre) ma voiture.|vends
 Je ___ (choisir) le rouge.|choisis
 Je ___ (comprendre) la question.|comprends
@@ -1242,16 +1242,16 @@ C'est ___ jardin (à vous).|votre
 Ce sont ___ enfants (à vous).|vos
 C'est ___ bureau (à eux/elles).|leur
 Ce sont ___ voitures (à eux/elles).|leurs
-J'ai perdu ___ clés.|mes
-Elle adore ___ chat.|son
-Nous aimons ___ ville.|notre
-Ils ont vendu ___ maison.|leur
-Tu as oublié ___ parapluie.|ton
-Vous avez ___ propre bureau ?|votre
-Il a rangé ___ chambre.|sa
-Elles ont fini ___ devoirs.|leurs
-J'adore passer du temps avec ___ famille.|ma
-Nous invitons ___ amis ce soir.|nos`,
+J'ai perdu ___ clés (à moi).|mes
+Elle adore ___ chat (à elle).|son
+Nous aimons ___ ville (à nous).|notre
+Ils ont vendu ___ maison (à eux).|leur
+Tu as oublié ___ parapluie (à toi).|ton
+Vous avez ___ propre bureau (à vous) ?|votre
+Il a rangé ___ chambre (à lui).|sa
+Elles ont fini ___ devoirs (à elles).|leurs
+J'adore passer du temps avec ___ famille (à moi).|ma
+Nous invitons ___ amis (à nous) ce soir.|nos`,
   },
   {
     id: "fra2p15",

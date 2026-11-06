@@ -14,6 +14,7 @@ import {
   homophoneOnly,
   optionClass,
   optionsOverlap,
+  politeTag,
   sameMeaning,
 } from "./romance-options";
 
@@ -134,7 +135,12 @@ describe("pair packs: the wrong options of a vocabulary question", () => {
             .filter((e) => e.cls === me.cls && !bannedBecause(me.text, e.text))
             .map((e) => e.text.toLowerCase()),
         ).size;
-        const same = options.filter((o) => classOf.get(o.toLowerCase())?.has(me.cls)).length;
+        // A phrase with the same "please" / "thanks" ending is the same kind of thing (a polite request
+        // or reply), whatever its length: bank-engine offers those first (POLITE_DECOYS).
+        const tag = politeTag(answer);
+        const same = options.filter(
+          (o) => classOf.get(o.toLowerCase())?.has(me.cls) || (tag && politeTag(o) === tag),
+        ).length;
         if (same < Math.min(3, available))
           bad.push(`${q.id} "${answer}" [${me.cls}]: ${options.join(" / ")}`);
       });

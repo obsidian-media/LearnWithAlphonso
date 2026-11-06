@@ -133,9 +133,13 @@ describe("Spanish cloze distractor cross-verb measurement", () => {
     // Re-pinned with the French/Spanish A1/A2 option work (src/data/romance-options.ts): the walk now
     // reaches every candidate of a 15-line pack, and the Ir a + Infinitive drills offer the verb's own wrong
     // forms (voy a comprando), which this measurement cannot trace to a hint, so they count as unresolved.
+    // Re-pinned with the A1/A2 conjugation drills (src/data/romance-conjugation.ts): esa1p5, esa1p22,
+    // esa2p2, esa2p6, esa2p18 and esa2p26 now offer other persons of the line's own verb. This
+    // measurement traces an option to a verb only through another line's answer, so those forms
+    // (hablas, habla, hablan) move from crossVerb to unresolved; the cross-verb options left are B1+.
     expect(verbHintedQuestions).toBe(780);
     expect(sameVerb).toBe(489);
-    expect(crossVerb).toBe(1600);
-    expect(unresolved).toBe(122);
+    expect(crossVerb).toBe(1231);
+    expect(unresolved).toBe(491);
   });
 });

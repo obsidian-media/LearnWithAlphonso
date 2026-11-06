@@ -2,13 +2,16 @@ import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
 import {
   EXTRA_DECOYS,
+  POLITE_DECOYS,
   ROMANCE_A1A2,
   bannedBecause,
   homophoneOnly,
   optionClass,
+  politeTag,
   type OptionClass,
 } from "./romance-options";
 import { ROMANCE_CLOZE } from "./romance-cloze-options";
+import { conjugationOptions } from "./romance-conjugation";
 
 /**
  * Shared content-bank engine. A pack holds ~25 terse lines that the
@@ -56,12 +59,6 @@ function withClue(sentence: string, clue: string): string {
     : `${sentence} (${clue})`;
 }
 
-/** The person a French reflexive form is in: me/m' (je), te/t', se/s', nous, vous. */
-function clitic(form: string): string {
-  const w = form.toLowerCase().split(/[\s']/)[0] ?? "";
-  return w === "m" ? "me" : w === "t" ? "te" : w === "s" ? "se" : w;
-}
-
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
 /**
@@ -81,6 +78,9 @@ function hashedWalk<T>(others: T[], seed: string, coprime = true): T[] {
   return walk;
 }
 
+/** The pack id of a question seed ("esa2p10-14" -> "esa2p10"). */
+const packOf = (seed: string) => seed.slice(0, seed.lastIndexOf("-"));
+
 /**
  * Wrong options for a pair line of an A1/A2 French or Spanish pack: never the answer's own words
  * or a synonym the pack also teaches, and the same kind of word as the answer (a verb for a verb,
@@ -94,7 +94,16 @@ function pickPairDistractors(
   extra: { text: string; cls: OptionClass }[] = [],
 ): string[] {
   const me = entries[index]!;
-  const others = [...entries.filter((_, i) => i !== index), ...extra].filter(
+  // A phrase that ends in "please" or "thanks" is offered beside phrases with the same ending (the
+  // pack's own first, then reviewed POLITE_DECOYS): as the only option with that ending, the English
+  // gloss ("Nothing else, thanks") gave it away.
+  const tag = politeTag(me.text);
+  const polite = tag
+    ? (POLITE_DECOYS[packOf(seed)] ?? [])
+        .filter((text) => politeTag(text) === tag)
+        .map((text) => ({ text, cls: me.cls }))
+    : [];
+  const others = [...entries.filter((_, i) => i !== index), ...extra, ...polite].filter(
     (e) => !bannedBecause(me.text, e.text),
   );
   const seen = new Set<string>([me.text.toLowerCase()]);
@@ -104,9 +113,10 @@ function pickPairDistractors(
     seen.add(k);
     return true;
   });
-  const same = unique.filter((e) => e.cls === me.cls);
-  const rest = unique.filter((e) => e.cls !== me.cls);
-  return [...same, ...rest].slice(0, 3).map((e) => e.text);
+  const tagged = tag ? unique.filter((e) => politeTag(e.text) === tag) : [];
+  const same = unique.filter((e) => e.cls === me.cls && !tagged.includes(e));
+  const rest = unique.filter((e) => e.cls !== me.cls && !tagged.includes(e));
+  return [...tagged, ...same, ...rest].slice(0, 3).map((e) => e.text);
 }
 
 function pickDistractors(
@@ -116,7 +126,6 @@ function pickDistractors(
   preferConfusable = false,
   coprime = true,
   soundAlike = false,
-  samePerson = false,
 ) {
   const others = pool.filter(
     (o) => o.toLowerCase() !== answer.toLowerCase() && !(soundAlike && homophoneOnly(answer, o)),
@@ -135,14 +144,7 @@ function pickDistractors(
   // tagging) -- reimplemented here with a Unicode-aware tokenizer instead of
   // its `[a-z]`-only one, which would otherwise silently drop every accented
   // French/Spanish content word from the comparison.
-  const ordered = preferConfusable
-    ? orderByContentWordOverlap(answer, walk)
-    : samePerson
-      ? [
-          ...walk.filter((c) => clitic(c) === clitic(answer)),
-          ...walk.filter((c) => clitic(c) !== clitic(answer)),
-        ]
-      : walk;
+  const ordered = preferConfusable ? orderByContentWordOverlap(answer, walk) : walk;
   const out: string[] = [];
   // Dedupe case-insensitively -- a cloze pack legitimately reuses the same
   // word as the correct answer for two different lines with different
@@ -340,19 +342,24 @@ export function packQuestions(pack: Pack): Question[] {
               (pack.prompt ?? "What did you hear?").replace("%s", left!)
             : left!;
     const line = authored?.[i];
+    const conjugated =
+      pack.kind === "cloze" && !line
+        ? conjugationOptions(pack.id, left!, answer, (xs) => hashedWalk(xs, seed))
+        : null;
     const distractors = classed
       ? pickPairDistractors(i, classed, seed, extra)
       : line
         ? line.wrong
-        : pickDistractors(
-            answer,
-            pool,
-            seed,
-            pack.kind === "listening",
-            wideWalk,
-            romance && pack.kind === "listening",
-            pack.id === "fra2p6",
-          );
+        : conjugated
+          ? conjugated
+          : pickDistractors(
+              answer,
+              pool,
+              seed,
+              pack.kind === "listening",
+              wideWalk,
+              romance && pack.kind === "listening",
+            );
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`

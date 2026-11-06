@@ -202,9 +202,9 @@
               "prompt": "How do you say \"I'm fine, thanks\" in French? ___",
               "bank": [
                 "Comment vous appelez-vous ?",
-                "Parlez-vous anglais ?",
-                "Je vais bien, merci",
-                "S'il vous plaît"
+                "Non, merci",
+                "Oui, merci",
+                "Je vais bien, merci"
               ],
               "answer": "Je vais bien, merci",
               "explanation": "I'm fine, thanks → Je vais bien, merci. Core greetings and polite phrases."
@@ -332,10 +332,10 @@
               "type": "fill",
               "prompt": "How do you say \"can you repeat, please?\" in French? ___",
               "bank": [
-                "Je m'appelle...",
+                "Parlez plus lentement, s'il vous plaît",
                 "Je vais bien, merci",
                 "Pouvez-vous répéter, s'il vous plaît ?",
-                "Parlez-vous anglais ?"
+                "Un café, s'il vous plaît"
               ],
               "answer": "Pouvez-vous répéter, s'il vous plaît ?",
               "explanation": "can you repeat, please? → Pouvez-vous répéter, s'il vous plaît ?. Core greetings and polite phrases."
@@ -5473,9 +5473,9 @@
               "prompt": "The French word for \"the check please\" is…",
               "choices": [
                 "l'addition, s'il vous plaît",
-                "la serveuse",
-                "la fourchette",
-                "la table"
+                "une table pour deux, s'il vous plaît",
+                "la carte, s'il vous plaît",
+                "de l'eau, s'il vous plaît"
               ],
               "answer": 0,
               "explanation": "the check please → l'addition, s'il vous plaît. Restaurant vocabulary and useful phrases."
@@ -8331,9 +8331,9 @@
               "prompt": "Je ___ (parler) français.",
               "choices": [
                 "parle",
-                "finis",
-                "attends",
-                "suis"
+                "parles",
+                "parlent",
+                "parlez"
               ],
               "answer": 0,
               "explanation": "\"parle\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8343,10 +8343,10 @@
               "type": "fill",
               "prompt": "Je ___ (manger) une pomme.",
               "bank": [
-                "lis",
-                "prends",
+                "manges",
+                "mangent",
                 "mange",
-                "ai"
+                "mangeons"
               ],
               "answer": "mange",
               "explanation": "\"mange\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8354,12 +8354,12 @@
             {
               "id": "fra2p1q2",
               "type": "mc",
-              "prompt": "Je ___ (avoir) un chat.",
+              "prompt": "J'___ (avoir) un chat.",
               "choices": [
-                "choisis",
-                "bois",
+                "ont",
+                "avons",
                 "ai",
-                "fais"
+                "a"
               ],
               "answer": 2,
               "explanation": "\"ai\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8369,10 +8369,10 @@
               "type": "fill",
               "prompt": "Je ___ (être) fatigué.",
               "bank": [
-                "pars",
-                "vais",
+                "êtes",
+                "es",
                 "suis",
-                "viens"
+                "sommes"
               ],
               "answer": "suis",
               "explanation": "\"suis\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8383,9 +8383,9 @@
               "prompt": "Je ___ (aller) au marché.",
               "choices": [
                 "vais",
-                "prends",
-                "lis",
-                "comprends"
+                "va",
+                "allez",
+                "vas"
               ],
               "answer": 0,
               "explanation": "\"vais\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8402,10 +8402,10 @@
               "type": "fill",
               "prompt": "Je ___ (faire) mes devoirs.",
               "bank": [
-                "dis",
-                "vais",
+                "font",
                 "fais",
-                "choisis"
+                "faisons",
+                "fait"
               ],
               "answer": "fais",
               "explanation": "\"fais\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8415,10 +8415,10 @@
               "type": "mc",
               "prompt": "Je ___ (vouloir) un café.",
               "choices": [
-                "pars",
-                "viens",
+                "voulons",
+                "voulez",
                 "veux",
-                "parle"
+                "veut"
               ],
               "answer": 2,
               "explanation": "\"veux\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8429,9 +8429,9 @@
               "prompt": "Je ___ (pouvoir) t'aider.",
               "bank": [
                 "peux",
-                "connais",
-                "veux",
-                "dors"
+                "peuvent",
+                "pouvez",
+                "pouvons"
               ],
               "answer": "peux",
               "explanation": "\"peux\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8442,9 +8442,9 @@
               "prompt": "Je ___ (savoir) la réponse.",
               "choices": [
                 "sais",
-                "vais",
-                "dis",
-                "mets"
+                "sait",
+                "savent",
+                "savez"
               ],
               "answer": 0,
               "explanation": "\"sais\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8454,10 +8454,10 @@
               "type": "fill",
               "prompt": "Je ___ (prendre) le bus.",
               "bank": [
-                "pars",
-                "peux",
-                "prends",
-                "parle"
+                "prenons",
+                "prend",
+                "prennent",
+                "prends"
               ],
               "answer": "prends",
               "explanation": "\"prends\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8475,9 +8475,9 @@
               "prompt": "Je ___ (voir) la mer.",
               "bank": [
                 "vois",
-                "choisis",
-                "vais",
-                "dis"
+                "voyons",
+                "voit",
+                "voient"
               ],
               "answer": "vois",
               "explanation": "\"vois\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8487,10 +8487,10 @@
               "type": "mc",
               "prompt": "Je ___ (venir) demain.",
               "choices": [
-                "pars",
-                "vois",
+                "venons",
+                "venez",
                 "viens",
-                "parle"
+                "vient"
               ],
               "answer": 2,
               "explanation": "\"viens\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8500,10 +8500,10 @@
               "type": "fill",
               "prompt": "Je ___ (dire) la vérité.",
               "bank": [
-                "veux",
-                "connais",
+                "disons",
+                "disent",
                 "dis",
-                "dors"
+                "dites"
               ],
               "answer": "dis",
               "explanation": "\"dis\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8514,9 +8514,9 @@
               "prompt": "Je ___ (finir) mon travail.",
               "choices": [
                 "finis",
-                "dis",
-                "attends",
-                "ai"
+                "finit",
+                "finissent",
+                "finissez"
               ],
               "answer": 0,
               "explanation": "\"finis\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8526,10 +8526,10 @@
               "type": "fill",
               "prompt": "Je ___ (dormir) huit heures.",
               "bank": [
-                "lis",
-                "sais",
-                "mange",
-                "dors"
+                "dorment",
+                "dort",
+                "dors",
+                "dormons"
               ],
               "answer": "dors",
               "explanation": "\"dors\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8546,10 +8546,10 @@
               "type": "mc",
               "prompt": "Je ___ (boire) de l'eau.",
               "choices": [
-                "choisis",
-                "dors",
+                "buvons",
+                "buvez",
                 "bois",
-                "vais"
+                "boit"
               ],
               "answer": 2,
               "explanation": "\"bois\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8559,10 +8559,10 @@
               "type": "fill",
               "prompt": "Je ___ (lire) un livre.",
               "bank": [
-                "vois",
+                "lisons",
                 "lis",
-                "suis",
-                "pars"
+                "lisez",
+                "lisent"
               ],
               "answer": "lis",
               "explanation": "\"lis\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8570,12 +8570,12 @@
             {
               "id": "fra2p1q17",
               "type": "mc",
-              "prompt": "Je ___ (écrire) une lettre.",
+              "prompt": "J'___ (écrire) un message à mon frère.",
               "choices": [
                 "écris",
-                "sais",
-                "bois",
-                "comprends"
+                "écrit",
+                "écrivent",
+                "écrivez"
               ],
               "answer": 0,
               "explanation": "\"écris\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8585,10 +8585,10 @@
               "type": "fill",
               "prompt": "Je ___ (partir) à midi.",
               "bank": [
-                "finis",
-                "suis",
+                "partons",
                 "pars",
-                "vends"
+                "part",
+                "partent"
               ],
               "answer": "pars",
               "explanation": "\"pars\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8598,10 +8598,10 @@
               "type": "mc",
               "prompt": "Je ___ (mettre) la table.",
               "choices": [
-                "prends",
-                "ai",
+                "mettons",
+                "mettez",
                 "mets",
-                "lis"
+                "met"
               ],
               "answer": 2,
               "explanation": "\"mets\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8616,12 +8616,12 @@
             {
               "id": "fra2p1q20",
               "type": "mc",
-              "prompt": "Je ___ (attendre) le train.",
+              "prompt": "J'___ (attendre) le train.",
               "choices": [
-                "choisis",
-                "dors",
+                "attendons",
+                "attendez",
                 "attends",
-                "vais"
+                "attend"
               ],
               "answer": 2,
               "explanation": "\"attends\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8631,9 +8631,9 @@
               "type": "fill",
               "prompt": "Je ___ (vendre) ma voiture.",
               "bank": [
-                "bois",
-                "sais",
-                "mange",
+                "vend",
+                "vendons",
+                "vendent",
                 "vends"
               ],
               "answer": "vends",
@@ -8645,9 +8645,9 @@
               "prompt": "Je ___ (choisir) le rouge.",
               "choices": [
                 "choisis",
-                "lis",
-                "connais",
-                "veux"
+                "choisit",
+                "choisissent",
+                "choisissez"
               ],
               "answer": 0,
               "explanation": "\"choisis\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8657,10 +8657,10 @@
               "type": "fill",
               "prompt": "Je ___ (comprendre) la question.",
               "bank": [
-                "écris",
-                "suis",
+                "comprenez",
                 "comprends",
-                "vois"
+                "comprennent",
+                "comprenons"
               ],
               "answer": "comprends",
               "explanation": "\"comprends\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -8670,10 +8670,10 @@
               "type": "mc",
               "prompt": "Je ___ (connaître) Paris.",
               "choices": [
-                "écris",
-                "vois",
+                "connaissons",
+                "connaissez",
                 "connais",
-                "parle"
+                "connaît"
               ],
               "answer": 2,
               "explanation": "\"connais\" is correct here. Present-tense \"je\" conjugation of common verbs."
@@ -10175,10 +10175,10 @@
               "type": "fill",
               "prompt": "Je ___ (se réveiller) à sept heures.",
               "bank": [
-                "me douche",
+                "nous réveillons",
                 "me réveille",
-                "me détends",
-                "m'occupe"
+                "te réveilles",
+                "se réveillent"
               ],
               "answer": "me réveille",
               "explanation": "\"me réveille\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10188,10 +10188,10 @@
               "type": "mc",
               "prompt": "Tu ___ (se lever) tôt le matin.",
               "choices": [
-                "te souviens",
-                "te maquilles",
+                "vous levez",
+                "se lève",
                 "te lèves",
-                "te rases"
+                "me lève"
               ],
               "answer": 2,
               "explanation": "\"te lèves\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10201,9 +10201,9 @@
               "type": "fill",
               "prompt": "Il ___ (se laver) avant le petit-déjeuner.",
               "bank": [
-                "se repose",
-                "se couchent",
-                "se coiffent",
+                "se lavent",
+                "te laves",
+                "nous lavons",
                 "se lave"
               ],
               "answer": "se lave",
@@ -10215,9 +10215,9 @@
               "prompt": "Nous ___ (s'habiller) rapidement.",
               "choices": [
                 "nous habillons",
-                "nous amusons",
-                "nous ennuyons",
-                "nous promenons"
+                "vous habillez",
+                "m'habille",
+                "s'habille"
               ],
               "answer": 0,
               "explanation": "\"nous habillons\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10227,10 +10227,10 @@
               "type": "fill",
               "prompt": "Vous ___ (se brosser) les dents.",
               "bank": [
+                "te brosses",
                 "vous brossez",
-                "vous dépêchez",
-                "vous inquiétez",
-                "vous sentez"
+                "nous brossons",
+                "me brosse"
               ],
               "answer": "vous brossez",
               "explanation": "\"vous brossez\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10247,10 +10247,10 @@
               "type": "mc",
               "prompt": "Elles ___ (se coiffer) devant le miroir.",
               "choices": [
-                "se repose",
-                "se couchent",
+                "vous coiffez",
+                "se coiffe",
                 "se coiffent",
-                "s'endorment"
+                "te coiffes"
               ],
               "answer": 2,
               "explanation": "\"se coiffent\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10261,9 +10261,9 @@
               "prompt": "Je ___ (se doucher) le matin.",
               "bank": [
                 "me douche",
-                "me réveille",
-                "me détends",
-                "m'occupe"
+                "vous douchez",
+                "te douches",
+                "nous douchons"
               ],
               "answer": "me douche",
               "explanation": "\"me douche\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10274,9 +10274,9 @@
               "prompt": "Tu ___ (se raser) tous les jours.",
               "choices": [
                 "te rases",
-                "te souviens",
-                "te maquilles",
-                "te lèves"
+                "se rasent",
+                "se rase",
+                "vous rasez"
               ],
               "answer": 0,
               "explanation": "\"te rases\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10286,10 +10286,10 @@
               "type": "fill",
               "prompt": "Il ___ (se reposer) après le travail.",
               "bank": [
+                "se reposent",
                 "se repose",
-                "se coiffent",
-                "s'endorment",
-                "se plaint"
+                "te reposes",
+                "nous reposons"
               ],
               "answer": "se repose",
               "explanation": "\"se repose\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10299,10 +10299,10 @@
               "type": "mc",
               "prompt": "Nous ___ (se promener) dans le parc.",
               "choices": [
-                "nous habillons",
-                "nous amusons",
+                "me promène",
+                "vous promenez",
                 "nous promenons",
-                "nous ennuyons"
+                "se promène"
               ],
               "answer": 2,
               "explanation": "\"nous promenons\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10319,10 +10319,10 @@
               "type": "mc",
               "prompt": "Vous ___ (se dépêcher) pour ne pas être en retard.",
               "choices": [
-                "vous brossez",
-                "vous inquiétez",
+                "se dépêchent",
+                "se dépêche",
                 "vous dépêchez",
-                "vous sentez"
+                "te dépêches"
               ],
               "answer": 2,
               "explanation": "\"vous dépêchez\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10332,10 +10332,10 @@
               "type": "fill",
               "prompt": "Elles ___ (se coucher) tard le week-end.",
               "bank": [
+                "te couches",
+                "me couche",
                 "se couchent",
-                "s'appelle",
-                "s'endorment",
-                "se repose"
+                "nous couchons"
               ],
               "answer": "se couchent",
               "explanation": "\"se couchent\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10346,9 +10346,9 @@
               "prompt": "Je ___ (s'habituer) à ce nouveau travail.",
               "choices": [
                 "m'habitue",
-                "me détends",
-                "me douche",
-                "m'occupe"
+                "s'habituent",
+                "s'habitue",
+                "vous habituez"
               ],
               "answer": 0,
               "explanation": "\"m'habitue\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10358,10 +10358,10 @@
               "type": "fill",
               "prompt": "Tu ___ (se souvenir) de son nom ?",
               "bank": [
-                "te lèves",
                 "te souviens",
-                "te rases",
-                "te maquilles"
+                "me souviens",
+                "vous souvenez",
+                "nous souvenons"
               ],
               "answer": "te souviens",
               "explanation": "\"te souviens\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10371,10 +10371,10 @@
               "type": "mc",
               "prompt": "Il ___ (s'appeler) Marc.",
               "choices": [
-                "se repose",
-                "se couchent",
+                "vous appelez",
+                "t'appelles",
                 "s'appelle",
-                "s'endorment"
+                "m'appelle"
               ],
               "answer": 2,
               "explanation": "\"s'appelle\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10391,10 +10391,10 @@
               "type": "fill",
               "prompt": "Nous ___ (s'ennuyer) sans internet.",
               "bank": [
-                "nous promenons",
-                "nous habillons",
-                "nous amusons",
-                "nous ennuyons"
+                "nous ennuyons",
+                "s'ennuie",
+                "s'ennuient",
+                "m'ennuie"
               ],
               "answer": "nous ennuyons",
               "explanation": "\"nous ennuyons\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10405,9 +10405,9 @@
               "prompt": "Vous ___ (se sentir) mieux aujourd'hui ?",
               "choices": [
                 "vous sentez",
-                "vous dépêchez",
-                "vous inquiétez",
-                "vous brossez"
+                "nous sentons",
+                "me sens",
+                "se sent"
               ],
               "answer": 0,
               "explanation": "\"vous sentez\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10417,10 +10417,10 @@
               "type": "fill",
               "prompt": "Elles ___ (se disputer) souvent.",
               "bank": [
+                "se dispute",
                 "se disputent",
-                "s'appelle",
-                "se lave",
-                "se plaint"
+                "vous disputez",
+                "te disputes"
               ],
               "answer": "se disputent",
               "explanation": "\"se disputent\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10430,10 +10430,10 @@
               "type": "mc",
               "prompt": "Je ___ (s'occuper) de mon petit frère.",
               "choices": [
-                "me détends",
-                "m'habitue",
+                "s'occupe",
+                "s'occupent",
                 "m'occupe",
-                "me douche"
+                "vous occupez"
               ],
               "answer": 2,
               "explanation": "\"m'occupe\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10443,9 +10443,9 @@
               "type": "fill",
               "prompt": "Tu ___ (se maquiller) avant de sortir.",
               "bank": [
-                "te lèves",
-                "te souviens",
-                "te rases",
+                "me maquille",
+                "vous maquillez",
+                "nous maquillons",
                 "te maquilles"
               ],
               "answer": "te maquilles",
@@ -10463,10 +10463,10 @@
               "type": "fill",
               "prompt": "Il ___ (se plaindre) tout le temps.",
               "bank": [
-                "se disputent",
-                "s'appelle",
-                "se couchent",
-                "se plaint"
+                "se plaint",
+                "me plains",
+                "vous plaignez",
+                "nous plaignons"
               ],
               "answer": "se plaint",
               "explanation": "\"se plaint\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10476,10 +10476,10 @@
               "type": "mc",
               "prompt": "Nous ___ (s'amuser) beaucoup ce soir.",
               "choices": [
-                "nous habillons",
-                "nous promenons",
+                "t'amuses",
+                "s'amusent",
                 "nous amusons",
-                "nous ennuyons"
+                "vous amusez"
               ],
               "answer": 2,
               "explanation": "\"nous amusons\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10489,10 +10489,10 @@
               "type": "fill",
               "prompt": "Vous ___ (s'inquiéter) pour rien.",
               "bank": [
-                "vous sentez",
+                "s'inquiète",
                 "vous inquiétez",
-                "vous dépêchez",
-                "vous brossez"
+                "s'inquiètent",
+                "m'inquiète"
               ],
               "answer": "vous inquiétez",
               "explanation": "\"vous inquiétez\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10503,9 +10503,9 @@
               "prompt": "Elles ___ (s'endormir) devant la télé.",
               "choices": [
                 "s'endorment",
-                "s'appelle",
-                "se couchent",
-                "se repose"
+                "t'endors",
+                "nous endormons",
+                "m'endors"
               ],
               "answer": 0,
               "explanation": "\"s'endorment\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -10515,10 +10515,10 @@
               "type": "fill",
               "prompt": "Je ___ (se détendre) le dimanche.",
               "bank": [
-                "me douche",
+                "se détendent",
                 "me détends",
-                "m'habitue",
-                "me réveille"
+                "se détend",
+                "vous détendez"
               ],
               "answer": "me détends",
               "explanation": "\"me détends\" is correct here. Present-tense reflexive verbs for daily routines."
@@ -11022,11 +11022,11 @@
             {
               "id": "fra2p8q8",
               "type": "fill",
-              "prompt": "J'ai pris rendez-vous chez le ___.",
+              "prompt": "J'ai pris rendez-vous chez le ___. (for my teeth)",
               "bank": [
-                "pharmacie",
-                "salle",
-                "infirmière",
+                "cardiologue",
+                "pharmacien",
+                "médecin",
                 "dentiste"
               ],
               "answer": "dentiste",
@@ -12463,7 +12463,7 @@
               "bank": [
                 "arroser",
                 "nourrir",
-                "repasser",
+                "balayer",
                 "passer"
               ],
               "answer": "passer",
@@ -13341,7 +13341,7 @@
             {
               "id": "fra2p14q15",
               "type": "mc",
-              "prompt": "J'ai perdu ___ clés.",
+              "prompt": "J'ai perdu ___ clés (à moi).",
               "choices": [
                 "mes",
                 "votre",
@@ -13354,7 +13354,7 @@
             {
               "id": "fra2p14q16",
               "type": "fill",
-              "prompt": "Elle adore ___ chat.",
+              "prompt": "Elle adore ___ chat (à elle).",
               "bank": [
                 "mon",
                 "leur",
@@ -13367,7 +13367,7 @@
             {
               "id": "fra2p14q17",
               "type": "mc",
-              "prompt": "Nous aimons ___ ville.",
+              "prompt": "Nous aimons ___ ville (à nous).",
               "choices": [
                 "leur",
                 "nos",
@@ -13380,7 +13380,7 @@
             {
               "id": "fra2p14q18",
               "type": "fill",
-              "prompt": "Ils ont vendu ___ maison.",
+              "prompt": "Ils ont vendu ___ maison (à eux).",
               "bank": [
                 "leurs",
                 "ta",
@@ -13393,7 +13393,7 @@
             {
               "id": "fra2p14q19",
               "type": "mc",
-              "prompt": "Tu as oublié ___ parapluie.",
+              "prompt": "Tu as oublié ___ parapluie (à toi).",
               "choices": [
                 "ton",
                 "leurs",
@@ -13413,7 +13413,7 @@
             {
               "id": "fra2p14q20",
               "type": "mc",
-              "prompt": "Vous avez ___ propre bureau ?",
+              "prompt": "Vous avez ___ propre bureau (à vous) ?",
               "choices": [
                 "votre",
                 "ses",
@@ -13426,7 +13426,7 @@
             {
               "id": "fra2p14q21",
               "type": "fill",
-              "prompt": "Il a rangé ___ chambre.",
+              "prompt": "Il a rangé ___ chambre (à lui).",
               "bank": [
                 "notre",
                 "sa",
@@ -13439,7 +13439,7 @@
             {
               "id": "fra2p14q22",
               "type": "mc",
-              "prompt": "Elles ont fini ___ devoirs.",
+              "prompt": "Elles ont fini ___ devoirs (à elles).",
               "choices": [
                 "ma",
                 "leur",
@@ -13452,7 +13452,7 @@
             {
               "id": "fra2p14q23",
               "type": "fill",
-              "prompt": "J'adore passer du temps avec ___ famille.",
+              "prompt": "J'adore passer du temps avec ___ famille (à moi).",
               "bank": [
                 "leur",
                 "votre",
@@ -13465,7 +13465,7 @@
             {
               "id": "fra2p14q24",
               "type": "mc",
-              "prompt": "Nous invitons ___ amis ce soir.",
+              "prompt": "Nous invitons ___ amis (à nous) ce soir.",
               "choices": [
                 "nos",
                 "leurs",

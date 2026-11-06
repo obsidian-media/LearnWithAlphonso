@@ -183,6 +183,39 @@ export const EXTRA_DECOYS: Record<string, { cls: OptionClass; words: string[] }[
   esa2p23: [{ cls: "verb", words: ["depositar", "retirar", "firmar", "ahorrar"] }],
 };
 
+/**
+ * The "please" or "thanks" a phrase ends with ("La cuenta, por favor" -> "por favor"), or null.
+ * A question whose answer is the only option ending in one is answered by the English gloss alone
+ * ("Nothing else, thanks"), so such an answer is offered beside phrases with the same ending.
+ */
+export function politeTag(phrase: string): string | null {
+  const m = norm(phrase).match(
+    /,\s*(s'il vous plaît|s'il te plaît|merci|por favor|gracias)\s*[?.!]*$/,
+  );
+  return m ? m[1]! : null;
+}
+
+/**
+ * Reviewed phrases ending in "please" or "thanks" that mean something else, for the packs whose own
+ * lines have too few: used only for an answer with the same ending (bank-engine pickPairDistractors).
+ */
+export const POLITE_DECOYS: Record<string, string[]> = {
+  fra1p1: [
+    "Non, merci",
+    "Oui, merci",
+    "Parlez plus lentement, s'il vous plaît",
+    "Un café, s'il vous plaît",
+  ],
+  fra1p15: [
+    "la carte, s'il vous plaît",
+    "de l'eau, s'il vous plaît",
+    "une table pour deux, s'il vous plaît",
+  ],
+  esa1p1: ["No, gracias", "Sí, gracias", "Más despacio, por favor", "Un momento, por favor"],
+  esa1p24: ["Habla más alto, por favor", "Espera un momento, por favor"],
+  esa2p10: ["Un poco más, gracias", "Muy rico, gracias"],
+};
+
 /** Why a candidate may not be a wrong option for this answer (null: it may). */
 export function bannedBecause(answer: string, candidate: string): string | null {
   if (norm(answer) === norm(candidate)) return "same as the answer";
