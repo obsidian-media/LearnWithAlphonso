@@ -83,4 +83,16 @@ final class AvatarCallTests: XCTestCase {
         XCTAssertEqual(AvatarMode.reacting(.happy).callLabel, "Nice!")
         XCTAssertEqual(AvatarMode.reacting(.encouraging).callLabel, "Let's fix that")
     }
+
+    func testTheCharacterIsAParameter() {
+        let kit = CharacterKit.alphonso
+        XCTAssertEqual(kit.displayName, "Alphonso")
+        XCTAssertEqual(kit.folder, "AlphonsoAvatar")
+        XCTAssertEqual(kit.mouthRect, AvatarLayers.mouthRect)
+        XCTAssertEqual(kit.defaultRoom, CallScenes.defaultRoom)
+        // Another character's default room is what a scenario without a picture falls back to.
+        let office = CallRoom(light: "office-light", dark: "office-dark", dimInDark: false)
+        XCTAssertEqual(CallScenes.room(for: "free-talk", fallback: office), office)
+        XCTAssertEqual(CallScenes.room(for: "coffee", fallback: office), CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
+    }
 }

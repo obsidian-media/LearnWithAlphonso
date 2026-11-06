@@ -15,14 +15,15 @@ import LearnWithAlphonsoKit
 private enum AvatarArt {
     private static var cache: [String: UIImage] = [:]
 
-    static func image(_ file: String) -> UIImage? {
-        if let hit = cache[file] { return hit }
-        let path = Bundle.main.bundlePath + "/AlphonsoAvatar/" + file
+    static func image(_ file: String, folder: String) -> UIImage? {
+        let cacheKey = folder + "/" + file
+        if let hit = cache[cacheKey] { return hit }
+        let path = Bundle.main.bundlePath + "/" + folder + "/" + file
         guard let loaded = UIImage(contentsOfFile: path) else { return nil }
         // contentsOfFile only maps the file; the WebP would otherwise decode lazily at first draw (and again if
         // the system purges the decode). Decode now, once, and cache the bitmap.
         let image = loaded.preparingForDisplay() ?? loaded
-        cache[file] = image
+        cache[cacheKey] = image
         return image
     }
 }
@@ -108,6 +109,8 @@ struct AlphonsoAvatarView: View {
     let replyText: String?
     let replyVerdict: AvatarReplyVerdict
     let course: Course
+    /// Who to draw: his art folder and layer placement. Alphonso unless told otherwise.
+    var kit: CharacterKit = .alphonso
     /// Told when his mode changes (idle, listening, thinking, speaking, a reaction): the call's state pill.
     var onModeChange: ((AvatarMode) -> Void)?
 
@@ -120,7 +123,7 @@ struct AlphonsoAvatarView: View {
             let frame = driver.frame(
                 voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course,
                 reduceMotion: reduceMotion, onModeChange: onModeChange)
-            AvatarLayersView(frame: frame)
+            AvatarLayersView(frame: frame, kit: kit)
         }
     }
 }
@@ -129,6 +132,7 @@ struct AlphonsoAvatarView: View {
 @MainActor
 private struct AvatarLayersView: View {
     let frame: AvatarFrame
+    let kit: CharacterKit
 
     var body: some View {
         GeometryReader { proxy in
@@ -139,13 +143,13 @@ private struct AvatarLayersView: View {
                 ear(.right, twitching: frame.rightEarTwitch, side)
                 ForEach(AvatarViseme.allCases.filter { $0 != .closed }, id: \.self) { shape in
                     if let file = AvatarLayers.mouthFile(shape) {
-                        layer(file, AvatarLayers.mouthRect, side)
+                        layer(file, kit.mouthRect, side)
                             .opacity(frame.pose.mouth == shape ? 1 : 0)
                     }
                 }
                 .animation(.linear(duration: 0.055), value: frame.pose.mouth)
                 ForEach(AvatarBrows.allCases, id: \.self) { brows in
-                    layer(AvatarLayers.browsFile(brows), AvatarLayers.browsRect, side)
+                    layer(AvatarLayers.browsFile(brows), kit.browsRect, side)
                         .opacity(frame.pose.brows == brows ? 1 : 0)
                 }
                 .animation(.easeInOut(duration: 0.14), value: frame.pose.brows)
@@ -161,7 +165,7 @@ private struct AvatarLayersView: View {
     }
 
     private func ear(_ side: AvatarEarSide, twitching: Bool, _ canvas: CGFloat) -> some View {
-        let rect = side == .left ? AvatarLayers.earLeftRect : AvatarLayers.earRightRect
+        let rect = side == .left ? kit.earLeftRect : kit.earRightRect
         return ZStack(alignment: .topLeading) {
             layer(AvatarLayers.earFile(side, twitching: false), rect, canvas).opacity(twitching ? 0 : 1)
             layer(AvatarLayers.earFile(side, twitching: true), rect, canvas).opacity(twitching ? 1 : 0)
@@ -171,7 +175,7 @@ private struct AvatarLayersView: View {
 
     /// A soft diagonal band of light across the lenses; the glint mask (white = lens) keeps it off the rest.
     private func glint(progress: Double, _ canvas: CGFloat) -> some View {
-        let rect = AvatarLayers.glintRect
+        let rect = kit.glintRect
         let width = canvas * rect.w
         let height = canvas * rect.h
         return ZStack {
@@ -186,7 +190,7 @@ private struct AvatarLayersView: View {
         .frame(width: width, height: height)
         .clipped()
         .mask {
-            if let mask = AvatarArt.image(AvatarLayers.glintMaskFile) {
+            if let mask = AvatarArt.image(AvatarLayers.glintMaskFile, folder: kit.folder) {
                 Image(uiImage: mask).resizable().luminanceToAlpha()
             }
         }
@@ -195,7 +199,7 @@ private struct AvatarLayersView: View {
 
     @ViewBuilder
     private func layer(_ file: String, _ rect: AvatarRect, _ canvas: CGFloat) -> some View {
-        if let image = AvatarArt.image(file) {
+        if let image = AvatarArt.image(file, folder: kit.folder) {
             Image(uiImage: image)
                 .resizable()
                 .frame(width: canvas * rect.w, height: canvas * rect.h)

@@ -30,6 +30,8 @@ private let eveningNavy = Color(red: 22.0 / 255, green: 32.0 / 255, blue: 60.0 /
 
 struct PracticeCallView<Sheet: View>: View {
     let title: String
+    /// Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise.
+    var kit: CharacterKit = .alphonso
     let scenarioID: String
     let voice: VoiceSessionController
     let course: Course
@@ -57,7 +59,7 @@ struct PracticeCallView<Sheet: View>: View {
                 room
                 AlphonsoAvatarView(
                     voice: voice, replyText: turns.last(where: { $0.role == "assistant" })?.content,
-                    replyVerdict: replyVerdict, course: course, onModeChange: { mode = $0 }
+                    replyVerdict: replyVerdict, course: course, kit: kit, onModeChange: { mode = $0 }
                 )
                 .frame(width: side, height: side)
                 .position(x: width / 2, y: height * 0.15 + side / 2)
@@ -94,7 +96,7 @@ struct PracticeCallView<Sheet: View>: View {
     // MARK: - Room
 
     private var room: some View {
-        let room = CallScenes.room(for: scenarioID)
+        let room = CallScenes.room(for: scenarioID, fallback: kit.defaultRoom)
         let dark = colorScheme == .dark
         let name = dark ? room.dark : room.light
         return ZStack {
@@ -126,7 +128,7 @@ struct PracticeCallView<Sheet: View>: View {
     private var callBar: some View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("Alphonso")
+                Text(kit.displayName)
                     .font(AlphonsoFont.display(19, weight: .bold))
                 HStack(spacing: 6) {
                     Circle()

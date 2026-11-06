@@ -23,8 +23,11 @@ public enum CallScenes {
     public static let scenariosWithArt: Set<String> = Set(scenarioIDs)
     public static let defaultRoom = CallRoom(light: "room-light", dark: "room-dark", dimInDark: false)
 
-    public static func room(for scenarioID: String?, withArt: Set<String> = scenariosWithArt) -> CallRoom {
-        guard let scenarioID, withArt.contains(scenarioID) else { return defaultRoom }
+    /// `fallback` is the character's own default room (`CharacterKit.defaultRoom`).
+    public static func room(
+        for scenarioID: String?, withArt: Set<String> = scenariosWithArt, fallback: CallRoom = defaultRoom
+    ) -> CallRoom {
+        guard let scenarioID, withArt.contains(scenarioID) else { return fallback }
         return CallRoom(light: scenarioID, dark: scenarioID, dimInDark: true)
     }
 
