@@ -698,7 +698,8 @@ function routeCommand() {
   const rulings = ROUTE_PHASES.flatMap((p) => [...loadRulings(p).values()]);
   // A later ruling on the same item (a rewrite) wins over the judge's.
   const latest = new Map(rulings.map((r) => [r.id, r]));
-  const routed = route([...latest.values()]);
+  const second = loadVerdicts("second");
+  const routed = route([...latest.values()], (id) => second.get(id)?.verdict === "ok");
   const checked = checkFixes(items, routed.fixes);
   for (const course of ["en", "fr", "es"])
     fs.writeFileSync(
@@ -770,7 +771,7 @@ function routeCommand() {
     ].join("\n"),
   );
   console.log(
-    `Fixes ${checked.ok.length} (legacy prompt needed: ${checked.ok.filter((f) => f.needsLegacyPrompt).length}), kept ${routed.kept.length}, owner ${owner.length} (${checked.refused.length} of them refused fixes).`,
+    `Key changes: ${routed.keyChanges.applied} applied, ${routed.keyChanges.listed} held for the owner. Fixes ${checked.ok.length} (legacy prompt needed: ${checked.ok.filter((f) => f.needsLegacyPrompt).length}), kept ${routed.kept.length}, owner ${owner.length} (${checked.refused.length} of them refused fixes).`,
   );
 }
 

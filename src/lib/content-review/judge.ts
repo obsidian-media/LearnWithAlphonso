@@ -131,25 +131,58 @@ export function parseRulings(c: Chunk, text: string): { rulings: Ruling[]; missi
  * Where each ruling goes: a confident fix becomes a proposed fix (fixes.ts checks it next), a keep
  * closes the item, and everything else is the owner's (kept short by the confidence bar).
  */
-export function route(rulings: Ruling[]): {
+/** A key change needs this much confidence (owner, 2026-11-06), and Mistral must not disagree. */
+export const MIN_KEY_CHANGE_CONFIDENCE = 0.8;
+
+/**
+ * Where each ruling goes: a confident fix becomes a proposed fix (fixes.ts checks it next), a keep
+ * closes the item, and everything else is the owner's. A fix that changes the answer key goes to the
+ * owner unless the judge called it a wrong key with confidence >= 0.8 AND Mistral did not say the
+ * item is fine (`mistralSaysOk`); without the key change a patch would be refused anyway.
+ */
+export function route(
+  rulings: Ruling[],
+  mistralSaysOk: (id: string) => boolean = () => false,
+): {
   fixes: ProposedFix[];
   kept: string[];
   owner: Ruling[];
+  keyChanges: { applied: number; listed: number };
 } {
   const fixes: ProposedFix[] = [];
   const kept: string[] = [];
   const owner: Ruling[] = [];
+  const keyChanges = { applied: 0, listed: 0 };
   for (const r of rulings) {
-    if (r.decision === "keep") kept.push(r.id);
-    else if (r.decision === "fix" && r.confidence >= MIN_FIX_CONFIDENCE && r.patch)
-      fixes.push({
-        id: r.id,
-        patch: r.patch,
-        reason: r.reason,
-        // A key change is only honoured when the judge also called it a wrong key.
-        ...(r.keyChange && r.category === "wrong-key" ? { keyChange: true } : {}),
-      });
-    else owner.push(r);
+    if (r.decision === "keep") {
+      kept.push(r.id);
+      continue;
+    }
+    if (r.decision !== "fix" || !r.patch || r.confidence < MIN_FIX_CONFIDENCE) {
+      owner.push(r);
+      continue;
+    }
+    if (r.keyChange) {
+      const ok =
+        r.category === "wrong-key" &&
+        r.confidence >= MIN_KEY_CHANGE_CONFIDENCE &&
+        !mistralSaysOk(r.id);
+      if (!ok) {
+        keyChanges.listed++;
+        owner.push({
+          ...r,
+          reason: `key change held for you (confidence ${r.confidence}${mistralSaysOk(r.id) ? ", Mistral says the item is fine" : ""}${r.category !== "wrong-key" ? `, category ${r.category}` : ""}): ${r.reason}`,
+        });
+        continue;
+      }
+      keyChanges.applied++;
+    }
+    fixes.push({
+      id: r.id,
+      patch: r.patch,
+      reason: r.reason,
+      ...(r.keyChange ? { keyChange: true } : {}),
+    });
   }
-  return { fixes, kept, owner };
+  return { fixes, kept, owner, keyChanges };
 }

@@ -213,30 +213,29 @@ describe("the judge's rulings", () => {
     expect(routed.kept).toEqual(["d"]);
   });
 
-  it("a key change is honoured only when the judge also called it a wrong key", () => {
-    const routed = route([
-      {
-        id: "a",
-        decision: "fix",
-        confidence: 0.9,
-        reason: "",
-        patch: { answer: "x" },
-        keyChange: true,
-        category: "naturalness",
-      },
-      {
-        id: "b",
-        decision: "fix",
-        confidence: 0.9,
-        reason: "",
-        patch: { answer: "x" },
-        keyChange: true,
-        category: "wrong-key",
-      },
+  it("a key change applies only as a wrong key, at >= 0.8, with Mistral not saying ok (mutation: drop the guard)", () => {
+    const k = (id: string, confidence: number, category = "wrong-key") => ({
+      id,
+      decision: "fix" as const,
+      confidence,
+      reason: "",
+      patch: { answer: "x" },
+      keyChange: true,
+      category,
+    });
+    const routed = route(
+      [k("a", 0.9, "naturalness"), k("b", 0.9), k("c", 0.75), k("d", 0.95)],
+      (id) => id === "d",
+    );
+    expect(routed.fixes.map((f) => [f.id, f.keyChange ?? false])).toEqual([["b", true]]);
+    expect(routed.owner.map((o) => o.id)).toEqual(["a", "c", "d"]);
+    expect(routed.keyChanges).toEqual({ applied: 1, listed: 3 });
+  });
+
+  it("wording fixes still apply from 0.5", () => {
+    const r = route([
+      { id: "w", decision: "fix", confidence: 0.5, reason: "", patch: { prompt: "p" } },
     ]);
-    expect(routed.fixes.map((f) => [f.id, f.keyChange ?? false])).toEqual([
-      ["a", false],
-      ["b", true],
-    ]);
+    expect(r.fixes.map((f) => f.id)).toEqual(["w"]);
   });
 });
