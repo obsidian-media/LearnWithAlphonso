@@ -93,6 +93,19 @@ export function browserFirstRunStore(): FirstRunStore {
   return createFirstRunStore(storage);
 }
 
+/**
+ * Complete your profile's Not now holds for the rest of this visit even when saving it failed (offline, a server
+ * error): without this the /learn gate would send the learner straight back, and the screen could not be skipped.
+ * In memory only; the saved dismissedAt is what keeps it away on later visits.
+ */
+let completeProfileSkipped = false;
+export function skipCompleteProfileThisVisit(): void {
+  completeProfileSkipped = true;
+}
+export function completeProfileSkippedThisVisit(): boolean {
+  return completeProfileSkipped;
+}
+
 /** The age screen's Continue. A device that ever chose Under 13 stays blocked, whatever is picked now. */
 export function chooseAge(store: FirstRunStore, choice: AgeChoice): "ok" | "blocked" {
   if (store.isBlocked()) return "blocked";

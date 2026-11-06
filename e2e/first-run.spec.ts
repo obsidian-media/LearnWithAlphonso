@@ -70,11 +70,26 @@ test("under 13: the kind stop, nothing sent, and it stays closed on this device"
   await walkToAge(page);
   await shot(page, "07-age");
   await btn(page, /under 13/i).click();
+  // From here on, every request at all: only the page's own files (pictures, scripts) may load, nothing may be
+  // posted, and nothing may leave this origin (analytics, Supabase, a server function, our API).
+  const origin = new URL(page.url()).origin;
+  const after: Request[] = [];
+  page.on("request", (r) => after.push(r));
   await btn(page, "Continue").click();
   const stop = page.getByRole("heading", { name: "Thanks for wanting to learn with me!" });
   await expect(stop).toBeVisible();
   await shot(page, "14-under-13");
   expect(await page.evaluate(() => localStorage.getItem("lwa.firstRun.v1"))).toBeNull();
+  await btn(page, "OK").click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.waitForLoadState("networkidle");
+  const leaving = after.filter(
+    (r) =>
+      r.method() !== "GET" ||
+      new URL(r.url()).origin !== origin ||
+      /\/_serverFn\/|\/api\//.test(r.url()),
+  );
+  expect(leaving.map((r) => `${r.method()} ${r.url()}`)).toEqual([]);
 
   // Back to the start, a reload, and the sign-up page: still the stop.
   await page.goto("/welcome");

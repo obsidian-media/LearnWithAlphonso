@@ -814,12 +814,7 @@ function PlanStep({
       )}
       <ul aria-label="Your team" className="mx-4 mt-3 grid grid-cols-2 gap-2.5">
         <TeamMate face={expressionSrc("happy")} name="Alphonso" job="Daily lessons" />
-        <TeamMate
-          face="/firstrun/hector-happy.webp"
-          name="Hector"
-          job="Real conversations"
-          pro
-        />
+        <TeamMate face="/firstrun/hector-happy.webp" name="Hector" job="Real conversations" pro />
       </ul>
       {error && (
         <p role="alert" className="mx-4 mt-3 ds-type-footnote text-ds-wrong-ink">

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PodcastAudio } from "@/components/PodcastAudio";
 import { NamePrompt } from "@/components/NamePrompt";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
-import { browserFirstRunStore } from "@/lib/first-run";
+import { browserFirstRunStore, completeProfileSkippedThisVisit } from "@/lib/first-run";
 import {
   LEARNER_PROFILE_KEY,
   needsCompleteProfile,
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_authenticated")({
     // home screen, so a deep link (a lesson, an invite) is never hijacked.
     if (
       location?.pathname === "/learn" &&
+      !completeProfileSkippedThisVisit() &&
       needsCompleteProfile(parseLearnerProfile(data.user.user_metadata?.[LEARNER_PROFILE_KEY]))
     ) {
       throw redirect({ to: "/complete-profile" });

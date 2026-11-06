@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { AfterSignIn } from "../../components/firstrun/AfterSignIn";
 import { FirstRunFlow } from "../../components/firstrun/FirstRunFlow";
 import { FirstRunScreen } from "../../components/firstrun/FirstRunParts";
-import { browserFirstRunStore, cleanAnswers, type FirstRunDraft } from "../../lib/first-run";
+import {
+  browserFirstRunStore,
+  cleanAnswers,
+  skipCompleteProfileThisVisit,
+  type FirstRunDraft,
+} from "../../lib/first-run";
 import {
   LEARNER_PROFILE_KEY,
   needsCompleteProfile,
@@ -104,8 +109,11 @@ function CompleteProfile() {
       course={course}
       prefill={loaded.prefill}
       onExit={async () => {
-        if (!edit)
+        if (!edit) {
+          // Skipped for this visit even if the save below fails, so the /learn gate cannot loop back here.
+          skipCompleteProfileThisVisit();
           await saveLearnerProfile({ data: { patch: {}, mark: "dismissed" } }).catch(() => {});
+        }
         navigate({ to: edit ? "/profile" : "/learn", replace: true });
       }}
       onUnder13Ok={async () => {

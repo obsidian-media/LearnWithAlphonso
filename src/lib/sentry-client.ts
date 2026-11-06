@@ -1,7 +1,21 @@
 import * as Sentry from "@sentry/react";
 
+import { UNDER_13_KEY } from "./first-run";
 import { SENTRY_TRACES_SAMPLE_RATE, sentryDsnFor } from "./sentry-config";
 import { scrubBreadcrumb, scrubEvent } from "./sentry-scrub";
+
+/**
+ * A device that answered Under 13 in the first run sends us nothing at all (privacy policy, Children), crash
+ * reports included. Read at send time, not just at start: the block can happen mid-visit, and Sentry would
+ * otherwise post a session on the next route change.
+ */
+function under13Device(): boolean {
+  try {
+    return window.localStorage.getItem(UNDER_13_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 let initialised = false;
 
@@ -19,7 +33,7 @@ export function initSentryClient(): boolean {
     vercelEnv: import.meta.env.VITE_VERCEL_ENV as string | undefined,
     override: import.meta.env.VITE_SENTRY_DSN as string | undefined,
   });
-  if (!dsn) return false;
+  if (!dsn || under13Device()) return false;
   Sentry.init({
     dsn,
     environment: "production",
@@ -27,8 +41,16 @@ export function initSentryClient(): boolean {
     tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
     // fetch/xhr breadcrumbs record Supabase URLs (user_id=eq.<uuid>): off, not just scrubbed.
     integrations: [Sentry.breadcrumbsIntegration({ fetch: false, xhr: false })],
-    beforeSend: (event) => scrubEvent(event),
-    beforeBreadcrumb: (breadcrumb) => scrubBreadcrumb(breadcrumb),
+    beforeSend: (event) => (under13Device() ? null : scrubEvent(event)),
+    beforeBreadcrumb: (breadcrumb) => (under13Device() ? null : scrubBreadcrumb(breadcrumb)),
+    // The one door every envelope (errors, sessions, client reports) goes through.
+    transport: (options) => {
+      const inner = Sentry.makeFetchTransport(options);
+      return {
+        ...inner,
+        send: (envelope) => (under13Device() ? Promise.resolve({}) : inner.send(envelope)),
+      };
+    },
   });
   initialised = true;
   return true;

@@ -96,6 +96,16 @@ describe("_authenticated route guard", () => {
     expect(types).toContain("PodcastAudio");
   });
 
+  // Last on purpose: the skip is module state that lasts the visit.
+  it("a Not now whose save failed still lets the learner into /learn for the rest of the visit", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } }, error: null });
+    const { skipCompleteProfileThisVisit } = await import("@/lib/first-run");
+    skipCompleteProfileThisVisit();
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+  });
+
   it("mounts the one-time name prompt beside the Outlet", () => {
     const element = Route.options.component!({} as never) as React.ReactElement<{
       children: React.ReactElement[];

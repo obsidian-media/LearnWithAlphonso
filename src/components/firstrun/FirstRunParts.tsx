@@ -340,7 +340,7 @@ export function AgeCard({
     <button
       type="button"
       aria-pressed={selected}
-      aria-label={small === big ? big : `${big.replace("<", "under ")}, ${small}`}
+      aria-label={small === big || big.startsWith("<") ? small : `${big}, ${small}`}
       onClick={onClick}
       className={`grid min-h-[78px] content-center gap-0.5 rounded-[var(--ds-radius-control)] border-2 px-1 pb-2.5 pt-3 text-center ${PRESS} ${selected ? FACE_ON : FACE_IDLE}`}
     >
@@ -566,17 +566,19 @@ export function PickerSheet({
   );
 }
 
-/** A country's flag as its emoji (the OS draws it), hidden from screen readers: the name is always next to it. */
+/**
+ * A country as its two-letter code in a small chip, hidden from screen readers (the name is always next to it).
+ * Deliberately not the flag emoji: Windows draws those as two loose letters, so every system gets the same chip,
+ * which also matches the code leaderboards show.
+ */
 export function CountryFlag({ code }: { code: string }) {
-  const emoji = String.fromCodePoint(
-    ...[...code.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)),
-  );
   return (
     <span
       aria-hidden="true"
-      className="grid h-7 w-10 shrink-0 place-items-center overflow-hidden rounded-[6px] bg-ds-sunk ds-type-title leading-none"
+      data-country-chip=""
+      className="grid h-7 w-10 shrink-0 place-items-center rounded-[6px] bg-ds-sunk ds-type-caption font-bold tracking-wider text-ds-ink-soft"
     >
-      {emoji}
+      {code.toUpperCase()}
     </span>
   );
 }
