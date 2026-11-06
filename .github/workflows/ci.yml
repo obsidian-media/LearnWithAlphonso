@@ -272,7 +272,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Run the signed-in journey
-        run: bunx playwright test e2e/signed-in.spec.ts --reporter=github,html
+        run: bunx playwright test e2e/signed-in.spec.ts e2e/practice-avatar.spec.ts --reporter=github,html
 
       # Screenshots for a person to review, not a gate: a flaky capture must never block a merge.
       - name: Capture the visual refresh screenshots
