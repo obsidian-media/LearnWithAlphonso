@@ -33,7 +33,7 @@ describe("the inventory", () => {
   });
 
   it("names a source file that exists for every item", () => {
-    const sources = new Set(items.map((i) => i.source.replace("*", "")));
+    const sources = new Set(items.map((i) => i.source.replaceAll("*", "")));
     for (const s of sources) {
       const file = s.endsWith("campaigns.ts") ? "src/data/campaigns.ts" : s;
       expect(fs.existsSync(path.resolve(file)), s).toBe(true);
