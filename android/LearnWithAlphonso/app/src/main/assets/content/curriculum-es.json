@@ -35864,9 +35864,12 @@
               "acceptableAnswers": [
                 "Como está lloviendo, me quedaré en casa.",
                 "Ya que está lloviendo, me quedo en casa.",
-                "Me quedaré en casa porque está lloviendo."
+                "Me quedaré en casa porque está lloviendo.",
+                "Como está lloviendo, nos quedaremos en casa.",
+                "Ya que está lloviendo, nos quedamos en casa.",
+                "Nos quedaremos en casa porque está lloviendo."
               ],
-              "explanation": "\"Como está lloviendo, me quedaré en casa.\" puts \"como\" (since) first to give the reason, then the future \"me quedaré\"."
+              "explanation": "\"Como está lloviendo, me quedaré en casa.\" puts \"como\" (since) first to give the reason, then the future \"me quedaré\". If \"you\" includes others at home, \"nos quedaremos\" is also right."
             },
             {
               "id": "esb2p27q4",

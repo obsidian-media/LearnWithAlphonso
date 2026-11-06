@@ -19775,11 +19775,14 @@
    "acceptableAnswers": [
     "Como está lloviendo, me quedaré en casa.",
     "Ya que está lloviendo, me quedo en casa.",
-    "Me quedaré en casa porque está lloviendo."
+    "Me quedaré en casa porque está lloviendo.",
+    "Como está lloviendo, nos quedaremos en casa.",
+    "Ya que está lloviendo, nos quedamos en casa.",
+    "Nos quedaremos en casa porque está lloviendo."
    ],
-   "explanation": "\"Como está lloviendo, me quedaré en casa.\" puts \"como\" (since) first to give the reason, then the future \"me quedaré\"."
+   "explanation": "\"Como está lloviendo, me quedaré en casa.\" puts \"como\" (since) first to give the reason, then the future \"me quedaré\". If \"you\" includes others at home, \"nos quedaremos\" is also right."
   },
-  "reason": "In these \"Say that you...\" tasks \"you\" is the speaker (compare i9), so \"me quedaré\" is the right answer, and the we-forms would mark correct answers wrong.",
+  "reason": "In these \"Say that you...\" tasks \"you\" is the speaker (compare i9), so \"me quedaré\" leads. The original we-forms stay accepted: the same lesson keys \"you came home early\" as \"volvimos\" and \"you went for a walk\" as \"salimos\", so a learner answering with \"nos quedaremos\" must not be marked wrong.",
   "keyChange": true
  },
  "es:question:esb2p27l1/esb2p27q4": {
