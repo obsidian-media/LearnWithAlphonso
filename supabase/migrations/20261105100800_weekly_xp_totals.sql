@@ -33,9 +33,6 @@
 --   DROP FUNCTION public._sync_weekly_xp_totals();
 --   DROP TABLE public.weekly_xp_totals;
 
--- Writers wait for the few seconds the backfill takes, so no write falls between the backfill and the trigger.
-LOCK TABLE public.activity_days IN SHARE ROW EXCLUSIVE MODE;
-
 -- client-grants: none public.weekly_xp_totals
 CREATE TABLE public.weekly_xp_totals (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -72,15 +69,24 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public._sync_weekly_xp_totals() FROM PUBLIC, anon, authenticated;
 
-CREATE TRIGGER sync_weekly_xp_totals
-  AFTER INSERT OR UPDATE OR DELETE ON public.activity_days
-  FOR EACH ROW EXECUTE FUNCTION public._sync_weekly_xp_totals();
+-- Trigger and backfill in one statement holding a lock on activity_days, so no write falls between them: writers
+-- wait the few seconds the backfill takes. (One DO block, because the migration runner may not wrap the file in a
+-- transaction, and a top-level LOCK TABLE needs one.)
+DO $$
+BEGIN
+  LOCK TABLE public.activity_days IN SHARE ROW EXCLUSIVE MODE;
 
-INSERT INTO public.weekly_xp_totals (user_id, week_start, xp)
-SELECT a.user_id, a.day - (extract(isodow from a.day)::int - 1), sum(a.xp_earned)::int
-  FROM public.activity_days a
- GROUP BY 1, 2
-HAVING sum(a.xp_earned) <> 0;
+  CREATE TRIGGER sync_weekly_xp_totals
+    AFTER INSERT OR UPDATE OR DELETE ON public.activity_days
+    FOR EACH ROW EXECUTE FUNCTION public._sync_weekly_xp_totals();
+
+  INSERT INTO public.weekly_xp_totals (user_id, week_start, xp)
+  SELECT a.user_id, a.day - (extract(isodow from a.day)::int - 1), sum(a.xp_earned)::int
+    FROM public.activity_days a
+   GROUP BY 1, 2
+  HAVING sum(a.xp_earned) <> 0;
+END;
+$$;
 
 -- Range covered: [_week_start, _week_start + 7). A Monday reads the stored total.
 CREATE OR REPLACE FUNCTION public.weekly_xp(_user_id uuid, _week_start date)
