@@ -19,8 +19,14 @@ class Speech(context: Context) {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "alphonso-${text.hashCode()}")
     }
 
+    /** True while a line is being spoken; the sound effects wait for it to finish. */
+    val isSpeaking: Boolean get() = ready && runCatching { tts.isSpeaking }.getOrDefault(false)
+
     companion object {
         @Volatile private var shared: Speech? = null
+
+        /** Whether the shared voice is speaking, without starting a TextToSpeech just to ask. */
+        fun isSpeakingNow(): Boolean = shared?.isSpeaking ?: false
         fun get(context: Context): Speech = shared ?: synchronized(this) { shared ?: Speech(context).also { shared = it } }
     }
 }

@@ -51,6 +51,7 @@ struct PracticeCallView<Sheet: View>: View {
     @State private var showSheet = false
     @State private var mode: AvatarMode = .idle
     @State private var startedAt = Date()
+    @State private var callID = UUID()
 
     var body: some View {
         GeometryReader { proxy in
@@ -107,6 +108,16 @@ struct PracticeCallView<Sheet: View>: View {
         .background { room }
         .background(Color.black)
         .sheet(isPresented: $showSheet) { conversationSheet }
+        // The call-start sound, once per call (keyed, so a re-appearance cannot repeat it); while he speaks, no effect
+        // plays over him.
+        .onAppear {
+            SoundEffectsPlayer.shared.registerVoiceProbe("call") { [voice] in
+                if case .speaking = voice.phase { return true }
+                return false
+            }
+            SoundEffectsPlayer.shared.play(.callStart, key: "call-\(callID)")
+        }
+        .onDisappear { SoundEffectsPlayer.shared.unregisterVoiceProbe("call") }
     }
 
     /// The microphone is off in Settings or would not start: the classic screens say so under the button.
@@ -310,7 +321,10 @@ struct PracticeCallView<Sheet: View>: View {
                 .allowsHitTesting(!voice.isBusy)
             }
 
-            Button(action: onEnd) {
+            Button {
+                SoundEffectsPlayer.shared.play(.callEnd)
+                onEnd()
+            } label: {
                 Image(systemName: "phone.down.fill")
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(.white)

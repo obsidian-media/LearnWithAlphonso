@@ -263,6 +263,11 @@ struct LessonPlayerView: View {
         .toolbar(onStage ? .hidden : .visible, for: .navigationBar)
         .toolbar(onStage ? .hidden : .visible, for: .tabBar)
         .task(id: lesson.id) { await openLessonSession() }
+        // Sound effects: loaded before the first answer, and never played over the question cards' spoken lines.
+        .onAppear {
+            SoundEffectsPlayer.shared.preload()
+            SoundEffectsPlayer.shared.registerVoiceProbe("lessonSpeech") { questionCardSpeechSynthesizer.isSpeaking }
+        }
         // The lesson's time counts only while the app is in front.
         .onChange(of: scenePhase) { _, newPhase in
             let now = Date().timeIntervalSince1970
@@ -455,10 +460,12 @@ struct LessonPlayerView: View {
                         isCheckingTranslation = false
                         checked = true
                         recordAnswer()
+                        playVerdictEffects()
                     }
                 } else {
                     checked = true
                     recordAnswer()
+                    playVerdictEffects()
                 }
             }
             .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
@@ -490,6 +497,7 @@ struct LessonPlayerView: View {
     /// Continue, Got it or Finish. Finish completes the lesson once: a second tap while the completion is in flight
     /// would be a zero-XP replay (FinishGate).
     private func advance() {
+        SoundEffectsPlayer.shared.play(.tap)
         if let pendingReinforcement {
             activeReinforcement = pendingReinforcement
             self.pendingReinforcement = nil
@@ -549,6 +557,10 @@ struct LessonPlayerView: View {
         .onAppear {
             showPromotionOverlay = isLeaguePromotion
             celebrated = true
+            // The jingle with the confetti, then XP and any achievement as their tiles land; keyed per attempt, so a
+            // re-appearance never plays them again. Sound plays under Reduce Motion too (it only calms visuals).
+            SoundEffectsPlayer.shared.play(
+                SoundEffectCues.finish(xp: result.xpGain, unlocked: achievements.count), key: "finish-\(attemptSeed)")
         }
         .fullScreenCover(isPresented: $showPromotionOverlay) {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
@@ -578,6 +590,17 @@ struct LessonPlayerView: View {
             isConnected: networkMonitor.isConnected,
             hasAIConsent: aiConsent.isGranted,
             submission: picked)
+    }
+
+    /// The verdict's sound and haptic, once per checked answer. A lost heart follows the wrong-answer sound.
+    private func playVerdictEffects() {
+        let correct = lastAnswerCorrect
+        let losesHeart = !correct && !isReinforcing
+            && HeartsEconomy.wrongAnswerCostsHeart(unlimited: hectorAccess?.entitlementStore.isPro ?? false)
+        SoundEffectsPlayer.shared.play(
+            SoundEffectCues.verdict(correct: correct, losesHeart: losesHeart),
+            key: "verdict-\(attemptSeed)-\(idx)-\(isReinforcing ? "r" : "q")")
+        SoundEffectsPlayer.shared.haptic(correct ? .right : .wrong)
     }
 
     private func recordAnswer() {

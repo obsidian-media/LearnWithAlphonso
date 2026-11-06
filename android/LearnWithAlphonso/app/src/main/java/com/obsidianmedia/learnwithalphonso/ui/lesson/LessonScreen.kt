@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.audio.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,6 +98,9 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
     }
     val state by vm.state.collectAsState()
     LaunchedEffect(vm) { vm.onScreenShown() }
+    // The lesson's sound effects and haptics: each moment arrives once, as an event, so a recomposition cannot repeat it.
+    val haptics = rememberHaptics()
+    LaunchedEffect(vm) { vm.soundEffects.collect { container.soundEffects.play(it, haptics) } }
     // The lesson's time counts only while the app is in front.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, vm) {

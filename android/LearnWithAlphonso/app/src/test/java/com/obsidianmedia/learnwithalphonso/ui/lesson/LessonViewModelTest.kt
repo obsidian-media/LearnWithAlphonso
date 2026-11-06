@@ -11,7 +11,14 @@ import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonPreviousBest
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.testContent
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectRequest
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -477,5 +484,61 @@ class LessonViewModelTest {
         awaitTrue("failure shown") { v.state.value.phase is LessonPhase.SaveFailed }
         assertTrue((v.state.value.phase as LessonPhase.SaveFailed).message.contains("signed out"))
         assertTrue(store.completions.isEmpty())
+    }
+
+    // Sound effects: the view model says which effects a moment asks for; the player (switch, voice, once per key) is
+    // core's SoundEffectGate, tested in SoundEffectsTest.
+
+    private fun recordEffects(v: LessonViewModel): Pair<MutableList<SoundEffectRequest>, CoroutineScope> {
+        val got = mutableListOf<SoundEffectRequest>()
+        val scope = CoroutineScope(Dispatchers.Unconfined + Job())
+        scope.launch { v.soundEffects.collect { got += it } }
+        return got to scope
+    }
+
+    private fun List<SoundEffectRequest>.effects() = map { r -> r.cues.map { it.effect } }
+
+    @Test
+    fun `a right answer asks for the right-answer effect, once`() = runBlocking {
+        val v = vm(okServer())
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(correctAnswer(lesson.questions[0])); v.check().join()
+        v.check().join()
+        assertEquals(listOf(listOf(SoundEffect.RIGHT)), got.effects())
+        scope.cancel()
+    }
+
+    @Test
+    fun `a wrong answer asks for the wrong effect, then the heart going`() = runBlocking {
+        val v = vm(okServer())
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        assertEquals(listOf(listOf(SoundEffect.WRONG, SoundEffect.HEART_LOST)), got.effects())
+        scope.cancel()
+    }
+
+    @Test
+    fun `a Pro learner's wrong answer loses no heart, so no heart sound`() = runBlocking {
+        val v = vm(okServer(), pro = true)
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        assertEquals(listOf(listOf(SoundEffect.WRONG)), got.effects())
+        scope.cancel()
+    }
+
+    @Test
+    fun `Continue taps, and finishing asks for the jingle and XP once`() = runBlocking {
+        val v = vm(okServer())
+        val (got, scope) = recordEffects(v)
+        playThrough(v)
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        val effects = got.effects()
+        assertEquals(lesson.questions.size, effects.count { it == listOf(SoundEffect.TAP) })
+        assertEquals(listOf(listOf(SoundEffect.LESSON_COMPLETE, SoundEffect.XP)), effects.filter { SoundEffect.LESSON_COMPLETE in it })
+        assertEquals(1, got.count { it.key?.startsWith("finish-") == true })
+        scope.cancel()
     }
 }

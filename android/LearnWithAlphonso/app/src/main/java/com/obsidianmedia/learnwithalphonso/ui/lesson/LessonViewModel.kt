@@ -32,8 +32,15 @@ import com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionService
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCue
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCues
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectRequest
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -115,6 +122,21 @@ class LessonViewModel(
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
     private var attemptSeed = UUID.randomUUID().toString()
+
+    private val _soundEffects = MutableSharedFlow<SoundEffectRequest>(extraBufferCapacity = 16)
+    /** The lesson's sound-effect moments, each sent once (events, not state, so a recomposition cannot repeat one). */
+    val soundEffects: SharedFlow<SoundEffectRequest> = _soundEffects.asSharedFlow()
+
+    /** The verdict's effects, once per checked answer; a lost heart follows the wrong-answer sound. */
+    private fun sendVerdictEffects() {
+        val s = _state.value
+        val correct = isCurrentCorrect()
+        val losesHeart = !correct && !s.isReinforcing && HeartsEconomy.wrongAnswerCostsHeart(unlimited = isPro())
+        _soundEffects.tryEmit(SoundEffectRequest(
+            SoundEffectCues.verdict(correct, losesHeart),
+            "verdict-$attemptSeed-${s.idx}-${if (s.isReinforcing) "r" else "q"}",
+        ))
+    }
     /** The start-lesson-session token taken when the lesson opened; finish() mints one if none is held. */
     private var sessionToken: String? = null
     /** The last question's Finish completes the lesson once (a second tap would be a zero-XP replay). */
@@ -237,16 +259,19 @@ class LessonViewModel(
                 val verdict = settleTranslation(q, s.picked)
                 _state.update { it.copy(isChecking = false, checked = true, translationVerdict = verdict) }
                 recordAnswer()
+                sendVerdictEffects()
             }
         }
         _state.update { it.copy(checked = true) }
         recordAnswer()
+        sendVerdictEffects()
         return NOTHING_TO_WAIT_FOR
     }
 
     fun continueOrFinish() {
         val s = _state.value
         if (!s.checked) return
+        _soundEffects.tryEmit(SoundEffectRequest(listOf(SoundEffectCue(SoundEffect.TAP, 0)), null))
         if (s.pendingReinforcement != null) {
             _state.update { it.copy(activeReinforcement = it.pendingReinforcement, pendingReinforcement = null, picked = null, checked = false, translationVerdict = null) }
             return
@@ -345,6 +370,8 @@ class LessonViewModel(
             val promoted = previousTier != null && previousTier != result.progress.leagueTier
             syncStore.updateLastKnownProgress(result.progress)
             _state.update { it.copy(phase = LessonPhase.Finished(result, promoted)) }
+            _soundEffects.tryEmit(SoundEffectRequest(
+                SoundEffectCues.finish(result.xpGain, result.newlyUnlocked.size), "finish-$attemptSeed"))
         } finally {
             _state.update { it.copy(isSubmitting = false) }
         }

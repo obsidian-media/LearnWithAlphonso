@@ -80,6 +80,18 @@ vi.mock("../../lib/use-pro-status", () => ({
   }),
 }));
 
+// Sound effects: the real player is unit-tested in sfx.test.ts; here only which effect each lesson moment asks for.
+const playSfx = vi.fn((_event: string, _key?: string) => true);
+const playSfxCues = vi.fn((_cues: unknown, _key: string) => () => {});
+vi.mock("../../lib/sfx", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/sfx")>();
+  return {
+    ...actual,
+    playSfx: (event: string, key?: string) => playSfx(event, key),
+    playSfxCues: (cues: unknown, key: string) => playSfxCues(cues, key),
+  };
+});
+
 const { Route } = await import("./lesson.$id");
 const { useProgress } = await import("../../lib/progress");
 
@@ -128,6 +140,8 @@ beforeEach(() => {
   pickReinforcementQuestion.mockReturnValue(null);
   useProgress.getState().reset();
   useProgress.setState({ streak: 7 });
+  playSfx.mockClear();
+  playSfxCues.mockClear();
 });
 
 describe("out of hearts", () => {
@@ -1176,5 +1190,76 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
     expect(await screen.findByText("Something went wrong. Try again.")).toBeInTheDocument();
+  });
+});
+
+describe("sound effects at the lesson's moments", () => {
+  const events = () => playSfx.mock.calls.map((c) => c[0]);
+  const cueEvents = () =>
+    playSfxCues.mock.calls.map((c) => (c[0] as { event: string }[]).map((cue) => cue.event));
+
+  it("a right answer plays the right-answer effect, once", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await screen.findByText("Exactly!");
+    expect(events().filter((e) => e === "right")).toHaveLength(1);
+    expect(events()).not.toContain("wrong");
+    expect(cueEvents()).toEqual([]);
+  });
+
+  it("a wrong answer plays the wrong effect, then the heart going", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await screen.findByText("Not quite");
+    expect(cueEvents()).toEqual([["wrong", "heartLost"]]);
+    expect(events()).not.toContain("right");
+  });
+
+  it("a Pro learner's wrong answer loses no heart, so no heart sound", async () => {
+    proState = "pro";
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await screen.findByText("Not quite");
+    expect(cueEvents()).toEqual([["wrong"]]);
+  });
+
+  it("Continue taps; the complete screen plays its jingle, XP and achievement once", async () => {
+    completeLessonRemote.mockResolvedValue({
+      xpGain: 60,
+      newlyUnlocked: ["xp_100"],
+      heartsBonus: null,
+      progress: {
+        xp: 160,
+        streak: 1,
+        longestStreak: 1,
+        lastActiveDate: "2026-09-19",
+        hearts: 5,
+        heartsRefillAt: null,
+        streakFreezes: 0,
+        leagueTier: "bronze",
+      },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(
+        screen.getByRole("button", { name: i === ANSWERS.length - 1 ? "Finish" : "Continue" }),
+      );
+    }
+    await screen.findByText("Lesson complete");
+    expect(events().filter((e) => e === "tap")).toHaveLength(ANSWERS.length);
+    expect(cueEvents()).toEqual([["lessonComplete", "xp", "achievement"]]);
   });
 });

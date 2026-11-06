@@ -94,6 +94,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             }
             AiFeaturesSection(container)
             AvatarSection(container)
+            SoundEffectsSection(container)
             VoicesSection(container)
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->

@@ -1,0 +1,23 @@
+Sound effects by Kenney (kenney.nl), CC0
+
+The app's nine short sound effects come from three Kenney.nl packs, all released
+under Creative Commons Zero (CC0 1.0): public domain, no attribution required.
+We credit them anyway.
+
+  Right answer      Music Jingles pack, jingles_PIZZI08.ogg
+  Wrong answer      Interface Sounds pack, question_004.ogg
+  Lesson complete   Music Jingles pack, jingles_STEEL02.ogg
+  XP                Interface Sounds pack, pluck_001.ogg
+  Heart lost        Impact Sounds pack, impactSoft_medium_001.ogg
+  Tap               Interface Sounds pack, drop_002.ogg
+  Call starts       Music Jingles pack, jingles_PIZZI10.ogg
+  Call ends         Music Jingles pack, jingles_PIZZI11.ogg
+  Achievement       Interface Sounds pack, confirmation_003.ogg
+
+Packs:
+  https://kenney.nl/assets/music-jingles
+  https://kenney.nl/assets/interface-sounds
+  https://kenney.nl/assets/impact-sounds
+
+Licence: Creative Commons Zero, CC0
+http://creativecommons.org/publicdomain/zero/1.0/
