@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
@@ -64,6 +65,7 @@ async function sendAndAwaitReply(
 }
 
 beforeEach(() => {
+  clearOpenerSpeechCache();
   // These tests cover the classic screen; the call screen has its own describe below.
   localStorage.setItem("showAlphonsoWhilePractising", "false");
   reportAiResponse.mockReset();
@@ -111,6 +113,22 @@ describe("Campaign chat page", () => {
       screen.getByText(`Scene 1 of ${campaign.scenes.length} — ${campaign.scenes[0].title}`),
     ).toBeInTheDocument();
     expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[0].opener);
+  });
+
+  it("says the first scene's opener out loud when the campaign starts", async () => {
+    await renderPage();
+    await waitFor(() =>
+      expect(
+        (global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([u]) =>
+          String(u).includes("/api/tts"),
+        ),
+      ).toBe(true),
+    );
+    const tts = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+      String(u).includes("/api/tts"),
+    );
+    expect(tts).toHaveLength(1);
+    expect(JSON.parse(tts[0][1].body as string).text).toBe(campaign.scenes[0].opener);
   });
 
   it("sends the composed premise+scene systemPrompt and the full transcript so far", async () => {

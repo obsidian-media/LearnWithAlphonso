@@ -181,6 +181,9 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
         AiReplyReports.scenario(message, course.code, scenario.id, reason)
     }
     AiConsentGate(container, onDecline = onBack) {
+        // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the gate, so nothing is
+        // fetched before consent; again on each return, from the cache, while the learner has not answered.
+        LaunchedEffect(Unit) { vm.speakOpener() }
         SaveWordHost(container) {
             if (showCall) {
                 DisposableEffect(Unit) { onDispose { vm.onLeave() } }
@@ -226,6 +229,8 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
         }
     }
     AiConsentGate(container, onDecline = onBack) {
+      // Alphonso says the scene's opening line out loud (build 59 only showed it); inside the gate, as above.
+      LaunchedEffect(Unit) { vm.speakOpener() }
       SaveWordHost(container) {
         if (showCall) {
             DisposableEffect(Unit) { onDispose { vm.onLeave() } }

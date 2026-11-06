@@ -116,6 +116,8 @@ private struct ConversationSessionView: View {
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var voice = VoiceSessionController()
+    /// Bumped when the opening line should be spoken: the call appeared, or a new conversation or scene began.
+    @State private var openerCue = 0
     /// Settings: "Show Alphonso while practising" (default on).
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
@@ -131,6 +133,13 @@ private struct ConversationSessionView: View {
         Group {
             if showAlphonso { callScreen } else { classicScreen }
         }
+        // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
+        // fetched before consent; keyed by openerCue, which onAppear and each new conversation or scene bump after
+        // the conversation and the voice session are ready. Repeats come from OpenerSpeechCache.
+        .task(id: openerCue) {
+            guard openerCue > 0 else { return }
+            await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+        }
         .aiDisclosureGate()
         .onAppear {
             // Load (or open) this scenario's conversation in this course.
@@ -138,6 +147,7 @@ private struct ConversationSessionView: View {
             conversation = conversationStore.snapshot(for: key, seededWith: scenario.opener)
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
+            openerCue += 1
         }
         .task(id: course) { cefrLevel = await loadCefrLevel() }
         .onDisappear {
@@ -400,6 +410,7 @@ private struct ConversationSessionView: View {
         analyzeWeaknessesIfNew()
         conversation = conversationStore.startNew(key, opener: scenario.opener)
         notice = nil
+        openerCue += 1
     }
 
     /// Once per new stretch of conversation. The conversation now survives

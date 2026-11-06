@@ -13,12 +13,15 @@ import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -59,11 +62,18 @@ abstract class BaseConversationViewModel(
     protected val course: Course = Course.ENGLISH,
     /** Alphonso's chosen voice for a course (Settings > Voices); null lets the server pick the default. */
     private val alphonsoVoice: (String) -> String? = { null },
+    /** Spoken openers already fetched; tests pass their own. */
+    private val openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
 ) : ViewModel(), com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation {
     protected val _state = MutableStateFlow(ConversationUiState(turns = listOf(ChatMessage("assistant", opener))))
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var analysed = false
+    /** The opener being fetched or spoken, cancelled (which stops its playback) when the learner talks over it. */
+    private var openerJob: Job? = null
+    private var openerActive = false
+    /** The opener holds the phase (thinking or speaking), so stopping it hands the phase back. */
+    private var openerClaimed = false
 
     protected abstract fun systemPrompt(): String
 
@@ -84,8 +94,68 @@ abstract class BaseConversationViewModel(
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
     override fun micLevelDBFS(): Double? = recorder.levelDBFS()
 
-    override fun pressBegan() { _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
+    override fun pressBegan() { stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
     override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+
+    /** Campaign only: a finished campaign has no line left to say. */
+    protected open val conversationFinished: Boolean get() = false
+
+    /**
+     * The opening line Alphonso still has to say: the latest turn when it is one of our own openers (the learner has
+     * not answered it yet). The opener is seeded locally, so it never went through [sendTurn]'s synthesize-and-play
+     * (build 59 showed it and stayed silent).
+     */
+    val pendingOpener: String?
+        get() {
+            val s = _state.value
+            val last = s.turns.lastIndex
+            if (conversationFinished || last < 0 || last !in s.openerIndices) return null
+            return s.turns[last].content.trim().ifEmpty { null }
+        }
+
+    /**
+     * Says the pending opener in Alphonso's chosen voice through the same player as a reply, so the call's lips and
+     * caption follow it. The screen calls it once the AI consent gate is passed; a new scene or a restart calls it
+     * too. A reply still playing finishes first. Thinking while the voice loads, speaking while it plays; never over
+     * a recording. Holding to talk cancels it, which stops its playback.
+     */
+    fun speakOpener() {
+        if (pendingOpener == null || openerActive) return
+        openerActive = true
+        openerJob = viewModelScope.launch {
+            try {
+                _state.first { it.phase == ConversationPhase.IDLE }
+                val text = pendingOpener ?: return@launch
+                if (engine.phase.value != com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE) return@launch
+                openerClaimed = true
+                _state.update { it.copy(phase = ConversationPhase.THINKING) }
+                val voice = alphonsoVoice(course.code)
+                val audio = openerCache.audio(text, voice, course.code) { ai.synthesizeSpeech(text, voice = voice, course = course.code) }
+                _state.update { it.copy(phase = ConversationPhase.SPEAKING) }
+                player.play(audio)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // The line is already on screen: a missing voice is not an error to show.
+            } finally {
+                if (openerActive) {
+                    openerActive = false
+                    if (openerClaimed) _state.update { it.copy(phase = ConversationPhase.IDLE) }
+                    openerClaimed = false
+                }
+            }
+        }
+    }
+
+    /** The learner talked over the opener, or left: cancel it, which stops its playback. */
+    private fun stopOpener() {
+        if (!openerActive) return
+        openerActive = false
+        openerJob?.cancel()
+        openerJob = null
+        if (openerClaimed) _state.update { it.copy(phase = ConversationPhase.IDLE) }
+        openerClaimed = false
+    }
 
     private suspend fun sendTurn(text: String, confidence: Double?) {
         _state.update { s ->
@@ -113,7 +183,7 @@ abstract class BaseConversationViewModel(
     protected open fun onReply(reply: String) {}
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model and its transcript survive. */
-    fun onLeave() = engine.cancel()
+    fun onLeave() { stopOpener(); engine.cancel() }
 
     /** The screen is really gone: tear down and, with a real conversation behind us, analyse it once, best effort. */
     /** Public (wider than ViewModel's protected) so the test can drive the real clear path. */
@@ -139,7 +209,8 @@ class ScenarioConversationViewModel(
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
     course: Course = Course.ENGLISH,
     alphonsoVoice: (String) -> String? = { null },
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course, alphonsoVoice) {
+    openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course, alphonsoVoice, openerCache) {
     override fun systemPrompt(): String = scenario.systemPrompt
 }
 
@@ -151,7 +222,8 @@ class CampaignConversationViewModel(
     recorder: RecorderPort, requestMic: suspend () -> Boolean, ai: AiConversationClient, progress: ProgressSyncClient, player: ReplyPlayer,
     course: Course = Course.ENGLISH,
     alphonsoVoice: (String) -> String? = { null },
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course, alphonsoVoice) {
+    openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course, alphonsoVoice, openerCache) {
     private val _campaign = MutableStateFlow(CampaignProgress())
     val campaignState: StateFlow<CampaignProgress> = _campaign.asStateFlow()
 
@@ -168,10 +240,14 @@ class CampaignConversationViewModel(
         val next = campaign.scenes[_campaign.value.sceneIndex + 1]
         _state.update { it.copy(turns = it.turns + ChatMessage("assistant", next.opener), openerIndices = it.openerIndices + it.turns.size, error = null) }
         _campaign.update { it.copy(sceneIndex = it.sceneIndex + 1, sceneAnchor = _state.value.turns.size - 1) }
+        speakOpener()
     }
+
+    override val conversationFinished: Boolean get() = _campaign.value.finished
 
     fun restartScene() {
         val anchor = _campaign.value.sceneAnchor
         _state.update { it.copy(turns = it.turns.take(anchor + 1), openerIndices = it.openerIndices.filter { i -> i <= anchor }.toSet(), error = null) }
+        speakOpener()
     }
 }

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
@@ -111,6 +112,7 @@ async function renderPage(consentApi = fakeConsentApi(), { waitForChat = true } 
 }
 
 beforeEach(() => {
+  clearOpenerSpeechCache();
   useProgress.setState({ course: "en" });
   // These tests cover the classic screen; the call screen has its own describe below.
   localStorage.setItem("showAlphonsoWhilePractising", "false");
@@ -666,6 +668,38 @@ describe("Converse call screen (setting on, the default)", () => {
     expect(screen.getByTestId("you-tile")).toHaveAttribute("data-live", "true");
     fireEvent.pointerUp(talk);
     expect(lastRecorder?.state).toBe("inactive");
+  });
+
+  it("says the scenario's opener out loud when the call starts, in Alphonso's voice", async () => {
+    getSession.mockResolvedValue({
+      data: {
+        session: { user: { user_metadata: { voices: { alphonso: { en: "aura-2-thalia-en" } } } } },
+      },
+    });
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    const tts = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+      String(u).includes("/api/tts"),
+    );
+    expect(tts).toHaveLength(1);
+    expect(JSON.parse(tts[0][1].body as string)).toMatchObject({
+      text: scenario.opener,
+      course: "en",
+      voice: "aura-2-thalia-en",
+    });
+    expect(audioInstances[0].play).toHaveBeenCalled();
+  });
+
+  it("fetches the opener's voice once: a second call replays it", async () => {
+    const first = await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(1));
+    first.unmount();
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(2));
+    const tts = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+      String(u).includes("/api/tts"),
+    );
+    expect(tts).toHaveLength(1);
   });
 
   it("talking over Alphonso cuts his voice off, so it is not recorded", async () => {

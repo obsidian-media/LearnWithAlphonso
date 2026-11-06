@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>aiConsent.grantedAt.user-a</key>
+	<string>1800000000.0</string>
+	<key>aiConsent.legacySynced.v1</key>
+	<true/>
+	<key>aiDataSharingConsent.v2</key>
+	<true/>
+</dict>
+</plist>
