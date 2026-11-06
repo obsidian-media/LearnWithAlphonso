@@ -35,7 +35,12 @@ describe("Landing route", () => {
     const Landing = Route.options.component!;
     render(<Landing />);
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/auth");
+    // Get started opens the first run (Alphonso's questions); an existing learner signs in straight away.
+    expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/welcome");
+    expect(screen.getByRole("link", { name: "I already have an account" })).toHaveAttribute(
+      "href",
+      "/auth",
+    );
     await waitFor(() => expect(getSession).toHaveBeenCalled());
     expect(navigate).not.toHaveBeenCalled();
   });

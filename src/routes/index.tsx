@@ -130,10 +130,16 @@ function Landing() {
 
         <div className="mt-auto pt-10">
           <Link
-            to="/auth"
+            to="/welcome"
             className="block w-full rounded-full bg-ember px-4 py-3.5 text-center text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
           >
             Get started — it's free
+          </Link>
+          <Link
+            to="/auth"
+            className="mt-3 block w-full rounded-full border border-hairline px-4 py-3 text-center text-sm font-semibold text-ink transition hover:bg-parchment"
+          >
+            I already have an account
           </Link>
           <p className="mt-3 text-center text-[11px] text-ink-soft/70">
             Free account with email or Google.
