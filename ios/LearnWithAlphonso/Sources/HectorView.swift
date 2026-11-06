@@ -260,7 +260,6 @@ private struct HectorConversationView: View {
         .accessibilityIdentifier("hectorHandsFreeToggle")
     }
 
-
     // MARK: - Hero
 
     private var languageName: String {
