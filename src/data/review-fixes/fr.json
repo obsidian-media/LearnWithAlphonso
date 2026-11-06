@@ -5330,6 +5330,414 @@
   },
   "reason": "Added a short gloss of the form as used."
  },
+ "fr:card:frgb1p1l1/a mangé": {
+  "patch": {
+   "meaning": "she/he ate, has eaten"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l1/avons mangé": {
+  "patch": {
+   "meaning": "we ate, we have eaten"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l1/ont mangé": {
+  "patch": {
+   "meaning": "they ate, they have eaten"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l2/a mangé": {
+  "patch": {
+   "meaning": "he ate, he has eaten"
+  },
+  "reason": "Meaning missing; example uses il."
+ },
+ "fr:card:frgb1p1l2/as mangé": {
+  "patch": {
+   "meaning": "you ate (informal, past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l2/avez mangé": {
+  "patch": {
+   "meaning": "you ate (past tense, formal or plural)"
+  },
+  "reason": "Meaning missing; gloss as the vous passé composé form."
+ },
+ "fr:card:frgb1p1l2/ont mangé": {
+  "patch": {
+   "meaning": "they ate (past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l3/a mangé": {
+  "patch": {
+   "meaning": "she ate, she has eaten"
+  },
+  "reason": "Meaning missing; example uses elle."
+ },
+ "fr:card:frgb1p1l3/as mangé": {
+  "patch": {
+   "meaning": "you ate (informal, past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l3/avez mangé": {
+  "patch": {
+   "meaning": "you ate (past tense, formal or plural)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l3/avons mangé": {
+  "patch": {
+   "meaning": "we ate (past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p1l3/ont mangé": {
+  "patch": {
+   "meaning": "they ate (past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p2l1/a acheté": {
+  "patch": {
+   "meaning": "he bought, he has bought"
+  },
+  "reason": "Meaning missing; example uses il."
+ },
+ "fr:card:frgb1p2l1/avez acheté": {
+  "patch": {
+   "meaning": "you bought (past tense, formal or plural)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p2l1/avons acheté": {
+  "patch": {
+   "meaning": "we bought (past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p2l1/ont acheté": {
+  "patch": {
+   "meaning": "they bought (past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p2l2/a acheté": {
+  "patch": {
+   "meaning": "she bought, she has bought"
+  },
+  "reason": "Meaning missing; example uses elle."
+ },
+ "fr:card:frgb1p2l2/as acheté": {
+  "patch": {
+   "meaning": "you bought (informal, past tense)"
+  },
+  "reason": "Meaning missing."
+ },
+ "fr:card:frgb1p2l2/avez acheté": {
+  "patch": {
+   "meaning": "you bought"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p2l2/ont acheté": {
+  "patch": {
+   "meaning": "they bought"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p2l3/a acheté": {
+  "patch": {
+   "meaning": "she bought"
+  },
+  "reason": "Missing meaning; the example uses elle."
+ },
+ "fr:card:frgb1p2l3/as acheté": {
+  "patch": {
+   "meaning": "you bought (informal)"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p2l3/avons acheté": {
+  "patch": {
+   "meaning": "we bought"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p2l3/ont acheté": {
+  "patch": {
+   "meaning": "they bought"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form. / With avoir the participle does not agree with the subject, so \"(feminine)\" wrongly suggests that \"ont acheté\" is a feminine form; the same form is used with ils."
+ },
+ "fr:card:frgb1p3l1/est allé": {
+  "patch": {
+   "meaning": "he went"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l1/est allée": {
+  "patch": {
+   "meaning": "she went"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l1/sont allées": {
+  "patch": {
+   "meaning": "they went (feminine)"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l1/sont allés": {
+  "patch": {
+   "meaning": "they went (masculine)"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l2/est allé": {
+  "patch": {
+   "meaning": "he went"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l2/est allée": {
+  "patch": {
+   "meaning": "she went"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l2/sont allées": {
+  "patch": {
+   "meaning": "they went (feminine)"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l3/est allé": {
+  "patch": {
+   "meaning": "he went"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p3l3/est allée": {
+  "patch": {
+   "meaning": "she went"
+  },
+  "reason": "Meaning was empty; glossed as the feminine past form."
+ },
+ "fr:card:frgb1p3l3/sont allés": {
+  "patch": {
+   "meaning": "they went (masculine)"
+  },
+  "reason": "Missing meaning; glossed as the conjugated form."
+ },
+ "fr:card:frgb1p4l1/est venu": {
+  "patch": {
+   "meaning": "he came"
+  },
+  "reason": "Meaning was empty; glossed as masculine singular past form."
+ },
+ "fr:card:frgb1p4l1/est venue": {
+  "patch": {
+   "meaning": "she came"
+  },
+  "reason": "Meaning was empty; glossed as feminine singular past form."
+ },
+ "fr:card:frgb1p4l1/sont venues": {
+  "patch": {
+   "meaning": "they came (feminine plural)"
+  },
+  "reason": "Meaning was empty; glossed as feminine plural past form."
+ },
+ "fr:card:frgb1p4l1/sont venus": {
+  "patch": {
+   "meaning": "they came (masculine plural)"
+  },
+  "reason": "Meaning was empty; glossed as masculine plural past form."
+ },
+ "fr:card:frgb1p4l2/est venu": {
+  "patch": {
+   "meaning": "he came"
+  },
+  "reason": "Meaning was empty; glossed as masculine singular past form."
+ },
+ "fr:card:frgb1p4l2/est venue": {
+  "patch": {
+   "meaning": "she came"
+  },
+  "reason": "Meaning was empty; glossed as feminine singular past form."
+ },
+ "fr:card:frgb1p4l2/sont venues": {
+  "patch": {
+   "meaning": "they came (feminine plural)"
+  },
+  "reason": "Meaning was empty; glossed as feminine plural past form."
+ },
+ "fr:card:frgb1p4l2/sont venus": {
+  "patch": {
+   "meaning": "they came (masculine plural)"
+  },
+  "reason": "Meaning was empty; glossed as masculine plural past form."
+ },
+ "fr:card:frgb1p4l3/est venu": {
+  "patch": {
+   "meaning": "he came"
+  },
+  "reason": "Meaning was empty; glossed as masculine singular past form."
+ },
+ "fr:card:frgb1p4l3/est venue": {
+  "patch": {
+   "meaning": "she came"
+  },
+  "reason": "Meaning was empty; glossed as feminine singular past form."
+ },
+ "fr:card:frgb1p4l3/sont venues": {
+  "patch": {
+   "meaning": "they came (feminine plural)"
+  },
+  "reason": "Meaning was empty; glossed as feminine plural past form."
+ },
+ "fr:card:frgb1p4l3/sont venus": {
+  "patch": {
+   "meaning": "they came (masculine plural)"
+  },
+  "reason": "Meaning was empty; glossed as masculine plural past form."
+ },
+ "fr:card:frgb1p5l1/est arrivé": {
+  "patch": {
+   "meaning": "he arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l1/est arrivée": {
+  "patch": {
+   "meaning": "she arrived"
+  },
+  "reason": "Meaning was empty; glossed as feminine singular past form."
+ },
+ "fr:card:frgb1p5l1/sont arrivées": {
+  "patch": {
+   "meaning": "they (women) arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l1/sont arrivés": {
+  "patch": {
+   "meaning": "they arrived (masculine plural)"
+  },
+  "reason": "Meaning was empty; glossed as masculine plural past form."
+ },
+ "fr:card:frgb1p5l2/est arrivé": {
+  "patch": {
+   "meaning": "he arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l2/est arrivée": {
+  "patch": {
+   "meaning": "she arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l2/sont arrivées": {
+  "patch": {
+   "meaning": "they (women) arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l2/sont arrivés": {
+  "patch": {
+   "meaning": "they (men) arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l3/est arrivé": {
+  "patch": {
+   "meaning": "he arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l3/est arrivée": {
+  "patch": {
+   "meaning": "she arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l3/sont arrivées": {
+  "patch": {
+   "meaning": "they (women) arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p5l3/sont arrivés": {
+  "patch": {
+   "meaning": "they (men) arrived"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l1/est resté": {
+  "patch": {
+   "meaning": "he stayed"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l1/est restée": {
+  "patch": {
+   "meaning": "she stayed"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l1/sont restées": {
+  "patch": {
+   "meaning": "they (women) stayed"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l1/sont restés": {
+  "patch": {
+   "meaning": "they (men) stayed"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l2/est resté": {
+  "patch": {
+   "meaning": "he stayed"
+  },
+  "reason": "Missing meaning; gloss the conjugated form."
+ },
+ "fr:card:frgb1p6l2/est restée": {
+  "patch": {
+   "meaning": "she stayed, she remained"
+  },
+  "reason": "Meaning missing; gloss the form as used."
+ },
+ "fr:card:frgb1p6l2/sont restés": {
+  "patch": {
+   "meaning": "they stayed, they remained (masculine)"
+  },
+  "reason": "Meaning missing; gloss the form as used."
+ },
+ "fr:card:frgb1p6l3/est resté": {
+  "patch": {
+   "meaning": "he stayed, he remained"
+  },
+  "reason": "Meaning missing; gloss the form as used."
+ },
+ "fr:card:frgb1p6l3/sont restées": {
+  "patch": {
+   "meaning": "they stayed, they remained (feminine)"
+  },
+  "reason": "Meaning missing; gloss the form as used."
+ },
+ "fr:card:frgb1p6l3/sont restés": {
+  "patch": {
+   "meaning": "they stayed, they remained (masculine)"
+  },
+  "reason": "Meaning missing; gloss the form as used."
+ },
  "fr:lesson-meta:fra1p2l1": {
   "patch": {
    "title": "Numbers 1–100 (Part 1)"
@@ -5419,6 +5827,66 @@
    "subtitle": "Talking about plans and what's going to happen"
   },
   "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:lesson-meta:frb2p1l1": {
+  "patch": {
+   "subtitle": "Expressing necessity, doubt, and desire"
+  },
+  "reason": "'and wish' is awkward English because 'wish' needs an article or a plural; 'desire' keeps the parallel list of abstract nouns."
+ },
+ "fr:lesson-meta:frb2p1l2": {
+  "patch": {
+   "subtitle": "Expressing necessity, doubt, and desire"
+  },
+  "reason": "Same awkward 'and wish'; replaced with 'desire' to keep the parallel list of abstract nouns."
+ },
+ "fr:lesson-meta:frb2p1l3": {
+  "patch": {
+   "subtitle": "Expressing necessity, doubt, and desire"
+  },
+  "reason": "Same awkward 'and wish'; replaced with 'desire' to keep the parallel list of abstract nouns."
+ },
+ "fr:lesson-meta:frb2p1l4": {
+  "patch": {
+   "subtitle": "Expressing necessity, doubt, and desire"
+  },
+  "reason": "Same awkward 'and wish'; replaced with 'desire' to keep the parallel list of abstract nouns."
+ },
+ "fr:lesson-meta:frb2p1l5": {
+  "patch": {
+   "subtitle": "Expressing necessity, doubt, and desire"
+  },
+  "reason": "Same awkward 'and wish'; replaced with 'desire' to keep the parallel list of abstract nouns."
+ },
+ "fr:lesson-meta:frb2p5l1": {
+  "patch": {
+   "subtitle": "Reporting what someone said"
+  },
+  "reason": "Every other unit uses an English subtitle, so the French subtitle is inconsistent UI text for English speakers."
+ },
+ "fr:lesson-meta:frb2p5l2": {
+  "patch": {
+   "subtitle": "Reporting what someone said"
+  },
+  "reason": "Every other unit uses an English subtitle, so the French subtitle is inconsistent UI text for English speakers."
+ },
+ "fr:lesson-meta:frb2p5l3": {
+  "patch": {
+   "subtitle": "Reporting what someone said"
+  },
+  "reason": "Every other unit uses an English subtitle, so the French subtitle is inconsistent UI text for English speakers."
+ },
+ "fr:lesson-meta:frb2p5l4": {
+  "patch": {
+   "subtitle": "Reporting what someone said"
+  },
+  "reason": "Every other unit uses an English subtitle, so the French subtitle is inconsistent UI text for English speakers."
+ },
+ "fr:lesson-meta:frb2p5l5": {
+  "patch": {
+   "subtitle": "Reporting what someone said"
+  },
+  "reason": "Every other unit uses an English subtitle, so the French subtitle is inconsistent UI text for English speakers."
  },
  "fr:question:fra1p10l1/fra1p10q0": {
   "patch": {
@@ -12156,6 +12624,12 @@
   },
   "reason": "The cognate is acceptable for a vocabulary item, but the explanation is a template that does not quote the answer or add anything useful."
  },
+ "fr:question:frb1p10l1/frb1p10q1": {
+  "patch": {
+   "explanation": "\"la forêt\" means forest; it is feminine and keeps the circumflex on the ê."
+  },
+  "reason": "The key is right; the explanation is a generic line with no useful note."
+ },
  "fr:question:frb1p10l1/frb1p10q2": {
   "patch": {
    "explanation": "\"la montagne\" means mountain; it is feminine, so it takes la."
@@ -12197,6 +12671,12 @@
    "explanation": "\"le ciel\" means sky; le soleil is the sun in the sky, not the sky itself."
   },
   "reason": "The explanation is a template that does not quote the answer or explain anything."
+ },
+ "fr:question:frb1p10l2/frb1p10q8": {
+  "patch": {
+   "explanation": "\"le soleil\" means sun; it is masculine, so you say le soleil and un soleil."
+  },
+  "reason": "The key is right; the explanation is generic."
  },
  "fr:question:frb1p10l3/frb1p10q10": {
   "patch": {
@@ -12685,6 +13165,12 @@
   },
   "reason": "\"la diffusion\" means the act of broadcasting rather than a programme, so the gloss is clarified and the explanation is rewritten."
  },
+ "fr:question:frb1p13l2/frb1p13q9": {
+  "patch": {
+   "explanation": "\"la chaîne\" is a TV or radio channel, as in une chaîne de télévision; the same word also means chain."
+  },
+  "reason": "The key is right; the explanation is generic."
+ },
  "fr:question:frb1p13l3/frb1p13q10": {
   "patch": {
    "explanation": "\"la radio\" is feminine in French: you say \"écouter la radio\". \"le public\" is the audience and \"la source\" is where information comes from."
@@ -12703,11 +13189,29 @@
   },
   "reason": "The key is correct and the distractors are fine, but the explanation is a generic line."
  },
+ "fr:question:frb1p13l3/frb1p13q13": {
+  "patch": {
+   "explanation": "\"l'abonnement\" means subscription and comes from s'abonner (to subscribe); it is masculine: un abonnement."
+  },
+  "reason": "The key is right; the explanation is generic."
+ },
+ "fr:question:frb1p13l3/frb1p13q14": {
+  "patch": {
+   "explanation": "\"le public\" is the audience of a show or media outlet; it is masculine singular even though it refers to many people."
+  },
+  "reason": "The key is right; the explanation is generic."
+ },
  "fr:question:frb1p13l4/frb1p13q15": {
   "patch": {
    "explanation": "\"le rédacteur\" is the person who writes and edits articles for a newspaper; the chief editor is \"le rédacteur en chef\"."
   },
   "reason": "No second answer in the bank (\"rédacteur en chef\" is absent), but the explanation is generic."
+ },
+ "fr:question:frb1p13l4/frb1p13q16": {
+  "patch": {
+   "explanation": "\"la presse\" means the press, meaning newspapers and journalists as a whole; it is feminine."
+  },
+  "reason": "The key is right; the explanation is generic."
  },
  "fr:question:frb1p13l4/frb1p13q17": {
   "patch": {
@@ -12727,6 +13231,12 @@
    "explanation": "\"la censure\" is the act of banning or cutting information; note it is feminine and ends in -ure, not -ship."
   },
   "reason": "The key is correct; only the explanation is generic."
+ },
+ "fr:question:frb1p13l5/frb1p13q20": {
+  "patch": {
+   "explanation": "\"la liberté d'expression\" literally means freedom of expression and is the usual French term for freedom of speech."
+  },
+  "reason": "The key is right; the explanation is generic."
  },
  "fr:question:frb1p13l5/frb1p13q21": {
   "patch": {
@@ -12765,6 +13275,12 @@
   },
   "reason": "\"le collège\" is not in the bank, so there is no second answer; the explanation should clarify the stage."
  },
+ "fr:question:frb1p14l1/frb1p14q2": {
+  "patch": {
+   "explanation": "\"l'université\" means university; it is feminine (une université), and la becomes l' before the vowel."
+  },
+  "reason": "The key is right; the explanation is generic."
+ },
  "fr:question:frb1p14l1/frb1p14q3": {
   "patch": {
    "explanation": "\"le diplôme\" is the general word for a degree or diploma; specific university degrees are \"la licence\" or \"le master\"."
@@ -12778,12 +13294,96 @@
   },
   "reason": "The explanation is generic, and 'course' could be read as a course of study, so a short clue helps rule out \"le programme\"."
  },
+ "fr:question:frb1p14l2/frb1p14q5": {
+  "patch": {
+   "explanation": "A school subject is \"la matière\" (Quelle est ta matière préférée ?); le sujet means a topic, not a school subject."
+  },
+  "reason": "The key is right; the explanation is generic and misses the useful contrast with le sujet."
+ },
  "fr:question:frb1p14l2/frb1p14q6": {
   "patch": {
    "prompt": "The French word for \"grade\" (a mark on a test) is…",
    "explanation": "\"la note\" is the mark a teacher gives your work, as in \"J'ai eu une bonne note\"; \"le cours\" is the lesson itself, not the mark."
   },
   "reason": "The explanation is generic; adding a clue removes the US 'school year' reading of 'grade'. / The remark about 'a school year' refers to nothing in the item, so it should contrast the key with a real distractor instead."
+ },
+ "fr:question:frb1p14l2/frb1p14q9": {
+  "patch": {
+   "explanation": "\"l'enseignant\" is the general word for a teacher at any level, from the verb enseigner (to teach). A female teacher is l'enseignante."
+  },
+  "reason": "The key is correct, but the explanation ends with a generic tagline that fits every item in the lesson."
+ },
+ "fr:question:frb1p14l3/frb1p14q10": {
+  "patch": {
+   "explanation": "\"l'étudiant\" is a student at university or in higher education. A school pupil is un élève."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l3/frb1p14q11": {
+  "patch": {
+   "explanation": "\"la salle de classe\" literally means 'the room of class', the room where lessons take place. Le lycée is the whole high school, not one room."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l3/frb1p14q12": {
+  "patch": {
+   "explanation": "\"la bourse\" is money given to a student to pay for their studies, as in obtenir une bourse (to get a scholarship)."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l3/frb1p14q13": {
+  "patch": {
+   "explanation": "\"le programme\" is the set of subjects and content taught in a course or school year, so it is the French word for curriculum."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l3/frb1p14q14": {
+  "patch": {
+   "explanation": "\"le semestre\" is one half of the academic year. Notice that it is masculine even though it ends in -e."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l4/frb1p14q15": {
+  "patch": {
+   "explanation": "\"le cours magistral\" is a university lecture given by a professor to a large audience. Beware: une lecture in French means 'a reading'."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l4/frb1p14q16": {
+  "patch": {
+   "explanation": "\"les frais de scolarité\" means the fees paid for schooling, which is tuition. Frais is always plural."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l4/frb1p14q17": {
+  "patch": {
+   "explanation": "\"la remise des diplômes\" literally means 'the handing out of degrees', the graduation ceremony. Le diplôme is the degree itself."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l4/frb1p14q19": {
+  "patch": {
+   "explanation": "\"la recherche\" is academic research, from the verb rechercher (to search for). Faire de la recherche means to do research."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l5/frb1p14q20": {
+  "patch": {
+   "explanation": "\"la thèse\" is the long research work written for a doctorate, just like an English thesis. Note the grave accent on the è."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l5/frb1p14q21": {
+  "patch": {
+   "explanation": "\"l'alphabétisation\" means learning to read and write, as in le taux d'alphabétisation (the literacy rate)."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline."
+ },
+ "fr:question:frb1p14l5/frb1p14q22": {
+  "patch": {
+   "explanation": "\"la maternelle\" (short for l'école maternelle) is the French nursery school for ages 3 to 6, the stage before primary school."
+  },
+  "reason": "The key and options are correct, but the explanation ends with a generic line that teaches nothing about this word."
  },
  "fr:question:frb1p14l5/frb1p14q23": {
   "patch": {
@@ -12877,15 +13477,39 @@
   },
   "reason": "Cognate vocabulary items are acceptable, but the explanation is generic."
  },
+ "fr:question:frb1p15l3/frb1p15q13": {
+  "patch": {
+   "explanation": "\"la forme physique\" means physical fitness, as in être en bonne forme physique (to be fit); le régime is a diet, not fitness."
+  },
+  "reason": "The key is correct, but the explanation's second sentence is generic."
+ },
+ "fr:question:frb1p15l3/frb1p15q14": {
+  "patch": {
+   "explanation": "\"une alimentation équilibrée\" is the usual phrase for a balanced diet: alimentation means the food you eat, and équilibrée agrees with this feminine noun."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:frb1p15l4/frb1p15q15": {
   "patch": {
    "explanation": "Hydration is \"l'hydratation\", with an extra -at- compared with English. The article elides to l' because the h is silent."
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:frb1p15l4/frb1p15q16": {
+  "patch": {
+   "explanation": "\"la guérison\" is recovery from an illness, from the verb guérir (to heal, to get better)."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:frb1p15l4/frb1p15q17": {
   "patch": {
    "explanation": "Prevention is \"la prévention\". It is feminine like most -tion nouns and takes an accent on the é."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p15l4/frb1p15q18": {
+  "patch": {
+   "explanation": "\"le bilan de santé\" is a medical checkup: un bilan is an overall assessment, here of your health."
   },
   "reason": "The key is correct, but the explanation is generic."
  },
@@ -12907,6 +13531,12 @@
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:frb1p15l5/frb1p15q22": {
+  "patch": {
+   "explanation": "\"la dépendance\" is the everyday word for addiction, as in la dépendance au tabac (nicotine addiction)."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:frb1p15l5/frb1p15q23": {
   "patch": {
    "explanation": "Habit is \"l'habitude\", a feminine noun with the article elided before a silent h. Be careful: French un habit means a piece of clothing, not a habit."
@@ -12918,6 +13548,30 @@
    "explanation": "\"le mode de vie\" literally means 'way of life', which is what 'lifestyle' means; \"le bien-être\" means 'well-being', not lifestyle."
   },
   "reason": "The explanation is a generic gloss line and does not separate the answer from the tempting \"le bien-être\"."
+ },
+ "fr:question:frb1p16l1/frb1p16q0": {
+  "patch": {
+   "choices": [
+    "la caution",
+    "le locataire",
+    "le loyer",
+    "le balcon"
+   ],
+   "explanation": "\"le loyer\" is the rent you pay each month; la caution is the deposit and le locataire is the tenant."
+  },
+  "reason": "The verb déménager stands out among noun options and is easy to rule out, and the explanation is generic."
+ },
+ "fr:question:frb1p16l1/frb1p16q1": {
+  "patch": {
+   "explanation": "\"le bail\" is the lease, the rental contract you sign with the landlord; le préavis is the notice period."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p16l1/frb1p16q2": {
+  "patch": {
+   "explanation": "\"le propriétaire\" is the owner, so for a rented flat it is the landlord who receives the rent."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:frb1p16l1/frb1p16q3": {
   "patch": {
@@ -12972,6 +13626,12 @@
    "explanation": "\"non meublé\" adds 'non' (not) to \"meublé\" (furnished), so it means a flat rented without furniture."
   },
   "reason": "The answer is the only adjective among nouns and a verb, so word type gives it away; the distractors are replaced with adjectives, including the tempting \"meublé\"."
+ },
+ "fr:question:frb1p16l2/frb1p16q8": {
+  "patch": {
+   "explanation": "\"le studio\" is a one-room flat with its own kitchen corner and bathroom, the same word as in English."
+  },
+  "reason": "The key is correct and the cognate is unavoidable, but the explanation is generic."
  },
  "fr:question:frb1p16l2/frb1p16q9": {
   "patch": {
@@ -14203,11 +14863,23 @@
   },
   "reason": "'Essayait' is a conjugated form; these infinitives all take 'un peu de repos', and only 'prendre' means 'to take'. / 'Prendre du repos' is the natural collocation; 'faire du repos' and the others are not idiomatic, so the key stands."
  },
+ "fr:question:frb1p21l1/frb1p21q0": {
+  "patch": {
+   "explanation": "One way to say it: \"Je pense que la réunion s'est bien passée.\" Se passer bien means 'to go well', and passée agrees with la réunion because it is an être verb."
+  },
+  "reason": "The accepted answers are fine, but the explanation's second sentence is generic."
+ },
  "fr:question:frb1p21l1/frb1p21q1": {
   "patch": {
    "explanation": "One way to say it: \"Je ne suis pas tout à fait d'accord.\" Adding 'pas tout à fait' (not quite) softens the disagreement and makes it polite."
   },
   "reason": "All accepted answers are correct polite disagreements; only the explanation is a generic, garbled line."
+ },
+ "fr:question:frb1p21l1/frb1p21q2": {
+  "patch": {
+   "explanation": "One way to say it: \"Je voudrais modifier ma réservation.\" Je voudrais is the polite conditional for 'I would like', and modifier is the usual verb for changing a booking."
+  },
+  "reason": "The accepted answers are fine, but the explanation's second sentence is generic."
  },
  "fr:question:frb1p21l1/frb1p21q3": {
   "patch": {
@@ -14221,6 +14893,43 @@
   },
   "reason": "The accepted answers are acceptable paraphrases, but the explanation is generic and should name the si + imperfect / conditional pattern."
  },
+ "fr:question:frb1p21l2/frb1p21q5": {
+  "patch": {
+   "acceptableAnswers": [
+    "Qu'en penses-tu ?",
+    "Quel est ton avis là-dessus ?",
+    "Qu'est-ce que tu en penses ?",
+    "Qu'en pensez-vous ?",
+    "Qu'est-ce que vous en pensez ?"
+   ],
+   "explanation": "\"Qu'en penses-tu ?\" uses en to stand for the decision (penser de quelque chose becomes en penser). With a stranger or a group, say \"Qu'en pensez-vous ?\""
+  },
+  "reason": "The prompt says 'someone', so the vous forms are equally correct and must be accepted; the explanation is also a generic, broken English line."
+ },
+ "fr:question:frb1p21l2/frb1p21q6": {
+  "patch": {
+   "explanation": "\"Je regrette de ne pas avoir appelé plus tôt.\" uses regretter de + a past infinitive, with both ne and pas placed before avoir. \"J'aurais dû appeler plus tôt\" says the same thing with the past conditional of devoir."
+  },
+  "reason": "The explanation is generic and its second sentence is ungrammatical English; the accepted answers are fine."
+ },
+ "fr:question:frb1p21l2/frb1p21q7": {
+  "patch": {
+   "explanation": "\"Et si on trouvait un compromis ?\" uses Et si + imperfect, a friendly way to suggest something. \"Un terrain d'entente\" means common ground."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are natural B1 French."
+ },
+ "fr:question:frb1p21l2/frb1p21q8": {
+  "patch": {
+   "explanation": "\"Je suis inquiet pour l'examen.\" uses inquiet pour to say what worries you; a woman writes inquiète."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers correctly cover both genders."
+ },
+ "fr:question:frb1p21l2/frb1p21q9": {
+  "patch": {
+   "explanation": "\"J'ai besoin de plus d'informations avant de décider.\" uses avoir besoin de for 'need' and avant de + infinitive for 'before deciding'."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are fine."
+ },
  "fr:question:frb1p21l3/frb1p21q10": {
   "patch": {
    "acceptableAnswers": [
@@ -14231,6 +14940,35 @@
    "explanation": "One way to say it: \"Je suis fier de mes progrès.\" 'Être fier de' means to be proud of, and a woman writes 'fière'."
   },
   "reason": "The third answer uses 'content' (happy), which does not mean proud, is masculine only and has no feminine variant, so replace it with a gender-neutral 'proud' sentence."
+ },
+ "fr:question:frb1p21l3/frb1p21q11": {
+  "patch": {
+   "explanation": "\"On pourrait reporter la réunion.\" softens the suggestion with the conditional. Reporter and repousser both mean to postpone."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are fine."
+ },
+ "fr:question:frb1p21l3/frb1p21q12": {
+  "patch": {
+   "acceptableAnswers": [
+    "Je préférerais rester à la maison ce soir.",
+    "Ce soir, je préfère rester chez moi.",
+    "J'aimerais mieux rester à la maison ce soir."
+   ],
+   "explanation": "\"Je préférerais rester à la maison ce soir.\" uses the conditional of préférer for 'would rather'. J'aimerais mieux means the same thing."
+  },
+  "reason": "The explanation is generic, and the third accepted answer drops 'tonight' from the prompt."
+ },
+ "fr:question:frb1p21l3/frb1p21q13": {
+  "patch": {
+   "explanation": "\"Cette décision a été difficile à prendre.\" uses difficile à + infinitive. In French you say prendre une décision (literally 'take a decision'), not 'make' one."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are fine. / The phrase \"you prendre une décision\" is garbled English mixed with an infinitive."
+ },
+ "fr:question:frb1p21l3/frb1p21q14": {
+  "patch": {
+   "explanation": "\"J'envisage de changer de carrière.\" uses envisager de + infinitive for 'to be considering'. Note that changer de takes no article."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are acceptable."
  },
  "fr:question:frb1p21l4/frb1p21q15": {
   "patch": {
@@ -14245,6 +14983,12 @@
    "explanation": "One way to say it: \"Dis-moi franchement ce que tu en penses.\" 'Franchement' asks for honesty, and with someone you call vous say 'Dites-moi franchement ce que vous en pensez.'"
   },
   "reason": "The task gives no context, so a polite vous version is equally correct and would currently be marked wrong."
+ },
+ "fr:question:frb1p21l4/frb1p21q16": {
+  "patch": {
+   "explanation": "\"La situation s'est améliorée.\" S'améliorer takes être in the passé composé, so améliorée agrees with la situation."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are fine."
  },
  "fr:question:frb1p21l4/frb1p21q17": {
   "patch": {
@@ -14263,6 +15007,72 @@
    "explanation": "One way to say it: \"Je voyagerais davantage si j'avais l'argent.\" An imaginary condition uses 'si' + imperfect ('j'avais') with the conditional ('voyagerais') in the main clause."
   },
   "reason": "The answers are acceptable, but the explanation is generic."
+ },
+ "fr:question:frb1p21l4/frb1p21q19": {
+  "patch": {
+   "explanation": "\"Tu devrais consulter un spécialiste.\" uses the conditional of devoir to give advice, and tu because you are talking to a friend."
+  },
+  "reason": "The explanation is generic and ungrammatical; tu correctly fits a friend."
+ },
+ "fr:question:frb1p21l5/frb1p21q20": {
+  "patch": {
+   "explanation": "\"Je suis reconnaissant pour ce soutien.\" uses être reconnaissant to say you are grateful; a woman writes reconnaissante."
+  },
+  "reason": "The explanation is generic and ungrammatical; the answers are acceptable."
+ },
+ "fr:question:frb1p21l5/frb1p21q21": {
+  "patch": {
+   "explanation": "One way to say it: \"Je doute que ce plan fonctionne.\" After \"douter que\", French uses the subjunctive, so \"fonctionne\" is subjunctive here.",
+   "acceptableAnswers": [
+    "Je doute que ce plan fonctionne.",
+    "Ce plan me semble risqué.",
+    "Je ne suis pas convaincu que ça marche.",
+    "Je ne suis pas convaincue que ça marche."
+   ]
+  },
+  "reason": "The explanation ends with a generic lesson-description line, and the accepted answers only allow the masculine \"convaincu\", so a female learner who writes \"convaincue\" would be marked wrong."
+ },
+ "fr:question:frb1p21l5/frb1p21q22": {
+  "patch": {
+   "explanation": "One way to say it: \"Je vais y réfléchir.\" \"Réfléchir à quelque chose\" becomes \"y réfléchir\", because \"y\" replaces \"à + thing\"."
+  },
+  "reason": "The answers are fine, but the explanation's second sentence is a generic lesson blurb, not a reason."
+ },
+ "fr:question:frb1p21l5/frb1p21q23": {
+  "patch": {
+   "explanation": "One way to say it: \"Peux-tu préciser ce que tu veux dire ?\" \"Préciser\" means to spell out more exactly, and \"ce que tu veux dire\" means \"what you mean\"."
+  },
+  "reason": "The answers are correct and consistently use tu, but the explanation ends with a generic lesson blurb."
+ },
+ "fr:question:frb1p21l5/frb1p21q24": {
+  "patch": {
+   "explanation": "One way to say it: \"J'apprécie les retours honnêtes.\" \"Un retour\" is the usual word for feedback, and \"apprécier\" takes a direct object, so no preposition is needed."
+  },
+  "reason": "The answers are correct, but the explanation's second sentence is generic filler."
+ },
+ "fr:question:frb1p22l1/frb1p22q0": {
+  "patch": {
+   "explanation": "The audio says \"Le dessus du bureau était couvert de dossiers urgents.\" Listen for the vowel: \"dessus\" (top) has the tight French u sound, while \"dessous\" (underside) has the ou sound."
+  },
+  "reason": "The options and key are sound, but the explanation does not point to the dessus/dessous sound contrast being tested."
+ },
+ "fr:question:frb1p22l1/frb1p22q1": {
+  "patch": {
+   "explanation": "The audio says \"Le dessous du bureau était couvert de dossiers urgents.\" \"Dessous\" (underside) has the ou sound, unlike \"dessus\" (top), which has the tight French u sound."
+  },
+  "reason": "The key is correct, but the explanation is a generic blurb that does not name the u/ou contrast."
+ },
+ "fr:question:frb1p22l1/frb1p22q2": {
+  "patch": {
+   "explanation": "The audio says \"Le dessus de l'étagère contenait des livres anciens.\" \"Dessus\" (top) has the tight French u sound, not the ou sound of \"dessous\"."
+  },
+  "reason": "The key is correct, but the explanation does not name the contrast being tested."
+ },
+ "fr:question:frb1p22l1/frb1p22q3": {
+  "patch": {
+   "explanation": "The audio says \"Le dessous de l'étagère contenait des livres anciens.\" \"Dessous\" (underneath) has the ou sound, unlike \"dessus\" (top), which has the tight French u sound."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:frb1p22l1/frb1p22q4": {
   "patch": {
@@ -14384,6 +15194,102 @@
   },
   "reason": "The explanation is generic and gives no listening clue."
  },
+ "fr:question:frb1p23l1/frb1p23q0": {
+  "patch": {
+   "explanation": "Target phrase: \"Je pense que c'est une bonne idée.\" Run \"que c'est\" together smoothly, and pronounce \"idée\" with a clear é at the end."
+  },
+  "reason": "The phrase is fine, but the explanation tail is a generic lesson blurb with no speaking tip."
+ },
+ "fr:question:frb1p23l1/frb1p23q1": {
+  "patch": {
+   "explanation": "Target phrase: \"À mon avis, il a raison.\" Link \"mon avis\" with a liaison (mon-n-avis), and say \"il a\" as one smooth sound."
+  },
+  "reason": "The phrase is fine, but the explanation tail is generic."
+ },
+ "fr:question:frb1p23l1/frb1p23q2": {
+  "patch": {
+   "explanation": "Target phrase: \"Je ne suis pas convaincu par cet argument.\" \"Cet\" links straight into \"argument\" (cè-targument), and \"convaincu\" sounds the same in the masculine and feminine."
+  },
+  "reason": "The phrase is fine, but the explanation tail is generic."
+ },
+ "fr:question:frb1p23l1/frb1p23q3": {
+  "patch": {
+   "explanation": "Target phrase: \"Ce film est plus intéressant que l'autre.\" Make the liaison in \"plus intéressant\" (plu-z-intéressant), and keep the final t of \"intéressant\" silent."
+  },
+  "reason": "The phrase is fine, but the explanation tail is generic."
+ },
+ "fr:question:frb1p23l1/frb1p23q4": {
+  "patch": {
+   "explanation": "\"Cette solution est meilleure que la précédente.\" uses \"meilleure\", the irregular comparative of \"bonne\", to say one solution is better than the previous one. It agrees with the feminine \"solution\", and you never say \"plus bonne\"."
+  },
+  "reason": "The sentence is correct, but the explanation is a generic lesson line that does not say anything about this sentence."
+ },
+ "fr:question:frb1p23l2/frb1p23q5": {
+  "patch": {
+   "explanation": "\"Je préfère le café au thé.\" shows the pattern \"préférer A à B\" (to prefer A to B). Here \"à + le\" contracts to \"au\" before \"thé\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l2/frb1p23q6": {
+  "patch": {
+   "explanation": "\"Il vaut mieux partir tôt.\" uses \"il vaut mieux\" + infinitive to give advice: it's better to leave early."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l2/frb1p23q7": {
+  "patch": {
+   "explanation": "\"Selon moi, c'est trop cher.\" opens with \"selon moi\" (in my opinion) to introduce a personal view. In \"c'est\", the \"ce\" is shortened before \"est\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l2/frb1p23q8": {
+  "patch": {
+   "explanation": "\"Je trouve que ce livre est ennuyeux.\" uses \"je trouve que\" (I find that / I think that) to give an opinion. \"Ennuyeux\" means boring and agrees with the masculine \"livre\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l2/frb1p23q9": {
+  "patch": {
+   "explanation": "\"Elle a probablement raison.\" uses \"avoir raison\" (to be right), not \"être\". The adverb \"probablement\" goes right after the verb \"a\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l3/frb1p23q10": {
+  "patch": {
+   "explanation": "\"C'est important de bien manger.\" uses \"c'est\" + adjective + \"de\" + infinitive to say that an action is important. This is the usual spoken pattern."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l3/frb1p23q11": {
+  "patch": {
+   "explanation": "\"Il est nécessaire de réserver à l'avance.\" uses \"il est\" + adjective + \"de\" + infinitive, a slightly more formal way to say something is necessary. \"À l'avance\" means in advance."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l3/frb1p23q12": {
+  "patch": {
+   "explanation": "\"Je suis content de mes résultats.\" uses \"être content de\" (to be pleased with) followed by the thing you are happy about. A woman would say \"contente\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l3/frb1p23q13": {
+  "patch": {
+   "explanation": "\"Nous sommes fiers de notre travail.\" uses \"être fier de\" (to be proud of). \"Fiers\" takes an -s to agree with the plural \"nous\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l3/frb1p23q14": {
+  "patch": {
+   "explanation": "\"C'est difficile à expliquer.\" uses \"à\" before the infinitive because \"c'est\" refers back to something already mentioned that is hard to explain."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb1p23l4/frb1p23q15": {
+  "patch": {
+   "explanation": "\"Ce n'est pas si simple.\" uses \"pas si\" + adjective (not that / not so) to soften a disagreement. \"Ne\" becomes \"n'\" before \"est\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
  "fr:question:frb1p2l1/frb1p2q0": {
   "patch": {
    "bank": [
@@ -14451,6 +15357,18 @@
   },
   "reason": "The explanation says \"masculine form\" but the key is the feminine \"gentille\"."
  },
+ "fr:question:frb1p2l4/frb1p2q15": {
+  "patch": {
+   "bank": [
+    "jeune",
+    "timide",
+    "ennuyeux",
+    "gentil"
+   ],
+   "explanation": "\"timide\" means shy; it ends in -e, so it stays the same for masculine and feminine (un garçon timide, une fille timide)."
+  },
+  "reason": "The bank mixes in the feminine \"gentille\" although the lesson teaches masculine forms, and the odd ending makes that option stand out; use \"gentil\" so all options match. / The explanation is a generic category line and does not explain the word or its form."
+ },
  "fr:question:frb1p2l4/frb1p2q17": {
   "patch": {
    "bank": [
@@ -14462,6 +15380,12 @@
    "explanation": "\"paresseux\" means \"lazy\"; it is the masculine form, and it becomes \"paresseuse\" in the feminine."
   },
   "reason": "The feminine 'belle' stands out among masculine forms, and the explanation is generic."
+ },
+ "fr:question:frb1p2l5/frb1p2q21": {
+  "patch": {
+   "explanation": "\"facile\" means easy; it ends in -e, so it stays the same for masculine and feminine (un test facile, une question facile)."
+  },
+  "reason": "The key is right, but the explanation is generic and says 'masculine form' for \"facile\", which has the same form in both genders."
  },
  "fr:question:frb1p2l5/frb1p2q22": {
   "patch": {
@@ -16583,11 +17507,49 @@
   },
   "reason": "\"c'est pourquoi\" can also render 'accordingly', so a learner could be marked wrong; it is replaced with a cause connector, and the prompt and explanation are fixed."
  },
+ "fr:question:frb2p11l1/frb2p11q2": {
+  "patch": {
+   "explanation": "\"l'élection\" is feminine (une élection), and the article elides to l' before the vowel é."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
  "fr:question:frb2p11l1/frb2p11q3": {
   "patch": {
    "explanation": "\"le vote\" is a direct cognate of 'vote' and is masculine, so it takes \"le\"; the other words mean president, immigration and politics."
   },
   "reason": "The item works, but the explanation is a generic gloss."
+ },
+ "fr:question:frb2p11l1/frb2p11q4": {
+  "patch": {
+   "explanation": "\"le citoyen\" is masculine; a female citizen is la citoyenne. Note the spelling -oyen."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
+ "fr:question:frb2p11l2/frb2p11q5": {
+  "patch": {
+   "prompt": "The French word for \"law\" is ___.",
+   "explanation": "\"la loi\" is feminine and means a law passed by parliament, as in voter une loi."
+  },
+  "reason": "The explanation is generic and does not quote the answer, and the prompt's '… ___' punctuation is clumsy."
+ },
+ "fr:question:frb2p11l2/frb2p11q6": {
+  "patch": {
+   "explanation": "\"la démocratie\" is feminine, like most nouns ending in -ie. The t is pronounced like an s, and the first e takes an accent (é)."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
+ "fr:question:frb2p11l2/frb2p11q7": {
+  "patch": {
+   "prompt": "The French word for \"parliament\" is ___.",
+   "explanation": "\"le parlement\" is masculine and is spelled -lement, with no i as in English 'parliament'."
+  },
+  "reason": "The explanation is generic and does not quote the answer, and the prompt's '… ___' punctuation is clumsy."
+ },
+ "fr:question:frb2p11l2/frb2p11q8": {
+  "patch": {
+   "explanation": "\"le ministre\" means a government minister; for a woman, la ministre is the standard form today."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
  },
  "fr:question:frb2p11l2/frb2p11q9": {
   "patch": {
@@ -16601,11 +17563,36 @@
   },
   "reason": "A cognate is acceptable here, but the explanation is generic."
  },
+ "fr:question:frb2p11l3/frb2p11q11": {
+  "patch": {
+   "explanation": "\"les droits\" is the plural of le droit (a right), as in les droits de l'homme (human rights)."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
  "fr:question:frb2p11l3/frb2p11q12": {
   "patch": {
    "explanation": "\"la justice\" means both fairness and the legal system, exactly like English 'justice', and it is feminine."
   },
   "reason": "The item is fine, but the explanation is generic."
+ },
+ "fr:question:frb2p11l3/frb2p11q13": {
+  "patch": {
+   "explanation": "\"l'égalité\" is feminine, like most nouns ending in -té. It appears in the French motto Liberté, égalité, fraternité."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
+ "fr:question:frb2p11l3/frb2p11q14": {
+  "patch": {
+   "prompt": "The French word for \"freedom\" is ___.",
+   "explanation": "\"la liberté\" is feminine, like most nouns ending in -té. It translates both 'freedom' and 'liberty'."
+  },
+  "reason": "The explanation is generic and does not quote the answer, and the prompt's '… ___' punctuation is clumsy."
+ },
+ "fr:question:frb2p11l4/frb2p11q15": {
+  "patch": {
+   "explanation": "\"la société\" is feminine, like most nouns ending in -té. It can also mean a company."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
  },
  "fr:question:frb2p11l4/frb2p11q16": {
   "patch": {
@@ -16613,11 +17600,54 @@
   },
   "reason": "The item is fine, but the explanation is generic."
  },
+ "fr:question:frb2p11l4/frb2p11q17": {
+  "patch": {
+   "explanation": "\"la pauvreté\" comes from pauvre (poor) and is feminine, like most nouns ending in -té."
+  },
+  "reason": "The explanation is a generic line that does not quote the answer and teaches nothing about this word."
+ },
+ "fr:question:frb2p11l4/frb2p11q18": {
+  "patch": {
+   "prompt": "The French word for \"inequality\" is ___.",
+   "explanation": "\"l'inégalité\" is égalité with the prefix in-. It is feminine (une inégalité), and the article elides before the vowel."
+  },
+  "reason": "The explanation is generic and does not quote the answer, and the prompt's '… ___' punctuation is clumsy."
+ },
  "fr:question:frb2p11l4/frb2p11q19": {
   "patch": {
    "explanation": "\"la manifestation\" is the everyday word for a street protest or demonstration (informally \"une manif\"); the other options mean law, diplomacy and justice."
   },
   "reason": "The key is correct and no other option means 'protest', but the explanation is generic."
+ },
+ "fr:question:frb2p11l5/frb2p11q20": {
+  "patch": {
+   "explanation": "\"la réforme\" is the cognate of \"reform\" and is feminine; note the accent on the é. Example: la réforme des retraites (pension reform)."
+  },
+  "reason": "The key is correct, but the explanation is a generic line that teaches nothing beyond the translation."
+ },
+ "fr:question:frb2p11l5/frb2p11q21": {
+  "patch": {
+   "explanation": "\"l'impôt\" is masculine (un impôt) and is often used in the plural: payer ses impôts (to pay your taxes). Watch the circumflex on the ô."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p11l5/frb2p11q22": {
+  "patch": {
+   "explanation": "\"l'opinion publique\" is feminine, so the adjective takes the feminine form publique. In French it follows the noun."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p11l5/frb2p11q24": {
+  "patch": {
+   "explanation": "\"la souveraineté\" is feminine, like most nouns ending in -té. Example: la souveraineté nationale (national sovereignty)."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p12l1/frb2p12q0": {
+  "patch": {
+   "explanation": "\"le changement climatique\" is masculine, and the adjective climatique comes after the noun, unlike in English. It is also called le réchauffement climatique when the focus is warming."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:frb2p12l1/frb2p12q1": {
   "patch": {
@@ -16715,6 +17745,18 @@
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:frb2p12l4/frb2p12q18": {
+  "patch": {
+   "explanation": "\"l'espèce en voie de disparition\" literally means 'the species on the way to disappearing'. Espèce is feminine; a close synonym is une espèce menacée."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p12l4/frb2p12q19": {
+  "patch": {
+   "explanation": "\"la ressource naturelle\" is feminine, so naturelle takes the feminine -le ending and follows the noun. It is often plural: les ressources naturelles."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:frb2p12l5/frb2p12q21": {
   "patch": {
    "explanation": "\"l'écologie\" (feminine, elided before a vowel) is the study of living things and their environment, and also the green political movement."
@@ -16724,6 +17766,12 @@
  "fr:question:frb2p12l5/frb2p12q22": {
   "patch": {
    "explanation": "\"la couche d'ozone\" literally means \"the layer of ozone\": \"la couche\" is a layer, and \"de\" elides to \"d'\" before \"ozone\"."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p12l5/frb2p12q23": {
+  "patch": {
+   "explanation": "\"le niveau de la mer\" is literally 'the level of the sea'; French uses de rather than putting the nouns together as English does. Example: le niveau de la mer monte (sea level is rising)."
   },
   "reason": "The key is correct, but the explanation is generic."
  },
@@ -16751,11 +17799,23 @@
   },
   "reason": "The bank is acceptable, but the explanation is generic."
  },
+ "fr:question:frb2p13l1/frb2p13q2": {
+  "patch": {
+   "explanation": "\"le juge\" is the person who presides over a court. For a woman you can say la juge; don't confuse it with juger, the verb 'to judge'."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:frb2p13l1/frb2p13q3": {
   "patch": {
    "explanation": "\"l'avocat\" is the lawyer who defends or represents someone in court; the same word also means avocado, so rely on context."
   },
   "reason": "The key is correct and unique, but the explanation is generic. / \"Avocat\" is not a false friend for lawyer (it matches English advocate); the avocado meaning is a homonym, so the label teaches something inaccurate."
+ },
+ "fr:question:frb2p13l1/frb2p13q4": {
+  "patch": {
+   "explanation": "\"le procès\" means a court trial, not a 'process', which in French is un processus. Example: le procès a duré trois semaines."
+  },
+  "reason": "The key is correct, but the generic explanation misses the useful false-friend point."
  },
  "fr:question:frb2p13l2/frb2p13q5": {
   "patch": {
@@ -16768,6 +17828,18 @@
    "explanation": "\"le crime\" is a masculine noun for a serious offence; \"le témoin\" is a witness and \"la victime\" the person harmed."
   },
   "reason": "\"coupable\" is an adjective among nouns, so it is easy to rule out, and the explanation is generic."
+ },
+ "fr:question:frb2p13l2/frb2p13q6": {
+  "patch": {
+   "explanation": "\"le témoin\" is a person who saw an event and testifies about it. It is traditionally masculine even for a woman, though la témoin is now also accepted."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p13l2/frb2p13q7": {
+  "patch": {
+   "explanation": "\"le jury\" is spelled as in English but is masculine and pronounced the French way (zhu-ree). Example: le jury a rendu son verdict."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:frb2p13l2/frb2p13q9": {
   "patch": {
@@ -18554,6 +19626,18 @@
   },
   "reason": "The key is correct, but the explanation is a generic gloss and does not say why this phrase, rather than the closing formulas, means Dear Sir or Madam."
  },
+ "fr:question:frb2p20l1/frb2p20q2": {
+  "patch": {
+   "choices": [
+    "veuillez noter que",
+    "je vous serais reconnaissant de",
+    "je vous écris pour vous informer",
+    "le destinataire"
+   ],
+   "explanation": "\"je vous écris pour vous informer\" is the standard opening of a formal letter announcing information, literally \"I am writing to you to inform you\"."
+  },
+  "reason": "The key is the only option starting with a capital letter, which makes it stand out; it should be lowercased like the other options."
+ },
  "fr:question:frb2p20l2/frb2p20q7": {
   "patch": {
    "prompt": "The French for \"I would be grateful if you could\" is… ___",
@@ -18572,6 +19656,66 @@
    "explanation": "\"n'hésitez pas à me contacter\" is the polite set phrase inviting the reader to get in touch. \"Dans l'attente de votre réponse\" means you are waiting for a reply, and the \"ci-joint\" phrases announce an attachment."
   },
   "reason": "The bare noun \"le destinataire\" stands out among full letter formulas, so it is replaced with another formula of the same kind; the answer stays at position 0. / The explanation is generic and does not quote the answer in double quotes or say why the other phrases don't fit."
+ },
+ "fr:question:frb2p20l3/frb2p20q13": {
+  "patch": {
+   "explanation": "\"je reste à votre disposition\" is the standard closing line offering further help, built on the set expression être à la disposition de quelqu'un, with vous for formal letters."
+  },
+  "reason": "The key is correct, but the explanation is a generic lesson line that does not say when the phrase is used."
+ },
+ "fr:question:frb2p20l3/frb2p20q14": {
+  "patch": {
+   "explanation": "\"veuillez noter que\" uses veuillez, the polite imperative of vouloir, which French letters use for 'kindly' or 'please' requests."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not explain the form."
+ },
+ "fr:question:frb2p20l4/frb2p20q15": {
+  "patch": {
+   "choices": [
+    "je m'excuse pour la gêne occasionnée",
+    "je vous écris pour vous informer",
+    "conformément à votre demande",
+    "si vous avez des questions"
+   ],
+   "explanation": "\"conformément à votre demande\" means 'in accordance with your request'; conformément à is the formal way to say 'as per'."
+  },
+  "reason": "One distractor starts with a capital letter while the others are lowercase, and the explanation is generic."
+ },
+ "fr:question:frb2p20l4/frb2p20q16": {
+  "patch": {
+   "explanation": "\"dans l'intervalle\" literally means 'in the interval' and is a formal written way to say 'in the meantime', more elevated than en attendant."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p20l4/frb2p20q17": {
+  "patch": {
+   "explanation": "French renders the English 'should you have' with a plain si + present tense, so \"si vous avez des questions\" is the natural formal equivalent."
+  },
+  "reason": "The key is acceptable, but the explanation is generic."
+ },
+ "fr:question:frb2p20l4/frb2p20q18": {
+  "patch": {
+   "explanation": "\"je souhaite attirer votre attention sur\" uses the fixed expression attirer l'attention de quelqu'un sur, 'to draw someone's attention to', with souhaiter as the polite 'would like'."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p20l4/frb2p20q19": {
+  "patch": {
+   "explanation": "\"respectueusement\" is the adverb from respectueux, 'respectful'; the -ment ending works like English -ly."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p20l5/frb2p20q21": {
+  "patch": {
+   "explanation": "\"le destinataire\" is the person a letter or email is addressed to (destiné à, 'intended for'), the opposite of l'expéditeur."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p20l5/frb2p20q22": {
+  "patch": {
+   "explanation": "\"l'expéditeur\" is the person who sends (expédier) a letter or parcel; le elides to l' before the vowel."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:frb2p21l1/frb2p21q0": {
   "patch": {
@@ -18596,6 +19740,47 @@
    "explanation": "One way to say it: \"J'aurais aimé étudier plus sérieusement.\" The past conditional \"j'aurais aimé\" expresses a regret about the past, like \"I wish I had\"."
   },
   "reason": "\"Étudié davantage\" is the more natural word order, and the explanation is a generic fragment."
+ },
+ "fr:question:frb2p21l1/frb2p21q3": {
+  "patch": {
+   "explanation": "One way to say it: \"Cette politique me semble injuste.\" Using me semble or je trouve presents unfairness as your argued opinion rather than a bare fact."
+  },
+  "reason": "The accepted answers are fine, but the explanation is a generic lesson line that does not fit this task."
+ },
+ "fr:question:frb2p21l1/frb2p21q4": {
+  "patch": {
+   "explanation": "One way to say it: \"Le résultat a dépassé nos attentes.\" The fixed phrase dépasser les attentes means 'to exceed expectations', in the passé composé for a completed outcome."
+  },
+  "reason": "The accepted answers are fine, but the explanation is generic and mentions 'hypothetical ideas', which do not apply here."
+ },
+ "fr:question:frb2p21l2/frb2p21q5": {
+  "patch": {
+   "explanation": "One way to say it: \"Certes, mais je maintiens mon point de vue.\" Certes concedes the point, and mais je maintiens holds your position."
+  },
+  "reason": "The accepted answers are fine, but the explanation is generic."
+ },
+ "fr:question:frb2p21l2/frb2p21q6": {
+  "patch": {
+   "explanation": "One natural way: \"Je reconsidérerais ma position dans d'autres circonstances.\" The conditional \"reconsidérerais\" makes it hypothetical; other conditional wordings such as \"Je pourrais changer d'avis si la situation évoluait.\" are also right.",
+   "acceptableAnswers": [
+    "Je reconsidérerais ma position dans d'autres circonstances.",
+    "Dans d'autres circonstances, je reviendrais sur ma décision.",
+    "Je pourrais changer d'avis si la situation évoluait."
+   ]
+  },
+  "reason": "The explanation ends in a generic, broken fragment, and the second accepted answer says things would differ rather than that you would reconsider."
+ },
+ "fr:question:frb2p21l2/frb2p21q7": {
+  "patch": {
+   "explanation": "One natural way: \"Je reste sceptique face à cette affirmation.\" \"Rester sceptique face à\" signals polite doubt; \"J'ai du mal à croire…\" works too."
+  },
+  "reason": "The explanation's second sentence is a generic, ungrammatical fragment that does not fit a skepticism task."
+ },
+ "fr:question:frb2p21l2/frb2p21q8": {
+  "patch": {
+   "explanation": "One natural way: \"La négociation est dans une impasse.\" \"Être dans une impasse\" is the set phrase for talks that are stuck; \"Les discussions n'avancent plus.\" says the same thing more simply."
+  },
+  "reason": "The explanation ends in a generic fragment unrelated to the impasse idea."
  },
  "fr:question:frb2p21l2/frb2p21q9": {
   "patch": {
@@ -18681,6 +19866,48 @@
   },
   "reason": "The third accepted answer drops the idea of raising questions, the second has an awkward comparison, and the explanation is generic."
  },
+ "fr:question:frb2p21l5/frb2p21q22": {
+  "patch": {
+   "explanation": "One natural way: \"Ce n'est pas si grave que ça.\" The structure \"pas si… que ça\" shrinks the importance of something; \"Ça n'a pas tant d'importance\" works the same way."
+  },
+  "reason": "The explanation ends in a generic fragment; downplaying is not a hypothetical idea."
+ },
+ "fr:question:frb2p21l5/frb2p21q23": {
+  "patch": {
+   "explanation": "One natural way: \"L'initiative n'a pas atteint ses objectifs.\" \"Atteindre ses objectifs\" means to reach one's goals, so the negative says it fell short; \"rester en deçà de\" is a more formal option."
+  },
+  "reason": "The explanation ends in a generic fragment that does not explain the wording."
+ },
+ "fr:question:frb2p21l5/frb2p21q24": {
+  "patch": {
+   "explanation": "One natural way: \"J'admire sa résilience.\" \"Admirer\" takes a direct object, and \"résilience\" is the same idea as in English; \"force le respect\" is a stronger, more formal option."
+  },
+  "reason": "The explanation ends in a generic fragment unrelated to expressing admiration."
+ },
+ "fr:question:frb2p22l1/frb2p22q0": {
+  "patch": {
+   "explanation": "The audio says \"Le dessus du dossier contenait un résumé synthétique.\" Listen for \"dessus\" with the tight French u sound, not \"dessous\" with the ou sound."
+  },
+  "reason": "The explanation is a generic fragment that does not name the sound contrast being tested."
+ },
+ "fr:question:frb2p22l1/frb2p22q1": {
+  "patch": {
+   "explanation": "The audio says \"Le dessous du dossier contenait un résumé synthétique.\" Listen for \"dessous\" with the ou sound, not \"dessus\" with the tight French u sound."
+  },
+  "reason": "The explanation is a generic fragment that does not name the sound contrast being tested."
+ },
+ "fr:question:frb2p22l1/frb2p22q2": {
+  "patch": {
+   "explanation": "The audio says \"Le dessus de la pile renfermait les pièces sensibles.\" Listen for \"dessus\" with the tight French u sound, not \"dessous\" with the ou sound."
+  },
+  "reason": "The explanation is a generic fragment that does not name the sound contrast being tested."
+ },
+ "fr:question:frb2p22l1/frb2p22q3": {
+  "patch": {
+   "explanation": "The audio says \"Le dessous de la pile renfermait les pièces sensibles.\" Listen for \"dessous\" with the ou sound, not \"dessus\" with the tight French u sound."
+  },
+  "reason": "The explanation is a generic fragment that does not name the sound contrast being tested."
+ },
  "fr:question:frb2p22l1/frb2p22q4": {
   "patch": {
    "choices": [
@@ -18705,6 +19932,12 @@
   },
   "reason": "Option A (\"contemplé sa mère depuis le sommet de la falaise\") is semantically odd, and the explanation is generic."
  },
+ "fr:question:frb2p22l2/frb2p22q7": {
+  "patch": {
+   "explanation": "The audio says \"L'analyse a détecté une trace infime de poison.\" A single s between vowels sounds like z, so \"poison\" means poison; \"poisson\" (fish) has a hissing s."
+  },
+  "reason": "The explanation is a generic fragment that does not name the z/s contrast being tested."
+ },
  "fr:question:frb2p22l2/frb2p22q8": {
   "patch": {
    "choices": [
@@ -18716,6 +19949,30 @@
    "explanation": "The audio says \"Ces conclusions restent sujettes à caution selon les experts.\" It is the only option about conclusions and experts, and \"sujettes à caution\" means open to doubt."
   },
   "reason": "Option B 'la mère qui borde son village natal' is nonsense (a mother cannot border a village), and the explanation is generic. / \"Ces\" and \"Ses\" sound identical, so the explanation wrongly says the learner can hear the difference; adding a \"Ses\" option would create a second answer, so only the explanation changes."
+ },
+ "fr:question:frb2p22l2/frb2p22q9": {
+  "patch": {
+   "choices": [
+    "Ses conclusions restent sujettes à caution selon les experts.",
+    "Ce plat gastronomique contient, paraît-il, du poisson.",
+    "Le mur de cette galerie est repeint en vert profond.",
+    "Il repense sans cesse à la mer qui borde son village natal."
+   ],
+   "explanation": "The audio says \"Ses conclusions restent sujettes à caution selon les experts.\" Listen for \"conclusions\" and \"sujettes à caution\" (open to doubt): no other option has them."
+  },
+  "reason": "Option D says \"la mère qui borde\" (mother instead of sea), which is nonsense French; option B lacks the commas around \"paraît-il\"; and the explanation is generic."
+ },
+ "fr:question:frb2p22l3/frb2p22q10": {
+  "patch": {
+   "explanation": "The audio says \"Ces décisions ont profondément divisé l'opinion publique.\" Listen for \"décisions\" and \"divisé l'opinion\": the option with \"conclusions\" has a different noun and verb."
+  },
+  "reason": "The key is unique, but the explanation is generic and does not say how to pick out this sentence."
+ },
+ "fr:question:frb2p22l3/frb2p22q11": {
+  "patch": {
+   "explanation": "The audio says \"Ses décisions ont profondément divisé l'opinion publique.\" Listen for \"décisions\" and \"divisé l'opinion publique\", which no other option contains."
+  },
+  "reason": "The key is unique, but the explanation is generic."
  },
  "fr:question:frb2p22l3/frb2p22q12": {
   "patch": {
@@ -18740,6 +19997,30 @@
    "explanation": "The audio says \"Il repense sans cesse à la mer qui borde son village natal.\" \"La mer\" (the sea) is what can border (\"borde\") a village, even though it sounds exactly like \"mère\"."
   },
   "reason": "The item works because the options are clearly distinct, but the explanation is generic."
+ },
+ "fr:question:frb2p22l4/frb2p22q16": {
+  "patch": {
+   "explanation": "The audio says \"La pénurie de pain a ravivé les tensions dans la région.\" Listen for \"La pénurie\" (the shortage) and \"les tensions\": the other sentence with \"pain\" starts with \"Elle se procure\"."
+  },
+  "reason": "The key is unique, but the explanation is generic; \"pain\" and \"pin\" sound the same, so the cue is the rest of the sentence."
+ },
+ "fr:question:frb2p22l4/frb2p22q17": {
+  "patch": {
+   "explanation": "The audio says \"La pénurie de pin a ravivé les tensions dans la région.\" Listen for \"La pénurie\" and \"les tensions\": the other sentence with \"pin\" starts with \"Elle se procure\"."
+  },
+  "reason": "The key is unique, but the explanation is generic."
+ },
+ "fr:question:frb2p22l4/frb2p22q18": {
+  "patch": {
+   "explanation": "The audio says \"Elle se procure discrètement du pain rare.\" Listen for \"du\" right after \"discrètement\": option A has \"un jeune\" there instead."
+  },
+  "reason": "The key is unique, but the explanation is generic."
+ },
+ "fr:question:frb2p22l4/frb2p22q19": {
+  "patch": {
+   "explanation": "The audio says \"Elle se procure discrètement un jeune pin rare.\" Listen for \"un jeune\" before the noun: option C has \"du\" there instead."
+  },
+  "reason": "The key is unique, but the explanation is generic."
  },
  "fr:question:frb2p22l5/frb2p22q20": {
   "patch": {
@@ -18770,6 +20051,84 @@
    "explanation": "The audio says \"Ces habitudes institutionnelles sont difficiles à réformer.\" Note the silent h in \"habitudes\" and the liaison \"ces_habitudes\" with a z sound."
   },
   "reason": "The item is answerable, but the explanation is generic."
+ },
+ "fr:question:frb2p23l1/frb2p23q0": {
+  "patch": {
+   "explanation": "Target phrase: \"Quand j'aurai fini mon travail, j'irai me promener.\" After \"quand\", French uses the future perfect (\"j'aurai fini\") for an action finished before the main future one; pause briefly at the comma."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l1/frb2p23q1": {
+  "patch": {
+   "explanation": "Target phrase: \"Si tu as le temps, on pourrait déjeuner ensemble.\" A present tense after \"si\" followed by the conditional \"on pourrait\" makes a polite suggestion; link \"tu as\" smoothly."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l1/frb2p23q2": {
+  "patch": {
+   "explanation": "Target phrase: \"Bien que ce soit difficile, je vais essayer.\" \"Bien que\" (although) is always followed by the subjunctive, here \"ce soit\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l1/frb2p23q3": {
+  "patch": {
+   "explanation": "Target phrase: \"Puisqu'il pleut, nous resterons à la maison.\" \"Puisque\" (since) elides to \"Puisqu'\" before \"il\", and the main clause uses the future \"resterons\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l1/frb2p23q4": {
+  "patch": {
+   "explanation": "Target phrase: \"Lorsque je serai arrivé, je t'appellerai.\" After \"lorsque\", the future perfect \"je serai arrivé\" uses \"être\", so a woman would write \"arrivée\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l4/frb2p23q17": {
+  "patch": {
+   "explanation": "Target phrase: \"Puisque tu insistes, j'accepte.\" \"Puisque\" (since) gives a reason both speakers already know, followed by the main clause \"j'accepte\"."
+  },
+  "reason": "The sentence is correct, but the explanation's second line is generic and does not describe this structure."
+ },
+ "fr:question:frb2p23l4/frb2p23q18": {
+  "patch": {
+   "explanation": "Target phrase: \"Quoi qu'il arrive, je serai là pour toi.\" \"Quoi que\" (whatever) takes the subjunctive \"arrive\", and the main clause uses the future \"serai\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l4/frb2p23q19": {
+  "patch": {
+   "explanation": "Target phrase: \"Si j'avais su, je ne serais pas venu.\" This is a past unreal condition: \"si\" + pluperfect (\"avais su\"), then past conditional (\"serais venu\")."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l5/frb2p23q20": {
+  "patch": {
+   "explanation": "Target phrase: \"Chaque fois que je le vois, il me parle de son travail.\" \"Chaque fois que\" (every time) introduces a repeated situation, with both clauses in the present."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l5/frb2p23q21": {
+  "patch": {
+   "explanation": "Target phrase: \"Plus j'y pense, plus je suis convaincu.\" The pattern \"plus… plus…\" means \"the more… the more…\", and needs no article or \"que\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l5/frb2p23q22": {
+  "patch": {
+   "explanation": "Target phrase: \"Que tu le veuilles ou non, il faut le faire.\" \"Que… ou non\" (whether or not) takes the subjunctive, so \"vouloir\" becomes \"veuilles\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l5/frb2p23q23": {
+  "patch": {
+   "explanation": "Target phrase: \"Bien que je sois occupé, je vais t'aider.\" \"Bien que\" (although) always takes the subjunctive, hence \"sois\" rather than \"suis\"."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
+ },
+ "fr:question:frb2p23l5/frb2p23q24": {
+  "patch": {
+   "explanation": "Target phrase: \"Une fois que ce sera fini, nous pourrons partir.\" After \"une fois que\", French uses the future \"sera\" when the main clause is in the future, where English uses the present."
+  },
+  "reason": "The sentence is correct, but the explanation is generic."
  },
  "fr:question:frb2p2l1/frb2p2q0": {
   "patch": {
@@ -18914,6 +20273,12 @@
    "explanation": "\"Tourner autour du pot\" literally means \"to go round the pot\" instead of getting to it, so it means \"to beat around the bush\"."
   },
   "reason": "The explanation is generic and does not explain the image behind the idiom."
+ },
+ "fr:question:frb2p2l5/frb2p2q24": {
+  "patch": {
+   "explanation": "\"il pleut des cordes\" literally means 'it's raining ropes', picturing rain falling in thick lines, so it means \"it's raining heavily\"."
+  },
+  "reason": "The key and distractors are fine, but the explanation is generic and does not say why the idiom means this."
  },
  "fr:question:frb2p3l1/frb2p3q0": {
   "patch": {
@@ -21453,6 +22818,546 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "fr:question:frgb1p1l1/frgb1p1q0": {
+  "patch": {
+   "explanation": "The subject \"elle\" is third person singular, so the auxiliary is \"a\", giving \"a mangé\"; \"ont\", \"avons\" and \"as\" belong to other subjects."
+  },
+  "reason": "Key is right; only the explanation needs to be specific."
+ },
+ "fr:question:frgb1p1l1/frgb1p1q1": {
+  "patch": {
+   "explanation": "\"Nous\" takes the auxiliary \"avons\" in the passé composé, so \"avons mangé\" matches the subject."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l1/frgb1p1q2": {
+  "patch": {
+   "explanation": "\"Elles\" is third person plural, so the auxiliary is \"ont\", giving \"ont mangé\"."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l1/frgb1p1q3": {
+  "patch": {
+   "explanation": "\"Il\" is third person singular, so the auxiliary is \"a\", giving \"a mangé\"."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l1/frgb1p1q4": {
+  "patch": {
+   "explanation": "\"Ils\" is third person plural, so the auxiliary is \"ont\", giving \"ont mangé\"."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l2/frgb1p1q5": {
+  "patch": {
+   "explanation": "\"Vous\" takes the auxiliary \"avez\" in the passé composé, so \"avez mangé\" is correct."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l2/frgb1p1q6": {
+  "patch": {
+   "explanation": "\"Tu\" takes the auxiliary \"as\", so \"as mangé\" is the matching passé composé form."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l2/frgb1p1q7": {
+  "patch": {
+   "explanation": "\"Il\" is third person singular, so the auxiliary is \"a\", giving \"a mangé\"."
+  },
+  "reason": "Key is right; explanation needs the subject clue."
+ },
+ "fr:question:frgb1p1l2/frgb1p1q8": {
+  "patch": {
+   "explanation": "The subject \"elles\" is third person plural, so avoir takes the form \"ont\" in the passé composé: \"ont mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l2/frgb1p1q9": {
+  "patch": {
+   "explanation": "The subject \"ils\" is third person plural, so avoir takes the form \"ont\" in the passé composé: \"ont mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l3/frgb1p1q10": {
+  "patch": {
+   "explanation": "With the subject \"vous\", avoir takes the form \"avez\" in the passé composé: \"avez mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l3/frgb1p1q11": {
+  "patch": {
+   "explanation": "The subject \"elle\" is third person singular, so avoir takes the form \"a\" in the passé composé: \"a mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l3/frgb1p1q12": {
+  "patch": {
+   "explanation": "With the subject \"nous\", avoir takes the form \"avons\" in the passé composé: \"avons mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l3/frgb1p1q13": {
+  "patch": {
+   "explanation": "With the subject \"tu\", avoir takes the form \"as\" in the passé composé: \"as mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p1l3/frgb1p1q14": {
+  "patch": {
+   "explanation": "The subject \"elles\" is third person plural, so avoir takes the form \"ont\" in the passé composé: \"ont mangé\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l1/frgb1p2q0": {
+  "patch": {
+   "explanation": "The subject \"il\" is third person singular, so avoir takes the form \"a\" in the passé composé: \"a acheté\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l1/frgb1p2q1": {
+  "patch": {
+   "explanation": "With the subject \"vous\", avoir takes the form \"avez\" in the passé composé: \"avez acheté\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l1/frgb1p2q2": {
+  "patch": {
+   "explanation": "The subject \"elles\" is third person plural, so avoir takes the form \"ont\" in the passé composé: \"ont acheté\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l1/frgb1p2q3": {
+  "patch": {
+   "explanation": "With the subject \"nous\", avoir takes the form \"avons\" in the passé composé: \"avons acheté\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l1/frgb1p2q4": {
+  "patch": {
+   "explanation": "The subject \"ils\" is third person plural, so avoir takes the form \"ont\" in the passé composé: \"ont acheté\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p2l2/frgb1p2q5": {
+  "patch": {
+   "explanation": "The subject \"tu\" takes the auxiliary \"avoir\" in the form \"as\", so the passé composé of acheter is \"as acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l2/frgb1p2q6": {
+  "patch": {
+   "explanation": "The subject \"elle\" (third person singular) takes \"a\" from avoir, so the passé composé is \"a acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l2/frgb1p2q7": {
+  "patch": {
+   "explanation": "The plural subject \"ils\" takes \"ont\" from avoir, so the passé composé is \"ont acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l2/frgb1p2q8": {
+  "patch": {
+   "explanation": "The subject \"vous\" takes \"avez\" from avoir, so the passé composé is \"avez acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l2/frgb1p2q9": {
+  "patch": {
+   "explanation": "The subject \"il\" (third person singular) takes \"a\" from avoir, so the passé composé is \"a acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l3/frgb1p2q10": {
+  "patch": {
+   "explanation": "The plural subject \"elles\" takes \"ont\" from avoir; acheter uses avoir, so there is no agreement and the answer is \"ont acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l3/frgb1p2q11": {
+  "patch": {
+   "explanation": "The subject \"nous\" takes \"avons\" from avoir, so the passé composé is \"avons acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l3/frgb1p2q12": {
+  "patch": {
+   "explanation": "The subject \"tu\" takes \"as\" from avoir, so the passé composé is \"as acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l3/frgb1p2q13": {
+  "patch": {
+   "explanation": "The subject \"elle\" takes \"a\" from avoir, so the passé composé is \"a acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p2l3/frgb1p2q14": {
+  "patch": {
+   "explanation": "The plural subject \"ils\" takes \"ont\" from avoir, so the passé composé is \"ont acheté\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p3l1/frgb1p3q0": {
+  "patch": {
+   "explanation": "Aller takes être, and the participle agrees with the feminine singular subject \"elle\", giving \"est allée\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p3l1/frgb1p3q1": {
+  "patch": {
+   "explanation": "Aller takes être, and the participle agrees with the masculine plural subject \"ils\", giving \"sont allés\"."
+  },
+  "reason": "Replace generic explanation with a subject-specific one."
+ },
+ "fr:question:frgb1p3l1/frgb1p3q2": {
+  "patch": {
+   "explanation": "\"est allé\" is right because aller takes être in the passé composé, and the subject \"il\" is masculine singular, so the participle has no added ending."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l1/frgb1p3q3": {
+  "patch": {
+   "explanation": "\"sont allées\" is right because \"elles\" is feminine plural: aller takes être, so the participle agrees by adding -e and -s."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l1/frgb1p3q4": {
+  "patch": {
+   "explanation": "\"sont allés\" is right because \"ils\" is masculine plural: aller takes être, so the participle agrees by adding -s."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l2/frgb1p3q5": {
+  "patch": {
+   "explanation": "\"est allé\" is right because aller takes être in the passé composé, and the subject \"il\" is masculine singular, so the participle stays unchanged."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l2/frgb1p3q6": {
+  "patch": {
+   "explanation": "\"est allée\" is right because aller takes être, and the subject \"elle\" is feminine singular, so the participle adds -e."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l2/frgb1p3q7": {
+  "patch": {
+   "explanation": "\"sont allées\" is right because \"elles\" is feminine plural: aller takes être, so the participle agrees by adding -e and -s."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l2/frgb1p3q8": {
+  "patch": {
+   "explanation": "\"est allée\" is right because aller takes être, and the subject \"elle\" is feminine singular, so the participle adds -e."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l2/frgb1p3q9": {
+  "patch": {
+   "explanation": "\"sont allées\" is right because \"elles\" is feminine plural: aller takes être, so the participle agrees by adding -e and -s."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l3/frgb1p3q10": {
+  "patch": {
+   "explanation": "\"est allé\" is right because aller takes être in the passé composé, and the subject \"il\" is masculine singular, so the participle stays unchanged."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l3/frgb1p3q11": {
+  "patch": {
+   "explanation": "\"sont allés\" is right because \"ils\" is masculine plural: aller takes être, so the participle agrees by adding -s."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l3/frgb1p3q12": {
+  "patch": {
+   "explanation": "\"est allée\" is right because aller takes être, and the subject \"elle\" is feminine singular, so the participle adds -e."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l3/frgb1p3q13": {
+  "patch": {
+   "explanation": "\"est allé\" is right because aller takes être in the passé composé, and the subject \"il\" is masculine singular, so the participle stays unchanged."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frgb1p3l3/frgb1p3q14": {
+  "patch": {
+   "explanation": "\"aller\" takes être in the passé composé, and \"ils\" is masculine plural, so the participle agrees: \"sont allés\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l1/frgb1p4q0": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"ils\" is masculine plural, so the participle agrees: \"sont venus\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l1/frgb1p4q1": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"il\" is masculine singular, so there is no extra ending: \"est venu\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l1/frgb1p4q2": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elles\" is feminine plural, so the participle adds -es: \"sont venues\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l1/frgb1p4q3": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elle\" is feminine singular, so the participle adds -e: \"est venue\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l1/frgb1p4q4": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elles\" is feminine plural, so the participle adds -es: \"sont venues\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l2/frgb1p4q5": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elle\" is feminine singular, so the participle adds -e: \"est venue\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l2/frgb1p4q6": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"il\" is masculine singular, so there is no extra ending: \"est venu\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l2/frgb1p4q7": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"ils\" is masculine plural, so the participle adds -s: \"sont venus\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l2/frgb1p4q8": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elle\" is feminine singular, so the participle adds -e: \"est venue\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l2/frgb1p4q9": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"elles\" is feminine plural, so the participle adds -es: \"sont venues\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l3/frgb1p4q10": {
+  "patch": {
+   "explanation": "\"venir\" takes être in the passé composé, and \"il\" is masculine singular, so there is no extra ending: \"est venu\"."
+  },
+  "reason": "Replace the generic line with a specific rule."
+ },
+ "fr:question:frgb1p4l3/frgb1p4q11": {
+  "patch": {
+   "explanation": "\"sont venus\" is right because \"ils\" is masculine plural: venir takes être in the passé composé, so the participle takes -s and the verb is \"sont\"."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p4l3/frgb1p4q12": {
+  "patch": {
+   "explanation": "\"est venue\" is right because \"elle\" is feminine singular: venir takes être, so the participle agrees with an added -e."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p4l3/frgb1p4q13": {
+  "patch": {
+   "explanation": "\"sont venues\" is right because \"elles\" is feminine plural: venir takes être, so the participle takes both -e and -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p4l3/frgb1p4q14": {
+  "patch": {
+   "explanation": "\"sont venus\" is right because \"ils\" is masculine plural: venir takes être, so the verb is \"sont\" and the participle takes -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l1/frgb1p5q0": {
+  "patch": {
+   "explanation": "\"sont arrivés\" is right because \"ils\" is masculine plural: arriver takes être in the passé composé, so the participle takes -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l1/frgb1p5q1": {
+  "patch": {
+   "explanation": "\"est arrivée\" is right because \"elle\" is feminine singular: arriver takes être, so the participle adds -e."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l1/frgb1p5q2": {
+  "patch": {
+   "explanation": "\"est arrivé\" is right because \"il\" is masculine singular: arriver takes être, so the verb is \"est\" and the participle has no ending added."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l1/frgb1p5q3": {
+  "patch": {
+   "explanation": "\"sont arrivées\" is right because \"elles\" is feminine plural: arriver takes être, so the participle takes both -e and -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l1/frgb1p5q4": {
+  "patch": {
+   "explanation": "\"sont arrivés\" is right because \"ils\" is masculine plural: arriver takes être, so the verb is \"sont\" and the participle takes -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l2/frgb1p5q5": {
+  "patch": {
+   "explanation": "\"sont arrivées\" is right because \"elles\" is feminine plural: arriver takes être, so the participle takes both -e and -s."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l2/frgb1p5q6": {
+  "patch": {
+   "explanation": "\"est arrivé\" is right because \"il\" is masculine singular: arriver takes être, so the verb is \"est\" and the participle stays unchanged."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l2/frgb1p5q7": {
+  "patch": {
+   "explanation": "\"est arrivée\" is right because \"elle\" is feminine singular: arriver takes être, so the participle adds -e."
+  },
+  "reason": "Replaced generic explanation with one tied to the subject."
+ },
+ "fr:question:frgb1p5l2/frgb1p5q8": {
+  "patch": {
+   "explanation": "\"sont arrivés\": arriver takes être, so the participle agrees with the masculine plural subject \"ils\", giving the plural ending -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l2/frgb1p5q9": {
+  "patch": {
+   "explanation": "\"est arrivé\": arriver takes être, and the singular masculine subject \"il\" needs the singular verb \"est\" and a participle with no extra ending."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l3/frgb1p5q10": {
+  "patch": {
+   "explanation": "\"sont arrivées\": arriver takes être, so the participle agrees with the feminine plural subject \"elles\", adding -e and -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l3/frgb1p5q11": {
+  "patch": {
+   "explanation": "\"est arrivée\": arriver takes être, so the participle agrees with the feminine singular subject \"elle\", adding -e."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l3/frgb1p5q12": {
+  "patch": {
+   "explanation": "\"est arrivé\": arriver takes être, and the singular masculine subject \"il\" needs \"est\" with a participle that takes no ending."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l3/frgb1p5q13": {
+  "patch": {
+   "explanation": "\"sont arrivées\": arriver takes être, so the participle agrees with the feminine plural subject \"elles\", adding -e and -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p5l3/frgb1p5q14": {
+  "patch": {
+   "explanation": "\"sont arrivés\": arriver takes être, so the participle agrees with the masculine plural subject \"ils\", adding -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l1/frgb1p6q0": {
+  "patch": {
+   "explanation": "\"sont restés\": rester takes être in the passé composé, and the masculine plural subject \"ils\" makes the participle plural (-s) with no -e."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l1/frgb1p6q1": {
+  "patch": {
+   "explanation": "\"est resté\": rester takes être, and the singular masculine subject \"il\" needs \"est\" with a participle that takes no ending."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l1/frgb1p6q2": {
+  "patch": {
+   "explanation": "\"sont restées\": rester takes être, so the participle agrees with the feminine plural subject \"elles\", adding -e and -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l1/frgb1p6q3": {
+  "patch": {
+   "explanation": "\"est restée\": rester takes être, so the participle agrees with the feminine singular subject \"elle\", adding -e."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l1/frgb1p6q4": {
+  "patch": {
+   "explanation": "\"sont restées\": rester takes être, so the participle agrees with the feminine plural subject \"elles\", adding -e and -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l2/frgb1p6q5": {
+  "patch": {
+   "explanation": "\"est resté\" fits because \"il\" is masculine singular, so the auxiliary is \"est\" and the participle takes no extra ending."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l2/frgb1p6q6": {
+  "patch": {
+   "explanation": "\"est restée\" fits because \"elle\" is feminine singular: rester takes être, so the participle adds -e."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l2/frgb1p6q7": {
+  "patch": {
+   "explanation": "\"sont restés\" fits because \"ils\" is masculine plural: the auxiliary is \"sont\" and the participle adds -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l2/frgb1p6q8": {
+  "patch": {
+   "explanation": "\"est restée\" fits because \"elle\" is feminine singular, so rester (with être) gets an extra -e on the participle."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l2/frgb1p6q9": {
+  "patch": {
+   "explanation": "\"est resté\" fits because \"il\" is masculine singular, so it takes \"est\" and the plain participle."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l3/frgb1p6q10": {
+  "patch": {
+   "explanation": "\"sont restés\" fits because \"ils\" is masculine plural, so the participle with être takes -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l3/frgb1p6q11": {
+  "patch": {
+   "explanation": "\"sont restées\" fits because \"elles\" is feminine plural, so the participle with être takes -es."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l3/frgb1p6q12": {
+  "patch": {
+   "explanation": "\"est resté\" fits because \"il\" is masculine singular: \"est\" plus the participle with no added ending."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l3/frgb1p6q13": {
+  "patch": {
+   "explanation": "\"sont restées\" fits because \"elles\" is feminine plural: \"sont\" plus a participle ending in -es."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
+ "fr:question:frgb1p6l3/frgb1p6q14": {
+  "patch": {
+   "explanation": "\"sont restés\" fits because \"ils\" is masculine plural, so the auxiliary is \"sont\" and the participle adds -s."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
  "fr:unit-meta:fra1p16u1": {
   "patch": {
    "description": "At school — Everyday classroom objects and school words."
@@ -21495,6 +23400,13 @@
   },
   "reason": "The subtitle and body say the same thing twice, so the body adds no information."
  },
+ "fr:unit-meta:frb2p19u1": {
+  "patch": {
+   "title": "Faire causatif",
+   "description": "Faire + infinitive — The causative construction: having something done."
+  },
+  "reason": "In French, \"causatif\" takes no capital, and the description repeats \"faire + infinitive\"."
+ },
  "fr:unit-meta:frb2p21u1": {
   "patch": {
    "description": "Write the idea in French — Express nuanced or hypothetical ideas in your own words; more than one wording is right."
@@ -21507,11 +23419,36 @@
   },
   "reason": "The description is awkward and does not say what the learner has to do."
  },
+ "fr:unit-meta:frb2p6u1": {
+  "patch": {
+   "description": "The pluperfect — What had already happened before another past action."
+  },
+  "reason": "The description repeats \"pluperfect\" awkwardly (\"The pluperfect — Pluperfect: ...\")."
+ },
+ "fr:unit-meta:frb2p7u1": {
+  "patch": {
+   "title": "Conditionnel passé",
+   "description": "The past conditional — What would have happened."
+  },
+  "reason": "French does not capitalise \"passé\" in \"conditionnel passé\", and the description repeats \"past conditional\"."
+ },
  "fr:unit-meta:frb2p8u1": {
   "patch": {
    "description": "En + -ant for simultaneous actions — Use the gerund (en + present participle) to show two things happening at once."
   },
   "reason": "The body repeats the subtitle almost word for word; rewording it to say what the learner will do removes the redundancy."
+ },
+ "fr:unit-meta:frgb1p1u1": {
+  "patch": {
+   "description": "Passé composé in short sentences — Avoir plus the past participle: j'ai mangé, nous avons bu."
+  },
+  "reason": "\"The auxiliary and the participle go together\" is vague and does not say which auxiliary these eating verbs use."
+ },
+ "fr:unit-meta:frgb1p2u1": {
+  "patch": {
+   "description": "Passé composé in short sentences — Avoir plus the past participle: j'ai acheté, elle a payé."
+  },
+  "reason": "\"The auxiliary and the participle go together\" is vague and does not say which auxiliary these buying verbs use."
  },
  "fr:unit-meta:frgb1p6u1": {
   "patch": {

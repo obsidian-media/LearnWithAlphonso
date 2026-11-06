@@ -19016,10 +19016,10 @@
                 "jeune",
                 "timide",
                 "ennuyeux",
-                "gentille"
+                "gentil"
               ],
               "answer": "timide",
-              "explanation": "shy → timide. Common descriptive adjectives (masculine form)."
+              "explanation": "\"timide\" means shy; it ends in -e, so it stays the same for masculine and feminine (un garçon timide, une fille timide)."
             },
             {
               "id": "frb1p2q16",
@@ -19104,7 +19104,7 @@
                 "intéressant"
               ],
               "answer": 0,
-              "explanation": "easy → facile. Common descriptive adjectives (masculine form)."
+              "explanation": "\"facile\" means easy; it ends in -e, so it stays the same for masculine and feminine (un test facile, une question facile)."
             },
             {
               "id": "frb1p2q22",
@@ -21914,7 +21914,7 @@
                 "la terre"
               ],
               "answer": "la forêt",
-              "explanation": "forest → la forêt. Nature and environment vocabulary."
+              "explanation": "\"la forêt\" means forest; it is feminine and keeps the circumflex on the ê."
             },
             {
               "id": "frb1p10q2",
@@ -22012,7 +22012,7 @@
                 "l'arbre"
               ],
               "answer": 0,
-              "explanation": "sun → le soleil. Nature and environment vocabulary."
+              "explanation": "\"le soleil\" means sun; it is masculine, so you say le soleil and un soleil."
             },
             {
               "id": "frb1p10q9",
@@ -23132,7 +23132,7 @@
                 "le journaliste"
               ],
               "answer": 2,
-              "explanation": "channel → la chaîne. Media and journalism vocabulary."
+              "explanation": "\"la chaîne\" is a TV or radio channel, as in une chaîne de télévision; the same word also means chain."
             }
           ]
         },
@@ -23191,7 +23191,7 @@
                 "l'abonnement"
               ],
               "answer": "l'abonnement",
-              "explanation": "subscription → l'abonnement. Media and journalism vocabulary."
+              "explanation": "\"l'abonnement\" means subscription and comes from s'abonner (to subscribe); it is masculine: un abonnement."
             },
             {
               "id": "frb1p13q14",
@@ -23204,7 +23204,7 @@
                 "les dernières nouvelles"
               ],
               "answer": 2,
-              "explanation": "audience → le public. Media and journalism vocabulary."
+              "explanation": "\"le public\" is the audience of a show or media outlet; it is masculine singular even though it refers to many people."
             }
           ]
         },
@@ -23237,7 +23237,7 @@
                 "la censure"
               ],
               "answer": 0,
-              "explanation": "press → la presse. Media and journalism vocabulary."
+              "explanation": "\"la presse\" means the press, meaning newspapers and journalists as a whole; it is feminine."
             },
             {
               "id": "frb1p13q17",
@@ -23296,7 +23296,7 @@
                 "l'article"
               ],
               "answer": "la liberté d'expression",
-              "explanation": "freedom of speech → la liberté d'expression. Media and journalism vocabulary."
+              "explanation": "\"la liberté d'expression\" literally means freedom of expression and is the usual French term for freedom of speech."
             },
             {
               "id": "frb1p13q21",
@@ -23403,7 +23403,7 @@
                 "l'école"
               ],
               "answer": 2,
-              "explanation": "university → l'université. Education vocabulary from school to university."
+              "explanation": "\"l'université\" means university; it is feminine (une université), and la becomes l' before the vowel."
             },
             {
               "id": "frb1p14q3",
@@ -23449,7 +23449,7 @@
                 "la matière"
               ],
               "answer": "la matière",
-              "explanation": "subject → la matière. Education vocabulary from school to university."
+              "explanation": "A school subject is \"la matière\" (Quelle est ta matière préférée ?); le sujet means a topic, not a school subject."
             },
             {
               "id": "frb1p14q6",
@@ -23501,7 +23501,7 @@
                 "la matière"
               ],
               "answer": "l'enseignant",
-              "explanation": "teacher (in the education system) → l'enseignant. Education vocabulary from school to university."
+              "explanation": "\"l'enseignant\" is the general word for a teacher at any level, from the verb enseigner (to teach). A female teacher is l'enseignante."
             }
           ]
         },
@@ -23521,7 +23521,7 @@
                 "le cours magistral"
               ],
               "answer": "l'étudiant",
-              "explanation": "student (university) → l'étudiant. Education vocabulary from school to university."
+              "explanation": "\"l'étudiant\" is a student at university or in higher education. A school pupil is un élève."
             },
             {
               "id": "frb1p14q11",
@@ -23534,7 +23534,7 @@
                 "les devoirs"
               ],
               "answer": 2,
-              "explanation": "classroom (education system) → la salle de classe. Education vocabulary from school to university."
+              "explanation": "\"la salle de classe\" literally means 'the room of class', the room where lessons take place. Le lycée is the whole high school, not one room."
             },
             {
               "id": "frb1p14q12",
@@ -23547,7 +23547,7 @@
                 "la thèse"
               ],
               "answer": "la bourse",
-              "explanation": "scholarship → la bourse. Education vocabulary from school to university."
+              "explanation": "\"la bourse\" is money given to a student to pay for their studies, as in obtenir une bourse (to get a scholarship)."
             },
             {
               "id": "frb1p14q13",
@@ -23560,7 +23560,7 @@
                 "la note"
               ],
               "answer": 0,
-              "explanation": "curriculum → le programme. Education vocabulary from school to university."
+              "explanation": "\"le programme\" is the set of subjects and content taught in a course or school year, so it is the French word for curriculum."
             },
             {
               "id": "frb1p14q14",
@@ -23573,7 +23573,7 @@
                 "le lycée"
               ],
               "answer": "le semestre",
-              "explanation": "semester → le semestre. Education vocabulary from school to university."
+              "explanation": "\"le semestre\" is one half of the academic year. Notice that it is masculine even though it ends in -e."
             }
           ]
         },
@@ -23593,7 +23593,7 @@
                 "la bourse"
               ],
               "answer": 2,
-              "explanation": "lecture → le cours magistral. Education vocabulary from school to university."
+              "explanation": "\"le cours magistral\" is a university lecture given by a professor to a large audience. Beware: une lecture in French means 'a reading'."
             },
             {
               "id": "frb1p14q16",
@@ -23606,7 +23606,7 @@
                 "le bulletin"
               ],
               "answer": "les frais de scolarité",
-              "explanation": "tuition → les frais de scolarité. Education vocabulary from school to university."
+              "explanation": "\"les frais de scolarité\" means the fees paid for schooling, which is tuition. Frais is always plural."
             },
             {
               "id": "frb1p14q17",
@@ -23619,7 +23619,7 @@
                 "l'étudiant"
               ],
               "answer": 0,
-              "explanation": "graduation → la remise des diplômes. Education vocabulary from school to university."
+              "explanation": "\"la remise des diplômes\" literally means 'the handing out of degrees', the graduation ceremony. Le diplôme is the degree itself."
             },
             {
               "id": "frb1p14q18",
@@ -23645,7 +23645,7 @@
                 "les frais de scolarité"
               ],
               "answer": 2,
-              "explanation": "research → la recherche. Education vocabulary from school to university."
+              "explanation": "\"la recherche\" is academic research, from the verb rechercher (to search for). Faire de la recherche means to do research."
             }
           ]
         },
@@ -23665,7 +23665,7 @@
                 "le cours"
               ],
               "answer": 2,
-              "explanation": "thesis → la thèse. Education vocabulary from school to university."
+              "explanation": "\"la thèse\" is the long research work written for a doctorate, just like an English thesis. Note the grave accent on the è."
             },
             {
               "id": "frb1p14q21",
@@ -23678,7 +23678,7 @@
                 "la remise des diplômes"
               ],
               "answer": "l'alphabétisation",
-              "explanation": "literacy → l'alphabétisation. Education vocabulary from school to university."
+              "explanation": "\"l'alphabétisation\" means learning to read and write, as in le taux d'alphabétisation (the literacy rate)."
             },
             {
               "id": "frb1p14q22",
@@ -23691,7 +23691,7 @@
                 "l'université"
               ],
               "answer": 0,
-              "explanation": "kindergarten → la maternelle. Education vocabulary from school to university."
+              "explanation": "\"la maternelle\" (short for l'école maternelle) is the French nursery school for ages 3 to 6, the stage before primary school."
             },
             {
               "id": "frb1p14q23",
@@ -23929,7 +23929,7 @@
                 "le vaccin"
               ],
               "answer": "la forme physique",
-              "explanation": "fitness → la forme physique. Health and wellness vocabulary."
+              "explanation": "\"la forme physique\" means physical fitness, as in être en bonne forme physique (to be fit); le régime is a diet, not fitness."
             },
             {
               "id": "frb1p15q14",
@@ -23942,7 +23942,7 @@
                 "l'habitude"
               ],
               "answer": 0,
-              "explanation": "balanced diet → une alimentation équilibrée. Health and wellness vocabulary."
+              "explanation": "\"une alimentation équilibrée\" is the usual phrase for a balanced diet: alimentation means the food you eat, and équilibrée agrees with this feminine noun."
             }
           ]
         },
@@ -23975,7 +23975,7 @@
                 "le vaccin"
               ],
               "answer": 2,
-              "explanation": "recovery → la guérison. Health and wellness vocabulary."
+              "explanation": "\"la guérison\" is recovery from an illness, from the verb guérir (to heal, to get better)."
             },
             {
               "id": "frb1p15q17",
@@ -24001,7 +24001,7 @@
                 "l'exercice"
               ],
               "answer": 0,
-              "explanation": "checkup → le bilan de santé. Health and wellness vocabulary."
+              "explanation": "\"le bilan de santé\" is a medical checkup: un bilan is an overall assessment, here of your health."
             },
             {
               "id": "frb1p15q19",
@@ -24060,7 +24060,7 @@
                 "le stress"
               ],
               "answer": "la dépendance",
-              "explanation": "addiction → la dépendance. Health and wellness vocabulary."
+              "explanation": "\"la dépendance\" is the everyday word for addiction, as in la dépendance au tabac (nicotine addiction)."
             },
             {
               "id": "frb1p15q23",
@@ -24109,13 +24109,13 @@
               "type": "mc",
               "prompt": "The French word for \"rent\" is…",
               "choices": [
-                "déménager",
+                "la caution",
                 "le locataire",
                 "le loyer",
                 "le balcon"
               ],
               "answer": 2,
-              "explanation": "rent → le loyer. Renting and housing vocabulary."
+              "explanation": "\"le loyer\" is the rent you pay each month; la caution is the deposit and le locataire is the tenant."
             },
             {
               "id": "frb1p16q1",
@@ -24128,7 +24128,7 @@
                 "la caution"
               ],
               "answer": "le bail",
-              "explanation": "lease → le bail. Renting and housing vocabulary."
+              "explanation": "\"le bail\" is the lease, the rental contract you sign with the landlord; le préavis is the notice period."
             },
             {
               "id": "frb1p16q2",
@@ -24141,7 +24141,7 @@
                 "l'étage"
               ],
               "answer": 0,
-              "explanation": "landlord → le propriétaire. Renting and housing vocabulary."
+              "explanation": "\"le propriétaire\" is the owner, so for a rented flat it is the landlord who receives the rent."
             },
             {
               "id": "frb1p16q3",
@@ -24226,7 +24226,7 @@
                 "le loyer"
               ],
               "answer": 2,
-              "explanation": "studio apartment → le studio. Renting and housing vocabulary."
+              "explanation": "\"le studio\" is a one-room flat with its own kitchen corner and bathroom, the same word as in English."
             },
             {
               "id": "frb1p16q9",
@@ -25961,7 +25961,7 @@
                 "À mon avis, la réunion était réussie.",
                 "Je trouve que la réunion s'est bien déroulée."
               ],
-              "explanation": "One way to say it: \"Je pense que la réunion s'est bien passée.\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"Je pense que la réunion s'est bien passée.\" Se passer bien means 'to go well', and passée agrees with la réunion because it is an être verb."
             },
             {
               "id": "frb1p21q1",
@@ -25983,7 +25983,7 @@
                 "J'aimerais changer ma réservation.",
                 "Serait-il possible de modifier ma réservation ?"
               ],
-              "explanation": "One way to say it: \"Je voudrais modifier ma réservation.\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"Je voudrais modifier ma réservation.\" Je voudrais is the polite conditional for 'I would like', and modifier is the usual verb for changing a booking."
             },
             {
               "id": "frb1p21q3",
@@ -26021,9 +26021,11 @@
               "acceptableAnswers": [
                 "Qu'en penses-tu ?",
                 "Quel est ton avis là-dessus ?",
-                "Qu'est-ce que tu en penses ?"
+                "Qu'est-ce que tu en penses ?",
+                "Qu'en pensez-vous ?",
+                "Qu'est-ce que vous en pensez ?"
               ],
-              "explanation": "One way to say it: \"Qu'en penses-tu ?\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Qu'en penses-tu ?\" uses en to stand for the decision (penser de quelque chose becomes en penser). With a stranger or a group, say \"Qu'en pensez-vous ?\""
             },
             {
               "id": "frb1p21q6",
@@ -26034,7 +26036,7 @@
                 "J'aurais dû appeler plus tôt.",
                 "Je m'en veux de ne pas avoir téléphoné avant."
               ],
-              "explanation": "One way to say it: \"Je regrette de ne pas avoir appelé plus tôt.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Je regrette de ne pas avoir appelé plus tôt.\" uses regretter de + a past infinitive, with both ne and pas placed before avoir. \"J'aurais dû appeler plus tôt\" says the same thing with the past conditional of devoir."
             },
             {
               "id": "frb1p21q7",
@@ -26045,7 +26047,7 @@
                 "Je propose un compromis.",
                 "On pourrait peut-être trouver un terrain d'entente."
               ],
-              "explanation": "One way to say it: \"Et si on trouvait un compromis ?\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Et si on trouvait un compromis ?\" uses Et si + imperfect, a friendly way to suggest something. \"Un terrain d'entente\" means common ground."
             },
             {
               "id": "frb1p21q8",
@@ -26056,7 +26058,7 @@
                 "Je suis inquiète pour l'examen.",
                 "L'examen m'inquiète beaucoup."
               ],
-              "explanation": "One way to say it: \"Je suis inquiet pour l'examen.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Je suis inquiet pour l'examen.\" uses inquiet pour to say what worries you; a woman writes inquiète."
             },
             {
               "id": "frb1p21q9",
@@ -26067,7 +26069,7 @@
                 "Il me faut plus de détails pour me décider.",
                 "Je ne peux pas décider sans plus d'informations."
               ],
-              "explanation": "One way to say it: \"J'ai besoin de plus d'informations avant de décider.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"J'ai besoin de plus d'informations avant de décider.\" uses avoir besoin de for 'need' and avant de + infinitive for 'before deciding'."
             }
           ]
         },
@@ -26096,7 +26098,7 @@
                 "Et si on repoussait la réunion ?",
                 "Je propose de reporter la réunion."
               ],
-              "explanation": "One way to say it: \"On pourrait reporter la réunion.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"On pourrait reporter la réunion.\" softens the suggestion with the conditional. Reporter and repousser both mean to postpone."
             },
             {
               "id": "frb1p21q12",
@@ -26105,9 +26107,9 @@
               "acceptableAnswers": [
                 "Je préférerais rester à la maison ce soir.",
                 "Ce soir, je préfère rester chez moi.",
-                "J'aimerais mieux rester à la maison."
+                "J'aimerais mieux rester à la maison ce soir."
               ],
-              "explanation": "One way to say it: \"Je préférerais rester à la maison ce soir.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Je préférerais rester à la maison ce soir.\" uses the conditional of préférer for 'would rather'. J'aimerais mieux means the same thing."
             },
             {
               "id": "frb1p21q13",
@@ -26118,7 +26120,7 @@
                 "Ce n'était pas facile de décider.",
                 "J'ai eu du mal à me décider."
               ],
-              "explanation": "One way to say it: \"Cette décision a été difficile à prendre.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Cette décision a été difficile à prendre.\" uses difficile à + infinitive. In French you say prendre une décision (literally 'take a decision'), not 'make' one."
             },
             {
               "id": "frb1p21q14",
@@ -26129,7 +26131,7 @@
                 "Je pense à changer de métier.",
                 "Un changement de carrière me tente."
               ],
-              "explanation": "One way to say it: \"J'envisage de changer de carrière.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"J'envisage de changer de carrière.\" uses envisager de + infinitive for 'to be considering'. Note that changer de takes no article."
             }
           ]
         },
@@ -26161,7 +26163,7 @@
                 "Les choses vont mieux maintenant.",
                 "Ça s'est nettement amélioré."
               ],
-              "explanation": "One way to say it: \"La situation s'est améliorée.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"La situation s'est améliorée.\" S'améliorer takes être in the passé composé, so améliorée agrees with la situation."
             },
             {
               "id": "frb1p21q17",
@@ -26195,7 +26197,7 @@
                 "Je te conseille de voir un spécialiste.",
                 "Il vaudrait mieux consulter un spécialiste."
               ],
-              "explanation": "One way to say it: \"Tu devrais consulter un spécialiste.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Tu devrais consulter un spécialiste.\" uses the conditional of devoir to give advice, and tu because you are talking to a friend."
             }
           ]
         },
@@ -26213,7 +26215,7 @@
                 "Je suis reconnaissante pour ce soutien.",
                 "Ce soutien compte énormément pour moi."
               ],
-              "explanation": "One way to say it: \"Je suis reconnaissant pour ce soutien.\" Opinions and plans, and more than one wording is right."
+              "explanation": "\"Je suis reconnaissant pour ce soutien.\" uses être reconnaissant to say you are grateful; a woman writes reconnaissante."
             },
             {
               "id": "frb1p21q21",
@@ -26222,9 +26224,10 @@
               "acceptableAnswers": [
                 "Je doute que ce plan fonctionne.",
                 "Ce plan me semble risqué.",
-                "Je ne suis pas convaincu que ça marche."
+                "Je ne suis pas convaincu que ça marche.",
+                "Je ne suis pas convaincue que ça marche."
               ],
-              "explanation": "One way to say it: \"Je doute que ce plan fonctionne.\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"Je doute que ce plan fonctionne.\" After \"douter que\", French uses the subjunctive, so \"fonctionne\" is subjunctive here."
             },
             {
               "id": "frb1p21q22",
@@ -26235,7 +26238,7 @@
                 "Laisse-moi y réfléchir.",
                 "Je dois y penser encore un peu."
               ],
-              "explanation": "One way to say it: \"Je vais y réfléchir.\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"Je vais y réfléchir.\" \"Réfléchir à quelque chose\" becomes \"y réfléchir\", because \"y\" replaces \"à + thing\"."
             },
             {
               "id": "frb1p21q23",
@@ -26246,7 +26249,7 @@
                 "Peux-tu clarifier ton propos ?",
                 "Qu'entends-tu exactement par là ?"
               ],
-              "explanation": "One way to say it: \"Peux-tu préciser ce que tu veux dire ?\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"Peux-tu préciser ce que tu veux dire ?\" \"Préciser\" means to spell out more exactly, and \"ce que tu veux dire\" means \"what you mean\"."
             },
             {
               "id": "frb1p21q24",
@@ -26257,7 +26260,7 @@
                 "Les critiques sincères, je les apprécie.",
                 "Un avis franc, ça me fait toujours plaisir."
               ],
-              "explanation": "One way to say it: \"J'apprécie les retours honnêtes.\" Opinions and plans, and more than one wording is right."
+              "explanation": "One way to say it: \"J'apprécie les retours honnêtes.\" \"Un retour\" is the usual word for feedback, and \"apprécier\" takes a direct object, so no preposition is needed."
             }
           ]
         }
@@ -26287,7 +26290,7 @@
                 "Le dessus du bureau était couvert de dossiers urgents."
               ],
               "answer": "Le dessus du bureau était couvert de dossiers urgents.",
-              "explanation": "The audio says \"Le dessus du bureau était couvert de dossiers urgents.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessus du bureau était couvert de dossiers urgents.\" Listen for the vowel: \"dessus\" (top) has the tight French u sound, while \"dessous\" (underside) has the ou sound."
             },
             {
               "id": "frb1p22q1",
@@ -26301,7 +26304,7 @@
                 "Le dessous de l'étagère contenait des livres anciens."
               ],
               "answer": "Le dessous du bureau était couvert de dossiers urgents.",
-              "explanation": "The audio says \"Le dessous du bureau était couvert de dossiers urgents.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous du bureau était couvert de dossiers urgents.\" \"Dessous\" (underside) has the ou sound, unlike \"dessus\" (top), which has the tight French u sound."
             },
             {
               "id": "frb1p22q2",
@@ -26315,7 +26318,7 @@
                 "Le dessous de l'étagère contenait des livres anciens."
               ],
               "answer": "Le dessus de l'étagère contenait des livres anciens.",
-              "explanation": "The audio says \"Le dessus de l'étagère contenait des livres anciens.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessus de l'étagère contenait des livres anciens.\" \"Dessus\" (top) has the tight French u sound, not the ou sound of \"dessous\"."
             },
             {
               "id": "frb1p22q3",
@@ -26329,7 +26332,7 @@
                 "Le dessous de l'étagère contenait des livres anciens."
               ],
               "answer": "Le dessous de l'étagère contenait des livres anciens.",
-              "explanation": "The audio says \"Le dessous de l'étagère contenait des livres anciens.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous de l'étagère contenait des livres anciens.\" \"Dessous\" (underneath) has the ou sound, unlike \"dessus\" (top), which has the tight French u sound."
             },
             {
               "id": "frb1p22q4",
@@ -26674,35 +26677,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je pense que c'est une bonne idée.",
-              "explanation": "Target phrase: \"Je pense que c'est une bonne idée.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"Je pense que c'est une bonne idée.\" Run \"que c'est\" together smoothly, and pronounce \"idée\" with a clear é at the end."
             },
             {
               "id": "frb1p23q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "À mon avis, il a raison.",
-              "explanation": "Target phrase: \"À mon avis, il a raison.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"À mon avis, il a raison.\" Link \"mon avis\" with a liaison (mon-n-avis), and say \"il a\" as one smooth sound."
             },
             {
               "id": "frb1p23q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je ne suis pas convaincu par cet argument.",
-              "explanation": "Target phrase: \"Je ne suis pas convaincu par cet argument.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"Je ne suis pas convaincu par cet argument.\" \"Cet\" links straight into \"argument\" (cè-targument), and \"convaincu\" sounds the same in the masculine and feminine."
             },
             {
               "id": "frb1p23q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Ce film est plus intéressant que l'autre.",
-              "explanation": "Target phrase: \"Ce film est plus intéressant que l'autre.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "Target phrase: \"Ce film est plus intéressant que l'autre.\" Make the liaison in \"plus intéressant\" (plu-z-intéressant), and keep the final t of \"intéressant\" silent."
             },
             {
               "id": "frb1p23q4",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Cette solution est meilleure que la précédente.",
-              "explanation": "Target phrase: \"Cette solution est meilleure que la précédente.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Cette solution est meilleure que la précédente.\" uses \"meilleure\", the irregular comparative of \"bonne\", to say one solution is better than the previous one. It agrees with the feminine \"solution\", and you never say \"plus bonne\"."
             }
           ]
         },
@@ -26716,35 +26719,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je préfère le café au thé.",
-              "explanation": "Target phrase: \"Je préfère le café au thé.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Je préfère le café au thé.\" shows the pattern \"préférer A à B\" (to prefer A to B). Here \"à + le\" contracts to \"au\" before \"thé\"."
             },
             {
               "id": "frb1p23q6",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Il vaut mieux partir tôt.",
-              "explanation": "Target phrase: \"Il vaut mieux partir tôt.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Il vaut mieux partir tôt.\" uses \"il vaut mieux\" + infinitive to give advice: it's better to leave early."
             },
             {
               "id": "frb1p23q7",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Selon moi, c'est trop cher.",
-              "explanation": "Target phrase: \"Selon moi, c'est trop cher.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Selon moi, c'est trop cher.\" opens with \"selon moi\" (in my opinion) to introduce a personal view. In \"c'est\", the \"ce\" is shortened before \"est\"."
             },
             {
               "id": "frb1p23q8",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je trouve que ce livre est ennuyeux.",
-              "explanation": "Target phrase: \"Je trouve que ce livre est ennuyeux.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Je trouve que ce livre est ennuyeux.\" uses \"je trouve que\" (I find that / I think that) to give an opinion. \"Ennuyeux\" means boring and agrees with the masculine \"livre\"."
             },
             {
               "id": "frb1p23q9",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Elle a probablement raison.",
-              "explanation": "Target phrase: \"Elle a probablement raison.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Elle a probablement raison.\" uses \"avoir raison\" (to be right), not \"être\". The adverb \"probablement\" goes right after the verb \"a\"."
             }
           ]
         },
@@ -26758,35 +26761,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "C'est important de bien manger.",
-              "explanation": "Target phrase: \"C'est important de bien manger.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"C'est important de bien manger.\" uses \"c'est\" + adjective + \"de\" + infinitive to say that an action is important. This is the usual spoken pattern."
             },
             {
               "id": "frb1p23q11",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Il est nécessaire de réserver à l'avance.",
-              "explanation": "Target phrase: \"Il est nécessaire de réserver à l'avance.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Il est nécessaire de réserver à l'avance.\" uses \"il est\" + adjective + \"de\" + infinitive, a slightly more formal way to say something is necessary. \"À l'avance\" means in advance."
             },
             {
               "id": "frb1p23q12",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je suis content de mes résultats.",
-              "explanation": "Target phrase: \"Je suis content de mes résultats.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Je suis content de mes résultats.\" uses \"être content de\" (to be pleased with) followed by the thing you are happy about. A woman would say \"contente\"."
             },
             {
               "id": "frb1p23q13",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Nous sommes fiers de notre travail.",
-              "explanation": "Target phrase: \"Nous sommes fiers de notre travail.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Nous sommes fiers de notre travail.\" uses \"être fier de\" (to be proud of). \"Fiers\" takes an -s to agree with the plural \"nous\"."
             },
             {
               "id": "frb1p23q14",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "C'est difficile à expliquer.",
-              "explanation": "Target phrase: \"C'est difficile à expliquer.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"C'est difficile à expliquer.\" uses \"à\" before the infinitive because \"c'est\" refers back to something already mentioned that is hard to explain."
             }
           ]
         },
@@ -26800,7 +26803,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Ce n'est pas si simple.",
-              "explanation": "Target phrase: \"Ce n'est pas si simple.\" Opinions, reasons and comparisons said out loud."
+              "explanation": "\"Ce n'est pas si simple.\" uses \"pas si\" + adjective (not that / not so) to soften a disagreement. \"Ne\" becomes \"n'\" before \"est\"."
             },
             {
               "id": "frb1p23q16",
@@ -26881,7 +26884,7 @@
       "level": "B1",
       "eyebrow": "Unit 24",
       "title": "Yesterday: Eating",
-      "description": "Passé composé in short sentences — The auxiliary and the participle go together.",
+      "description": "Passé composé in short sentences — Avoir plus the past participle: j'ai mangé, nous avons bu.",
       "lessons": [
         {
           "id": "frgb1p1l1",
@@ -27118,7 +27121,7 @@
       "level": "B1",
       "eyebrow": "Unit 25",
       "title": "Yesterday: Buying Things",
-      "description": "Passé composé in short sentences — The auxiliary and the participle go together.",
+      "description": "Passé composé in short sentences — Avoir plus the past participle: j'ai acheté, elle a payé.",
       "lessons": [
         {
           "id": "frgb1p2l1",
@@ -28304,7 +28307,7 @@
         {
           "id": "frb2p1l1",
           "title": "Subjunctive Mood 1",
-          "subtitle": "Expressing necessity, doubt, and wish",
+          "subtitle": "Expressing necessity, doubt, and desire",
           "questions": [
             {
               "id": "frb2p1q0",
@@ -28381,7 +28384,7 @@
         {
           "id": "frb2p1l2",
           "title": "Subjunctive Mood 2",
-          "subtitle": "Expressing necessity, doubt, and wish",
+          "subtitle": "Expressing necessity, doubt, and desire",
           "questions": [
             {
               "id": "frb2p1q5",
@@ -28458,7 +28461,7 @@
         {
           "id": "frb2p1l3",
           "title": "Subjunctive Mood 3",
-          "subtitle": "Expressing necessity, doubt, and wish",
+          "subtitle": "Expressing necessity, doubt, and desire",
           "questions": [
             {
               "id": "frb2p1q10",
@@ -28535,7 +28538,7 @@
         {
           "id": "frb2p1l4",
           "title": "Subjunctive Mood 4",
-          "subtitle": "Expressing necessity, doubt, and wish",
+          "subtitle": "Expressing necessity, doubt, and desire",
           "questions": [
             {
               "id": "frb2p1q15",
@@ -28613,7 +28616,7 @@
         {
           "id": "frb2p1l5",
           "title": "Subjunctive Mood 5",
-          "subtitle": "Expressing necessity, doubt, and wish",
+          "subtitle": "Expressing necessity, doubt, and desire",
           "questions": [
             {
               "id": "frb2p1q20",
@@ -29051,7 +29054,7 @@
                 "to feel great and energetic"
               ],
               "answer": 0,
-              "explanation": "il pleut des cordes → it's raining heavily. Common French idioms beyond literal translation."
+              "explanation": "\"il pleut des cordes\" literally means 'it's raining ropes', picturing rain falling in thick lines, so it means \"it's raining heavily\"."
             }
           ]
         }
@@ -29856,7 +29859,7 @@
         {
           "id": "frb2p5l1",
           "title": "Reported Speech 1",
-          "subtitle": "Le discours indirect",
+          "subtitle": "Reporting what someone said",
           "questions": [
             {
               "id": "frb2p5q0",
@@ -29933,7 +29936,7 @@
         {
           "id": "frb2p5l2",
           "title": "Reported Speech 2",
-          "subtitle": "Le discours indirect",
+          "subtitle": "Reporting what someone said",
           "questions": [
             {
               "id": "frb2p5q5",
@@ -30010,7 +30013,7 @@
         {
           "id": "frb2p5l3",
           "title": "Reported Speech 3",
-          "subtitle": "Le discours indirect",
+          "subtitle": "Reporting what someone said",
           "questions": [
             {
               "id": "frb2p5q10",
@@ -30086,7 +30089,7 @@
         {
           "id": "frb2p5l4",
           "title": "Reported Speech 4",
-          "subtitle": "Le discours indirect",
+          "subtitle": "Reporting what someone said",
           "questions": [
             {
               "id": "frb2p5q15",
@@ -30165,7 +30168,7 @@
         {
           "id": "frb2p5l5",
           "title": "Reported Speech 5",
-          "subtitle": "Le discours indirect",
+          "subtitle": "Reporting what someone said",
           "questions": [
             {
               "id": "frb2p5q20",
@@ -30248,7 +30251,7 @@
       "level": "B2",
       "eyebrow": "Unit 6",
       "title": "Plus-que-parfait",
-      "description": "The pluperfect — Pluperfect: what had already happened before another past action.",
+      "description": "The pluperfect — What had already happened before another past action.",
       "lessons": [
         {
           "id": "frb2p6l1",
@@ -30648,8 +30651,8 @@
       "id": "frb2p7u1",
       "level": "B2",
       "eyebrow": "Unit 7",
-      "title": "Conditionnel Passé",
-      "description": "The past conditional — Past conditional: what would have happened.",
+      "title": "Conditionnel passé",
+      "description": "The past conditional — What would have happened.",
       "lessons": [
         {
           "id": "frb2p7l1",
@@ -32221,7 +32224,7 @@
                 "la loi"
               ],
               "answer": 2,
-              "explanation": "election → l'élection. Politics and society vocabulary."
+              "explanation": "\"l'élection\" is feminine (une élection), and the article elides to l' before the vowel é."
             },
             {
               "id": "frb2p11q3",
@@ -32247,7 +32250,7 @@
                 "l'élection"
               ],
               "answer": 0,
-              "explanation": "citizen → le citoyen. Politics and society vocabulary."
+              "explanation": "\"le citoyen\" is masculine; a female citizen is la citoyenne. Note the spelling -oyen."
             }
           ]
         },
@@ -32259,7 +32262,7 @@
             {
               "id": "frb2p11q5",
               "type": "fill",
-              "prompt": "The French word for \"law\" is… ___",
+              "prompt": "The French word for \"law\" is ___.",
               "bank": [
                 "la loi",
                 "la liberté",
@@ -32267,7 +32270,7 @@
                 "le parlement"
               ],
               "answer": "la loi",
-              "explanation": "law → la loi. Politics and society vocabulary."
+              "explanation": "\"la loi\" is feminine and means a law passed by parliament, as in voter une loi."
             },
             {
               "id": "frb2p11q6",
@@ -32280,12 +32283,12 @@
                 "le gouvernement"
               ],
               "answer": 2,
-              "explanation": "democracy → la démocratie. Politics and society vocabulary."
+              "explanation": "\"la démocratie\" is feminine, like most nouns ending in -ie. The t is pronounced like an s, and the first e takes an accent (é)."
             },
             {
               "id": "frb2p11q7",
               "type": "fill",
-              "prompt": "The French word for \"parliament\" is… ___",
+              "prompt": "The French word for \"parliament\" is ___.",
               "bank": [
                 "l'opinion publique",
                 "le citoyen",
@@ -32293,7 +32296,7 @@
                 "la justice"
               ],
               "answer": "le parlement",
-              "explanation": "parliament → le parlement. Politics and society vocabulary."
+              "explanation": "\"le parlement\" is masculine and is spelled -lement, with no i as in English 'parliament'."
             },
             {
               "id": "frb2p11q8",
@@ -32306,7 +32309,7 @@
                 "la société"
               ],
               "answer": 0,
-              "explanation": "minister → le ministre. Politics and society vocabulary."
+              "explanation": "\"le ministre\" means a government minister; for a woman, la ministre is the standard form today."
             },
             {
               "id": "frb2p11q9",
@@ -32352,7 +32355,7 @@
                 "le citoyen"
               ],
               "answer": 2,
-              "explanation": "rights → les droits. Politics and society vocabulary."
+              "explanation": "\"les droits\" is the plural of le droit (a right), as in les droits de l'homme (human rights)."
             },
             {
               "id": "frb2p11q12",
@@ -32378,12 +32381,12 @@
                 "la démocratie"
               ],
               "answer": 0,
-              "explanation": "equality → l'égalité. Politics and society vocabulary."
+              "explanation": "\"l'égalité\" is feminine, like most nouns ending in -té. It appears in the French motto Liberté, égalité, fraternité."
             },
             {
               "id": "frb2p11q14",
               "type": "fill",
-              "prompt": "The French word for \"freedom\" is… ___",
+              "prompt": "The French word for \"freedom\" is ___.",
               "bank": [
                 "les droits",
                 "l'opinion publique",
@@ -32391,7 +32394,7 @@
                 "le citoyen"
               ],
               "answer": "la liberté",
-              "explanation": "freedom → la liberté. Politics and society vocabulary."
+              "explanation": "\"la liberté\" is feminine, like most nouns ending in -té. It translates both 'freedom' and 'liberty'."
             }
           ]
         },
@@ -32411,7 +32414,7 @@
                 "le gouvernement"
               ],
               "answer": 2,
-              "explanation": "society → la société. Politics and society vocabulary."
+              "explanation": "\"la société\" is feminine, like most nouns ending in -té. It can also mean a company."
             },
             {
               "id": "frb2p11q16",
@@ -32437,12 +32440,12 @@
                 "l'élection"
               ],
               "answer": 0,
-              "explanation": "poverty → la pauvreté. Politics and society vocabulary."
+              "explanation": "\"la pauvreté\" comes from pauvre (poor) and is feminine, like most nouns ending in -té."
             },
             {
               "id": "frb2p11q18",
               "type": "fill",
-              "prompt": "The French word for \"inequality\" is… ___",
+              "prompt": "The French word for \"inequality\" is ___.",
               "bank": [
                 "l'inégalité",
                 "la souveraineté",
@@ -32450,7 +32453,7 @@
                 "l'immigration"
               ],
               "answer": "l'inégalité",
-              "explanation": "inequality → l'inégalité. Politics and society vocabulary."
+              "explanation": "\"l'inégalité\" is égalité with the prefix in-. It is feminine (une inégalité), and the article elides before the vowel."
             },
             {
               "id": "frb2p11q19",
@@ -32483,7 +32486,7 @@
                 "le ministre"
               ],
               "answer": 2,
-              "explanation": "reform → la réforme. Politics and society vocabulary."
+              "explanation": "\"la réforme\" is the cognate of \"reform\" and is feminine; note the accent on the é. Example: la réforme des retraites (pension reform)."
             },
             {
               "id": "frb2p11q21",
@@ -32496,7 +32499,7 @@
                 "la justice"
               ],
               "answer": "l'impôt",
-              "explanation": "tax → l'impôt. Politics and society vocabulary."
+              "explanation": "\"l'impôt\" is masculine (un impôt) and is often used in the plural: payer ses impôts (to pay your taxes). Watch the circumflex on the ô."
             },
             {
               "id": "frb2p11q22",
@@ -32509,7 +32512,7 @@
                 "la constitution"
               ],
               "answer": 0,
-              "explanation": "public opinion → l'opinion publique. Politics and society vocabulary."
+              "explanation": "\"l'opinion publique\" is feminine, so the adjective takes the feminine form publique. In French it follows the noun."
             },
             {
               "id": "frb2p11q23",
@@ -32535,7 +32538,7 @@
                 "la justice"
               ],
               "answer": 2,
-              "explanation": "sovereignty → la souveraineté. Politics and society vocabulary."
+              "explanation": "\"la souveraineté\" is feminine, like most nouns ending in -té. Example: la souveraineté nationale (national sovereignty)."
             }
           ]
         }
@@ -32564,7 +32567,7 @@
                 "le recyclage"
               ],
               "answer": "le changement climatique",
-              "explanation": "climate change → le changement climatique. Climate and environmental vocabulary."
+              "explanation": "\"le changement climatique\" is masculine, and the adjective climatique comes after the noun, unlike in English. It is also called le réchauffement climatique when the focus is warming."
             },
             {
               "id": "frb2p12q1",
@@ -32819,7 +32822,7 @@
                 "l'écologie"
               ],
               "answer": 2,
-              "explanation": "endangered species → l'espèce en voie de disparition. Climate and environmental vocabulary."
+              "explanation": "\"l'espèce en voie de disparition\" literally means 'the species on the way to disappearing'. Espèce is feminine; a close synonym is une espèce menacée."
             },
             {
               "id": "frb2p12q19",
@@ -32832,7 +32835,7 @@
                 "la ressource naturelle"
               ],
               "answer": "la ressource naturelle",
-              "explanation": "natural resource → la ressource naturelle. Climate and environmental vocabulary."
+              "explanation": "\"la ressource naturelle\" is feminine, so naturelle takes the feminine -le ending and follows the noun. It is often plural: les ressources naturelles."
             }
           ]
         },
@@ -32891,7 +32894,7 @@
                 "l'extinction"
               ],
               "answer": 0,
-              "explanation": "sea level → le niveau de la mer. Climate and environmental vocabulary."
+              "explanation": "\"le niveau de la mer\" is literally 'the level of the sea'; French uses de rather than putting the nouns together as English does. Example: le niveau de la mer monte (sea level is rising)."
             },
             {
               "id": "frb2p12q24",
@@ -32959,7 +32962,7 @@
                 "l'amende"
               ],
               "answer": 0,
-              "explanation": "judge → le juge. Law and justice vocabulary."
+              "explanation": "\"le juge\" is the person who presides over a court. For a woman you can say la juge; don't confuse it with juger, the verb 'to judge'."
             },
             {
               "id": "frb2p13q3",
@@ -32985,7 +32988,7 @@
                 "les droits"
               ],
               "answer": 2,
-              "explanation": "trial → le procès. Law and justice vocabulary."
+              "explanation": "\"le procès\" means a court trial, not a 'process', which in French is un processus. Example: le procès a duré trois semaines."
             }
           ]
         },
@@ -33018,7 +33021,7 @@
                 "la justice"
               ],
               "answer": 0,
-              "explanation": "witness → le témoin. Law and justice vocabulary."
+              "explanation": "\"le témoin\" is a person who saw an event and testifies about it. It is traditionally masculine even for a woman, though la témoin is now also accepted."
             },
             {
               "id": "frb2p13q7",
@@ -33031,7 +33034,7 @@
                 "l'arrestation"
               ],
               "answer": "le jury",
-              "explanation": "jury → le jury. Law and justice vocabulary."
+              "explanation": "\"le jury\" is spelled as in English but is masculine and pronounced the French way (zhu-ree). Example: le jury a rendu son verdict."
             },
             {
               "id": "frb2p13q8",
@@ -35144,8 +35147,8 @@
       "id": "frb2p19u1",
       "level": "B2",
       "eyebrow": "Unit 19",
-      "title": "Faire Causatif",
-      "description": "Faire + infinitive — The causative construction: faire + infinitive.",
+      "title": "Faire causatif",
+      "description": "Faire + infinitive — The causative construction: having something done.",
       "lessons": [
         {
           "id": "frb2p19l1",
@@ -35584,11 +35587,11 @@
               "choices": [
                 "veuillez noter que",
                 "je vous serais reconnaissant de",
-                "Je vous écris pour vous informer",
+                "je vous écris pour vous informer",
                 "le destinataire"
               ],
               "answer": 2,
-              "explanation": "I am writing to inform you → Je vous écris pour vous informer. Set phrases for formal letters and emails."
+              "explanation": "\"je vous écris pour vous informer\" is the standard opening of a formal letter announcing information, literally \"I am writing to you to inform you\"."
             },
             {
               "id": "frb2p20q3",
@@ -35745,7 +35748,7 @@
                 "respectueusement"
               ],
               "answer": 0,
-              "explanation": "I remain at your disposal → je reste à votre disposition. Set phrases for formal letters and emails."
+              "explanation": "\"je reste à votre disposition\" is the standard closing line offering further help, built on the set expression être à la disposition de quelqu'un, with vous for formal letters."
             },
             {
               "id": "frb2p20q14",
@@ -35758,7 +35761,7 @@
                 "dans l'intervalle"
               ],
               "answer": "veuillez noter que",
-              "explanation": "kindly note that → veuillez noter que. Set phrases for formal letters and emails."
+              "explanation": "\"veuillez noter que\" uses veuillez, the polite imperative of vouloir, which French letters use for 'kindly' or 'please' requests."
             }
           ]
         },
@@ -35773,12 +35776,12 @@
               "prompt": "The French for \"as per your request\" is…",
               "choices": [
                 "je m'excuse pour la gêne occasionnée",
-                "Je vous écris pour vous informer",
+                "je vous écris pour vous informer",
                 "conformément à votre demande",
                 "si vous avez des questions"
               ],
               "answer": 2,
-              "explanation": "as per your request → conformément à votre demande. Set phrases for formal letters and emails."
+              "explanation": "\"conformément à votre demande\" means 'in accordance with your request'; conformément à is the formal way to say 'as per'."
             },
             {
               "id": "frb2p20q16",
@@ -35791,7 +35794,7 @@
                 "dans l'intervalle"
               ],
               "answer": "dans l'intervalle",
-              "explanation": "in the meantime → dans l'intervalle. Set phrases for formal letters and emails."
+              "explanation": "\"dans l'intervalle\" literally means 'in the interval' and is a formal written way to say 'in the meantime', more elevated than en attendant."
             },
             {
               "id": "frb2p20q17",
@@ -35804,7 +35807,7 @@
                 "veuillez noter que"
               ],
               "answer": 0,
-              "explanation": "should you have any questions → si vous avez des questions. Set phrases for formal letters and emails."
+              "explanation": "French renders the English 'should you have' with a plain si + present tense, so \"si vous avez des questions\" is the natural formal equivalent."
             },
             {
               "id": "frb2p20q18",
@@ -35817,7 +35820,7 @@
                 "je souhaite attirer votre attention sur"
               ],
               "answer": "je souhaite attirer votre attention sur",
-              "explanation": "I would like to draw your attention to → je souhaite attirer votre attention sur. Set phrases for formal letters and emails."
+              "explanation": "\"je souhaite attirer votre attention sur\" uses the fixed expression attirer l'attention de quelqu'un sur, 'to draw someone's attention to', with souhaiter as the polite 'would like'."
             },
             {
               "id": "frb2p20q19",
@@ -35830,7 +35833,7 @@
                 "dans l'attente de votre réponse"
               ],
               "answer": 2,
-              "explanation": "respectfully → respectueusement. Set phrases for formal letters and emails."
+              "explanation": "\"respectueusement\" is the adverb from respectueux, 'respectful'; the -ment ending works like English -ly."
             }
           ]
         },
@@ -35863,7 +35866,7 @@
                 "le destinataire"
               ],
               "answer": "le destinataire",
-              "explanation": "recipient → le destinataire. Set phrases for formal letters and emails."
+              "explanation": "\"le destinataire\" is the person a letter or email is addressed to (destiné à, 'intended for'), the opposite of l'expéditeur."
             },
             {
               "id": "frb2p20q22",
@@ -35876,7 +35879,7 @@
                 "veuillez noter que"
               ],
               "answer": 0,
-              "explanation": "sender → l'expéditeur. Set phrases for formal letters and emails."
+              "explanation": "\"l'expéditeur\" is the person who sends (expédier) a letter or parcel; le elides to l' before the vowel."
             },
             {
               "id": "frb2p20q23",
@@ -35962,7 +35965,7 @@
                 "Je trouve cette mesure injuste.",
                 "Cette politique désavantage clairement certains groupes."
               ],
-              "explanation": "One way to say it: \"Cette politique me semble injuste.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One way to say it: \"Cette politique me semble injuste.\" Using me semble or je trouve presents unfairness as your argued opinion rather than a bare fact."
             },
             {
               "id": "frb2p21q4",
@@ -35973,7 +35976,7 @@
                 "On ne s'attendait pas à un si bon résultat.",
                 "C'est mieux que ce qu'on espérait."
               ],
-              "explanation": "One way to say it: \"Le résultat a dépassé nos attentes.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One way to say it: \"Le résultat a dépassé nos attentes.\" The fixed phrase dépasser les attentes means 'to exceed expectations', in the passé composé for a completed outcome."
             }
           ]
         },
@@ -35991,7 +35994,7 @@
                 "C'est vrai, cependant je ne change pas d'avis.",
                 "J'admets ce fait, sans pour autant changer d'opinion."
               ],
-              "explanation": "One way to say it: \"Certes, mais je maintiens mon point de vue.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One way to say it: \"Certes, mais je maintiens mon point de vue.\" Certes concedes the point, and mais je maintiens holds your position."
             },
             {
               "id": "frb2p21q6",
@@ -35999,10 +36002,10 @@
               "prompt": "Say you would reconsider under different circumstances.",
               "acceptableAnswers": [
                 "Je reconsidérerais ma position dans d'autres circonstances.",
-                "Les choses seraient différentes si le contexte changeait.",
+                "Dans d'autres circonstances, je reviendrais sur ma décision.",
                 "Je pourrais changer d'avis si la situation évoluait."
               ],
-              "explanation": "One way to say it: \"Je reconsidérerais ma position dans d'autres circonstances.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"Je reconsidérerais ma position dans d'autres circonstances.\" The conditional \"reconsidérerais\" makes it hypothetical; other conditional wordings such as \"Je pourrais changer d'avis si la situation évoluait.\" are also right."
             },
             {
               "id": "frb2p21q7",
@@ -36013,7 +36016,7 @@
                 "Ça me semble difficile à croire.",
                 "J'ai du mal à croire cette version des faits."
               ],
-              "explanation": "One way to say it: \"Je reste sceptique face à cette affirmation.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"Je reste sceptique face à cette affirmation.\" \"Rester sceptique face à\" signals polite doubt; \"J'ai du mal à croire…\" works too."
             },
             {
               "id": "frb2p21q8",
@@ -36024,7 +36027,7 @@
                 "Les discussions n'avancent plus.",
                 "On est bloqués, la négociation n'aboutit pas."
               ],
-              "explanation": "One way to say it: \"La négociation est dans une impasse.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"La négociation est dans une impasse.\" \"Être dans une impasse\" is the set phrase for talks that are stuck; \"Les discussions n'avancent plus.\" says the same thing more simply."
             },
             {
               "id": "frb2p21q9",
@@ -36199,7 +36202,7 @@
                 "Il ne faut pas exagérer l'importance de cet événement.",
                 "Ça n'a pas tant d'importance, en fin de compte."
               ],
-              "explanation": "One way to say it: \"Ce n'est pas si grave que ça.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"Ce n'est pas si grave que ça.\" The structure \"pas si… que ça\" shrinks the importance of something; \"Ça n'a pas tant d'importance\" works the same way."
             },
             {
               "id": "frb2p21q23",
@@ -36210,7 +36213,7 @@
                 "Les objectifs de cette initiative n'ont pas été atteints.",
                 "Cette initiative est restée en deçà de ses ambitions."
               ],
-              "explanation": "One way to say it: \"L'initiative n'a pas atteint ses objectifs.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"L'initiative n'a pas atteint ses objectifs.\" \"Atteindre ses objectifs\" means to reach one's goals, so the negative says it fell short; \"rester en deçà de\" is a more formal option."
             },
             {
               "id": "frb2p21q24",
@@ -36221,7 +36224,7 @@
                 "Sa capacité à tenir bon force le respect.",
                 "C'est vraiment impressionnant, sa résilience."
               ],
-              "explanation": "One way to say it: \"J'admire sa résilience.\" Nuanced and hypothetical ideas, and more than one wording is right."
+              "explanation": "One natural way: \"J'admire sa résilience.\" \"Admirer\" takes a direct object, and \"résilience\" is the same idea as in English; \"force le respect\" is a stronger, more formal option."
             }
           ]
         }
@@ -36251,7 +36254,7 @@
                 "Ses décisions ont profondément divisé l'opinion publique."
               ],
               "answer": "Le dessus du dossier contenait un résumé synthétique.",
-              "explanation": "The audio says \"Le dessus du dossier contenait un résumé synthétique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessus du dossier contenait un résumé synthétique.\" Listen for \"dessus\" with the tight French u sound, not \"dessous\" with the ou sound."
             },
             {
               "id": "frb2p22q1",
@@ -36265,7 +36268,7 @@
                 "Le dessous de la pile renfermait les pièces sensibles."
               ],
               "answer": "Le dessous du dossier contenait un résumé synthétique.",
-              "explanation": "The audio says \"Le dessous du dossier contenait un résumé synthétique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous du dossier contenait un résumé synthétique.\" Listen for \"dessous\" with the ou sound, not \"dessus\" with the tight French u sound."
             },
             {
               "id": "frb2p22q2",
@@ -36279,7 +36282,7 @@
                 "Le dessous de la pile renfermait les pièces sensibles."
               ],
               "answer": "Le dessus de la pile renfermait les pièces sensibles.",
-              "explanation": "The audio says \"Le dessus de la pile renfermait les pièces sensibles.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessus de la pile renfermait les pièces sensibles.\" Listen for \"dessus\" with the tight French u sound, not \"dessous\" with the ou sound."
             },
             {
               "id": "frb2p22q3",
@@ -36293,7 +36296,7 @@
                 "Le dessous de la pile renfermait les pièces sensibles."
               ],
               "answer": "Le dessous de la pile renfermait les pièces sensibles.",
-              "explanation": "The audio says \"Le dessous de la pile renfermait les pièces sensibles.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Le dessous de la pile renfermait les pièces sensibles.\" Listen for \"dessous\" with the ou sound, not \"dessus\" with the tight French u sound."
             },
             {
               "id": "frb2p22q4",
@@ -36356,7 +36359,7 @@
                 "L'analyse a détecté une trace infime de poisson."
               ],
               "answer": "L'analyse a détecté une trace infime de poison.",
-              "explanation": "The audio says \"L'analyse a détecté une trace infime de poison.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"L'analyse a détecté une trace infime de poison.\" A single s between vowels sounds like z, so \"poison\" means poison; \"poisson\" (fish) has a hissing s."
             },
             {
               "id": "frb2p22q8",
@@ -36379,12 +36382,12 @@
               "audioText": "Ses conclusions restent sujettes à caution selon les experts.",
               "choices": [
                 "Ses conclusions restent sujettes à caution selon les experts.",
-                "Ce plat gastronomique contient paraît-il du poisson.",
+                "Ce plat gastronomique contient, paraît-il, du poisson.",
                 "Le mur de cette galerie est repeint en vert profond.",
-                "Il repense sans cesse à la mère qui borde son village natal."
+                "Il repense sans cesse à la mer qui borde son village natal."
               ],
               "answer": "Ses conclusions restent sujettes à caution selon les experts.",
-              "explanation": "The audio says \"Ses conclusions restent sujettes à caution selon les experts.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Ses conclusions restent sujettes à caution selon les experts.\" Listen for \"conclusions\" and \"sujettes à caution\" (open to doubt): no other option has them."
             }
           ]
         },
@@ -36405,7 +36408,7 @@
                 "Ces conclusions restent sujettes à caution selon les experts."
               ],
               "answer": "Ces décisions ont profondément divisé l'opinion publique.",
-              "explanation": "The audio says \"Ces décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Ces décisions ont profondément divisé l'opinion publique.\" Listen for \"décisions\" and \"divisé l'opinion\": the option with \"conclusions\" has a different noun and verb."
             },
             {
               "id": "frb2p22q11",
@@ -36419,7 +36422,7 @@
                 "Le dessous du dossier contenait un résumé synthétique."
               ],
               "answer": "Ses décisions ont profondément divisé l'opinion publique.",
-              "explanation": "The audio says \"Ses décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Ses décisions ont profondément divisé l'opinion publique.\" Listen for \"décisions\" and \"divisé l'opinion publique\", which no other option contains."
             },
             {
               "id": "frb2p22q12",
@@ -36496,7 +36499,7 @@
                 "Nous avons contemplé sa mère depuis le sommet de la falaise."
               ],
               "answer": "La pénurie de pain a ravivé les tensions dans la région.",
-              "explanation": "The audio says \"La pénurie de pain a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"La pénurie de pain a ravivé les tensions dans la région.\" Listen for \"La pénurie\" (the shortage) and \"les tensions\": the other sentence with \"pain\" starts with \"Elle se procure\"."
             },
             {
               "id": "frb2p22q17",
@@ -36510,7 +36513,7 @@
                 "Nous avons contemplé sa mère depuis le sommet de la falaise."
               ],
               "answer": "La pénurie de pin a ravivé les tensions dans la région.",
-              "explanation": "The audio says \"La pénurie de pin a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"La pénurie de pin a ravivé les tensions dans la région.\" Listen for \"La pénurie\" and \"les tensions\": the other sentence with \"pin\" starts with \"Elle se procure\"."
             },
             {
               "id": "frb2p22q18",
@@ -36524,7 +36527,7 @@
                 "Elle se procure discrètement du pain rare."
               ],
               "answer": "Elle se procure discrètement du pain rare.",
-              "explanation": "The audio says \"Elle se procure discrètement du pain rare.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Elle se procure discrètement du pain rare.\" Listen for \"du\" right after \"discrètement\": option A has \"un jeune\" there instead."
             },
             {
               "id": "frb2p22q19",
@@ -36538,7 +36541,7 @@
                 "Ces conclusions restent sujettes à caution selon les experts."
               ],
               "answer": "Elle se procure discrètement un jeune pin rare.",
-              "explanation": "The audio says \"Elle se procure discrètement un jeune pin rare.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+              "explanation": "The audio says \"Elle se procure discrètement un jeune pin rare.\" Listen for \"un jeune\" before the noun: option C has \"du\" there instead."
             }
           ]
         },
@@ -36638,35 +36641,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Quand j'aurai fini mon travail, j'irai me promener.",
-              "explanation": "Target phrase: \"Quand j'aurai fini mon travail, j'irai me promener.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Quand j'aurai fini mon travail, j'irai me promener.\" After \"quand\", French uses the future perfect (\"j'aurai fini\") for an action finished before the main future one; pause briefly at the comma."
             },
             {
               "id": "frb2p23q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Si tu as le temps, on pourrait déjeuner ensemble.",
-              "explanation": "Target phrase: \"Si tu as le temps, on pourrait déjeuner ensemble.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Si tu as le temps, on pourrait déjeuner ensemble.\" A present tense after \"si\" followed by the conditional \"on pourrait\" makes a polite suggestion; link \"tu as\" smoothly."
             },
             {
               "id": "frb2p23q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bien que ce soit difficile, je vais essayer.",
-              "explanation": "Target phrase: \"Bien que ce soit difficile, je vais essayer.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Bien que ce soit difficile, je vais essayer.\" \"Bien que\" (although) is always followed by the subjunctive, here \"ce soit\"."
             },
             {
               "id": "frb2p23q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Puisqu'il pleut, nous resterons à la maison.",
-              "explanation": "Target phrase: \"Puisqu'il pleut, nous resterons à la maison.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Puisqu'il pleut, nous resterons à la maison.\" \"Puisque\" (since) elides to \"Puisqu'\" before \"il\", and the main clause uses the future \"resterons\"."
             },
             {
               "id": "frb2p23q4",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Lorsque je serai arrivé, je t'appellerai.",
-              "explanation": "Target phrase: \"Lorsque je serai arrivé, je t'appellerai.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Lorsque je serai arrivé, je t'appellerai.\" After \"lorsque\", the future perfect \"je serai arrivé\" uses \"être\", so a woman would write \"arrivée\"."
             }
           ]
         },
@@ -36778,21 +36781,21 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Puisque tu insistes, j'accepte.",
-              "explanation": "Target phrase: \"Puisque tu insistes, j'accepte.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Puisque tu insistes, j'accepte.\" \"Puisque\" (since) gives a reason both speakers already know, followed by the main clause \"j'accepte\"."
             },
             {
               "id": "frb2p23q18",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Quoi qu'il arrive, je serai là pour toi.",
-              "explanation": "Target phrase: \"Quoi qu'il arrive, je serai là pour toi.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Quoi qu'il arrive, je serai là pour toi.\" \"Quoi que\" (whatever) takes the subjunctive \"arrive\", and the main clause uses the future \"serai\"."
             },
             {
               "id": "frb2p23q19",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Si j'avais su, je ne serais pas venu.",
-              "explanation": "Target phrase: \"Si j'avais su, je ne serais pas venu.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Si j'avais su, je ne serais pas venu.\" This is a past unreal condition: \"si\" + pluperfect (\"avais su\"), then past conditional (\"serais venu\")."
             }
           ]
         },
@@ -36806,35 +36809,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Chaque fois que je le vois, il me parle de son travail.",
-              "explanation": "Target phrase: \"Chaque fois que je le vois, il me parle de son travail.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Chaque fois que je le vois, il me parle de son travail.\" \"Chaque fois que\" (every time) introduces a repeated situation, with both clauses in the present."
             },
             {
               "id": "frb2p23q21",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Plus j'y pense, plus je suis convaincu.",
-              "explanation": "Target phrase: \"Plus j'y pense, plus je suis convaincu.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Plus j'y pense, plus je suis convaincu.\" The pattern \"plus… plus…\" means \"the more… the more…\", and needs no article or \"que\"."
             },
             {
               "id": "frb2p23q22",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Que tu le veuilles ou non, il faut le faire.",
-              "explanation": "Target phrase: \"Que tu le veuilles ou non, il faut le faire.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Que tu le veuilles ou non, il faut le faire.\" \"Que… ou non\" (whether or not) takes the subjunctive, so \"vouloir\" becomes \"veuilles\"."
             },
             {
               "id": "frb2p23q23",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Bien que je sois occupé, je vais t'aider.",
-              "explanation": "Target phrase: \"Bien que je sois occupé, je vais t'aider.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Bien que je sois occupé, je vais t'aider.\" \"Bien que\" (although) always takes the subjunctive, hence \"sois\" rather than \"suis\"."
             },
             {
               "id": "frb2p23q24",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Une fois que ce sera fini, nous pourrons partir.",
-              "explanation": "Target phrase: \"Une fois que ce sera fini, nous pourrons partir.\" Multi-clause sentences to say in one breath."
+              "explanation": "Target phrase: \"Une fois que ce sera fini, nous pourrons partir.\" After \"une fois que\", French uses the future \"sera\" when the main clause is in the future, where English uses the present."
             }
           ]
         }
