@@ -164,7 +164,9 @@ describe("Hector's call", () => {
     expect(sheet).toMatch(/VStack\(spacing: 0\) \{\s*handsFreeToggle\s*transcript/);
     expect(sheet).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
     expect(sheet).toContain("voice.setHandsFree(true)");
-    expect(call).toMatch(/if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/);
+    expect(call).toMatch(
+      /if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/,
+    );
     expect(call).toContain("voice.toggleHandsFreePause()");
     expect(call).toContain("HandsFreeCopy.statusLine(voice.handsFreeStatus)");
     expect(call).toContain("HandsFreeCopy.pause");
