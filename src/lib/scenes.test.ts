@@ -51,7 +51,6 @@ describe("scenes and figures", () => {
   });
 
   it("every approved clip ships as a web video with its still first frame, and as an iPhone data asset with its poster", () => {
-    expect(CLIPS).toContain("complete");
     const assets = "ios/LearnWithAlphonso/Sources/Assets.xcassets";
     for (const c of CLIPS) {
       expect(existsSync(`public${clipSrc(c)}`), clipSrc(c)).toBe(true);
@@ -59,6 +58,15 @@ describe("scenes and figures", () => {
       expect(existsSync(`${assets}/Clip-${c}.dataset/clip-${c}.mp4`), c).toBe(true);
       expect(existsSync(`${assets}/Clip-${c}-poster.imageset/Contents.json`), c).toBe(true);
     }
+  });
+
+  it("the painted lesson-complete clip is retired: the celebration is drawn in code on every platform", () => {
+    expect(CLIPS).not.toContain("complete");
+    const assets = "ios/LearnWithAlphonso/Sources/Assets.xcassets";
+    expect(existsSync("public/clips/complete.mp4")).toBe(false);
+    expect(existsSync("public/clips/complete.jpg")).toBe(false);
+    expect(existsSync(`${assets}/Clip-complete.dataset`)).toBe(false);
+    expect(existsSync(`${assets}/Clip-complete-poster.imageset`)).toBe(false);
   });
 
   it("clips stay small enough to download on a phone without a wait", () => {

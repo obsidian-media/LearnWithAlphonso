@@ -1,0 +1,12 @@
+{
+  "$comment": "How long a lesson takes, for the lesson start's honest 'About N min'. Seconds a learner typically spends per question type (reading, answering and the verdict) and per new word in the deck. Rounded up to whole minutes by src/lib/lesson-time.ts. iOS and Android mirror this file.",
+  "secondsPerQuestion": {
+    "mc": 20,
+    "listening": 25,
+    "fill": 25,
+    "reorder": 30,
+    "speak": 30,
+    "translate": 45
+  },
+  "secondsPerNewWord": 8
+}
