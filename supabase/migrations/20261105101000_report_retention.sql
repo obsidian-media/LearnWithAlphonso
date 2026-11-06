@@ -91,7 +91,7 @@ BEGIN
   DELETE FROM public.friend_activity_events
    WHERE event_type <> 'league_promotion' AND created_at < now() - interval '180 days';
   DELETE FROM public.podcast_play_events WHERE started_at < now() - interval '400 days';
-  -- Reports kept after an account was deleted: 90 days from that deletion (20261105100700).
+  -- Reports kept after an account was deleted: 90 days from that deletion (20261105101000).
   DELETE FROM public.content_reports WHERE account_deleted_at < now() - interval '90 days';
 
   -- Its own block: a failure to reach the web app must not undo the pruning above.

@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { beforeEach, describe, expect, it } from "vitest";
 
 /**
- * Reports are kept for moderation for 90 days after an account involved is deleted (20261105100700), run on real
+ * Reports are kept for moderation for 90 days after an account involved is deleted (20261105101000), run on real
  * Postgres (PGlite) against a fixture that reproduces the live content_reports table: both user columns reference
  * auth.users ON DELETE CASCADE, the kind/reported check, the client column grants, and the maintenance sweep as
  * 20261105100600 deployed it. Each block shows the old behaviour first, then applies the migration.
@@ -24,7 +24,7 @@ function deployedFunction(file: string, name: string): string {
   return m[0];
 }
 
-const MIGRATION_FILE = "20261105100700_report_retention.sql";
+const MIGRATION_FILE = "20261105101000_report_retention.sql";
 const migration = () => read(MIGRATION_FILE);
 
 const REPORTER = "00000000-0000-4000-8000-000000000001";
