@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { isCourse } from "@/data/courses";
+import { headerDurationSeconds } from "@/lib/audio-duration";
 
 /** A spoken answer is a few seconds of audio; transcription normally returns in about a second. */
 const STT_TIMEOUT_MS = 20_000;
 /**
  * The provider bills per audio minute and the daily quota counts calls, so each call needs a ceiling. 1 MB is about
  * 80 s of the apps' own recordings (Android AAC at 96 kbps, the highest bitrate any client sends); a spoken answer or a
- * tutor turn is seconds.
+ * tutor turn is seconds. Low-bitrate audio fits far more into 1 MB, so the seconds themselves are also limited:
+ * a daily voice-time budget and a per-call maximum (src/lib/stt-audio-budget.server.ts).
  */
 export const MAX_STT_BYTES = 1_000_000;
 
@@ -20,6 +22,10 @@ export const Route = createFileRoute("/api/stt")({
         const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
         const access = await authorizeAiRequest(request, "stt", { route: "stt" });
         if (!access.ok) return access.response;
+        const budget = await import("@/lib/stt-audio-budget.server");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const refusal = await budget.audioBudgetRefusal(supabaseAdmin, access.userId);
+        if (refusal) return refusal;
         const inForm = await request.formData().catch(() => null);
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {
@@ -51,6 +57,12 @@ export const Route = createFileRoute("/api/stt")({
         // no multipart wrapper or transcoding needed.
         const forwardedContentType = file.type || "audio/webm";
         const audioBytes = new Uint8Array(await file.arrayBuffer());
+        // The apps' .m4a states its length up front: refuse an over-long one without paying for it. A header can
+        // lie, so this only refuses; the charge below uses the provider's own length.
+        const declared = headerDurationSeconds(audioBytes);
+        if (declared !== null && declared > budget.maxCallSeconds()) {
+          return Response.json({ error: "audio-too-long" }, { status: 413 });
+        }
         let resp: Response;
         try {
           resp = await fetch(
@@ -78,6 +90,14 @@ export const Route = createFileRoute("/api/stt")({
           };
           metadata?: Record<string, unknown>;
         };
+        // Charged after the fact, from the length the provider billed. An over-long recording (a WebM states no
+        // length up front) is charged in full and still answered: the cost is already paid, and the budget then
+        // stops the rest of the day.
+        await budget.chargeAudioSeconds(
+          supabaseAdmin,
+          access.userId,
+          budget.chargeableSeconds(data.metadata?.duration),
+        );
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),

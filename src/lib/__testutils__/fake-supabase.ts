@@ -62,6 +62,10 @@ export function makeFakeSupabase(state: FakeSupabaseState) {
       if (name === "consume_ai_rate_limit" || name === "consume_ai_quota") {
         return { data: [{ allowed: true, used: 1 }], error: null };
       }
+      // Voice time (20261105100900): nothing used yet today.
+      if (name === "stt_audio_seconds_used" || name === "add_stt_audio_seconds") {
+        return { data: 0, error: null };
+      }
       if (name === "ai_output_blocked") {
         return { data: (args?._texts ?? []).map(() => false), error: null };
       }

@@ -6,6 +6,20 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
 }));
 const authorizeAiRequest = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
+// Voice time budget (20261105100900): read and charged with the service role.
+let secondsUsed = 0;
+type RpcReply = { data: number | null; error: { message: string } | null };
+const adminRpc = vi.fn(
+  async (fn: string, args: { _user_id: string; _seconds?: number }): Promise<RpcReply> => {
+    if (fn === "stt_audio_seconds_used") return { data: secondsUsed, error: null };
+    if (fn === "add_stt_audio_seconds") {
+      secondsUsed += args._seconds ?? 0;
+      return { data: secondsUsed, error: null };
+    }
+    throw new Error(`unexpected rpc ${fn}`);
+  },
+);
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: adminRpc } }));
 
 const { Route } = await import("./stt");
 const handler = (
@@ -28,6 +42,10 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
   authorizeAiRequest.mockReset();
+  adminRpc.mockClear();
+  secondsUsed = 0;
+  delete process.env.STT_DAILY_AUDIO_SECONDS;
+  delete process.env.STT_MAX_CALL_SECONDS;
   blockedRpc.mockClear();
   authorizeAiRequest.mockResolvedValue({
     ok: true,
@@ -265,5 +283,116 @@ describe("POST /api/stt", () => {
     expect(timeout).toHaveBeenCalledWith(20_000);
     expect(sent?.signal).toBeInstanceOf(AbortSignal);
     timeout.mockRestore();
+  });
+
+  describe("daily voice time", () => {
+    const deepgram = (duration?: number) =>
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            metadata: duration === undefined ? {} : { duration },
+            results: { channels: [{ alternatives: [{ transcript: "hi" }] }] },
+          }),
+          { status: 200 },
+        ),
+      );
+    const charged = () =>
+      adminRpc.mock.calls.filter(([fn]) => fn === "add_stt_audio_seconds").map(([, a]) => a);
+
+    /** An .m4a whose mvhd says `seconds`, the shape iOS and Android upload. */
+    function m4a(seconds: number) {
+      const out = new Uint8Array(700);
+      const v = new DataView(out.buffer);
+      const put = (o: number, t: string) =>
+        [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+      v.setUint32(0, 16);
+      put(4, "ftyp");
+      v.setUint32(16, 116);
+      put(20, "moov");
+      v.setUint32(24, 108);
+      put(28, "mvhd");
+      v.setUint32(44, 1000);
+      v.setUint32(48, seconds * 1000);
+      v.setUint32(132, 700 - 132);
+      put(136, "mdat");
+      return new Blob([out], { type: "audio/m4a" });
+    }
+
+    it("charges the length the provider reports, rounded up, to the caller", async () => {
+      deepgram(12.2);
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 13 }]);
+    });
+
+    it("charges the per-call maximum when the provider reports no length", async () => {
+      deepgram();
+      await handler({ request: CONSENT_REQUEST() });
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 120 }]);
+    });
+
+    it("charges a long recording in full and still returns its transcript", async () => {
+      deepgram(1320);
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ text: "hi" });
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 1320 }]);
+    });
+
+    it("refuses with the daily-limit 429 the apps already handle once 20 minutes are spent, and calls no provider", async () => {
+      secondsUsed = 1200;
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(429);
+      const body = await res.json();
+      expect(body).toMatchObject({ error: "quota-exceeded" });
+      expect(typeof body.resetsAt).toBe("string");
+      expect(body.message).toMatch(/voice/i);
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(charged()).toEqual([]);
+    });
+
+    it("still transcribes with one second of the day left", async () => {
+      secondsUsed = 1199;
+      deepgram(30);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(secondsUsed).toBe(1229);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(429);
+    });
+
+    it("reads the budget and the per-call maximum from the environment", async () => {
+      process.env.STT_DAILY_AUDIO_SECONDS = "60";
+      process.env.STT_MAX_CALL_SECONDS = "30";
+      secondsUsed = 60;
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(429);
+      secondsUsed = 0;
+      deepgram();
+      await handler({ request: CONSENT_REQUEST() });
+      expect(charged()).toEqual([{ _user_id: "user-1", _seconds: 30 }]);
+    });
+
+    it("refuses an .m4a whose header says it is over the per-call maximum, before calling the provider", async () => {
+      const res = await handler({ request: reqWithFile(m4a(121)) });
+      expect(res.status).toBe(413);
+      expect(await res.json()).toEqual({ error: "audio-too-long" });
+      expect(global.fetch).not.toHaveBeenCalled();
+      deepgram(119);
+      expect((await handler({ request: reqWithFile(m4a(119)) })).status).toBe(200);
+    });
+
+    it("fails closed when the day's usage cannot be read", async () => {
+      adminRpc.mockImplementationOnce(async () => ({ data: null, error: { message: "down" } }));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(500);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("returns the transcript even when recording the seconds fails", async () => {
+      deepgram(5);
+      adminRpc
+        .mockImplementationOnce(async () => ({ data: 0, error: null }))
+        .mockImplementationOnce(async () => ({ data: null, error: { message: "down" } }));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+    });
   });
 });
