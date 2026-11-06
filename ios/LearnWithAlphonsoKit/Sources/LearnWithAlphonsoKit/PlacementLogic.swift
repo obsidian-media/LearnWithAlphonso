@@ -74,7 +74,9 @@ public struct AdaptiveBandDecision: Equatable {
 /// Mirrors placement.ts's `nextAdaptiveBand` exactly -- see that file's
 /// own doc comment for the full rule set (stop on a zero band, skip one
 /// band ahead on a perfect score only when a real band exists two steps
-/// out, otherwise advance normally).
+/// out, otherwise advance normally). The skip's credit is only a bet that
+/// the band after it will be passed: callers use `resolveBand` below, not
+/// this, to move between bands, because that is what settles the bet.
 public func nextAdaptiveBand(
     bandPool: [String: [PlacementQuestion]], currentIdx: Int, correctInBand: Int
 ) -> AdaptiveBandDecision {
@@ -91,13 +93,20 @@ public func nextAdaptiveBand(
     return AdaptiveBandDecision(stop: false, skipped: nil, nextIdx: currentIdx + 1)
 }
 
+/// A band is passed with at least this many of its three questions
+/// correct -- mirrors placement.ts's `PLACEMENT_PASS_MARK`. The one
+/// definition of "passed": `scorePlacement` counts bands with it, and
+/// `resolveBand` uses it to decide whether the band after a skip held up.
+public let placementPassMark = 2
+
 /// Mirrors placement.ts's `scorePlacement` exactly: a band is "passed"
-/// with at least 2 of its 3 questions correct, and placement lands one
-/// band above the highest *consecutively* passed band (capped at C1).
+/// with at least `placementPassMark` (2) of its 3 questions correct, and
+/// placement lands one band above the highest *consecutively* passed band
+/// (capped at C1).
 public func scorePlacement(correctByLevel: [String: Int]) -> (level: String, passed: [String]) {
     var passed: [String] = []
     for lvl in placementOrder {
-        if (correctByLevel[lvl] ?? 0) >= 2 {
+        if (correctByLevel[lvl] ?? 0) >= placementPassMark {
             passed.append(lvl)
         } else {
             break
@@ -108,6 +117,161 @@ public func scorePlacement(correctByLevel: [String: Int]) -> (level: String, pas
     }
     let next = placementOrder[min(idx + 1, placementOrder.count - 1)]
     return (next, passed)
+}
+
+/// What the adaptive walk remembers from one band to the next -- mirrors
+/// placement.ts's `PlacementTally`.
+public struct PlacementTally: Equatable {
+    /// Correct answers per band. A skipped band holds `placementPassMark`
+    /// for as long as its credit stands, and 0 from the moment the credit
+    /// is withdrawn until the band has really been asked.
+    public var correctByLevel: [String: Int]
+    /// The skipped bands whose credit still stands: the only ones the
+    /// result may call "fast-tracked".
+    public var skippedLevels: [String]
+    /// True while the learner answers a skipped band the exam sent them
+    /// back to. That band is the last one asked.
+    public var revisiting: Bool
+
+    public init(
+        correctByLevel: [String: Int] = Dictionary(uniqueKeysWithValues: placementOrder.map { ($0, 0) }),
+        skippedLevels: [String] = [],
+        revisiting: Bool = false
+    ) {
+        self.correctByLevel = correctByLevel
+        self.skippedLevels = skippedLevels
+        self.revisiting = revisiting
+    }
+}
+
+public struct BandResolution: Equatable {
+    /// True when the exam ends here.
+    public let stop: Bool
+    /// Which `placementOrder` index to ask next (meaningless when `stop` is true).
+    public let nextIdx: Int
+    public let tally: PlacementTally
+}
+
+/// Mirrors placement.ts's `resolveBand` exactly -- see that file's doc
+/// comment for the reasoning. What happens when the learner has answered
+/// the last question of a band: where the exam goes next, and what the
+/// credit for any skipped band is worth.
+///
+/// A skip is a bet. Acing a band makes `nextAdaptiveBand` jump the next
+/// one -- credited as passed, never asked -- on the strength that someone
+/// who aced A1 will pass A2, so B1 is the interesting question. The credit
+/// stands only once the band after the skip (the landing band) is passed
+/// for real: a pass above implies a pass below. If the landing band is NOT
+/// passed (under `placementPassMark`, so 0 or 1 of 3) the bet lost, and the
+/// credit must decide nothing: `scorePlacement` would read the credited
+/// band as passed and place the learner AT the band they had just failed,
+/// on an A2 nobody ever asked them. So the credit is withdrawn and the
+/// exam goes BACK and asks the skipped band -- then ends, because nothing
+/// above can change the result once the landing band has failed -- and the
+/// placement rests on answers the learner actually gave. A skipped band
+/// with no questions in the pool cannot be gone back to; there the exam
+/// ends with the credit withdrawn and the learner is placed at the skipped
+/// band at most. Passing the landing band 2 of 3 changes nothing.
+public func resolveBand(
+    bandPool: [String: [PlacementQuestion]], currentIdx: Int, correctInBand: Int, tally: PlacementTally
+) -> BandResolution {
+    var correctByLevel = tally.correctByLevel
+    correctByLevel[placementOrder[currentIdx]] = correctInBand
+    func end(skippedLevels: [String]) -> BandResolution {
+        BandResolution(
+            stop: true, nextIdx: currentIdx,
+            tally: PlacementTally(correctByLevel: correctByLevel, skippedLevels: skippedLevels, revisiting: false))
+    }
+
+    // The band the learner was sent back to is the last one asked: the
+    // band above it already failed.
+    if tally.revisiting { return end(skippedLevels: tally.skippedLevels) }
+
+    // Is the band just finished the landing band of a skip, and did the
+    // learner fail it?
+    if currentIdx > 0 {
+        let skippedBelow = placementOrder[currentIdx - 1]
+        if tally.skippedLevels.contains(skippedBelow) && correctInBand < placementPassMark {
+            let skippedLevels = tally.skippedLevels.filter { $0 != skippedBelow }
+            correctByLevel[skippedBelow] = 0
+            if (bandPool[skippedBelow]?.count ?? 0) == 0 { return end(skippedLevels: skippedLevels) }
+            return BandResolution(
+                stop: false, nextIdx: currentIdx - 1,
+                tally: PlacementTally(correctByLevel: correctByLevel, skippedLevels: skippedLevels, revisiting: true))
+        }
+    }
+
+    let decision = nextAdaptiveBand(bandPool: bandPool, currentIdx: currentIdx, correctInBand: correctInBand)
+    var skippedLevels = tally.skippedLevels
+    if let skipped = decision.skipped {
+        correctByLevel[skipped] = placementPassMark
+        skippedLevels.append(skipped)
+    }
+    return BandResolution(
+        stop: decision.stop, nextIdx: decision.nextIdx,
+        tally: PlacementTally(correctByLevel: correctByLevel, skippedLevels: skippedLevels, revisiting: false))
+}
+
+/// The most questions the adaptive walk can ever ask for this pool: every band at most once, so the sum of the
+/// band sizes (15 for five bands of three). It does not depend on the answers, so it is shown from the first
+/// question. Mirrors placement.ts's `placementMaxQuestions`.
+public func placementMaxQuestions(bandPool: [String: [PlacementQuestion]]) -> Int {
+    placementOrder.reduce(0) { $0 + (bandPool[$1]?.count ?? 0) }
+}
+
+/// "Question 4 · up to 15": the same words on web, iOS and Android.
+public func placementProgressLabel(questionNumber: Int, max: Int) -> String {
+    "Question \(questionNumber) · up to \(max)"
+}
+
+/// What VoiceOver says for the counter: "Question 4, up to 15" (the dot would be read aloud or dropped).
+/// Mirrors placement.ts's `placementProgressSpokenLabel`.
+public func placementProgressSpokenLabel(questionNumber: Int, max: Int) -> String {
+    "Question \(questionNumber), up to \(max)"
+}
+
+/// Finishing before the maximum is a result, not a failure: the exam had what it needed.
+public func placementFinishedLabel(asked: Int) -> String {
+    "Placed after \(asked) questions"
+}
+
+public enum BandMarkerState: Equatable {
+    /// Asked and passed on the learner's own answers.
+    case passed
+    /// Credited from a perfect band below, not asked: looks different on purpose.
+    case skipped
+    /// The band being asked now.
+    case current
+    /// Asked, and not passed.
+    case missed
+    /// Not reached.
+    case upcoming
+}
+
+public struct BandMarker: Equatable {
+    public let level: String
+    public let state: BandMarkerState
+}
+
+/// One marker per band that has questions, for the row under the counter. Mirrors placement.ts's `bandMarkers`.
+public func bandMarkers(
+    bandPool: [String: [PlacementQuestion]], shown: [PlacementQuestion], bandIdx: Int,
+    tally: PlacementTally, done: Bool
+) -> [BandMarker] {
+    let asked = Set(shown.map(\.level))
+    return placementOrder.filter { !(bandPool[$0]?.isEmpty ?? true) }.map { level in
+        let state: BandMarkerState
+        if !done && placementOrder.indices.contains(bandIdx) && placementOrder[bandIdx] == level {
+            state = .current
+        } else if tally.skippedLevels.contains(level) {
+            state = .skipped
+        } else if asked.contains(level) {
+            state = (tally.correctByLevel[level] ?? 0) >= placementPassMark ? .passed : .missed
+        } else {
+            state = .upcoming
+        }
+        return BandMarker(level: level, state: state)
+    }
 }
 
 /// Mirrors placement-grading.ts's `isPlacementAnswerCorrect` exactly: the

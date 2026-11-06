@@ -222,6 +222,22 @@ const MULTI_BAND_QUESTIONS: PlacementQuestion[] = [
   },
 ];
 
+// The real shape of a sitting: all five bands, three questions each, labelled
+// "<band> Q<n>" so a test can tell WHICH band the exam is asking about -- the
+// whole point of the skipped-band scenarios is that the exam goes back to a band
+// the learner was never shown.
+const FULL_BAND_QUESTIONS: PlacementQuestion[] = (["A1", "A2", "B1", "B2", "C1"] as const).flatMap(
+  (level) =>
+    [1, 2, 3].map((n): PlacementQuestion => ({
+      id: `f-${level.toLowerCase()}-${n}`,
+      level,
+      type: "mc",
+      prompt: `${level} Q${n}`,
+      choices: ["wrong", "right"],
+      answer: 1,
+    })),
+);
+
 // Typed as the union rather than inferred from the first fixture, so a
 // listening or translate set can be injected too. It takes the same
 // `canPlayAudio` argument the real bundle does, because the route's job is now
@@ -337,7 +353,9 @@ describe("Placement language choice", () => {
 describe("Placement test", () => {
   it("shows step progress and disables submit until an answer is picked", () => {
     renderPage();
-    expect(screen.getByText("1/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 1 · up to 2")).toBeInTheDocument();
+    // screen readers get "Question 1, up to 2", not the dot
+    expect(screen.getByText("Question 1, up to 2")).toHaveClass("sr-only");
     expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
   });
 
@@ -348,7 +366,7 @@ describe("Placement test", () => {
     await user.click(screen.getByRole("button", { name: "right" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
-    expect(screen.getByText("2/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 2 · up to 2")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "See my level" })).toBeDisabled();
   });
 
@@ -409,7 +427,7 @@ describe("Placement test", () => {
     await user.click(screen.getByRole("button", { name: "Retake the test" }));
 
     expect(pickPlacement).toHaveBeenCalled();
-    expect(screen.getByText("1/2")).toBeInTheDocument();
+    expect(screen.getByText("Question 1 · up to 2")).toBeInTheDocument();
   });
 
   it("navigates to /learn from the results screen", async () => {
@@ -576,5 +594,250 @@ describe("Adaptive band sequencing", () => {
 
     fireEvent.change(await screen.findByLabelText("Your answer"), { target: { value: "   " } });
     expect(screen.getByRole("button", { name: /See my level|Continue/ })).toBeDisabled();
+  });
+});
+
+const R = "right" as const;
+const W = "wrong" as const;
+
+/** Answers the next questions in order, one verdict each. */
+async function answerAll(
+  user: ReturnType<typeof userEvent.setup>,
+  verdicts: ("right" | "wrong")[],
+) {
+  for (const verdict of verdicts) {
+    await answer(user, verdict);
+  }
+}
+
+// The defect this block pins, found in a QA run and reproduced on the web: ace A1 and the exam skips A2 on credit
+// it gives itself, then lands on B1. Fail B1 outright and it used to stop there and place the learner AT B1 -- on
+// the strength of an A2 nobody ever asked them, with the one band above A1 they had really sat failed. A skipped
+// band's credit is only a bet that the band after it will be passed; when it is not, the exam has to go back and
+// ask the skipped band, and place on answers it really has.
+describe("A skipped band is only credited once the band after it is passed", () => {
+  beforeEach(() => {
+    pickPlacement.mockReturnValue(FULL_BAND_QUESTIONS);
+  });
+
+  it("goes back and asks A2 when B1 is failed outright, then places at A2 when A2 is failed too", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R]); // A1 perfect: A2 is skipped, B1 is next
+    expect(await screen.findByText("B1 Q1")).toBeInTheDocument();
+    expect(screen.queryByText("A2 Q1")).not.toBeInTheDocument();
+    await answerAll(user, [W, W, W]); // B1 failed outright
+
+    // It does not place on the A2 it gave itself -- it asks A2.
+    expect(await screen.findByText("A2 Q1")).toBeInTheDocument();
+    await answerAll(user, [W, W]);
+    // The sent-back band is the last one asked, so its final question already says so.
+    expect(screen.getByRole("button", { name: "See my level" })).toBeDisabled();
+    await answer(user, W);
+
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+    expect(screen.getByText("3 of 9 correct")).toBeInTheDocument();
+    // Nothing was fast-tracked: the one band that was skipped has been asked after all.
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+    expect(useProgress.getState().cefrLevel).toBe("A2");
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "A2", score: 3, course: "en" },
+    });
+  });
+
+  it("places at B1 once the band it went back to is really passed", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R, W, W, W]); // A1 perfect, B1 failed outright
+    expect(await screen.findByText("A2 Q1")).toBeInTheDocument();
+    await answerAll(user, [R, R, W]); // A2 really passed, 2 of 3
+
+    // A1 and A2 passed on real answers and B1 failed: B1 is where they start.
+    expect(await screen.findByText("B1")).toBeInTheDocument();
+    expect(screen.getByText("5 of 9 correct")).toBeInTheDocument();
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "B1", score: 5, course: "en" },
+    });
+  });
+
+  it("treats 1 of 3 on B1 as a fail too: it goes back to A2 instead of carrying on to B2", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R]);
+    await answerAll(user, [R, W, W]); // B1: 1 of 3, under the 2-of-3 pass mark
+
+    expect(await screen.findByText("A2 Q1")).toBeInTheDocument();
+    // B2 is not asked: it could not change the result, B1 having failed.
+    expect(screen.queryByText("B2 Q1")).not.toBeInTheDocument();
+    await answerAll(user, [W, W, W]);
+
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+    expect(screen.getByText("4 of 9 correct")).toBeInTheDocument();
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "A2", score: 4, course: "en" },
+    });
+  });
+
+  it("keeps the fast-track when B1 is passed 2 of 3: the credit for A2 now has a real pass above it", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R]);
+    await answerAll(user, [R, R, W]); // B1 passed, not perfect: carry on to B2
+
+    expect(await screen.findByText("B2 Q1")).toBeInTheDocument();
+    expect(screen.queryByText("A2 Q1")).not.toBeInTheDocument();
+    await answerAll(user, [W, W, W]);
+
+    // A1 and B1 passed for real, A2 stands on B1, B2 failed: start at B2.
+    expect(await screen.findByText("B2")).toBeInTheDocument();
+    expect(screen.getByText("5 of 9 correct")).toBeInTheDocument();
+    expect(screen.getByText("Fast-tracked past A2 after strong answers.")).toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "B2", score: 5, course: "en" },
+    });
+  });
+
+  it("skips B2 as well when B1 is perfect, and keeps both skips once C1 is passed", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R, R, R, R]); // A1 and B1 perfect: A2 and B2 skipped
+    expect(await screen.findByText("C1 Q1")).toBeInTheDocument();
+    await answerAll(user, [R, R, R]);
+
+    expect(await screen.findByText("C1")).toBeInTheDocument();
+    expect(screen.getByText("9 of 9 correct")).toBeInTheDocument();
+    expect(screen.getByText("Fast-tracked past A2, B2 after strong answers.")).toBeInTheDocument();
+  });
+
+  it("goes back to B2 when C1 is failed after a double skip, and keeps the A2 credit that B1 backs", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R, R, R, R]); // A2 and B2 skipped, C1 next
+    await answerAll(user, [W, W, W]); // C1 failed outright
+
+    expect(await screen.findByText("B2 Q1")).toBeInTheDocument();
+    await answerAll(user, [W, W, W]);
+
+    // A2 is still credited -- B1 was really passed above it -- but B2 was asked, and failed.
+    expect(await screen.findByText("B2")).toBeInTheDocument();
+    expect(screen.getByText("6 of 12 correct")).toBeInTheDocument();
+    expect(screen.getByText("Fast-tracked past A2 after strong answers.")).toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "B2", score: 6, course: "en" },
+    });
+  });
+
+  it("applies the same rule higher up: A2 perfect skips B1, and a failed B2 sends the exam back to B1", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, W]); // A1: 2 of 3 is a pass but not perfect, so A2 is asked
+    expect(await screen.findByText("A2 Q1")).toBeInTheDocument();
+    await answerAll(user, [R, R, R]); // A2 perfect: B1 skipped
+    expect(await screen.findByText("B2 Q1")).toBeInTheDocument();
+    await answerAll(user, [W, W, W]); // B2 failed outright
+
+    expect(await screen.findByText("B1 Q1")).toBeInTheDocument();
+    await answerAll(user, [W, W, W]);
+
+    expect(await screen.findByText("B1")).toBeInTheDocument();
+    expect(screen.getByText("5 of 12 correct")).toBeInTheDocument();
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "B1", score: 5, course: "en" },
+    });
+  });
+
+  it("places at the skipped band at most when that band has no questions to go back to", async () => {
+    // MULTI_BAND_QUESTIONS has no A2. The skip is still taken (a real band lies beyond it), but a failed B1 leaves
+    // nothing to ask, so the credit is simply withdrawn and is never the basis for B1.
+    pickPlacement.mockReturnValue(MULTI_BAND_QUESTIONS);
+    const user = userEvent.setup();
+    renderPage();
+
+    await answerAll(user, [R, R, R, W, W, W]);
+
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+    expect(screen.getByText("3 of 6 correct")).toBeInTheDocument();
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+    expect(savePlacementResult).toHaveBeenCalledWith({
+      data: { level: "A2", score: 3, course: "en" },
+    });
+  });
+});
+
+describe("The length is shown up front and the level markers tell passes from skips", () => {
+  beforeEach(() => {
+    pickPlacement.mockReturnValue(FULL_BAND_QUESTIONS);
+  });
+
+  const state = (level: string) =>
+    screen.getByLabelText(new RegExp(`^${level},`)).getAttribute("data-state");
+
+  it("says 'up to 15' from the first question to the last, however the exam adapts", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    // A1 perfect (A2 skipped), B1 failed, back to A2: 9 questions. The counter grows, the maximum never does.
+    const seen: string[] = [];
+    for (const verdict of [R, R, R, W, W, W, W, W, W]) {
+      seen.push(screen.getByText(/^Question \d+ · up to \d+$/).textContent ?? "");
+      await answer(user, verdict);
+    }
+    expect(seen).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `Question ${n} · up to 15`));
+  });
+
+  it("reads an early finish as a result: 'Placed after 9 questions'", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R, R, W, W, W, W, W, W]);
+    expect(await screen.findByText("Placed after 9 questions")).toBeInTheDocument();
+  });
+
+  it("does not add the early-finish line when every question was asked", async () => {
+    pickPlacement.mockReturnValue(FIXED_QUESTIONS);
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R]);
+    await screen.findByText("A2");
+    expect(screen.queryByText(/Placed after/)).not.toBeInTheDocument();
+  });
+
+  it("marks a skipped band differently from a passed one", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    expect(state("A1")).toBe("current");
+    expect(state("C1")).toBe("upcoming");
+
+    await answerAll(user, [R, R, R]); // A1 perfect: A2 skipped
+    expect([state("A1"), state("A2"), state("B1"), state("B2")]).toEqual([
+      "passed",
+      "skipped",
+      "current",
+      "upcoming",
+    ]);
+
+    await answerAll(user, [R, R, W]); // B1 passed 2 of 3: B1 is passed, A2 still only skipped
+    expect([state("A1"), state("A2"), state("B1"), state("B2")]).toEqual([
+      "passed",
+      "skipped",
+      "passed",
+      "current",
+    ]);
+  });
+
+  it("takes the skipped marker back when the credit is withdrawn", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await answerAll(user, [R, R, R, W, W, W]); // B1 failed: A2 is asked after all
+    expect([state("A1"), state("A2"), state("B1")]).toEqual(["passed", "current", "missed"]);
   });
 });

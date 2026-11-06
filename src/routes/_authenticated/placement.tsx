@@ -5,9 +5,15 @@ import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  bandMarkers,
+  emptyTally,
   groupByBand,
-  nextAdaptiveBand,
   PLACEMENT_ORDER,
+  placementFinishedLabel,
+  placementMaxQuestions,
+  placementProgressLabel,
+  placementProgressSpokenLabel,
+  resolveBand,
   scorePlacement,
   type PlacementQuestion,
 } from "../../data/placement";
@@ -37,7 +43,22 @@ export const Route = createFileRoute("/_authenticated/placement")({
   }),
 });
 
-const EMPTY_CORRECT: Record<Level, number> = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 };
+const MARKER_WORDS = {
+  passed: "passed",
+  skipped: "skipped after strong answers",
+  current: "now",
+  missed: "not passed",
+  upcoming: "not reached",
+} as const;
+
+// A skipped band is dashed and a passed one solid, so credit and a real pass never look alike.
+const MARKER_STYLE = {
+  passed: "border-moss bg-moss text-surface",
+  skipped: "border-dashed border-moss text-moss",
+  current: "border-ink text-ink",
+  missed: "border-hairline text-ink-soft/60 line-through",
+  upcoming: "border-hairline text-ink-soft/50",
+} as const;
 
 type Session = {
   bandPool: Record<Level, PlacementQuestion[]>;
@@ -47,6 +68,8 @@ type Session = {
   bandIdx: number;
   /** Index into `shown` where the current band's questions begin. */
   bandStart: number;
+  /** True while the current band is a skipped one the exam went back to -- the last band it asks. */
+  revisiting: boolean;
 };
 
 /**
@@ -62,7 +85,7 @@ function startSession(pool: PlacementQuestion[]): Session {
     idx++;
   }
   const shown = idx < PLACEMENT_ORDER.length ? bandPool[PLACEMENT_ORDER[idx]!]! : [];
-  return { bandPool, shown, bandIdx: idx, bandStart: 0 };
+  return { bandPool, shown, bandIdx: idx, bandStart: 0, revisiting: false };
 }
 
 function PlacementPage() {
@@ -95,11 +118,11 @@ function PlacementPage() {
   const [done, setDone] = useState(false);
   const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
   // Imperative tally across band transitions, not itself rendered --
-  // see submit()'s band-complete branch and nextAdaptiveBand in placement.ts.
-  const correctByLevelRef = useRef<Record<Level, number>>({ ...EMPTY_CORRECT });
+  // see submit()'s band-complete branch and resolveBand in placement.ts.
+  const correctByLevelRef = useRef<Record<Level, number>>(emptyTally().correctByLevel);
 
   function resetSession() {
-    correctByLevelRef.current = { ...EMPTY_CORRECT };
+    correctByLevelRef.current = emptyTally().correctByLevel;
     setSession(startSession(getCourse(course).pickPlacement(canSpeak())));
     setAnswers([]);
     setStep(0);
@@ -115,6 +138,9 @@ function PlacementPage() {
 
   const q = session.shown[step];
   const total = session.shown.length;
+  // The longest this sitting can get, fixed by the pool and shown from the first question: the counter must not
+  // grow as the exam adapts.
+  const maxQuestions = placementMaxQuestions(session.bandPool);
 
   async function chooseLanguage(next: Course) {
     if (switching) return;
@@ -172,23 +198,24 @@ function PlacementPage() {
     }
 
     // This band just finished -- tally it and adaptively decide what
-    // comes next. See nextAdaptiveBand's doc comment (placement.ts) for
-    // the skip/stop rules.
+    // comes next. resolveBand (placement.ts) owns the skip/stop rules AND
+    // what a skip's synthetic credit is worth: it only stands once the
+    // band after the skip is really passed. If that band was failed, the
+    // credit comes back out and nextIdx points BACKWARDS, so the exam
+    // asks the skipped band instead -- a placement never rests on a band
+    // the learner was never asked.
     const correctInBand = next.slice(session.bandStart).filter(Boolean).length;
-    correctByLevelRef.current[q.level] = correctInBand;
+    const resolution = resolveBand(session.bandPool, session.bandIdx, correctInBand, {
+      correctByLevel: correctByLevelRef.current,
+      skippedLevels,
+      revisiting: session.revisiting,
+    });
+    correctByLevelRef.current = resolution.tally.correctByLevel;
+    setSkippedLevels(resolution.tally.skippedLevels);
 
-    const decision = nextAdaptiveBand(session.bandPool, session.bandIdx, correctInBand);
-    if (decision.skipped) {
-      // Synthetic pass credit -- only ever granted when a real band lies
-      // beyond it too (nextAdaptiveBand's landingHasContent guard), so
-      // it's never the sole basis for the final result.
-      correctByLevelRef.current[decision.skipped] = 2;
-      setSkippedLevels((s) => [...s, decision.skipped!]);
-    }
-
-    const nextLevel = PLACEMENT_ORDER[decision.nextIdx];
-    const nextBandQs = !decision.stop && nextLevel ? session.bandPool[nextLevel] : [];
-    if (decision.stop || !nextBandQs || nextBandQs.length === 0) {
+    const nextLevel = PLACEMENT_ORDER[resolution.nextIdx];
+    const nextBandQs = !resolution.stop && nextLevel ? session.bandPool[nextLevel] : [];
+    if (resolution.stop || !nextBandQs || nextBandQs.length === 0) {
       finish(next);
       return;
     }
@@ -196,8 +223,9 @@ function PlacementPage() {
     setSession({
       ...session,
       shown: [...session.shown, ...nextBandQs],
-      bandIdx: decision.nextIdx,
+      bandIdx: resolution.nextIdx,
       bandStart: session.shown.length,
+      revisiting: resolution.tally.revisiting,
     });
     setStep(step + 1);
   }
@@ -257,6 +285,11 @@ function PlacementPage() {
           <p className="tnum mt-4 text-xs text-ink-soft/70">
             {correct} of {total} correct
           </p>
+          {total < maxQuestions && (
+            <p className="mt-1 text-[11px] font-medium text-moss">
+              {placementFinishedLabel(total)}
+            </p>
+          )}
           {skippedLevels.length > 0 && (
             <p className="mt-1.5 max-w-[280px] text-[11px] text-ink-soft/60">
               Fast-tracked past {skippedLevels.join(", ")} after strong answers.
@@ -302,17 +335,25 @@ function PlacementPage() {
     );
   }
 
-  const pct = Math.round((step / total) * 100);
+  const pct = Math.round((step / maxQuestions) * 100);
+  const markers = bandMarkers(
+    session.bandPool,
+    session.shown,
+    session.bandIdx,
+    { correctByLevel: correctByLevelRef.current, skippedLevels, revisiting: session.revisiting },
+    false,
+  );
   // Whether finishing this question is *guaranteed* regardless of its
   // outcome -- i.e. no band beyond the current one has any content left,
   // so even the "keep going" adaptive path would immediately finish()
-  // anyway. Anything else stays "Continue": the real next step (skip,
-  // advance, or stop) depends on whether this last answer is correct,
-  // which isn't known until it's submitted.
+  // anyway, or this is a skipped band the exam went back to, which is
+  // always the last one it asks. Anything else stays "Continue": the real
+  // next step (skip, advance, go back or stop) depends on whether this
+  // last answer is correct, which isn't known until it's submitted.
   const noBandsAhead = PLACEMENT_ORDER.slice(session.bandIdx + 1).every(
     (lvl) => (session.bandPool[lvl]?.length ?? 0) === 0,
   );
-  const isFinalQuestion = step + 1 === total && noBandsAhead;
+  const isFinalQuestion = step + 1 === total && (noBandsAhead || session.revisiting);
 
   return (
     <LessonFrame>
@@ -334,9 +375,22 @@ function PlacementPage() {
             />
           </div>
           <span className="tnum text-[11px] font-medium text-ink-soft">
-            {step + 1}/{total}
+            <span aria-hidden="true">{placementProgressLabel(step + 1, maxQuestions)}</span>
+            <span className="sr-only">{placementProgressSpokenLabel(step + 1, maxQuestions)}</span>
           </span>
         </div>
+        <ul aria-label="Levels" className="mt-3 flex justify-center gap-1.5">
+          {markers.map((m) => (
+            <li
+              key={m.level}
+              data-state={m.state}
+              aria-label={`${m.level}, ${MARKER_WORDS[m.state]}`}
+              className={`tnum rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${MARKER_STYLE[m.state]}`}
+            >
+              {m.level}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-8 pt-10">
