@@ -52,6 +52,9 @@ describe.each(FACES)("$spec.name ($role)", ({ spec, licence, copyright }) => {
     const css = read("src/styles/ds-tokens.generated.css").toString("utf8");
     expect(css).toContain(`font-family: "${spec.name}";`);
     expect(css).toContain(`url("/fonts/${spec.web}")`);
+    // The @font-face only registers the face if the app's stylesheet actually loads the generated file.
+    const app = read("src/styles.css").toString("utf8");
+    expect(app).toMatch(/^@import "\.\/styles\/ds-tokens\.generated\.css";$/m);
   });
 
   it("ships its OFL licence text next to the font on every platform", () => {

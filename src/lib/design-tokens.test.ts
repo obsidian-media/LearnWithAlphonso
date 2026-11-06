@@ -76,6 +76,14 @@ describe("design tokens: contrast (the spec page's 72 checks)", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5);
     expect(contrastRatio("#1D2B64", "#1D2B64")).toBeCloseTo(1, 5);
   });
+
+  it("contrastRatio matches WCAG's reference values in between, which pin the gamma curve and channel weights", () => {
+    // The endpoints above hold for any monotone formula; these do not. #767676 is the familiar 4.54:1 grey.
+    expect(contrastRatio("#767676", "#FFFFFF")).toBeCloseTo(4.54, 2);
+    expect(contrastRatio("#FF0000", "#FFFFFF")).toBeCloseTo(4.0, 2);
+    expect(contrastRatio("#0000FF", "#FFFFFF")).toBeCloseTo(8.59, 2);
+    expect(contrastRatio("#00FF00", "#000000")).toBeCloseTo(15.3, 2);
+  });
 });
 
 describe("design tokens: scales", () => {

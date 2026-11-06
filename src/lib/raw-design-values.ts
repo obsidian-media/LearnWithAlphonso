@@ -23,6 +23,9 @@ type Config = {
   patterns: RegExp[];
 };
 
+/** Android's "built on the new system" marker. NoRawDesignValuesTest.kt keeps the same regex. */
+export const ANDROID_NEW_SYSTEM = /\bAlphonsoTokens\b|\bLocalAlphonsoTokens\b/;
+
 const CONFIG: Record<Platform, Config> = {
   web: {
     roots: ["src/routes", "src/components"],
@@ -61,8 +64,8 @@ const CONFIG: Record<Platform, Config> = {
     roots: ["android/LearnWithAlphonso/app/src/main/java"],
     extensions: [".kt"],
     exempt: (rel) => rel.includes("/ui/theme/"),
-    isNewSystem: (_rel, text) => /\bAlphonsoTokens\b|\bLocalAlphonsoTokens\b/.test(text),
-    // Keep in step with NoRawDesignValuesTest.kt.
+    isNewSystem: (_rel, text) => ANDROID_NEW_SYSTEM.test(text),
+    // Keep in step with NoRawDesignValuesTest.kt (design-token-guards.test.ts checks).
     patterns: [
       /\bColor\(\s*0x/g,
       /\bColor\.parseColor\(/g,
@@ -72,6 +75,11 @@ const CONFIG: Record<Platform, Config> = {
     ],
   },
 };
+
+/** The patterns a platform counts; the Android list is checked against NoRawDesignValuesTest.kt's copy. */
+export function rawValuePatterns(platform: Platform): readonly RegExp[] {
+  return CONFIG[platform].patterns;
+}
 
 export function countRawValues(platform: Platform, text: string): number {
   return CONFIG[platform].patterns.reduce((sum, re) => sum + (text.match(re)?.length ?? 0), 0);

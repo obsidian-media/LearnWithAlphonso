@@ -2,7 +2,59 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { countRawValues, findViolations, loadBaseline, scanPlatform } from "./raw-design-values";
+import {
+  ANDROID_NEW_SYSTEM,
+  baselinePath,
+  countRawValues,
+  findViolations,
+  loadBaseline,
+  rawValuePatterns,
+  scanPlatform,
+  type Platform,
+} from "./raw-design-values";
+
+/**
+ * All three ratchets: a baseline is exactly today's counts, never more. "count <= baseline" alone leaves slack:
+ * a file that drops from 5 raw values to 3 would keep a baseline of 5, and 2 could come back unnoticed. Holding
+ * the baseline equal to the scan makes every removal lower it (bun scripts/design-raw-value-baseline.ts), and
+ * every rise a visible edit to design/baselines/*.json.
+ */
+describe.each(["web", "ios", "android"] as Platform[])("%s raw-value baseline has no slack", (platform) => {
+  const root = path.resolve(import.meta.dirname, "../..");
+
+  it("equals today's counts file for file (lower it with bun scripts/design-raw-value-baseline.ts)", () => {
+    expect(loadBaseline(root, platform)).toEqual(scanPlatform(root, platform));
+  });
+
+  it("states its own total", () => {
+    const json = JSON.parse(fs.readFileSync(baselinePath(root, platform), "utf8")) as {
+      total: number;
+      files: Record<string, number>;
+    };
+    expect(json.total).toBe(Object.values(json.files).reduce((a, b) => a + b, 0));
+  });
+});
+
+describe("Android's Kotlin guard counts the same things as this one", () => {
+  const kt = fs.readFileSync(
+    path.resolve(
+      import.meta.dirname,
+      "../../android/LearnWithAlphonso/app/src/test/java/com/obsidianmedia/learnwithalphonso/ui/theme/NoRawDesignValuesTest.kt",
+    ),
+    "utf8",
+  );
+  const sources = (block: string) => [...block.matchAll(/Regex\("""(.*?)"""\)/g)].map((m) => m[1]);
+
+  it("same raw-value patterns, in order", () => {
+    const list = /private val patterns = listOf\(([\s\S]*?)\n {4}\)/.exec(kt)?.[1] ?? "";
+    expect(sources(list)).toEqual(rawValuePatterns("android").map((r) => r.source));
+  });
+
+  it("same new-system marker", () => {
+    const line = /private val newSystem = (Regex\(""".*?"""\))/.exec(kt)?.[1] ?? "";
+    expect(sources(line)).toEqual([ANDROID_NEW_SYSTEM.source]);
+  });
+});
 
 /**
  * Web: screens use design tokens, never raw values (the spec's "No raw values"). Scans src/routes and
