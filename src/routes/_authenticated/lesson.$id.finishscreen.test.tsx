@@ -71,11 +71,12 @@ describe("FinishScreen rewards", () => {
     expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
   });
 
-  it("Back to path is the chunky button", () => {
+  it("Continue is the gold pressable button, back to the path", () => {
     renderFinish();
-    expect(screen.getByRole("link", { name: "Back to path" }).className).toContain(
-      "active:translate-y-1",
-    );
+    const link = screen.getByRole("link", { name: "Continue" });
+    expect(link).toHaveAttribute("href", "/learn");
+    expect(link.className).toContain("bg-[linear-gradient(180deg,var(--c-action-hi)");
+    expect(link.className).toContain("active:translate-y-1");
   });
 });
 
@@ -208,20 +209,58 @@ describe("FinishScreen celebration", () => {
   }
   afterEach(() => vi.useRealTimers());
 
-  it("the stage plays the celebration clip: Alphonso cheering, confetti and streamers all in the video", () => {
+  function renderInRoom() {
+    return render(
+      <FinishScreen
+        xp={10}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="Test lesson"
+        correct={4}
+        total={5}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+        roomSrc="/avatar/scenes/garden.webp"
+      />,
+    );
+  }
+
+  it("happens in the unit's room, in code: no painted clip, confetti on a canvas, Alphonso amazed", () => {
     setReducedMotion(false);
-    const { container } = renderFinish();
-    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
-    expect(stage.getAttribute("data-stage")).toBe("complete");
-    const video = stage.querySelector("video")!;
-    expect(video.getAttribute("src")).toBe("/clips/complete.mp4");
-    expect(video.getAttribute("poster")).toBe("/clips/complete.jpg");
-    expect(video.loop).toBe(true);
-    expect(video.muted).toBe(true);
-    expect(video.autoplay).toBe(true);
-    // One celebration on screen: no code confetti and no separate cut-out on top of the clip.
-    expect(container.querySelector("[data-confetti]")).toBeNull();
-    expect(container.querySelector("[data-figure]")).toBeNull();
+    const { container } = renderInRoom();
+    expect(container.querySelector("[data-room]")?.getAttribute("data-room")).toBe(
+      "/avatar/scenes/garden.webp",
+    );
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.innerHTML).not.toContain("/clips/complete");
+    expect(container.querySelector("canvas[data-confetti]")?.getAttribute("data-confetti")).toBe(
+      "falling",
+    );
+    expect(screen.getByRole("img", { name: "Alphonso, amazed" })).toHaveAttribute(
+      "src",
+      "/alphonso/lesson/wow.webp",
+    );
+    expect(screen.getByText("Lesson complete")).toBeInTheDocument();
+    expect(screen.getByText("Nice work! You got 4 of 5.")).toBeInTheDocument();
+  });
+
+  it("Alphonso goes from wow to a smile 1.4 s in", async () => {
+    setReducedMotion(false);
+    vi.useFakeTimers();
+    renderInRoom();
+    expect(screen.getByRole("img", { name: "Alphonso, amazed" })).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    expect(screen.queryByRole("img", { name: "Alphonso, smiling" })).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(screen.getByRole("img", { name: "Alphonso, smiling" })).toHaveAttribute(
+      "src",
+      "/alphonso/lesson/happy.webp",
+    );
   });
 
   it("the XP counts up from zero", async () => {
@@ -236,42 +275,128 @@ describe("FinishScreen celebration", () => {
     expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
 
-  it("under Reduce Motion: the clip's first frame stands still and the numbers show their final values at once", () => {
+  it("under Reduce Motion: a still scatter, Alphonso already smiling, and the final numbers at once", () => {
     setReducedMotion(true);
-    const { container } = renderFinish();
-    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
-    expect(stage.querySelector("video")).toBeNull();
-    expect(stage.querySelector("img")?.getAttribute("src")).toBe("/clips/complete.jpg");
-    expect(container.querySelector("[data-confetti]")).toBeNull();
+    const { container } = renderInRoom();
+    expect(container.querySelector("canvas[data-confetti]")?.getAttribute("data-confetti")).toBe(
+      "still",
+    );
+    expect(screen.getByRole("img", { name: "Alphonso, smiling" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Alphonso, amazed" })).toBeNull();
     const xp = screen.getByRole("group", { name: "XP: +10" });
     expect(within(xp).getByText("+10")).toBeInTheDocument();
   });
 
-  it("the clip fills the whole screen behind the rewards, and Back to path is always on screen", () => {
+  it("Continue is pinned to the bottom of the screen, so the way on never scrolls out of view", () => {
     setReducedMotion(false);
     renderFinish();
-    const stage = screen.getByRole("img", { name: /Alphonso celebrating/ });
-    // Full-bleed behind the column (like the Hector page), not a boxed 10:13 window.
-    expect(stage.className).toContain("fixed");
-    expect(stage.className).toContain("inset-y-0");
-    expect(stage.className).not.toContain("aspect-[10/13]");
-    // The button sits in a footer pinned to the bottom of the screen, so it never scrolls out of view.
-    const footer = screen
-      .getByRole("link", { name: "Back to path" })
-      .closest("[data-finish-footer]")!;
+    const footer = screen.getByRole("link", { name: "Continue" }).closest("[data-finish-footer]")!;
     expect(footer.className).toContain("sticky");
     expect(footer.className).toContain("bottom-0");
   });
 
-  it("the headline reads in ink, not moss, so it stays legible over the clip", () => {
+  it("a new achievement slides in as a toast under the tiles", () => {
     setReducedMotion(false);
-    renderFinish();
-    // classList: a substring match would also pass "text-ink-soft".
-    expect(screen.getByText("Nice work, lesson complete!").classList.contains("text-ink")).toBe(
-      true,
+    const { container } = render(
+      <FinishScreen
+        xp={10}
+        unlocked={["streak_3"]}
+        heartsBonus="perfect"
+        lessonTitle="Test lesson"
+        correct={5}
+        total={5}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
     );
-    expect(screen.getByText("Nice work, lesson complete!").className).not.toMatch(
-      /text-moss|text-ink-soft/,
+    expect(container.querySelectorAll("[data-achievement-toast]")).toHaveLength(1);
+    expect(screen.getByText("Achievement unlocked")).toBeInTheDocument();
+    expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
+  });
+});
+
+describe("FinishScreen XP and time", () => {
+  it("shows the lesson's time in m:ss beside the other tiles", () => {
+    render(
+      <FinishScreen
+        xp={70}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={7}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+        elapsedMs={222_000}
+      />,
     );
+    expect(screen.getByLabelText("Time: 3:42")).toBeInTheDocument();
+    expect(screen.getByLabelText("XP: +70")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accuracy: 88%")).toBeInTheDocument();
+  });
+
+  it("a perfect lesson shows its bonus as its own line, and the lines add up to the XP tile", () => {
+    const { container } = render(
+      <FinishScreen
+        xp={100}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={8}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+        elapsedMs={60_000}
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual(["8 right answers +80", "Perfect lesson +20"]);
+    const sum = lines.reduce((n, l) => n + Number(l.dataset.xpLine), 0);
+    expect(sum).toBe(100);
+  });
+
+  it("the XP lines use the server's own count of right answers, so a re-grade is never called an earlier try", () => {
+    // This screen counted 8 of 8; the server's grading counted 7 and paid 70 on a first try.
+    const { container } = render(
+      <FinishScreen
+        xp={70}
+        awardedCorrect={7}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={8}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual([]);
+    expect(container.textContent).not.toMatch(/earlier try|Perfect lesson/);
+  });
+
+  it("a replay that earns nothing says so instead of contradicting the tile", () => {
+    const { container } = render(
+      <FinishScreen
+        xp={0}
+        unlocked={[]}
+        heartsBonus={null}
+        lessonTitle="T"
+        correct={6}
+        total={8}
+        missedQs={[]}
+        lessonId="l1"
+        course="en"
+      />,
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>("[data-xp-line]")];
+    expect(lines.map((l) => l.textContent)).toEqual([
+      "6 right answers +60",
+      "Already earned on an earlier try −60",
+    ]);
   });
 });

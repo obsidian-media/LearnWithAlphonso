@@ -1,3 +1,4 @@
+import { DsIcon } from "./ds/DsIcon";
 import { AI_CONSENT_COPY } from "../lib/ai-consent-copy";
 import { useOptionalAiConsent } from "../lib/ai-consent-context";
 import { canSpeak, speak } from "../lib/speech";
@@ -64,18 +65,17 @@ export function SpeakAnswer({
 
   return (
     <div>
-      <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-          Your phrase
-        </p>
-        <p className="mt-1 text-lg font-medium leading-snug text-ink">{target}</p>
+      <div className="mb-3 rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]">
+        <p className="ds-type-overline text-ds-ink-soft">Your phrase</p>
+        <p className="mt-1 ds-type-title text-ds-brand">{target}</p>
         {canSpeak() && (
           <button
             type="button"
             onClick={() => speak(target, locale)}
-            className="mt-2 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink transition hover:border-ink/30"
+            className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-ds-choice-tint px-3 py-1.5 ds-type-footnote font-bold text-ds-choice"
           >
-            🔊 Hear it first
+            <DsIcon name="speaker" className="size-4" />
+            Hear it first
           </button>
         )}
       </div>
@@ -90,29 +90,13 @@ export function SpeakAnswer({
             aria-pressed={recording}
             className={`grid size-16 place-items-center rounded-full transition-transform ${
               recording
-                ? "scale-110 bg-ember text-ink-on-ember hard-shadow-ember"
-                : "bg-moss text-surface hard-shadow"
+                ? "scale-110 bg-ds-wrong text-ds-on-wrong shadow-[0_5px_0_var(--c-wrong-edge)]"
+                : "bg-[linear-gradient(180deg,var(--c-action-hi)_0%,var(--c-action)_55%)] text-ds-on-action shadow-[0_5px_0_var(--c-action-edge)]"
             } disabled:opacity-50`}
           >
-            <svg viewBox="0 0 24 24" className="size-7" fill="none" aria-hidden="true">
-              <rect
-                x="9"
-                y="3"
-                width="6"
-                height="12"
-                rx="3"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
-              <path
-                d="M5 11a7 7 0 0 0 14 0M12 18v3"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
+            <DsIcon name="mic" className="size-7" />
           </button>
-          <p className="text-xs text-ink-soft" aria-live="polite">
+          <p className="ds-type-caption text-ds-ink-soft" aria-live="polite">
             {recording
               ? "Listening — tap to stop"
               : transcribing
@@ -122,11 +106,9 @@ export function SpeakAnswer({
                   : "Tap and say the phrase"}
           </p>
           {value && (
-            <div className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-                We heard
-              </p>
-              <p className="mt-1 text-base text-ink">{value}</p>
+            <div className="w-full rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]">
+              <p className="ds-type-overline text-ds-ink-soft">We heard</p>
+              <p className="mt-1 ds-type-headline text-ds-ink">{value}</p>
             </div>
           )}
           {error && (
@@ -135,7 +117,7 @@ export function SpeakAnswer({
             // button), so an error drawn in it reads as decoration.
             <p
               role="alert"
-              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+              className="self-center rounded-full bg-ds-wrong-tint px-3 py-1 ds-type-caption text-ds-wrong-ink"
             >
               {error}
             </p>
@@ -143,7 +125,7 @@ export function SpeakAnswer({
         </div>
       ) : (
         <div>
-          <p className="mb-2 text-xs text-ink-soft">
+          <p className="mb-2 ds-type-caption text-ds-ink-soft">
             {needsConsent
               ? consentKnown
                 ? AI_CONSENT_COPY.speakFallbackNoConsent
@@ -158,7 +140,7 @@ export function SpeakAnswer({
             <button
               type="button"
               onClick={() => void consent.refresh()}
-              className="mb-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink"
+              className="mb-2 rounded-full bg-ds-card px-3 py-1.5 ds-type-caption text-ds-brand shadow-[inset_0_0_0_1.5px_var(--c-line)]"
             >
               {AI_CONSENT_COPY.retry}
             </button>
@@ -167,7 +149,7 @@ export function SpeakAnswer({
             <button
               type="button"
               onClick={() => void consent.requestConsent()}
-              className="mb-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink"
+              className="mb-2 rounded-full bg-ds-card px-3 py-1.5 ds-type-caption text-ds-brand shadow-[inset_0_0_0_1.5px_var(--c-line)]"
             >
               {AI_CONSENT_COPY.useVoiceInstead}
             </button>
@@ -175,7 +157,7 @@ export function SpeakAnswer({
           {error && (
             <p
               role="alert"
-              className="mb-2 w-fit rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+              className="mb-2 w-fit rounded-full bg-ds-wrong-tint px-3 py-1 ds-type-caption text-ds-wrong-ink"
             >
               {error}
             </p>
@@ -187,7 +169,7 @@ export function SpeakAnswer({
             onChange={(e) => onChange(e.target.value)}
             placeholder="Type the phrase"
             aria-label="Type the phrase"
-            className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
+            className="w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 ds-type-headline text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
           />
         </div>
       )}

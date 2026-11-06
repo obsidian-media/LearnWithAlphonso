@@ -481,6 +481,8 @@ describe("completeLessonRemote", () => {
     });
 
     expect(result.xpGain).toBe(0);
+    // Its own count of this attempt (one miss), not the stored best: the complete screen's XP lines start from it.
+    expect(result.correct).toBe(7);
     expect(result.heartsBonus).toBeNull(); // gated on xpGain > 0
     expect(result.progress.xp).toBe(100); // unchanged
   });
