@@ -255,7 +255,7 @@ describe("word-card fixes follow the English card rules", () => {
     expect(why({ meaning: "one two three four five six seven eight nine" })).toMatch(
       /over 8 words/,
     );
-    expect(why({ meaning: "I could (past)" })).toMatch(/bracket/);
+    expect(why({ meaning: "I could [past]" })).toMatch(/bracket/);
     expect(why({ meaning: "poder → I could" })).toMatch(/arrow/);
     expect(why({ example: "Ayer no vine." })).toMatch(/does not use the term/);
   });
@@ -292,5 +292,30 @@ describe("drill fixes: every wrong option is a form of the bracketed verb", () =
         patch: { bank: ["parlerai", "mangeras", "parlerons"] },
       }).join(),
     ).toMatch(/not a form of parler/);
+  });
+});
+
+describe("French and Spanish card glosses may carry a grammar note", () => {
+  const es = item("card", { term: "cansado", meaning: "", example: "Estoy cansado." }, "es");
+  const en = item("card", { term: "tired", meaning: "", example: "I am tired." }, "en");
+  it("allows (masculine) in a Spanish gloss, not in an English one", () => {
+    expect(
+      checkFix(es, { id: es.id, reason: "", patch: { meaning: "tired (masculine)" } }),
+    ).toEqual([]);
+    expect(
+      checkFix(en, { id: en.id, reason: "", patch: { meaning: "sleepy (adjective)" } }).join(),
+    ).toMatch(/bracket/);
+  });
+  it("still refuses square brackets and counts 8 words outside the note", () => {
+    expect(checkFix(es, { id: es.id, reason: "", patch: { meaning: "tired [m]" } }).join()).toMatch(
+      /bracket/,
+    );
+    expect(
+      checkFix(es, {
+        id: es.id,
+        reason: "",
+        patch: { meaning: "a b c d e f g h i (note)" },
+      }).join(),
+    ).toMatch(/over 8/);
   });
 });

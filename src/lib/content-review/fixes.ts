@@ -15,7 +15,7 @@
 //   legacy-system-prompts.fixtures.json in the same PR, or /api/chat rejects older builds.
 
 import type { ItemKind, ReviewItem } from "./inventory";
-import { FLAG, GENERIC_EXPLANATION } from "./gates";
+import { FLAG, GENERIC_EXPLANATION, INFINITIVE } from "./gates";
 import { isFormOf } from "../../data/conjugation-form-check";
 import { bracketedVerb } from "../../data/romance-conjugation";
 
@@ -78,19 +78,30 @@ function optionsField(d: Record<string, unknown>): "choices" | "bank" | null {
   return null;
 }
 
-/** The English word-card rules (vocab-meanings.test.ts cardProblems), applied to a card patch. */
-export function cardRules(term: string, patch: Patch): string[] {
+/**
+ * The English word-card rules (vocab-meanings.test.ts cardProblems), applied to a card patch.
+ * One difference for French and Spanish meanings: a round-bracketed grammar note is allowed
+ * ("tired (masculine)", "you read (informal)"), and the 8-word limit counts the words outside it.
+ * In English cards a bracket was a quiz clue ("(à moi)") leaking onto the card; in a French or
+ * Spanish gloss it tells the learner which form this is.
+ */
+export function cardRules(term: string, patch: Patch, course: string = "en"): string[] {
   const why: string[] = [];
   const words = (t: string) => t.trim().split(/\s+/).filter(Boolean);
+  const noteAllowed = (field: string) => course !== "en" && field === "meaning";
   for (const field of ["meaning", "example"] as const) {
     const t = patch[field];
     if (typeof t !== "string") continue;
     if (!t.trim()) why.push(`the card ${field} is empty`);
     if (/_{2,}/.test(t)) why.push(`the card ${field} has a blank`);
     if (/→|->/.test(t)) why.push(`the card ${field} has an arrow`);
-    if (/[()[\]]/.test(t)) why.push(`the card ${field} has a bracket clue`);
+    const brackets = noteAllowed(field) ? /[[\]]/ : /[()[\]]/;
+    if (brackets.test(t)) why.push(`the card ${field} has a bracket clue`);
   }
-  if (typeof patch.meaning === "string" && words(patch.meaning).length > 8)
+  if (
+    typeof patch.meaning === "string" &&
+    words(patch.meaning.replace(/\([^)]*\)/g, " ")).length > 8
+  )
     why.push("the card meaning is over 8 words");
   if (
     typeof patch.example === "string" &&
@@ -206,15 +217,21 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   // A conjugation drill: every wrong option is a form of the bracketed verb, decided by the gate's own
   // spelling check (conjugation-form-check.ts), never by the engine or the model.
   if (item.flags?.includes(FLAG.drillNonForm) && ("choices" in fix.patch || "bank" in fix.patch)) {
-    const verb = bracketedVerb(String(next.prompt ?? ""));
+    // "(hacer, tú)": the verb is before the comma. A bracket that is no longer an infinitive (an
+    // English clue replaced it) makes the line a plain fill-in, which the gate does not treat as a
+    // drill either.
+    const verb =
+      bracketedVerb(String(next.prompt ?? ""))
+        ?.split(",")[0]
+        ?.trim() ?? "";
     const answer = answerText(next);
     const options = (next.choices ?? next.bank) as string[];
-    if (!verb) why.push("the drill prompt lost its bracketed verb");
-    else
+    if (INFINITIVE[item.course === "fr" ? "fr" : "es"].test(verb))
       for (const o of options)
         if (o !== answer && !isFormOf(o, verb)) why.push(`"${o}" is not a form of ${verb}`);
   }
-  if (item.kind === "card") why.push(...cardRules(String(item.data.term ?? ""), fix.patch));
+  if (item.kind === "card")
+    why.push(...cardRules(String(item.data.term ?? ""), fix.patch, item.course));
   if (
     item.kind === "card" &&
     typeof fix.patch.meaning === "string" &&

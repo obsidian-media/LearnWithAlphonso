@@ -47,7 +47,7 @@ export const KNOWN_SECOND_ANSWER: Record<string, string> = {
 
 // ---- Conjugation drills (same detector as romance-conjugation.test.ts) -------------------------------
 
-const INFINITIVE = {
+export const INFINITIVE = {
   fr: /^(se\s+|s')?[\p{L}]+(er|ir|re)$/u,
   es: /^[\p{L}]*(ar|er|ir|ír)(se)?$/u,
 };
