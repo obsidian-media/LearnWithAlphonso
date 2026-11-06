@@ -52,6 +52,11 @@ targets:
       - path: AlphonsoAvatar
         type: folder
         buildPhase: resources
+      # The rooms behind Alphonso in the Practice call: one WebP per scenario id plus room-light/room-dark, read by
+      # name at run time (PracticeCallView).
+      - path: AlphonsoScenes
+        type: folder
+        buildPhase: resources
       - path: Sources
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources

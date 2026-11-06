@@ -3,7 +3,7 @@ import UIKit
 import QuartzCore
 import LearnWithAlphonsoKit
 
-/// The talking 2D Alphonso at the top of the Practice speaking screen, "on a video call". He listens while the
+/// The talking 2D Alphonso in the full-screen Practice call (PracticeCallView). He listens while the
 /// learner holds the button, thinks while the reply is made, and talks with lip sync while it plays. The logic
 /// (mouth shapes, timing, state, idle life) is the Kit's Avatar* files; this file only draws it.
 ///
@@ -55,10 +55,11 @@ private final class AvatarDriver {
     /// nil until the first frame: a verdict that was already there when the stage appeared (the setting turned on
     /// after a reply) belongs to a turn that is over, so it is not reacted to.
     private var handledVerdictSerial: Int?
+    private var lastMode: AvatarMode = .idle
 
     func frame(
         voice: VoiceSessionController, replyText: String?, replyVerdict: AvatarReplyVerdict, course: Course,
-        reduceMotion: Bool
+        reduceMotion: Bool, onModeChange: ((AvatarMode) -> Void)?
     ) -> AvatarFrame {
         let now = CACurrentMediaTime() - origin
         if handledVerdictSerial == nil { handledVerdictSerial = replyVerdict.serial }
@@ -68,6 +69,12 @@ private final class AvatarDriver {
             machine.replyArrived(verdict: replyVerdict.verdict)
         }
         machine.update(phase: voice.phase, now: now)
+        if machine.mode != lastMode {
+            lastMode = machine.mode
+            let mode = machine.mode
+            // Never change state while a view is being evaluated.
+            DispatchQueue.main.async { onModeChange?(mode) }
+        }
         if voice.isRecording, let level = voice.inputLevelDBFS() {
             machine.heard(levelDBFS: level, now: now)
         }
@@ -96,29 +103,13 @@ private final class AvatarDriver {
     }
 }
 
-/// The stage: sized from the screen so a small phone keeps room for the transcript and the talk button.
-struct AlphonsoAvatarStage: View {
-    let voice: VoiceSessionController
-    let replyText: String?
-    var replyVerdict = AvatarReplyVerdict()
-    let course: Course
-
-    var body: some View {
-        AlphonsoAvatarView(voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course)
-            .containerRelativeFrame(.vertical) { length, _ in min(max(length * 0.2, 88), 170) }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 4)
-            .background(AlphonsoColor.surface)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-    }
-}
-
 struct AlphonsoAvatarView: View {
     let voice: VoiceSessionController
     let replyText: String?
     let replyVerdict: AvatarReplyVerdict
     let course: Course
+    /// Told when his mode changes (idle, listening, thinking, speaking, a reaction): the call's state pill.
+    var onModeChange: ((AvatarMode) -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -128,7 +119,7 @@ struct AlphonsoAvatarView: View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: scenePhase != .active)) { _ in
             let frame = driver.frame(
                 voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course,
-                reduceMotion: reduceMotion)
+                reduceMotion: reduceMotion, onModeChange: onModeChange)
             AvatarLayersView(frame: frame)
         }
     }

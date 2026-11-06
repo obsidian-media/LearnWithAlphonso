@@ -44,14 +44,20 @@ describe("the setting", () => {
     expect(settings).toContain("Show Alphonso while practising");
   });
 
-  it("gates the stage on the Practice speaking screen, so off leaves the screen as it was", () => {
+  it("gates the call on the Practice speaking screen, so off leaves the screen as it was", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
     expect(conversation).toContain(
       "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
     );
-    expect(conversation).toMatch(
-      /\.safeAreaInset\(edge: \.top, spacing: 0\) \{\s*if showAlphonso \{\s*AlphonsoAvatarStage\(/,
+    expect(conversation).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
+    // The classic screen keeps its own navigation bar, mic button and New conversation toolbar item.
+    const classic = conversation.slice(
+      conversation.indexOf("private var classicScreen"),
+      conversation.indexOf("private var callScreen"),
     );
+    expect(classic).toContain("micButton");
+    expect(classic).toContain('Button("New conversation")');
+    expect(classic).not.toContain("PracticeCallView");
   });
 });
 
@@ -172,8 +178,8 @@ describe("what he is built from", () => {
     }
   });
 
-  it("is decorative and never takes a touch", () => {
-    const view = code(VIEW);
+  it("is decorative and never takes a touch (the call view that hosts it enforces both)", () => {
+    const view = code(`${APP}/Sources/PracticeCallView.swift`);
     expect(view).toContain(".accessibilityHidden(true)");
     expect(view).toContain(".allowsHitTesting(false)");
   });
@@ -212,7 +218,7 @@ describe("reactions from the reply's verdict", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
     expect(conversation).toContain("client.chatReply(");
     expect(conversation).toMatch(/verdict: chatReply\.verdict/);
-    expect(conversation).toMatch(/AlphonsoAvatarStage\([\s\S]*?replyVerdict: replyVerdict/);
+    expect(conversation).toMatch(/PracticeCallView\([\s\S]*?replyVerdict: replyVerdict/);
   });
 
   it("queues the reaction in the machine and plays it only when the session is idle", () => {
