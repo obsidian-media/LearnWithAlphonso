@@ -104,12 +104,16 @@ describe("design tokens: scales", () => {
   it("radii: pressables 16, floating 22 to 28, pills full", () => {
     expect(tokens.radius).toEqual({ key: 8, control: 16, bubble: 22, sheet: 28, pill: 999 });
   });
-  it("type scale has the ten roles with display and body families only", () => {
+  it("type scale has the thirteen roles with display and body families only", () => {
     expect(Object.keys(tokens.type)).toEqual([
       "displayXL",
       "display",
       "title",
+      // The lesson's question and answers (owner review of the round-6 lesson: bigger and bolder).
+      "question",
+      "questionSmall",
       "headline",
+      "answer",
       "body",
       "footnote",
       "caption",
@@ -121,6 +125,9 @@ describe("design tokens: scales", () => {
       expect(["display", "body"], n).toContain(t.family);
       expect(t.lineHeight, n).toBeGreaterThanOrEqual(t.size);
     }
+    expect(tokens.type.question).toMatchObject({ family: "display", weight: 800, size: 24 });
+    expect(tokens.type.questionSmall).toMatchObject({ family: "display", weight: 800, size: 20 });
+    expect(tokens.type.answer).toMatchObject({ family: "body", weight: 700, size: 18 });
     expect(tokens.type.numeralXL.tnum).toBe(true);
     expect(tokens.type.numeral.tnum).toBe(true);
   });

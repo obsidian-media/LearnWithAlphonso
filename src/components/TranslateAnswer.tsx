@@ -21,6 +21,7 @@ export function TranslateAnswer({
   checked,
   verdict,
   showAiGradingOption,
+  showAcceptedPhrasing = true,
 }: {
   question: Extract<Question, { type: "translate" }>;
   value: string | null;
@@ -31,6 +32,8 @@ export function TranslateAnswer({
   verdict: TranslationVerdict | null;
   /** Offer to turn AI grading on when the learner has not allowed it (lessons and review, not placement). */
   showAiGradingOption?: boolean;
+  /** Off where the screen shows the accepted phrasing itself (the lesson's verdict sheet). */
+  showAcceptedPhrasing?: boolean;
 }) {
   const consent = useOptionalAiConsent();
   return (
@@ -44,7 +47,7 @@ export function TranslateAnswer({
         rows={3}
         placeholder="Write your answer"
         aria-label="Your answer"
-        className="w-full resize-none rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss disabled:opacity-70"
+        className="resize-none disabled:opacity-70 w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 ds-type-headline text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
       />
 
       {showAiGradingOption &&
@@ -52,28 +55,28 @@ export function TranslateAnswer({
         consent.status !== "loading" &&
         !consent.granted &&
         !checked && (
-          <p className="mt-2 text-xs text-ink-soft">
+          <p className="mt-2 ds-type-caption text-ds-ink-soft">
             {AI_CONSENT_COPY.localGradingNote}{" "}
             <button
               type="button"
               onClick={() => void consent.requestConsent()}
-              className="font-semibold text-moss underline"
+              className="font-bold text-ds-choice underline"
             >
               {AI_CONSENT_COPY.turnOnAiGrading}
             </button>
           </p>
         )}
 
-      {checked && verdict && !verdict.correct && (
-        <div className="mt-3 rounded-2xl border border-hairline bg-surface px-4 py-3">
-          {verdict.reason && <p className="text-sm text-ink">{verdict.reason}</p>}
-          <p className={verdict.reason ? "mt-2" : ""}>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              One way to say it
-            </span>
-            <br />
-            <span className="text-base text-ink">{question.acceptableAnswers[0]}</span>
-          </p>
+      {checked && verdict && !verdict.correct && (verdict.reason || showAcceptedPhrasing) && (
+        <div className="mt-3 rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]">
+          {verdict.reason && <p className="ds-type-body text-ds-ink">{verdict.reason}</p>}
+          {showAcceptedPhrasing && (
+            <p className={verdict.reason ? "mt-2" : ""}>
+              <span className="ds-type-overline text-ds-ink-soft">One way to say it</span>
+              <br />
+              <span className="ds-type-headline text-ds-ink">{question.acceptableAnswers[0]}</span>
+            </p>
+          )}
         </div>
       )}
     </div>
