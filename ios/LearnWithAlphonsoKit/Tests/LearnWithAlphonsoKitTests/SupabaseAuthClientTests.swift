@@ -278,6 +278,29 @@ final class SupabaseAuthClientTests: XCTestCase {
         XCTAssertEqual((payload["data"] as? [String: String])?["given_name"], "Zoë")
     }
 
+    func testVoicePrefsRoundTripThroughUserMetadata() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.response(for: request.url!, body: [
+                "id": "u1",
+                "user_metadata": ["given_name": "Zoë", "voices": ["hector": ["es": "aura-2-celeste-es"]]],
+            ])
+        }
+        let metadata = try await client.fetchUserMetadata(accessToken: "access-1")
+        let prefs = VoicePrefs(json: metadata[VoicePrefs.metadataKey])
+        XCTAssertEqual(prefs.voice(.hector, course: "es"), "aura-2-celeste-es")
+        XCTAssertEqual(prefs.voice(.alphonso, course: "es"), "aura-2-javier-es")
+
+        let next = prefs.with(.alphonso, course: "en", voice: "aura-2-luna-en")
+        try await client.updateUserMetadata(accessToken: "access-1", json: [VoicePrefs.metadataKey: next.jsonObject])
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.httpMethod, "PUT")
+        let payload = try JSONSerialization.jsonObject(with: try XCTUnwrap(request.httpBody)) as! [String: Any]
+        let voices = try XCTUnwrap((payload["data"] as? [String: Any])?["voices"] as? [String: [String: String]])
+        XCTAssertEqual(voices, ["alphonso": ["en": "aura-2-luna-en"], "hector": ["es": "aura-2-celeste-es"]])
+    }
+
     // MARK: - logout
 
     func testLogoutEndsThisDevicesSessionOnTheServerWithItsOwnToken() async throws {

@@ -588,6 +588,28 @@ describe("GDPR export table coverage", () => {
     expect(missing).toEqual([]);
   });
 
+  it("every reference to auth.users lets the account go (ON DELETE CASCADE or SET NULL)", () => {
+    // deleteMyAccount and the service-role deletion both end in auth.admin.deleteUser(); a user-scoped table whose
+    // foreign key neither cascades nor nulls would either block that delete or, worse, outlive it.
+    // Fixed by a later ALTER instead of in its CREATE TABLE: admin_users.added_by (20261014100100, SET NULL).
+    const fixedLater = new Map([
+      ["admin_users", "20261014100100_admin_users_added_by_set_null.sql"],
+    ]);
+    const blocking = createTableBlocks.flatMap(({ table, body }) =>
+      [...body.matchAll(/references\s+auth\.users[^,\n]*/gi)]
+        .filter(([ref]) => !/on\s+delete\s+(cascade|set\s+null)/i.test(ref))
+        .map(() => table),
+    );
+    expect(blocking.filter((t) => !fixedLater.has(t))).toEqual([]);
+    for (const migration of fixedLater.values()) {
+      expect(readFileSync(path.join(migrationsDir, migration), "utf8")).toMatch(
+        /ON DELETE SET NULL/,
+      );
+    }
+    // The minutes-spoken table (20261106100000) is one of them.
+    expect(createTableBlocks.map(({ table }) => table)).toContain("speech_days");
+  });
+
   it("keeps the exclusion list honest", () => {
     // An exclusion list is a hole in a guard. This pins that every name
     // in it still exists as a table -- otherwise a renamed table leaves a

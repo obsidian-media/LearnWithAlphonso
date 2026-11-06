@@ -369,7 +369,9 @@ private struct ConversationSessionView: View {
             replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
 
             do {
-                let speech = try await client.synthesizeSpeech(text: reply, course: courseCode)
+                // Alphonso's chosen voice for this course (Settings > Voices); the server re-checks it.
+                let speech = try await client.synthesizeSpeech(
+                    text: reply, voice: VoicePrefsCache().voice(.alphonso, course: courseCode), course: courseCode)
                 if !voice.play(speech, generation: generation) {
                     notice = "Got a reply, but couldn't play it back."
                 }

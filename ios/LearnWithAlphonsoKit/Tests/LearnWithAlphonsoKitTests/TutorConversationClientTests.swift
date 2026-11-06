@@ -33,6 +33,22 @@ final class TutorConversationClientTests: XCTestCase {
         try await client.respond(sessionID: "s1", text: "hi", course: course, cefrLevel: nil, history: [])
     }
 
+    func testSendsHectorsVoiceOnlyWhenGiven() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(self.okReply)
+        }
+        _ = try await client.respond(
+            sessionID: "s1", text: "hola", course: "es", cefrLevel: nil, history: [], voice: "aura-2-celeste-es")
+        var payload = try JSONSerialization.jsonObject(with: XCTUnwrap(captured.value?.httpBody)) as! [String: Any]
+        XCTAssertEqual(payload["voice"] as? String, "aura-2-celeste-es")
+
+        _ = try await respond(client)
+        payload = try JSONSerialization.jsonObject(with: XCTUnwrap(captured.value?.httpBody)) as! [String: Any]
+        XCTAssertNil(payload["voice"])
+    }
+
     func testSendsCourseLevelAndHistoryAndNoDeviceIdentifier() async throws {
         let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
