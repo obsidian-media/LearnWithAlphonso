@@ -19,9 +19,12 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
 import { Route as AuthenticatedHectorRouteImport } from './routes/_authenticated/hector'
+import { Route as AuthenticatedHelloRouteImport } from './routes/_authenticated/hello'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
@@ -107,6 +110,17 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCompleteProfileRoute =
+  AuthenticatedCompleteProfileRouteImport.update({
+    id: '/complete-profile',
+    path: '/complete-profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConverseRoute = AuthenticatedConverseRouteImport.update({
   id: '/converse',
   path: '/converse',
@@ -120,6 +134,11 @@ const AuthenticatedDuelsRoute = AuthenticatedDuelsRouteImport.update({
 const AuthenticatedHectorRoute = AuthenticatedHectorRouteImport.update({
   id: '/hector',
   path: '/hector',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHelloRoute = AuthenticatedHelloRouteImport.update({
+  id: '/hello',
+  path: '/hello',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
@@ -313,9 +332,12 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
+  '/hello': typeof AuthenticatedHelloRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -362,9 +384,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
+  '/hello': typeof AuthenticatedHelloRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -413,9 +438,12 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/_authenticated/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
   '/_authenticated/hector': typeof AuthenticatedHectorRoute
+  '/_authenticated/hello': typeof AuthenticatedHelloRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
@@ -464,9 +492,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/complete-profile'
     | '/converse'
     | '/duels'
     | '/hector'
+    | '/hello'
     | '/league'
     | '/learn'
     | '/listen'
@@ -513,9 +544,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/complete-profile'
     | '/converse'
     | '/duels'
     | '/hector'
+    | '/hello'
     | '/league'
     | '/learn'
     | '/listen'
@@ -563,9 +597,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/_authenticated/complete-profile'
     | '/_authenticated/converse'
     | '/_authenticated/duels'
     | '/_authenticated/hector'
+    | '/_authenticated/hello'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
@@ -614,6 +651,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  WelcomeRoute: typeof WelcomeRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
@@ -707,6 +745,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/complete-profile': {
+      id: '/_authenticated/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/complete-profile'
+      preLoaderRoute: typeof AuthenticatedCompleteProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/converse': {
       id: '/_authenticated/converse'
       path: '/converse'
@@ -726,6 +778,13 @@ declare module '@tanstack/react-router' {
       path: '/hector'
       fullPath: '/hector'
       preLoaderRoute: typeof AuthenticatedHectorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hello': {
+      id: '/_authenticated/hello'
+      path: '/hello'
+      fullPath: '/hello'
+      preLoaderRoute: typeof AuthenticatedHelloRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/league': {
@@ -988,9 +1047,11 @@ const AuthenticatedListenRouteWithChildren =
   AuthenticatedListenRoute._addFileChildren(AuthenticatedListenRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
   AuthenticatedHectorRoute: typeof AuthenticatedHectorRoute
+  AuthenticatedHelloRoute: typeof AuthenticatedHelloRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
@@ -1009,9 +1070,11 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompleteProfileRoute: AuthenticatedCompleteProfileRoute,
   AuthenticatedConverseRoute: AuthenticatedConverseRoute,
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
   AuthenticatedHectorRoute: AuthenticatedHectorRoute,
+  AuthenticatedHelloRoute: AuthenticatedHelloRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
@@ -1043,6 +1106,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  WelcomeRoute: WelcomeRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,

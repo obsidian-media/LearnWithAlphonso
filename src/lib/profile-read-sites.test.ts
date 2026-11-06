@@ -24,6 +24,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "supabase/functions/_shared/ai-consent.ts": 1, // ai_consent_at by id (service role)
   "src/lib/leaderboard.functions.ts": 2, // updateProfile (own), getMyProfile (own)
   "src/lib/account.functions.ts": 1, // GDPR export (own, user client)
+  "src/lib/learner-profile.functions.ts": 1, // country mirror for the leaderboard flag: UPDATE own row (user client)
   "src/lib/admin.functions.ts": 1, // admin reports (service role)
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 3, // own GET + 2 PATCH
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).

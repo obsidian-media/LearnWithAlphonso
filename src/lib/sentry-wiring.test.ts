@@ -7,12 +7,21 @@ import { contentSecurityPolicy } from "./security-policy";
 const init = vi.fn();
 const captureException = vi.fn();
 const breadcrumbsIntegration = vi.fn((o: unknown) => ({ name: "Breadcrumbs", options: o }));
-vi.mock("@sentry/react", () => ({ init, captureException, breadcrumbsIntegration }));
+const innerSend = vi.fn(() => Promise.resolve({}));
+const makeFetchTransport = vi.fn(() => ({ send: innerSend, flush: vi.fn() }));
+vi.mock("@sentry/react", () => ({
+  init,
+  captureException,
+  breadcrumbsIntegration,
+  makeFetchTransport,
+}));
 
 beforeEach(() => {
   vi.resetModules();
   init.mockReset();
   captureException.mockReset();
+  innerSend.mockClear();
+  localStorage.removeItem("lwa.under13.v1");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -68,6 +77,28 @@ describe("browser Sentry init", () => {
     const event = options.beforeSend({ message: "x a@b.com", user: { email: "a@b.com" } });
     expect(JSON.stringify(event)).not.toContain("a@b.com");
     expect(options.beforeBreadcrumb({ category: "console" })).toBeNull();
+  });
+
+  it("a device that answered Under 13 sends nothing: not at start, and not after a mid-visit block", async () => {
+    vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_VERCEL_ENV", "production");
+    localStorage.setItem("lwa.under13.v1", "1");
+    const { initSentryClient } = await import("./sentry-client");
+    expect(initSentryClient()).toBe(false);
+    expect(init).not.toHaveBeenCalled();
+
+    localStorage.removeItem("lwa.under13.v1");
+    expect(initSentryClient()).toBe(true);
+    const options = init.mock.calls[0][0];
+    const transport = options.transport({});
+    await transport.send(["session"]);
+    expect(innerSend).toHaveBeenCalledTimes(1);
+
+    localStorage.setItem("lwa.under13.v1", "1");
+    await transport.send(["session"]);
+    expect(innerSend).toHaveBeenCalledTimes(1);
+    expect(options.beforeSend({ message: "x" })).toBeNull();
+    expect(options.beforeBreadcrumb({ category: "ui.click", message: "Under 13" })).toBeNull();
   });
 
   it("reportError reaches Sentry only after init", async () => {

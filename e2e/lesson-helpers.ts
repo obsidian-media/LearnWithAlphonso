@@ -6,14 +6,18 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? "https://placeholder.supab
  * Signs in as a fake user with no backend: the session sits in local storage and the one network question the
  * signed-in shell asks (who is signed in) is answered here. Lesson content is bundled, so lessons play.
  */
-export async function signInAsFakeUser(page: Page) {
+export async function signInAsFakeUser(
+  page: Page,
+  { userMetadata = { learner_profile: { dismissedAt: "2026-11-06T00:00:00Z" } } as object } = {},
+) {
   const user = {
     id: "00000000-0000-4000-8000-000000000001",
     aud: "authenticated",
     role: "authenticated",
     email: "layout@example.test",
     app_metadata: {},
-    user_metadata: {},
+    // A learner past the one-time Complete your profile, unless a spec says otherwise.
+    user_metadata: userMetadata,
     created_at: "2026-01-01T00:00:00Z",
   };
   const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
@@ -103,6 +107,11 @@ export async function fakeLessonServer(page: Page, { streak = 4, xp = 70 } = {})
       },
     },
   };
+  await fakeServerFns(page, answers);
+}
+
+/** Answers the named server functions (by their export name) with the given values; others fall through. */
+export async function fakeServerFns(page: Page, answers: Record<string, unknown>) {
   await page.route("**/_serverFn/**", async (route) => {
     const id = route.request().url().split("/_serverFn/")[1]?.split("?")[0] ?? "";
     const name = Buffer.from(id, "base64url").toString("utf8");

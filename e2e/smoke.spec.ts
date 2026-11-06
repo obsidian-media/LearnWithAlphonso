@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
  * see playwright.config.ts's top comment for why.
  */
 
-test("landing page loads and links to sign-in", async ({ page }) => {
+test("landing page loads and opens the first run", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Learn with Alphonso/i);
   // Not pinning the exact hero sentence -- see §0.1d/§0.1-f in
@@ -15,7 +15,8 @@ test("landing page loads and links to sign-in", async ({ page }) => {
   // is exactly backwards when (as happened here) the string was stale.
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.getByRole("link", { name: "Get started — it's free" }).click();
-  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page).toHaveURL(/\/welcome$/);
+  await expect(page.getByRole("heading", { name: /What should I call you/ })).toBeVisible();
 });
 
 test("sign-in page loads", async ({ page }) => {

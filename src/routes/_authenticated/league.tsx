@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -151,14 +152,7 @@ function LeaguePage() {
                 >
                   {i + 1}
                 </span>
-                <span
-                  className="grid size-9 place-items-center rounded-full text-xs font-semibold text-surface"
-                  style={{
-                    backgroundColor: `hsl(${(row.avatar_seed.charCodeAt(0) * 37) % 360} 40% 45%)`,
-                  }}
-                >
-                  {row.display_name.slice(0, 1).toUpperCase()}
-                </span>
+                <ProfileAvatar seed={row.avatar_seed} name={row.display_name} className="size-9" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">
                     {row.display_name}
