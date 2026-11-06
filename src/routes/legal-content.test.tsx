@@ -94,4 +94,9 @@ describe("legal pages share one 'Last updated' date", () => {
     expect(dates.every(Boolean)).toBe(true);
     expect(new Set(dates).size).toBe(1);
   });
+
+  // The privacy policy's report-retention sentence (20261105100700) is dated with the change.
+  it("is 5 November 2026", () => {
+    expect(pageText("/privacy")).toMatch(/Last updated 5 November 2026/);
+  });
 });
