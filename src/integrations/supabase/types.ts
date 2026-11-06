@@ -440,14 +440,17 @@ export type Database = {
         Row: {
           id: boolean;
           matching_enabled: boolean;
+          open_duels_enabled: boolean;
         };
         Insert: {
           id?: boolean;
           matching_enabled?: boolean;
+          open_duels_enabled?: boolean;
         };
         Update: {
           id?: boolean;
           matching_enabled?: boolean;
+          open_duels_enabled?: boolean;
         };
         Relationships: [];
       };
@@ -2060,6 +2063,24 @@ export type Database = {
           target?: number;
           title?: string;
           xp_reward?: number;
+        };
+        Relationships: [];
+      };
+      weekly_xp_totals: {
+        Row: {
+          user_id: string;
+          week_start: string;
+          xp: number;
+        };
+        Insert: {
+          user_id: string;
+          week_start: string;
+          xp?: number;
+        };
+        Update: {
+          user_id?: string;
+          week_start?: string;
+          xp?: number;
         };
         Relationships: [];
       };
