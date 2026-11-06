@@ -125,10 +125,15 @@ describe("the art", () => {
   const expectedWebp = Object.keys(manifest.layers).map((n) => `${n}.webp`);
 
   it("ships every layer in the manifest, plus the manifest, and nothing else", () => {
-    expect(expectedWebp).toHaveLength(15);
+    expect(expectedWebp).toHaveLength(11);
     expect([...files].sort()).toEqual([...expectedWebp, "manifest.json"].sort());
     for (const f of expectedWebp)
       expect(fs.statSync(path.join(root, ART, f)).size, f).toBeGreaterThan(100);
+  });
+
+  it("has no ear layers: the realistic kit is one base, six mouths, three brows and the glint mask", () => {
+    expect(files.some((f) => f.startsWith("ear-"))).toBe(false);
+    expect(Object.keys(manifest.layers).some((n) => n.startsWith("ear-"))).toBe(false);
   });
 
   it("is a folder reference in the app target's resources", () => {
@@ -163,8 +168,6 @@ describe("the art", () => {
     };
     rect("mouth-ah", "mouthRect");
     rect("brows-neutral", "browsRect");
-    rect("ear-left-neutral", "earLeftRect");
-    rect("ear-right-neutral", "earRightRect");
     rect("glint-mask", "glintRect");
   });
 });

@@ -57,6 +57,10 @@ targets:
       - path: AlphonsoScenes
         type: folder
         buildPhase: resources
+      # Hector's kit for the same call: base, six mouths, three eyes layers (no ears, no glint) plus manifest.json.
+      - path: HectorAvatar
+        type: folder
+        buildPhase: resources
       - path: Sources
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources
