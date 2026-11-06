@@ -86,7 +86,10 @@ public final class TutorConversationClient: Sendable {
         course: String,
         cefrLevel: String?,
         history: [TutorConversationMessage],
-        agentID: String = "tutor"
+        agentID: String = "tutor",
+        /// Hector's chosen voice for this course (Settings > Voices). The server uses it only when it is on the
+        /// course's allow-list, else the account's saved choice, else Hector's default.
+        voice: String? = nil
     ) async throws -> TutorReply {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -102,6 +105,7 @@ public final class TutorConversationClient: Sendable {
             "history": history.map { ["role": $0.role, "content": $0.content] },
         ]
         if let cefrLevel, !cefrLevel.isEmpty { payload["cefr_level"] = cefrLevel }
+        if let voice { payload["voice"] = voice }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let data: Data

@@ -92,6 +92,21 @@ class AiConversationClientTest {
     }
 
     @Test
+    fun `the tutor call carries Hector's voice only when given, and speech carries Alphonso's`() = runTest {
+        val seen = ArrayList<Seen>()
+        val reply = """{"request_id":"r","session_id":"s","agent":"tutor","reply":"Hola","audio_base64":"","tts_model":"m","tts_provider":"p","language":"es","state":"ok"}"""
+        val t = TutorConversationClient(http(seen) { reply.toByteArray() to HttpStatusCode.OK }, "d")
+        t.respond("s", "hola", "es", emptyList(), course = "es", voice = "aura-2-celeste-es")
+        assertTrue(seen[0].body.decodeToString().contains(""""voice":"aura-2-celeste-es""""))
+        t.respond("s", "hola", "es", emptyList(), course = "es")
+        assertTrue(!seen[1].body.decodeToString().contains("\"voice\""))
+        val ai = AiConversationClient(http(seen) { "mp3".toByteArray() to HttpStatusCode.OK })
+        ai.synthesizeSpeech("hola", voice = "aura-2-diana-es", course = "es")
+        val tts = seen[2].body.decodeToString()
+        assertTrue(tts.contains(""""voice":"aura-2-diana-es"""") && tts.contains(""""course":"es""""), tts)
+    }
+
+    @Test
     fun `tts returns raw bytes and analyze decodes the count`() = runTest {
         val seen = ArrayList<Seen>()
         val c = AiConversationClient(http(seen) { s -> if (s.path.endsWith("tts")) byteArrayOf(1, 2, 3) to HttpStatusCode.OK else """{"weaknessesDetected":2}""".toByteArray() to HttpStatusCode.OK })

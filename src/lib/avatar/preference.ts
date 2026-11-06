@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { create } from "zustand";
 import { AVATAR_PREFERENCE_DEFAULT, AVATAR_PREFERENCE_KEY } from "./layers";
 
@@ -21,9 +22,12 @@ function readStored(): boolean {
   }
 }
 
-export const useAvatarPreference = create<PreferenceState>()((set) => ({
+export const useAvatarPreference = create<PreferenceState>()((set, get) => ({
   enabled: AVATAR_PREFERENCE_DEFAULT,
-  hydrate: () => set({ enabled: readStored() }),
+  hydrate: () => {
+    const enabled = readStored();
+    if (get().enabled !== enabled) set({ enabled });
+  },
   setEnabled: (enabled) => {
     try {
       localStorage.setItem(AVATAR_PREFERENCE_KEY, String(enabled));
@@ -33,3 +37,13 @@ export const useAvatarPreference = create<PreferenceState>()((set) => ({
     set({ enabled });
   },
 }));
+
+/**
+ * The switch for a screen that only ever renders in the browser (never server-rendered), read from storage before
+ * its first render. Hydrating in a mount effect instead commits one render at the default ("on") first, so with the
+ * setting off the full-screen call would flash up and then be torn down.
+ */
+export function useStoredAvatarPreference(): boolean {
+  useState(() => useAvatarPreference.getState().hydrate());
+  return useAvatarPreference((st) => st.enabled);
+}

@@ -77,7 +77,7 @@ class AiConversationClient(private val http: ApiHttp) {
         return ChatReply(content, ReplyVerdict.fromWire(obj.str("verdict")))
     }
 
-    /** `course` picks the course's native voice; an explicit `voice` still wins. */
+    /** `voice` is Alphonso's chosen voice (Settings > Voices); the server uses it only when it is on `course`'s allow-list. */
     suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null): ByteArray {
         val response = http.post("api/tts", buildJsonObject { put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course) })
         requireSuccess(response)
@@ -216,6 +216,8 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
         course: String? = null,
         /** The learner's level in this course, so the tutor's system prompt can pitch its replies. Omitted when unknown. */
         cefrLevel: String? = null,
+        /** Hector's chosen voice for this course (Settings > Voices); the server uses it only when it is allow-listed. */
+        voice: String? = null,
     ): TutorReply {
         val body = buildJsonObject {
             put("session_id", sessionId)
@@ -226,6 +228,7 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
             put("tts_model", ttsModel)
             put("piper_voice", piperVoice)
             if (!cefrLevel.isNullOrEmpty()) put("cefr_level", cefrLevel)
+            if (voice != null) put("voice", voice)
             putJsonArray("history") { history.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
         }
         val response = http.post("api/hector-respond", body, extraHeaders = mapOf("X-Alphonso-Device-Id" to deviceId))

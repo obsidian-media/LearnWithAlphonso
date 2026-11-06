@@ -33,6 +33,17 @@ data class CharacterKit(
 ) {
     fun expressionFile(brows: Brows) = "$expressionPrefix-${brows.wire}.webp"
 
+    /** Every layer file the call loads for this kit: ears and the glint only when the manifest places them. */
+    fun layerFiles(): List<String> = buildList {
+        add(AvatarLayerFiles.BASE)
+        if (glint != null) add(AvatarLayerFiles.GLINT_MASK)
+        AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
+        Brows.entries.forEach { add(expressionFile(it)) }
+        if (earLeft != null && earRight != null) {
+            for (side in EarSide.entries) for (t in listOf(false, true)) add(AvatarLayerFiles.ear(side, t))
+        }
+    }
+
     companion object {
         /** Builds a kit from its manifest.json. The layer names are the kit format's: mouth-*, brows-*, ear-*, glint-mask. */
         fun fromManifest(
