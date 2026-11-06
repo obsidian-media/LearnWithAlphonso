@@ -18,6 +18,8 @@ export function CookieConsent() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // The apps' bot-check page (/native-captcha) is a few pixels inside the app's own screen: no banner there.
+    if (window.location.pathname.startsWith("/native-captcha")) return;
     if (getConsent() === null) setOpen(true);
   }, []);
 

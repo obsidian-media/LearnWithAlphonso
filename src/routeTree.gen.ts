@@ -15,6 +15,7 @@ import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as NativeCaptchaRouteImport } from './routes/native-captcha'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -82,6 +83,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NativeCaptchaRoute = NativeCaptchaRouteImport.update({
+  id: '/native-captcha',
+  path: '/native-captcha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/native-captcha': typeof NativeCaptchaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -433,6 +442,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -479,6 +489,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/native-captcha'
     | '/reset-password'
     | '/support'
     | '/terms'
@@ -574,6 +586,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   PrivacyRoute: typeof PrivacyRoute
+  NativeCaptchaRoute: typeof NativeCaptchaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -638,6 +651,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/native-captcha': {
+      id: '/native-captcha'
+      path: '/native-captcha'
+      fullPath: '/native-captcha'
+      preLoaderRoute: typeof NativeCaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -979,6 +999,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   PrivacyRoute: PrivacyRoute,
+  NativeCaptchaRoute: NativeCaptchaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,

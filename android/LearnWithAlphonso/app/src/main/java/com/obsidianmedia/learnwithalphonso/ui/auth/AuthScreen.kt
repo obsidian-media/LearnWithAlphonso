@@ -70,6 +70,8 @@ fun AuthScreen(container: AppContainer) {
     var displayName by remember { mutableStateOf("") }
     var usePassword by remember { mutableStateOf(false) }
     var passwordMode by remember { mutableStateOf(PasswordMode.SIGN_IN) }
+    // The bot check on the email forms (BotCheckWebView). Google sign-in never needs it.
+    val botCheck = remember { BotCheckState() }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
@@ -105,8 +107,9 @@ fun AuthScreen(container: AppContainer) {
                     HorizontalDivider(Modifier.weight(1f), color = palette.hairline)
                 }
                 AuthField(email, { email = it }, "Email", KeyboardType.Email)
+                BotCheckWebView(botCheck, "${BuildConfig.API_BASE_URL}/native-captcha")
                 if (!usePassword) {
-                    AlphonsoPrimaryButton("Send code", onClick = { scope.launch { session.requestCode(email) } }, enabled = email.contains("@"), busy = busy)
+                    AlphonsoPrimaryButton("Send code", onClick = { scope.launch { session.requestCode(email, botCheck.spend()) } }, enabled = email.contains("@") && botCheck.canSend, busy = busy)
                     TextButton(onClick = { usePassword = true; session.clearMessages() }) { Text("Use a password instead", color = palette.inkSoft) }
                 } else {
                     if (passwordMode == PasswordMode.SIGN_UP) AuthField(displayName, { displayName = it.take(40) }, "Display name", KeyboardType.Text)
@@ -117,12 +120,13 @@ fun AuthScreen(container: AppContainer) {
                         PasswordMode.SIGN_UP -> PasswordPolicy.longEnoughToCreate(password)
                         PasswordMode.SIGN_IN -> PasswordPolicy.longEnoughToSignIn(password)
                     }
-                    AlphonsoPrimaryButton(label, enabled = ready, busy = busy, onClick = {
+                    AlphonsoPrimaryButton(label, enabled = ready && botCheck.canSend, busy = busy, onClick = {
+                        val token = botCheck.spend()
                         scope.launch {
                             when (passwordMode) {
-                                PasswordMode.SIGN_IN -> session.signInWithPassword(email, password)
-                                PasswordMode.SIGN_UP -> session.signUpWithPassword(email, password, displayName, "${BuildConfig.API_BASE_URL}/placement")
-                                PasswordMode.FORGOT -> session.resetPassword(email, "${BuildConfig.API_BASE_URL}/reset-password")
+                                PasswordMode.SIGN_IN -> session.signInWithPassword(email, password, token)
+                                PasswordMode.SIGN_UP -> session.signUpWithPassword(email, password, displayName, "${BuildConfig.API_BASE_URL}/placement", token)
+                                PasswordMode.FORGOT -> session.resetPassword(email, "${BuildConfig.API_BASE_URL}/reset-password", token)
                             }
                         }
                     })

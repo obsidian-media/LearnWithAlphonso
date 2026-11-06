@@ -56,16 +56,23 @@ public final class SupabaseAuthClient: Sendable {
         self.requester = requester
     }
 
-    public func requestEmailOTP(email: String) async throws {
+    /// `captchaToken` is the bot check's single-use token (the native-captcha page). Sent as
+    /// `gotrue_meta_security.captcha_token`, the field the auth server reads when its captcha setting is on; without a
+    /// token the request is exactly what every earlier build sent.
+    public func requestEmailOTP(email: String, captchaToken: String? = nil) async throws {
         let url = supabaseURL.appendingPathComponent("auth/v1/otp")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(publishableKey, forHTTPHeaderField: "apikey")
-        request.httpBody = try JSONSerialization.data(withJSONObject: [
+        var body: [String: Any] = [
             "email": email,
             "create_user": true,
-        ])
+        ]
+        if let captchaToken, !captchaToken.isEmpty {
+            body["gotrue_meta_security"] = ["captcha_token": captchaToken]
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
