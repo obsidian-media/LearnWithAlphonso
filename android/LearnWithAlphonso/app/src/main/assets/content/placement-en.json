@@ -502,7 +502,7 @@
       "The committee required a reduction in expenditure",
       "The committee spent less",
       "Expenditure reduction was a committee requirement",
-      "The requirement for the reduction of expenditure"
+      "There was a requirement for the reduction of expenditure"
     ],
     "answer": 1
   },
@@ -781,7 +781,10 @@
     "acceptableAnswers": [
       "That may be true, but I still think otherwise.",
       "Fair enough, though I would still disagree.",
-      "I take your point, but I stand by my view."
+      "I take your point, but I stand by my view.",
+      "I see your point, but I still disagree.",
+      "Granted, but I'm still not convinced.",
+      "Fair point, but I stand by what I said."
     ]
   }
 ]
