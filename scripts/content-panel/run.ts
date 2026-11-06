@@ -21,7 +21,9 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   BATCH_SIZE,
+  MODEL_FAMILY,
   batchMessage,
+  callCost,
   batches,
   clearCut,
   combine,
@@ -57,14 +59,9 @@ const MARGIN = 1.5;
 
 type Model = { id: string; created?: number; pricing?: { prompt?: string; completion?: string } };
 
-/**
- * "auto" picks the newest model in OpenRouter's list matching the family: Claude Sonnet (a strong
- * reviewer at a third of Opus's price) and Mistral Large (Mistral's largest general model).
- */
-const FAMILY: Record<"claude" | "mistral", RegExp> = {
-  claude: /^anthropic\/claude-(\d[\d.]*-)?sonnet(-\d[\d.]*)?$/,
-  mistral: /^mistralai\/mistral-large(-\d+)?$/,
-};
+const FAMILY = MODEL_FAMILY;
+/** Models that cannot turn reasoning off, so they need a large budget (see review()). */
+const REASONING_MODEL = /^mistralai\/mistral-large-4/;
 
 async function listModels(): Promise<Model[]> {
   const res = await fetch(`${API}/models`);
@@ -94,13 +91,12 @@ type Call = {
   text: string;
   provider: string;
   cost: number;
-  promptTokens: number;
-  completionTokens: number;
 };
 
 async function review(
   key: string,
   model: string,
+  price: Pricing,
   lang: PanelLang,
   batch: PanelItem[],
 ): Promise<Call> {
@@ -115,7 +111,11 @@ async function review(
       body: JSON.stringify({
         model,
         temperature: 0,
-        max_tokens: Math.max(1500, batch.length * 220),
+        // Mistral Large 4 always reasons ("none" is refused) and at "low" still spends about 1,500
+        // tokens an item before it answers; with a small budget it returned no answer at all.
+        ...(REASONING_MODEL.test(model)
+          ? { max_tokens: 40_000, reasoning: { effort: "low", exclude: true } }
+          : { max_tokens: Math.max(1500, batch.length * 220) }),
         usage: { include: true },
         provider: { data_collection: "deny" },
         messages: [
@@ -124,23 +124,25 @@ async function review(
         ],
       }),
     });
-    if (res.status === 429 && attempt < 4) {
-      await new Promise((r) => setTimeout(r, 2000 * attempt));
+    // A free-tier Mistral account rate-limits back-to-back requests; wait longer each time.
+    if (res.status === 429 && attempt < 7) {
+      await new Promise((r) => setTimeout(r, 3000 * attempt));
       continue;
     }
     const body = (await res.json().catch(() => ({}))) as {
       provider?: string;
       choices?: { message?: { content?: string } }[];
       usage?: { cost?: number; prompt_tokens?: number; completion_tokens?: number };
-      error?: { message?: string };
+      error?: { message?: string; metadata?: { raw?: string } };
     };
-    if (!res.ok) throw new Error(`${model}: HTTP ${res.status} ${body.error?.message ?? ""}`);
+    if (!res.ok)
+      throw new Error(
+        `${model}: HTTP ${res.status} ${body.error?.message ?? ""} ${body.error?.metadata?.raw ?? ""}`,
+      );
     return {
       text: body.choices?.[0]?.message?.content ?? "",
       provider: body.provider ?? "unknown",
-      cost: body.usage?.cost ?? 0,
-      promptTokens: body.usage?.prompt_tokens ?? 0,
-      completionTokens: body.usage?.completion_tokens ?? 0,
+      cost: callCost(body.usage, price),
     };
   }
 }
@@ -209,24 +211,61 @@ if (!key) {
   process.exit(1);
 }
 
-const verdicts: Record<"claude" | "mistral", Verdict[]> = { claude: [], mistral: [] };
-const providers: Record<"claude" | "mistral", Set<string>> = {
-  claude: new Set(),
-  mistral: new Set(),
+type Who = "claude" | "mistral";
+type LogEntry = {
+  batch: number;
+  who: Who;
+  model: string;
+  provider?: string;
+  cost?: number;
+  errors?: string[];
+  text?: string;
+  error?: string;
 };
-const log: unknown[] = [];
+const verdicts: Record<Who, Verdict[]> = { claude: [], mistral: [] };
+const providers: Record<Who, Set<string>> = { claude: new Set(), mistral: new Set() };
+const spentBy: Record<Who, number> = { claude: 0, mistral: 0 };
+let log: LogEntry[] = [];
+// --only <claude|mistral> reruns one reviewer and keeps the other's replies from the last run of
+// this seed (its raw log), so a reviewer that failed does not cost the other one a second pass.
+const only = arg("only", "") as Who | "";
+const reviewers: Who[] = only ? [only] : ["claude", "mistral"];
+const rawPath = path.join(outDir, `raw-${seed}.json`);
+if (only && fs.existsSync(rawPath)) {
+  const keep = (JSON.parse(fs.readFileSync(rawPath, "utf8")) as LogEntry[]).filter(
+    (e) => e.who !== only,
+  );
+  for (const e of keep) {
+    if (e.text === undefined) continue;
+    const parsed = parseVerdicts(
+      e.text,
+      work[e.batch]!.batch.map((it) => it.key),
+    );
+    verdicts[e.who].push(...parsed.verdicts);
+    if (e.provider) providers[e.who].add(e.provider);
+    // A reply from before BYOK costs were counted reports $0: count its estimated tokens at list price.
+    spentBy[e.who] +=
+      e.cost ||
+      estimateCost([{ lang: work[e.batch]!.lang, batch: work[e.batch]!.batch }], pricing[e.who])
+        .usd;
+    models[e.who] = e.model;
+  }
+  log = keep;
+  console.log(`Kept ${keep.length} earlier replies from the other reviewer.`);
+}
 let spent = 0;
 let stopped = false;
 for (const [i, w] of work.entries()) {
-  for (const who of ["claude", "mistral"] as const) {
-    if (spent >= maxUsd) {
+  for (const who of reviewers) {
+    if (spentBy.claude + spentBy.mistral >= maxUsd) {
       stopped = true;
       break;
     }
     const keys = w.batch.map((it) => it.key);
     try {
-      const call = await review(key, models[who], w.lang, w.batch);
+      const call = await review(key, models[who], pricing[who], w.lang, w.batch);
       spent += call.cost;
+      spentBy[who] += call.cost;
       providers[who].add(call.provider);
       const parsed = parseVerdicts(call.text, keys);
       verdicts[who].push(...parsed.verdicts);
@@ -247,10 +286,10 @@ for (const [i, w] of work.entries()) {
       console.error(`batch ${i + 1} ${who}: ${(e as Error).message}`);
     }
     // A free-tier Mistral account allows about one request a second (scripts/benchmark-llm.ts).
-    if (who === "mistral") await new Promise((r) => setTimeout(r, 1500));
+    if (who === "mistral") await new Promise((r) => setTimeout(r, 2500));
   }
   if (stopped) {
-    console.error(`Stopped: reported cost $${spent.toFixed(2)} reached the cap.`);
+    console.error(`Stopped: cost $${spent.toFixed(2)} reached the cap.`);
     break;
   }
 }
@@ -273,10 +312,10 @@ const md = summaryMarkdown({
   ],
   itemsByLang: { fr: items.fr.length, es: items.es.length },
   combined,
-  costUsd: spent,
+  costUsd: spentBy.claude + spentBy.mistral,
   textOf: (k) => textOf.get(k) ?? "",
 });
 fs.writeFileSync(path.join(outDir, `summary-${seed}.md`), md);
 console.log(
-  `Both defect ${combined.bothDefect.length} (clear-cut ${clearCut(combined).length}), disagree ${combined.disagree.length}, both ok ${combined.bothOk.length}, missing ${combined.missing.length}. Spent $${spent.toFixed(2)}.`,
+  `Both defect ${combined.bothDefect.length} (clear-cut ${clearCut(combined).length}), disagree ${combined.disagree.length}, both ok ${combined.bothOk.length}, missing ${combined.missing.length}. Spent $${spent.toFixed(2)} this run; Claude $${spentBy.claude.toFixed(2)} + Mistral $${spentBy.mistral.toFixed(2)} in all.`,
 );

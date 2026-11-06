@@ -7,6 +7,8 @@ import {
   batchMessage,
   batches,
   clearCut,
+  MODEL_FAMILY,
+  callCost,
   combine,
   estimateCost,
   parseVerdicts,
@@ -166,6 +168,36 @@ describe("combining the two reviewers", () => {
     expect(md).toContain("served by Anthropic");
     expect(md).toContain("a \\| b");
     expect(md).toContain("| `fr:lesson:k3`".replace("fr:lesson:", ""));
+  });
+});
+
+describe("cost and model choice", () => {
+  it("counts a BYOK call (reported $0) at the model's list price, so the cap still trips", () => {
+    const price = { prompt: 2, completion: 10 };
+    expect(callCost({ cost: 0, prompt_tokens: 1_000_000, completion_tokens: 100_000 }, price)).toBe(
+      3,
+    );
+    expect(callCost({ cost: 5, prompt_tokens: 10, completion_tokens: 10 }, price)).toBe(5);
+    expect(callCost(undefined, price)).toBe(0);
+    expect(
+      callCost(
+        {
+          cost: 0,
+          prompt_tokens: 1,
+          completion_tokens: 1,
+          cost_details: { upstream_inference_cost: 0.5 },
+        },
+        price,
+      ),
+    ).toBe(0.5);
+  });
+  it("auto picks Claude Sonnet and Mistral Large ids, not variants or other sizes", () => {
+    expect(MODEL_FAMILY.claude.test("anthropic/claude-sonnet-5.5")).toBe(true);
+    expect(MODEL_FAMILY.claude.test("anthropic/claude-sonnet-5.5:batch")).toBe(false);
+    expect(MODEL_FAMILY.claude.test("anthropic/claude-opus-5.5")).toBe(false);
+    expect(MODEL_FAMILY.mistral.test("mistralai/mistral-large-4-0")).toBe(true);
+    expect(MODEL_FAMILY.mistral.test("mistralai/mistral-large-2512")).toBe(true);
+    expect(MODEL_FAMILY.mistral.test("mistralai/mistral-medium-3-5")).toBe(false);
   });
 });
 

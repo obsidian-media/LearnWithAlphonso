@@ -455,6 +455,40 @@ export function estimateCost(
   return { promptTokens, completionTokens, usd };
 }
 
+/**
+ * What a call cost. Under BYOK OpenRouter reports cost US$0 (the provider bills the owner directly),
+ * so the cap would never trip on that figure: the largest of the reported cost, the provider's
+ * upstream cost and the reported tokens at the model's list price counts against --max-usd.
+ */
+export function callCost(
+  usage:
+    | {
+        cost?: number;
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        cost_details?: { upstream_inference_cost?: number };
+      }
+    | undefined,
+  pricing: Pricing,
+): number {
+  const listed =
+    ((usage?.prompt_tokens ?? 0) * pricing.prompt +
+      (usage?.completion_tokens ?? 0) * pricing.completion) /
+    1_000_000;
+  // Under BYOK, cost_details.upstream_inference_cost is what the provider charged the owner.
+  return Math.max(usage?.cost ?? 0, usage?.cost_details?.upstream_inference_cost ?? 0, listed);
+}
+
+/**
+ * "auto" picks the newest model of these families in OpenRouter's list: Claude Sonnet (a strong
+ * reviewer at a fraction of Opus's price) and Mistral Large (Mistral's largest general model).
+ * Variants such as ":batch" are left out.
+ */
+export const MODEL_FAMILY: Record<"claude" | "mistral", RegExp> = {
+  claude: /^anthropic\/claude-(\d[\d.]*-)?sonnet(-\d[\d.]*)?$/,
+  mistral: /^mistralai\/mistral-large(-\d+)*$/,
+};
+
 // ---- Report ---------------------------------------------------------------------------------------
 
 export type ReviewerInfo = { label: string; model: string; providers: string[] };
@@ -495,7 +529,7 @@ export function summaryMarkdown(params: {
     `# FR/ES review panel, first run (${params.date})`,
     "",
     `Two reviewers, seed \`${params.seed}\`: **${ra.label}** \`${ra.model}\` (served by ${ra.providers.join(", ") || "unknown"}) and **${rb.label}** \`${rb.model}\` (served by ${rb.providers.join(", ") || "unknown"}).`,
-    `Items: ${params.itemsByLang.fr} French, ${params.itemsByLang.es} Spanish. Cost reported by OpenRouter: US$${params.costUsd.toFixed(2)}.`,
+    `Items: ${params.itemsByLang.fr} French, ${params.itemsByLang.es} Spanish. Cost: US$${params.costUsd.toFixed(2)} (OpenRouter's reported cost, or under BYOK, where it reports $0, the tokens at the model's list price).`,
     "",
     "| Outcome | Items |",
     "| --- | --- |",
