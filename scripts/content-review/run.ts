@@ -971,7 +971,7 @@ function routeCommand() {
       "",
       "| Item | Why it needs you |",
       "| --- | --- |",
-      ...owner.map((o) => `| \`${o.id}\` | ${o.reason.replace(/\|/g, "\\|")} |`),
+      ...owner.map((o) => `| \`${o.id}\` | ${mdCell(o.reason)} |`),
       "",
     ].join("\n"),
   );
@@ -1176,7 +1176,7 @@ async function check() {
         : v.verdict === "ok"
           ? "ok"
           : `${v.category}/${v.severity}: ${v.problem ?? ""} Fix: ${v.fix ?? ""}`;
-    const cell = (s: string) => s.replace(/\|/g, "\\|").replace(/\s+/g, " ");
+    const cell = (s: string) => mdCell(s).replace(/\s+/g, " ");
     return `| \`${it.id}\` | ${cell(say(a))} | ${cell(say(b))} |`;
   };
   const bad = changed.filter(
@@ -1286,4 +1286,9 @@ function overlayOnEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
   delete env.LWA_REVIEW_OVERLAY;
   return env;
+}
+
+/** Text for one markdown table cell: backslashes first, then the pipes that would end the cell. */
+function mdCell(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 }
