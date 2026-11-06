@@ -20,6 +20,7 @@ import { useProgress } from "../lib/progress";
 import { useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
+import { clearCachedVoicePrefs } from "../lib/voice-prefs";
 
 function NotFoundComponent() {
   return (
@@ -205,6 +206,8 @@ function AuthSync() {
       router.invalidate();
       if (event === "SIGNED_OUT") {
         reset();
+        // Voice choices are the account's; the next account on this browser starts from its own.
+        clearCachedVoicePrefs();
       } else {
         qc.invalidateQueries();
         void load();

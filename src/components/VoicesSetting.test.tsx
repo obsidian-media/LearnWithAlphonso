@@ -14,6 +14,7 @@ const { useProgress } = await import("@/lib/progress");
 const { VOICE_PREFS_STORAGE_KEY } = await import("@/lib/voice-prefs");
 
 const played: string[] = [];
+const paused: string[] = [];
 class FakeAudio {
   constructor(public src: string) {
     played.push(src);
@@ -21,7 +22,9 @@ class FakeAudio {
   play() {
     return Promise.resolve();
   }
-  pause() {}
+  pause() {
+    paused.push(this.src);
+  }
   addEventListener() {}
 }
 
@@ -29,6 +32,7 @@ beforeEach(() => {
   cleanup();
   localStorage.removeItem(VOICE_PREFS_STORAGE_KEY);
   played.length = 0;
+  paused.length = 0;
   getSession.mockReset();
   getSession.mockResolvedValue({ data: { session: { user: { user_metadata: {} } } } });
   updateUser.mockReset();
@@ -122,5 +126,26 @@ describe("Settings > Voices", () => {
     expect(played).toEqual(["/voices/aura-2-diana-es.mp3"]);
     expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Stop Diana preview" })).toBeInTheDocument();
+  });
+
+  it("closing the picker stops a playing preview", async () => {
+    render(<VoicesSetting />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Alphonso's voice in Spanish/ }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Play Diana preview" }));
+    expect(paused).toEqual([]);
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(paused).toEqual(["/voices/aura-2-diana-es.mp3"]);
+  });
+
+  it("an account that never chose hears the defaults, not a previous account's cached choice", async () => {
+    // Left behind on this browser by someone else; this account's metadata has no `voices`.
+    localStorage.setItem(
+      VOICE_PREFS_STORAGE_KEY,
+      JSON.stringify({ alphonso: { es: "aura-2-diana-es" } }),
+    );
+    const { voiceFor } = await import("@/lib/voice-prefs");
+    expect(await voiceFor("alphonso", "es")).toBe("aura-2-javier-es");
   });
 });

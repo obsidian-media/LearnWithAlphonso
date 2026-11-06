@@ -34,13 +34,26 @@ function cacheVoicePrefs(prefs: VoicePrefs) {
   }
 }
 
-/** The account's choices from the locally stored session (no network), cached; the cache when signed out. */
+/** Forgets the cached choices; called on sign-out, because the cache belongs to the account that made them. */
+export function clearCachedVoicePrefs() {
+  try {
+    globalThis.localStorage?.removeItem(VOICE_PREFS_STORAGE_KEY);
+  } catch {
+    /* nothing cached */
+  }
+}
+
+/**
+ * The account's choices from the locally stored session (no network), cached. A signed-in session is
+ * authoritative: an account that never chose gets the defaults, never another account's cached choice. The cache is
+ * only the fallback when the session cannot be read.
+ */
 export async function loadVoicePrefs(): Promise<VoicePrefs> {
   try {
     const { data } = await supabase.auth.getSession();
-    const meta = data.session?.user?.user_metadata;
-    if (meta && VOICE_PREFS_METADATA_KEY in meta) {
-      const prefs = parseVoicePrefs(meta[VOICE_PREFS_METADATA_KEY]);
+    const user = data.session?.user;
+    if (user) {
+      const prefs = parseVoicePrefs(user.user_metadata?.[VOICE_PREFS_METADATA_KEY]);
       cacheVoicePrefs(prefs);
       return prefs;
     }
