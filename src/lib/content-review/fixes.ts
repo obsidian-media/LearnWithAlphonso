@@ -127,6 +127,15 @@ function englishCard(card: CardShape, level: string): string[] {
 export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   const why: string[] = [];
   const d = item.data;
+  // A multiple-choice answer is the option's position. A reviewer may name it as text ("était");
+  // that becomes the position of that option in the (patched) choices, and the rules below then
+  // hold it to the same position. A text that is not an option is refused.
+  if (typeof d.answer === "number" && typeof fix.patch.answer === "string") {
+    const choices = (fix.patch.choices ?? d.choices) as string[] | undefined;
+    const idx = choices?.indexOf(fix.patch.answer) ?? -1;
+    if (idx < 0) return [`the answer "${fix.patch.answer}" is not one of the choices`];
+    (fix.patch as Record<string, unknown>).answer = idx;
+  }
   const allowed = EDITABLE[item.kind];
   const keys = Object.keys(fix.patch);
   if (!keys.length) why.push("empty patch");
@@ -144,7 +153,10 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
       if (typeof after !== "string") why.push(`field "${k}" must be text`);
       continue;
     }
-    if (Array.isArray(before) !== Array.isArray(after)) why.push(`field "${k}" changes shape`);
+    if (typeof before === "number") {
+      if (!Number.isInteger(after)) why.push(`field "${k}" must stay a whole number`);
+    } else if (Array.isArray(before) !== Array.isArray(after))
+      why.push(`field "${k}" changes shape`);
     else if (Array.isArray(before) && Array.isArray(after)) {
       if (k !== "acceptableAnswers" && after.length !== before.length)
         why.push(`field "${k}" has ${after.length} entries, the item has ${before.length}`);

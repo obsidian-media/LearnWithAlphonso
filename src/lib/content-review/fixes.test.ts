@@ -338,3 +338,44 @@ describe("earlier reviewed English fixes (question-fixes.ts)", () => {
     expect(answer).toBeTruthy();
   });
 });
+
+describe("a multiple-choice answer named as text", () => {
+  const mc = item(
+    "question",
+    {
+      type: "mc",
+      prompt: "Il ___ là.",
+      choices: ["était", "avait", "allait"],
+      answer: 0,
+      explanation: 'It is "était".',
+    },
+    "fr",
+  );
+  it("becomes the option's position, and an unknown text is refused", () => {
+    const ok = { id: mc.id, reason: "", patch: { answer: "était" } as Record<string, unknown> };
+    expect(checkFix(mc, ok as never)).toEqual([]);
+    expect(ok.patch.answer).toBe(0);
+    expect(checkFix(mc, { id: mc.id, reason: "", patch: { answer: "est" } }).join()).toMatch(
+      /not one of the choices/,
+    );
+  });
+});
+
+describe("numeric fields", () => {
+  const mc = item(
+    "question",
+    {
+      type: "mc",
+      prompt: "Il ___ là.",
+      choices: ["était", "avait"],
+      answer: 0,
+      explanation: 'It is "était".',
+    },
+    "fr",
+  );
+  it("an mc answer must stay a whole number", () => {
+    expect(
+      checkFix(mc, { id: mc.id, reason: "", patch: { answer: ["0"] } as never }).join(),
+    ).toMatch(/whole number/);
+  });
+});
