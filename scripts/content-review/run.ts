@@ -767,6 +767,16 @@ function routeCommand() {
   const OVERLAY_KINDS = /:(question|card|lesson-meta|unit-meta|placement):/;
   const manual = checked.ok.filter((f) => !OVERLAY_KINDS.test(f.id));
   writeJson(path.join(STATE, "manual-fixes.json"), manual);
+  // --levels A1,A2 (and "other" for items without a CEFR level) applies only those items' fixes,
+  // so the delivery PRs can be split by language and level. --courses fr limits the language.
+  const levels = new Set(arg("levels", "A1,A2,B1,B2,C1,other").split(","));
+  const courses = new Set(arg("courses", "en,fr,es").split(","));
+  const CEFR = new Set(["A1", "A2", "B1", "B2", "C1"]);
+  const inLevels = (id: string) => {
+    const it = items.get(id);
+    if (!it || !courses.has(it.course)) return false;
+    return levels.has(CEFR.has(it.level) ? it.level : "other");
+  };
   if (flag("apply")) {
     for (const course of ["en", "fr", "es"]) {
       const file = path.resolve("src", "data", "review-fixes", `${course}.json`);
@@ -777,7 +787,7 @@ function routeCommand() {
         >
       >(file, {});
       for (const f of checked.ok.filter(
-        (x) => x.id.startsWith(`${course}:`) && OVERLAY_KINDS.test(x.id),
+        (x) => x.id.startsWith(`${course}:`) && OVERLAY_KINDS.test(x.id) && inLevels(x.id),
       )) {
         const prev = current[f.id];
         current[f.id] = {
