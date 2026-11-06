@@ -86,6 +86,266 @@ class PlacementLogicTest {
         assertEquals(AdaptiveBandDecision(false, null, 1), nextAdaptiveBand(a1Only, 0, 3))
     }
 
+    /** A pool with [size] multiple-choice questions in each of the given bands and none anywhere else. */
+    private fun bandsOf(levels: List<String>, size: Int = 3): Map<String, List<PlacementQuestion>> =
+        groupByBand(levels.flatMap { l -> List(size) { i -> mc("$l-$i", l) } })
+
+    /** A tally with the given real counts and standing skips, everything else zero. */
+    private fun tallyOf(correct: Map<String, Int>, skipped: List<String> = emptyList(), revisiting: Boolean = false) =
+        PlacementTally(placementOrder.associateWith { 0 } + correct, skipped, revisiting)
+
+    /** The state right after acing A1: A2 skipped on credit, B1 about to be asked. */
+    private val afterSkip = tallyOf(mapOf("A1" to 3, "A2" to PLACEMENT_PASS_MARK), listOf("A2"))
+
+    @Test
+    fun `resolveBand agrees with nextAdaptiveBand when no skip is in play and records the real count`() {
+        val full = bandsOf(placementOrder)
+        assertEquals(BandResolution(true, 0, tallyOf(mapOf("A1" to 0))), resolveBand(full, 0, 0, PlacementTally()))
+        assertEquals(BandResolution(false, 1, tallyOf(mapOf("A1" to 1))), resolveBand(full, 0, 1, PlacementTally()))
+        assertEquals(BandResolution(false, 1, tallyOf(mapOf("A1" to 2))), resolveBand(full, 0, 2, PlacementTally()))
+    }
+
+    @Test
+    fun `resolveBand skips a band on a perfect score and credits it as a provisional skip`() {
+        assertEquals(BandResolution(false, 2, afterSkip), resolveBand(bandsOf(placementOrder), 0, 3, PlacementTally()))
+    }
+
+    @Test
+    fun `resolveBand does not treat a failed band as a lost bet unless it is the band after a skip`() {
+        // A1 2 of 3 is a pass, so A2 is asked normally; A2 then 1 of 3. Nothing was skipped, nothing to withdraw.
+        assertEquals(
+            BandResolution(false, 2, tallyOf(mapOf("A1" to 2, "A2" to 1))),
+            resolveBand(bandsOf(placementOrder), 1, 1, tallyOf(mapOf("A1" to 2))),
+        )
+    }
+
+    @Test
+    fun `resolveBand withdraws the credit and goes back to the skipped band when the band after the skip is failed`() {
+        val full = bandsOf(placementOrder)
+        for (correct in listOf(0, 1)) {
+            assertEquals(
+                // nextIdx 1 is BACKWARDS: A2, the band that was skipped.
+                BandResolution(false, 1, tallyOf(mapOf("A1" to 3, "A2" to 0, "B1" to correct), revisiting = true)),
+                resolveBand(full, 2, correct, afterSkip),
+                "B1 $correct of 3",
+            )
+        }
+    }
+
+    @Test
+    fun `resolveBand judges a fail by the pass mark and not by anything but zero`() {
+        // 1 of 3 is not a pass, so it is a fail here -- even though nextAdaptiveBand calls it "partial credit".
+        val full = bandsOf(placementOrder)
+        assertEquals(2, PLACEMENT_PASS_MARK)
+        assertEquals(3, nextAdaptiveBand(full, 2, 1).nextIdx)
+        assertEquals(1, resolveBand(full, 2, 1, afterSkip).nextIdx)
+    }
+
+    @Test
+    fun `resolveBand ends after the band it went back to and places on that bands real answers`() {
+        val full = bandsOf(placementOrder)
+        val wentBack = resolveBand(full, 2, 0, afterSkip).tally
+        assertTrue(wentBack.revisiting)
+        val expected = mapOf(0 to "A2", 1 to "A2", 2 to "B1", 3 to "B1")
+        for (correct in 0..3) {
+            val end = resolveBand(full, 1, correct, wentBack)
+            assertTrue(end.stop, "A2 $correct of 3")
+            assertFalse(end.tally.revisiting)
+            assertEquals(emptyList<String>(), end.tally.skippedLevels)
+            assertEquals(correct, end.tally.correctByLevel["A2"])
+            assertEquals(expected[correct], scorePlacement(end.tally.correctByLevel).level, "A2 $correct of 3")
+        }
+    }
+
+    @Test
+    fun `resolveBand withdraws the credit and ends placing at the skipped band when that band has no questions`() {
+        // A1, B1, C1 only: A2 can be skipped (B1 lies beyond it) but never asked.
+        val thin = bandsOf(listOf("A1", "B1", "C1"))
+        val skipped = resolveBand(thin, 0, 3, PlacementTally())
+        assertEquals(listOf("A2"), skipped.tally.skippedLevels)
+        val failed = resolveBand(thin, 2, 0, skipped.tally)
+        assertEquals(BandResolution(true, 2, tallyOf(mapOf("A1" to 3, "A2" to 0, "B1" to 0))), failed)
+        assertEquals("A2", scorePlacement(failed.tally.correctByLevel).level)
+    }
+
+    @Test
+    fun `resolveBand keeps the credit and carries on when the band after the skip is passed`() {
+        val full = bandsOf(placementOrder)
+        assertEquals(
+            BandResolution(false, 3, tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 2), listOf("A2"))),
+            resolveBand(full, 2, 2, afterSkip),
+        )
+        assertEquals(
+            BandResolution(false, 4, tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 3, "B2" to 2), listOf("A2", "B2"))),
+            resolveBand(full, 2, 3, afterSkip),
+        )
+        val doubleSkip = tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 3, "B2" to 2), listOf("A2", "B2"))
+        val end = resolveBand(full, 4, 2, doubleSkip)
+        assertEquals(5, end.nextIdx) // past C1: nothing left to ask
+        assertEquals(listOf("A2", "B2"), end.tally.skippedLevels)
+        assertEquals("C1", scorePlacement(end.tally.correctByLevel).level)
+    }
+
+    @Test
+    fun `resolveBand goes back to the right band after a skip higher up and keeps an earlier skip that still stands`() {
+        // A1 and B1 aced: A2 and B2 skipped, C1 next. C1 failed: B2's credit goes, A2's stays (B1 backs it).
+        val doubleSkip = tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 3, "B2" to 2), listOf("A2", "B2"))
+        assertEquals(
+            BandResolution(false, 3, tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 3, "B2" to 0, "C1" to 0), listOf("A2"), revisiting = true)),
+            resolveBand(bandsOf(placementOrder), 4, 0, doubleSkip),
+        )
+    }
+
+    private data class Sitting(
+        /** The bands the exam asked, in order. */
+        val asked: List<String>,
+        /** Correct answers in each band that was asked. */
+        val real: Map<String, Int>,
+        val tally: PlacementTally,
+    )
+
+    /** Every sitting the exam can produce from this pool: each band it asks gets every possible score. */
+    private fun allSittings(pool: Map<String, List<PlacementQuestion>>): List<Sitting> {
+        val sittings = mutableListOf<Sitting>()
+        fun walk(idx: Int, tally: PlacementTally, asked: List<String>, real: Map<String, Int>) {
+            val level = placementOrder[idx]
+            for (correct in 0..(pool[level]?.size ?: 0)) {
+                val resolution = resolveBand(pool, idx, correct, tally)
+                val nextReal = real + (level to correct)
+                val nextBand = placementOrder.getOrNull(resolution.nextIdx)?.let { pool[it] }.orEmpty()
+                if (resolution.stop || nextBand.isEmpty()) {
+                    sittings += Sitting(asked + level, nextReal, resolution.tally)
+                } else {
+                    walk(resolution.nextIdx, resolution.tally, asked + level, nextReal)
+                }
+            }
+        }
+        walk(0, PlacementTally(), emptyList(), emptyMap())
+        return sittings
+    }
+
+    /**
+     * The property the whole skip mechanism has to keep, stated once and checked over EVERY possible sitting rather
+     * than a handful of examples: a placement is never higher than the learner's real answers support. The bug this
+     * pins -- ace A1, fail B1, get placed at B1 on a credit for an A2 nobody asked -- is one sitting out of hundreds;
+     * the examples above name the ones that matter, this proves there is not another one like it.
+     */
+    @Test
+    fun `a skipped bands credit never places a learner above what they really answered`() {
+        // [name, pool, a floor on how many sittings it has]. The floor is far under the real count (214, 10 and 79
+        // when this was written) and is only there so an enumeration that quietly stopped enumerating cannot pass.
+        val pools = listOf(
+            Triple("a full pool", bandsOf(placementOrder), 100),
+            Triple("a pool with no A2 or B2", bandsOf(listOf("A1", "B1", "C1")), 5),
+            Triple("a pool with a one-question B1", bandsOf(placementOrder) + ("B1" to bandsOf(listOf("B1"), 1).getValue("B1")), 30),
+        )
+        for ((name, pool, floor) in pools) {
+            val sittings = allSittings(pool)
+            assertTrue(sittings.size >= floor, "$name has only ${sittings.size} sittings")
+
+            for (s in sittings) {
+                val story = "$name: asked " + s.asked.joinToString(" ") { "$it:${s.real[it]}" }
+
+                // A band is asked at most once, so a sitting never exceeds the 15 questions the exam advertises.
+                assertEquals(s.asked.size, s.asked.toSet().size, story)
+
+                // Every credit still standing at the end rests on a REAL pass of the band above it -- and the band
+                // itself was not asked.
+                for (skipped in s.tally.skippedLevels) {
+                    val above = placementOrder[placementOrder.indexOf(skipped) + 1]
+                    assertFalse(skipped in s.asked, story)
+                    assertTrue((s.real[above] ?: 0) >= PLACEMENT_PASS_MARK, story)
+                }
+
+                // The tally is the real counts, plus the pass mark for each standing skip, and nothing else.
+                for (level in placementOrder) {
+                    val expected = if (level in s.tally.skippedLevels) PLACEMENT_PASS_MARK else (s.real[level] ?: 0)
+                    assertEquals(expected, s.tally.correctByLevel[level], "$story / $level")
+                }
+
+                // The headline claim: placed no higher than one band above the highest band really passed.
+                val highest = s.asked.filter { (s.real[it] ?: 0) >= PLACEMENT_PASS_MARK }.maxOfOrNull { placementOrder.indexOf(it) } ?: -1
+                val placed = placementOrder.indexOf(scorePlacement(s.tally.correctByLevel).level)
+                assertTrue(placed <= minOf(placementOrder.size - 1, highest + 1), story)
+            }
+        }
+    }
+
+    @Test
+    fun `the sitting from the bug report is in the enumeration and ends at A2 at most`() {
+        // A1 3/3 (A2 skipped), B1 0/3 (fail), then A2 asked: the old exam ended at B1 here, after two bands.
+        val bug = allSittings(bandsOf(placementOrder)).filter { it.asked == listOf("A1", "B1", "A2") && it.real["A1"] == 3 && it.real["B1"] == 0 }
+        assertEquals(4, bug.size) // A2 asked, 0..3 correct
+        for (s in bug) {
+            val a2 = s.real.getValue("A2")
+            assertEquals(if (a2 >= 2) "B1" else "A2", scorePlacement(s.tally.correctByLevel).level, "A2 answered $a2 of 3")
+        }
+    }
+
+    @Test
+    fun `the maximum is the sum of the band sizes and does not depend on any answer`() {
+        assertEquals(15, placementMaxQuestions(bandsOf(placementOrder)))
+        assertEquals(9, placementMaxQuestions(bandsOf(listOf("A1", "B1", "C1"))))
+        assertEquals(10, placementMaxQuestions(bandsOf(placementOrder, 2)))
+        // and it is reachable: pass every band 2 of 3 and all of them are asked
+        val pool = bandsOf(placementOrder)
+        var tally = PlacementTally()
+        var idx = 0
+        var asked = 0
+        while (idx < placementOrder.size) {
+            asked += pool.getValue(placementOrder[idx]).size
+            val r = resolveBand(pool, idx, 2, tally)
+            tally = r.tally
+            idx = r.nextIdx
+        }
+        assertEquals(placementMaxQuestions(pool), asked)
+    }
+
+    @Test
+    fun `the labels use the same words as web and iOS`() {
+        assertEquals("Question 4 · up to 15", placementProgressLabel(4, 15))
+        assertEquals("Placed after 9 questions", placementFinishedLabel(9))
+        assertEquals("Question 4, up to 15", placementProgressSpokenLabel(4, 15))
+    }
+
+    @Test
+    fun `markers tell a skipped band from a passed one`() {
+        val pool = bandsOf(placementOrder)
+        val shown = pool.getValue("A1") + pool.getValue("B1")
+        val tally = tallyOf(mapOf("A1" to 3, "A2" to 2), listOf("A2"))
+        assertEquals(
+            listOf(BandMarkerState.PASSED, BandMarkerState.SKIPPED, BandMarkerState.CURRENT, BandMarkerState.UPCOMING, BandMarkerState.UPCOMING),
+            bandMarkers(pool, shown, 2, tally, false).map { it.state },
+        )
+        assertEquals(
+            BandMarkerState.MISSED,
+            bandMarkers(pool, shown, 2, tallyOf(mapOf("A1" to 3, "A2" to 2, "B1" to 1), listOf("A2")), true).first { it.level == "B1" }.state,
+        )
+        assertEquals(listOf("A1", "B1"), bandMarkers(bandsOf(listOf("A1", "B1")), pool.getValue("A1"), 0, PlacementTally(), false).map { it.level })
+    }
+
+    // The exam logic never looks at the language; this runs it on the real French and Spanish banks (read, not edited).
+    @Test
+    fun `skip then fail goes back to A2 on the real French and Spanish placement banks`() {
+        val store = ContentStore { name -> checkNotNull(javaClass.getResourceAsStream("/$name")).bufferedReader().readText() }
+        for (course in listOf(Course.FRENCH, Course.SPANISH)) {
+            val pool = groupByBand(pickPlacementSet(store.placementPool(course), Random(3)))
+            assertEquals(15, placementMaxQuestions(pool), course.name)
+            val afterA1 = resolveBand(pool, 0, 3, PlacementTally())
+            assertEquals(listOf("A2"), afterA1.tally.skippedLevels, course.name)
+            for (b1 in listOf(0, 1)) {
+                val back = resolveBand(pool, 2, b1, afterA1.tally)
+                assertEquals(1, back.nextIdx, course.name)
+                assertEquals(3, pool.getValue("A2").size, course.name)
+                for (a2 in 0..3) {
+                    val end = resolveBand(pool, 1, a2, back.tally)
+                    assertTrue(end.stop, course.name)
+                    assertEquals(if (a2 >= 2) "B1" else "A2", scorePlacement(end.tally.correctByLevel).level, "${course.name} A2 $a2")
+                }
+            }
+        }
+    }
+
     @Test
     fun `isPlacementAnswerCorrect grades text and treats blank as wrong`() {
         val mcQ = PlacementQuestion.MultipleChoice("m", "A1", "p", listOf("are", "is"), 1)
