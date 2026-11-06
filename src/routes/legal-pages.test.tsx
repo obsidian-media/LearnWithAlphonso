@@ -100,6 +100,11 @@ describe("Privacy route", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/deletes the reports you made/)).toBeNull();
+    // The "Reports and blocking" section must not still promise the old, shorter lifetime.
+    expect(screen.queryByText(/kept for as long as the accounts involved\s+exist/)).toBeNull();
+    expect(
+      screen.getByText(/kept while the accounts involved exist, and\s+for up to 90 days after one of them is deleted/),
+    ).toBeInTheDocument();
   });
 
   it("describes the in-app export and deletion path, not only the web one", () => {

@@ -244,9 +244,9 @@ function Privacy() {
           store the block so that it works on every device.
         </p>
         <p>
-          Reports, and the actions we take on them, are kept for as long as the accounts involved
-          exist, so we can deal with repeated abuse. Deleting your account deletes the blocks you
-          set.
+          Reports, and the actions we take on them, are kept while the accounts involved exist, and
+          for up to 90 days after one of them is deleted, so we can deal with repeated abuse.
+          Deleting your account deletes the blocks you set.
         </p>
       </Section>
 
