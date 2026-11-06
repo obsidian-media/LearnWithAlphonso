@@ -2333,12 +2333,156 @@
   },
   "reason": "Added a short gloss of the form as used."
  },
+ "fr:lesson-meta:fra1p2l1": {
+  "patch": {
+   "title": "Numbers 1–100 (Part 1)"
+  },
+  "reason": "In \"Numbers 1–100 1\" the lesson number runs into the range, so it reads like \"1–1001\"; a separator removes the confusion."
+ },
+ "fr:lesson-meta:fra1p2l2": {
+  "patch": {
+   "title": "Numbers 1–100 (Part 2)"
+  },
+  "reason": "In \"Numbers 1–100 2\" the lesson number runs into the range and is confusing; a separator makes it clear."
+ },
+ "fr:lesson-meta:fra1p2l3": {
+  "patch": {
+   "title": "Numbers 1–100 (Part 3)"
+  },
+  "reason": "In \"Numbers 1–100 3\" the lesson number runs into the range and is confusing; a separator makes it clear."
+ },
+ "fr:lesson-meta:fra1p2l4": {
+  "patch": {
+   "title": "Numbers 1–100 (Part 4)"
+  },
+  "reason": "In \"Numbers 1–100 4\" the lesson number runs into the range and is confusing; a separator makes it clear."
+ },
+ "fr:lesson-meta:fra1p2l5": {
+  "patch": {
+   "title": "Numbers 1–100 (Part 5)"
+  },
+  "reason": "In \"Numbers 1–100 5\" the lesson number runs into the range and is confusing; a separator makes it clear."
+ },
+ "fr:lesson-meta:fra1p5l1": {
+  "patch": {
+   "subtitle": "Talking about time and the calendar"
+  },
+  "reason": "The English subtitle is missing an article; it should read 'time and the calendar'."
+ },
+ "fr:lesson-meta:fra1p5l2": {
+  "patch": {
+   "subtitle": "Talking about time and the calendar"
+  },
+  "reason": "The English subtitle is missing an article; it should read 'time and the calendar'."
+ },
+ "fr:lesson-meta:fra1p5l3": {
+  "patch": {
+   "subtitle": "Talking about time and the calendar"
+  },
+  "reason": "The English subtitle is missing an article; it should read 'time and the calendar'."
+ },
+ "fr:lesson-meta:fra1p5l4": {
+  "patch": {
+   "subtitle": "Talking about time and the calendar"
+  },
+  "reason": "The English subtitle is missing an article; it should read 'time and the calendar'."
+ },
+ "fr:lesson-meta:fra1p5l5": {
+  "patch": {
+   "subtitle": "Talking about time and the calendar"
+  },
+  "reason": "The English subtitle is missing an article; it should read 'time and the calendar'."
+ },
+ "fr:lesson-meta:fra2p7l1": {
+  "patch": {
+   "subtitle": "Talking about plans and what's going to happen"
+  },
+  "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:lesson-meta:fra2p7l2": {
+  "patch": {
+   "subtitle": "Talking about plans and what's going to happen"
+  },
+  "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:lesson-meta:fra2p7l3": {
+  "patch": {
+   "subtitle": "Talking about plans and what's going to happen"
+  },
+  "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:lesson-meta:fra2p7l4": {
+  "patch": {
+   "subtitle": "Talking about plans and what's going to happen"
+  },
+  "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:lesson-meta:fra2p7l5": {
+  "patch": {
+   "subtitle": "Talking about plans and what's going to happen"
+  },
+  "reason": "\"About to happen\" suggests the imminent \"être sur le point de\", but aller + infinitive is mainly used for plans and \"going to\" futures."
+ },
+ "fr:question:fra1p10l1/fra1p10q0": {
+  "patch": {
+   "explanation": "\"Doctor\" is \"le médecin\", the usual word for the profession. You say \"docteur\" mainly when you address a doctor directly."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p10l1/fra1p10q1": {
+  "patch": {
+   "explanation": "\"Nurse\" is \"l'infirmier\" for a man and \"l'infirmière\" for a woman. \"Le\" becomes \"l'\" before the vowel."
+  },
+  "reason": "The key is correct; the explanation should say this is the masculine form and give the feminine."
+ },
+ "fr:question:fra1p10l1/fra1p10q2": {
+  "patch": {
+   "explanation": "\"Teacher\" as a profession is \"le professeur\", used for secondary school and university teachers. In casual speech people often shorten it to \"le prof\"."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p10l1/fra1p10q3": {
+  "patch": {
+   "explanation": "\"Engineer\" is \"l'ingénieur\". It is masculine, and \"le\" becomes \"l'\" before the vowel."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p10l1/fra1p10q4": {
+  "patch": {
+   "explanation": "\"Lawyer\" is \"l'avocat\". Watch out: the same word also means \"avocado\"."
+  },
+  "reason": "The key is correct; a useful note is that the same word also means avocado."
+ },
+ "fr:question:fra1p10l2/fra1p10q5": {
+  "patch": {
+   "explanation": "\"Police officer\" is \"le policier\". A female officer is \"la policière\"."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p10l2/fra1p10q6": {
+  "patch": {
+   "explanation": "\"Firefighter\" is \"le pompier\". It comes from \"pompe\" (pump), and firefighters work in \"la caserne des pompiers\" (the fire station)."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
  "fr:question:fra1p10l2/fra1p10q7": {
   "patch": {
    "prompt": "The French word for \"cook\" (the job) is…",
    "explanation": "\"le cuisinier\" is the person who cooks as a job (a woman is la cuisinière); it comes from the verb cuisiner, to cook."
   },
   "reason": "French \"le chef\" also means chef, so the English \"chef\" in the prompt is ambiguous; \"cook\" matches \"le cuisinier\" exactly."
+ },
+ "fr:question:fra1p10l2/fra1p10q8": {
+  "patch": {
+   "explanation": "\"Waiter\" is \"le serveur\", from the verb \"servir\" (to serve). A waitress is \"la serveuse\"."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p10l2/fra1p10q9": {
+  "patch": {
+   "explanation": "\"l'agriculteur\" is the person who works the land and raises crops or animals; the article elides to l' because the noun starts with a vowel."
+  },
+  "reason": "The key is correct, but the explanation is a generic gloss that does not quote the answer."
  },
  "fr:question:fra1p10l3/fra1p10q10": {
   "patch": {
@@ -2351,12 +2495,6 @@
    "explanation": "\"le pilote\" is the person who flies a plane; the word looks almost the same as the English \"pilot\"."
   },
   "reason": "The key is correct, but the explanation is a generic template line."
- },
- "fr:question:fra1p10l3/fra1p10q12": {
-  "patch": {
-   "explanation": "\"l'artiste\" means \"artist\"; \"le\" becomes \"l'\" before a vowel, and the word is the same for a man or a woman."
-  },
-  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:fra1p10l3/fra1p10q13": {
   "patch": {
@@ -2418,11 +2556,23 @@
   },
   "reason": "The explanation is generic and does not mention the elision."
  },
+ "fr:question:fra1p10l5/fra1p10q23": {
+  "patch": {
+   "explanation": "\"le soldat\" is a member of the army; it is a masculine noun and looks close to the English word soldier."
+  },
+  "reason": "The key is correct, but the explanation is a generic gloss that does not quote the answer."
+ },
  "fr:question:fra1p10l5/fra1p10q24": {
   "patch": {
    "explanation": "\"le secrétaire\" means secretary; for a woman you say \"la secrétaire\", and the spelling stays the same."
   },
   "reason": "Cognates are normal in vocabulary items, so this is not a real giveaway, but the explanation is generic."
+ },
+ "fr:question:fra1p11l1/fra1p11q0": {
+  "patch": {
+   "explanation": "\"qui\" asks about a person (who); quel asks which, and quand asks when."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p11l1/fra1p11q1": {
   "patch": {
@@ -2430,11 +2580,41 @@
   },
   "reason": "\"quoi\" is the only fitting option, but the explanation should say where \"quoi\" is used rather than present it as the all-purpose word for \"what\"."
  },
+ "fr:question:fra1p11l1/fra1p11q2": {
+  "patch": {
+   "explanation": "\"où\" asks about a place (where); the grave accent separates it from ou, which means or."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p11l1/fra1p11q3": {
+  "patch": {
+   "explanation": "\"quand\" asks about time (when); où asks where, and combien asks how much or how many."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p11l1/fra1p11q4": {
+  "patch": {
+   "explanation": "\"pourquoi\" asks for a reason (why); the answer often starts with parce que (because)."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p11l2/fra1p11q5": {
+  "patch": {
+   "explanation": "\"comment\" asks about manner (how), as in Comment tu t'appelles ?; est-ce que only turns a sentence into a yes/no question."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p11l2/fra1p11q6": {
   "patch": {
    "explanation": "\"combien\" asks about a quantity or price, as in \"C'est combien ?\" (How much is it?); \"quel\" means which or what."
   },
   "reason": "The key is correct, but the explanation is generic and does not quote the answer in double quotes."
+ },
+ "fr:question:fra1p11l2/fra1p11q7": {
+  "patch": {
+   "explanation": "\"combien de\" asks how many and is followed by a noun with no article, as in « Combien de frères as-tu ? »."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer. / The example in the explanation is a fragment ending in \"?.\", so it should be a full, correctly punctuated question."
  },
  "fr:question:fra1p11l2/fra1p11q8": {
   "patch": {
@@ -2478,6 +2658,20 @@
   },
   "reason": "The explanation is generic and should show quelle heure in its usual questions."
  },
+ "fr:question:fra1p11l4/fra1p11q15": {
+  "patch": {
+   "prompt": "The French phrase for \"who is it\" is…",
+   "explanation": "\"qui est-ce\" is qui (who) plus est-ce (is it) and asks who a person is, as in Qui est-ce ? C'est ma sœur."
+  },
+  "reason": "The prompt calls a phrase a word, and the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p11l4/fra1p11q16": {
+  "patch": {
+   "prompt": "The French phrase for \"what is it\" is… ___",
+   "explanation": "\"qu'est-ce que c'est\" asks what a thing is, as in Qu'est-ce que c'est ? C'est un livre; qu'est-ce qui alone is not a complete question."
+  },
+  "reason": "The prompt calls a phrase a word, and the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p11l4/fra1p11q17": {
   "patch": {
    "explanation": "\"où est\" asks where one thing or person is (Où est la gare ?); for several things you use où sont."
@@ -2489,6 +2683,20 @@
    "explanation": "\"où sont\" asks where several things or people are (Où sont les clés ?); for one thing you use où est."
   },
   "reason": "The explanation is generic and does not say why plural sont is right."
+ },
+ "fr:question:fra1p11l4/fra1p11q19": {
+  "patch": {
+   "prompt": "The French phrase for \"how are you (informal)\" is…",
+   "explanation": "\"comment vas-tu\" uses tu, the form you use with a friend or family member; with a stranger you would say comment allez-vous."
+  },
+  "reason": "The prompt calls a phrase a word, and the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p11l5/fra1p11q20": {
+  "patch": {
+   "prompt": "The French phrase for \"what's your name (informal)\" is…",
+   "explanation": "\"comment tu t'appelles\" literally means how do you call yourself and uses tu, so it is the informal way to ask someone's name."
+  },
+  "reason": "The prompt calls a phrase a word, and the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p11l5/fra1p11q21": {
   "patch": {
@@ -2556,6 +2764,24 @@
   },
   "reason": "English speakers often say 'in front of' for 'en face de' (the café in front of my house), so this distractor risks a second answer, and 'ici' is an adverb, not a preposition. / The explanation mixes single and double quotes; this polish makes it consistent."
  },
+ "fr:question:fra1p12l3/fra1p12q14": {
+  "patch": {
+   "explanation": "\"autour de\" means \"around\" in the sense of surrounding something, as in autour de la table (around the table). \"vers\" means towards."
+  },
+  "reason": "The key is correct, but the second sentence of the explanation is generic filler that fits any item in the lesson."
+ },
+ "fr:question:fra1p12l4/fra1p12q16": {
+  "patch": {
+   "explanation": "\"à travers\" means \"through\", going from one side to the other, as in à travers la forêt (through the forest)."
+  },
+  "reason": "The key is correct, but the explanation ends with a generic line instead of a useful note."
+ },
+ "fr:question:fra1p12l4/fra1p12q17": {
+  "patch": {
+   "explanation": "\"le long de\" means \"along\", following the length of something, as in le long de la rivière (along the river). \"de\" becomes \"du\" before a masculine noun: le long du mur."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p12l4/fra1p12q18": {
   "patch": {
    "choices": [
@@ -2568,11 +2794,23 @@
   },
   "reason": "\"entre\" can also translate \"among\" (entre amis), so it is a defensible second answer and should be replaced with an unambiguous preposition."
  },
+ "fr:question:fra1p12l4/fra1p12q19": {
+  "patch": {
+   "explanation": "\"vers\" means \"towards\", showing direction, as in Il marche vers la gare (He walks towards the station)."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p12l5/fra1p12q20": {
   "patch": {
    "explanation": "\"chez\" means at someone's place and goes before a person or pronoun: \"chez moi\", \"chez Marie\"."
   },
   "reason": "The key is right, but the explanation is generic and does not show that the word goes before a person."
+ },
+ "fr:question:fra1p12l5/fra1p12q21": {
+  "patch": {
+   "explanation": "\"de\" means \"from\", as in Je viens de Paris (I come from Paris). It combines with le and les: du, des."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not mention the useful contraction."
  },
  "fr:question:fra1p12l5/fra1p12q22": {
   "patch": {
@@ -2585,6 +2823,12 @@
    "explanation": "\"à\" is the basic way to say you go to a place: \"Je vais à Paris.\""
   },
   "reason": "\"vers\" (towards) can be read as \"to (a place)\", so it is replaced with a clearly different preposition."
+ },
+ "fr:question:fra1p12l5/fra1p12q23": {
+  "patch": {
+   "explanation": "\"ici\" means \"here\", as in Je suis ici (I am here). It is an adverb of place, not a preposition, so no \"de\" follows it."
+  },
+  "reason": "The explanation wrongly calls \"ici\" a preposition and is generic."
  },
  "fr:question:fra1p12l5/fra1p12q24": {
   "patch": {
@@ -2603,6 +2847,12 @@
    "explanation": "\"il est une heure\" uses singular \"une heure\" because it is one o'clock; other hours take \"heures\"."
   },
   "reason": "Two distractors are not full clock sentences, so they are easy to dismiss; they are replaced with real times."
+ },
+ "fr:question:fra1p13l1/fra1p13q1": {
+  "patch": {
+   "explanation": "\"il est deux heures\" means \"it's two o'clock\". French uses il est plus the number and heures, which is plural from two onwards."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:fra1p13l1/fra1p13q2": {
   "patch": {
@@ -2628,6 +2878,12 @@
   },
   "reason": "The distractors are not clock times, so the answer is the only possible pick."
  },
+ "fr:question:fra1p13l1/fra1p13q4": {
+  "patch": {
+   "explanation": "\"deux heures et demie\" means \"half past two\". French adds et demie (and a half) after the hour."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p13l2/fra1p13q5": {
   "patch": {
    "bank": [
@@ -2639,6 +2895,12 @@
    "explanation": "\"trois heures et quart\" adds \"et quart\" (a quarter past) to three o'clock; \"et demie\" would be half past."
   },
   "reason": "The answer is the only option containing \"three\", so the distractors are changed to test et quart against et demie and moins le quart."
+ },
+ "fr:question:fra1p13l2/fra1p13q6": {
+  "patch": {
+   "explanation": "\"quatre heures moins le quart\" means \"quarter to four\": French takes the next hour and subtracts a quarter. Trois heures et quart is quarter past three."
+  },
+  "reason": "The key is correct, but the explanation should show the 'next hour minus a quarter' logic that separates it from \"trois heures et quart\"."
  },
  "fr:question:fra1p13l2/fra1p13q7": {
   "patch": {
@@ -2684,6 +2946,60 @@
    "explanation": "\"la nuit\" on its own means at night, with no preposition needed: \"Je dors la nuit.\""
   },
   "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p13l3/fra1p13q11": {
+  "patch": {
+   "explanation": "\"quelle heure est-il ?\" is how you ask \"what time is it?\". The verb and subject swap places (est-il) to form the question."
+  },
+  "reason": "The key is correct, but the explanation is generic and has awkward \"?.\" punctuation."
+ },
+ "fr:question:fra1p13l3/fra1p13q12": {
+  "patch": {
+   "explanation": "\"une heure\" means \"an hour\". Heure is feminine, so it takes une."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p13l3/fra1p13q13": {
+  "patch": {
+   "explanation": "\"une minute\" means \"a minute\". Minute is feminine in French, so it takes une."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p13l3/fra1p13q14": {
+  "patch": {
+   "explanation": "\"une seconde\" is a second, the smallest unit of time here; \"une minute\" is sixty of them."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p13l4/fra1p13q15": {
+  "patch": {
+   "explanation": "\"tôt\" means early (Je me lève tôt), while \"bientôt\" means soon."
+  },
+  "reason": "The key is correct, but the explanation is generic; it should separate tôt from the tempting bientôt."
+ },
+ "fr:question:fra1p13l4/fra1p13q16": {
+  "patch": {
+   "explanation": "\"tard\" means late, the opposite of tôt (early): Je me couche tard."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p13l4/fra1p13q17": {
+  "patch": {
+   "explanation": "\"maintenant\" means now, at this moment; \"toujours\" means always."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p13l4/fra1p13q18": {
+  "patch": {
+   "explanation": "\"bientôt\" means soon, as in À bientôt! (See you soon!)."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p13l4/fra1p13q19": {
+  "patch": {
+   "explanation": "\"plus tard\" means later (literally 'more late'), as in À plus tard!"
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p13l5/fra1p13q20": {
   "patch": {
@@ -2865,6 +3181,24 @@
   },
   "reason": "\"l'argent\" and \"l'argent liquide\" overlap, so one is replaced with another object you carry, \"le sac\", and the explanation is made specific."
  },
+ "fr:question:fra1p14l4/fra1p14q19": {
+  "patch": {
+   "explanation": "\"la pièce\" is a coin, while le billet is a paper banknote."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p14l5/fra1p14q20": {
+  "patch": {
+   "explanation": "\"le billet\" is a banknote, while la monnaie means change or small coins."
+  },
+  "reason": "The key is correct, but the explanation is generic; it should separate billet from monnaie."
+ },
+ "fr:question:fra1p14l5/fra1p14q21": {
+  "patch": {
+   "explanation": "\"gratuit\" means free of charge, while bon marché only means cheap."
+  },
+  "reason": "The key is correct, but the explanation is generic; it should separate gratuit from the tempting bon marché."
+ },
  "fr:question:fra1p14l5/fra1p14q22": {
   "patch": {
    "prompt": "The French for \"how much does it cost?\" is… ___",
@@ -2903,6 +3237,12 @@
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:fra1p15l1/fra1p15q2": {
+  "patch": {
+   "explanation": "\"la serveuse\" is a waitress, the feminine of le serveur (waiter)."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p15l1/fra1p15q3": {
   "patch": {
    "explanation": "\"la table\" is spelled like the English word but is feminine, as in \"une table pour deux\"."
@@ -2914,6 +3254,12 @@
    "explanation": "\"la réservation\" is a booking, as in \"J'ai une réservation\"; note that it is feminine and takes an accent on the é."
   },
   "reason": "The cognate is acceptable for A1, but the explanation is generic."
+ },
+ "fr:question:fra1p15l2/fra1p15q5": {
+  "patch": {
+   "explanation": "\"l'entrée\" is the starter in a French meal, not the main course; the main course is le plat principal."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not flag the common false friend."
  },
  "fr:question:fra1p15l2/fra1p15q6": {
   "patch": {
@@ -3065,6 +3411,30 @@
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:fra1p16l2/fra1p16q5": {
+  "patch": {
+   "explanation": "\"la règle\" is a ruler for drawing lines; the same word also means a rule."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p16l2/fra1p16q6": {
+  "patch": {
+   "explanation": "A desk is \"le bureau\", a masculine noun (un bureau). The same word also means \"office\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic template and does not quote the answer in double quotes."
+ },
+ "fr:question:fra1p16l2/fra1p16q7": {
+  "patch": {
+   "explanation": "A chair is \"la chaise\", a feminine noun (une chaise), used for any chair, not just in the classroom."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
+ "fr:question:fra1p16l2/fra1p16q8": {
+  "patch": {
+   "explanation": "The classroom board is \"le tableau\", a masculine noun. The teacher writes au tableau (on the board)."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
  "fr:question:fra1p16l2/fra1p16q9": {
   "patch": {
    "explanation": "\"la craie\" is the French for chalk, the stick you write with on a blackboard; it is feminine, so it takes \"la\"."
@@ -3078,11 +3448,53 @@
   },
   "reason": "\"le sac\" just means 'bag' (a school bag is \"le cartable\"), so the English gloss should be broadened rather than the key changed."
  },
+ "fr:question:fra1p16l3/fra1p16q11": {
+  "patch": {
+   "explanation": "Paper is \"le papier\", a masculine noun. A single sheet is une feuille de papier."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
+ "fr:question:fra1p16l3/fra1p16q12": {
+  "patch": {
+   "explanation": "Scissors is \"les ciseaux\". Like the English word, it is always plural in French: des ciseaux."
+  },
+  "reason": "The key is correct, but the explanation is a generic template and misses the useful plural point."
+ },
+ "fr:question:fra1p16l3/fra1p16q13": {
+  "patch": {
+   "explanation": "Glue is \"la colle\", a feminine noun. It comes from the verb coller (to stick)."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
+ "fr:question:fra1p16l3/fra1p16q14": {
+  "patch": {
+   "explanation": "A calculator is \"la calculatrice\", a feminine noun related to calculer (to calculate)."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
+ "fr:question:fra1p16l4/fra1p16q15": {
+  "patch": {
+   "explanation": "A dictionary is \"le dictionnaire\", a masculine noun. Note the double n in the French spelling."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
+ },
  "fr:question:fra1p16l4/fra1p16q16": {
   "patch": {
    "explanation": "\"la carte\" means 'map' in the classroom; the same word also means 'card', or 'menu' in a restaurant."
   },
   "reason": "The item is sound and only the generic explanation needs work."
+ },
+ "fr:question:fra1p16l4/fra1p16q17": {
+  "patch": {
+   "explanation": "A clock is \"l'horloge\". The article elides before the silent h, and the noun is feminine (une horloge)."
+  },
+  "reason": "The key is correct, but the explanation is generic and hides the gender behind the elided article."
+ },
+ "fr:question:fra1p16l4/fra1p16q18": {
+  "patch": {
+   "explanation": "A classroom is \"la salle de classe\", literally \"room of class\". It is feminine because salle is feminine."
+  },
+  "reason": "The key is correct, but the explanation is a generic template with no quoted answer."
  },
  "fr:question:fra1p16l5/fra1p16q21": {
   "patch": {
@@ -3096,12 +3508,36 @@
   },
   "reason": "Cognates are legitimate A1 vocabulary and the article still has to be known, but the explanation is generic. / The cognate gives the answer away; a wrong-gender distractor makes the item test the gender that the explanation teaches."
  },
+ "fr:question:fra1p16l5/fra1p16q22": {
+  "patch": {
+   "explanation": "\"la réponse\" means \"answer\", the reply to une question. It is feminine, so it takes la."
+  },
+  "reason": "The key and options are fine, but the explanation is a generic template line and does not quote the answer."
+ },
+ "fr:question:fra1p16l5/fra1p16q23": {
+  "patch": {
+   "explanation": "\"la leçon\" means \"lesson\". Note the cedilla on the ç, which gives it an s sound, and that the word is feminine."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
  "fr:question:fra1p16l5/fra1p16q24": {
   "patch": {
    "prompt": "The French word for \"timetable\" (school schedule) is… ___",
    "explanation": "\"l'emploi du temps\" is your school timetable, the schedule of your lessons for the week."
   },
   "reason": "In a school context \"l'emploi du temps\" is best glossed 'timetable', and the explanation is generic."
+ },
+ "fr:question:fra1p17l1/fra1p17q0": {
+  "patch": {
+   "explanation": "\"l'ordinateur\" means \"computer\". It is masculine (un ordinateur), and le becomes l' before the vowel."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p17l1/fra1p17q1": {
+  "patch": {
+   "explanation": "\"le téléphone\" means \"phone\". It is masculine and spelled with ph and two é accents."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
  },
  "fr:question:fra1p17l1/fra1p17q2": {
   "patch": {
@@ -3283,6 +3719,24 @@
   },
   "reason": "The distractors are this lesson's own hobby verbs and are fine at A1, but the explanation is generic."
  },
+ "fr:question:fra1p18l2/fra1p18q6": {
+  "patch": {
+   "explanation": "\"cuisiner\" means \"to cook (a meal)\" and comes from la cuisine, the kitchen. It is a regular -er verb: je cuisine."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l2/fra1p18q7": {
+  "patch": {
+   "explanation": "\"pêcher\" means \"to fish\" and is spelled with ê. Don't confuse it with pécher (to sin)."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l2/fra1p18q8": {
+  "patch": {
+   "explanation": "\"jardiner\" means \"to garden\" and comes from le jardin (the garden). It is a regular -er verb: je jardine."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
  "fr:question:fra1p18l2/fra1p18q9": {
   "patch": {
    "explanation": "\"coudre\" means \"to sew\"; \"chanter\" is to sing, \"cuisiner\" to cook and \"lire\" to read."
@@ -3313,17 +3767,77 @@
   },
   "reason": "The spelling \"theater\" is fine for English UI text, but the explanation is generic."
  },
+ "fr:question:fra1p18l3/fra1p18q14": {
+  "patch": {
+   "explanation": "\"le jeu vidéo\" means \"video game\". In French the word order is reversed (game + video), and the plural is les jeux vidéo."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l4/fra1p18q15": {
+  "patch": {
+   "explanation": "\"le jeu de société\" means \"board game\". Word for word it is a \"society game\", a game you play with other people."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l4/fra1p18q16": {
+  "patch": {
+   "explanation": "\"collectionner\" means \"to collect\" as a hobby (stamps, cards). Note the double n: je collectionne."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
  "fr:question:fra1p18l4/fra1p18q17": {
   "patch": {
    "explanation": "\"tricoter\" means \"to knit\"; \"coudre\" is to sew, \"cuisiner\" to cook and \"collectionner\" to collect."
   },
   "reason": "\"tricoter\" is acceptable hobby vocabulary, but the explanation is generic."
  },
+ "fr:question:fra1p18l4/fra1p18q18": {
+  "patch": {
+   "explanation": "\"la randonnée\" means \"hiking\" or \"a hike\". It is feminine, and you say faire une randonnée (to go hiking)."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l4/fra1p18q19": {
+  "patch": {
+   "explanation": "\"le camping\" is borrowed from English and means \"camping\". It is masculine, and you say faire du camping."
+  },
+  "reason": "The item is acceptable as a cognate, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra1p18l5/fra1p18q20": {
+  "patch": {
+   "explanation": "Chess is \"les échecs\". In French the word is always plural, so it takes \"les\": on joue aux échecs."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic line; it should point out the plural form."
+ },
  "fr:question:fra1p18l5/fra1p18q21": {
   "patch": {
    "explanation": "French borrows the English word: \"le puzzle\" means \"puzzle\" (a jigsaw) and is masculine."
   },
   "reason": "An identical loanword is a valid vocabulary fact, but the explanation should teach that French uses the same word with \"le\"."
+ },
+ "fr:question:fra1p18l5/fra1p18q22": {
+  "patch": {
+   "explanation": "Free time is \"le temps libre\", literally 'free time'. Do not confuse it with \"le week-end\", which means only Saturday and Sunday."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p18l5/fra1p18q23": {
+  "patch": {
+   "explanation": "A hobby is \"le passe-temps\", literally something that 'passes the time'. The other options are particular hobbies, not the word for hobby itself."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p18l5/fra1p18q24": {
+  "patch": {
+   "explanation": "In France the weekend is \"le week-end\", a masculine word borrowed from English and written with a hyphen."
+  },
+  "reason": "The key is correct and standard in France, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p19l1/fra1p19q0": {
+  "patch": {
+   "explanation": "Happy is \"heureux\", as in Je suis heureux. A woman says heureuse."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p19l1/fra1p19q1": {
   "patch": {
@@ -3355,6 +3869,18 @@
   },
   "reason": "\"inquiet\" means worried, so it is not a second answer, but the generic explanation should point to the everyday \"avoir peur\"."
  },
+ "fr:question:fra1p19l2/fra1p19q6": {
+  "patch": {
+   "explanation": "Surprised is \"surpris\", which looks like the English word. A woman says surprise."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p19l2/fra1p19q8": {
+  "patch": {
+   "explanation": "Nervous is \"nerveux\": English -ous often becomes -eux in French. A woman says nerveuse."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p19l2/fra1p19q9": {
   "patch": {
    "bank": [
@@ -3373,11 +3899,41 @@
   },
   "reason": "\"effrayé\" (frightened) is distinct enough from worried, so the options can stay, but the explanation is generic."
  },
+ "fr:question:fra1p19l3/fra1p19q11": {
+  "patch": {
+   "explanation": "Proud is \"fier\", as in Je suis fier de toi. A woman says fière."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p19l3/fra1p19q12": {
+  "patch": {
+   "explanation": "Jealous is \"jaloux\", as in Il est jaloux. A woman says jalouse."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p19l3/fra1p19q13": {
+  "patch": {
+   "explanation": "Confused is \"confus\" here, but careful: Je suis confus often means 'I'm embarrassed or sorry'. To say you don't understand, French speakers usually say Je suis perdu."
+  },
+  "reason": "The key is acceptable among these options, but \"confus\" often means 'embarrassed' about a person, and the explanation should warn learners about this false friend."
+ },
  "fr:question:fra1p19l3/fra1p19q14": {
   "patch": {
    "explanation": "\"gêné\" means embarrassed or ill at ease; the other words mean grateful, comfortable and calm."
   },
   "reason": "The key is right, but the explanation is generic."
+ },
+ "fr:question:fra1p19l4/fra1p19q15": {
+  "patch": {
+   "explanation": "Relaxed is \"détendu\", from se détendre, 'to relax'. A woman says détendue."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p19l4/fra1p19q16": {
+  "patch": {
+   "explanation": "Disappointed is \"déçu\", from décevoir, 'to disappoint'. Triste only means 'sad'."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p19l4/fra1p19q18": {
   "patch": {
@@ -3415,6 +3971,12 @@
   },
   "reason": "Bonsoir is also a formal greeting (in the evening), so replacing it with informal Salut leaves Bonjour as the only formal hello, and the explanation is generic."
  },
+ "fr:question:fra1p1l1/fra1p1q2": {
+  "patch": {
+   "explanation": "\"Bonsoir\" is the greeting for the evening. \"Bonjour\" is used during the day."
+  },
+  "reason": "The key is correct, but the explanation is a generic line that does not teach the contrast with Bonjour."
+ },
  "fr:question:fra1p1l1/fra1p1q3": {
   "patch": {
    "choices": [
@@ -3427,17 +3989,65 @@
   },
   "reason": "À bientôt and À demain are also ways to say goodbye, so a learner could defend them; replace them with non-farewells."
  },
+ "fr:question:fra1p1l1/fra1p1q4": {
+  "patch": {
+   "explanation": "\"À bientôt\" means \"see you soon\": \"bientôt\" means \"soon\", and you say it when you expect to meet again before long."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p1l2/fra1p1q5": {
   "patch": {
    "explanation": "\"S'il vous plaît\" is the polite way to say please; with a friend you say \"s'il te plaît\"."
   },
   "reason": "The explanation is generic."
  },
+ "fr:question:fra1p1l2/fra1p1q6": {
+  "patch": {
+   "explanation": "\"Merci\" is the standard way to say \"thank you\" in French, and it works with anyone."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p1l2/fra1p1q7": {
+  "patch": {
+   "explanation": "\"De rien\" literally means \"it's nothing\" and is the everyday reply when someone says \"merci\"."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p1l2/fra1p1q8": {
+  "patch": {
+   "explanation": "\"Excusez-moi\" is the polite \"excuse me\" for getting a stranger's attention. It uses the vous form."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p1l2/fra1p1q9": {
+  "patch": {
+   "explanation": "\"Désolé\" means \"sorry\" and is used to apologise. A woman writes it \"Désolée\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and should mention the feminine form."
+ },
+ "fr:question:fra1p1l3/fra1p1q10": {
+  "patch": {
+   "explanation": "\"Oui\" is the French word for \"yes\". The other options are greetings or welcomes, not answers to a question."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p1l3/fra1p1q11": {
+  "patch": {
+   "explanation": "\"Non\" is the French word for \"no\", the opposite of \"oui\"."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p1l3/fra1p1q12": {
   "patch": {
    "explanation": "\"Comment allez-vous ?\" is the polite way to ask how someone is; \"Comment vous appelez-vous ?\" asks their name instead."
   },
   "reason": "The explanation is generic and has awkward punctuation (\"?.\")."
+ },
+ "fr:question:fra1p1l3/fra1p1q13": {
+  "patch": {
+   "explanation": "\"Je vais bien, merci\" literally means \"I am going well, thanks\". French uses the verb aller (to go) to say how you are."
+  },
+  "reason": "The key is correct, but the explanation is generic."
  },
  "fr:question:fra1p1l3/fra1p1q14": {
   "patch": {
@@ -3667,12 +4277,32 @@
   },
   "reason": "Accepting \"Je n'y comprends rien\" does no harm because it also expresses not understanding, but the explanation is generic."
  },
+ "fr:question:fra1p21l2/fra1p21q5": {
+  "patch": {
+   "prompt": "Politely ask a stranger to repeat something (use vous)."
+  },
+  "reason": "The task gives no register, yet only vous answers are accepted, so a learner writing the correct \"Tu peux répéter ?\" would be marked wrong; the prompt should ask for the polite form."
+ },
  "fr:question:fra1p21l3/fra1p21q10": {
   "patch": {
    "prompt": "Introduce yourself as Julie.",
    "explanation": "\"Je m'appelle Julie.\" literally means \"I call myself Julie\" and is the usual way to give your name; « Moi, c'est Julie » is a casual alternative."
   },
   "reason": "The prompt never says the name is Julie, so a learner who gives their own name is marked wrong; the prompt must supply the name. / The explanation ends in a broken English fragment and does not say why the answer fits."
+ },
+ "fr:question:fra1p21l3/fra1p21q13": {
+  "patch": {
+   "explanation": "\"Quelle heure est-il ?\" is the standard way to ask the time; \"Vous avez l'heure ?\" is a common polite way to ask a stranger.",
+   "acceptableAnswers": [
+    "Quelle heure est-il ?",
+    "Vous avez l'heure ?",
+    "Il est quelle heure, s'il vous plaît ?",
+    "Quelle heure est-il, s'il vous plaît ?",
+    "Tu as l'heure ?",
+    "Il est quelle heure ?"
+   ]
+  },
+  "reason": "The accepted answers are fine, but the second sentence of the explanation is a lesson-description fragment and says nothing about this task. / The task does not specify a register, so the standard question with s'il vous plaît and the informal tu form should also be accepted."
  },
  "fr:question:fra1p21l3/fra1p21q14": {
   "patch": {
@@ -3687,6 +4317,65 @@
   },
   "reason": "\"Au revoir !\" is a perfectly correct goodbye to a friend but is not accepted, so a learner using it is marked wrong; \"Ciao !\" (often written tchao) is genuinely used colloquially in France and can stay. / The explanation ends in a broken fragment and does not explain why \"Salut !\" suits a friend."
  },
+ "fr:question:fra1p21l4/fra1p21q15": {
+  "patch": {
+   "explanation": "French says \"J'ai faim.\" (literally 'I have hunger'), using avoir, not être; \"Je meurs de faim.\" means 'I'm starving'."
+  },
+  "reason": "The explanation ends with a generic fragment and does not teach the key point that French uses avoir for hunger."
+ },
+ "fr:question:fra1p21l4/fra1p21q16": {
+  "patch": {
+   "explanation": "\"Où habitez-vous ?\" is the polite vous form for a stranger; with a friend you can say \"Tu habites où ?\"."
+  },
+  "reason": "Mixing tu and vous is fine because 'someone' is unspecified, but the explanation should say when to use each instead of ending with a generic fragment."
+ },
+ "fr:question:fra1p21l4/fra1p21q17": {
+  "patch": {
+   "explanation": "\"J'habite à Paris.\" uses à because French puts à before the name of a city; je vis à Paris also works."
+  },
+  "reason": "The explanation is generic and should point out the preposition à used before a city."
+ },
+ "fr:question:fra1p21l4/fra1p21q19": {
+  "patch": {
+   "explanation": "\"Je suis désolé.\" means 'I'm sorry'; a woman writes désolée, with an extra e, because the adjective agrees with the speaker."
+  },
+  "reason": "The explanation is generic and should explain why both désolé and désolée are accepted."
+ },
+ "fr:question:fra1p21l5/fra1p21q20": {
+  "patch": {
+   "explanation": "\"Bonne journée !\" is what French speakers say when leaving someone during the day, for example in a shop; journée means the whole day."
+  },
+  "reason": "The explanation is generic and should say when the phrase is used."
+ },
+ "fr:question:fra1p21l5/fra1p21q21": {
+  "patch": {
+   "explanation": "\"Combien ça coûte ?\" literally means 'How much does that cost?'; the shorter c'est combien ? is just as common in shops."
+  },
+  "reason": "The explanation is generic and should give a usable point about this question."
+ },
+ "fr:question:fra1p21l5/fra1p21q22": {
+  "patch": {
+   "explanation": "\"Je ne parle pas bien français.\" puts ne…pas around the verb parle, and français needs no article after parler."
+  },
+  "reason": "The explanation is generic and should mention the ne…pas negation and the missing article."
+ },
+ "fr:question:fra1p21l5/fra1p21q23": {
+  "patch": {
+   "explanation": "\"Tu veux prendre un café ?\" is the friendly tu form (French says prendre, 'take', a coffee); with someone you call vous, say voulez-vous prendre un café avec moi ?"
+  },
+  "reason": "The explanation is generic and should explain prendre un café and the tu/vous choice."
+ },
+ "fr:question:fra1p21l5/fra1p21q24": {
+  "patch": {
+   "acceptableAnswers": [
+    "Bonne chance !",
+    "Je te souhaite bonne chance !",
+    "Je vous souhaite bonne chance !"
+   ],
+   "explanation": "\"Bonne chance !\" is the direct way to wish someone good luck; bon courage ! is different and means 'hang in there'."
+  },
+  "reason": "\"Bon courage !\" means 'hang in there' or 'keep it up' rather than 'good luck', so accepting it teaches a misleading equivalence; replace it with another true 'good luck' wording and make the explanation specific."
+ },
  "fr:question:fra1p22l1/fra1p22q0": {
   "patch": {
    "explanation": "The audio says \"Le dessus de la table est propre.\": \"dessus\" (on top) has the French u sound, not the \"ou\" sound of \"dessous\" (underneath).",
@@ -3699,11 +4388,59 @@
   },
   "reason": "No option duplicates another (reviewer A misread), but the explanation is generic and never names the dessus/dessous contrast. / Option C is unrelated to the audio and is absurd for a minimal-pairs listening item."
  },
+ "fr:question:fra1p22l1/fra1p22q1": {
+  "patch": {
+   "explanation": "The audio says \"Le dessous de la table est propre.\" Dessous ('underneath') has the ou sound, as in 'you', while dessus ('top') has the tight French u sound.",
+   "choices": [
+    "Le dessous de l'armoire est sale.",
+    "Le dessous de la table est propre.",
+    "Le dessous de la table est sale.",
+    "Le dessus de la table est propre."
+   ]
+  },
+  "reason": "The options are fine, but the explanation is generic and should name the dessous/dessus contrast being tested. / Option C is unrelated in both sound and meaning; a close variant makes the listening task meaningful."
+ },
+ "fr:question:fra1p22l1/fra1p22q2": {
+  "patch": {
+   "explanation": "The audio says \"Le dessus de l'armoire est sale.\" Dessus ('top') has the tight French u sound, with rounded lips, not the ou sound of dessous ('underneath')."
+  },
+  "reason": "The options are fine, but the explanation is generic and should name the dessus/dessous contrast being tested."
+ },
+ "fr:question:fra1p22l1/fra1p22q3": {
+  "patch": {
+   "choices": [
+    "Le dessous de l'armoire est sale.",
+    "Le dessus de l'armoire est sale.",
+    "Le dessus de la table est sale.",
+    "Le dessous de la table est propre."
+   ],
+   "explanation": "The audio says \"Le dessous de l'armoire est sale.\" Listen for the vowel: \"dessous\" (underneath) has the 'oo' sound /u/, while \"dessus\" (on top) has the French 'u' sound /y/, made with rounded lips."
+  },
+  "reason": "Option C shares no sound contrast with the audio, so it is ruled out with no listening skill, and the explanation never names the dessous/dessus contrast being tested."
+ },
  "fr:question:fra1p22l1/fra1p22q4": {
   "patch": {
    "explanation": "The audio says \"Ce plat contient du poisson.\": \"poisson\" (fish) has a hard s sound, while \"poison\" has a z sound, and you hear \"ce plat\", not \"cette boîte\"."
   },
   "reason": "The options test the poisson/poison pair well, but the explanation is generic."
+ },
+ "fr:question:fra1p22l2/fra1p22q5": {
+  "patch": {
+   "explanation": "The audio says \"Ce plat contient du poison.\" A single s between vowels sounds like 'z', so \"poison\" (poison) has a 'z' sound, while \"poisson\" (fish) has a double s and a hissing 's' sound."
+  },
+  "reason": "The explanation is a generic lesson description and does not explain the poison/poisson contrast."
+ },
+ "fr:question:fra1p22l2/fra1p22q6": {
+  "patch": {
+   "explanation": "The audio says \"Cette boîte contient du poisson.\" The double s in \"poisson\" (fish) gives a hissing 's' sound, while \"poison\" (poison) has a single s that sounds like 'z'."
+  },
+  "reason": "The explanation is a generic lesson description and does not explain the poison/poisson contrast."
+ },
+ "fr:question:fra1p22l2/fra1p22q7": {
+  "patch": {
+   "explanation": "The audio says \"Cette boîte contient du poison.\" A single s between vowels sounds like 'z', so \"poison\" (poison) has a 'z' sound, while \"poisson\" (fish) has a hissing 's' sound."
+  },
+  "reason": "The explanation is a generic lesson description and does not explain the poison/poisson contrast."
  },
  "fr:question:fra1p22l2/fra1p22q8": {
   "patch": {
@@ -3819,6 +4556,156 @@
   },
   "reason": "The item is answerable thanks to the audible \"en\". The explanation is generic, and distractor D should match the more natural wording used in i9."
  },
+ "fr:question:fra1p23l1/fra1p23q0": {
+  "patch": {
+   "explanation": "Target phrase: \"Bonjour, comment allez-vous ?\" This is the polite way to ask 'How are you?', using vous for a stranger, a customer or anyone you address formally."
+  },
+  "reason": "The explanation is generic and misses the useful register point."
+ },
+ "fr:question:fra1p23l1/fra1p23q1": {
+  "patch": {
+   "explanation": "Target phrase: \"Bonjour, comment vas-tu ?\" This means 'How are you?' and uses tu, so say it to a friend, a family member or a child."
+  },
+  "reason": "The explanation is generic and misses the useful register point."
+ },
+ "fr:question:fra1p23l1/fra1p23q2": {
+  "patch": {
+   "explanation": "Target phrase: \"Enchanté de vous rencontrer.\" This means 'Pleased to meet you', with vous for polite use. A woman writes \"Enchantée\", which is pronounced the same."
+  },
+  "reason": "The explanation is generic and should note the agreement and the formal vous."
+ },
+ "fr:question:fra1p23l1/fra1p23q3": {
+  "patch": {
+   "explanation": "Target phrase: \"Comment tu t'appelles ?\" This is the informal way to ask 'What's your name?', used with friends, children or people your age."
+  },
+  "reason": "The explanation is generic and misses the register point."
+ },
+ "fr:question:fra1p23l1/fra1p23q4": {
+  "patch": {
+   "explanation": "Target phrase: \"Je m'appelle Marie.\" This means 'My name is Marie' (literally 'I call myself Marie'). Me shortens to m' before a vowel sound."
+  },
+  "reason": "The explanation is generic."
+ },
+ "fr:question:fra1p23l2/fra1p23q5": {
+  "patch": {
+   "explanation": "Target phrase: \"J'ai faim.\" This means 'I'm hungry', but French uses avoir ('to have hunger'), not être."
+  },
+  "reason": "The explanation is generic and misses the key point that French uses avoir here."
+ },
+ "fr:question:fra1p23l2/fra1p23q6": {
+  "patch": {
+   "explanation": "Target phrase: \"J'ai soif.\" This means 'I'm thirsty', but French uses avoir ('to have thirst'), not être."
+  },
+  "reason": "The explanation is generic and misses the key point that French uses avoir here."
+ },
+ "fr:question:fra1p23l2/fra1p23q7": {
+  "patch": {
+   "explanation": "Target phrase: \"Je voudrais un café, s'il vous plaît.\" \"Je voudrais\" ('I would like') is the polite way to order, and s'il vous plaît uses vous for a waiter or a shop."
+  },
+  "reason": "The explanation is generic."
+ },
+ "fr:question:fra1p23l2/fra1p23q8": {
+  "patch": {
+   "explanation": "\"Où sont les toilettes ?\" means \"Where are the toilets?\". \"Toilettes\" is always plural in this phrase, and the -s of \"les\" is silent."
+  },
+  "reason": "The phrase is correct, but the explanation is a generic line that does not give the meaning or a speaking tip."
+ },
+ "fr:question:fra1p23l2/fra1p23q9": {
+  "patch": {
+   "explanation": "\"Merci beaucoup.\" means \"Thank you very much.\" The final -p of \"beaucoup\" is silent."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l3/fra1p23q10": {
+  "patch": {
+   "explanation": "\"De rien.\" means \"You're welcome.\" and is the usual reply to \"merci\". The -n of \"rien\" is not pronounced separately; it makes the vowel nasal."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l3/fra1p23q11": {
+  "patch": {
+   "explanation": "\"Excusez-moi.\" means \"Excuse me.\" It is the polite vous form you use with strangers, for example to get someone's attention or to get past."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and does not mention its polite register."
+ },
+ "fr:question:fra1p23l3/fra1p23q12": {
+  "patch": {
+   "explanation": "\"Je suis désolé.\" means \"I'm sorry.\" A woman writes \"désolée\", but both forms sound exactly the same."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and misses the useful gender note."
+ },
+ "fr:question:fra1p23l3/fra1p23q13": {
+  "patch": {
+   "explanation": "\"À bientôt !\" means \"See you soon!\" You say it when you leave someone you expect to see again soon."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l3/fra1p23q14": {
+  "patch": {
+   "explanation": "\"Bonne journée !\" means \"Have a nice day!\" People often say it when leaving a shop or saying goodbye during the day."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l4/fra1p23q15": {
+  "patch": {
+   "explanation": "\"Quelle heure est-il ?\" means \"What time is it?\" Link \"heure\" and \"est\" smoothly, and run \"est-il\" together as \"è-til\"."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l4/fra1p23q16": {
+  "patch": {
+   "explanation": "\"Il est cinq heures.\" means \"It is five o'clock.\" Pronounce the -q of \"cinq\" and link it to \"heures\"; French uses \"il est\" for telling the time."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l4/fra1p23q17": {
+  "patch": {
+   "explanation": "\"J'habite à Paris.\" means \"I live in Paris.\" \"Je\" becomes \"j'\" before the silent h, and you use \"à\" before a city name."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l4/fra1p23q18": {
+  "patch": {
+   "explanation": "\"Je ne comprends pas.\" means \"I don't understand.\" The negation \"ne ... pas\" goes around the verb, and the final -ds of \"comprends\" is silent."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l4/fra1p23q19": {
+  "patch": {
+   "explanation": "\"Pouvez-vous répéter, s'il vous plaît ?\" means \"Can you repeat that, please?\" It is a polite vous question, ideal with teachers, shop staff or strangers."
+  },
+  "reason": "The phrase is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p23l5/fra1p23q20": {
+  "patch": {
+   "explanation": "\"Je suis fatigué.\" means \"I'm tired.\" A woman writes \"fatiguée\" with an extra -e, but it sounds exactly the same."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and gives neither the meaning nor the gender point a learner needs."
+ },
+ "fr:question:fra1p23l5/fra1p23q21": {
+  "patch": {
+   "explanation": "\"Il fait très beau ce matin.\" means \"The weather is really nice this morning.\" French talks about the weather with \"il fait\"."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and gives no meaning."
+ },
+ "fr:question:fra1p23l5/fra1p23q22": {
+  "patch": {
+   "explanation": "\"J'ai deux frères.\" means \"I have two brothers.\" Je + ai shortens to \"j'ai\", and the final -s of \"frères\" is silent."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and gives no meaning."
+ },
+ "fr:question:fra1p23l5/fra1p23q23": {
+  "patch": {
+   "explanation": "\"Je parle un peu français.\" means \"I speak a little French.\" After \"parler\" you can name the language without an article."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and gives no meaning."
+ },
+ "fr:question:fra1p23l5/fra1p23q24": {
+  "patch": {
+   "explanation": "\"Bonne chance !\" means \"Good luck!\" \"Chance\" is feminine, so the adjective is \"bonne\"."
+  },
+  "reason": "The phrase is correct, but the explanation is generic and gives no meaning."
+ },
  "fr:question:fra1p2l1/fra1p2q0": {
   "patch": {
    "explanation": "\"un\" is the French number 1; it is also the word for \"a\" before a masculine noun, as in un café."
@@ -3928,6 +4815,18 @@
   },
   "reason": "The explanation is a generic topic line and does not quote the answer."
  },
+ "fr:question:fra1p2l4/fra1p2q18": {
+  "patch": {
+   "explanation": "\"dix-neuf\" is built as dix (ten) + neuf (nine), joined with a hyphen, just like \"dix-huit\" (eighteen)."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
+ "fr:question:fra1p2l4/fra1p2q19": {
+  "patch": {
+   "explanation": "\"vingt\" means twenty. Its final -gt is silent, so it sounds like \"vin\"."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p2l5/fra1p2q20": {
   "patch": {
    "explanation": "\"vingt et un\" means twenty-one; 21, 31, 41 and so on use \"et\" (and), unlike \"vingt-deux\" (22)."
@@ -3970,11 +4869,83 @@
   },
   "reason": "The answer is correct, but the explanation is generic and does not quote the answer."
  },
+ "fr:question:fra1p3l1/fra1p3q2": {
+  "patch": {
+   "explanation": "\"la sœur\" means sister. It is feminine, so it takes \"la\", and it is spelled with the joined letters œ."
+  },
+  "reason": "The key is correct, but the explanation is generic."
+ },
  "fr:question:fra1p3l1/fra1p3q3": {
   "patch": {
    "explanation": "\"le frère\" means brother, a male sibling; don't confuse it with \"la sœur\" (sister) or \"le cousin\" (cousin)."
   },
   "reason": "The key is correct, but the explanation is a generic mapping that does not quote the answer in double quotes."
+ },
+ "fr:question:fra1p3l1/fra1p3q4": {
+  "patch": {
+   "explanation": "\"le fils\" means son; the final s is pronounced (\"feess\"). \"l'enfant\" means any child, not specifically a son."
+  },
+  "reason": "The key is correct, but the second sentence of the explanation is generic and the answer is not quoted."
+ },
+ "fr:question:fra1p3l2/fra1p3q5": {
+  "patch": {
+   "choices": [
+    "la fille",
+    "le fils",
+    "la femme",
+    "la sœur"
+   ],
+   "explanation": "\"la fille\" means daughter (it also means girl). \"le fils\" is the son and \"la sœur\" is the sister."
+  },
+  "reason": "\"la fille\" is the only feminine option, so gender alone gives the answer; the explanation is also generic."
+ },
+ "fr:question:fra1p3l2/fra1p3q6": {
+  "patch": {
+   "explanation": "\"la grand-mère\" means grandmother: grand + mère (mother), joined with a hyphen."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l2/fra1p3q7": {
+  "patch": {
+   "explanation": "\"le grand-père\" means grandfather: grand + père (father). \"la grand-mère\" is the grandmother."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l2/fra1p3q8": {
+  "patch": {
+   "explanation": "\"la tante\" means aunt, the sister of your mother or father."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l2/fra1p3q9": {
+  "patch": {
+   "explanation": "\"l'oncle\" means uncle. The word is masculine (un oncle), and le becomes l' before the vowel."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l3/fra1p3q10": {
+  "patch": {
+   "explanation": "\"le cousin\" is a male cousin; the masculine form ends in -in, pronounced nasally."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l3/fra1p3q11": {
+  "patch": {
+   "bank": [
+    "la cousine",
+    "le cousin",
+    "la tante",
+    "la sœur"
+   ],
+   "explanation": "\"la cousine\" is a female cousin: add -e to le cousin and pronounce the n. \"le cousin\" is the male form."
+  },
+  "reason": "\"la cousine\" is the only feminine option, and the word is an English cognate, so the female clue gives the answer away; the explanation is also generic."
+ },
+ "fr:question:fra1p3l3/fra1p3q12": {
+  "patch": {
+   "explanation": "\"le mari\" means husband. For wife, French usually says la femme."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p3l3/fra1p3q13": {
   "patch": {
@@ -3994,11 +4965,65 @@
   },
   "reason": "The answer is correct, but the explanation is generic and does not point out the feminine -e."
  },
+ "fr:question:fra1p3l4/fra1p3q16": {
+  "patch": {
+   "explanation": "\"l'homme\" means man; the h is silent, so le becomes l'."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l4/fra1p3q17": {
+  "patch": {
+   "explanation": "\"la femme\" means woman (and also wife); it is pronounced \"fam\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l4/fra1p3q18": {
+  "patch": {
+   "explanation": "\"l'enfant\" means child, a boy or a girl; le or la becomes l' before the vowel."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l4/fra1p3q19": {
+  "patch": {
+   "explanation": "\"le bébé\" means \"baby\". The noun is masculine, so it takes \"le\" even when the baby is a girl."
+  },
+  "reason": "The key and options are fine, but the explanation does not quote the answer and ends with a generic lesson line."
+ },
+ "fr:question:fra1p3l5/fra1p3q20": {
+  "patch": {
+   "explanation": "\"le garçon\" means \"boy\". Its counterpart for a girl is \"la fille\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l5/fra1p3q21": {
+  "patch": {
+   "explanation": "\"le voisin\" means \"neighbour\", the person who lives next door. A female neighbour is \"la voisine\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l5/fra1p3q22": {
+  "patch": {
+   "explanation": "\"le collègue\" means \"colleague\", someone you work with. Note the accent on the first e, and that a woman is \"la collègue\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p3l5/fra1p3q23": {
+  "patch": {
+   "explanation": "\"le professeur\" means \"teacher\", especially in secondary school. In everyday speech people often shorten it to \"le prof\"."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p3l5/fra1p3q24": {
   "patch": {
    "explanation": "\"l'étudiant\" means a (male) student; a female student is \"l'étudiante\"."
   },
   "reason": "Only one form of the word is in the bank, so there is no second answer, but the explanation is generic and should mention the feminine form."
+ },
+ "fr:question:fra1p4l1/fra1p4q0": {
+  "patch": {
+   "explanation": "\"rouge\" means \"red\". It already ends in -e, so it stays the same for masculine and feminine nouns."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p4l1/fra1p4q1": {
   "patch": {
@@ -4138,6 +5163,30 @@
   },
   "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
+ "fr:question:fra1p5l1/fra1p5q0": {
+  "patch": {
+   "explanation": "\"lundi\" means \"Monday\", the first day of the French week. Days of the week take no capital letter in French."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l1/fra1p5q1": {
+  "patch": {
+   "explanation": "\"mardi\" means \"Tuesday\", the day after \"lundi\". It is written with a small letter in French."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l1/fra1p5q2": {
+  "patch": {
+   "explanation": "\"mercredi\" means \"Wednesday\", the middle of the week. It is written with a small letter in French."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l1/fra1p5q3": {
+  "patch": {
+   "explanation": "\"jeudi\" means \"Thursday\", the day after \"mercredi\". It is written with a small letter in French."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra1p5l1/fra1p5q4": {
   "patch": {
    "explanation": "Friday is \"vendredi\", the day after \"jeudi\" (Thursday). French day names are written in lowercase."
@@ -4209,6 +5258,78 @@
    "explanation": "\"septembre\" means September. It is like the English word, but it ends in -bre and is written in lowercase."
   },
   "reason": "The explanation is generic boilerplate."
+ },
+ "fr:question:fra1p5l4/fra1p5q16": {
+  "patch": {
+   "explanation": "\"octobre\" means \"October\". Like all French months, it is written with a small letter."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l4/fra1p5q17": {
+  "patch": {
+   "explanation": "\"novembre\" means \"November\", the month after \"octobre\". French months are written with a small letter."
+  },
+  "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l4/fra1p5q18": {
+  "patch": {
+   "explanation": "December is \"décembre\". In French, month names take no capital letter, and note the accent on the é."
+  },
+  "reason": "The explanation does not quote the answer and ends with a generic lesson description; a useful note on lowercase months helps the learner."
+ },
+ "fr:question:fra1p5l4/fra1p5q19": {
+  "patch": {
+   "explanation": "Spring is \"le printemps\". It is the only season that keeps \"le\", because it starts with a consonant; you say \"au printemps\" for \"in spring\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l5/fra1p5q20": {
+  "patch": {
+   "explanation": "Summer is \"l'été\". \"Le\" shortens to \"l'\" before a vowel, and \"in summer\" is \"en été\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l5/fra1p5q21": {
+  "patch": {
+   "explanation": "Autumn is \"l'automne\". The \"m\" is silent, so it sounds like \"o-tonn\", and \"in autumn\" is \"en automne\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l5/fra1p5q22": {
+  "patch": {
+   "explanation": "Winter is \"l'hiver\". The h is silent, so \"le\" shortens to \"l'\", and \"in winter\" is \"en hiver\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l5/fra1p5q23": {
+  "patch": {
+   "explanation": "Today is \"aujourd'hui\". Don't confuse it with \"maintenant\" (now) or \"ce soir\" (tonight)."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p5l5/fra1p5q24": {
+  "patch": {
+   "explanation": "Tomorrow is \"demain\". Its opposite is \"hier\" (yesterday)."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l1/fra1p6q0": {
+  "patch": {
+   "explanation": "Head is \"la tête\". It is feminine, so it takes \"la\", and the ê has a circumflex."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l1/fra1p6q1": {
+  "patch": {
+   "explanation": "Hair on your head is \"les cheveux\". It is plural in French, unlike English; \"un cheveu\" is a single hair."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l1/fra1p6q2": {
+  "patch": {
+   "explanation": "Eye is \"l'œil\". Its plural is completely different: \"les yeux\" (eyes)."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
  },
  "fr:question:fra1p6l1/fra1p6q3": {
   "patch": {
@@ -4294,6 +5415,66 @@
   },
   "reason": "The key is correct, but the explanation is generic and does not quote the answer."
  },
+ "fr:question:fra1p6l4/fra1p6q17": {
+  "patch": {
+   "explanation": "Knee is \"le genou\". It is masculine, and its plural ends in x: \"les genoux\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l4/fra1p6q18": {
+  "patch": {
+   "explanation": "Foot is \"le pied\". The d is silent, and \"on foot\" is \"à pied\"."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l4/fra1p6q19": {
+  "patch": {
+   "explanation": "\"Skin\" is \"la peau\", a feminine noun. Don't confuse it with \"la poitrine\", which means chest."
+  },
+  "reason": "The explanation is a generic line and does not quote the answer in double quotes."
+ },
+ "fr:question:fra1p6l5/fra1p6q20": {
+  "patch": {
+   "explanation": "\"Face\" is \"le visage\". It is masculine even though it ends in -e."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l5/fra1p6q21": {
+  "patch": {
+   "explanation": "\"Heart\" is \"le cœur\", a masculine noun spelled with the joined letters œ."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l5/fra1p6q22": {
+  "patch": {
+   "explanation": "\"Elbow\" is \"le coude\". \"Le bras\" is the whole arm, not the joint in the middle."
+  },
+  "reason": "The explanation is generic and does not quote the answer; the arm/elbow contrast is worth stating."
+ },
+ "fr:question:fra1p6l5/fra1p6q23": {
+  "patch": {
+   "explanation": "\"Wrist\" is \"le poignet\", a masculine noun. The final t is silent."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p6l5/fra1p6q24": {
+  "patch": {
+   "explanation": "\"Chin\" is \"le menton\". \"Le nez\" is the nose, just above it."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p7l1/fra1p7q0": {
+  "patch": {
+   "explanation": "\"House\" is \"la maison\", a feminine noun, so you say une maison."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p7l1/fra1p7q1": {
+  "patch": {
+   "explanation": "\"Apartment\" is \"l'appartement\". The article becomes l' before a vowel. The word is masculine (un appartement) and is spelled with a double p."
+  },
+  "reason": "The explanation is generic and misses the useful elision and spelling point."
+ },
  "fr:question:fra1p7l1/fra1p7q2": {
   "patch": {
    "explanation": "\"la cuisine\" means \"kitchen\", the room where you cook. It is feminine, and the same word also means cooking or cuisine."
@@ -4366,11 +5547,89 @@
   },
   "reason": "The key is correct, but the explanation is generic and misses the useful point that French uses the singular here."
  },
+ "fr:question:fra1p7l3/fra1p7q14": {
+  "patch": {
+   "explanation": "\"Roof\" is \"le toit\", a masculine noun. The final t is silent."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p7l4/fra1p7q15": {
+  "patch": {
+   "bank": [
+    "le garage",
+    "la gare",
+    "la chambre",
+    "le mur"
+   ],
+   "explanation": "\"Garage\" is \"le garage\", a masculine noun. Careful: \"la gare\" means train station."
+  },
+  "reason": "The answer is spelled exactly like the English word and no other option resembles it, so a learner needs no French; adding the false friend \"la gare\" makes the item test real knowledge."
+ },
+ "fr:question:fra1p7l4/fra1p7q16": {
+  "patch": {
+   "choices": [
+    "la clé",
+    "le tableau",
+    "la table",
+    "la salle de bain"
+   ],
+   "explanation": "\"Table\" is \"la table\", a feminine noun. \"Le tableau\" looks similar but means a painting or a board."
+  },
+  "reason": "The answer is the identical English word with unrelated distractors; replacing one with the tempting \"le tableau\" removes the giveaway."
+ },
+ "fr:question:fra1p7l4/fra1p7q17": {
+  "patch": {
+   "explanation": "\"Chair\" is \"la chaise\", a feminine noun. Don't mix it up with \"la porte\", the door."
+  },
+  "reason": "The explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p7l4/fra1p7q18": {
+  "patch": {
+   "explanation": "\"le lit\" means bed, the piece of furniture you sleep in. Lit is masculine, so it takes \"le\". Don't confuse it with la chambre, the bedroom."
+  },
+  "reason": "The key and options are correct, but the explanation does not quote the answer in double quotes and its second sentence is a generic tag."
+ },
+ "fr:question:fra1p7l4/fra1p7q19": {
+  "patch": {
+   "explanation": "\"le canapé\" means sofa (couch). Canapé is masculine, so it takes \"le\"."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p7l5/fra1p7q20": {
+  "patch": {
+   "explanation": "\"la lampe\" means lamp, and it looks almost like the English word. Lampe is feminine, so it takes \"la\"."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p7l5/fra1p7q21": {
+  "patch": {
+   "explanation": "\"le miroir\" means mirror, the glass you look at yourself in. Miroir is masculine, so it takes \"le\"."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p7l5/fra1p7q22": {
+  "patch": {
+   "explanation": "\"la clé\" means key, the thing that opens a door. Clé is feminine, so it takes \"la\"."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p7l5/fra1p7q23": {
+  "patch": {
+   "explanation": "\"l'étagère\" means shelf. Étagère is a feminine noun starting with a vowel, so la becomes l'."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
  "fr:question:fra1p7l5/fra1p7q24": {
   "patch": {
    "explanation": "\"le tapis\" is the piece of fabric laid on the floor, so it means \"carpet\" or rug. \"le sol\" is the floor itself."
   },
   "reason": "\"le sol\" means floor and is not a second answer, so the bank stays; the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p8l1/fra1p8q0": {
+  "patch": {
+   "explanation": "\"manger\" means to eat. It is a regular -er verb, as in Je mange une pomme."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
  },
  "fr:question:fra1p8l1/fra1p8q1": {
   "patch": {
@@ -4450,11 +5709,53 @@
   },
   "reason": "The key is correct, but the explanation is a generic template line and does not put the answer in double quotes."
  },
+ "fr:question:fra1p8l3/fra1p8q14": {
+  "patch": {
+   "explanation": "\"acheter\" means to buy, as in acheter du pain (to buy bread)."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p8l4/fra1p8q15": {
+  "patch": {
+   "explanation": "\"vendre\" means to sell, the opposite of acheter (to buy). Don't confuse it with attendre, which means to wait."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p8l4/fra1p8q16": {
+  "patch": {
+   "explanation": "\"ouvrir\" means to open, as in ouvrir la porte (to open the door)."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p8l4/fra1p8q17": {
+  "patch": {
+   "explanation": "\"fermer\" means to close, the opposite of ouvrir (to open), as in fermer la fenêtre."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
+ "fr:question:fra1p8l4/fra1p8q18": {
+  "patch": {
+   "explanation": "\"regarder\" means to look (at) or to watch, as in regarder la télé. It takes no word for at."
+  },
+  "reason": "The key is correct, but the explanation does not quote the answer and ends with a generic tag."
+ },
  "fr:question:fra1p8l4/fra1p8q19": {
   "patch": {
    "explanation": "\"attendre\" means \"to wait\" (for example, attendre le bus); \"vendre\" only looks similar and means to sell."
   },
   "reason": "The options are fine because no other option means to wait, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra1p8l5/fra1p8q20": {
+  "patch": {
+   "explanation": "\"aider\" means \"to help\"; it is a regular -er verb, as in « Je peux t'aider ? »."
+  },
+  "reason": "The key is correct, but the explanation's second sentence is a generic lesson tagline and the answer is not in double quotes."
+ },
+ "fr:question:fra1p8l5/fra1p8q21": {
+  "patch": {
+   "explanation": "\"aimer\" means \"to love\", and also \"to like\" for things, as in « J'aime le chocolat »."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
  },
  "fr:question:fra1p8l5/fra1p8q22": {
   "patch": {
@@ -4473,6 +5774,162 @@
    "explanation": "\"avoir besoin de\" means \"to need\" (j'ai besoin d'aide); \"avoir envie de\" means to feel like, \"avoir peur de\" to be afraid of and \"avoir faim\" to be hungry."
   },
   "reason": "The key is the only multi-word phrase in a bank of single verbs, so a learner can find it by its shape alone; the distractors should be similar avoir phrases."
+ },
+ "fr:question:fra1p8l5/fra1p8q24": {
+  "patch": {
+   "explanation": "\"vivre\" means \"to live\" (to be alive, or to live somewhere), as in « Je vis à Paris »."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l1/fra1p9q0": {
+  "patch": {
+   "explanation": "\"le chien\" means \"dog\"; it is masculine, so it takes \"le\"."
+  },
+  "reason": "The key is correct, but the explanation ends with a generic lesson tagline and the answer is unquoted."
+ },
+ "fr:question:fra1p9l1/fra1p9q1": {
+  "patch": {
+   "explanation": "\"le chat\" means \"cat\"; it is masculine, and the final -t is silent."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l1/fra1p9q2": {
+  "patch": {
+   "explanation": "\"l'oiseau\" means \"bird\"; \"le\" becomes \"l'\" before a vowel, and the word is masculine."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l1/fra1p9q3": {
+  "patch": {
+   "explanation": "\"le cheval\" means \"horse\"; it is masculine, and the plural is irregular: \"les chevaux\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l1/fra1p9q4": {
+  "patch": {
+   "explanation": "\"la vache\" means \"cow\"; it is feminine, so it takes \"la\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l2/fra1p9q5": {
+  "patch": {
+   "explanation": "\"le cochon\" means \"pig\"; it is masculine, so it takes \"le\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l2/fra1p9q6": {
+  "patch": {
+   "explanation": "\"le mouton\" means \"sheep\"; it is masculine, so it takes \"le\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l2/fra1p9q7": {
+  "patch": {
+   "explanation": "\"la poule\" is the live hen (feminine); chicken as meat is \"le poulet\"."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline and could usefully separate the live hen from chicken meat."
+ },
+ "fr:question:fra1p9l2/fra1p9q8": {
+  "patch": {
+   "explanation": "\"le canard\" means \"duck\"; it is masculine, and the final -d is silent."
+  },
+  "reason": "The key is correct, but the explanation is a generic tagline with the answer unquoted."
+ },
+ "fr:question:fra1p9l2/fra1p9q9": {
+  "patch": {
+   "explanation": "A rabbit is \"le lapin\" in French. Lapin is a masculine noun, so it takes le; le renard is a fox."
+  },
+  "reason": "The key is correct, but the explanation's second sentence is a generic topic line and the answer is not quoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l3/fra1p9q10": {
+  "patch": {
+   "explanation": "A mouse is \"la souris\" in French. Souris is a feminine noun, so it takes la, unlike most animals in this list."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted; the feminine gender is worth pointing out. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l3/fra1p9q11": {
+  "patch": {
+   "explanation": "A fish is \"le poisson\" in French. Poisson is masculine and is spelled with a double s, which gives the s sound."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l3/fra1p9q12": {
+  "patch": {
+   "explanation": "A lion is \"le lion\" in French. The spelling is the same as in English, but the word is masculine and ends in a nasal vowel: the n is not pronounced as a separate sound."
+  },
+  "reason": "The key is correct (the cognate is inherent to the word), but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word. / Saying lion is said \"without a final n sound\" is loosely true but hides that the ending is a nasal vowel; clarifying the nasal avoids misleading learners."
+ },
+ "fr:question:fra1p9l3/fra1p9q13": {
+  "patch": {
+   "explanation": "A tiger is \"le tigre\" in French. Note the -re ending, where English has -er, and the masculine article le."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l3/fra1p9q14": {
+  "patch": {
+   "explanation": "A bear is \"l'ours\" in French. Ours starts with a vowel, so le shortens to l'."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted; the elision is worth explaining. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l4/fra1p9q15": {
+  "patch": {
+   "explanation": "An elephant is \"l'éléphant\" in French. Éléphant starts with a vowel, so le shortens to l'. Note the two accents."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l4/fra1p9q16": {
+  "patch": {
+   "explanation": "A monkey is \"le singe\" in French. Singe is a masculine noun, so it takes le."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l4/fra1p9q17": {
+  "patch": {
+   "explanation": "A wolf is \"le loup\" in French. The final p is silent, and l'ours is a bear."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l4/fra1p9q18": {
+  "patch": {
+   "explanation": "A fox is \"le renard\" in French. Renard is a masculine noun, and its final d is silent."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l4/fra1p9q19": {
+  "patch": {
+   "explanation": "A frog is \"la grenouille\" in French. Grenouille is a feminine noun, so it takes la, and le canard is a duck."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l5/fra1p9q20": {
+  "patch": {
+   "explanation": "A snake is \"le serpent\" in French. Serpent is a masculine noun, and its final t is silent."
+  },
+  "reason": "The key is correct, but the explanation is generic and unquoted. / The tail of the explanation is a generic lesson line that does not teach anything about this word."
+ },
+ "fr:question:fra1p9l5/fra1p9q21": {
+  "patch": {
+   "explanation": "\"Turtle\" is \"la tortue\". It is a feminine noun, so it takes \"la\" (une tortue)."
+  },
+  "reason": "The key is correct, but the explanation ends with a generic lesson tagline and says nothing useful about the word."
+ },
+ "fr:question:fra1p9l5/fra1p9q22": {
+  "patch": {
+   "explanation": "\"Bee\" is \"l'abeille\". It is feminine (une abeille), and \"la\" shortens to \"l'\" before the vowel."
+  },
+  "reason": "The key is correct; the generic tagline should be replaced by a note on gender and elision."
+ },
+ "fr:question:fra1p9l5/fra1p9q23": {
+  "patch": {
+   "explanation": "\"Butterfly\" is \"le papillon\". It is a masculine noun, so it takes \"le\" (un papillon)."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
+ },
+ "fr:question:fra1p9l5/fra1p9q24": {
+  "patch": {
+   "explanation": "\"Spider\" is \"l'araignée\". It is feminine (une araignée), and \"la\" becomes \"l'\" before the vowel."
+  },
+  "reason": "The key is correct; the explanation is a generic tagline."
  },
  "fr:question:fra2p10l1/fra2p10q0": {
   "patch": {
@@ -4951,6 +6408,36 @@
   },
   "reason": "The item is fine as a vocabulary check, but the explanation is generic and does not quote the answer."
  },
+ "fr:question:fra2p13l1/fra2p13q1": {
+  "patch": {
+   "explanation": "\"après\" means \"after\" and comes before the event, as in \"après le dîner\" (after dinner)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now gives an example."
+ },
+ "fr:question:fra2p13l1/fra2p13q2": {
+  "patch": {
+   "explanation": "\"pendant\" means \"during\" and comes before a period of time, as in \"pendant les vacances\" (during the holidays)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now gives an example."
+ },
+ "fr:question:fra2p13l1/fra2p13q3": {
+  "patch": {
+   "explanation": "\"depuis\" means \"since\" for a starting point that still continues now, as in \"J'habite ici depuis lundi\" (I've lived here since Monday)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now shows the starting-point use."
+ },
+ "fr:question:fra2p13l1/fra2p13q4": {
+  "patch": {
+   "explanation": "\"jusqu'à\" means \"until\", as in \"jusqu'à midi\" (until noon); with a masculine noun it becomes \"jusqu'au\".",
+   "bank": [
+    "depuis",
+    "jusqu'à",
+    "vers",
+    "avant"
+   ]
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now gives an example and the contracted form. / \"le\" is an article, not a time preposition, so it is an absurd distractor; replace it and the multi-word phrase with real time prepositions."
+ },
  "fr:question:fra2p13l2/fra2p13q5": {
   "patch": {
    "prompt": "Choose the right word: Hier soir, j'ai dormi ___ huit heures.",
@@ -4970,12 +6457,30 @@
   },
   "reason": "The key is the only fitting option, but the explanation falsely calls the article \"le\" a preposition."
  },
+ "fr:question:fra2p13l2/fra2p13q8": {
+  "patch": {
+   "explanation": "\"à\" gives an exact clock time, as in \"à huit heures\" (at eight o'clock); \"vers\" would mean \"around\" a time."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now contrasts the answer with the tempting \"vers\"."
+ },
+ "fr:question:fra2p13l2/fra2p13q9": {
+  "patch": {
+   "explanation": "\"de…à\" marks the start and end of a time span, as in \"de neuf heures à midi\" (from nine to noon)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now shows the time-span use."
+ },
  "fr:question:fra2p13l3/fra2p13q10": {
   "patch": {
    "prompt": "The French word for \"in\" (= from now, as in \"in two days\") is…",
    "explanation": "\"dans\" says how long from now something will happen: \"dans deux jours\" means \"in two days' time\"; \"avant\" means \"before\"."
   },
   "reason": "\"dans\" means \"in (X time from now)\", not \"within\" (\"en moins de\" or \"d'ici\"), so the clue teaches a false equivalence; the gloss is changed and the key stays."
+ },
+ "fr:question:fra2p13l3/fra2p13q11": {
+  "patch": {
+   "explanation": "To say how long ago something happened, French puts \"il y a\" before the length of time: \"il y a deux jours\" means \"two days ago\"."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key and options are fine, but the explanation is generic and does not quote the answer, so it is rewritten to give the rule."
  },
  "fr:question:fra2p13l3/fra2p13q12": {
   "patch": {
@@ -5466,11 +6971,35 @@
   },
   "reason": "Replace the generic explanation with one tied to the subject pronoun and the inverted verb ending."
  },
+ "fr:question:fra2p17l1/fra2p17q3": {
+  "patch": {
+   "explanation": "\"parfois\" means \"sometimes\"; \"jamais\" is never, \"presque jamais\" is almost never and \"régulièrement\" is regularly."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is generic and does not quote the answer, so it now separates the answer from the distractors."
+ },
  "fr:question:fra2p17l2/fra2p17q8": {
   "patch": {
    "explanation": "\"toutes les semaines\" means 'every week' (literally 'all the weeks'); \"chaque mois\" is every month, and the others give no fixed interval."
   },
   "reason": "The key is correct and is the only bank option meaning 'every week', but the explanation is a generic gloss."
+ },
+ "fr:question:fra2p17l2/fra2p17q9": {
+  "patch": {
+   "explanation": "\"tous les mois\" means \"every month\": \"tous les\" plus a plural time word gives \"every\", so \"tous les jours\" would be every day."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is generic and does not quote the answer, so it now gives the \"tous les\" pattern."
+ },
+ "fr:question:fra2p17l3/fra2p17q10": {
+  "patch": {
+   "explanation": "\"une fois\" means one time (once), built from fois (time, occasion), as in « Je vais au cinéma une fois par mois ». \"toujours\" means always and \"tous les jours\" means every day."
+  },
+  "reason": "The item is correct, but the explanation is a generic line that doesn't explain anything."
+ },
+ "fr:question:fra2p17l3/fra2p17q11": {
+  "patch": {
+   "explanation": "\"deux fois\" literally means two times, which is how French says twice, as in « Je l'appelle deux fois par semaine ». The other options are general frequency words, not a count."
+  },
+  "reason": "The item is correct, but the explanation is generic."
  },
  "fr:question:fra2p17l3/fra2p17q12": {
   "patch": {
@@ -5489,6 +7018,18 @@
    "explanation": "\"constamment\" means 'constantly', all the time without stopping; it is built like the English word, with -amment matching '-antly'."
   },
   "reason": "The key is correct and the distractors are fine; the explanation is generic."
+ },
+ "fr:question:fra2p17l4/fra2p17q15": {
+  "patch": {
+   "explanation": "\"régulièrement\" is régulier plus the adverb ending -ment, just like regular plus -ly in English. \"rarement\" means rarely, the opposite idea."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
+ "fr:question:fra2p17l4/fra2p17q16": {
+  "patch": {
+   "explanation": "\"fréquemment\" comes from fréquent; adjectives ending in -ent form their adverb with -emment. \"de temps à autre\" means from time to time, which is less often."
+  },
+  "reason": "The item is correct, but the explanation is generic."
  },
  "fr:question:fra2p17l4/fra2p17q18": {
   "patch": {
@@ -5736,11 +7277,41 @@
   },
   "reason": "The generic explanation would fit any item."
  },
+ "fr:question:fra2p19l2/fra2p19q8": {
+  "patch": {
+   "explanation": "\"le projet\" is the French word for a project and is masculine, as in « Nous travaillons sur un nouveau projet ». \"le rapport\" is a report."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
  "fr:question:fra2p19l2/fra2p19q9": {
   "patch": {
    "explanation": "\"le courriel\" is the official French word for an email; in everyday speech in France people often say \"le mail\"."
   },
   "reason": "\"courriel\" is official in France as well as Quebec, so the key stands, but the explanation is generic and should mention the everyday European word."
+ },
+ "fr:question:fra2p19l3/fra2p19q10": {
+  "patch": {
+   "explanation": "\"le rapport\" is a written report, as in « Je dois finir le rapport ce soir ». \"le courriel\" is an email, not a report."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
+ "fr:question:fra2p19l3/fra2p19q11": {
+  "patch": {
+   "explanation": "\"le contrat\" is a contract. Note the spelling: there is no c before the t, unlike English contract."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
+ "fr:question:fra2p19l3/fra2p19q12": {
+  "patch": {
+   "explanation": "\"l'entretien\" is the word for a job interview, as in « J'ai un entretien demain ». A media interview is usually une interview."
+  },
+  "reason": "The item is correct, but the explanation is generic and should make clear it means a job interview."
+ },
+ "fr:question:fra2p19l3/fra2p19q13": {
+  "patch": {
+   "explanation": "\"le CV\" (curriculum vitae) is what French speakers call a résumé, and it is masculine. You send it before an entretien."
+  },
+  "reason": "The item is correct, but the explanation is generic."
  },
  "fr:question:fra2p19l3/fra2p19q14": {
   "patch": {
@@ -5748,11 +7319,35 @@
   },
   "reason": "A cognate is acceptable in an A2 vocabulary item because the learner still learns the gender, but the explanation is generic."
  },
+ "fr:question:fra2p19l4/fra2p19q15": {
+  "patch": {
+   "explanation": "\"les vacances\" means vacation or holidays and is always plural in this sense, as in « Je pars en vacances en août »."
+  },
+  "reason": "The item is correct, but the explanation is generic and misses the key plural point."
+ },
+ "fr:question:fra2p19l4/fra2p19q16": {
+  "patch": {
+   "explanation": "\"la pause\" is a short break from work, as in « On fait une pause café ? ». It is feminine."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
+ "fr:question:fra2p19l4/fra2p19q17": {
+  "patch": {
+   "explanation": "\"la tâche\" means a task or job to do and is feminine. Keep the circumflex: without it, la tache means a stain."
+  },
+  "reason": "The item is correct, but the explanation is generic."
+ },
  "fr:question:fra2p19l4/fra2p19q18": {
   "patch": {
    "explanation": "\"l'équipe\" means the team, the group of people you work with; it is feminine (une équipe) and elides to l' before the vowel."
   },
   "reason": "The key is correct, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra2p19l4/fra2p19q19": {
+  "patch": {
+   "explanation": "\"Client\" is spelled the same in French, and it is masculine, so it takes \"le\": \"le client\" (a female client is \"la cliente\")."
+  },
+  "reason": "The key is right, but the explanation is a generic line and does not quote the answer in double quotes."
  },
  "fr:question:fra2p19l5/fra2p19q20": {
   "patch": {
@@ -5760,11 +7355,29 @@
   },
   "reason": "The cognate is acceptable at A2, but the generic explanation should point out the gender and the accent."
  },
+ "fr:question:fra2p19l5/fra2p19q21": {
+  "patch": {
+   "explanation": "A computer is \"l'ordinateur\"; it is masculine (un ordinateur), and \"le\" becomes \"l'\" before the vowel."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra2p19l5/fra2p19q22": {
   "patch": {
    "explanation": "\"l'imprimante\" is the printer, from the verb imprimer (to print); it is feminine and takes l' because it starts with a vowel."
   },
   "reason": "Distractors from the same lesson are normal here, but the explanation is generic."
+ },
+ "fr:question:fra2p19l5/fra2p19q23": {
+  "patch": {
+   "explanation": "\"To hire\" is \"embaucher\"; don't confuse it with its opposite, licencier (to fire)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra2p19l5/fra2p19q24": {
+  "patch": {
+   "explanation": "To leave your job by choice is \"démissionner\" (the noun is la démission, a resignation)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra2p1l1/fra2p1q0": {
   "patch": {
@@ -5918,11 +7531,35 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "fr:question:fra2p20l1/fra2p20q0": {
+  "patch": {
+   "explanation": "\"City\" or \"town\" is \"la ville\", a feminine noun; the town centre is le centre-ville."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra2p20l1/fra2p20q1": {
+  "patch": {
+   "explanation": "A street is \"la rue\", a feminine noun, as in « J'habite rue Victor-Hugo »."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra2p20l1/fra2p20q2": {
   "patch": {
    "explanation": "\"l'avenue\" is spelled like the English word, but it is feminine, so \"la\" elides to \"l'\" before the vowel. \"la rue\" is the general word for a street."
   },
   "reason": "The cognate is acceptable for A2 vocabulary because the item still tests the article and elision, but the explanation is generic."
+ },
+ "fr:question:fra2p20l1/fra2p20q3": {
+  "patch": {
+   "explanation": "A town square is \"la place\"; careful, it does not mean \"place\" in the English sense, and a square shape is un carré."
+  },
+  "reason": "The key is right, but the explanation is generic and should warn learners about the false friend."
+ },
+ "fr:question:fra2p20l1/fra2p20q4": {
+  "patch": {
+   "explanation": "A bridge is \"le pont\", a masculine noun, as in le pont Neuf in Paris."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
  },
  "fr:question:fra2p20l2/fra2p20q5": {
   "patch": {
@@ -5984,6 +7621,24 @@
   },
   "reason": "The key is correct, but the explanation is generic."
  },
+ "fr:question:fra2p20l4/fra2p20q15": {
+  "patch": {
+   "explanation": "A park is \"le parc\", spelled with a c and masculine; it does not mean a car park, which is un parking."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
+ "fr:question:fra2p20l4/fra2p20q16": {
+  "patch": {
+   "explanation": "A library is \"la bibliothèque\"; la librairie is a false friend and means a bookshop."
+  },
+  "reason": "The key is right, but the explanation is generic and should warn learners about the false friend librairie."
+ },
+ "fr:question:fra2p20l4/fra2p20q17": {
+  "patch": {
+   "explanation": "A church is \"l'église\", a feminine noun; \"la\" becomes \"l'\" before the vowel."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer."
+ },
  "fr:question:fra2p20l4/fra2p20q18": {
   "patch": {
    "explanation": "\"le marché\" is a market where stalls sell food and goods. \"la mairie\" is the town hall and \"le pont\" a bridge."
@@ -6025,6 +7680,126 @@
    "explanation": "\"le sens unique\" is a one-way street, where cars may drive in one direction only; the full form is « une rue à sens unique »."
   },
   "reason": "The explanation is generic; \"le sens unique\" is the standard colloquial term for a one-way street, so the key stands."
+ },
+ "fr:question:fra2p21l1/fra2p21q0": {
+  "patch": {
+   "acceptableAnswers": [
+    "Hier, je suis allé au marché.",
+    "Hier, je suis allée au marché.",
+    "Je suis allé au marché hier.",
+    "Je suis allée au marché hier."
+   ],
+   "explanation": "One way to say it: \"Hier, je suis allé au marché.\" Aller takes être in the passé composé, so a woman writes allée, and \"au\" is à + le before marché."
+  },
+  "reason": "The feminine form with \"hier\" at the end is missing, so a female learner writing it would be marked wrong; the explanation is also generic."
+ },
+ "fr:question:fra2p21l1/fra2p21q1": {
+  "patch": {
+   "explanation": "\"Comment s'est passé ton week-end ?\" literally means \"How did your weekend go?\". It uses \"se passer\" in the passé composé with \"être\", and \"ton\" because you ask a friend."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line with a fragment sentence and does not say why the wording works."
+ },
+ "fr:question:fra2p21l1/fra2p21q2": {
+  "patch": {
+   "explanation": "\"Je vais voyager l'été prochain.\" uses the near future: \"aller\" in the present plus the infinitive \"voyager\", for a plan you have already made."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l1/fra2p21q3": {
+  "patch": {
+   "explanation": "\"C'est cassé.\" means \"It's broken\". \"Cassé\" is the past participle of \"casser\" (to break), used here like an adjective after \"c'est\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l1/fra2p21q4": {
+  "patch": {
+   "explanation": "\"Une table pour deux, s'il vous plaît.\" is the usual short request in a restaurant. You use \"s'il vous plaît\" because you are speaking politely to staff."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l2/fra2p21q5": {
+  "patch": {
+   "explanation": "\"J'ai oublié mes clés.\" uses the passé composé of \"oublier\" with \"avoir\" for a finished action. Keys are plural, so you say \"mes clés\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l2/fra2p21q6": {
+  "patch": {
+   "explanation": "\"Cette place est-elle libre ?\" means \"Is this seat free?\". French asks either whether a seat is \"libre\" (free) or \"prise\" (taken), and here the subject is inverted to form a more formal question."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line. / The claim that French usually prefers \"libre\" over \"prise\" is overstated, since both are common, and inversion is formal rather than specially polite."
+ },
+ "fr:question:fra2p21l2/fra2p21q7": {
+  "patch": {
+   "explanation": "\"J'habitais à Lyon avant.\" uses the imparfait \"habitais\" to describe an ongoing past situation, which matches English \"used to live\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l2/fra2p21q8": {
+  "patch": {
+   "explanation": "\"Je te recommande ce restaurant.\" uses \"te\" because you are talking to a friend, and \"recommander\" means \"to recommend\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l2/fra2p21q9": {
+  "patch": {
+   "explanation": "\"Qu'est-ce que tu penses du film ?\" uses \"penser de\" (to think of). \"De\" plus \"le\" becomes \"du\" before \"film\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l3/fra2p21q11": {
+  "patch": {
+   "explanation": "\"J'ai raté le bus.\" uses the passé composé of \"rater\", the everyday verb for missing a bus or train (\"manquer\" is a little more formal)."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l3/fra2p21q13": {
+  "patch": {
+   "explanation": "\"Je cherche un emploi.\" uses \"chercher\" without a preposition: it already means \"to look for\", so never say \"chercher pour\"."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l4/fra2p21q15": {
+  "patch": {
+   "explanation": "\"Il a fait un temps horrible hier.\" uses the weather expression \"il fait\" in the passé composé, because yesterday's weather is a finished period."
+  },
+  "reason": "The answers are correct, but the explanation is a generic template line."
+ },
+ "fr:question:fra2p21l4/fra2p21q16": {
+  "patch": {
+   "explanation": "\"Et si on allait à la plage ?\" uses si + the imperfect to make a friendly suggestion. \"On pourrait aller à la plage.\" or \"Allons à la plage !\" also work."
+  },
+  "reason": "The French is fine, but the explanation's second sentence is a generic lesson blurb that does not explain the answer."
+ },
+ "fr:question:fra2p21l4/fra2p21q17": {
+  "patch": {
+   "explanation": "\"J'ai déjà mangé.\" uses the passé composé with \"déjà\" placed between the auxiliary and the past participle to say you have already eaten."
+  },
+  "reason": "The accepted answers are correct, but the explanation is a generic line that would fit any item."
+ },
+ "fr:question:fra2p21l5/fra2p21q20": {
+  "patch": {
+   "explanation": "\"Désolé pour le retard.\" is the everyday way to apologize for being late; a woman writes \"Désolée\" with an extra -e."
+  },
+  "reason": "The answers are fine, but the explanation is generic and does not mention the gender agreement it relies on."
+ },
+ "fr:question:fra2p21l5/fra2p21q22": {
+  "patch": {
+   "explanation": "\"Quel est le mot de passe wifi ?\" uses \"quel\" to ask which specific thing, here the wifi password; \"Avez-vous le mot de passe du wifi ?\" is a polite alternative."
+  },
+  "reason": "The answers are acceptable, but the explanation is a generic blurb."
+ },
+ "fr:question:fra2p21l5/fra2p21q23": {
+  "patch": {
+   "explanation": "\"Je vais étudier ce soir.\" uses the near future (aller + infinitive) for a plan; \"compter\" or \"avoir l'intention de\" + infinitive also express intention."
+  },
+  "reason": "The answers are fine, but the explanation is generic."
+ },
+ "fr:question:fra2p21l5/fra2p21q24": {
+  "patch": {
+   "explanation": "\"Pouvez-vous parler plus lentement ?\" uses pouvoir + infinitive with \"plus lentement\" (more slowly) to make a polite request to someone you address as vous."
+  },
+  "reason": "The answers are fine and consistently use vous, but the explanation is generic."
  },
  "fr:question:fra2p22l1/fra2p22q0": {
   "patch": {
@@ -6092,6 +7867,18 @@
   },
   "reason": "Adding 'Ces photos' as the reviewer suggests would create a homophone second answer; only the generic explanation needs fixing."
  },
+ "fr:question:fra2p22l3/fra2p22q12": {
+  "patch": {
+   "explanation": "The audio says \"Nous avons vu la mer depuis la fenêtre de l'hôtel.\" \"mer\" (sea) and \"mère\" (mother) sound the same, so listen for \"la\" rather than \"sa\" before the noun."
+  },
+  "reason": "The item works, but the explanation does not point out the mer/mère contrast."
+ },
+ "fr:question:fra2p22l3/fra2p22q13": {
+  "patch": {
+   "explanation": "The audio says \"Nous avons vu sa mère depuis la fenêtre de l'hôtel.\" \"mère\" (mother) sounds like \"mer\" (sea), so the clue is \"sa\" instead of \"la\"."
+  },
+  "reason": "The item works, but the explanation is a generic blurb."
+ },
  "fr:question:fra2p22l3/fra2p22q14": {
   "patch": {
    "explanation": "The audio says \"Elle pense souvent à la mer de son enfance.\" \"Mer\" (sea) and \"mère\" (mother) sound the same, so listen for the ending \"de son enfance\", which only this option has."
@@ -6110,17 +7897,203 @@
   },
   "reason": "The item is answerable because only C matches the audio, but the explanation is a generic lesson blurb and says nothing about the sound being practised."
  },
+ "fr:question:fra2p22l4/fra2p22q17": {
+  "patch": {
+   "explanation": "The audio says \"La taille de ce pin a beaucoup augmenté cette année.\" \"pin\" (pine tree) and \"pain\" (bread) sound alike, so listen for \"La taille de ce\" rather than \"Le prix du\"."
+  },
+  "reason": "The item is usable, but the explanation is a generic blurb."
+ },
+ "fr:question:fra2p22l4/fra2p22q18": {
+  "patch": {
+   "explanation": "The audio says \"Elle achète chaque semaine du pain complet.\" \"du pain complet\" (wholemeal bread) contrasts with \"un jeune pin\" (a young pine), even though pain and pin sound alike."
+  },
+  "reason": "The item works, but the explanation is generic."
+ },
+ "fr:question:fra2p22l4/fra2p22q19": {
+  "patch": {
+   "explanation": "The audio says \"Elle achète chaque semaine un jeune pin.\" \"un jeune pin\" (a young pine) differs from \"du pain complet\" in its article and adjective, even though pin and pain sound alike."
+  },
+  "reason": "The item works, but the explanation is generic."
+ },
  "fr:question:fra2p22l5/fra2p22q20": {
   "patch": {
    "explanation": "The audio says \"Le cou me fait vraiment mal depuis ce matin.\" Here \"le cou\" means the neck, so the sentence means my neck has really hurt since this morning."
   },
   "reason": "Only A contains \"cou\", so the item is answerable, but the explanation is a generic lesson blurb."
  },
+ "fr:question:fra2p22l5/fra2p22q22": {
+  "patch": {
+   "explanation": "The audio says \"Le mur de la cuisine est peint en vert.\" \"vert\" (green) and \"verre\" (glass) sound the same, so listen for \"peint\" (painted) instead of \"fait\" (made)."
+  },
+  "reason": "The item works, but the explanation is generic."
+ },
  "fr:question:fra2p22l5/fra2p22q23": {
   "patch": {
    "explanation": "The audio says \"Le mur de la cuisine est fait en verre.\" The words \"verre\" (glass) and \"vert\" (green) sound the same, so listen for \"fait en\" (made of) rather than \"peint en\" (painted)."
   },
   "reason": "B and C stay distinguishable through \"fait\" versus \"peint\", but the explanation is generic and should point to that clue, because \"verre\" and \"vert\" sound identical."
+ },
+ "fr:question:fra2p22l5/fra2p22q24": {
+  "patch": {
+   "choices": [
+    "Ces vêtements sont vraiment très grands.",
+    "Ces vêtements sont vraiment trop grands.",
+    "Ces vêtements sont vraiment trop gris.",
+    "Ces vêtements sont vraiment trop longs."
+   ],
+   "explanation": "The audio says \"Ces vêtements sont vraiment trop grands.\" Listen for \"trop\" (too), not \"très\" (very), and for the nasal vowel in \"grands\", which is not the \"i\" of \"gris\"."
+  },
+  "reason": "The keyed sentence shares no sounds with the distractors, so it can be picked without careful listening. Options A and D (cou/coup) are exact homophones, which makes them a broken pair rather than a minimal pair, and the explanation is the generic lesson tagline."
+ },
+ "fr:question:fra2p23l1/fra2p23q0": {
+  "patch": {
+   "explanation": "Target phrase: \"Est-ce que tu es libre ce soir ?\" Starting with \"Est-ce que\" turns a statement into a yes/no question, and \"tu\" fits asking a friend."
+  },
+  "reason": "The phrase is fine, but the second sentence of the explanation is a generic lesson tagline."
+ },
+ "fr:question:fra2p23l1/fra2p23q1": {
+  "patch": {
+   "explanation": "Target phrase: \"On peut se voir demain ?\" In everyday speech \"on\" means \"we\", and a rising voice alone makes it a question."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l1/fra2p23q2": {
+  "patch": {
+   "explanation": "Target phrase: \"Je dois partir maintenant.\" \"Devoir\" plus an infinitive means \"to have to\", and the final \"s\" of \"dois\" and \"t\" of \"maintenant\" are silent."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l1/fra2p23q3": {
+  "patch": {
+   "explanation": "Target phrase: \"Pouvez-vous m'aider, s'il vous plaît ?\" Inverting \"vous pouvez\" to \"Pouvez-vous\" gives a polite question for asking a stranger for help."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l1/fra2p23q4": {
+  "patch": {
+   "explanation": "Target phrase: \"Je cherche la gare.\" \"Chercher\" means \"to look for\" and takes no preposition, so there is no word for \"for\" before \"la gare\"."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l2/fra2p23q5": {
+  "patch": {
+   "explanation": "Target phrase: \"C'est à quelle distance ?\" This is a natural spoken way to ask how far away something is, with \"à\" before \"quelle distance\"."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l2/fra2p23q6": {
+  "patch": {
+   "explanation": "Target phrase: \"Combien ça coûte ?\" This is the everyday way to ask a price, and the final \"-te\" of \"coûte\" is pronounced."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l2/fra2p23q7": {
+  "patch": {
+   "explanation": "Target phrase: \"Je voudrais réserver une table.\" \"Je voudrais\" (I would like) is the polite form to use when booking at a restaurant."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l2/fra2p23q8": {
+  "patch": {
+   "explanation": "Target phrase: \"Avez-vous une chambre libre ?\" Inverting to \"Avez-vous\" makes a polite question for a hotel receptionist, and \"libre\" means available."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l2/fra2p23q9": {
+  "patch": {
+   "explanation": "Target phrase: \"Le train part à quelle heure ?\" In spoken French \"à quelle heure\" can come at the end of the question, with the voice rising."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l3/fra2p23q10": {
+  "patch": {
+   "explanation": "Target phrase: \"J'ai besoin d'un médecin.\" \"Avoir besoin de\" means \"to need\", and \"de\" shortens to \"d'\" before \"un\"."
+  },
+  "reason": "The phrase is fine, but the explanation is generic."
+ },
+ "fr:question:fra2p23l3/fra2p23q11": {
+  "patch": {
+   "explanation": "\"Je ne me sens pas bien.\" means \"I don't feel well.\" The reflexive \"me\" sits between \"ne\" and the verb, and the final \"s\" of \"sens\" is silent."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l3/fra2p23q12": {
+  "patch": {
+   "explanation": "\"Qu'est-ce que tu fais ce week-end ?\" means \"What are you doing this weekend?\" \"Qu'est-ce que\" is said quickly, like \"kess-kuh\", and \"tu\" suits a friend."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l3/fra2p23q13": {
+  "patch": {
+   "explanation": "\"Je travaille dans un bureau.\" means \"I work in an office.\" In \"travaille\" the \"ill\" sounds like the English \"y\" and the final \"e\" is silent."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l3/fra2p23q14": {
+  "patch": {
+   "explanation": "\"J'étudie le français depuis deux ans.\" means \"I've been studying French for two years.\" French uses the present tense with \"depuis\" for something still going on, and \"deux ans\" is linked with a \"z\" sound."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l4/fra2p23q15": {
+  "patch": {
+   "explanation": "\"Nous habitons ici depuis longtemps.\" means \"We have lived here for a long time.\" The present tense goes with \"depuis\", and \"nous habitons\" is linked with a \"z\" sound."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l4/fra2p23q16": {
+  "patch": {
+   "explanation": "\"Elle arrive dans dix minutes.\" means \"She's arriving in ten minutes.\" \"Dans\" plus a time means \"in ... from now\", and \"dix\" before \"minutes\" is said \"dee\"."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l4/fra2p23q17": {
+  "patch": {
+   "explanation": "\"Il est parti hier soir.\" means \"He left last night.\" \"Partir\" takes \"être\" in the past tense, so you say \"est parti\", and the final \"t\" of \"parti\" is not pronounced."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l4/fra2p23q18": {
+  "patch": {
+   "explanation": "\"Je vais chez le médecin demain.\" means \"I'm going to the doctor's tomorrow.\" Use \"chez\" when you go to a person's place, such as a doctor or a friend."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l4/fra2p23q19": {
+  "patch": {
+   "explanation": "\"Tu peux venir avec nous ?\" means \"Can you come with us?\" A rising voice at the end turns the sentence into a question, and \"tu\" suits a friend."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l5/fra2p23q20": {
+  "patch": {
+   "explanation": "\"C'est une bonne idée.\" means \"That's a good idea.\" \"Idée\" is feminine, so it takes \"une\" and \"bonne\"."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l5/fra2p23q21": {
+  "patch": {
+   "explanation": "\"Je suis d'accord avec toi.\" means \"I agree with you.\" French uses \"être d'accord\" (to be in agreement), and \"toi\" is the form used after \"avec\"."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p23l5/fra2p23q22": {
+  "patch": {
+   "explanation": "\"Je ne suis pas d'accord.\" means \"I don't agree.\" The negation \"ne ... pas\" goes around the verb \"suis\"."
+  },
+  "reason": "The explanation is a generic lesson line that would fit any phrase; it should give the meaning and a point about this sentence."
+ },
+ "fr:question:fra2p2l2/fra2p2q8": {
+  "patch": {
+   "explanation": "\"Butter\" in French is \"le beurre\", a masculine noun, as in du beurre sur le pain (butter on bread)."
+  },
+  "reason": "The item is correct, but the explanation is a generic tag line and does not quote the answer in double quotes."
+ },
+ "fr:question:fra2p2l2/fra2p2q9": {
+  "patch": {
+   "explanation": "\"Sugar\" is \"le sucre\" (masculine). Don't mix it up with le sel, which means salt."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
  },
  "fr:question:fra2p2l3/fra2p2q10": {
   "patch": {
@@ -6193,6 +8166,24 @@
    "explanation": "\"la soupe\" is the French word for soup; soupe is a feminine noun, so it takes la."
   },
   "reason": "The explanation does not quote the answer in double quotes and only repeats the gloss; the item itself is fine."
+ },
+ "fr:question:fra2p2l5/fra2p2q22": {
+  "patch": {
+   "explanation": "\"Cake\" is \"le gâteau\". Note the accent on the â and the plural with -x: des gâteaux."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p2l5/fra2p2q23": {
+  "patch": {
+   "explanation": "\"Juice\" is \"le jus\", with a silent s, as in un jus d'orange (an orange juice)."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p2l5/fra2p2q24": {
+  "patch": {
+   "explanation": "\"Breakfast\", the morning meal, is \"le petit-déjeuner\". Literally it means a \"small lunch\" (déjeuner = lunch)."
+  },
+  "reason": "The item is correct (the hyphenated spelling is accepted), but the explanation is generic and unquoted."
  },
  "fr:question:fra2p3l2/fra2p3q6": {
   "patch": {
@@ -6442,6 +8433,54 @@
   },
   "reason": "The English gloss \"(humid)\" names a cognate answer; a French clue still rules out \"froid\", \"sec\" and \"chaud\" but makes the learner think in French. / The clue says the opposite of 'sec', so \"humide\" is the answer."
  },
+ "fr:question:fra2p5l1/fra2p5q0": {
+  "patch": {
+   "explanation": "Grand means big or tall, so its opposite is \"petit\", meaning small or short."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l1/fra2p5q1": {
+  "patch": {
+   "explanation": "Chaud means hot, so its opposite is \"froid\", meaning cold."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l1/fra2p5q2": {
+  "patch": {
+   "explanation": "Rapide means fast, so its opposite is \"lent\", meaning slow (feminine: lente)."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l1/fra2p5q3": {
+  "patch": {
+   "explanation": "Facile means easy, so its opposite is \"difficile\", meaning difficult. It has the same form for masculine and feminine."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l1/fra2p5q4": {
+  "patch": {
+   "explanation": "Propre means clean, so its opposite is \"sale\", meaning dirty."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l2/fra2p5q5": {
+  "patch": {
+   "explanation": "Plein means full, so its opposite is \"vide\", meaning empty, as in un verre vide (an empty glass)."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l2/fra2p5q6": {
+  "patch": {
+   "explanation": "Riche means rich, so its opposite is \"pauvre\", meaning poor."
+  },
+  "reason": "The item is correct, but the explanation is generic and unquoted."
+ },
+ "fr:question:fra2p5l2/fra2p5q7": {
+  "patch": {
+   "explanation": "\"vieux\" (old) is the opposite of \"jeune\" (young); its feminine is \"vieille\", and it becomes \"vieil\" before a masculine noun starting with a vowel."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now gives the meaning and the irregular forms."
+ },
  "fr:question:fra2p5l2/fra2p5q8": {
   "patch": {
    "choices": [
@@ -6531,6 +8570,24 @@
    "explanation": "Describing a person, \"mince\" (slim) is the opposite of \"gros\" (fat, big)."
   },
   "reason": "\"maigre\" is not in the bank, so \"mince\" is the only fitting option; only the generic explanation needs fixing."
+ },
+ "fr:question:fra2p5l5/fra2p5q22": {
+  "patch": {
+   "explanation": "\"mouillé\" (wet) is the opposite of \"sec\" (dry), as in \"une serviette mouillée\" (a wet towel)."
+  },
+  "reason": "The key is right, but the explanation is generic and does not quote the answer. / The key is correct, but the explanation is a generic arrow line; it now gives both meanings."
+ },
+ "fr:question:fra2p5l5/fra2p5q23": {
+  "patch": {
+   "bank": [
+    "vite",
+    "tard",
+    "bientôt",
+    "souvent"
+   ],
+   "explanation": "\"tard\" (late) is the opposite of \"tôt\" (early); both are adverbs, so they never change form, as in \"Je me couche tard.\""
+  },
+  "reason": "The explanation wrongly calls tôt/tard adjectives, and \"tard\" is the only adverb in a bank of adjectives, which gives it away. / The explanation wrongly calls tôt and tard adjectives; they are adverbs."
  },
  "fr:question:fra2p5l5/fra2p5q24": {
   "patch": {
@@ -7635,6 +9692,42 @@
    "explanation": "\"Nous\" takes the ending -ons: \"lisons\". \"lisez\" is for vous and \"lisent\" for ils/elles."
   },
   "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:unit-meta:fra1p16u1": {
+  "patch": {
+   "description": "At school — Everyday classroom objects and school words."
+  },
+  "reason": "The description repeats \"school vocabulary\" in both halves; it reads as filler."
+ },
+ "fr:unit-meta:fra1p17u1": {
+  "patch": {
+   "description": "Everyday tech — Common devices and technology words."
+  },
+  "reason": "The description says \"vocabulary\" twice and repeats itself; a tighter line is clearer."
+ },
+ "fr:unit-meta:fra1p21u1": {
+  "patch": {
+   "description": "Write the idea in French — Everyday ideas where more than one wording is right."
+  },
+  "reason": "The description's second half is an awkward comma splice ('Everyday ideas, and more than one wording is right')."
+ },
+ "fr:unit-meta:fra1p3u1": {
+  "patch": {
+   "description": "Talking about people you know — Family members and everyday words for people."
+  },
+  "reason": "\"common people vocabulary\" is awkward and can read as \"commoners\"; a plainer phrasing is friendlier."
+ },
+ "fr:unit-meta:fra2p16u1": {
+  "patch": {
+   "description": "Asking questions — Forming questions with est-ce que and inversion."
+  },
+  "reason": "The description repeats 'est-ce que and inversion' on both sides of the dash; a minor polish."
+ },
+ "fr:unit-meta:fra2p1u1": {
+  "patch": {
+   "description": "Present tense, first person — The \"je\" form of common verbs."
+  },
+  "reason": "The description repeats 'present tense' on both sides of the dash; a minor polish."
  },
  "fr:unit-meta:fra2p5u1": {
   "patch": {
