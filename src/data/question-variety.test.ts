@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { applyReviewFixes } from "./review-fixes";
 import { curriculum, rawCurriculum } from "./curriculum";
 import { applyQuestionFixes } from "./question-fixes";
 import { TRANSLATE_IDEAS } from "./question-variety-translate";
@@ -12,7 +13,14 @@ const lessonsOf = (units: typeof curriculum) =>
 
 describe("mixed question formats for A1/A2", () => {
   it("appends after the existing questions and never changes them", () => {
-    const before = new Map(lessonsOf(fixed).map(({ lesson }) => [lesson.id, lesson.questions]));
+    // The full content review's fixes (review-fixes.ts) are applied after the variety questions,
+    // so compare with the original questions as those fixes leave them.
+    const before = new Map(
+      lessonsOf(applyReviewFixes(fixed, "en", undefined, { strict: false })).map(({ lesson }) => [
+        lesson.id,
+        lesson.questions,
+      ]),
+    );
     for (const { lesson } of lessonsOf(curriculum)) {
       const old = before.get(lesson.id)!;
       expect(lesson.questions.slice(0, old.length), lesson.id).toEqual(old);

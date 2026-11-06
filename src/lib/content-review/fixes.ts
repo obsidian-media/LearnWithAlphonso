@@ -232,6 +232,11 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   }
   if (item.kind === "card")
     why.push(...cardRules(String(item.data.term ?? ""), fix.patch, item.course));
+  // A question's meaning/example fields ARE its word card: the same rules.
+  if (item.kind === "question" && ("meaning" in fix.patch || "example" in fix.patch)) {
+    const term = String(next.term ?? answerText(next) ?? "");
+    why.push(...cardRules(term, fix.patch, item.course));
+  }
   if (
     item.kind === "card" &&
     typeof fix.patch.meaning === "string" &&

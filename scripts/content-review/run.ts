@@ -89,7 +89,7 @@ import {
   route,
   type Ruling,
 } from "../../src/lib/content-review/judge";
-import { checkFixes, overlayJson } from "../../src/lib/content-review/fixes";
+import { answerText, checkFixes, overlayJson } from "../../src/lib/content-review/fixes";
 import {
   blindSample,
   missEstimate,
@@ -763,6 +763,27 @@ function routeCommand() {
   const second = loadVerdicts("second");
   const routed = route([...latest.values()], (id) => second.get(id)?.verdict === "ok");
   const checked = checkFixes(items, routed.fixes);
+  // A key change gives the question's word card a new term: a card fix written for the old term
+  // would land on the new card with the wrong meaning. Drop it; the new card is re-read in verify.
+  const orphaned = new Set<string>();
+  for (const f of checked.ok) {
+    if (!f.keyChange || !f.id.includes(":question:")) continue;
+    const it = items.get(f.id)!;
+    const lesson = f.id.slice(f.id.indexOf(":question:") + 10).split("/")[0];
+    const old = (answerText(it.data) ?? "").trim().toLowerCase();
+    if (old) orphaned.add(`${it.course}:card:${lesson}/${old}`);
+  }
+  // A fix that passed these checks but failed a CI gate once applied (recorded by hand in
+  // .content-review/gate-refused.json, {id: the gate's message}) goes back to judge-retry.
+  const gateRefused = readJson<Record<string, string>>(path.join(STATE, "gate-refused.json"), {});
+  for (const f of [...checked.ok]) {
+    const why = orphaned.has(f.id)
+      ? "its card term was changed by a key change in the same lesson"
+      : gateRefused[f.id];
+    if (!why) continue;
+    checked.ok.splice(checked.ok.indexOf(f), 1);
+    checked.refused.push({ fix: f, why: [why] });
+  }
   for (const course of ["en", "fr", "es"])
     fs.writeFileSync(
       path.join(STATE, `fixes-${course}.json`),

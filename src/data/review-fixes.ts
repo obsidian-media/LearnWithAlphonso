@@ -63,6 +63,8 @@ export function applyReviewFixes(
   units: Unit[],
   course: Course,
   fixes: ReviewFixes = REVIEW_FIXES[course],
+  /** strict false: a fix that matches nothing is ignored (for tests comparing partial content). */
+  opts: { strict?: boolean } = {},
 ): Unit[] {
   const keys = Object.keys(fixes);
   if (!keys.length) return units;
@@ -94,8 +96,9 @@ export function applyReviewFixes(
             const qk = `${course}:question:${lesson.id}/${q.id}`;
             const qf = take(qk);
             if (qf) next = { ...next, ...patchOf(qk, qf, QUESTION_FIELDS) } as typeof q;
-            // A card comes from the FIRST question with its term (vocab.ts skips later repeats).
-            const term = termOf(q);
+            // A card comes from the FIRST question with its term (vocab.ts skips later repeats), as
+            // the question reads after its own fix (a key change gives the card a new term).
+            const term = termOf(next);
             if (term && !cardTerms.has(term)) {
               cardTerms.add(term);
               const ck = `${course}:card:${lesson.id}/${term}`;
@@ -110,7 +113,7 @@ export function applyReviewFixes(
     };
   });
   const unused = [...pending].filter((k) => !k.includes(":placement:"));
-  if (unused.length)
+  if (unused.length && opts.strict !== false)
     throw new Error(`review fixes match nothing: ${unused.slice(0, 5).join(", ")}`);
   return out;
 }
@@ -158,3 +161,9 @@ export function withReviewFix<Q extends { id: string }>(course: Course, q: Q): Q
   return f ? ({ ...q, ...f.patch } as Q) : q;
 }
 const fixIndex: Partial<Record<Course, Map<string, ReviewFix>>> = {};
+
+/** One lesson question with its review fix applied (for tests that compare built lessons). */
+export function patchQuestion<Q extends { id: string }>(course: Course, lessonId: string, q: Q): Q {
+  const f = REVIEW_FIXES[course][`${course}:question:${lessonId}/${q.id}`];
+  return f ? ({ ...q, ...f.patch } as Q) : q;
+}
