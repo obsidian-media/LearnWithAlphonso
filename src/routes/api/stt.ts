@@ -113,9 +113,19 @@ export const Route = createFileRoute("/api/stt")({
         }
         // Settled to the length the provider billed. An over-long recording (a WebM states no length up front) is
         // charged in full and still answered: the cost is already paid, and the budget then stops the rest of the day.
-        await settle(budget.chargeableSeconds(data.metadata?.duration));
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
+        // Minutes spoken (20261106100000): the same settled length, recorded only for a transcription that heard
+        // words and reported a length. Awaited so a serverless runtime cannot drop it after the response.
+        const speech = await import("@/lib/speech-days.server");
+        await Promise.all([
+          settle(budget.chargeableSeconds(data.metadata?.duration)),
+          speech.recordSpeechSeconds(
+            supabaseAdmin,
+            access.userId,
+            speech.spokenSeconds(data.metadata?.duration, text),
+          ),
+        ]);
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),
         // used as a lightweight pronunciation-clarity heuristic client-side
         // -- not real phoneme-level pronunciation scoring (see the design

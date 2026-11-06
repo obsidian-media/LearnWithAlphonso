@@ -492,6 +492,42 @@ describe("Campaign chat page", () => {
       expect(JSON.parse(init.body as string).course).toBe("es");
     }
   });
+
+  it("speaks with Alphonso's chosen voice for the course, never Hector's", async () => {
+    getSession.mockResolvedValue({
+      data: {
+        session: {
+          user: {
+            user_metadata: {
+              voices: {
+                alphonso: { es: "aura-2-diana-es" },
+                hector: { es: "aura-2-celeste-es" },
+              },
+            },
+          },
+        },
+      },
+    });
+    useProgress.setState({ course: "es" });
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Reply 1" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await sendAndAwaitReply(user, "Un café de olla, por favor", "Reply 1");
+
+    const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const chat = calls.find(([u]) => String(u).includes("/api/chat"))!;
+    expect(JSON.parse(chat[1].body as string).course).toBe("es");
+    await waitFor(() => expect(calls.some(([u]) => String(u).includes("/api/tts"))).toBe(true));
+    const tts = calls.filter(([u]) => String(u).includes("/api/tts"));
+    expect(tts.length).toBeGreaterThan(0);
+    for (const [, init] of tts) {
+      expect(JSON.parse(init.body as string).voice).toBe("aura-2-diana-es");
+    }
+  });
 });
 
 describe("Campaign call screen (setting on, the default)", () => {

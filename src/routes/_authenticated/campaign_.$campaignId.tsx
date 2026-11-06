@@ -26,6 +26,7 @@ import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar
 import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
+import { voiceFor } from "@/lib/voice-prefs";
 
 export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   component: CampaignChatPageWithSave,
@@ -172,8 +173,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         const resp = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          // The server picks this course's native voice.
-          body: JSON.stringify({ text, course }),
+          // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
+          body: JSON.stringify({ text, course, voice: await voiceFor("alphonso", course) }),
         });
         if (!resp.ok) {
           setVoice("idle");

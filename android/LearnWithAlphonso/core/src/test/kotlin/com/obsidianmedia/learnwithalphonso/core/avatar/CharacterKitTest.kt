@@ -33,14 +33,23 @@ class CharacterKitTest {
 
     @Test
     fun `every layer file the code can ask for is bundled, and nothing else`() {
-        val wanted = buildSet {
-            add(AvatarLayerFiles.BASE); add(AvatarLayerFiles.GLINT_MASK)
-            AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
-            Brows.entries.forEach { add(AvatarLayerFiles.brows(it)) }
-        }
-        assertEquals(11, wanted.size)
+        // What the call actually loads for Alphonso (CharacterAvatar's rememberKitArt uses layerFiles()).
+        val wanted = alphonso().layerFiles().toSet()
+        // The realistic kit: base, glint, six mouths, three brows. No ear layers since #426, so no ear files either.
+        assertEquals(
+            setOf(
+                "base.webp", "glint-mask.webp",
+                "mouth-half.webp", "mouth-talk.webp", "mouth-ah.webp", "mouth-oh.webp", "mouth-ee.webp", "mouth-fv.webp",
+                "brows-neutral.webp", "brows-raised.webp", "brows-lowered.webp",
+            ),
+            wanted,
+        )
         val have = File(assets, "avatar").list()!!.filter { it.endsWith(".webp") }.toSet()
         assertEquals(wanted, have)
+        // The same files the web and iOS bundle for him.
+        File("../../../public/avatar").takeIf { it.exists() }?.let { web ->
+            assertEquals(have, web.list()!!.filter { it.endsWith(".webp") }.toSet())
+        }
     }
 
     @Test

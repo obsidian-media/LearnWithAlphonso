@@ -8,11 +8,11 @@ import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
   buildHectorSystemPrompt,
-  deepgramVoiceForLanguage,
   resolveTutorCourse,
   shapeTutorReply,
   type TutorHistoryMessage,
 } from "@/lib/hector-conversation";
+import { parseVoicePrefs, resolveServerVoice, VOICE_PREFS_METADATA_KEY } from "@/lib/voice-catalog";
 
 async function boundedAudio(response: Response, maxBytes: number): Promise<Buffer | null> {
   if (!response.body) return Buffer.alloc(0);
@@ -95,6 +95,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     course?: string;
     cefr_level?: string;
     agent_id?: string;
+    voice?: string;
     history?: TutorHistoryMessage[];
   };
   try {
@@ -165,7 +166,14 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   ).text;
 
   // --- TTS (Deepgram, same as /api/tts) → base64 for the client ---
-  const ttsModel = deepgramVoiceForLanguage(course);
+  // Hector's own voice: the client's cached choice when it is on this course's allow-list, else the choice saved on
+  // the account (older builds send none), else Hector's default. Never an arbitrary model id.
+  const ttsModel = resolveServerVoice({
+    character: "hector",
+    course,
+    requested: body.voice,
+    stored: parseVoicePrefs(userData.user.user_metadata?.[VOICE_PREFS_METADATA_KEY]),
+  });
   const ttsStart = performance.now();
   const tts = await timer.time("tts", async () => {
     try {

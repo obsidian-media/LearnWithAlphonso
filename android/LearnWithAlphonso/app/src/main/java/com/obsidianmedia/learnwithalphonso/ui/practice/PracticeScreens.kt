@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
@@ -170,7 +171,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     val scenario = container.content.scenarios(course).firstOrNull { it.id == scenarioId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
     val vm: ScenarioConversationViewModel = viewModel(key = "scenario-${course.code}-$scenarioId") {
-        ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course)
+        ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course, alphonsoVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Alphonso, c) })
     }
     val palette = AlphonsoColor.palette
     val context = LocalContext.current
@@ -202,7 +203,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val campaign = container.content.campaigns(course).firstOrNull { it.id == campaignId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
     val vm: CampaignConversationViewModel = viewModel(key = "campaign-${course.code}-$campaignId") {
-        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course)
+        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course, alphonsoVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Alphonso, c) })
     }
     val palette = AlphonsoColor.palette
     val progress by vm.campaignState.collectAsState()

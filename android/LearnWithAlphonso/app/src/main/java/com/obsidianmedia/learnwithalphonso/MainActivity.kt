@@ -29,7 +29,8 @@ class MainActivity : ComponentActivity() {
         handleInviteLink(intent)
         setContent {
             val themeId by container.themeManager.theme.collectAsState()
-            AlphonsoTheme(themeId, isSystemInDarkTheme()) {
+            val paletteId by container.themeManager.palette.collectAsState()
+            AlphonsoTheme(themeId, isSystemInDarkTheme(), paletteId) {
                 RootScreen(container, pendingInviteCode, onInviteConsumed = { pendingInviteCode = null })
             }
         }
