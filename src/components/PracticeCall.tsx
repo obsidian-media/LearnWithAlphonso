@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { AlphonsoAvatar } from "./AlphonsoAvatar";
+import { ALPHONSO_KIT, type CharacterKit } from "@/lib/avatar/layers";
 import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
@@ -19,6 +20,8 @@ export type CallCaption = {
 type Props = {
   /** The scenario's name, shown under "Alphonso". */
   title: string;
+  /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
+  kit?: CharacterKit;
   scenarioId: string;
   dark: boolean;
   avatar: Omit<ComponentProps<typeof AlphonsoAvatar>, "className">;
@@ -64,6 +67,7 @@ const formatClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padSt
 export function PracticeCall(props: Props) {
   const {
     title,
+    kit = ALPHONSO_KIT,
     scenarioId,
     dark,
     avatar,
@@ -85,7 +89,7 @@ export function PracticeCall(props: Props) {
   } = props;
   const speaking = mode === "speaking";
   const stateLabel = MODE_LABEL[mode];
-  const art = sceneArt(scenarioId);
+  const art = sceneArt(scenarioId, undefined, kit.defaultRoom);
   const room = dark ? art.dark : art.light;
 
   const [seconds, setSeconds] = useState(0);
@@ -187,12 +191,12 @@ export function PracticeCall(props: Props) {
           top: "15%",
         }}
       >
-        <AlphonsoAvatar {...avatar} className="aspect-square w-full" />
+        <AlphonsoAvatar {...avatar} kit={kit} className="aspect-square w-full" />
       </div>
 
       <div className="absolute left-[18px] right-[18px] top-[18px] z-[5] flex items-center gap-2.5">
         <div className="grid leading-tight" style={{ textShadow: "0 1px 6px rgba(0,0,0,.35)" }}>
-          <b className="font-display text-[19px] font-extrabold">Alphonso</b>
+          <b className="font-display text-[19px] font-extrabold">{kit.displayName}</b>
           <span className="flex items-center gap-1.5 text-[13px] font-semibold opacity-95">
             <i
               aria-hidden="true"
