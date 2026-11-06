@@ -8,6 +8,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -150,6 +151,27 @@ class SupabaseAuthClient(
         val meta = obj["user_metadata"] as? JsonObject ?: return null
         fun s(key: String) = meta[key]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
         return AuthUserNames(s("given_name"), s("full_name"), s("name"))
+    }
+
+    /** The signed-in user's whole user_metadata object (GET /auth/v1/user). Voice choices live under `voices`. */
+    suspend fun fetchUserMetadata(accessToken: String): JsonObject {
+        val response = client.get("${supabaseUrl.trimEnd('/')}/auth/v1/user") {
+            header("apikey", publishableKey)
+            header("Authorization", "Bearer $accessToken")
+        }
+        val obj = runCatching { json.parseToJsonElement(requireSuccess(response)).jsonObject }.getOrElse { throw SupabaseAuthError.InvalidPayload() }
+        return obj["user_metadata"] as? JsonObject ?: JsonObject(emptyMap())
+    }
+
+    /** Merges `data` into user_metadata (GoTrue PUT /auth/v1/user merges top-level keys), e.g. the `voices` object. */
+    suspend fun updateUserMetadata(accessToken: String, data: JsonObject) {
+        requireSuccess(
+            client.put("${supabaseUrl.trimEnd('/')}/auth/v1/user") {
+                header("apikey", publishableKey)
+                header("Authorization", "Bearer $accessToken")
+                setBody(TextContent(buildJsonObject { put("data", data) }.toString(), ContentType.Application.Json))
+            },
+        )
     }
 
     suspend fun refresh(session: SupabaseSession): SupabaseSession =

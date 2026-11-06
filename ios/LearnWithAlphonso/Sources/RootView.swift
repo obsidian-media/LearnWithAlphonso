@@ -166,6 +166,7 @@ struct RootView: View {
                         }
                         await triggerSync()
                         await hydrateThemeFromServer()
+                        await session.hydrateVoicePrefs()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
                         // The same device token after a sign-out and sign-in never fires onChange, so the new
@@ -271,6 +272,8 @@ struct RootView: View {
             appearanceObserver.start()
         }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
+        // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
+        .alphonsoDesignSystem()
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
             PaywallView(entitlementStore: entitlementStore, source: .hectorTab)

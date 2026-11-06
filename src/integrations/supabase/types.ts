@@ -1717,6 +1717,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      speech_days: {
+        Row: {
+          day: string;
+          speech_seconds: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          day: string;
+          speech_seconds?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          day?: string;
+          speech_seconds?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       team_kicks: {
         Row: {
           kicked_at: string;
@@ -2218,6 +2239,10 @@ export type Database = {
           message: string;
           ok: boolean;
         }[];
+      };
+      add_speech_seconds: {
+        Args: { _seconds: number; _user_id: string };
+        Returns: string;
       };
       admin_rename_team: {
         Args: { _name: string; _team_id: string };

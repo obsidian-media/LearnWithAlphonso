@@ -81,7 +81,7 @@ public enum AlphonsoFont {
     /// applies `.body`'s curve to everything, which noticeably over-grows a
     /// 12pt caption relative to how the rest of iOS treats caption-sized
     /// text at accessibility sizes.
-    private static func resolvedVariant(baseName: String, axes: [String: CGFloat], size: CGFloat) -> UIFont {
+    static func resolvedVariant(baseName: String, axes: [String: CGFloat], size: CGFloat) -> UIFont {
         let metrics = UIFontMetrics(forTextStyle: nearestTextStyle(for: size))
 
         guard let base = UIFont(name: baseName, size: size) else {

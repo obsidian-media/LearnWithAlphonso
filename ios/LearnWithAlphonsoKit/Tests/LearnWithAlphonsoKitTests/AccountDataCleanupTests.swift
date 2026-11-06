@@ -120,7 +120,7 @@ final class AccountDataCleanupTests: XCTestCase {
     func testAccountCacheKeysAreTheAppCaches() {
         XCTAssertEqual(AccountCacheKeys.all, [
             "lastGlobalWeeklyLeaderboardSnapshot", "lastRecapLeagueTier", "lastKnownLeagueTier", "nudgeCooldowns",
-            "deadLetterNotice.dismissed.v1",
+            "deadLetterNotice.dismissed.v1", "voicePrefs.v1",
         ])
     }
 }
