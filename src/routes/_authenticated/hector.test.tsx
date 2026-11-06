@@ -348,6 +348,13 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     expect(stage.querySelector('img[src$="mouth-ee.webp"]') as HTMLImageElement).toHaveStyle({
       opacity: "0",
     });
+    // The rendered check above cannot see a reaction that jsdom never plays out, so pin the source too: the verdict
+    // handed to the call is a constant "none" that no reply ever bumps.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const source = fs.readFileSync(path.join(import.meta.dirname, "hector.tsx"), "utf8");
+    expect(source).toContain('replyVerdict: { serial: 0, verdict: "none" }');
+    expect(source).not.toMatch(/verdict: "(correct|corrected)"/);
   });
 
   it("Pro gating is unchanged: a free learner still sees the paywall, not the call", async () => {
