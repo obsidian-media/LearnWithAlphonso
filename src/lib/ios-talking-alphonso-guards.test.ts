@@ -170,6 +170,25 @@ describe("the art", () => {
     rect("brows-neutral", "browsRect");
     rect("glint-mask", "glintRect");
   });
+
+  it("places Hector with his own manifest's rectangles, and gives him no glint or ears", () => {
+    const hectorManifest = JSON.parse(read(`${APP}/HectorAvatar/manifest.json`)) as typeof manifest;
+    const layers = code(`${KIT}/AvatarLayers.swift`);
+    const hector = layers.slice(layers.indexOf("static let hector = CharacterKit("));
+    const block = hector.slice(0, hector.indexOf("defaultRoom:"));
+    for (const [name, id] of [
+      ["mouth-ah", "mouthRect"],
+      ["eyes-neutral", "expressionRect"],
+    ] as const) {
+      const r = hectorManifest.layers[name];
+      expect(block, name).toMatch(
+        new RegExp(`${id}: AvatarRect\\(x: ${r.x}, y: ${r.y}, w: ${r.w}, h: ${r.h}\\)`),
+      );
+    }
+    expect(block).toMatch(/expressionPrefix: "eyes"/);
+    expect(block).toMatch(/glintRect: nil/);
+    expect(block).toMatch(/earLeftRect: nil, earRightRect: nil/);
+  });
 });
 
 describe("what he is built from", () => {
