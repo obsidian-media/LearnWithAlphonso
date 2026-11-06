@@ -535,6 +535,12 @@ describe("POST /api/stt", () => {
       expect(secondsUsed).toBe(13); // the same number the budget settled to
     });
 
+    it("records at most an hour for one transcription, the most the database accepts per call", async () => {
+      answer(said("a very long one", 5000.4));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(recorded()).toEqual([{ _user_id: "user-1", _seconds: 3600 }]);
+    });
+
     it("adds up across transcriptions", async () => {
       answer(said("one", 3));
       await handler({ request: CONSENT_REQUEST() });

@@ -11,6 +11,9 @@ type RpcError = { message: string; code?: string };
 type RpcResult = { data: unknown; error: RpcError | null };
 export type SpeechDb = { rpc: (fn: never, args: never) => PromiseLike<RpcResult> };
 
+/** The most one call may add; add_speech_seconds refuses more (20261106100000). */
+export const MAX_SPEECH_SECONDS_PER_CALL = 3600;
+
 /**
  * Seconds to record for one transcription, or null when nothing should be recorded: no length from the provider
  * (the budget then keeps its per-call maximum, which is a ceiling, not speech), or no words were recognised.
@@ -24,7 +27,7 @@ export function spokenSeconds(providerDuration: unknown, transcript: string): nu
     return null;
   }
   if (transcript.trim() === "") return null;
-  return Math.ceil(providerDuration);
+  return Math.min(Math.ceil(providerDuration), MAX_SPEECH_SECONDS_PER_CALL);
 }
 
 /**

@@ -19,7 +19,9 @@
 -- so it does not depend on the session's TimeZone setting.
 --
 -- add_speech_seconds adds in ONE statement (INSERT ... ON CONFLICT DO UPDATE SET n = n + EXCLUDED.n): parallel calls
--- queue on the row lock and every addition counts; there is no read-modify-write. Server (service role) only.
+-- queue on the row lock and every addition counts; there is no read-modify-write. Server (service role) only. One
+-- call adds at most 3600 s (an hour): the upload cap (1 MB) keeps a real recording far below that, so a larger
+-- number can only be a bug, and it is refused rather than inflating the day.
 -- Learners read their own rows (RLS); no client can write. Rows go with the account (ON DELETE CASCADE from
 -- auth.users) and are part of the account export.
 --
@@ -48,8 +50,8 @@ AS $$
 DECLARE
   booked date;
 BEGIN
-  IF _user_id IS NULL OR _seconds IS NULL OR _seconds < 0 THEN
-    RAISE EXCEPTION 'add_speech_seconds: seconds must be zero or more' USING ERRCODE = '22023';
+  IF _user_id IS NULL OR _seconds IS NULL OR _seconds < 0 OR _seconds > 3600 THEN
+    RAISE EXCEPTION 'add_speech_seconds: seconds must be from 0 to 3600' USING ERRCODE = '22023';
   END IF;
   INSERT INTO public.speech_days AS s (user_id, day, speech_seconds)
   VALUES (_user_id, (now() AT TIME ZONE 'UTC')::date, _seconds)

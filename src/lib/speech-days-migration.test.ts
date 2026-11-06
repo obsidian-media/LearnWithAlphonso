@@ -89,9 +89,16 @@ describe("speech_days (real Postgres)", () => {
 
   it("refuses negative or missing seconds, which would take time away", async () => {
     await add(U1, 30);
-    await expect(add(U1, -30)).rejects.toThrow(/zero or more/);
-    await expect(add(U1, null)).rejects.toThrow(/zero or more/);
+    await expect(add(U1, -30)).rejects.toThrow(/from 0 to 3600/);
+    await expect(add(U1, null)).rejects.toThrow(/from 0 to 3600/);
     expect(await total(U1, await utcToday())).toBe(30);
+  });
+
+  it("refuses more than an hour in one call, so a bad caller cannot inflate the day", async () => {
+    expect(await add(U1, 3600)).toBe(await utcToday());
+    await expect(add(U1, 3601)).rejects.toThrow(/from 0 to 3600/);
+    await expect(add(U1, 2_000_000_000)).rejects.toThrow(/from 0 to 3600/);
+    expect(await total(U1, await utcToday())).toBe(3600);
   });
 
   it("the server can add, inside a transaction that is then rolled back", async () => {
