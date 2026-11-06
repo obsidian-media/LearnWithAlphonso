@@ -417,8 +417,8 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  // clue 548 -> 551 (2026-11-06): the full content review gave three bare questions a clue.
-  const PINNED_SPLIT = { picture: 45, context: 141, clue: 551 };
+  // clue 548 -> 550 (2026-11-06): the full content review gave bare questions a clue.
+  const PINNED_SPLIT = { picture: 45, context: 141, clue: 550 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
   const POS_MISMATCH_BUDGET = 0;
   const WEAK_CONTEXT_BUDGET = 0;

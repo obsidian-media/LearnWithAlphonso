@@ -53,7 +53,7 @@
                 "Goodbye."
               ],
               "answer": 0,
-              "explanation": "A short answer with \"thanks\" is polite and standard.",
+              "explanation": "\"I am fine, thanks.\" tells the person how you feel and thanks them, which is the polite reply to \"How are you?\".",
               "meaning": "a polite answer to \"How are you?\"",
               "example": "\"How are you?\" \"I am fine, thanks.\""
             },
@@ -99,7 +99,7 @@
               "answer": 1,
               "explanation": "\"Hey\" is informal, used with friends.",
               "meaning": "a friendly, informal hello",
-              "example": "Hey! How is it going?"
+              "example": "Hey! How's it going?"
             },
             {
               "id": "q7",
@@ -148,7 +148,7 @@
                 "be"
               ],
               "answer": "is",
-              "explanation": "Third-person singular of \"to be\" is \"is\".",
+              "explanation": "\"My name\" is one thing, like \"it\", so the verb be is \"is\".",
               "meaning": "form of be with he, she or it"
             },
             {
@@ -176,7 +176,7 @@
                 "From where you?"
               ],
               "answer": 1,
-              "explanation": "Questions with \"to be\" invert the subject and verb.",
+              "explanation": "In a question with be, the verb comes before the subject, so we say \"Where are you from?\".",
               "meaning": "asks which country you come from",
               "example": "\"Where are you from?\" \"I am from Peru.\""
             },
@@ -211,7 +211,7 @@
             {
               "id": "q6",
               "type": "mc",
-              "prompt": "How old are you? →",
+              "prompt": "Answer the question: \"How old are you?\"",
               "choices": [
                 "I have 22.",
                 "I am 22.",
@@ -219,7 +219,7 @@
                 "Me 22."
               ],
               "answer": 1,
-              "explanation": "English uses \"to be\" for age: \"I am 22\".",
+              "explanation": "English uses be, not have, to give your age, so the answer is \"I am 22.\".",
               "meaning": "tells how old you are",
               "example": "\"How old are you?\" \"I am 22.\""
             },
@@ -300,7 +300,7 @@
         {
           "id": "u1l3",
           "title": "Numbers & Time",
-          "subtitle": "Telling the hour",
+          "subtitle": "Telling the time",
           "questions": [
             {
               "id": "q1",
@@ -386,7 +386,7 @@
                 "Fourthy"
               ],
               "answer": 1,
-              "explanation": "The correct spelling is \"forty\".",
+              "explanation": "\"Forty\" drops the \"u\" of \"four\": we write four and fourteen, but forty.",
               "meaning": "the number 40",
               "example": "There are forty students here."
             },
@@ -433,11 +433,11 @@
               "bank": [
                 "raining",
                 "rain",
-                "rained",
+                "to rain",
                 "rains"
               ],
               "answer": "raining",
-              "explanation": "Present continuous describes current weather.",
+              "explanation": "\"It's\" + \"raining\" makes the present continuous, which we use for weather happening right now.",
               "meaning": "water is falling from the sky"
             },
             {
@@ -570,7 +570,7 @@
                 "is drink"
               ],
               "answer": "drink",
-              "explanation": "First person singular uses the base verb.",
+              "explanation": "With \"I\" in the present simple we use the base verb \"drink\", with no -s.",
               "meaning": "to take a liquid into your mouth"
             },
             {
@@ -650,12 +650,12 @@
               "prompt": "Choose the correct question.",
               "choices": [
                 "Do you drink coffee?",
-                "You drink coffee?",
+                "Does you drink coffee?",
                 "Drink you coffee?",
                 "Are you drink coffee?"
               ],
               "answer": 0,
-              "explanation": "Present-simple questions use \"do/does\".",
+              "explanation": "With \"you\" a present-simple question starts with \"Do\": \"Do you drink coffee?\".",
               "term": ""
             },
             {
@@ -830,7 +830,7 @@
                 "ran"
               ],
               "answer": 1,
-              "explanation": "\"Enjoy\" is followed by the -ing form.",
+              "explanation": "After \"enjoy\" we use the -ing form, so \"running\" is correct: \"I enjoy running.\"",
               "meaning": "moving fast on foot",
               "example": "I enjoy running in the park."
             },
@@ -903,7 +903,7 @@
                 "hikes"
               ],
               "answer": "hiking",
-              "explanation": "\"Go\" + activity uses -ing.",
+              "explanation": "We use \"go\" + the -ing form for activities, so \"hiking\" is correct: \"We go hiking.\"",
               "meaning": "walking a long way in nature"
             },
             {
@@ -983,7 +983,8 @@
               ],
               "answer": "reads",
               "explanation": "Third person singular adds -s.",
-              "meaning": "looks at words and understands"
+              "meaning": "looks at words and understands",
+              "example": "He reads a book every night before bed."
             },
             {
               "id": "q5",
@@ -1210,7 +1211,8 @@
               ],
               "answer": "bill",
               "explanation": "The \"bill\" (UK) or \"check\" (US) is what you pay.",
-              "meaning": "the paper that shows what you owe"
+              "meaning": "the paper that shows what you owe",
+              "example": "We've finished. Could we have the bill, please?"
             },
             {
               "id": "q3",
@@ -1334,7 +1336,8 @@
               ],
               "answer": "straight",
               "explanation": "\"Go straight\" = continue forward.",
-              "meaning": "without turning"
+              "meaning": "without turning",
+              "example": "Go straight on to the end of the road."
             },
             {
               "id": "q3",
@@ -1500,14 +1503,14 @@
                 "Order"
               ],
               "answer": 1,
-              "explanation": "Warm acceptance.",
+              "explanation": "\"Accept enthusiastically\" is right: we say \"Sounds great!\" to say a happy yes to a plan.",
               "meaning": "to say yes in a very happy way",
-              "example": "She will accept enthusiastically."
+              "example": "Say \"Sounds great!\" to accept enthusiastically."
             },
             {
               "id": "q6",
               "type": "fill",
-              "prompt": "Are you ___ Saturday?",
+              "prompt": "Are you ___ on Saturday?",
               "bank": [
                 "free",
                 "freed",
@@ -1515,8 +1518,9 @@
                 "freeing"
               ],
               "answer": "free",
-              "explanation": "\"Free\" = available.",
-              "meaning": "not busy"
+              "explanation": "Here \"free\" is an adjective meaning not busy, and an adjective is what follows \"Are you\"; \"freed\", \"freely\" and \"freeing\" are other word forms.",
+              "meaning": "not busy",
+              "example": "Are you free on Saturday?"
             },
             {
               "id": "q7",
@@ -1605,7 +1609,7 @@
                 "She no went."
               ],
               "answer": 1,
-              "explanation": "After \"didn't\" use the base verb.",
+              "explanation": "After \"didn't\" we use the base verb \"go\", not \"went\", so \"She didn't go.\" is correct.",
               "term": ""
             },
             {
@@ -1619,7 +1623,7 @@
                 "lives"
               ],
               "answer": "lived",
-              "explanation": "Regular verbs add -ed.",
+              "explanation": "\"Last year\" tells us this is the past, and \"live\" is a regular verb, so we add -d to make \"lived\".",
               "meaning": "the past of \"live\""
             },
             {
@@ -1633,7 +1637,7 @@
                 "buying"
               ],
               "answer": 1,
-              "explanation": "buy → bought. \"Brought\" is from \"bring\".",
+              "explanation": "\"Buy\" is irregular, so its past is \"bought\"; \"brought\" is the past of \"bring\".",
               "meaning": "the past of \"buy\"",
               "example": "I bought a new bag."
             },
@@ -1648,7 +1652,7 @@
                 "Done"
               ],
               "answer": "Did",
-              "explanation": "Past questions use \"did\" + base verb.",
+              "explanation": "\"Last night\" is in the past, so the question starts with \"Did\" and is followed by the base verb \"see\".",
               "meaning": "starts a question about the past"
             }
           ]
@@ -1802,7 +1806,7 @@
                 "It's broken"
               ],
               "answer": 1,
-              "explanation": "A polite way to decline assistance.",
+              "explanation": "In a shop, \"I'm just browsing\" tells the assistant you don't need help yet, so it means \"I'm only looking\".",
               "meaning": "means you are not ready to buy",
               "example": "I'm only looking, thank you."
             },
@@ -1866,9 +1870,9 @@
                 "landed"
               ],
               "answer": 1,
-              "explanation": "\"Delayed\" = later than scheduled.",
+              "explanation": "A flight that is late but will still go is \"delayed\"; \"cancelled\" means it will not go at all.",
               "meaning": "late; not on time",
-              "example": "The delayed train arrives at six."
+              "example": "Sorry, our train is delayed by twenty minutes."
             },
             {
               "id": "q2",
@@ -1895,7 +1899,7 @@
                 "A complaint"
               ],
               "answer": 1,
-              "explanation": "Indirect questions sound more polite.",
+              "explanation": "\"Could you tell me where…\" wraps the question \"Where is gate 12?\" inside a polite request, so it is \"An indirect polite question\".",
               "term": "Could you tell me…?",
               "meaning": "a polite way to ask for information",
               "example": "Could you tell me where gate 12 is?"
@@ -1911,7 +1915,7 @@
                 "depart"
               ],
               "answer": "departs",
-              "explanation": "Present simple for timetables.",
+              "explanation": "Timetables use the present simple, and \"the train\" is he/she/it, so the verb takes -s: \"departs\".",
               "meaning": "leaves"
             },
             {
@@ -2800,7 +2804,7 @@
                 "childes"
               ],
               "answer": "children",
-              "explanation": "child → children. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "\"Child\" has an irregular plural, \"children\", so you don't add -s or -es.",
               "meaning": "more than one child",
               "example": "The children play in the park."
             },
@@ -2815,7 +2819,7 @@
                 "mens"
               ],
               "answer": 2,
-              "explanation": "man → men. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "\"Man\" forms its plural by changing the vowel to \"men\", so you don't add -s or -es.",
               "meaning": "more than one man",
               "example": "Two men are at the door."
             },
@@ -2830,7 +2834,7 @@
                 "women"
               ],
               "answer": "women",
-              "explanation": "woman → women. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "The plural of \"woman\" is \"women\": the vowel changes from a to e, and you do not add -s.",
               "meaning": "more than one woman",
               "example": "The women talk after class."
             },
@@ -2846,7 +2850,7 @@
               ],
               "answer": 0,
               "explanation": "person → people. Irregular and spelling-change plurals must be memorised.",
-              "meaning": "more than one person; many men and women",
+              "meaning": "more than one person",
               "example": "Many people live in this town."
             },
             {
@@ -2860,7 +2864,7 @@
                 "feet"
               ],
               "answer": "feet",
-              "explanation": "foot → feet. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "The plural of \"foot\" is \"feet\": the oo changes to ee, and you do not add -s.",
               "meaning": "the parts of your body you walk on",
               "example": "My feet are very tired."
             },
@@ -2923,7 +2927,7 @@
                 "toothes"
               ],
               "answer": 2,
-              "explanation": "tooth → teeth. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "The plural of \"tooth\" is \"teeth\": the oo changes to ee, and you do not add -s.",
               "meaning": "the hard white parts in your mouth",
               "example": "Brush your teeth every night."
             },
@@ -2938,9 +2942,9 @@
                 "mouse"
               ],
               "answer": "mice",
-              "explanation": "mouse → mice. Irregular and spelling-change plurals must be memorised.",
+              "explanation": "The plural of \"mouse\" is \"mice\": the word changes completely, and you never add -s.",
               "meaning": "more than one mouse; small animals",
-              "example": "Mice eat cheese in the story."
+              "example": "The mice live under the floor."
             },
             {
               "id": "a1p1q7",
@@ -3047,7 +3051,7 @@
               "answer": 2,
               "explanation": "\"wives\" is correct because wife ends in -fe, which changes to -ves in the plural.",
               "meaning": "more than one wife",
-              "example": "Both wives came to the party."
+              "example": "The men came to the party with their wives."
             },
             {
               "id": "a1p1q11",
@@ -3130,7 +3134,7 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "There are two parties this weekend.",
               "choices": [
-                "There are two parties last weekend.",
+                "There are two parties next weekend.",
                 "There are two games this weekend.",
                 "There are three parties this weekend.",
                 "There are two parties this weekend."
@@ -3658,7 +3662,7 @@
               ],
               "answer": "Are",
               "explanation": "\"Are\" goes with \"you\" when asking about where someone is from: Are you from Spain? \"Do\" would need a main verb like live.",
-              "meaning": "starts a question with you"
+              "meaning": "starts a question with you, we or they"
             },
             {
               "id": "a1p2q11",
@@ -3672,7 +3676,7 @@
               ],
               "answer": 2,
               "explanation": "Questions with the main verb speak need a helper, and \"she\" takes \"Does\": Does she speak French? Is and Are are only used with be.",
-              "meaning": "starts a question with he or she"
+              "meaning": "starts a question with he, she or it"
             },
             {
               "id": "a1p2q12",
@@ -3823,7 +3827,7 @@
               ],
               "answer": "have",
               "explanation": "\"They\" is plural, so the present simple of \"have breakfast\" is \"have\"; \"has\" is only for he, she and it.",
-              "meaning": "to eat or drink a meal"
+              "meaning": "to eat or drink something"
             },
             {
               "id": "a1p2q19",
@@ -3913,7 +3917,8 @@
               ],
               "answer": "fly",
               "explanation": "\"Birds\" is plural, so the present simple verb has no -s: \"fly\".",
-              "meaning": "to move through the air"
+              "meaning": "to move through the air",
+              "example": "Birds fly south for the winter."
             },
             {
               "id": "a1p2q22",
@@ -4039,7 +4044,7 @@
                 "heavy"
               ],
               "answer": 0,
-              "explanation": "hot → cold. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"cold\" is the opposite of \"hot\": both describe temperature, at opposite ends.",
               "meaning": "not hot; with a low temperature",
               "example": "The water is cold today."
             },
@@ -4069,7 +4074,7 @@
                 "weak"
               ],
               "answer": 2,
-              "explanation": "fast → slow. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"slow\" is the opposite of \"fast\": both describe speed, and slow means taking a long time.",
               "meaning": "not fast; taking a long time",
               "example": "The bus is very slow today."
             },
@@ -4084,7 +4089,7 @@
                 "old"
               ],
               "answer": "sad",
-              "explanation": "happy → sad. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"sad\" is the opposite of \"happy\": both describe feelings, one good and one bad.",
               "meaning": "unhappy; feeling bad",
               "example": "He is sad about his lost dog."
             },
@@ -4170,7 +4175,7 @@
                 "dry"
               ],
               "answer": "expensive",
-              "explanation": "cheap → expensive. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"expensive\" is the opposite of \"cheap\": cheap costs little money, and expensive costs a lot.",
               "meaning": "costing a lot of money",
               "example": "That coat is too expensive."
             },
@@ -4185,7 +4190,7 @@
                 "dirty"
               ],
               "answer": 2,
-              "explanation": "early → late. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"late\" is the opposite of \"early\": early is before the right time, and late is after it.",
               "meaning": "after the right time",
               "example": "I am late for school."
             },
@@ -4200,7 +4205,7 @@
                 "dirty"
               ],
               "answer": "closed",
-              "explanation": "open → closed. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"closed\" is the opposite of \"open\": a closed shop or door is shut, and you cannot go in.",
               "meaning": "not open; shut",
               "example": "The shop is closed on Sundays."
             },
@@ -4215,7 +4220,7 @@
                 "young"
               ],
               "answer": 0,
-              "explanation": "clean → dirty. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"dirty\" is the opposite of \"clean\": something dirty has dirt on it, and something clean does not.",
               "meaning": "not clean; covered with dirt",
               "example": "Your shoes are dirty."
             },
@@ -4294,7 +4299,7 @@
                 "late"
               ],
               "answer": "heavy",
-              "explanation": "light → heavy. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "Here \"light\" means easy to lift, so its opposite is \"heavy\", which means hard to lift.",
               "meaning": "weighing a lot; hard to lift",
               "example": "This bag is very heavy."
             },
@@ -4309,7 +4314,7 @@
                 "old"
               ],
               "answer": 2,
-              "explanation": "near → far. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"Near\" means a short way away, so its opposite is \"far\", a long way away.",
               "meaning": "a long way away",
               "example": "The beach is far from here."
             },
@@ -4324,7 +4329,7 @@
                 "old"
               ],
               "answer": "weak",
-              "explanation": "strong → weak. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"Strong\" means having a lot of power, so its opposite is \"weak\", without much power.",
               "meaning": "not strong; without much power",
               "example": "She felt weak after the long illness."
             },
@@ -4339,7 +4344,7 @@
                 "dry"
               ],
               "answer": 0,
-              "explanation": "long → short. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "For length, the opposite of \"long\" is \"short\"; \"small\" is the opposite of big.",
               "meaning": "not long; small in length",
               "example": "My hair is short."
             },
@@ -4404,7 +4409,7 @@
                 "heavy"
               ],
               "answer": "dry",
-              "explanation": "wet → dry. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"Wet\" means with water on it, so its opposite is \"dry\", with no water on it.",
               "meaning": "with no water on it",
               "example": "The towel is dry now."
             },
@@ -4419,7 +4424,7 @@
                 "old"
               ],
               "answer": 2,
-              "explanation": "loud → quiet. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"Loud\" means making a lot of noise, so its opposite is \"quiet\", making very little noise.",
               "meaning": "making very little noise",
               "example": "Please be quiet in the library."
             },
@@ -4449,9 +4454,9 @@
                 "young"
               ],
               "answer": 0,
-              "explanation": "rich → poor. Learning adjectives in pairs doubles your vocabulary.",
+              "explanation": "\"Rich\" means having a lot of money, so its opposite is \"poor\", having very little money.",
               "meaning": "having very little money",
-              "example": "The poor man has no home."
+              "example": "His family is poor, so they can't buy new clothes."
             },
             {
               "id": "a1p3q19",
@@ -4589,7 +4594,7 @@
               "answer": "last",
               "explanation": "first → last. Learning adjectives in pairs doubles your vocabulary.",
               "meaning": "coming after all the others",
-              "example": "He was the last person here."
+              "example": "He was the last person to arrive."
             },
             {
               "id": "a1p3q37",
@@ -4646,7 +4651,7 @@
       "level": "A1",
       "eyebrow": "Unit 7",
       "title": "Time & Place",
-      "description": "Basic prepositions — Use in for months/years, on for days/dates, at for clock times.",
+      "description": "Basic prepositions — Use \"in\" for months and years, \"on\" for days and dates, and \"at\" for clock times.",
       "lessons": [
         {
           "id": "a1p4l1",
@@ -5183,7 +5188,7 @@
                 "across"
               ],
               "answer": "down",
-              "explanation": "down means from a higher place to a lower one, like a ball rolling from the top of a hill to the bottom.",
+              "explanation": "We use \"down\" for movement from a higher place to a lower one, so the ball rolled from the top of the hill to the bottom.",
               "meaning": "from a high place to a low place"
             },
             {
@@ -5250,7 +5255,7 @@
       "level": "A1",
       "eyebrow": "Unit 8",
       "title": "Everyday Verbs",
-      "description": "Verb + noun pairs — English fixes certain verbs to certain nouns.",
+      "description": "Verb + noun pairs — Some nouns always go with a particular verb, like \"make a cake\" or \"do homework\".",
       "lessons": [
         {
           "id": "a1p5l1",
@@ -5313,7 +5318,7 @@
                 "make"
               ],
               "answer": 0,
-              "explanation": "a photo → take. English fixes certain verbs to certain nouns."
+              "explanation": "In English we say \"take\" a photo; \"make a photo\" sounds wrong to native speakers."
             },
             {
               "id": "a1p5q4",
@@ -5328,7 +5333,7 @@
               "answer": "make",
               "explanation": "a mistake → make. English fixes certain verbs to certain nouns.",
               "meaning": "to create or cause something",
-              "example": "Everyone can make a mistake."
+              "example": "I make breakfast every morning."
             },
             {
               "id": "a1p5q25",
@@ -5424,7 +5429,7 @@
                 "pay"
               ],
               "answer": 0,
-              "explanation": "TV → watch. English fixes certain verbs to certain nouns.",
+              "explanation": "We say \"watch\" TV because we look at a screen with moving pictures for some time; we never \"do\" or \"pay\" TV.",
               "meaning": "to look at something moving",
               "example": "We watch TV after dinner."
             },
@@ -5535,7 +5540,7 @@
                 "make"
               ],
               "answer": "ride",
-              "explanation": "a bike → ride. English fixes certain verbs to certain nouns.",
+              "explanation": "We use \"ride\" for a bike because you sit on it and make it move, the same as with a horse; you don't \"make\" or \"watch\" a bike to travel.",
               "meaning": "to sit on a bike and move",
               "example": "I ride my bike to school."
             },
@@ -5550,7 +5555,7 @@
                 "listen to"
               ],
               "answer": 0,
-              "explanation": "the dishes → wash. English fixes certain verbs to certain nouns.",
+              "explanation": "We \"wash\" the dishes because we clean the plates and cups with water after eating; \"take\" or \"speak\" don't fit.",
               "meaning": "to clean with water",
               "example": "I wash the dishes after dinner."
             },
@@ -5992,7 +5997,7 @@
                 "live"
               ],
               "answer": "Where do you live",
-              "explanation": "Correct order: \"Where do you live\""
+              "explanation": "\"Where do you live\": in a question, the question word comes first, then \"do\", then the subject and the main verb."
             },
             {
               "id": "a1p6q26",
@@ -6354,7 +6359,7 @@
               ],
               "answer": "How",
               "explanation": "\"How\" far is the fixed way to ask about distance, such as how many kilometres to the beach.",
-              "meaning": "used in \"how far\" to ask distance"
+              "meaning": "used in \"how far\" to ask about distance"
             },
             {
               "id": "a1p6q19",
@@ -6469,7 +6474,7 @@
               ],
               "answer": 1,
               "explanation": "The reply \"My phone is broken\" names the problem, so we ask about the thing with \"What\".",
-              "meaning": "asks about a thing or problem"
+              "meaning": "asks about a thing or information"
             },
             {
               "id": "a1p6q22",
@@ -6576,7 +6581,7 @@
         {
           "id": "a1p7l1",
           "title": "Family & People 1",
-          "subtitle": "Male → female counterparts",
+          "subtitle": "Male and female words",
           "questions": [
             {
               "id": "a1p7q0",
@@ -6701,7 +6706,7 @@
         {
           "id": "a1p7l2",
           "title": "Family & People 2",
-          "subtitle": "Male → female counterparts",
+          "subtitle": "Male and female words",
           "questions": [
             {
               "id": "a1p7q5",
@@ -6774,7 +6779,7 @@
                 "grandmother"
               ],
               "answer": 0,
-              "explanation": "king → queen. Many family and role words change form by gender in English.",
+              "explanation": "The female form of \"king\" is \"queen\". It is a completely different word, not \"king\" with an ending added.",
               "meaning": "a woman who rules a country",
               "example": "The queen lives in a big palace."
             },
@@ -6816,7 +6821,9 @@
                 "My grandpa is seventy years old.",
                 "My grandpa is seventy.",
                 "My granddad is seventy.",
-                "My granddad is seventy years old."
+                "My granddad is seventy years old.",
+                "My grandad is seventy.",
+                "My grandad is seventy years old."
               ],
               "explanation": "One way to say it: \"My grandfather is seventy years old.\""
             }
@@ -6825,7 +6832,7 @@
         {
           "id": "a1p7l3",
           "title": "Family & People 3",
-          "subtitle": "Male → female counterparts",
+          "subtitle": "Male and female words",
           "questions": [
             {
               "id": "a1p7q10",
@@ -6853,8 +6860,8 @@
                 "aunt"
               ],
               "answer": "actress",
-              "explanation": "actor → actress. Many family and role words change form by gender in English.",
-              "meaning": "a woman who acts in films",
+              "explanation": "For a woman, \"actor\" drops the \"o\" and adds \"-ess\" to make \"actress\". Many people now also say \"actor\" for women.",
+              "meaning": "a woman who acts in films or plays",
               "example": "The actress won a big prize."
             },
             {
@@ -6868,7 +6875,7 @@
                 "mother"
               ],
               "answer": 2,
-              "explanation": "waiter → waitress. Many family and role words change form by gender in English.",
+              "explanation": "\"Waiter\" drops the \"e\" and adds \"-ess\" to make \"waitress\", a woman who serves food in a restaurant.",
               "meaning": "a woman who brings food in a restaurant",
               "example": "The waitress brought our soup."
             },
@@ -6953,7 +6960,7 @@
         {
           "id": "a1p7l4",
           "title": "Family & People 4",
-          "subtitle": "Male → female counterparts",
+          "subtitle": "Male and female words",
           "questions": [
             {
               "id": "a1p7q15",
@@ -6966,7 +6973,7 @@
                 "lady"
               ],
               "answer": "bride",
-              "explanation": "groom → bride. Many family and role words change form by gender in English.",
+              "explanation": "A man getting married is the \"groom\", and a woman getting married is the \"bride\". They are two different words.",
               "meaning": "a woman on her wedding day",
               "example": "The bride wore a white dress."
             },
@@ -6996,7 +7003,7 @@
                 "wife"
               ],
               "answer": "godmother",
-              "explanation": "godfather → godmother. Many family and role words change form by gender in English.",
+              "explanation": "We change \"father\" to \"mother\" in \"godfather\" to get \"godmother\".",
               "meaning": "a woman chosen to help guide a child",
               "example": "My godmother sends me a gift each year."
             },
@@ -7011,7 +7018,7 @@
                 "grandmother"
               ],
               "answer": 0,
-              "explanation": "grandson → granddaughter. Many family and role words change form by gender in English.",
+              "explanation": "We change \"son\" to \"daughter\" in \"grandson\" to get \"granddaughter\", the daughter of your child.",
               "meaning": "the daughter of your son or daughter",
               "example": "Her granddaughter visits every Sunday."
             },
@@ -7026,7 +7033,7 @@
                 "mother-in-law"
               ],
               "answer": "stepmother",
-              "explanation": "stepfather → stepmother. Many family and role words change form by gender in English.",
+              "explanation": "We change \"father\" to \"mother\" in \"stepfather\" to get \"stepmother\", your father's wife who is not your birth mother.",
               "meaning": "your father's new wife",
               "example": "My stepmother cooks very well."
             },
@@ -7077,7 +7084,7 @@
         {
           "id": "a1p7l5",
           "title": "Family & People 5",
-          "subtitle": "Male → female counterparts",
+          "subtitle": "Male and female words",
           "questions": [
             {
               "id": "a1p7q20",
@@ -7222,7 +7229,7 @@
               ],
               "answer": 2,
               "explanation": "You drink \"coffee\" from a cup and can have it with milk, while sugar, bill and bread are not drunk.",
-              "meaning": "a hot brown drink",
+              "meaning": "a hot brown drink made from roasted beans",
               "imageKey": "coffee"
             },
             {
@@ -7389,7 +7396,8 @@
               "answer": 2,
               "explanation": "The clue says a list of dishes, which is a \"menu\"; you ask for it to choose what to order.",
               "meaning": "a list of food you can order",
-              "imageKey": "menu"
+              "imageKey": "menu",
+              "example": "Could we see the menu, please?"
             },
             {
               "id": "a1p8q9",
@@ -7438,7 +7446,6 @@
               "prompt": "Say that you do not like fish.",
               "acceptableAnswers": [
                 "I don't like fish.",
-                "I don't eat fish.",
                 "I dislike fish.",
                 "I don't like eating fish.",
                 "I'm not a fan of fish."
@@ -7507,7 +7514,8 @@
               ],
               "answer": 2,
               "explanation": "One triangle cut from a whole pizza is a \"slice\"; a box or bowl would hold the whole thing, and a bottle is for liquids.",
-              "meaning": "a thin piece cut from food"
+              "meaning": "a thin piece cut from food",
+              "example": "Can I have a slice of cake, please?"
             },
             {
               "id": "a1p8q14",
@@ -7620,7 +7628,7 @@
               ],
               "answer": 2,
               "explanation": "\"steak\" is correct here. High-frequency food vocabulary used in daily conversation.",
-              "meaning": "a thick piece of cooked beef",
+              "meaning": "a thick, flat piece of beef",
               "imageKey": "steak"
             },
             {
@@ -7635,7 +7643,8 @@
               ],
               "answer": "meat",
               "explanation": "\"meat\" is correct here. High-frequency food vocabulary used in daily conversation.",
-              "meaning": "food that comes from animals"
+              "meaning": "the flesh of animals, eaten as food",
+              "example": "She's a vegetarian, so she doesn't eat meat."
             },
             {
               "id": "a1p8q19",
@@ -7704,14 +7713,12 @@
                 "Could we have the bill?",
                 "Can I have the bill?",
                 "Could I have the bill?",
-                "The bill.",
                 "May I have the bill?",
                 "Can we have the bill?",
                 "Could I get the bill?",
                 "Can I get the bill?",
                 "Could you bring the bill?",
                 "Could I see the bill?",
-                "The check.",
                 "Could we get the bill?",
                 "May we have the bill?",
                 "Could I have the check?"
@@ -7794,7 +7801,7 @@
               ],
               "answer": 0,
               "explanation": "Water without bubbles is called \"still\" water, the opposite of sparkling water. Warm, salty and dry do not describe bubbles.",
-              "meaning": "water without bubbles"
+              "meaning": "not sparkling; with no bubbles"
             },
             {
               "id": "a1p8q37",
@@ -7911,7 +7918,7 @@
               ],
               "answer": 0,
               "explanation": "\"coat\" is correct here. Common clothing vocabulary with colour adjectives.",
-              "meaning": "warm clothing you wear outside"
+              "meaning": "a long, warm jacket you wear outside"
             },
             {
               "id": "a1p9q4",
@@ -7986,7 +7993,7 @@
               ],
               "answer": 2,
               "explanation": "A top with buttons and a collar, worn for work, is a \"shirt\". A ribbon and umbrella are not clothes, and jeans have no collar.",
-              "meaning": "clothing for the top of your body"
+              "meaning": "a top with a collar and buttons"
             },
             {
               "id": "a1p9q6",
@@ -8353,7 +8360,8 @@
               ],
               "answer": "trainers",
               "explanation": "You lace up soft sports shoes before a run, and those are \"trainers\"; trousers, a watch and pyjamas are not laced up.",
-              "meaning": "soft shoes for sport"
+              "meaning": "soft shoes for sport",
+              "example": "He put on his trainers and went for a run."
             },
             {
               "id": "a1p9q21",
@@ -8424,7 +8432,7 @@
                 "skirt"
               ],
               "answer": "She wears a green skirt",
-              "explanation": "Correct order: \"She wears a green skirt\""
+              "explanation": "\"She wears a green skirt\": the subject comes first, then the verb \"wears\", and the colour goes before the noun \"skirt\"."
             },
             {
               "id": "a1p9q38",
@@ -9049,7 +9057,7 @@
                 "sun"
               ],
               "answer": "The sun melts the snow",
-              "explanation": "Correct order: \"The sun melts the snow\""
+              "explanation": "\"The sun melts the snow\": the subject \"The sun\" comes first, then the verb \"melts\", then the object \"the snow\"."
             },
             {
               "id": "a1p10q38",
@@ -9365,7 +9373,7 @@
               ],
               "answer": 0,
               "explanation": "\"card\" is a way of paying that contrasts with cash, which is what 'not cash' signals. \"Notes\" are cash, and \"discount\" and \"balance\" are not things you pay by.",
-              "meaning": "a plastic way to pay"
+              "meaning": "a small plastic thing you pay with"
             },
             {
               "id": "a1p11q12",
@@ -9595,7 +9603,8 @@
               ],
               "answer": 0,
               "explanation": "A shop \"sale\" is a time when prices are lowered, which matches the clue that the item costs less than usual.",
-              "meaning": "a time when shops lower prices"
+              "meaning": "a time when shops lower prices",
+              "example": "There is a big sale at the shop this week."
             },
             {
               "id": "a1p11q21",
@@ -9718,7 +9727,7 @@
             {
               "id": "a1p12q0",
               "type": "fill",
-              "prompt": "Someone who \"teaches students\" is a… ___",
+              "prompt": "Someone who works in a school and helps students learn is a… ___",
               "bank": [
                 "midwife",
                 "teacher",
@@ -9726,7 +9735,7 @@
                 "police officer"
               ],
               "answer": "teacher",
-              "explanation": "teaches students → teacher. Common job titles matched to their main duty.",
+              "explanation": "A person whose job is to help students learn in a school is a \"teacher\"; a midwife, a lawyer and a police officer do other jobs.",
               "meaning": "a person who helps students learn",
               "example": "My teacher is very kind."
             },
@@ -9741,7 +9750,7 @@
                 "pilot"
               ],
               "answer": 0,
-              "explanation": "treats sick people → doctor. Common job titles matched to their main duty.",
+              "explanation": "A person who treats sick people and gives them medicine is a \"doctor\".",
               "meaning": "a person who helps sick people",
               "example": "The doctor gave me some medicine."
             },
@@ -9771,7 +9780,7 @@
                 "teacher"
               ],
               "answer": 2,
-              "explanation": "flies a plane → pilot. Common job titles matched to their main duty.",
+              "explanation": "A person whose job is to fly a plane is a \"pilot\".",
               "meaning": "a person who flies a plane",
               "example": "The pilot spoke to the passengers."
             },
@@ -9786,7 +9795,7 @@
                 "mechanic"
               ],
               "answer": "mechanic",
-              "explanation": "fixes cars → mechanic. Common job titles matched to their main duty.",
+              "explanation": "A person whose job is to fix cars in a garage is a \"mechanic\".",
               "meaning": "a person who fixes cars",
               "example": "The mechanic fixed our car."
             },
@@ -9865,7 +9874,7 @@
                 "dentist"
               ],
               "answer": "firefighter",
-              "explanation": "puts out fires → firefighter. Common job titles matched to their main duty.",
+              "explanation": "A \"firefighter\" is the person whose job is to put out fires; hairdressers, doctors and dentists do other work.",
               "meaning": "a person who puts out fires",
               "example": "The firefighter climbed the ladder."
             },
@@ -9895,8 +9904,8 @@
                 "cleaner"
               ],
               "answer": "builder",
-              "explanation": "builds houses → builder. Common job titles matched to their main duty.",
-              "meaning": "a person who makes houses",
+              "explanation": "A \"builder\" is the person whose job is to build houses and other buildings, just as the verb 'build' suggests.",
+              "meaning": "a person who builds houses and other buildings",
               "example": "The builder is building a new house."
             },
             {
@@ -9910,7 +9919,7 @@
                 "painter"
               ],
               "answer": 0,
-              "explanation": "cuts hair → hairdresser. Common job titles matched to their main duty.",
+              "explanation": "A \"hairdresser\" is the person who cuts and styles your hair; a mechanic fixes cars and a painter paints.",
               "meaning": "a person who cuts your hair",
               "example": "I go to the hairdresser every month."
             },
@@ -10003,7 +10012,7 @@
                 "teacher"
               ],
               "answer": 2,
-              "explanation": "grows crops → farmer. Common job titles matched to their main duty.",
+              "explanation": "A \"farmer\" is the person who grows crops and keeps animals on a farm.",
               "meaning": "a person who grows food on a farm",
               "example": "The farmer has fifty cows."
             },
@@ -10018,9 +10027,9 @@
                 "programmer"
               ],
               "answer": "shopkeeper",
-              "explanation": "sells goods in a shop → shopkeeper. Common job titles matched to their main duty.",
+              "explanation": "A \"shopkeeper\" is the person who runs a shop and sells things to customers, as the word 'shop' in the job title shows.",
               "meaning": "a person who runs a small shop",
-              "example": "The shopkeeper opens at nine."
+              "example": "The shopkeeper opens the shop at nine."
             },
             {
               "id": "a1p12q14",
@@ -10033,7 +10042,7 @@
                 "firefighter"
               ],
               "answer": 0,
-              "explanation": "catches criminals → police officer. Common job titles matched to their main duty.",
+              "explanation": "A \"police officer\" is the person whose job is to stop crime and catch criminals; a firefighter puts out fires instead.",
               "meaning": "a person who stops crime",
               "example": "The police officer helped us."
             },
@@ -10096,7 +10105,7 @@
                 "waiter"
               ],
               "answer": "journalist",
-              "explanation": "writes news stories → journalist. Common job titles matched to their main duty.",
+              "explanation": "A \"journalist\" is the person who writes news stories for newspapers, websites or TV.",
               "meaning": "a person who writes the news",
               "example": "The journalist wrote a story about our town."
             },
@@ -10111,7 +10120,7 @@
                 "mechanic"
               ],
               "answer": 2,
-              "explanation": "looks after teeth → dentist. Common job titles matched to their main duty.",
+              "explanation": "A \"dentist\" is the person who looks after your teeth and checks them for problems.",
               "meaning": "a person who looks after your teeth",
               "example": "I go to the dentist twice a year."
             },
@@ -10141,7 +10150,7 @@
                 "waiter"
               ],
               "answer": 0,
-              "explanation": "takes care of patients → nurse. Common job titles matched to their main duty.",
+              "explanation": "A \"nurse\" takes care of patients, usually in a hospital, and helps the doctors.",
               "meaning": "a person who helps sick people in hospital",
               "example": "The nurse took my temperature."
             },
@@ -10214,7 +10223,7 @@
             {
               "id": "a1p12q20",
               "type": "fill",
-              "prompt": "Someone who \"manages a company\" is a… ___",
+              "prompt": "Someone who \"is in charge of a team at work\" is a… ___",
               "bank": [
                 "journalist",
                 "builder",
@@ -10222,7 +10231,7 @@
                 "doctor"
               ],
               "answer": "manager",
-              "explanation": "manages a company → manager. Common job titles matched to their main duty.",
+              "explanation": "A \"manager\" is the person in charge of a team or a company, who organises the work.",
               "meaning": "a person in charge of a team",
               "example": "The manager has a meeting at ten."
             },
@@ -10237,14 +10246,14 @@
                 "chef"
               ],
               "answer": 0,
-              "explanation": "repairs pipes → plumber. Common job titles matched to their main duty.",
+              "explanation": "A \"plumber\" is the person who repairs water pipes, sinks and toilets.",
               "meaning": "a person who fixes water pipes",
               "example": "The plumber fixed the sink."
             },
             {
               "id": "a1p12q22",
               "type": "fill",
-              "prompt": "Someone who \"programs computers\" is a… ___",
+              "prompt": "Someone who \"writes code for computers\" is a… ___",
               "bank": [
                 "programmer",
                 "waiter",
@@ -10252,14 +10261,14 @@
                 "taxi driver"
               ],
               "answer": "programmer",
-              "explanation": "programs computers → programmer. Common job titles matched to their main duty.",
+              "explanation": "A \"programmer\" is the person who writes code to make computer programs and apps.",
               "meaning": "a person who writes computer programs",
               "example": "My brother is a programmer."
             },
             {
               "id": "a1p12q23",
               "type": "mc",
-              "prompt": "Someone who \"cleans buildings\" is a…",
+              "prompt": "Someone who \"washes floors and empties bins in offices\" is a…",
               "choices": [
                 "plumber",
                 "police officer",
@@ -10267,7 +10276,7 @@
                 "mechanic"
               ],
               "answer": 2,
-              "explanation": "cleans buildings → cleaner. Common job titles matched to their main duty.",
+              "explanation": "A \"cleaner\" is the person whose job is to wash floors and keep rooms and buildings tidy.",
               "meaning": "a person who cleans rooms and buildings",
               "example": "The cleaner comes every morning."
             },
@@ -10373,7 +10382,7 @@
                 "pig"
               ],
               "answer": "cat",
-              "explanation": "says meow → cat. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"cat\" is the pet that says meow; a lion roars and a pig says oink.",
               "meaning": "a small pet that says meow",
               "example": "The cat sleeps on my bed."
             },
@@ -10388,7 +10397,7 @@
                 "dog"
               ],
               "answer": 2,
-              "explanation": "gives us milk → cow. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"cow\" is the farm animal that gives us milk; a duck, a bee and a dog do not.",
               "meaning": "a farm animal that gives milk",
               "example": "The cow eats grass all day."
             },
@@ -10481,7 +10490,7 @@
                 "lion"
               ],
               "answer": "lion",
-              "explanation": "is the king of the jungle → lion. Common animals, from pets to farm and wild species.",
+              "explanation": "People call the \"lion\" the king of the jungle because it is big, strong and brave.",
               "meaning": "a big wild cat; the king of animals",
               "example": "The lion sleeps in the shade."
             },
@@ -10496,7 +10505,7 @@
                 "rabbit"
               ],
               "answer": 2,
-              "explanation": "has a long trunk → elephant. Common animals, from pets to farm and wild species.",
+              "explanation": "An \"elephant\" has a long trunk, which is its very long nose.",
               "meaning": "a very big animal with a long nose",
               "example": "An elephant drinks with its trunk."
             },
@@ -10511,7 +10520,7 @@
                 "giraffe"
               ],
               "answer": "giraffe",
-              "explanation": "is very tall with a long neck → giraffe. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"giraffe\" is very tall and has a long neck to reach leaves high in trees.",
               "meaning": "a very tall animal with a long neck",
               "example": "The giraffe eats leaves from trees."
             },
@@ -10541,9 +10550,9 @@
                 "tiger"
               ],
               "answer": "bird",
-              "explanation": "can fly and has feathers → bird. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"bird\" has feathers and can fly; a camel, a lion and a tiger cannot.",
               "meaning": "an animal with wings and feathers",
-              "example": "A bird sings in the tree."
+              "example": "A bird is singing in the tree."
             },
             {
               "id": "a1p13q28",
@@ -10607,7 +10616,7 @@
                 "turtle"
               ],
               "answer": "turtle",
-              "explanation": "is slow and carries a shell → turtle. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"turtle\" is slow and has a hard shell on its back. A cat, a kangaroo and a fish have no shell.",
               "meaning": "a water animal with a hard shell",
               "example": "The turtle swims slowly in the sea."
             },
@@ -10622,7 +10631,7 @@
                 "rabbit"
               ],
               "answer": 2,
-              "explanation": "says quack → duck. Common animals, from pets to farm and wild species.",
+              "explanation": "\"Quack\" is the sound a \"duck\" makes. A snail, a panda and a rabbit do not say quack.",
               "meaning": "a water bird that says quack",
               "example": "The duck swims on the pond."
             },
@@ -10637,7 +10646,7 @@
                 "turtle"
               ],
               "answer": "pig",
-              "explanation": "is pink and says oink → pig. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"pig\" is a pink farm animal, and \"oink\" is the sound it makes.",
               "meaning": "a pink farm animal",
               "example": "The pig is playing in the mud."
             },
@@ -10667,7 +10676,7 @@
                 "duck"
               ],
               "answer": "monkey",
-              "explanation": "climbs trees and eats bananas → monkey. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"monkey\" climbs trees and likes to eat bananas. A snail, a rabbit and a duck cannot climb trees.",
               "meaning": "an animal that climbs trees",
               "example": "The monkey eats a banana."
             },
@@ -10729,7 +10738,7 @@
                 "dog"
               ],
               "answer": 2,
-              "explanation": "is black and white and eats bamboo → panda. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"panda\" is a black and white bear that eats bamboo.",
               "meaning": "a black and white bear",
               "example": "The panda eats bamboo all day."
             },
@@ -10744,7 +10753,7 @@
                 "tiger"
               ],
               "answer": "kangaroo",
-              "explanation": "hops on strong back legs → kangaroo. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"kangaroo\" moves by hopping on its strong back legs. An elephant, a bat and a tiger do not hop.",
               "meaning": "an Australian animal that hops",
               "example": "The kangaroo jumps very high."
             },
@@ -10774,7 +10783,7 @@
                 "walrus"
               ],
               "answer": "bee",
-              "explanation": "lives in a hive and makes honey → bee. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"bee\" is a small insect that lives in a hive and makes honey.",
               "meaning": "a small flying insect that makes honey",
               "example": "A bee sat on the flower."
             },
@@ -10789,7 +10798,7 @@
                 "whale"
               ],
               "answer": 2,
-              "explanation": "spins a web → spider. Common animals, from pets to farm and wild species.",
+              "explanation": "A \"spider\" spins a web to catch insects. A tiger, an elephant and a whale cannot make webs.",
               "meaning": "a small animal with eight legs",
               "example": "The spider made a web."
             },
@@ -10913,7 +10922,7 @@
                 "pig"
               ],
               "answer": 2,
-              "explanation": "flies at night and sleeps upside down → bat. Common animals, from pets to farm and wild species.",
+              "explanation": "A bat flies at night and sleeps hanging upside down, so the answer is \"bat\".",
               "meaning": "a small animal that flies at night",
               "example": "A bat flew out of the cave."
             },
@@ -11022,7 +11031,8 @@
               ],
               "answer": "December",
               "explanation": "Christmas is on 25 \"December\", the last month of the year; the other months in the list do not contain Christmas Day.",
-              "meaning": "the last month of the year"
+              "meaning": "the last month of the year",
+              "example": "Christmas is in December."
             },
             {
               "id": "a1p14q3",
@@ -11050,7 +11060,8 @@
               ],
               "answer": "afternoon",
               "explanation": "Around one o'clock is just after noon, which is the \"afternoon\"; the morning ends at noon and evening and night come later.",
-              "meaning": "the time between noon and evening"
+              "meaning": "the time between noon and evening",
+              "example": "We play football in the afternoon."
             },
             {
               "id": "a1p14q25",
@@ -11155,7 +11166,8 @@
               ],
               "answer": "July",
               "explanation": "The clue says it is the seventh month, and \"July\" is the seventh month after January to June.",
-              "meaning": "a summer month, after June"
+              "meaning": "a summer month, after June",
+              "example": "My birthday is in July."
             },
             {
               "id": "a1p14q9",
@@ -11339,11 +11351,9 @@
                 "The store is closed on Sunday.",
                 "The store doesn't open on Sundays.",
                 "The shop doesn't open on Sunday.",
-                "The shop doesn't open every Sunday.",
                 "The store is closed every Sunday.",
                 "The store is not open on Sundays.",
                 "The shop is not open on Sunday.",
-                "The shop is not open every Sunday.",
                 "The store closes on Sundays.",
                 "The shop closes on Sunday.",
                 "The shop closes every Sunday.",
@@ -11352,9 +11362,7 @@
                 "The shop is shut on Sunday.",
                 "The shop is shut every Sunday.",
                 "The store doesn't open on Sunday.",
-                "The store doesn't open every Sunday.",
                 "The store is not open on Sunday.",
-                "The store is not open every Sunday.",
                 "The store closes on Sunday.",
                 "The store closes every Sunday.",
                 "The store is shut on Sunday.",
@@ -11533,7 +11541,7 @@
               ],
               "answer": "noon",
               "explanation": "\"noon\" means twelve o'clock in the middle of the day; midnight is twelve at night, and dawn and evening are not twelve o'clock.",
-              "meaning": "twelve o'clock in the day",
+              "meaning": "twelve o'clock in the middle of the day",
               "example": "We eat lunch at noon."
             },
             {
@@ -11548,7 +11556,8 @@
               ],
               "answer": 0,
               "explanation": "The clue says Saturday and Sunday, and those two days together are the \"weekend\".",
-              "meaning": "Saturday and Sunday"
+              "meaning": "Saturday and Sunday",
+              "example": "We often relax at the weekend."
             },
             {
               "id": "a1p14q24",
@@ -11777,7 +11786,7 @@
                 "square"
               ],
               "answer": 0,
-              "explanation": "is shaped like an egg → oval. Basic shapes and size adjectives.",
+              "explanation": "An egg is longer than it is wide, with round ends, and we call that shape \"oval\".",
               "meaning": "a shape like an egg",
               "example": "The mirror has an oval shape."
             },
@@ -12147,7 +12156,7 @@
               ],
               "answer": "cone",
               "explanation": "A \"cone\" has a round base and a pointed top, like an ice cream cone; the other words are flat shapes.",
-              "meaning": "a round base and a pointed top",
+              "meaning": "a round shape with a pointed top",
               "example": "The ice cream is in a cone."
             },
             {
@@ -12535,7 +12544,7 @@
               ],
               "answer": 2,
               "explanation": "People look at the words in a book and understand them, which is \"read\"; you do not \"write\", \"close\" or \"hide\" a book as a bedtime routine.",
-              "meaning": "to look at words and understand"
+              "meaning": "to look at words and understand them"
             },
             {
               "id": "a1p16q13",
@@ -12674,7 +12683,7 @@
               "explanation": "The subject \"He\" is third person singular, so the simple present verb needs -s: \"works\". The other forms are base, -ing or infinitive.",
               "term": "works out",
               "meaning": "does exercise",
-              "example": "He works out at the gym daily."
+              "example": "He works out at the gym every day."
             },
             {
               "id": "a1p16q19",
@@ -12761,7 +12770,7 @@
               ],
               "answer": "choose",
               "explanation": "With the subject \"I\" the simple present uses the base verb, so \"choose\" is right. \"Chooses\" is for he/she/it, and -ing or to-forms do not work here.",
-              "meaning": "to pick one thing"
+              "meaning": "to pick what you want from several things"
             },
             {
               "id": "a1p16q21",
@@ -12817,7 +12826,8 @@
               ],
               "answer": "set",
               "explanation": "\"set\" is correct here. Simple present tense sentences describing a typical day.",
-              "meaning": "to get a clock ready to ring"
+              "meaning": "to get an alarm clock ready to ring",
+              "example": "I always set my alarm before I go to bed."
             },
             {
               "id": "a1p16q37",
@@ -12903,8 +12913,9 @@
               ],
               "answer": 0,
               "explanation": "You open a \"book\" to a page number. A rubber, ruler or bell has no pages.",
-              "meaning": "pages of words to read",
-              "imageKey": "book"
+              "meaning": "a set of printed pages that you read",
+              "imageKey": "book",
+              "example": "Open your book at page ten."
             },
             {
               "id": "a1p17q1",
@@ -13095,7 +13106,7 @@
               ],
               "answer": "worksheet",
               "explanation": "The clue says it is a printed page of exercises, which is a \"worksheet\"; a rubber, bell or map is not a page of exercises.",
-              "meaning": "a paper with questions to answer"
+              "meaning": "a sheet of paper with questions to answer"
             },
             {
               "id": "a1p17q28",
@@ -13189,7 +13200,7 @@
               ],
               "answer": "bell",
               "explanation": "Only a \"bell\" rings to signal the end of a lesson; books, rulers and desks do not make a ringing sound.",
-              "meaning": "something that rings to tell the time"
+              "meaning": "a metal object that rings"
             },
             {
               "id": "a1p17q13",
@@ -13565,7 +13576,7 @@
               ],
               "answer": 2,
               "explanation": "A pillow is gentle and squashy to lie on, so \"pillow\" is the noun that goes with \"soft\".",
-              "meaning": "a soft bag for your head in bed",
+              "meaning": "a soft thing for your head in bed",
               "example": "This pillow is soft."
             },
             {
@@ -14423,7 +14434,7 @@
               ],
               "answer": "cashier",
               "explanation": "The person at the till who scans your shopping is the \"cashier\". Drivers, farmers and teachers do not work at a till.",
-              "meaning": "a person who takes your money"
+              "meaning": "a person you pay at the checkout"
             },
             {
               "id": "a1p19q11",
@@ -14556,7 +14567,8 @@
               ],
               "answer": 0,
               "explanation": "The clue says prices are lower, which is what a \"discount\" means. A receipt, trolley and basket have nothing to do with lower prices.",
-              "meaning": "a lower price"
+              "meaning": "a lower price",
+              "example": "There is a big discount on cheese this week."
             },
             {
               "id": "a1p19q16",
@@ -14760,9 +14772,9 @@
               "audioText": "I use soap to wash my hands.",
               "choices": [
                 "I use soap to wash my hands.",
-                "I use eggs to wash my hands.",
-                "I use milk to wash my hands.",
-                "I use bread to wash my hands."
+                "I use soap to wash my hair.",
+                "I use soap to wash my face.",
+                "I use water to wash my hands."
               ],
               "answer": "I use soap to wash my hands.",
               "explanation": "The audio says \"I use soap to wash my hands.\""
@@ -14952,7 +14964,8 @@
               ],
               "answer": 0,
               "explanation": "\"walk\" is correct because after \"I\" in the present simple we use the base verb, and it means to go on foot.",
-              "meaning": "to travel on foot"
+              "meaning": "to travel on foot",
+              "example": "I usually walk to work because it's not far."
             },
             {
               "id": "a1p20q7",
@@ -15443,11 +15456,11 @@
               "bank": [
                 "eyes",
                 "ears",
-                "elbow",
-                "hair"
+                "hands",
+                "feet"
               ],
               "answer": "eyes",
-              "explanation": "you see with these → eyes. Basic body part vocabulary.",
+              "explanation": "You see with your \"eyes\"; you hear with your ears, and you walk with your feet.",
               "meaning": "the parts of your face you see with",
               "example": "My eyes are brown."
             },
@@ -15459,10 +15472,10 @@
                 "toes",
                 "hands",
                 "ears",
-                "shin"
+                "eyes"
               ],
               "answer": 2,
-              "explanation": "you hear with these → ears. Basic body part vocabulary.",
+              "explanation": "You hear with your \"ears\"; you see with your eyes and hold things with your hands.",
               "meaning": "the parts of your head you hear with",
               "example": "Her ears are cold."
             },
@@ -15477,7 +15490,7 @@
                 "hands"
               ],
               "answer": "nose",
-              "explanation": "You smell with your nose; eyes, ears and hands do other jobs.",
+              "explanation": "You smell with your \"nose\"; eyes, ears and hands do other jobs.",
               "meaning": "the part of your face you smell with",
               "example": "My nose is red from the cold."
             },
@@ -15726,7 +15739,7 @@
               "answer": 0,
               "explanation": "The neck joins your head to the rest of your body, so the answer is \"neck\".",
               "meaning": "the part between your head and body",
-              "example": "He wears a scarf on his neck."
+              "example": "He wears a scarf round his neck."
             },
             {
               "id": "a1p21q13",
@@ -16351,7 +16364,7 @@
               ],
               "answer": "stories",
               "explanation": "You write \"stories\"; cakes, wool and bikes go with baking, knitting and cycling.",
-              "meaning": "tales about people and events",
+              "meaning": "words that tell about people and events",
               "example": "She writes stories for children."
             },
             {
@@ -16381,8 +16394,8 @@
               ],
               "answer": "outdoors",
               "explanation": "When you go camping, you sleep in a tent \"outdoors\", outside and not in a house.",
-              "meaning": "outside, not in a house",
-              "example": "We like to camp outdoors."
+              "meaning": "outside, not in a building",
+              "example": "The children like to play outdoors."
             },
             {
               "id": "a1p22q31",
@@ -16460,7 +16473,7 @@
               ],
               "answer": "on a bike",
               "explanation": "cycling → on a bike. Common free-time activities.",
-              "meaning": "sitting on a bicycle",
+              "meaning": "riding a bicycle",
               "example": "She goes to school on a bike."
             },
             {
@@ -16496,15 +16509,15 @@
             {
               "id": "a1p22q19",
               "type": "mc",
-              "prompt": "This hobby involves \"knitting\"…",
+              "prompt": "Knitting is a hobby you do ___.",
               "choices": [
-                "new places",
-                "art",
+                "with paint",
+                "with a ball",
                 "with wool",
-                "sports on TV"
+                "with a camera"
               ],
               "answer": 2,
-              "explanation": "knitting → with wool. Common free-time activities.",
+              "explanation": "You knit with soft thread from sheep, so the answer is \"with wool\". You paint with paint, play with a ball and take photos with a camera.",
               "meaning": "using soft thread from sheep",
               "example": "She knits a hat with wool."
             },
@@ -16715,7 +16728,7 @@
                 "I can't find my keys."
               ],
               "answer": "She's a doctor.",
-              "explanation": "The audio says \"She's a doctor.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"She's a doctor.\" Listen to the last word: it is \"doctor\", not \"teacher\"."
             },
             {
               "id": "a1p23q1",
@@ -16729,7 +16742,7 @@
                 "The train leaves at nine."
               ],
               "answer": "She's a teacher.",
-              "explanation": "The audio says \"She's a teacher.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"She's a teacher.\" Listen to the last word: it is \"teacher\", not \"doctor\"."
             },
             {
               "id": "a1p23q2",
@@ -16757,7 +16770,7 @@
                 "He's a bus driver."
               ],
               "answer": "He works at the airport.",
-              "explanation": "The audio says \"He works at the airport.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"He works at the airport.\" Listen for the last word: \"airport\", not \"hospital\"."
             },
             {
               "id": "a1p23q4",
@@ -16771,7 +16784,7 @@
                 "He's a bus driver."
               ],
               "answer": "He works at the hospital.",
-              "explanation": "The audio says \"He works at the hospital.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"He works at the hospital.\" Listen for the last word: \"hospital\", not \"airport\"."
             }
           ]
         },
@@ -16792,7 +16805,7 @@
                 "We eat dinner at seven."
               ],
               "answer": "They live near the park.",
-              "explanation": "The audio says \"They live near the park.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"They live near the park.\" Listen for the last word: \"park\", not \"station\"."
             },
             {
               "id": "a1p23q6",
@@ -16820,7 +16833,7 @@
                 "I've got two brothers."
               ],
               "answer": "I've got two brothers.",
-              "explanation": "The audio says \"I've got two brothers.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"I've got two brothers.\" Listen for the last word: \"brothers\", not \"sisters\"."
             },
             {
               "id": "a1p23q8",
@@ -16834,7 +16847,7 @@
                 "I've got two brothers."
               ],
               "answer": "I've got two sisters.",
-              "explanation": "The audio says \"I've got two sisters.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"I've got two sisters.\" Listen for the last word: \"sisters\", not \"brothers\"."
             },
             {
               "id": "a1p23q9",
@@ -16848,7 +16861,7 @@
                 "We eat dinner at seven."
               ],
               "answer": "We eat dinner at seven.",
-              "explanation": "The audio says \"We eat dinner at seven.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"We eat dinner at seven.\" Listen for the meal and the time: \"dinner\", not \"lunch\", and \"seven\", not \"eight\"."
             }
           ]
         },
@@ -16869,7 +16882,7 @@
                 "We eat lunch at seven."
               ],
               "answer": "We eat lunch at seven.",
-              "explanation": "The audio says \"We eat lunch at seven.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"We eat lunch at seven.\" Listen for the meal: \"lunch\", not \"dinner\"."
             },
             {
               "id": "a1p23q11",
@@ -16883,7 +16896,7 @@
                 "We eat lunch at seven."
               ],
               "answer": "We eat dinner at eight.",
-              "explanation": "The audio says \"We eat dinner at eight.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"We eat dinner at eight.\" Listen for the time: \"eight\", not \"seven\"."
             },
             {
               "id": "a1p23q12",
@@ -16897,7 +16910,7 @@
                 "It's very cold today."
               ],
               "answer": "The train leaves at nine.",
-              "explanation": "The audio says \"The train leaves at nine.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"The train leaves at nine.\" Listen for the transport and the time: \"train\", not \"bus\", and \"nine\", not \"five\"."
             },
             {
               "id": "a1p23q13",
@@ -16911,7 +16924,7 @@
                 "They live near the park."
               ],
               "answer": "The train leaves at five.",
-              "explanation": "The audio says \"The train leaves at five.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"The train leaves at five.\" Listen for the time: \"five\", not \"nine\"."
             },
             {
               "id": "a1p23q14",
@@ -16925,7 +16938,7 @@
                 "He's a bus driver."
               ],
               "answer": "The bus leaves at nine.",
-              "explanation": "The audio says \"The bus leaves at nine.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"The bus leaves at nine.\" Listen for the transport: \"bus\", not \"train\"."
             }
           ]
         },
@@ -16946,7 +16959,7 @@
                 "She doesn't drink coffee."
               ],
               "answer": "She doesn't drink coffee.",
-              "explanation": "The audio says \"She doesn't drink coffee.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"She doesn't drink coffee.\" Listen for the person and the drink: \"she\", not \"he\", and \"coffee\", not \"tea\"."
             },
             {
               "id": "a1p23q16",
@@ -16960,7 +16973,7 @@
                 "She doesn't drink coffee."
               ],
               "answer": "He doesn't drink tea.",
-              "explanation": "The audio says \"He doesn't drink tea.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"He doesn't drink tea.\" Listen for \"he\" and \"tea\": the similar option has \"she\" and \"coffee\"."
             },
             {
               "id": "a1p23q17",
@@ -16974,7 +16987,7 @@
                 "He doesn't drink tea."
               ],
               "answer": "My sister plays the piano.",
-              "explanation": "The audio says \"My sister plays the piano.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"My sister plays the piano.\" Listen for \"sister\" and \"piano\", not \"brother\" and \"guitar\"."
             },
             {
               "id": "a1p23q18",
@@ -16988,7 +17001,7 @@
                 "The train leaves at nine."
               ],
               "answer": "My brother plays the guitar.",
-              "explanation": "The audio says \"My brother plays the guitar.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"My brother plays the guitar.\" Listen for \"brother\" and \"guitar\", not \"sister\" and \"piano\"."
             },
             {
               "id": "a1p23q19",
@@ -17002,7 +17015,7 @@
                 "They live near the station."
               ],
               "answer": "It's very cold today.",
-              "explanation": "The audio says \"It's very cold today.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"It's very cold today.\" The key word is \"cold\", not \"hot\"."
             }
           ]
         },
@@ -17023,7 +17036,7 @@
                 "She's a teacher."
               ],
               "answer": "It's very hot today.",
-              "explanation": "The audio says \"It's very hot today.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"It's very hot today.\" The key word is \"hot\", not \"cold\"."
             },
             {
               "id": "a1p23q21",
@@ -17037,7 +17050,7 @@
                 "The train leaves at nine."
               ],
               "answer": "The shop opens on Monday.",
-              "explanation": "The audio says \"The shop opens on Monday.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"The shop opens on Monday.\" Listen for \"opens\" and \"Monday\", not \"closes\" and \"Sunday\"."
             },
             {
               "id": "a1p23q22",
@@ -17051,7 +17064,7 @@
                 "He works at the airport."
               ],
               "answer": "The shop closes on Sunday.",
-              "explanation": "The audio says \"The shop closes on Sunday.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"The shop closes on Sunday.\" Listen for \"closes\" and \"Sunday\", not \"opens\" and \"Monday\"."
             },
             {
               "id": "a1p23q23",
@@ -17065,7 +17078,7 @@
                 "The bus leaves at nine."
               ],
               "answer": "I can't find my keys.",
-              "explanation": "The audio says \"I can't find my keys.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"I can't find my keys.\" The last word is \"keys\", not \"phone\"."
             },
             {
               "id": "a1p23q24",
@@ -17079,7 +17092,7 @@
                 "I can't find my keys."
               ],
               "answer": "I can't find my phone.",
-              "explanation": "The audio says \"I can't find my phone.\" Short statements at natural speed, in near-identical pairs."
+              "explanation": "The audio says \"I can't find my phone.\" The last word is \"phone\", not \"keys\"."
             }
           ]
         }
@@ -17102,35 +17115,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Good morning.",
-              "explanation": "Target phrase: \"Good morning.\" Short everyday phrases to practise saying."
+              "explanation": "\"Good morning.\" is a friendly greeting you use until about midday."
             },
             {
               "id": "a1p24q1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Nice to meet you.",
-              "explanation": "Target phrase: \"Nice to meet you.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"Nice to meet you.\" when you meet someone for the first time."
             },
             {
               "id": "a1p24q2",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "How are you today?",
-              "explanation": "Target phrase: \"How are you today?\" Short everyday phrases to practise saying."
+              "explanation": "\"How are you today?\" is a friendly way to ask how someone feels; a common reply is \"Fine, thanks.\""
             },
             {
               "id": "a1p24q3",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "My name is Anna.",
-              "explanation": "Target phrase: \"My name is Anna.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"My name is Anna.\" to introduce yourself; put your own name after \"My name is\"."
             },
             {
               "id": "a1p24q4",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I would like a coffee.",
-              "explanation": "Target phrase: \"I would like a coffee.\" Short everyday phrases to practise saying."
+              "explanation": "\"I would like a coffee.\" is a polite way to order in a café; \"I would like\" is softer than \"I want\"."
             }
           ]
         },
@@ -17144,35 +17157,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Where is the station?",
-              "explanation": "Target phrase: \"Where is the station?\" Short everyday phrases to practise saying."
+              "explanation": "Ask \"Where is the station?\" when you need directions; \"Where is\" starts a question about a place."
             },
             {
               "id": "a1p24q6",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Thank you very much.",
-              "explanation": "Target phrase: \"Thank you very much.\" Short everyday phrases to practise saying."
+              "explanation": "\"Thank you very much.\" is a stronger, warmer way to say \"thank you\" when someone has helped you."
             },
             {
               "id": "a1p24q7",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Can you help me?",
-              "explanation": "Target phrase: \"Can you help me?\" Short everyday phrases to practise saying."
+              "explanation": "Use \"Can you help me?\" to ask someone for help; with \"can\", the question starts with \"Can you\"."
             },
             {
               "id": "a1p24q8",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I am from Spain.",
-              "explanation": "Target phrase: \"I am from Spain.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"I am from Spain.\" to tell people your country; use \"from\" before the country name."
             },
             {
               "id": "a1p24q9",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "See you tomorrow.",
-              "explanation": "Target phrase: \"See you tomorrow.\" Short everyday phrases to practise saying."
+              "explanation": "\"See you tomorrow.\" is a friendly goodbye when you will meet the person again the next day."
             }
           ]
         },
@@ -17186,35 +17199,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "The weather is lovely.",
-              "explanation": "Target phrase: \"The weather is lovely.\" Short everyday phrases to practise saying."
+              "explanation": "\"The weather is lovely.\" is a common British way to make small talk about a nice, sunny day."
             },
             {
               "id": "a1p24q11",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I have two brothers.",
-              "explanation": "Target phrase: \"I have two brothers.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"I have two brothers.\" to talk about your family; the plural \"brothers\" ends in -s after \"two\"."
             },
             {
               "id": "a1p24q12",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "What time is it?",
-              "explanation": "Target phrase: \"What time is it?\" Short everyday phrases to practise saying."
+              "explanation": "Ask \"What time is it?\" when you want to know the time; English uses \"it\" for the time."
             },
             {
               "id": "a1p24q13",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Excuse me, please.",
-              "explanation": "Target phrase: \"Excuse me, please.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"Excuse me, please.\" politely when you need to get past someone or catch their attention."
             },
             {
               "id": "a1p24q14",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I work in a bank.",
-              "explanation": "Target phrase: \"I work in a bank.\" Short everyday phrases to practise saying."
+              "explanation": "Say \"I work in a bank.\" to tell people your job or workplace; use \"in a\" before the place."
             }
           ]
         },
@@ -17425,11 +17438,11 @@
             {
               "id": "a1p25q9",
               "type": "translate",
-              "prompt": "Say goodbye until tomorrow.",
+              "prompt": "Say goodbye to someone you will see tomorrow.",
               "acceptableAnswers": [
                 "See you tomorrow.",
                 "Goodbye, see you tomorrow.",
-                "Until tomorrow."
+                "Bye, see you tomorrow."
               ],
               "explanation": "One way to say it: \"See you tomorrow.\" Everyday ideas, and more than one wording is right."
             }
@@ -17591,13 +17604,13 @@
             {
               "id": "a1p25q22",
               "type": "translate",
-              "prompt": "Say you work in a bank.",
+              "prompt": "Say where you work (a bank).",
               "acceptableAnswers": [
                 "I work in a bank.",
                 "I work at a bank.",
                 "My job is in a bank."
               ],
-              "explanation": "One way to say it: \"I work in a bank.\" Everyday ideas, and more than one wording is right."
+              "explanation": "One way to say it: \"I work in a bank.\" You can use \"in\" or \"at\" before a workplace, so \"I work at a bank.\" is also right."
             },
             {
               "id": "a1p25q23",
@@ -17871,7 +17884,7 @@
             {
               "id": "a2p1q30",
               "type": "translate",
-              "prompt": "Say that she gave him a present.",
+              "prompt": "Say this sentence in the past simple: \"She gives him a present.\"",
               "acceptableAnswers": [
                 "She gave him a present.",
                 "She gave him a gift.",
@@ -18434,7 +18447,7 @@
               ],
               "answer": "was",
               "explanation": "\"was\" is right because \"yesterday\" and \"left\" show past time, and \"I\" takes \"was\" in the past. \"Am\" and \"is\" are present forms.",
-              "meaning": "the past of \"am\", used with I"
+              "meaning": "past form of am and is"
             },
             {
               "id": "a2p2q9",
@@ -18449,7 +18462,7 @@
               "answer": 2,
               "explanation": "\"didn't\" is correct here. Past simple for finished events; past continuous for background action.",
               "meaning": "short for did not",
-              "example": "She didn't call me last year."
+              "example": "She didn't call me last night."
             },
             {
               "id": "a2p2q28",
@@ -19144,7 +19157,7 @@
               ],
               "answer": 0,
               "explanation": "\"busier\": busy ends in a consonant + y, so you change the y to i and add -er.",
-              "meaning": "with more things to do",
+              "meaning": "with more people or activity",
               "example": "The shop is busier on Saturdays."
             },
             {
@@ -19160,7 +19173,7 @@
               "answer": "safer",
               "explanation": "\"safe\" is a short adjective that already ends in -e, so you add only -r: \"safer\".",
               "meaning": "less dangerous",
-              "example": "This street is safer at night."
+              "example": "This street is safer than that one."
             },
             {
               "id": "a2p3q13",
@@ -19671,7 +19684,8 @@
               ],
               "answer": 2,
               "explanation": "A \"return\" ticket covers a trip there and back, as the clue says; a single ticket is one way only.",
-              "meaning": "a ticket for going and coming back"
+              "meaning": "a ticket for going and coming back",
+              "example": "A return to Oxford, please."
             },
             {
               "id": "a2p4q8",
@@ -20301,7 +20315,7 @@
               ],
               "answer": "enough",
               "explanation": "\"Enough\" means as many as we need and goes before plural nouns like \"chairs\", so \"enough\" fits this positive sentence.",
-              "meaning": "as much as you need"
+              "meaning": "as much or as many as you need"
             },
             {
               "id": "a2p5q6",
@@ -20338,11 +20352,11 @@
               "choices": [
                 "much",
                 "more",
-                "little",
+                "many",
                 "whole"
               ],
               "answer": 0,
-              "explanation": "\"much\" is correct here. Countable nouns take many/few; uncountable nouns take much/little.",
+              "explanation": "\"Coffee\" is uncountable, so after \"too\" we use \"much\", not \"many\" (\"many\" is for countable nouns like cups).",
               "meaning": "a lot; used mainly in questions and negatives",
               "example": "We don't have much time."
             },
@@ -20420,7 +20434,7 @@
               ],
               "answer": "much",
               "explanation": "\"Time\" is uncountable and the sentence is negative, so we use \"much\": \"I don't have much time.\"",
-              "meaning": "a big amount; used in negatives"
+              "meaning": "a lot; used in questions and negatives"
             },
             {
               "id": "a2p5q11",
@@ -20448,7 +20462,7 @@
               ],
               "answer": "Most",
               "explanation": "\"Most\" is correct here. Countable nouns take many/few; uncountable nouns take much/little.",
-              "meaning": "almost all"
+              "meaning": "more than half; the largest part or number"
             },
             {
               "id": "a2p5q13",
@@ -20476,7 +20490,7 @@
               ],
               "answer": "some",
               "explanation": "We use \"some\" in offers like \"Would you like…?\", and tea is uncountable, so \"many\" and \"few\" don't fit.",
-              "meaning": "used in offers and questions"
+              "meaning": "a few or a little; also in offers"
             },
             {
               "id": "a2p5q31",
@@ -20687,7 +20701,7 @@
                 "from"
               ],
               "answer": 0,
-              "explanation": "Both of them is the fixed pattern: both takes of before a pronoun such as them.",
+              "explanation": "Before a pronoun such as \"them\", \"both\" needs \"of\": we say \"Both of them\", never \"Both them\".",
               "meaning": "links an amount to a group"
             },
             {
@@ -21201,7 +21215,7 @@
             {
               "id": "a2p6q34",
               "type": "reorder",
-              "prompt": "Put the words in order to make a sentence.",
+              "prompt": "Put the words in order to make a question.",
               "tokens": [
                 "taxi",
                 "a",
@@ -21420,7 +21434,7 @@
               ],
               "answer": 0,
               "explanation": "The clue 'the room with the sofa' describes the \"living room\", where people relax and watch TV; a bathroom, hallway or garage is not where you do that.",
-              "meaning": "the room for relaxing and TV",
+              "meaning": "the room where you relax and watch TV",
               "imageKey": "living room"
             },
             {
@@ -22138,7 +22152,7 @@
             {
               "id": "a2p8q6",
               "type": "fill",
-              "prompt": "Which sport or hobby uses \"a helmet and bike\"? ___",
+              "prompt": "Which sport or hobby uses \"a helmet and a bike\"? ___",
               "bank": [
                 "pottery",
                 "cricket",
@@ -22146,7 +22160,7 @@
                 "gardening"
               ],
               "answer": "cycling",
-              "explanation": "a helmet and bike → cycling. Match the equipment or place to the activity.",
+              "explanation": "You wear a helmet and ride a bike when you go \"cycling\".",
               "meaning": "riding a bike",
               "example": "Cycling to work saves money."
             },
@@ -22183,7 +22197,7 @@
             {
               "id": "a2p8q9",
               "type": "mc",
-              "prompt": "Which sport or hobby uses \"skis and snow\"?",
+              "prompt": "Which sport or hobby uses \"boots, poles and snowy mountains\"?",
               "choices": [
                 "skiing",
                 "swimming",
@@ -22191,7 +22205,7 @@
                 "badminton"
               ],
               "answer": 0,
-              "explanation": "skis and snow → skiing. Match the equipment or place to the activity.",
+              "explanation": "You need boots, poles and snowy mountains for \"skiing\", not for swimming, painting or badminton.",
               "meaning": "sliding down snow on long boards",
               "example": "We go skiing in winter."
             },
@@ -22372,7 +22386,7 @@
             {
               "id": "a2p8q15",
               "type": "fill",
-              "prompt": "Which sport or hobby uses \"a deck of cards\"? ___",
+              "prompt": "Which sport or hobby uses \"aces, kings and jokers\"? ___",
               "bank": [
                 "card games",
                 "painting",
@@ -22380,14 +22394,14 @@
                 "running"
               ],
               "answer": "card games",
-              "explanation": "a deck of cards → card games. Match the equipment or place to the activity.",
+              "explanation": "Aces, kings and jokers are on playing cards, so the hobby is \"card games\".",
               "meaning": "games played with a deck of cards",
               "example": "We play card games at night."
             },
             {
               "id": "a2p8q16",
               "type": "mc",
-              "prompt": "Which sport or hobby uses \"a chessboard\"?",
+              "prompt": "Which sport or hobby uses \"a king, a queen and 64 black and white squares\"?",
               "choices": [
                 "basketball",
                 "badminton",
@@ -22395,7 +22409,7 @@
                 "boxing"
               ],
               "answer": 2,
-              "explanation": "a chessboard → chess. Match the equipment or place to the activity.",
+              "explanation": "A board of 64 black and white squares with a king and a queen is used for \"chess\".",
               "meaning": "a board game for two players",
               "example": "He plays chess with his grandfather."
             },
@@ -22496,7 +22510,7 @@
             {
               "id": "a2p8q20",
               "type": "fill",
-              "prompt": "Which sport or hobby uses \"a climbing wall\"? ___",
+              "prompt": "Which sport or hobby uses \"a rope and a harness\"? ___",
               "bank": [
                 "climbing",
                 "gardening",
@@ -22504,14 +22518,14 @@
                 "photography"
               ],
               "answer": "climbing",
-              "explanation": "a climbing wall → climbing. Match the equipment or place to the activity.",
+              "explanation": "You use a rope and a harness to stay safe when you go up a wall or a mountain, so the answer is \"climbing\".",
               "meaning": "going up a wall or mountain",
               "example": "Climbing is hard but fun."
             },
             {
               "id": "a2p8q21",
               "type": "mc",
-              "prompt": "Which sport or hobby uses \"a yoga mat\"?",
+              "prompt": "Which sport or hobby uses \"a soft mat for stretching\"?",
               "choices": [
                 "yoga",
                 "painting",
@@ -22519,7 +22533,7 @@
                 "skateboarding"
               ],
               "answer": 0,
-              "explanation": "a yoga mat → yoga. Match the equipment or place to the activity.",
+              "explanation": "You stretch and breathe slowly on a soft mat when you do \"yoga\"; you don't need one for painting, badminton or skateboarding.",
               "meaning": "slow exercise for body and mind",
               "example": "I do yoga every morning."
             },
@@ -23266,7 +23280,7 @@
                 "most big"
               ],
               "answer": 2,
-              "explanation": "big → biggest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Big\" is a short adjective ending in one vowel and one consonant, so we double the g and add -est: \"biggest\".",
               "meaning": "larger than all the others",
               "example": "This is the biggest room in the house."
             },
@@ -23281,7 +23295,7 @@
                 "most hot"
               ],
               "answer": "hottest",
-              "explanation": "hot → hottest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Hot\" is a short adjective ending in one vowel and one consonant, so we double the t and add -est: \"hottest\".",
               "meaning": "with the highest temperature",
               "example": "July is the hottest month here."
             },
@@ -23296,7 +23310,7 @@
                 "most happy"
               ],
               "answer": 0,
-              "explanation": "happy → happiest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Happy\" ends in consonant + -y, so change the y to i and add -est: \"happiest\".",
               "meaning": "feeling the most joy",
               "example": "It was the happiest day of my life."
             },
@@ -23311,7 +23325,7 @@
                 "most easy"
               ],
               "answer": "easiest",
-              "explanation": "easy → easiest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Easy\" ends in consonant + -y, so change the y to i and add -est: \"easiest\".",
               "meaning": "the least difficult",
               "example": "This is the easiest question."
             },
@@ -23647,7 +23661,7 @@
                 "most carefullest"
               ],
               "answer": 0,
-              "explanation": "careful → most careful. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Careful\" has two syllables and does not end in -y, so it takes \"most\": \"most careful\".",
               "meaning": "taking the most care",
               "example": "He is the most careful driver here."
             },
@@ -23677,9 +23691,9 @@
                 "most funny"
               ],
               "answer": 2,
-              "explanation": "funny → funniest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Funny\" ends in consonant + -y, so change the y to i and add -est: \"funniest\".",
               "meaning": "making you laugh the most",
-              "example": "He is the funniest boy in class."
+              "example": "He is the funniest boy in our class."
             },
             {
               "id": "a2p10q18",
@@ -23692,7 +23706,7 @@
                 "most heavy"
               ],
               "answer": "heaviest",
-              "explanation": "heavy → heaviest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Heavy\" ends in a consonant + y, so change y to i and add -est: \"heaviest\".",
               "meaning": "weighing the most",
               "example": "This is the heaviest box."
             },
@@ -23707,7 +23721,7 @@
                 "most moderner"
               ],
               "answer": 0,
-              "explanation": "modern → most modern. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Modern\" does not take -est, so we put \"most\" in front of it to make the superlative: \"most modern\".",
               "meaning": "the newest in style",
               "example": "It is the most modern school in town."
             },
@@ -23771,7 +23785,7 @@
                 "narrowwer"
               ],
               "answer": 0,
-              "explanation": "narrow → narrowest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Narrow\" ends in -ow, so we just add -est without doubling any letter: \"narrowest\".",
               "meaning": "the least wide",
               "example": "This is the narrowest street in the city."
             },
@@ -23801,7 +23815,7 @@
                 "quieteest"
               ],
               "answer": 2,
-              "explanation": "quiet → quietest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Quiet\" is a common two-syllable adjective that takes -est, so we add -est with no other change: \"quietest\".",
               "meaning": "making the least noise",
               "example": "The library is the quietest place here."
             },
@@ -23816,7 +23830,7 @@
                 "strangiest"
               ],
               "answer": "strangest",
-              "explanation": "strange → strangest. Short adjectives take -est; long ones take \"most\".",
+              "explanation": "\"Strange\" already ends in -e, so we only add -st: \"strangest\".",
               "meaning": "the most unusual",
               "example": "That is the strangest story I know."
             },
@@ -24043,7 +24057,7 @@
               ],
               "answer": "vegetarian",
               "explanation": "Dishes for people who don't eat meat are \"vegetarian\" dishes. Menu, water and ketchup can't describe dishes in this way.",
-              "meaning": "not eating meat",
+              "meaning": "without meat, or not eating meat",
               "example": "Do you have any vegetarian dishes?"
             },
             {
@@ -24072,7 +24086,8 @@
               ],
               "answer": "water",
               "explanation": "Tap \"water\" is the free drinking water from the tap. Ketchup, bread and dish don't go with \"tap\" or with \"you drink it\".",
-              "meaning": "a clear drink with no colour"
+              "meaning": "a clear drink with no colour",
+              "example": "Could I have some tap water as well?"
             },
             {
               "id": "a2p11q9",
@@ -24332,7 +24347,8 @@
               ],
               "answer": 2,
               "explanation": "The clue says everything we ate, which is the whole \"meal\"; a dish is only one item of food, and a menu or bill cannot be excellent food.",
-              "meaning": "the food you eat at one time"
+              "meaning": "the food you eat at one time",
+              "example": "The meal was excellent. Please thank the chef."
             },
             {
               "id": "a2p11q19",
@@ -24439,7 +24455,8 @@
               ],
               "answer": "booked",
               "explanation": "If a restaurant is fully \"booked\", every table has already been reserved, so you cannot get in without a booking.",
-              "meaning": "reserved ahead of time"
+              "meaning": "reserved ahead of time",
+              "example": "We booked a table for eight o'clock."
             },
             {
               "id": "a2p11q23",
@@ -24527,7 +24544,7 @@
       "level": "A2",
       "eyebrow": "Unit 14",
       "title": "Adverbs of Frequency",
-      "description": "How often things happen — Frequency adverbs matched to how often they mean.",
+      "description": "How often things happen — Match each frequency adverb to how often it means something happens.",
       "lessons": [
         {
           "id": "a2p12l1",
@@ -24579,7 +24596,7 @@
               "answer": 2,
               "explanation": "\"Normally\" means \"as a rule, under typical conditions\", so what happens most of the time. The other options all mean rarely or never.",
               "term": "normally",
-              "meaning": "in most normal situations",
+              "meaning": "usually; in the usual way",
               "example": "We normally eat dinner at seven."
             },
             {
@@ -24710,7 +24727,7 @@
               "answer": "on certain occasions but not most",
               "explanation": "\"Sometimes\" means it happens on some occasions but not most of the time, so the answer is \"on certain occasions but not most\".",
               "term": "sometimes",
-              "meaning": "not every time, but on some days",
+              "meaning": "on some occasions, but not always",
               "example": "Sometimes we eat out on Fridays."
             },
             {
@@ -24826,7 +24843,7 @@
               "answer": 2,
               "explanation": "\"Once in a while\" means something happens only sometimes, so the answer is \"not very often, infrequently\".",
               "term": "once in a while",
-              "meaning": "not often; a few times a year",
+              "meaning": "sometimes, but not often",
               "example": "We eat out once in a while."
             },
             {
@@ -24856,7 +24873,7 @@
                 "the great majority of the time"
               ],
               "answer": 0,
-              "explanation": "seldom → only rarely, not very often. Frequency adverbs matched to how often they mean.",
+              "explanation": "\"Seldom\" means something happens only a few times, so the answer is \"only rarely, not very often\", as in \"She seldom eats sweets.\"",
               "term": "seldom",
               "meaning": "not often; only a few times",
               "example": "She seldom eats sweets."
@@ -25263,7 +25280,7 @@
               ],
               "answer": "next",
               "explanation": "\"next\" is correct here. Everyday vocabulary for giving and following directions.",
-              "meaning": "beside; used in \"next to\""
+              "meaning": "in \"next to\": beside, very close to"
             },
             {
               "id": "a2p13q25",
@@ -25371,7 +25388,7 @@
               ],
               "answer": 2,
               "explanation": "The clue says where cars drive, which is the \"road\"; a pavement is for people walking, and cars do not drive in a garden or a park.",
-              "meaning": "a hard path for cars"
+              "meaning": "a wide way for cars and other traffic"
             },
             {
               "id": "a2p13q8",
@@ -25778,7 +25795,8 @@
               ],
               "answer": "in",
               "explanation": "\"in\" is correct here. Everyday vocabulary for giving and following directions.",
-              "meaning": "inside a place or area"
+              "meaning": "inside a place or area",
+              "example": "You can't miss it. It's in the town square."
             },
             {
               "id": "a2p13q37",
@@ -26414,7 +26432,7 @@
               ],
               "answer": 2,
               "explanation": "After \"Let's\" we use the base form of the verb, so \"agree\" is right; \"agree on a place\" means to decide on it together.",
-              "meaning": "to say yes to the same idea"
+              "meaning": "to decide something together"
             },
             {
               "id": "a2p14q23",
@@ -26560,7 +26578,8 @@
               ],
               "answer": 0,
               "explanation": "\"withdraw\" is correct here. A2-level vocabulary for post office and banking errands.",
-              "meaning": "to take money out of a bank"
+              "meaning": "to take money out of a bank",
+              "example": "I'd like to withdraw fifty pounds from my account, please."
             },
             {
               "id": "a2p15q4",
@@ -26805,7 +26824,8 @@
               ],
               "answer": "declined",
               "explanation": "A card the machine refuses to accept was \"declined\", and the passive \"was ___ by\" needs a past participle. \"withdraw\" and \"deposit\" are base forms and do not fit this sentence.",
-              "meaning": "not accepted"
+              "meaning": "not accepted",
+              "example": "My card was declined, so I paid in cash."
             },
             {
               "id": "a2p15q12",
@@ -26945,7 +26965,8 @@
               ],
               "answer": "PIN",
               "explanation": "The clue describes the four-digit number for your card, which is a \"PIN\". A branch, an order and a balance are not secret numbers you can forget.",
-              "meaning": "a secret number for your bank card"
+              "meaning": "a secret number for your bank card",
+              "example": "I've forgotten the PIN for my bank card."
             },
             {
               "id": "a2p15q18",
@@ -27052,7 +27073,8 @@
               ],
               "answer": 2,
               "explanation": "The clue says how much you must pay, which is the \"cost\"; the weight, colour or number of the parcel is not a price.",
-              "meaning": "the price of something"
+              "meaning": "the price of something",
+              "example": "Could you tell me the cost of sending this parcel?"
             },
             {
               "id": "a2p15q22",
@@ -27302,7 +27324,8 @@
               ],
               "answer": "local",
               "explanation": "The clue says near where I live, and \"local\" shops means shops in your own area; busy, quiet and clean do not describe where the shops are.",
-              "meaning": "near your home"
+              "meaning": "near your home",
+              "example": "I always buy my bread from the local bakery."
             },
             {
               "id": "a2p16q6",
@@ -27330,7 +27353,8 @@
               ],
               "answer": "residential",
               "explanation": "\"residential\" describes an area with mostly houses, which matches the clue. The other words describe areas full of shops, offices or factories.",
-              "meaning": "with houses, not offices or shops"
+              "meaning": "with houses, not offices or shops",
+              "example": "I live in a quiet residential area."
             },
             {
               "id": "a2p16q8",
@@ -27573,7 +27597,8 @@
               ],
               "answer": "community",
               "explanation": "A \"community\" atmosphere is a friendly feeling where neighbours know each other, as the clue says. Traffic, parking and tax do not describe an atmosphere between people.",
-              "meaning": "the people living in one place"
+              "meaning": "the people living in one place",
+              "example": "There's a friendly community here."
             },
             {
               "id": "a2p16q17",
@@ -27682,7 +27707,7 @@
               ],
               "answer": 2,
               "explanation": "\"bus\" is correct here. A2-level vocabulary for describing a local area.",
-              "meaning": "a big vehicle that carries many people"
+              "meaning": "a big road vehicle that carries many passengers"
             },
             {
               "id": "a2p16q21",
@@ -27762,7 +27787,7 @@
               "choices": [
                 "There's a good shopping centre nearby for sports.",
                 "There's a good garden centre nearby for sports.",
-                "There's a good police centre nearby for sports.",
+                "There's a good community centre nearby for sports.",
                 "There's a good leisure centre nearby for sports."
               ],
               "answer": "There's a good leisure centre nearby for sports.",
@@ -28343,7 +28368,8 @@
               ],
               "answer": 2,
               "explanation": "The clue \"it went by without stopping\" means the plane moved by the city, and \"past\" means going by something; \"into\" and \"onto\" mean entering or landing, and \"towards\" gives only the direction.",
-              "meaning": "going by something"
+              "meaning": "by and beyond something",
+              "example": "We walked past the school on our way home."
             },
             {
               "id": "a2p17q24",
@@ -28459,7 +28485,7 @@
               ],
               "answer": 0,
               "explanation": "\"cooking\" is correct here. A2-level past continuous tense practice.",
-              "meaning": "making food hot to eat"
+              "meaning": "preparing food by heating it"
             },
             {
               "id": "a2p18q3",
@@ -28487,7 +28513,7 @@
               ],
               "answer": 2,
               "explanation": "The past continuous is \"was\" + verb-ing, so after \"He was\" you need \"sleeping\". The alarm interrupted an action that was already in progress.",
-              "meaning": "resting with your eyes closed"
+              "meaning": "resting your body and mind, not awake"
             },
             {
               "id": "a2p18q25",
@@ -28552,7 +28578,7 @@
               ],
               "answer": "reading",
               "explanation": "After \"was\" the past continuous needs the -ing form, so \"reading\" fits. The phone call interrupted a book you were already reading.",
-              "meaning": "looking at words and understanding"
+              "meaning": "looking at words and understanding them"
             },
             {
               "id": "a2p18q6",
@@ -29855,7 +29881,7 @@
               ],
               "answer": "fluent",
               "explanation": "Someone who speaks smoothly and easily is \"fluent\"; poor, basic and weak describe limited English.",
-              "meaning": "able to speak easily"
+              "meaning": "speaking or spoken easily and well"
             },
             {
               "id": "a2p20q9",
@@ -30796,21 +30822,21 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I am trying to eat less sugar.",
-              "explanation": "Target phrase: \"I am trying to eat less sugar.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"I am trying to eat less sugar.\" Use \"trying to\" + verb for something you are working at, and \"less\" with uncountable nouns like sugar."
             },
             {
               "id": "a2p22q13",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "We walked all the way to the river.",
-              "explanation": "Target phrase: \"We walked all the way to the river.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"We walked all the way to the river.\" \"All the way to\" shows you went the whole distance, often further than expected."
             },
             {
               "id": "a2p22q14",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "She is studying to be a nurse.",
-              "explanation": "Target phrase: \"She is studying to be a nurse.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "Target phrase: \"She is studying to be a nurse.\" \"Studying to be\" + a job says what someone is training for."
             }
           ]
         },
@@ -30824,35 +30850,35 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I have never been to Italy.",
-              "explanation": "Target phrase: \"I have never been to Italy.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"I have never been to Italy.\" uses the present perfect with \"never\" to talk about life experience; we say \"been to\" a place, not \"gone to\"."
             },
             {
               "id": "a2p22q16",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Would you like to join us?",
-              "explanation": "Target phrase: \"Would you like to join us?\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"Would you like to join us?\" is a polite way to invite someone; \"Would you like to\" is followed by the base verb."
             },
             {
               "id": "a2p22q17",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "The train was completely full.",
-              "explanation": "Target phrase: \"The train was completely full.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"The train was completely full.\" uses \"completely\" to stress that there was no space left at all."
             },
             {
               "id": "a2p22q18",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I need to book a room for one night.",
-              "explanation": "Target phrase: \"I need to book a room for one night.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"I need to book a room for one night.\" uses \"book\" to mean reserve, and \"for\" to give the length of the stay."
             },
             {
               "id": "a2p22q19",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "He works from home on Fridays.",
-              "explanation": "Target phrase: \"He works from home on Fridays.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"He works from home on Fridays.\" uses the present simple for a regular routine; note \"on Fridays\" for days and \"from home\" with no article."
             }
           ]
         },
@@ -30866,28 +30892,28 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "We should leave before it gets dark.",
-              "explanation": "Target phrase: \"We should leave before it gets dark.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"We should leave before it gets dark.\" uses \"should\" to give advice, and the present \"gets\" after \"before\" even though it refers to the future."
             },
             {
               "id": "a2p22q21",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I left my bag on the bus.",
-              "explanation": "Target phrase: \"I left my bag on the bus.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"I left my bag on the bus.\" uses \"left\" (past of leave) to mean forgot it somewhere; we say \"on the bus\", not \"in the bus\"."
             },
             {
               "id": "a2p22q22",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "This jacket is a little too small.",
-              "explanation": "Target phrase: \"This jacket is a little too small.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"This jacket is a little too small.\" uses \"a little\" to soften \"too small\", which makes it a polite way to complain in a shop."
             },
             {
               "id": "a2p22q23",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "They are building a new library.",
-              "explanation": "Target phrase: \"They are building a new library.\" Everyday phrases for asking, arranging and explaining."
+              "explanation": "\"They are building a new library.\" uses the present continuous for a project that is happening around now."
             },
             {
               "id": "a2p22q24",
@@ -30905,7 +30931,7 @@
       "level": "A2",
       "eyebrow": "Unit 25",
       "title": "Say It Your Way: Getting Things Done",
-      "description": "Write the idea in English — Everyday errands and arrangements, more than one wording.",
+      "description": "Write the idea in English — Everyday errands and arrangements, with more than one right way to say it.",
       "lessons": [
         {
           "id": "a2p23l1",
@@ -30921,7 +30947,7 @@
                 "When does the shop open?",
                 "Could you tell me what time the shop opens?"
               ],
-              "explanation": "One way to say it: \"What time does the shop open?\" Everyday errands and arrangements, more than one wording."
+              "explanation": "\"What time does the shop open?\" uses \"does\" with the base verb \"open\"; in the polite \"Could you tell me...\" version, the word order changes to \"the shop opens\"."
             },
             {
               "id": "a2p23q1",
@@ -30943,7 +30969,7 @@
                 "Would you mind watering my plants while I'm away?",
                 "Can you look after my plants while I am away?"
               ],
-              "explanation": "One way to say it: \"Could you water my plants while I am away?\" Everyday errands and arrangements, more than one wording."
+              "explanation": "\"Could you water my plants while I am away?\" is a polite request; you can also say \"Would you mind\" followed by the -ing form, \"watering\"."
             },
             {
               "id": "a2p23q3",
@@ -30965,7 +30991,7 @@
                 "Do you take cards?",
                 "Is it possible to pay by card?"
               ],
-              "explanation": "One way to say it: \"Can I pay by card?\" Everyday errands and arrangements, more than one wording."
+              "explanation": "\"Can I pay by card?\" asks for permission with \"Can I\"; note the preposition \"by card\", not \"with card\"."
             }
           ]
         },
