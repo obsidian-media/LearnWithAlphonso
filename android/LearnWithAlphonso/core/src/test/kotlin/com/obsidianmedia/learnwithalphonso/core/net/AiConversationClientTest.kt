@@ -44,6 +44,15 @@ class AiConversationClientTest {
     }
 
     @Test
+    fun `chat still returns just the text when the server adds a verdict field`() = runTest {
+        val seen = ArrayList<Seen>()
+        val c = AiConversationClient(http(seen) { """{"content":"Sure, what size?","verdict":"corrected"}""".toByteArray() to HttpStatusCode.OK })
+        val shown = c.chat(listOf(ChatMessage("user", "hi")))
+        assertEquals("Sure, what size?", shown)
+        assertTrue(!shown.contains("verdict") && !shown.contains("[["))
+    }
+
+    @Test
     fun `the conversation's course rides on chat, speech, analysis and the tutor, and is absent when not given`() = runTest {
         val seen = ArrayList<Seen>()
         val c = AiConversationClient(http(seen) { s ->
