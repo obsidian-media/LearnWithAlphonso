@@ -1,6 +1,6 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 193,
+  "total": 189,
   "files": {
     "src/components/AchievementBadge.tsx": 10,
     "src/components/AiConsentGate.tsx": 2,
@@ -20,7 +20,6 @@
     "src/components/PracticeCall.tsx": 32,
     "src/components/SegmentedControl.tsx": 1,
     "src/components/VoicesSetting.tsx": 3,
-    "src/components/WebPaywall.tsx": 3,
     "src/components/ui/StatPill.tsx": 1,
     "src/components/ui/TileCard.tsx": 3,
     "src/routes/_authenticated/campaign_.$campaignId.tsx": 15,
@@ -31,7 +30,6 @@
     "src/routes/_authenticated/league.tsx": 7,
     "src/routes/_authenticated/learn.tsx": 11,
     "src/routes/_authenticated/placement.tsx": 13,
-    "src/routes/_authenticated/pro-return.tsx": 1,
     "src/routes/_authenticated/profile.tsx": 14,
     "src/routes/_authenticated/profile_.friends.tsx": 4,
     "src/routes/_authenticated/review.tsx": 6,

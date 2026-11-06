@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@/lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
+vi.mock("@/lib/leaderboard.functions", () => ({ getMyProfile: async () => null }));
 const { HectorInvite } = await import("./HectorInvite");
 
 const realFetch = globalThis.fetch;
@@ -16,11 +17,18 @@ beforeEach(() => {
   globalThis.fetch = vi.fn(async (input: string) => {
     urls.push(String(input));
     if (String(input).startsWith("/api/pro-offering")) {
+      // Test fixture: a made-up offer.
       return Response.json({
-        price: "$9.99",
-        period: "month",
-        trialDays: 7,
-        purchaseUrl: "https://pay.rev.cat/t/u",
+        plans: [
+          {
+            price: "$9.99",
+            amountMicros: 9_990_000,
+            currency: "USD",
+            period: "month",
+            trialDays: 7,
+            purchaseUrl: "https://pay.rev.cat/t/u",
+          },
+        ],
       });
     }
     return Response.json(status.body, { status: status.code });
@@ -40,8 +48,24 @@ describe("HectorInvite", () => {
       ),
     ).toBeInTheDocument();
     await userEvent.click(card);
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    const sheet = await screen.findByRole("dialog", { name: "Alphonso Pro" });
+    expect(await within(sheet).findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(urls).toContain("/api/pro-offering?source=practice_hector_card");
+  });
+
+  it("the paywall opens over the page, takes focus, and Close or Escape gives the page back", async () => {
+    render(<HectorInvite source="practice_hector_card" />);
+    const card = await screen.findByRole("button", { name: /Practise speaking with Hector/ });
+    await userEvent.click(card);
+    const close = await screen.findByRole("button", { name: "Close" });
+    expect(close).toHaveFocus();
+    await userEvent.click(close);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(card).toHaveFocus();
+    await userEvent.click(card);
+    await screen.findByRole("dialog");
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("end-of-Practice prompt uses its own wording and source", async () => {

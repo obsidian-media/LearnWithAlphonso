@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PAYWALL_COPY, WEB_PAYWALL_COPY } from "@/lib/paywall-copy";
 import { useProStatus } from "@/lib/use-pro-status";
-import { WebPaywall } from "./WebPaywall";
+import { WebPaywallSheet } from "./WebPaywall";
 
 const COPY = {
   practice_hector_card: {
@@ -17,7 +17,7 @@ const COPY = {
 /**
  * Practice's invitation to Hector (the iPhone's practiceCard), and the end-of-conversation "Continue with Hector"
  * prompt. Shown only to a learner confirmed not to have Pro: hidden for Pro, while loading, and when Pro cannot be
- * checked. Tapping it opens the paywall in place, attributed to where it was opened.
+ * checked. Tapping it opens the paywall over the page (Close or Escape returns), attributed to where it was opened.
  */
 export function HectorInvite({ source }: { source: keyof typeof COPY }) {
   const pro = useProStatus();
@@ -40,7 +40,7 @@ export function HectorInvite({ source }: { source: keyof typeof COPY }) {
           <span className="mt-0.5 block text-xs text-ink-soft/80">{copy.subtitle}</span>
         </span>
       </button>
-      {open && <WebPaywall source={source} />}
+      {open && <WebPaywallSheet source={source} onClose={() => setOpen(false)} />}
     </div>
   );
 }
