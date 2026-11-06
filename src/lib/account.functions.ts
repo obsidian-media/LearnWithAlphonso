@@ -85,7 +85,7 @@ export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as con
 // cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
 // below, so nothing is left behind. content_reports is the one exception: its
 // reporter/reported become NULL and the report is kept for 90 days for moderation
-// (20261105101000), with nothing from the profile.
+// (20261105101100), with nothing from the profile.
 export const USER_DELETE_TABLES = [
   "review_items",
   "lesson_completions",

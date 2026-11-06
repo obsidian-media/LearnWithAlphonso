@@ -818,7 +818,7 @@ export function teamIdForReport(report: { reason: string; context: unknown }): s
  * but there is no FK between content_reports and profiles directly for
  * PostgREST to embed across.
  *
- * A report outlives a deleted account for 90 days (20261105101000): its reporter or reported id is then NULL and
+ * A report outlives a deleted account for 90 days (20261105101100): its reporter or reported id is then NULL and
  * account_deleted_at is set, so that side shows as "(deleted account)" and no lookup is made for it.
  */
 export const adminListReports = createServerFn({ method: "GET" })
@@ -887,7 +887,7 @@ export const adminListReports = createServerFn({ method: "GET" })
  * ones -- reset the name, rename or disband a team, dismiss -- are below).
  * The reports against them stay in the queue for 90 days with the account
  * shown as "(deleted account)" (content_reports.reported is ON DELETE SET
- * NULL since 20261105101000); dismiss them when done. An AI-response report
+ * NULL since 20261105101100); dismiss them when done. An AI-response report
  * names no account and is refused, as is a report whose account is already gone. Revokes the Apple grant first, same as self-service
  * deleteMyAccount, because Apple requires that on any account deletion
  * regardless of who initiates it -- see revokeAppleGrantForUser's own
