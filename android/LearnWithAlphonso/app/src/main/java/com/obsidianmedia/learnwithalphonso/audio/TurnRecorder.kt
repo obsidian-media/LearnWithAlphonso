@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.audio
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import com.obsidianmedia.learnwithalphonso.core.avatar.CallLevel
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +84,9 @@ class TurnRecorder(private val context: Context, private val nowMillis: () -> Lo
         f?.delete()
         bytes
     }
+
+    /** Real metering: MediaRecorder's peak amplitude since the last read, as dBFS. */
+    override fun levelDBFS(): Double? = recorder?.let { r -> runCatching { CallLevel.dBFSFromAmplitude(r.maxAmplitude) }.getOrNull() }
 
     override fun cancelIfRecording() {
         val r = recorder ?: return

@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso.ui.practice
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.Campaign
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Scenario
@@ -34,6 +35,9 @@ data class ConversationUiState(
      * position, so a model reply that repeats an opener's words is still a model reply (and reportable).
      */
     val openerIndices: Set<Int> = setOf(0),
+    /** The server's verdict on the learner's last turn, numbered so one reply is reacted to once. */
+    val verdictSerial: Int = 0,
+    val verdict: ReplyVerdict = ReplyVerdict.NONE,
 )
 
 /** Plays reply audio; the app passes AudioPlayback, tests a no-op. */
@@ -45,7 +49,7 @@ fun interface ReplyPlayer { suspend fun play(bytes: ByteArray): Boolean }
  * is what differs between them.
  */
 abstract class BaseConversationViewModel(
-    recorder: RecorderPort,
+    private val recorder: RecorderPort,
     requestMic: suspend () -> Boolean,
     protected val ai: AiConversationClient,
     private val progress: ProgressSyncClient,
@@ -75,6 +79,9 @@ abstract class BaseConversationViewModel(
         }
     }
 
+    /** The microphone level while recording (the call's "You" tile), null otherwise. */
+    fun micLevelDBFS(): Double? = recorder.levelDBFS()
+
     fun pressBegan() { _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
     fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
 
@@ -87,8 +94,11 @@ abstract class BaseConversationViewModel(
             )
         }
         try {
-            val reply = ai.chat(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code)
-            _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING) }
+            val chatReply = ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code)
+            val reply = chatReply.content
+            _state.update {
+                it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
+            }
             onReply(reply)
             val audio = ai.synthesizeSpeech(reply, course = course.code)
             if (!player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }

@@ -93,6 +93,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
             }
             AiFeaturesSection(container)
+            AvatarSection(container)
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->
                     val p = AlphonsoPalettes.light.getValue(id)

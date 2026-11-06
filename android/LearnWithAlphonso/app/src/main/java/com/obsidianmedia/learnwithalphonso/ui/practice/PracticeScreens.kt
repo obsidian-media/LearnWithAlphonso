@@ -30,11 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
+import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
@@ -54,6 +56,9 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.league.ScreenHeader
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.PracticeCallScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.alphonsoKit
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.systemMotionReduced
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
@@ -108,19 +113,13 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
     }
 }
 
+/** The bubbles and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
 @Composable
-private fun ConversationBody(container: AppContainer, vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, course: String, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
-    val palette = AlphonsoColor.palette
+private fun TranscriptList(container: AppContainer, vm: BaseConversationViewModel, tint: Color, userText: Color, reporting: ReplyReporting, course: String, modifier: Modifier, footer: @Composable () -> Unit = {}) {
     val state by vm.state.collectAsState()
-    val phase by vm.engine.phase.collectAsState()
     val listState = rememberLazyListState()
-    DisposableEffect(Unit) { onDispose { vm.onLeave() } }
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size) }
-
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        AiReportStatusHost(reporting.sender)
-        ScreenHeader(title, onBack, actions)
-        header()
+    Column(modifier) {
         // Words are plain-looking links, so say they are tappable.
         SaveWordHintLine(container, SavedWordCopy.REPLY_HINT, limited = false)
         LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -135,6 +134,21 @@ private fun ConversationBody(container: AppContainer, vm: BaseConversationViewMo
             }
             item { footer() }
         }
+    }
+}
+
+@Composable
+private fun ConversationBody(container: AppContainer, vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, course: String, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
+    val palette = AlphonsoColor.palette
+    val state by vm.state.collectAsState()
+    val phase by vm.engine.phase.collectAsState()
+    DisposableEffect(Unit) { onDispose { vm.onLeave() } }
+
+    Column(Modifier.fillMaxSize().background(palette.surface)) {
+        AiReportStatusHost(reporting.sender)
+        ScreenHeader(title, onBack, actions)
+        header()
+        TranscriptList(container, vm, tint, userText, reporting, course, Modifier.weight(1f), footer)
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
         val busy = when (state.phase) { ConversationPhase.TRANSCRIBING -> "Listening..."; ConversationPhase.THINKING -> "Thinking..."; ConversationPhase.SPEAKING -> "..."; ConversationPhase.IDLE -> null }
             ?: if (phase == TurnPhase.TRANSCRIBING) "Listening..." else null
@@ -158,15 +172,25 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
         ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course)
     }
     val palette = AlphonsoColor.palette
+    val context = LocalContext.current
+    // "Show Alphonso while practising" (Settings, on by default): a full-screen call. Off keeps the classic screen.
+    val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
+    val reporting = ReplyReporting(container.aiReports) { message, _, reason ->
+        AiReplyReports.scenario(message, course.code, scenario.id, reason)
+    }
     AiConsentGate(container, onDecline = onBack) {
         SaveWordHost(container) {
-            ConversationBody(
-                container, vm, scenario.title, palette.moss, Color.White, onBack,
-                reporting = ReplyReporting(container.aiReports) { message, _, reason ->
-                    AiReplyReports.scenario(message, course.code, scenario.id, reason)
-                },
-                course = course.code,
-            )
+            if (showCall) {
+                DisposableEffect(Unit) { onDispose { vm.onLeave() } }
+                PracticeCallScreen(
+                    kit = remember { alphonsoKit(context) }, title = scenario.title, scenarioId = scenario.id, course = course,
+                    vm = vm, playback = playback, reducedMotion = systemMotionReduced(context), onEnd = onBack,
+                    statusHost = { AiReportStatusHost(reporting.sender) },
+                    transcript = { TranscriptList(container, vm, palette.moss, Color.White, reporting, course.code, Modifier) },
+                )
+            } else {
+                ConversationBody(container, vm, scenario.title, palette.moss, Color.White, onBack, reporting = reporting, course = course.code)
+            }
         }
     }
 }
