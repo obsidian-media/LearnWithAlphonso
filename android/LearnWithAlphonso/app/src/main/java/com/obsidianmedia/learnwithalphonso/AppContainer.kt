@@ -78,10 +78,6 @@ class AppContainer(context: Context) {
     /** The same app-lifetime scope, for work that must outlive the screen that started it (a podcast quiz submit). */
     val appLifetimeScope: CoroutineScope get() = appScope
 
-    /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */
-    suspend fun checkAppUpdate(): AppUpdateGate.Requirement? =
-        if (BuildConfig.DEBUG) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
-
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
     val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
     val themeManager = ThemeManager(prefs)
@@ -194,4 +190,8 @@ class AppContainer(context: Context) {
         prefs = prefs,
         scope = appScope,
     )
+
+    /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */
+    suspend fun checkAppUpdate(): AppUpdateGate.Requirement? =
+        if (BuildConfig.DEBUG) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
 }
