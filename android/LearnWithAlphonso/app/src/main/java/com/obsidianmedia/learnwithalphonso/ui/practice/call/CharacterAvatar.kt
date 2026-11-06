@@ -62,15 +62,7 @@ internal fun rememberKitArt(kit: CharacterKit): Map<String, ImageBitmap> {
     val context = LocalContext.current
     val art by produceState<Map<String, ImageBitmap>>(emptyMap(), kit.assetFolder) {
         value = withContext(Dispatchers.Default) {
-            buildList {
-                add(AvatarLayerFiles.BASE)
-                if (kit.glint != null) add(AvatarLayerFiles.GLINT_MASK)
-                AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
-                Brows.entries.forEach { add(kit.expressionFile(it)) }
-                if (kit.earLeft != null && kit.earRight != null) {
-                    for (side in EarSide.entries) for (t in listOf(false, true)) add(AvatarLayerFiles.ear(side, t))
-                }
-            }.mapNotNull { file -> loadAsset(context, "${kit.assetFolder}/$file")?.let { file to it } }.toMap()
+            kit.layerFiles().mapNotNull { file -> loadAsset(context, "${kit.assetFolder}/$file")?.let { file to it } }.toMap()
         }
     }
     return art
