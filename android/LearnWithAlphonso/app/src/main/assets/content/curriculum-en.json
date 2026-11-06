@@ -2597,7 +2597,7 @@
               "answer": 1,
               "explanation": "\"To bite the bullet\" means to make yourself do something unpleasant that you have been avoiding, so the answer is \"Face something unpleasant\".",
               "term": "bite the bullet",
-              "meaning": "to accept something unpleasant",
+              "meaning": "to make yourself do something unpleasant",
               "example": "I'll have to bite the bullet and ask."
             },
             {
@@ -2630,7 +2630,7 @@
               "explanation": "\"A blessing in disguise\" is something that seems bad at first but turns out to be good, so it is \"A hidden benefit\".",
               "term": "a blessing in disguise",
               "meaning": "a bad thing that turns out good",
-              "example": "Losing it was a blessing in disguise."
+              "example": "Losing that job was a blessing in disguise."
             },
             {
               "id": "q4",
@@ -50017,7 +50017,7 @@
       "level": "C1",
       "eyebrow": "Unit 2",
       "title": "Idioms",
-      "description": "Meaning match — Idioms are fixed — the words can't be swapped.",
+      "description": "Meaning match — Idioms are fixed: the words can't be swapped.",
       "lessons": [
         {
           "id": "c1p1l1",
@@ -50479,7 +50479,7 @@
                 "reduce"
               ],
               "answer": 2,
-              "explanation": "find out → ascertain. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"ascertain\" is the formal verb for finding out the facts, as in \"We must ascertain the cause of the fire\"; \"inform\" means to tell someone, not to find out.",
               "meaning": "to find the facts about something",
               "example": "We must ascertain the cause of the fire."
             },
@@ -50509,7 +50509,7 @@
                 "conduct"
               ],
               "answer": 0,
-              "explanation": "help → assist. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"assist\" is the formal way to say help, as in \"Staff will assist passengers at the gate\"; the other verbs mean delay, deal with or carry out.",
               "meaning": "to help someone do something",
               "example": "Staff will assist passengers at the gate."
             },
@@ -50561,7 +50561,7 @@
                 "demonstrate"
               ],
               "answer": "terminate",
-              "explanation": "end → terminate. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"terminate\" is the formal verb for ending something such as a contract; \"reduce\" only makes something smaller, it does not end it.",
               "meaning": "to bring something to an end",
               "example": "The contract was terminated last week."
             },
@@ -50576,8 +50576,8 @@
                 "discuss"
               ],
               "answer": 0,
-              "explanation": "need → require. Academic and professional writing prefers Latinate verbs.",
-              "meaning": "to need something as a rule",
+              "explanation": "\"require\" is the formal verb for need, common in rules and notices such as \"All visitors are required to sign in\"; the other verbs mean begin, set up or talk about.",
+              "meaning": "to officially say that someone must do something",
               "example": "All visitors are required to sign in."
             },
             {
@@ -50606,7 +50606,7 @@
                 "increase"
               ],
               "answer": 2,
-              "explanation": "ask for → request. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"request\" is the formal verb for ask for, as in \"I wish to request a refund\"; the other options mean end, carry out or make bigger.",
               "meaning": "to ask politely or formally for something",
               "example": "I wish to request a refund."
             },
@@ -50770,7 +50770,7 @@
                 "indicate"
               ],
               "answer": "relinquish",
-              "explanation": "give up → relinquish. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"relinquish\" is the formal verb for \"give up\" a right, power or claim, so it suits academic and professional writing.",
               "meaning": "to give up a right or claim",
               "example": "He chose to relinquish his title."
             },
@@ -50807,7 +50807,7 @@
                 "decline"
               ],
               "answer": 0,
-              "explanation": "make up → constitute. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"constitute\" is the formal verb for \"make up\" in the sense of forming the parts of a whole, as in \"Women constitute half of the workforce.\"",
               "meaning": "to form or be the parts of something",
               "example": "Women constitute half of the workforce."
             },
@@ -50852,7 +50852,7 @@
                 "terminate"
               ],
               "answer": "conduct",
-              "explanation": "carry out → conduct. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"conduct\" is the formal verb for \"carry out\" an activity such as research, a survey or an experiment.",
               "meaning": "to organise and carry out an activity",
               "example": "Researchers conduct tests in the lab."
             },
@@ -50867,7 +50867,7 @@
                 "relinquish"
               ],
               "answer": 0,
-              "explanation": "back up → corroborate. Academic and professional writing prefers Latinate verbs.",
+              "explanation": "\"corroborate\" is the formal verb for \"back up\" a claim, meaning to support it with further evidence.",
               "meaning": "to support a claim with more evidence",
               "example": "New data corroborate the earlier findings."
             }
@@ -51505,11 +51505,11 @@
             {
               "id": "c1p4q12",
               "type": "fill",
-              "prompt": "___ , consider the counterexample.",
+              "prompt": "Many countries have reduced class sizes. ___, consider Finland.",
               "bank": [
-                "In so",
-                "For simplicity",
-                "In light of",
+                "in light of",
+                "as yet",
+                "in terms of",
                 "By way of illustration"
               ],
               "answer": "By way of illustration",
@@ -51587,12 +51587,12 @@
             {
               "id": "c1p4q17",
               "type": "mc",
-              "prompt": "The sample was small; ___ , caution is advised.",
+              "prompt": "The sample was small; ___, caution is advised.",
               "choices": [
                 "hence",
                 "particularly",
-                "Crucially",
-                "Notably"
+                "crucially",
+                "notably"
               ],
               "answer": 0,
               "explanation": "\"hence\" is correct here. Each connector carries a distinct logical relationship.",
@@ -51619,15 +51619,15 @@
               "type": "mc",
               "prompt": "This is true ___ in urban settings.",
               "choices": [
-                "Generally",
+                "conversely",
                 "hence",
                 "particularly",
-                "Crucially"
+                "ultimately"
               ],
               "answer": 2,
               "explanation": "\"particularly\" is correct here. Each connector carries a distinct logical relationship.",
               "meaning": "especially; more than in other cases",
-              "example": "This is true particularly in cities."
+              "example": "This is particularly true in cities."
             }
           ]
         },
@@ -51639,11 +51639,11 @@
             {
               "id": "c1p4q20",
               "type": "mc",
-              "prompt": "___ , the hypothesis was rejected.",
+              "prompt": "After years of mixed results, the hypothesis was ___ rejected.",
               "choices": [
                 "particularly",
-                "Notably",
-                "Ultimately",
+                "as yet",
+                "ultimately",
                 "conversely"
               ],
               "answer": 2,
@@ -51672,7 +51672,7 @@
               "prompt": "___ this evidence, revision is needed.",
               "choices": [
                 "In light of",
-                "In so",
+                "Conversely",
                 "For simplicity",
                 "As yet"
               ],
@@ -51686,15 +51686,15 @@
               "type": "fill",
               "prompt": "The study is limited ___ its scope.",
               "bank": [
-                "In so",
+                "in light of",
                 "in terms of",
-                "For simplicity",
-                "As yet"
+                "by way of",
+                "as yet"
               ],
               "answer": "in terms of",
               "explanation": "\"in terms of\" is correct here. Each connector carries a distinct logical relationship.",
               "meaning": "used to say which aspect you mean",
-              "example": "The study is limited in terms of scope."
+              "example": "In terms of cost, the plan is realistic."
             },
             {
               "id": "c1p4q24",
@@ -51753,7 +51753,7 @@
                 "undermine"
               ],
               "answer": 0,
-              "explanation": "suggest indirectly → imply. Reporting verbs encode your stance on a claim.",
+              "explanation": "\"imply\" means to suggest something indirectly, without stating it outright, which matches the definition given.",
               "meaning": "to suggest something without saying it",
               "example": "His silence seemed to imply guilt."
             },
@@ -51770,7 +51770,7 @@
               "answer": "substantiate",
               "explanation": "provide evidence for → substantiate. Reporting verbs encode your stance on a claim.",
               "meaning": "to prove a claim with evidence",
-              "example": "The new data substantiate the claim."
+              "example": "The data substantiate the claim."
             },
             {
               "id": "c1p5q3",
@@ -51783,8 +51783,8 @@
                 "synthesise"
               ],
               "answer": 2,
-              "explanation": "weaken an argument → undermine. Reporting verbs encode your stance on a claim.",
-              "meaning": "to weaken something slowly",
+              "explanation": "\"undermine\" means to weaken an argument or position, often gradually, so it matches \"weaken an argument\".",
+              "meaning": "to weaken something, often gradually or indirectly",
               "example": "Doubt can undermine trust."
             },
             {
@@ -51835,7 +51835,7 @@
                 "distil"
               ],
               "answer": "challenge",
-              "explanation": "question the validity of → challenge. Reporting verbs encode your stance on a claim.",
+              "explanation": "To \"challenge\" a claim is to question whether it is valid or true, as in \"Some experts challenge the findings.\" \"Qualify\" only limits a claim, and \"imply\" suggests one.",
               "meaning": "to question whether something is right",
               "example": "Some experts challenge the findings."
             },
@@ -51880,7 +51880,7 @@
                 "substantiate"
               ],
               "answer": 0,
-              "explanation": "soften a claim → qualify. Reporting verbs encode your stance on a claim.",
+              "explanation": "To \"qualify\" a claim is to soften it by adding limits or conditions, for example \"in most cases\". \"Substantiate\" means the opposite: to support a claim with evidence.",
               "meaning": "to limit or soften a claim",
               "example": "You should qualify that statement."
             }
@@ -52031,7 +52031,7 @@
               "answer": 0,
               "explanation": "\"estimate\" means to judge a rough value or amount; \"infer\" means to reach a conclusion from evidence, not to give a number.",
               "meaning": "to judge a rough value or amount",
-              "example": "We estimate the cost at ten thousand."
+              "example": "We estimate the cost at about ten thousand pounds."
             },
             {
               "id": "c1p5q19",
@@ -52219,7 +52219,7 @@
               "answer": 2,
               "explanation": "The clue describes something true in general but not in every detail, which is exactly what \"broadly\" means in \"broadly consistent\".",
               "meaning": "in a general way",
-              "example": "The trend is broadly consistent."
+              "example": "The trend is broadly consistent with earlier findings."
             }
           ]
         },
@@ -52434,7 +52434,7 @@
               ],
               "answer": 2,
               "explanation": "\"appears\" works in the hedging pattern \"There appears to be...\" and agrees with the singular \"a threshold effect\"; \"might\" would need \"be\" without \"to\".",
-              "meaning": "seems to be",
+              "meaning": "seems; looks as if something is true",
               "example": "There appears to be a threshold effect."
             },
             {
@@ -52608,7 +52608,7 @@
               "answer": "deemed",
               "explanation": "\"deemed\" completes 'shall be deemed null and void', the fixed legal phrase meaning 'treated as' void if the clause is breached.",
               "meaning": "judged or considered to be",
-              "example": "The clause shall be deemed void if breached."
+              "example": "Notice shall be deemed received two days after posting."
             },
             {
               "id": "c1p7q3",
@@ -52788,8 +52788,8 @@
               ],
               "answer": "severable",
               "explanation": "\"severable\" means a clause can be separated from the rest, so the contract stays valid if that clause is struck out. \"This clause is ___ from the rest\" needs an adjective of separation, which \"legal\", \"right\" and \"binding\" are not.",
-              "meaning": "able to be separated from the rest",
-              "example": "This clause is severable from the contract."
+              "meaning": "able to be removed without affecting the rest",
+              "example": "Each provision of this agreement is severable."
             },
             {
               "id": "c1p7q14",
@@ -52871,7 +52871,7 @@
               "answer": 2,
               "explanation": "\"confidential\" means kept secret, which is what parties agree to do with the terms of a deal (\"keep the terms confidential\"). \"liable\" and \"severable\" do not describe how terms are kept.",
               "meaning": "meant to be kept secret",
-              "example": "The parties keep the terms confidential."
+              "example": "The parties shall keep the terms confidential."
             },
             {
               "id": "c1p7q19",
@@ -52907,7 +52907,7 @@
               ],
               "answer": "accept",
               "explanation": "After \"must\" the bare verb \"accept\" is needed, and \"accept the terms\" means agreeing to the conditions before going ahead. \"warrants\", \"interpreted\" and \"resolved\" have the wrong form after \"must\".",
-              "meaning": "to agree to receive something",
+              "meaning": "to agree to terms or conditions",
               "example": "The recipient must accept the terms."
             },
             {
@@ -52979,7 +52979,7 @@
       "level": "C1",
       "eyebrow": "Unit 9",
       "title": "Nuanced Character & Emotion",
-      "description": "Precise personality vocabulary — C1-level adjectives for describing character precisely.",
+      "description": "Precise personality vocabulary — C1-level adjectives for describing character and emotion.",
       "lessons": [
         {
           "id": "c1p8l1",
@@ -53094,7 +53094,7 @@
                 "reticent"
               ],
               "answer": 2,
-              "explanation": "showing great attention to duty → conscientious. C1-level adjectives for describing character precisely.",
+              "explanation": "A \"conscientious\" person takes their duties seriously and does their work carefully and thoroughly. \"Reticent\" instead means unwilling to talk.",
               "meaning": "careful to do your duty well",
               "example": "She is a conscientious worker."
             },
@@ -53125,7 +53125,7 @@
               ],
               "answer": 0,
               "explanation": "\"frugal\" describes someone who spends money carefully and avoids waste. It is usually a positive word, unlike stingy.",
-              "meaning": "careful not to spend money",
+              "meaning": "careful not to waste money",
               "example": "A frugal family saves every month."
             },
             {
@@ -53140,7 +53140,7 @@
               ],
               "answer": "candid",
               "explanation": "\"candid\" describes someone who speaks frankly and truthfully, even when the truth is awkward. \"capricious\" means unpredictable and \"conscientious\" means careful and dutiful.",
-              "meaning": "honest and direct about your feelings",
+              "meaning": "honest and direct in what you say",
               "example": "She gave a candid answer."
             }
           ]
@@ -53371,7 +53371,7 @@
               ],
               "answer": "obsequious",
               "explanation": "\"obsequious\" means trying far too hard to please people, especially important ones; \"acerbic\" means sharp and sarcastic, the opposite of fawning.",
-              "meaning": "too eager to please important people",
+              "meaning": "too eager to please or obey others",
               "example": "The obsequious waiter bowed constantly."
             },
             {
@@ -53387,7 +53387,7 @@
               "answer": 2,
               "explanation": "\"capricious\" describes someone whose moods and decisions change suddenly and without warning; \"audacious\" means bold and \"frugal\" means careful with money.",
               "meaning": "changing mood or mind without warning",
-              "example": "The weather is capricious in spring."
+              "example": "Her capricious boss changed the plan every day."
             }
           ]
         }
@@ -53462,8 +53462,8 @@
               ],
               "answer": 2,
               "explanation": "\"strikes\" forms the idiom \"strikes at the heart of\", meaning attacks or directly affects the most important part of something.",
-              "meaning": "hits or affects an important part",
-              "example": "This point strikes at the heart of it."
+              "meaning": "attacks or affects something at its core",
+              "example": "This argument strikes at the heart of the problem."
             },
             {
               "id": "c1p9q4",
@@ -53869,7 +53869,7 @@
               ],
               "answer": "supported",
               "explanation": "\"supported\" is right because data can back up a hypothesis ('by the data'), whereas a hypothesis is not observed, developed or published by data.",
-              "meaning": "shown to be true by evidence",
+              "meaning": "gave evidence in favour of",
               "example": "The data supported the hypothesis."
             },
             {
@@ -54658,7 +54658,7 @@
       "level": "C1",
       "eyebrow": "Unit 13",
       "title": "Idiomatic Expressions II",
-      "description": "Meaning match, advanced idioms — Advanced idioms beyond the basics.",
+      "description": "Advanced idioms — Match idioms that go beyond the basics to their meanings.",
       "lessons": [
         {
           "id": "c1p12l1",
@@ -54678,7 +54678,7 @@
               "answer": "to join something popular",
               "explanation": "A bandwagon is a trend that everyone hurries to join, so \"to join something popular\" is the meaning, often said slightly critically.",
               "term": "to jump on the bandwagon",
-              "meaning": "to join something popular",
+              "meaning": "to join a trend because others have",
               "example": "Many firms want to jump on the bandwagon."
             },
             {
@@ -54692,7 +54692,7 @@
                 "to start planning again"
               ],
               "answer": 2,
-              "explanation": "to read between the lines → to understand hidden meaning. Advanced idioms beyond the basics.",
+              "explanation": "When you read between the lines, you notice what someone means but does not say directly, so the idiom means \"to understand hidden meaning\".",
               "term": "to read between the lines",
               "meaning": "to understand a hidden meaning",
               "example": "You have to read between the lines."
@@ -54708,9 +54708,9 @@
                 "to agree completely"
               ],
               "answer": "to accept something difficult",
-              "explanation": "to bite the bullet → to accept something difficult. Advanced idioms beyond the basics.",
+              "explanation": "To bite the bullet is to face something unpleasant that you cannot avoid, such as apologising, so it means \"to accept something difficult\".",
               "term": "to bite the bullet",
-              "meaning": "to accept something difficult",
+              "meaning": "to make yourself do something difficult or unpleasant",
               "example": "He had to bite the bullet and apologise."
             },
             {
@@ -54724,7 +54724,7 @@
                 "to seem bad but turn out good"
               ],
               "answer": 0,
-              "explanation": "to burn bridges → to end a relationship badly. Advanced idioms beyond the basics.",
+              "explanation": "If you burn bridges, you damage a relationship so badly that you cannot go back, so the idiom means \"to end a relationship badly\".",
               "term": "to burn bridges",
               "meaning": "to end a relationship badly",
               "example": "Try not to burn bridges when you quit."
@@ -54740,7 +54740,7 @@
                 "to accept something difficult"
               ],
               "answer": "to agree completely",
-              "explanation": "to see eye to eye → to agree completely. Advanced idioms beyond the basics.",
+              "explanation": "People who see eye to eye share the same opinion, so the idiom means \"to agree completely\". It is often used in the negative, as in \"We rarely see eye to eye.\"",
               "term": "to see eye to eye",
               "meaning": "to agree completely",
               "example": "We rarely see eye to eye on politics."
@@ -54763,7 +54763,7 @@
                 "to have both good and bad effects"
               ],
               "answer": 2,
-              "explanation": "to go the extra mile → to make extra effort. Advanced idioms beyond the basics.",
+              "explanation": "To go the extra mile is to do more than is expected of you, so the idiom means \"to make extra effort\".",
               "term": "to go the extra mile",
               "meaning": "to make an extra effort",
               "example": "She is willing to go the extra mile for you."
@@ -54779,7 +54779,7 @@
                 "to increase the standard expected"
               ],
               "answer": "to get to the point quickly",
-              "explanation": "to cut to the chase → to get to the point quickly. Advanced idioms beyond the basics.",
+              "explanation": "To cut to the chase is to skip the unimportant details and talk about the main issue, so the idiom means \"to get to the point quickly\".",
               "term": "to cut to the chase",
               "meaning": "to get to the point quickly",
               "example": "Let's cut to the chase."
@@ -54795,7 +54795,7 @@
                 "to feel slightly unwell"
               ],
               "answer": 0,
-              "explanation": "to hit the nail on the head → to be exactly right. Advanced idioms beyond the basics.",
+              "explanation": "A carpenter who hits a nail exactly on its head has struck it perfectly, so the idiom means \"to be exactly right\" about something.",
               "term": "to hit the nail on the head",
               "meaning": "to be exactly right",
               "example": "You managed to hit the nail on the head there."
@@ -54811,7 +54811,7 @@
                 "to start planning again"
               ],
               "answer": "to have the same understanding",
-              "explanation": "to be on the same page → to have the same understanding. Advanced idioms beyond the basics.",
+              "explanation": "People on the same page are reading the same text, so the idiom means \"to have the same understanding\" of a plan or situation.",
               "term": "to be on the same page",
               "meaning": "to have the same understanding",
               "example": "We need to be on the same page."
@@ -55040,9 +55040,9 @@
                 "to be caught doing something wrong"
               ],
               "answer": 2,
-              "explanation": "to be a double-edged sword → to have both good and bad effects. Advanced idioms beyond the basics.",
+              "explanation": "A sword with two sharp edges can cut its user as well as the enemy, so the idiom means \"to have both good and bad effects\".",
               "term": "to be a double-edged sword",
-              "meaning": "something with both good and bad effects",
+              "meaning": "to have both good and bad effects",
               "example": "Fame can prove to be a double-edged sword."
             },
             {
@@ -55072,7 +55072,7 @@
                 "to avoid speaking directly"
               ],
               "answer": 0,
-              "explanation": "to be at a crossroads → to face an important decision. Advanced idioms beyond the basics.",
+              "explanation": "At a crossroads you must choose which road to take, so the idiom means \"to face an important decision\".",
               "term": "to be at a crossroads",
               "meaning": "to face an important decision",
               "example": "The firm appears to be at a crossroads."
@@ -55088,7 +55088,7 @@
                 "to be caught doing something wrong"
               ],
               "answer": "to survive a difficult period",
-              "explanation": "to weather the storm → to survive a difficult period. Advanced idioms beyond the basics.",
+              "explanation": "To weather something is to come through it without being destroyed, so the idiom means \"to survive a difficult period\".",
               "term": "to weather the storm",
               "meaning": "to survive a difficult period",
               "example": "The company managed to weather the storm."
@@ -55300,7 +55300,7 @@
               ],
               "answer": 0,
               "explanation": "A treaty is officially approved by a vote, so it is \"ratified\"; \"will be + past participle\" gives the future passive.",
-              "meaning": "confirmed officially by a vote",
+              "meaning": "formally approved",
               "example": "The treaty will be ratified."
             },
             {
@@ -55479,7 +55479,7 @@
               ],
               "answer": 2,
               "explanation": "'Have + object + past participle' describes arranging for someone else to do a job, and an engine checked before a long trip is \"serviced\". 'Reversed', 'surprised' and 'translated' do not suit an engine.",
-              "meaning": "checked and fixed by a mechanic",
+              "meaning": "checked and maintained by a mechanic",
               "example": "He had the engine serviced."
             },
             {
@@ -55588,7 +55588,7 @@
               "explanation": "The fixed formal phrase is 'with reference \"to\"', meaning 'about'. 'Reference' is never followed by 'of', 'on' or 'about' in this phrase.",
               "term": "with reference to",
               "meaning": "about; concerning",
-              "example": "With reference to our call, here is the report."
+              "example": "With reference to our call, please find the report attached."
             },
             {
               "id": "c1p14q4",
@@ -55769,7 +55769,7 @@
               "answer": 0,
               "explanation": "\"regret\" is correct because \"We regret to inform you\" is the formal way to give disappointing news, such as a filled position. \"Apologise\" and \"thank\" are not followed by \"to inform\", and \"sorry\" would need \"are\" before it.",
               "meaning": "to feel sorry about something",
-              "example": "We regret to inform you the post is filled."
+              "example": "We regret to inform you that the post has been filled."
             }
           ]
         },
@@ -55906,7 +55906,7 @@
               "answer": "change",
               "explanation": "\"change\" is right because 'Should circumstances change' is an inverted conditional meaning 'If circumstances change', which needs a bare verb after the subject. The other words are not verbs.",
               "meaning": "to become different",
-              "example": "Should circumstances change, tell us."
+              "example": "Should circumstances change, please let us know."
             },
             {
               "id": "c1p14q23",
@@ -55989,13 +55989,13 @@
               "type": "mc",
               "prompt": "The noun form of \"to analyse\" is…",
               "choices": [
-                "argument",
-                "interpretation",
+                "analysement",
+                "analysation",
                 "analysis",
-                "requirement"
+                "analysance"
               ],
               "answer": 2,
-              "explanation": "to analyse → analysis. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "Verbs ending in \"-yse\" form their noun with \"-ysis\", so \"to analyse\" becomes \"analysis\".",
               "meaning": "a careful study of something in parts",
               "example": "The analysis took weeks."
             },
@@ -56005,12 +56005,12 @@
               "prompt": "The noun form of \"to conclude\" is… ___",
               "bank": [
                 "conclusion",
-                "reduction",
-                "justification",
-                "explanation"
+                "concludement",
+                "concludation",
+                "conclusity"
               ],
               "answer": "conclusion",
-              "explanation": "to conclude → conclusion. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "Verbs ending in \"-clude\" drop \"-de\" and add \"-sion\", so \"to conclude\" becomes \"conclusion\".",
               "meaning": "a final decision reached after thought",
               "example": "We reached a clear conclusion."
             },
@@ -56020,12 +56020,12 @@
               "prompt": "The noun form of \"to assume\" is…",
               "choices": [
                 "assumption",
-                "decision",
-                "development",
-                "discovery"
+                "assumement",
+                "assumation",
+                "assumance"
               ],
               "answer": 0,
-              "explanation": "to assume → assumption. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Assume\" drops its final \"e\" and takes \"-ption\", giving the noun \"assumption\", just as consume becomes consumption.",
               "meaning": "something you accept as true without proof",
               "example": "It was a false assumption."
             }
@@ -56087,12 +56087,12 @@
               "prompt": "The noun form of \"to develop\" is…",
               "choices": [
                 "development",
-                "reduction",
-                "justification",
-                "analysis"
+                "developation",
+                "developion",
+                "developance"
               ],
               "answer": 0,
-              "explanation": "to develop → development. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"To develop\" forms its noun with the suffix \"-ment\", giving \"development\".",
               "meaning": "growth or a new step forward",
               "example": "There was a major development in the case."
             },
@@ -56153,13 +56153,13 @@
               "type": "fill",
               "prompt": "The noun form of \"to propose\" is… ___",
               "bank": [
-                "resolution",
+                "proposement",
                 "proposal",
-                "improvement",
-                "explanation"
+                "proposure",
+                "proposance"
               ],
               "answer": "proposal",
-              "explanation": "to propose → proposal. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"To propose\" drops the final \"e\" and adds \"-al\", giving \"proposal\" for a plan put forward.",
               "meaning": "a plan offered for others to consider",
               "example": "Our proposal was accepted."
             },
@@ -56169,12 +56169,12 @@
               "prompt": "The noun form of \"to reduce\" is…",
               "choices": [
                 "reduction",
-                "proposal",
-                "justification",
-                "analysis"
+                "reducement",
+                "reducal",
+                "reducance"
               ],
               "answer": 0,
-              "explanation": "to reduce → reduction. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "Verbs ending in \"-duce\" change to \"-duction\", so \"to reduce\" becomes \"reduction\".",
               "meaning": "a fall in amount or size",
               "example": "There was a big reduction in cost."
             },
@@ -56205,14 +56205,14 @@
               "type": "mc",
               "prompt": "The noun form of \"to discover\" is…",
               "choices": [
-                "production",
-                "improvement",
+                "discoverment",
+                "discoveration",
                 "discovery",
-                "assumption"
+                "discoverance"
               ],
               "answer": 2,
-              "explanation": "to discover → discovery. C1-level nominalisation, common in academic and formal writing.",
-              "meaning": "finding something new",
+              "explanation": "\"To discover\" simply adds \"-y\" to form its noun, giving \"discovery\".",
+              "meaning": "finding something new, or the thing found",
               "example": "The discovery changed medicine."
             },
             {
@@ -56220,15 +56220,15 @@
               "type": "fill",
               "prompt": "The noun form of \"to expand\" is… ___",
               "bank": [
-                "establishment",
-                "conclusion",
-                "failure",
+                "expandment",
+                "expandation",
+                "expandal",
                 "expansion"
               ],
               "answer": "expansion",
-              "explanation": "to expand → expansion. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Expand\" drops -d and takes -sion, giving \"expansion\", like extend → extension; there is no -ment or -ation form.",
               "meaning": "growth in size or range",
-              "example": "The firm planned expansion abroad."
+              "example": "The firm planned its expansion abroad."
             },
             {
               "id": "c1p15q17",
@@ -56236,12 +56236,12 @@
               "prompt": "The noun form of \"to achieve\" is…",
               "choices": [
                 "achievement",
-                "expansion",
-                "resolution",
-                "explanation"
+                "achievation",
+                "achievance",
+                "achievion"
               ],
               "answer": 0,
-              "explanation": "to achieve → achievement. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Achieve\" forms its noun with -ment, giving \"achievement\", like improve → improvement.",
               "meaning": "something done well with effort",
               "example": "Graduating was a great achievement."
             },
@@ -56265,13 +56265,13 @@
               "type": "mc",
               "prompt": "The noun form of \"to interpret\" is…",
               "choices": [
-                "argument",
-                "establishment",
+                "interpretion",
+                "interpretment",
                 "interpretation",
-                "development"
+                "interpretance"
               ],
               "answer": 2,
-              "explanation": "to interpret → interpretation. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Interpret\" adds -ation, not just -ion, giving \"interpretation\", like present → presentation.",
               "meaning": "an explanation of what something means",
               "example": "Each critic offered a different interpretation."
             }
@@ -56287,13 +56287,13 @@
               "type": "mc",
               "prompt": "The noun form of \"to justify\" is…",
               "choices": [
-                "description",
-                "recognition",
+                "justifiment",
+                "justifyance",
                 "justification",
-                "proposal"
+                "justifation"
               ],
               "answer": 2,
-              "explanation": "to justify → justification. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "Verbs ending in -ify change to -ification, so \"justify\" becomes \"justification\", like clarify → clarification.",
               "meaning": "a good reason for an action",
               "example": "She could offer no justification."
             },
@@ -56303,12 +56303,12 @@
               "prompt": "The noun form of \"to maintain\" is… ___",
               "bank": [
                 "maintenance",
-                "resolution",
-                "requirement",
-                "expansion"
+                "maintainance",
+                "maintainment",
+                "maintention"
               ],
               "answer": "maintenance",
-              "explanation": "to maintain → maintenance. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "The noun of \"maintain\" is \"maintenance\": the -ai- of the verb changes to -e- and it takes -ance, so \"maintainance\" is a common misspelling.",
               "meaning": "work to keep something in good condition",
               "example": "The road needs regular maintenance."
             },
@@ -56333,12 +56333,12 @@
               "prompt": "The noun form of \"to recognise\" is… ___",
               "bank": [
                 "recognition",
-                "success",
-                "argument",
-                "establishment"
+                "recognisation",
+                "recognisement",
+                "recognisal"
               ],
               "answer": "recognition",
-              "explanation": "to recognise → recognition. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Recognise\" drops -ise and takes -ition, giving \"recognition\", like compete → competition.",
               "meaning": "praise or respect for what someone has done",
               "example": "She won recognition for her work."
             },
@@ -56347,13 +56347,13 @@
               "type": "mc",
               "prompt": "The noun form of \"to resolve\" is…",
               "choices": [
-                "argument",
-                "establishment",
+                "resolvance",
+                "resolvation",
                 "resolution",
-                "development"
+                "resolval"
               ],
               "answer": 2,
-              "explanation": "to resolve → resolution. C1-level nominalisation, common in academic and formal writing.",
+              "explanation": "\"Resolve\" changes -ve to -u- and adds -tion, giving \"resolution\", like solve → solution.",
               "meaning": "a solution to a problem",
               "example": "We found a resolution to the dispute."
             }
@@ -56482,7 +56482,7 @@
               ],
               "answer": "that",
               "explanation": "In an 'It was ... that' cleft, the focused phrase 'because of the delay' is always followed by \"that\", never 'which', 'what' or 'why', before the rest of the sentence 'we missed the flight'.",
-              "meaning": "links a reason to a result",
+              "meaning": "introduces the rest after the focused part",
               "example": "It was because of the delay that we missed it."
             },
             {
@@ -56836,7 +56836,7 @@
               "answer": 0,
               "explanation": "We say \"a mistake\" after \"make\"; research and damage go with \"do\", and a risk goes with \"take\".",
               "meaning": "something you did that was wrong",
-              "example": "Everyone can make a mistake."
+              "example": "Anyone can make a mistake."
             },
             {
               "id": "c1p17q3",
@@ -57098,7 +57098,7 @@
               ],
               "answer": "a look",
               "explanation": "With \"have\" the fixed phrase is \"a look\" (have a look), meaning look at something quickly. We make an effort, take a risk and make a decision.",
-              "meaning": "a quick view of something",
+              "meaning": "a short act of looking at something",
               "example": "Have a look at this."
             },
             {
@@ -57394,12 +57394,12 @@
               "prompt": "The phrase \"correctional facility\" is a polite way of saying…",
               "choices": [
                 "prison",
-                "euthanised",
-                "drug addiction",
-                "unemployed"
+                "a mental hospital",
+                "a care home",
+                "a homeless shelter"
               ],
               "answer": 0,
-              "explanation": "correctional facility → prison. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "A \"correctional facility\" is where people are held to 'correct' their behaviour after a crime, so it is an official, softer name for \"prison\".",
               "term": "correctional facility",
               "meaning": "prison",
               "example": "He was sent to a correctional facility."
@@ -57480,13 +57480,13 @@
               "type": "fill",
               "prompt": "The phrase \"a bit under the weather\" is a polite way of saying… ___",
               "bank": [
-                "not very intelligent",
-                "unintended harm",
+                "mildly annoyed",
+                "short of money",
                 "slightly ill",
-                "second-hand"
+                "rather nervous"
               ],
               "answer": "slightly ill",
-              "explanation": "a bit under the weather → slightly ill. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "\"A bit under the weather\" is a gentle, informal way to say you are \"slightly ill\", for example with a cold, without giving details.",
               "term": "a bit under the weather",
               "meaning": "slightly ill",
               "example": "I'm a bit under the weather."
@@ -57496,13 +57496,13 @@
               "type": "mc",
               "prompt": "The phrase \"of a certain age\" is a polite way of saying…",
               "choices": [
-                "decline",
-                "prison",
+                "overweight",
+                "poor",
                 "older",
-                "to die"
+                "unemployed"
               ],
               "answer": 2,
-              "explanation": "of a certain age → older. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "\"Of a certain age\" avoids stating someone's age directly and politely means \"older\", usually middle-aged or beyond.",
               "term": "of a certain age",
               "meaning": "older",
               "example": "A woman of a certain age waved."
@@ -57512,16 +57512,16 @@
               "type": "fill",
               "prompt": "The phrase \"enhanced interrogation\" is a polite way of saying… ___",
               "bank": [
-                "euthanised",
-                "pregnant",
-                "cheap or stingy",
+                "bribery",
+                "spying",
+                "imprisonment",
                 "torture"
               ],
               "answer": "torture",
-              "explanation": "enhanced interrogation → torture. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "\"Enhanced interrogation\" is an official-sounding term that critics say hides the harsh physical methods it describes, which are \"torture\".",
               "term": "enhanced interrogation",
-              "meaning": "torture",
-              "example": "Critics called it enhanced interrogation."
+              "meaning": "a euphemism for torture",
+              "example": "Officials called it enhanced interrogation; critics called it torture."
             },
             {
               "id": "c1p18q18",
@@ -57529,12 +57529,12 @@
               "prompt": "The phrase \"negative growth\" is a polite way of saying…",
               "choices": [
                 "decline",
-                "currently without a job",
-                "dishonest",
-                "prison"
+                "inflation",
+                "debt",
+                "unemployment"
               ],
               "answer": 0,
-              "explanation": "negative growth → decline. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "\"Negative growth\" is business jargon that avoids saying a company or economy is shrinking, so it is a polite way of saying \"decline\".",
               "term": "negative growth",
               "meaning": "decline",
               "example": "The firm reported negative growth."
@@ -57573,7 +57573,7 @@
                 "forgetfulness"
               ],
               "answer": "drug addiction",
-              "explanation": "substance abuse → drug addiction. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "\"Substance abuse\" is the clinical, softer term used instead of naming the problem directly, so it means \"drug addiction\".",
               "term": "substance abuse",
               "meaning": "harmful use of drugs or alcohol",
               "example": "He is being treated for substance abuse."
@@ -57589,7 +57589,7 @@
                 "prison"
               ],
               "answer": 0,
-              "explanation": "in between opportunities → currently without a job. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "Saying someone is \"in between opportunities\" makes unemployment sound temporary and positive, so it means \"currently without a job\".",
               "term": "in between opportunities",
               "meaning": "currently without a job",
               "example": "She is in between opportunities."
@@ -57621,7 +57621,7 @@
                 "disabled"
               ],
               "answer": 2,
-              "explanation": "letting nature take its course → not intervening medically. C1-level euphemisms for sensitive or blunt topics.",
+              "explanation": "Doctors and families say they are \"letting nature take its course\" when they decide not to treat an illness any further, so it means \"not intervening medically\".",
               "term": "letting nature take its course",
               "meaning": "choosing not to treat an illness",
               "example": "The family agreed on letting nature take its course."
@@ -57783,7 +57783,7 @@
               "answer": "however",
               "explanation": "\"however\" is a linking adverb used after a semicolon and followed by a comma, introducing the contrast (disappointing results, yet they kept trying). \"while\" and \"although\" are conjunctions that do not follow a semicolon like this, and \"despite\" needs a noun phrase.",
               "meaning": "used to add a contrast",
-              "example": "Results were poor; however, the team kept trying."
+              "example": "The results were poor; however, the team kept trying."
             },
             {
               "id": "c1p19q8",
@@ -57798,7 +57798,7 @@
               "answer": 0,
               "explanation": "\"nevertheless\" is a linking adverb that works after a semicolon and before a comma, showing morale stayed high in spite of the setbacks; \"despite\" needs a noun phrase, and \"although\" and \"even though\" are conjunctions that cannot sit between a semicolon and a comma like this.",
               "meaning": "in spite of that",
-              "example": "Setbacks were serious; nevertheless, morale stayed high."
+              "example": "The setbacks were serious; nevertheless, morale stayed high."
             },
             {
               "id": "c1p19q9",
@@ -57947,7 +57947,7 @@
               "answer": 0,
               "explanation": "\"on the other hand\" introduces a contrasting point: the rules are strict, but exceptions are sometimes made.",
               "meaning": "used to give an opposing point",
-              "example": "On the other hand, exceptions are made."
+              "example": "The flat is quite small; on the other hand, it's very cheap."
             },
             {
               "id": "c1p19q18",
@@ -58500,7 +58500,7 @@
         {
           "id": "c1p21l1",
           "title": "Listening: Academic & Professional Register 1",
-          "subtitle": "Academic and professional register",
+          "subtitle": "Follow lectures, talks and meetings",
           "questions": [
             {
               "id": "c1p21q0",
@@ -58514,7 +58514,7 @@
                 "The implementation was contingent on further funding."
               ],
               "answer": "The implementation was contingent on further funding.",
-              "explanation": "The audio says \"The implementation was contingent on further funding.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The implementation was contingent on further funding.\" Listen for the last word: the project depended on more money (\"funding\"), not on permission (\"approval\")."
             },
             {
               "id": "c1p21q1",
@@ -58528,7 +58528,7 @@
                 "The implementation was contingent on further funding."
               ],
               "answer": "The implementation was contingent on further approval.",
-              "explanation": "The audio says \"The implementation was contingent on further approval.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The implementation was contingent on further approval.\" Listen for the last word: the project depended on permission (\"approval\"), not on money (\"funding\")."
             },
             {
               "id": "c1p21q2",
@@ -58570,14 +58570,14 @@
                 "Not until the enquiry did the discrepancy emerge."
               ],
               "answer": "Not until the audit did the discrepancy emerge.",
-              "explanation": "The audio says \"Not until the audit did the discrepancy emerge.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"Not until the audit did the discrepancy emerge.\" The key word is \"audit\" (a financial check), not \"enquiry\" (an investigation)."
             }
           ]
         },
         {
           "id": "c1p21l2",
           "title": "Listening: Academic & Professional Register 2",
-          "subtitle": "Academic and professional register",
+          "subtitle": "Follow lectures, talks and meetings",
           "questions": [
             {
               "id": "c1p21q5",
@@ -58591,7 +58591,7 @@
                 "Not until the enquiry did the discrepancy emerge."
               ],
               "answer": "Not until the enquiry did the discrepancy emerge.",
-              "explanation": "The audio says \"Not until the enquiry did the discrepancy emerge.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"Not until the enquiry did the discrepancy emerge.\" The key word is \"enquiry\" (an investigation), not \"audit\" (a financial check)."
             },
             {
               "id": "c1p21q6",
@@ -58605,7 +58605,7 @@
                 "Not until the enquiry did the discrepancy emerge."
               ],
               "answer": "The correlation shouldn't be read as causation.",
-              "explanation": "The audio says \"The correlation shouldn't be read as causation.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The correlation shouldn't be read as causation.\" It warns against assuming cause; it does not say the correlation \"may well indicate\" it."
             },
             {
               "id": "c1p21q7",
@@ -58619,7 +58619,7 @@
                 "The correlation may well indicate causation."
               ],
               "answer": "The correlation may well indicate causation.",
-              "explanation": "The audio says \"The correlation may well indicate causation.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The correlation may well indicate causation.\" It suggests cause is likely, the opposite of saying it \"shouldn't be read as\" cause."
             },
             {
               "id": "c1p21q8",
@@ -58654,7 +58654,7 @@
         {
           "id": "c1p21l3",
           "title": "Listening: Academic & Professional Register 3",
-          "subtitle": "Academic and professional register",
+          "subtitle": "Follow lectures, talks and meetings",
           "questions": [
             {
               "id": "c1p21q10",
@@ -58668,7 +58668,7 @@
                 "The methodology has been scrutinised at length."
               ],
               "answer": "The methodology has been scrutinised at length.",
-              "explanation": "The audio says \"The methodology has been scrutinised at length.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The methodology has been scrutinised at length.\" \"At length\" means it was examined thoroughly; the look-alike option \"hasn't been scrutinised at all\" says the opposite."
             },
             {
               "id": "c1p21q11",
@@ -58731,7 +58731,7 @@
         {
           "id": "c1p21l4",
           "title": "Listening: Academic & Professional Register 4",
-          "subtitle": "Academic and professional register",
+          "subtitle": "Follow lectures, talks and meetings",
           "questions": [
             {
               "id": "c1p21q15",
@@ -58808,7 +58808,7 @@
         {
           "id": "c1p21l5",
           "title": "Listening: Academic & Professional Register 5",
-          "subtitle": "Academic and professional register",
+          "subtitle": "Follow lectures, talks and meetings",
           "questions": [
             {
               "id": "c1p21q20",
@@ -58850,7 +58850,7 @@
                 "The implementation was contingent on further approval."
               ],
               "answer": "The intervention yielded only marginal improvement.",
-              "explanation": "The audio says \"The intervention yielded only marginal improvement.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The intervention yielded only marginal improvement.\" \"Only marginal\" means very little, the opposite of the look-alike option \"substantial improvement\"."
             },
             {
               "id": "c1p21q23",
@@ -58864,7 +58864,7 @@
                 "Their reasoning rests on an untested assumption."
               ],
               "answer": "The intervention yielded substantial improvement.",
-              "explanation": "The audio says \"The intervention yielded substantial improvement.\" Formal register where one word reverses the claim."
+              "explanation": "The audio says \"The intervention yielded substantial improvement.\" Listen for \"substantial\": the option with \"only marginal\" sounds similar but says the opposite."
             },
             {
               "id": "c1p21q24",
@@ -59090,14 +59090,14 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "We are effectively back where we started.",
-              "explanation": "Target phrase: \"We are effectively back where we started.\" Idiomatic and formal phrasing said aloud."
+              "explanation": "Target phrase: \"We are effectively back where we started.\" Here \"effectively\" means \"in practice\", and \"back where we started\" means no progress has been made."
             },
             {
               "id": "c1p22q24",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "It bears repeating that nothing was agreed.",
-              "explanation": "Target phrase: \"It bears repeating that nothing was agreed.\" Idiomatic and formal phrasing said aloud."
+              "explanation": "Target phrase: \"It bears repeating that nothing was agreed.\" \"It bears repeating\" is a formal way to say something is worth saying again for emphasis."
             }
           ]
         }
@@ -59124,7 +59124,7 @@
                 "With respect, that misses the point.",
                 "That rather misses the point, I think."
               ],
-              "explanation": "One way to say it: \"I am afraid that rather misses the point.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"I am afraid that rather misses the point.\" \"I am afraid\" and \"rather\" soften the criticism, which keeps it polite."
             },
             {
               "id": "c1p23q1",
@@ -59135,7 +59135,7 @@
                 "Allow me to take the opposing view.",
                 "Let me put the opposite case."
               ],
-              "explanation": "One way to say it: \"Let me argue the other side for a moment.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"Let me argue the other side for a moment.\" \"Let me\" offers politely, and \"for a moment\" shows this is not your real view."
             },
             {
               "id": "c1p23q2",
@@ -59157,7 +59157,7 @@
                 "This is a quibble about wording.",
                 "We are arguing over details of wording."
               ],
-              "explanation": "One way to say it: \"We are splitting hairs over the wording.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"We are splitting hairs over the wording.\" \"Splitting hairs\" means arguing about tiny, unimportant differences."
             },
             {
               "id": "c1p23q4",
@@ -59168,7 +59168,7 @@
                 "That argument does not stand up.",
                 "The argument falls apart under scrutiny."
               ],
-              "explanation": "One way to say it: \"The argument does not hold water.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"The argument does not hold water.\" An argument that does not \"hold water\" has a weakness that makes it fail."
             }
           ]
         },
@@ -59186,7 +59186,7 @@
                 "I'd be cautious about concluding that.",
                 "I am reluctant to conclude that."
               ],
-              "explanation": "One way to say it: \"I would hesitate to draw that conclusion.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"I would hesitate to draw that conclusion.\" \"Would hesitate\" disagrees tentatively, which is typical of careful academic speech."
             },
             {
               "id": "c1p23q6",
@@ -59208,7 +59208,7 @@
                 "Looking back, the signs were clear.",
                 "With hindsight the warnings were plain."
               ],
-              "explanation": "One way to say it: \"In hindsight, the warning signs were obvious.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"In hindsight, the warning signs were obvious.\" \"In hindsight\" means judging now, after the event, what was not clear at the time."
             },
             {
               "id": "c1p23q8",
@@ -59230,7 +59230,7 @@
                 "That would set a bad precedent.",
                 "It would establish an unwelcome precedent."
               ],
-              "explanation": "One way to say it: \"That would set an unfortunate precedent.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"That would set an unfortunate precedent.\" \"Set a precedent\" means create an example others will follow, and \"unfortunate\" is a politer word than \"bad\"."
             }
           ]
         },
@@ -59259,7 +59259,7 @@
                 "To say the proposal is ambitious is an understatement.",
                 "The proposal is, to put it mildly, ambitious."
               ],
-              "explanation": "One way to say it: \"The proposal is ambitious, to put it mildly.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"The proposal is ambitious, to put it mildly.\" \"To put it mildly\" signals that the real situation is far more extreme than the word used."
             },
             {
               "id": "c1p23q12",
@@ -59281,7 +59281,7 @@
                 "That distinction makes no real difference.",
                 "There is no practical difference there."
               ],
-              "explanation": "One way to say it: \"That is a distinction without a difference.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"That is a distinction without a difference.\" This set phrase means two things are labelled differently but are the same in practice."
             },
             {
               "id": "c1p23q14",
@@ -59292,7 +59292,7 @@
                 "I'd even call it reckless.",
                 "I would describe it as reckless."
               ],
-              "explanation": "One way to say it: \"I would go so far as to call it reckless.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"I would go so far as to call it reckless.\" \"Go so far as to\" shows you are choosing a strong word on purpose, while \"I'd even call it reckless\" says the same thing more casually."
             }
           ]
         },
@@ -59343,7 +59343,7 @@
                 "That reading seems like a stretch.",
                 "I find that interpretation strained."
               ],
-              "explanation": "One way to say it: \"That interpretation strikes me as a stretch.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"That interpretation strikes me as a stretch.\" \"Strikes me as\" is a polished way to give your own judgement, and \"a stretch\" means the reading goes further than the evidence supports."
             },
             {
               "id": "c1p23q19",
@@ -59354,7 +59354,7 @@
                 "We should keep the original aim in view.",
                 "Let's remember what we set out to do."
               ],
-              "explanation": "One way to say it: \"Let us not lose sight of the original aim.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"Let us not lose sight of the original aim.\" \"Let us not\" is a formal way to urge a group, and \"lose sight of\" means to stop paying attention to something important."
             }
           ]
         },
@@ -59383,7 +59383,7 @@
                 "I'd phrase that more carefully.",
                 "I would be more careful in how I said that."
               ],
-              "explanation": "One way to say it: \"I would put it more carefully than that.\" Idiomatic and formal phrasing, written in your own words."
+              "explanation": "One way to say it: \"I would put it more carefully than that.\" Here \"put\" means \"express\", so this is a tactful way to say someone's wording was too blunt."
             },
             {
               "id": "c1p23q22",
