@@ -114,6 +114,7 @@ describe("adminListReports", () => {
         teamId: null,
         teamName: null,
         createdAt: "2026-01-01T00:00:00Z",
+        accountDeletedAt: null,
       },
     ]);
   });
@@ -147,6 +148,78 @@ describe("adminListReports", () => {
 
     expect(result[0].reporterName).toBe("(deleted account)");
     expect(result[0].reportedName).toBe("(deleted account)");
+  });
+
+  it("lists a report kept after both accounts were deleted, without looking up a missing id", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockImplementation((table: string) => {
+      if (table === "content_reports") {
+        return chainable({
+          data: [
+            {
+              id: "r1",
+              kind: "user",
+              reporter: null,
+              reported: null,
+              reason: "spam",
+              context: null,
+              created_at: "2026-01-01T00:00:00Z",
+              account_deleted_at: "2026-02-01T00:00:00Z",
+            },
+          ],
+          error: null,
+        });
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const result = await adminListReports({ context: ctx(supabaseAdmin) });
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        reporterId: null,
+        reporterName: "(deleted account)",
+        reportedId: null,
+        reportedName: "(deleted account)",
+        accountDeletedAt: "2026-02-01T00:00:00Z",
+      }),
+    ]);
+  });
+
+  it("names a deleted reported account on a kept report, and only looks up the live reporter", async () => {
+    const calls: ChainCall[] = [];
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockImplementation((table: string) => {
+      if (table === "content_reports") {
+        return chainable({
+          data: [
+            {
+              id: "r1",
+              kind: "team_name",
+              reporter: "u1",
+              reported: null,
+              reason: "rude",
+              context: null,
+              created_at: "2026-01-01T00:00:00Z",
+              account_deleted_at: "2026-02-01T00:00:00Z",
+            },
+          ],
+          error: null,
+        });
+      }
+      if (table === "profiles")
+        return chainable({ data: [{ id: "u1", display_name: "Ada" }], error: null }, calls);
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const [report] = await adminListReports({ context: ctx(supabaseAdmin) });
+
+    expect(report).toMatchObject({
+      reporterName: "Ada",
+      reportedId: null,
+      reportedName: "(deleted account)",
+    });
+    expect(calls.find((c) => c.method === "in")?.args).toEqual(["id", ["u1"]]);
   });
 
   it("surfaces a database error instead of returning an empty list", async () => {

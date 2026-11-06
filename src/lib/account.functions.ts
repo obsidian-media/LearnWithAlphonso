@@ -81,7 +81,9 @@ export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as con
 // listed that way until 2026-10-06; their DELETE grants were revoked in
 // 20261006130000, BACKLOG 0.0-ae). Everything else, including those four, is
 // cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
-// below, so nothing is left behind.
+// below, so nothing is left behind. content_reports is the one exception: its
+// reporter/reported become NULL and the report is kept for 90 days for moderation
+// (20261105100700), with nothing from the profile.
 export const USER_DELETE_TABLES = [
   "review_items",
   "lesson_completions",
