@@ -354,11 +354,13 @@ describe("the A1/A2 English bank", () => {
   }
   // The words a pack itself uses: its answers plus the options of its questions before any fix.
   const rawVocab = new Map<string, Set<string>>();
+  let rawVisited = 0;
   for (const unit of rawCurriculum)
     for (const lesson of unit.lessons)
       for (const q of lesson.questions) {
-        const pack = /^(a[12]pd+)qd+$/.exec(q.id)?.[1];
+        const pack = /^(a[12]p\d+)q\d+$/.exec(q.id)?.[1];
         if (!pack || (q.type !== "mc" && q.type !== "fill")) continue;
+        rawVisited++;
         const set = rawVocab.get(pack) ?? new Set<string>();
         for (const o of q.type === "mc" ? q.choices : q.bank) set.add(o);
         rawVocab.set(pack, set);
@@ -415,7 +417,8 @@ describe("the A1/A2 English bank", () => {
   // sentence context, because every word of the topic fits until something rules it out.
   // A question whose slot cannot be inferred, or a hand-authored phrase question nobody
   // has read (reviewed-phrases.ts), is not allowed in.
-  const PINNED_SPLIT = { picture: 45, context: 141, clue: 548 };
+  // clue 548 -> 551 (2026-11-06): the full content review gave three bare questions a clue.
+  const PINNED_SPLIT = { picture: 45, context: 141, clue: 551 };
   // Honest debt, pinned, lowered as questions are rewritten; never raised.
   const POS_MISMATCH_BUDGET = 0;
   const WEAK_CONTEXT_BUDGET = 0;
@@ -456,6 +459,13 @@ describe("the A1/A2 English bank", () => {
   it("does not add questions with an unknown slot", () => {
     const n = all.filter(({ issues }) => issues.some((i) => i.kind === "unclassified")).length;
     expect(n).toBeLessThanOrEqual(UNCLASSIFIED_BUDGET);
+  });
+
+  it("reads every pack's own words before any fix (the raw-vocabulary loop is not empty)", () => {
+    // This loop once matched nothing (an unescaped /^(a[12]pd+)qd+$/), so every pack's raw options
+    // silently dropped out of the vocabulary the slot checks compare against.
+    expect(rawVisited).toBeGreaterThan(1000);
+    expect(rawVocab.size).toBeGreaterThan(30);
   });
 
   // The split of how topic-word questions are disambiguated, pinned so a change is a
