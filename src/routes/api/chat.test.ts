@@ -3,6 +3,7 @@ import { SCENARIOS, scenarioPrompt } from "@/data/scenarios";
 import { CAMPAIGNS, campaignScenePrompt } from "@/data/campaigns";
 
 import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE, withSafety } from "@/lib/ai-safety";
+import { REPLY_VERDICT_INSTRUCTION, withVerdictInstruction } from "@/lib/chat-verdict";
 
 const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
@@ -97,12 +98,12 @@ describe("POST /api/chat", () => {
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ content: "hello!" });
+    expect(await res.json()).toEqual({ content: "hello!", verdict: "none" });
 
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const sentBody = JSON.parse(init.body as string);
     expect(sentBody.messages).toEqual([
-      { role: "system", content: withSafety(REAL_PROMPT) },
+      { role: "system", content: withSafety(withVerdictInstruction(REAL_PROMPT)) },
       { role: "user", content: "hi" },
     ]);
   });
@@ -159,7 +160,7 @@ describe("POST /api/chat", () => {
     });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const sentBody = JSON.parse(init.body as string);
-    expect(sentBody.messages[0].content).toBe(withSafety(REAL_PROMPT));
+    expect(sentBody.messages[0].content).toBe(withSafety(withVerdictInstruction(REAL_PROMPT)));
   });
 
   it("accepts a composed campaign-scene system prompt", async () => {
@@ -289,7 +290,7 @@ describe("POST /api/chat", () => {
         }),
       );
       const res = await handler({ request: req(hi) });
-      expect(await res.json()).toEqual({ content: "ok" });
+      expect(await res.json()).toEqual({ content: "ok", verdict: "none" });
     });
   });
 
@@ -381,7 +382,7 @@ describe("POST /api/chat", () => {
     const res = await handler({
       request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
     });
-    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.en });
+    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.en, verdict: "none" });
   });
 
   it("takes the fallback language from the matched persona, not from a client field", async () => {
@@ -397,7 +398,7 @@ describe("POST /api/chat", () => {
         messages: [{ role: "user", content: "salut" }],
       }),
     });
-    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.fr });
+    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.fr, verdict: "none" });
   });
 
   describe("CEFR hints follow the course", () => {
@@ -513,6 +514,67 @@ describe("POST /api/chat", () => {
       expect(prompt).toContain("a competent French speaker");
       expect(prompt).not.toContain("English speaker");
     });
+  });
+});
+
+describe("reply verdict", () => {
+  const ask = (modelContent: string) => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: modelContent } }] })),
+    );
+    return handler({
+      request: req({
+        systemPrompt: REAL_PROMPT,
+        messages: [{ role: "user", content: "I want a coffee" }],
+      }),
+    });
+  };
+
+  it("asks the model for the tag, before the safety rules", async () => {
+    await ask("ok");
+    const body = JSON.parse((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    const system: string = body.messages[0].content;
+    expect(system).toContain(REPLY_VERDICT_INSTRUCTION);
+    expect(system.indexOf(REPLY_VERDICT_INSTRUCTION)).toBeLessThan(system.indexOf(SAFETY_PREAMBLE));
+  });
+
+  it.each(["correct", "corrected", "none"] as const)(
+    "returns %s as its own field and strips the tag",
+    async (v) => {
+      const res = await ask(`Sure, what size?\n[[verdict:${v}]]`);
+      expect(await res.json()).toEqual({ content: "Sure, what size?", verdict: v });
+    },
+  );
+
+  it("gives none, with no tag in the text, when the tag is garbled", async () => {
+    const res = await ask("Sure, what size?\n[[verdict:wonderful]]");
+    expect(await res.json()).toEqual({ content: "Sure, what size?", verdict: "none" });
+  });
+
+  it("gives none when the output filter replaced the reply", async () => {
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const res = await ask("something bad\n[[verdict:correct]]");
+    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.en, verdict: "none" });
+  });
+
+  it("filters the text without the tag", async () => {
+    await ask("Sure\n[[verdict:correct]]");
+    expect(blockedRpc.mock.calls[0][1]._texts.join(" ")).not.toContain("verdict");
+  });
+
+  it("treats a reply that was only a tag as an empty reply", async () => {
+    const res = await ask("[[verdict:correct]]");
+    expect(res.status).toBe(502);
+  });
+
+  it("is invisible to a shipped client, which reads only `content` (iOS 56-58, Android)", async () => {
+    const res = await ask("Sure, what size?\n[[verdict:corrected]]");
+    const shippedDecode = (o: Record<string, unknown>): string | undefined =>
+      typeof o.content === "string" ? o.content : undefined;
+    const shown = shippedDecode((await res.json()) as Record<string, unknown>);
+    expect(shown).toBe("Sure, what size?");
+    expect(shown).not.toMatch(/\[\[|verdict/i);
   });
 });
 
