@@ -10304,9 +10304,10 @@
  },
  "fr:question:fra2p16l1/fra2p16q3": {
   "patch": {
+   "prompt": "Où ___-t-il ?",
    "explanation": "The inverted subject \"-il\" is third person singular, so aller takes the form \"va\" (où va-t-il ?); \"vais\", \"vont\" and \"allons\" go with other subjects."
   },
-  "reason": "Specific explanation needed."
+  "reason": "Specific explanation needed. The prompt now shows the linking \"-t-\", so the only sentence a learner can build is \"Où va-t-il ?\" (it built \"Où va-il ?\" before)."
  },
  "fr:question:fra2p16l1/fra2p16q4": {
   "patch": {
