@@ -27,6 +27,13 @@ private enum AvatarArt {
     }
 }
 
+/// The verdict that came with the latest reply, numbered so one reply is reacted to once however often the view
+/// redraws. A new conversation or a new reply bumps `serial`.
+struct AvatarReplyVerdict: Equatable {
+    var serial = 0
+    var verdict: ReplyVerdict = .inconclusive
+}
+
 /// Everything one frame needs.
 private struct AvatarFrame {
     var pose = AvatarPose(mouth: .closed, brows: .neutral)
@@ -45,9 +52,21 @@ private final class AvatarDriver {
     private var idle = AvatarIdleScheduler(random: AvatarSystemRandom())
     private var plan: (key: String, plan: AvatarLipSyncPlan)?
     private let origin = CACurrentMediaTime()
+    /// nil until the first frame: a verdict that was already there when the stage appeared (the setting turned on
+    /// after a reply) belongs to a turn that is over, so it is not reacted to.
+    private var handledVerdictSerial: Int?
 
-    func frame(voice: VoiceSessionController, replyText: String?, course: Course, reduceMotion: Bool) -> AvatarFrame {
+    func frame(
+        voice: VoiceSessionController, replyText: String?, replyVerdict: AvatarReplyVerdict, course: Course,
+        reduceMotion: Bool
+    ) -> AvatarFrame {
         let now = CACurrentMediaTime() - origin
+        if handledVerdictSerial == nil { handledVerdictSerial = replyVerdict.serial }
+        if replyVerdict.serial != handledVerdictSerial {
+            handledVerdictSerial = replyVerdict.serial
+            // He reacts once the reply has been spoken; the machine holds the reaction until then.
+            machine.replyArrived(verdict: replyVerdict.verdict)
+        }
         machine.update(phase: voice.phase, now: now)
         if voice.isRecording, let level = voice.inputLevelDBFS() {
             machine.heard(levelDBFS: level, now: now)
@@ -81,10 +100,11 @@ private final class AvatarDriver {
 struct AlphonsoAvatarStage: View {
     let voice: VoiceSessionController
     let replyText: String?
+    var replyVerdict = AvatarReplyVerdict()
     let course: Course
 
     var body: some View {
-        AlphonsoAvatarView(voice: voice, replyText: replyText, course: course)
+        AlphonsoAvatarView(voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course)
             .containerRelativeFrame(.vertical) { length, _ in min(max(length * 0.2, 88), 170) }
             .frame(maxWidth: .infinity)
             .padding(.top, 4)
@@ -97,6 +117,7 @@ struct AlphonsoAvatarStage: View {
 struct AlphonsoAvatarView: View {
     let voice: VoiceSessionController
     let replyText: String?
+    let replyVerdict: AvatarReplyVerdict
     let course: Course
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -105,7 +126,9 @@ struct AlphonsoAvatarView: View {
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: scenePhase != .active)) { _ in
-            let frame = driver.frame(voice: voice, replyText: replyText, course: course, reduceMotion: reduceMotion)
+            let frame = driver.frame(
+                voice: voice, replyText: replyText, replyVerdict: replyVerdict, course: course,
+                reduceMotion: reduceMotion)
             AvatarLayersView(frame: frame)
         }
     }

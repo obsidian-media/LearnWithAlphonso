@@ -8,6 +8,7 @@ import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
+import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -115,7 +116,12 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     courseOfSystemPrompt(body.systemPrompt) ??
     (typeof body.course === "string" && isCourse(body.course) ? body.course : "en");
   const finalMessages: ChatMessage[] = [
-    { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel, course) },
+    {
+      role: "system",
+      content: withVerdictInstruction(
+        withDifficultyHint(body.systemPrompt, body.cefrLevel, course),
+      ),
+    },
     ...messages,
   ];
 
@@ -154,18 +160,23 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   if (!llm.ok) return llm.failure;
   // An empty completion is an upstream failure, not a reply. It used to return 200 with "" and the clients
   // rendered an ellipsis as the partner's turn. 502 lets each client retry once.
-  if (!llm.content.trim()) {
+  // The model ends its reply with a verdict tag about the learner's last turn. It is parsed and removed here, so
+  // the text that is shown, spoken and filtered never carries it.
+  const { text: replyText, verdict } = splitReplyVerdict(llm.content);
+  if (!replyText) {
     console.warn(JSON.stringify({ event: "chat_empty_reply", model }));
     return Response.json({ error: "empty-reply" }, { status: 502 });
   }
   // The fallback language and the output mask follow the persona the server matched, never a client field.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const safe = await filterModelOutput(llm.content, {
+  const safe = await filterModelOutput(replyText, {
     check: makeBlockedTermCheck(supabaseAdmin),
     course: courseOfSystemPrompt(body.systemPrompt) ?? "en",
     route: "chat",
   });
-  return Response.json({ content: safe.text });
+  // `verdict` is an extra field: shipped iOS and Android builds read `content` only and ignore it. A reply the
+  // filter replaced says nothing about the learner's answer.
+  return Response.json({ content: safe.text, verdict: safe.blocked ? "none" : verdict });
 }
 
 export const Route = createFileRoute("/api/chat")({
