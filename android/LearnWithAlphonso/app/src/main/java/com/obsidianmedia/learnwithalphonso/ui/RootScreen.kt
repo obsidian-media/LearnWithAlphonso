@@ -107,13 +107,16 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     var updateRequired by remember { mutableStateOf<AppUpdateGate.Requirement?>(null) }
     LaunchedEffect(Unit) { updateRequired = container.checkAppUpdate() }
 
+    val gate = updateRequired
+
     Box(Modifier.fillMaxSize().background(palette.surface)) {
         when {
+            // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.
+            gate != null -> UpdateRequiredScreen(gate)
             isRestoring -> Unit
             state !is AuthState.SignedIn -> AuthScreen(container)
             else -> SignedInApp(container, pendingInviteCode, onInviteConsumed)
         }
-        updateRequired?.let { UpdateRequiredScreen(it) }
     }
 }
 

@@ -4,6 +4,7 @@
  *
  * Off by default: with no minimum set (the env var missing, empty or not a positive whole number), every build opens
  * normally. An app that cannot read the setting also opens normally, so a server problem never locks anyone out.
+ * A platform with no usable https store link has no gate either (iOS needs APP_IOS_STORE_URL).
  *
  * Ported to Swift (ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AppUpdateGate.swift) and Kotlin
  * (android/LearnWithAlphonso/core/.../logic/AppUpdateGate.kt). Keep the three in step.
@@ -39,15 +40,12 @@ function httpsOrNull(raw: string | undefined): string | null {
 export function appUpdateConfigFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): AppUpdateConfig {
+  // A gate with nowhere to update from would strand people, so a platform without a usable store link has no gate.
+  const iosStore = httpsOrNull(env.APP_IOS_STORE_URL);
+  const androidStore = httpsOrNull(env.APP_ANDROID_STORE_URL) ?? ANDROID_STORE_URL_DEFAULT;
   return {
-    ios: {
-      minBuild: parseMinBuild(env.APP_MIN_IOS_BUILD),
-      storeUrl: httpsOrNull(env.APP_IOS_STORE_URL),
-    },
-    android: {
-      minBuild: parseMinBuild(env.APP_MIN_ANDROID_VERSION_CODE),
-      storeUrl: httpsOrNull(env.APP_ANDROID_STORE_URL) ?? ANDROID_STORE_URL_DEFAULT,
-    },
+    ios: { minBuild: iosStore ? parseMinBuild(env.APP_MIN_IOS_BUILD) : null, storeUrl: iosStore },
+    android: { minBuild: parseMinBuild(env.APP_MIN_ANDROID_VERSION_CODE), storeUrl: androidStore },
   };
 }
 

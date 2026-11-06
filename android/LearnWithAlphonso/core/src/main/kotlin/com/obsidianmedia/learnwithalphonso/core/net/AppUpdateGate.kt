@@ -37,6 +37,8 @@ object AppUpdateGate {
         if (!needsUpdate(currentVersionCode, min)) return null
         val store = (android["storeUrl"] as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
             ?.takeIf { it.startsWith("https://") }
+            // No usable store link: no gate (a screen with nowhere to update from would strand people).
+            ?: return null
         return Requirement(store)
     }
 

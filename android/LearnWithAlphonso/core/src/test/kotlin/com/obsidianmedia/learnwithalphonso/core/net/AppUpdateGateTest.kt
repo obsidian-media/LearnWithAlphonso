@@ -34,12 +34,11 @@ class AppUpdateGateTest {
             AppUpdateGate.Requirement("https://play.example/x"),
             AppUpdateGate.requirement(body("""{"minBuild":12,"storeUrl":"https://play.example/x"}"""), 11),
         )
-        assertEquals(
-            AppUpdateGate.Requirement(null),
-            AppUpdateGate.requirement(body("""{"minBuild":12,"storeUrl":"javascript:alert(1)"}"""), 11),
-        )
+        // No usable store link: no gate.
+        assertNull(AppUpdateGate.requirement(body("""{"minBuild":12,"storeUrl":"javascript:alert(1)"}"""), 11))
+        assertNull(AppUpdateGate.requirement(body("""{"minBuild":12,"storeUrl":null}"""), 11))
         // A minimum sent as a string is not a minimum.
-        assertNull(AppUpdateGate.requirement(body("""{"minBuild":"12","storeUrl":null}"""), 11))
+        assertNull(AppUpdateGate.requirement(body("""{"minBuild":"12","storeUrl":"https://play.example/x"}"""), 11))
     }
 
     @Test
@@ -47,9 +46,9 @@ class AppUpdateGateTest {
         var seen: String? = null
         val gated = MockEngine { req ->
             seen = req.url.toString()
-            respond(body("""{"minBuild":12,"storeUrl":null}"""), HttpStatusCode.OK)
+            respond(body("""{"minBuild":12,"storeUrl":"https://play.example/x"}"""), HttpStatusCode.OK)
         }
-        assertEquals(AppUpdateGate.Requirement(null), AppUpdateGate.check("https://learn.example/", 11, gated))
+        assertEquals(AppUpdateGate.Requirement("https://play.example/x"), AppUpdateGate.check("https://learn.example/", 11, gated))
         assertEquals("https://learn.example/api/app-config", seen)
 
         assertNull(AppUpdateGate.check("https://learn.example", 11, MockEngine { respond("oops", HttpStatusCode.InternalServerError) }))

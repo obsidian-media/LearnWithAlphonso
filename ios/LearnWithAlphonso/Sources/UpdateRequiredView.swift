@@ -14,6 +14,7 @@ struct UpdateRequiredView: View {
                 .font(AlphonsoFont.display(24, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
                 .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             Text("This version of the app is no longer supported. Update to the latest version to keep learning. Your progress is saved to your account.")
                 .font(AlphonsoFont.sans(15))
                 .foregroundStyle(AlphonsoColor.inkSoft)

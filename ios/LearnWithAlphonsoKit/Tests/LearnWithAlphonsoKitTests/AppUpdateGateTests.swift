@@ -45,11 +45,15 @@ final class AppUpdateGateTests: XCTestCase {
         XCTAssertEqual(r, .init(storeURL: URL(string: "https://apps.apple.com/app/id1")))
     }
 
-    func testANonHttpsStoreLinkIsDroppedButTheGateStillHolds() async {
-        let r = await AppUpdateGate.check(
-            baseURL: base, currentBuild: 58,
-            requester: responder(200, body(#"{"minBuild":59,"storeUrl":"javascript:alert(1)"}"#)))
-        XCTAssertEqual(r, .init(storeURL: nil))
+    func testNoUsableStoreLinkMeansNoGate() async {
+        for ios in [
+            #"{"minBuild":59,"storeUrl":"javascript:alert(1)"}"#,
+            #"{"minBuild":59,"storeUrl":null}"#,
+            #"{"minBuild":59,"storeUrl":""}"#,
+        ] {
+            let r = await AppUpdateGate.check(baseURL: base, currentBuild: 58, requester: responder(200, body(ios)))
+            XCTAssertNil(r, ios)
+        }
     }
 
     func testAnyFailureOpensTheAppNormally() async {

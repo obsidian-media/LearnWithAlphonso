@@ -39,7 +39,9 @@ public enum AppUpdateGate {
             return d.rounded() == d && d > 0 && d < Double(Int.max) ? Int(d) : nil
         }
         guard needsUpdate(currentBuild: currentBuild, minBuild: minBuild) else { return nil }
-        let store = (ios["storeUrl"] as? String).flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil }
+        // No usable store link: no gate (a card with nowhere to update from would strand people).
+        guard let store = (ios["storeUrl"] as? String).flatMap(URL.init(string:)).flatMap({ $0.scheme == "https" ? $0 : nil })
+        else { return nil }
         return Requirement(storeURL: store)
     }
 

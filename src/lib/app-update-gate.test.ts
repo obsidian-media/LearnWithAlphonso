@@ -33,6 +33,15 @@ describe("the app update gate", () => {
     expect(c.android).toEqual({ minBuild: 12, storeUrl: ANDROID_STORE_URL_DEFAULT });
   });
 
+  it("never gates iOS without a usable store link (empty, missing or not https)", () => {
+    for (const url of [undefined, "", "  ", "http://apps.apple.com/app/id1", "not a url"]) {
+      expect(
+        appUpdateConfigFromEnv({ APP_MIN_IOS_BUILD: "59", APP_IOS_STORE_URL: url }).ios.minBuild,
+        String(url),
+      ).toBeNull();
+    }
+  });
+
   it("blocks only a known build strictly below the minimum", () => {
     expect(needsUpdate(58, 59)).toBe(true);
     expect(needsUpdate(59, 59)).toBe(false);
@@ -50,6 +59,7 @@ describe("GET /api/app-config", () => {
 
   it("serves the configured gate publicly, without a session", async () => {
     process.env.APP_MIN_IOS_BUILD = "59";
+    process.env.APP_IOS_STORE_URL = "https://apps.apple.com/app/id1";
     delete process.env.APP_MIN_ANDROID_VERSION_CODE;
     const { Route } = await import("../routes/api/app-config");
     const GET = (Route.options.server!.handlers as unknown as { GET: () => Promise<Response> }).GET;
