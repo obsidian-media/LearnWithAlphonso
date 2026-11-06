@@ -29063,7 +29063,7 @@
             {
               "id": "esb2p6q6",
               "type": "mc",
-              "prompt": "La ciudad en ___ vivo es hermosa.",
+              "prompt": "El museo ___ visitamos ayer es enorme.",
               "choices": [
                 "que",
                 "quien",
@@ -35279,8 +35279,8 @@
               "choices": [
                 "Nadie se atrevía a acercarse a la cima.",
                 "Llegaron hasta la cima de la montaña.",
-                "Desde arriba se veía toda la cima.",
-                "Llegaron hasta la sima de la montaña."
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Desde arriba se veía toda la cima."
               ],
               "answer": "Llegaron hasta la cima de la montaña.",
               "explanation": "The audio says \"Llegaron hasta la cima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35293,7 +35293,7 @@
               "choices": [
                 "La sima resultó ser más profunda de lo esperado.",
                 "Nadie se atrevía a acercarse a la sima.",
-                "Llegaron hasta la cima de la montaña.",
+                "Desde arriba se veía toda la sima.",
                 "Llegaron hasta la sima de la montaña."
               ],
               "answer": "Llegaron hasta la sima de la montaña.",
@@ -35305,10 +35305,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Nadie se atrevía a acercarse a la cima.",
               "choices": [
-                "Nadie se atrevía a acercarse a la sima.",
                 "Nadie se atrevía a acercarse a la cima.",
-                "Desde arriba se veía toda la cima.",
-                "Nadie esperaba que el concejo cambiara de opinión."
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Nadie sabía que alguien los estaba acechando.",
+                "Desde arriba se veía toda la cima."
               ],
               "answer": "Nadie se atrevía a acercarse a la cima.",
               "explanation": "The audio says \"Nadie se atrevía a acercarse a la cima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35320,7 +35320,7 @@
               "audioText": "Nadie se atrevía a acercarse a la sima.",
               "choices": [
                 "Nadie se atrevía a acercarse a la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
                 "Desde arriba se veía toda la sima.",
                 "Desde arriba se veía toda la cima."
               ],
@@ -35333,8 +35333,8 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Desde arriba se veía toda la cima.",
               "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
                 "Nadie se atrevía a acercarse a la cima.",
-                "Desde arriba se veía toda la sima.",
                 "El concejo escolar se reunió por la tarde.",
                 "Desde arriba se veía toda la cima."
               ],
@@ -35355,9 +35355,9 @@
               "audioText": "Desde arriba se veía toda la sima.",
               "choices": [
                 "Nadie se atrevía a acercarse a la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
                 "Desde arriba se veía toda la sima.",
-                "Desde arriba se veía toda la cima."
+                "El concejo escolar se reunió por la tarde.",
+                "Llegaron hasta la sima de la montaña."
               ],
               "answer": "Desde arriba se veía toda la sima.",
               "explanation": "The audio says \"Desde arriba se veía toda la sima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35524,8 +35524,8 @@
               "choices": [
                 "El cazador decidió acechar en silencio.",
                 "El animal empezó a acechar a su presa.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "El animal empezó a asechar a su presa."
+                "El consejo escolar se reunió por la tarde.",
+                "Desde arriba se veía toda la cima."
               ],
               "answer": "El animal empezó a acechar a su presa.",
               "explanation": "The audio says \"El animal empezó a acechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35536,10 +35536,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El animal empezó a asechar a su presa.",
               "choices": [
-                "El animal empezó a acechar a su presa.",
                 "El cazador decidió asechar en silencio.",
-                "Todos hablaban sobre el concejo del pueblo.",
-                "El animal empezó a asechar a su presa."
+                "El animal empezó a asechar a su presa.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Desde arriba se veía toda la cima."
               ],
               "answer": "El animal empezó a asechar a su presa.",
               "explanation": "The audio says \"El animal empezó a asechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35586,9 +35586,9 @@
               "audioText": "El cazador decidió acechar en silencio.",
               "choices": [
                 "El cazador decidió acechar en silencio.",
-                "El cazador decidió asechar en silencio.",
-                "Nadie sabía que alguien los estaba acechando.",
-                "El animal empezó a acechar a su presa."
+                "Nadie se atrevía a acercarse a la sima.",
+                "El animal empezó a acechar a su presa.",
+                "Nadie sabía que alguien los estaba asechando."
               ],
               "answer": "El cazador decidió acechar en silencio.",
               "explanation": "The audio says \"El cazador decidió acechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -35599,10 +35599,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El cazador decidió asechar en silencio.",
               "choices": [
+                "Nadie esperaba que el concejo cambiara de opinión.",
                 "El animal empezó a asechar a su presa.",
-                "El cazador decidió acechar en silencio.",
-                "El alcalde presentó el consejo a todos.",
-                "El cazador decidió asechar en silencio."
+                "El cazador decidió asechar en silencio.",
+                "Nadie se atrevía a acercarse a la sima."
               ],
               "answer": "El cazador decidió asechar en silencio.",
               "explanation": "The audio says \"El cazador decidió asechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
@@ -43535,10 +43535,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El juez decidió encausar al acusado de inmediato.",
               "choices": [
+                "Intentaron encausar la situación desde el principio.",
                 "El comité decidió encausar el problema de raíz.",
                 "El juez decidió encausar al acusado de inmediato.",
-                "El juez decidió encauzar al acusado de inmediato.",
-                "La comisión decidió encauzar formalmente la investigación."
+                "El comité decidió encauzar el problema de raíz."
               ],
               "answer": "El juez decidió encausar al acusado de inmediato.",
               "explanation": "The audio says \"El juez decidió encausar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43549,9 +43549,9 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El juez decidió encauzar al acusado de inmediato.",
               "choices": [
-                "El juez decidió encausar al acusado de inmediato.",
                 "El comité decidió encauzar el problema de raíz.",
                 "El juez decidió encauzar al acusado de inmediato.",
+                "Intentaron encauzar la situación desde el principio.",
                 "La comisión decidió encauzar formalmente la investigación."
               ],
               "answer": "El juez decidió encauzar al acusado de inmediato.",
@@ -43563,10 +43563,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El comité decidió encausar el problema de raíz.",
               "choices": [
+                "Intentaron encausar la situación desde el principio.",
+                "El comité reconoció haber alcanzado la cima del proceso.",
                 "El comité decidió encausar el problema de raíz.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "El comité decidió encauzar el problema de raíz.",
-                "El juez decidió encauzar al acusado de inmediato."
+                "El juez decidió encausar al acusado de inmediato."
               ],
               "answer": "El comité decidió encausar el problema de raíz.",
               "explanation": "The audio says \"El comité decidió encausar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43577,7 +43577,7 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El comité decidió encauzar el problema de raíz.",
               "choices": [
-                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
                 "El comité decidió encauzar el problema de raíz.",
                 "El juez decidió encauzar al acusado de inmediato.",
                 "La comisión decidió encauzar formalmente la investigación."
@@ -43591,10 +43591,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Intentaron encauzar la situación desde el principio.",
               "choices": [
-                "Intentaron encausar la situación desde el principio.",
                 "El comité decidió encauzar el problema de raíz.",
                 "El juez decidió encauzar al acusado de inmediato.",
-                "Intentaron encauzar la situación desde el principio."
+                "Intentaron encauzar la situación desde el principio.",
+                "La comisión decidió encauzar formalmente la investigación."
               ],
               "answer": "Intentaron encauzar la situación desde el principio.",
               "explanation": "The audio says \"Intentaron encauzar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43615,7 +43615,7 @@
                 "Intentaron encausar la situación desde el principio.",
                 "El comité decidió encausar el problema de raíz.",
                 "El juez decidió encausar al acusado de inmediato.",
-                "Intentaron encauzar la situación desde el principio."
+                "Nadie sabía que el bebé era barón."
               ],
               "answer": "Intentaron encausar la situación desde el principio.",
               "explanation": "The audio says \"Intentaron encausar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43626,8 +43626,8 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "En el documento decía que era un varón.",
               "choices": [
-                "En el documento decía que era un barón.",
                 "El título nobiliario pertenecía a un varón.",
+                "Nadie sabía que el bebé era barón.",
                 "En el documento decía que era un varón.",
                 "Nadie sabía que el bebé era varón."
               ],
@@ -43642,8 +43642,8 @@
               "choices": [
                 "En el documento decía que era un barón.",
                 "Nadie sabía que el bebé era barón.",
-                "En el documento decía que era un varón.",
-                "El título nobiliario pertenecía a un barón."
+                "El título nobiliario pertenecía a un barón.",
+                "Nadie sabía que el bebé era varón."
               ],
               "answer": "En el documento decía que era un barón.",
               "explanation": "The audio says \"En el documento decía que era un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43654,7 +43654,7 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Nadie sabía que el bebé era varón.",
               "choices": [
-                "Nadie sabía que el bebé era barón.",
+                "El título nobiliario pertenecía a un varón.",
                 "Nadie sospechaba que el escándalo los estuviera acechando.",
                 "En el documento decía que era un varón.",
                 "Nadie sabía que el bebé era varón."
@@ -43670,8 +43670,8 @@
               "choices": [
                 "En el documento decía que era un barón.",
                 "Nadie sabía que el bebé era barón.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
-                "Nadie sabía que el bebé era varón."
+                "En el documento decía que era un varón.",
+                "El título nobiliario pertenecía a un barón."
               ],
               "answer": "Nadie sabía que el bebé era barón.",
               "explanation": "The audio says \"Nadie sabía que el bebé era barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43690,7 +43690,7 @@
               "audioText": "El título nobiliario pertenecía a un barón.",
               "choices": [
                 "En el documento decía que era un barón.",
-                "El título nobiliario pertenecía a un varón.",
+                "El depredador aprendió a asechar pacientemente a su presa.",
                 "El título nobiliario pertenecía a un barón.",
                 "Nadie sabía que el bebé era barón."
               ],
@@ -43705,8 +43705,8 @@
               "choices": [
                 "En el documento decía que era un varón.",
                 "Nadie sabía que el bebé era varón.",
-                "El título nobiliario pertenecía a un barón.",
-                "El título nobiliario pertenecía a un varón."
+                "El título nobiliario pertenecía a un varón.",
+                "La expedición alcanzó finalmente la cima más alta."
               ],
               "answer": "El título nobiliario pertenecía a un varón.",
               "explanation": "The audio says \"El título nobiliario pertenecía a un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43717,9 +43717,9 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
               "choices": [
+                "En el documento decía que era un barón.",
                 "Los diplomáticos llegaron hasta la cima de las negociaciones.",
                 "La expedición alcanzó finalmente la cima más alta.",
-                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
                 "El comité reconoció haber alcanzado la cima del proceso."
               ],
               "answer": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
@@ -43732,7 +43732,7 @@
               "audioText": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
               "choices": [
                 "La expedición alcanzó finalmente la sima más alta.",
-                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "El juez decidió encausar al acusado de inmediato.",
                 "El comité reconoció haber alcanzado la sima del proceso.",
                 "Los diplomáticos llegaron hasta la sima de las negociaciones."
               ],
@@ -43746,7 +43746,7 @@
               "audioText": "El comité reconoció haber alcanzado la cima del proceso.",
               "choices": [
                 "El comité decidió encausar el problema de raíz.",
-                "El comité reconoció haber alcanzado la sima del proceso.",
+                "La expedición alcanzó finalmente la cima más alta.",
                 "El comité reconoció haber alcanzado la cima del proceso.",
                 "El comité decidió encauzar el problema de raíz."
               ],
@@ -43766,9 +43766,9 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El comité reconoció haber alcanzado la sima del proceso.",
               "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
                 "El comité reconoció haber alcanzado la sima del proceso.",
                 "Los diplomáticos llegaron hasta la sima de las negociaciones.",
-                "El comité reconoció haber alcanzado la cima del proceso.",
                 "El comité decidió encauzar el problema de raíz."
               ],
               "answer": "El comité reconoció haber alcanzado la sima del proceso.",
@@ -43780,8 +43780,8 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "La expedición alcanzó finalmente la cima más alta.",
               "choices": [
-                "La expedición alcanzó finalmente la sima más alta.",
                 "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "Nadie sospechaba que el escándalo los estuviera asechando.",
                 "La expedición alcanzó finalmente la cima más alta.",
                 "El comité reconoció haber alcanzado la cima del proceso."
               ],
@@ -43795,9 +43795,9 @@
               "audioText": "La expedición alcanzó finalmente la sima más alta.",
               "choices": [
                 "La expedición alcanzó finalmente la sima más alta.",
+                "Intentaron encausar la situación desde el principio.",
                 "El comité reconoció haber alcanzado la sima del proceso.",
-                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
-                "La expedición alcanzó finalmente la cima más alta."
+                "Los diplomáticos llegaron hasta la sima de las negociaciones."
               ],
               "answer": "La expedición alcanzó finalmente la sima más alta.",
               "explanation": "The audio says \"La expedición alcanzó finalmente la sima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43809,9 +43809,9 @@
               "audioText": "Los inversionistas decidieron acechar el mercado en silencio.",
               "choices": [
                 "El depredador aprendió a acechar pacientemente a su presa.",
-                "En el documento decía que era un barón.",
                 "Los inversionistas decidieron acechar el mercado en silencio.",
-                "Los inversionistas decidieron asechar el mercado en silencio."
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "El título nobiliario pertenecía a un varón."
               ],
               "answer": "Los inversionistas decidieron acechar el mercado en silencio.",
               "explanation": "The audio says \"Los inversionistas decidieron acechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43822,10 +43822,10 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "Los inversionistas decidieron asechar el mercado en silencio.",
               "choices": [
-                "Los inversionistas decidieron acechar el mercado en silencio.",
                 "Los inversionistas decidieron asechar el mercado en silencio.",
                 "El depredador aprendió a asechar pacientemente a su presa.",
-                "El juez decidió encauzar al acusado de inmediato."
+                "Intentaron encauzar la situación desde el principio.",
+                "El título nobiliario pertenecía a un varón."
               ],
               "answer": "Los inversionistas decidieron asechar el mercado en silencio.",
               "explanation": "The audio says \"Los inversionistas decidieron asechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
@@ -43871,8 +43871,8 @@
               "prompt": "¿Qué escuchaste?",
               "audioText": "El depredador aprendió a acechar pacientemente a su presa.",
               "choices": [
-                "El depredador aprendió a asechar pacientemente a su presa.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "La expedición alcanzó finalmente la cima más alta.",
+                "El juez decidió encausar al acusado de inmediato.",
                 "Los inversionistas decidieron acechar el mercado en silencio.",
                 "El depredador aprendió a acechar pacientemente a su presa."
               ],
@@ -43886,9 +43886,9 @@
               "audioText": "El depredador aprendió a asechar pacientemente a su presa.",
               "choices": [
                 "Los inversionistas decidieron asechar el mercado en silencio.",
+                "El juez decidió encausar al acusado de inmediato.",
                 "El depredador aprendió a asechar pacientemente a su presa.",
-                "Nadie sabía que el bebé era barón.",
-                "El depredador aprendió a acechar pacientemente a su presa."
+                "En el documento decía que era un barón."
               ],
               "answer": "El depredador aprendió a asechar pacientemente a su presa.",
               "explanation": "The audio says \"El depredador aprendió a asechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."

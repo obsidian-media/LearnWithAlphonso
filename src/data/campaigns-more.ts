@@ -545,7 +545,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
           es: es(
             "Eres Raúl Ortega, el propietario, y contestas la llamada de tu inquilino o inquilina. Llama porque el calentador de agua del departamento dejó de funcionar. Escucha, pregunta desde cuándo no sirve, si se enciende alguna luz o se oye algún ruido, y di que vas a mandar a alguien. Ofrece dos horarios de visita y confirma el que el estudiante elija. Sé cortés y un poco apurado.",
             USTED,
-            "explicar que el calentador no funciona y desde cuándo, y acordar un horario para que vayan a revisarla.",
+            "explicar que el calentador no funciona y desde cuándo, y acordar un horario para que vayan a revisarlo.",
           ),
         },
         opener: {

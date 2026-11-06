@@ -252,10 +252,13 @@ describe("listening packs: the choices can be told apart by ear", () => {
     expect(homophoneOnly("Le dessus est propre.", "Le dessous est propre.")).toBe(false);
   });
 
-  it("no A1/A2 listening question offers a wrong choice that is a homophone of the answer", () => {
+  // Every level, not only A1/A2: bank-engine filters homophones in every French and Spanish
+  // listening pack since the review panel found "acechar" offered for "asechar" (esb2p28).
+  it("no French or Spanish listening question offers a wrong choice that is a homophone of the answer", () => {
     const bad: string[] = [];
     let n = 0;
-    for (const pack of packs) {
+    const everyLevel = [BANK_FR, BANK_ES].flatMap((b) => Object.values(b).flat());
+    for (const pack of everyLevel) {
       if (pack.kind !== "listening") continue;
       for (const q of packQuestions(pack)) {
         if (q.type !== "listening") continue;
@@ -264,7 +267,7 @@ describe("listening packs: the choices can be told apart by ear", () => {
           if (c !== q.answer && homophoneOnly(q.answer, c)) bad.push(`${q.id}: ${c}`);
       }
     }
-    expect(n).toBe(100);
+    expect(n).toBe(250);
     expect(bad).toEqual([]);
   });
 });
