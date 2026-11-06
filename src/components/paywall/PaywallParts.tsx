@@ -10,8 +10,8 @@ import type { Course } from "@/data/courses";
  * leading the plans. Tokens only (--c-* / ds-type-*), so Meadow is a palette switch.
  */
 
-export const HECTOR_TALK_SRC = "/hector/paywall/he-talk.webp";
-export const HECTOR_HAPPY_SRC = "/hector/paywall/he-happy.webp";
+export const HECTOR_TALK_SRC = "/paywall/hector-talk.webp";
+export const HECTOR_HAPPY_SRC = "/paywall/hector-happy.webp";
 export const PAYWALL_ROOM_SRC = "/avatar/scenes/library.webp";
 export const WELCOME_ROOM_SRC = "/avatar/scenes/office.webp";
 

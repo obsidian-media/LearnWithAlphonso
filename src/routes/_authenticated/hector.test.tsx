@@ -315,7 +315,7 @@ describe("web Hector in his library", () => {
     const { container } = await renderPage();
     // Round 6 (BACKLOG 0.0-bk): the paywall paints Hector in his library itself, in light cream, with no clip.
     const hector = await screen.findByRole("img", { name: "Hector in his library" });
-    expect(hector.getAttribute("src")).toBe("/hector/paywall/he-talk.webp");
+    expect(hector.getAttribute("src")).toBe("/paywall/hector-talk.webp");
     const room = container.querySelector("[data-paywall-room] img");
     expect(room?.getAttribute("src")).toBe("/avatar/scenes/library.webp");
     expect(container.querySelector('[data-scene="hector"] video')).toBeNull();
