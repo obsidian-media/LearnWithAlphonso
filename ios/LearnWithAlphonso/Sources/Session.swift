@@ -138,6 +138,9 @@ final class Session {
         return nil
     }
 
+    /// The bot check on the email form (BotCheckView): each email request spends one token.
+    let botCheck = BotCheckModel()
+
     func requestCode() async {
         errorMessage = nil
         notice = nil
@@ -149,7 +152,7 @@ final class Session {
         defer { isBusy = false }
         let email = emailFlow.trimmedEmail
         do {
-            try await authClient.requestEmailOTP(email: email)
+            try await authClient.requestEmailOTP(email: email, captchaToken: botCheck.spend())
             emailFlow.codeSent(at: Date())
             state = .awaitingCode(email: email)
         } catch {
@@ -163,7 +166,7 @@ final class Session {
         isBusy = true
         defer { isBusy = false }
         do {
-            try await authClient.requestEmailOTP(email: email)
+            try await authClient.requestEmailOTP(email: email, captchaToken: botCheck.spend())
             emailFlow.codeResent(at: Date())
         } catch {
             emailFlow.sendFailed(error, now: Date())

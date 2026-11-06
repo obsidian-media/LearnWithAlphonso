@@ -6,6 +6,33 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
 }));
 const authorizeAiRequest = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
+// Voice time budget (20261105100900), with the service role: reserve the per-call maximum before the provider call
+// (atomically, as the database function does), then settle to the provider's length. `secondsUsed` is the day's total.
+let secondsUsed = 0;
+const DAY = "2026-11-05";
+type RpcReply = { data: string | null; error: { message: string; code?: string } | null };
+type RpcArgs = {
+  _user_id: string;
+  _seconds?: number;
+  _budget?: number;
+  _day?: string;
+  _reserved?: number;
+  _actual?: number;
+};
+async function realRpc(fn: string, args: RpcArgs): Promise<RpcReply> {
+  if (fn === "reserve_stt_audio_seconds") {
+    if (secondsUsed + args._seconds! > args._budget!) return { data: null, error: null };
+    secondsUsed += args._seconds!;
+    return { data: DAY, error: null };
+  }
+  if (fn === "settle_stt_audio_seconds") {
+    secondsUsed = Math.max(0, secondsUsed - args._reserved! + args._actual!);
+    return { data: null, error: null };
+  }
+  throw new Error(`unexpected rpc ${fn}`);
+}
+const adminRpc = vi.fn(realRpc);
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: adminRpc } }));
 
 const { Route } = await import("./stt");
 const handler = (
@@ -28,6 +55,11 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
   authorizeAiRequest.mockReset();
+  adminRpc.mockReset();
+  adminRpc.mockImplementation(realRpc);
+  secondsUsed = 0;
+  delete process.env.STT_DAILY_AUDIO_SECONDS;
+  delete process.env.STT_MAX_CALL_SECONDS;
   blockedRpc.mockClear();
   authorizeAiRequest.mockResolvedValue({
     ok: true,
@@ -265,5 +297,214 @@ describe("POST /api/stt", () => {
     expect(timeout).toHaveBeenCalledWith(20_000);
     expect(sent?.signal).toBeInstanceOf(AbortSignal);
     timeout.mockRestore();
+  });
+
+  describe("daily voice time", () => {
+    // A fresh answer per call: a Response body can be read only once.
+    const deepgram = (duration?: number) =>
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+        async () =>
+          new Response(
+            JSON.stringify({
+              metadata: duration === undefined ? {} : { duration },
+              results: { channels: [{ alternatives: [{ transcript: "hi" }] }] },
+            }),
+            { status: 200 },
+          ),
+      );
+    const calls = (fn: string) =>
+      adminRpc.mock.calls.filter(([name]) => name === fn).map(([, a]) => a);
+
+    /** An .m4a whose mvhd says `seconds`, the shape iOS and Android upload. */
+    function m4a(seconds: number) {
+      const out = new Uint8Array(700);
+      const v = new DataView(out.buffer);
+      const put = (o: number, t: string) =>
+        [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+      v.setUint32(0, 16);
+      put(4, "ftyp");
+      v.setUint32(16, 116);
+      put(20, "moov");
+      v.setUint32(24, 108);
+      put(28, "mvhd");
+      v.setUint32(44, 1000);
+      v.setUint32(48, seconds * 1000);
+      v.setUint32(132, 700 - 132);
+      put(136, "mdat");
+      return new Blob([out], { type: "audio/m4a" });
+    }
+
+    it("reserves the per-call maximum before the provider call, then settles to the reported length", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+        expect(secondsUsed).toBe(120); // held while the provider works
+        return new Response(JSON.stringify({ metadata: { duration: 12.2 }, results: {} }), {
+          status: 200,
+        });
+      });
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(calls("reserve_stt_audio_seconds")).toEqual([
+        { _user_id: "user-1", _seconds: 120, _budget: 1200 },
+      ]);
+      expect(calls("settle_stt_audio_seconds")).toEqual([
+        { _user_id: "user-1", _day: DAY, _reserved: 120, _actual: 13 },
+      ]);
+      expect(secondsUsed).toBe(13);
+    });
+
+    it("keeps the per-call maximum when the provider reports no length", async () => {
+      deepgram();
+      await handler({ request: CONSENT_REQUEST() });
+      expect(secondsUsed).toBe(120);
+    });
+
+    it("charges a long recording in full and still returns its transcript", async () => {
+      deepgram(1320);
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ text: "hi" });
+      expect(secondsUsed).toBe(1320);
+    });
+
+    it("refuses with the daily-limit 429 the apps already handle when the next call would pass the budget", async () => {
+      secondsUsed = 1081;
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(429);
+      const body = await res.json();
+      expect(body).toMatchObject({ error: "quota-exceeded" });
+      expect(typeof body.resetsAt).toBe("string");
+      expect(body.message).toMatch(/voice/i);
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(secondsUsed).toBe(1081);
+    });
+
+    it("still transcribes when exactly one call's maximum is left", async () => {
+      secondsUsed = 1080;
+      deepgram(30);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(secondsUsed).toBe(1110);
+    });
+
+    it("reads the budget and the per-call maximum from the environment", async () => {
+      process.env.STT_DAILY_AUDIO_SECONDS = "60";
+      process.env.STT_MAX_CALL_SECONDS = "30";
+      secondsUsed = 31;
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(429);
+      secondsUsed = 0;
+      deepgram();
+      await handler({ request: CONSENT_REQUEST() });
+      expect(calls("reserve_stt_audio_seconds").at(-1)).toEqual({
+        _user_id: "user-1",
+        _seconds: 30,
+        _budget: 60,
+      });
+      expect(secondsUsed).toBe(30);
+    });
+
+    it("refuses an .m4a whose header says it is over the per-call maximum, before reserving or calling the provider", async () => {
+      const res = await handler({ request: reqWithFile(m4a(121)) });
+      expect(res.status).toBe(413);
+      expect(await res.json()).toEqual({ error: "audio-too-long" });
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(adminRpc).not.toHaveBeenCalled();
+      deepgram(119);
+      expect((await handler({ request: reqWithFile(m4a(119)) })).status).toBe(200);
+    });
+
+    it("fails closed when the reservation cannot be made", async () => {
+      adminRpc.mockImplementationOnce(async () => ({ data: null, error: { message: "down" } }));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(500);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("serves the request without a budget while the database function is not deployed yet, logging once", async () => {
+      adminRpc.mockImplementation(async () => ({
+        data: null,
+        error: { code: "PGRST202", message: "Could not find the function" },
+      }));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      deepgram(10);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(calls("settle_stt_audio_seconds")).toEqual([]);
+      expect(warn.mock.calls.filter(([m]) => String(m).includes("voice time"))).toHaveLength(1);
+      warn.mockRestore();
+      adminRpc.mockImplementation(realRpc);
+    });
+
+    it("also treats Postgres's own undefined-function error as not deployed", async () => {
+      adminRpc.mockImplementationOnce(async () => ({
+        data: null,
+        error: { code: "42883", message: "function does not exist" },
+      }));
+      deepgram(10);
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+    });
+
+    it("keeps the reservation when a caller hangs up after the upload: the provider call is not tied to their connection", async () => {
+      const caller = new AbortController();
+      const form = new FormData();
+      form.set("file", new Blob(["x".repeat(600)]), "audio.webm");
+      const request = new Request("https://example.com/api/stt", {
+        method: "POST",
+        body: form,
+        signal: caller.signal,
+      });
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+        async (_url: string, init?: RequestInit) => {
+          caller.abort(); // the caller hangs up while the provider is transcribing
+          if (init?.signal?.aborted) throw init.signal.reason; // what a real fetch does
+          return new Response(JSON.stringify({ metadata: { duration: 600 }, results: {} }), {
+            status: 200,
+          });
+        },
+      );
+      await handler({ request });
+      expect(secondsUsed).toBe(600);
+    });
+
+    it("keeps the per-call maximum when the provider times out, since it already had the audio", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new DOMException("timed out", "TimeoutError"),
+      );
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(504);
+      expect(secondsUsed).toBe(120);
+    });
+
+    it("refunds in full when the provider could not be reached at all", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new TypeError("fetch failed"));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(504);
+      expect(secondsUsed).toBe(0);
+    });
+
+    it("refunds in full when the provider answers with an error", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("bad gateway", { status: 502 }),
+      );
+      await handler({ request: CONSENT_REQUEST() });
+      expect(secondsUsed).toBe(0);
+    });
+
+    it("keeps the per-call maximum when a success answer cannot be read", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("not json", { status: 200 }),
+      );
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(502);
+      expect(secondsUsed).toBe(120);
+    });
+
+    it("returns the transcript even when settling fails", async () => {
+      deepgram(5);
+      adminRpc
+        .mockImplementationOnce(async () => ({ data: DAY, error: null }))
+        .mockImplementationOnce(async () => ({ data: null, error: { message: "down" } }));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
+    });
   });
 });
