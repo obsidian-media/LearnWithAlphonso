@@ -15,10 +15,11 @@ async function handle(request: Request): Promise<Response> {
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
   if (error || !data?.user) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  const { revenueCatConfigFromEnv, getSubscriberSummary } =
+  const { revenueCatConfigFromEnv, getAccountSubscriberSummary } =
     await import("@/lib/revenuecat-entitlement");
   const config = revenueCatConfigFromEnv();
-  const summary = config ? await getSubscriberSummary(config, data.user.id) : null;
+  // Every id the account's purchases can be under (its subscription identifier and, for older purchases, its id).
+  const summary = config ? await getAccountSubscriberSummary(config, data.user.id) : null;
   if (!summary || summary.status === "unavailable") {
     return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
   }

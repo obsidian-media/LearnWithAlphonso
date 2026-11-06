@@ -25,6 +25,8 @@
  * ships to the client. That secret must never reach the app binary.
  */
 
+import { createHmac } from "node:crypto";
+
 const REVENUECAT_API_HOST = "https://api.revenuecat.com";
 /** Matches AppConfig.proEntitlementID (iOS) -- the RevenueCat dashboard's Entitlement identifier. */
 const PRO_ENTITLEMENT_ID = "pro";
@@ -42,6 +44,11 @@ export type RevenueCatConfig = {
   /** When true, Apple/Google sandbox purchases count only for testPurchaseUserIds. Off by default, because App
    *  Review and TestFlight buy in the sandbox. */
   rejectSandbox?: boolean;
+  /**
+   * SUBSCRIPTION_ID_SECRET: derives each account's separate subscription identifier (subscriptionAppUserId). Without
+   * it the account's Supabase id is its only RevenueCat id, as before.
+   */
+  subscriptionIdSecret?: string;
 };
 
 /**
@@ -68,19 +75,39 @@ export function revenueCatConfigFromEnv(
     .filter(Boolean);
   if (testers.length > 0) config.testPurchaseUserIds = testers;
   if (env.REVENUECAT_REJECT_SANDBOX === "true") config.rejectSandbox = true;
+  const idSecret = env.SUBSCRIPTION_ID_SECRET?.trim();
+  if (idSecret && idSecret.length >= 32) config.subscriptionIdSecret = idSecret;
   return config;
+}
+
+/**
+ * The account's separate subscription identifier: what the apps and the web checkout give RevenueCat instead of the
+ * Supabase id, so an id other learners can see is never the key to someone's subscription. Derived (HMAC-SHA256 of
+ * the account id under SUBSCRIPTION_ID_SECRET), so it needs no storage and is still known after the account is
+ * deleted. Never shown anywhere. Keep identical to supabase/functions/_shared/hearts-pro.ts.
+ */
+export function subscriptionAppUserId(userId: string, secret: string): string {
+  const mac = createHmac("sha256", secret).update(`rc-subscription:${userId}`).digest("hex");
+  return `sub_${mac.slice(0, 32)}`;
+}
+
+/** Every RevenueCat id this account's purchases can be under: the subscription identifier first, then the account id. */
+export function accountAppUserIds(config: RevenueCatConfig, userId: string): string[] {
+  return config.subscriptionIdSecret
+    ? [subscriptionAppUserId(userId, config.subscriptionIdSecret), userId]
+    : [userId];
 }
 
 type PurchaseRecord = { store?: string; is_sandbox?: boolean };
 
-/** Whether the purchase behind an entitlement may grant Pro to this account. */
+/** Whether the purchase behind an entitlement may grant Pro to this account (testers are listed by account id). */
 function purchaseCounts(
   config: RevenueCatConfig,
-  appUserId: string,
+  accountId: string,
   purchase: PurchaseRecord | undefined,
 ): boolean {
   if (!purchase) return true;
-  if (config.testPurchaseUserIds?.includes(appUserId)) return true;
+  if (config.testPurchaseUserIds?.includes(accountId)) return true;
   if (purchase.store === "test_store") return false;
   if (config.rejectSandbox && purchase.is_sandbox === true) return false;
   return true;
@@ -141,6 +168,8 @@ export async function getSubscriberSummary(
   config: RevenueCatConfig,
   appUserId: string,
   fetchImpl: typeof fetch = fetch,
+  /** The Supabase account id, for the test-purchase list. Defaults to appUserId (the account id itself). */
+  accountId: string = appUserId,
 ): Promise<SubscriberSummary> {
   const none = { store: null, managementUrl: null } as const;
   try {
@@ -193,7 +222,7 @@ export async function getSubscriberSummary(
     const purchase: PurchaseRecord | undefined = productId
       ? (subscriptions[productId] ?? (Array.isArray(oneTime) ? oneTime.at(-1) : undefined))
       : undefined;
-    if (!purchaseCounts(config, appUserId, purchase)) {
+    if (!purchaseCounts(config, accountId, purchase)) {
       return { status: "inactive", trialEligible, ...none };
     }
     const store = productId ? storeOf(subscriptions[productId]?.store) : null;
@@ -204,22 +233,67 @@ export async function getSubscriberSummary(
   }
 }
 
-/** Keep an upstream outage distinct from a confirmed lack of entitlement. */
+export type AccountSubscriberSummary = SubscriberSummary & {
+  /**
+   * The id the apps and the web checkout should give RevenueCat: the subscription identifier, unless this account's
+   * purchases are only under its account id (bought on an app build from before the identifier existed). Null when
+   * RevenueCat could not be read.
+   */
+  loginId: string | null;
+};
+
+const hasHistory = (s: SubscriberSummary) =>
+  s.status === "active" || (s.status === "inactive" && !s.trialEligible);
+
+/**
+ * The account's subscription across every id its purchases can be under (accountAppUserIds). Pro on either id is
+ * Pro. "unavailable" only when no id says Pro and at least one could not be read, so it still fails closed. One free
+ * trial per person: trial-eligible only if no id has had a subscription.
+ */
+export async function getAccountSubscriberSummary(
+  config: RevenueCatConfig,
+  userId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<AccountSubscriberSummary> {
+  const ids = accountAppUserIds(config, userId);
+  const summaries = await Promise.all(
+    ids.map((id) => getSubscriberSummary(config, id, fetchImpl, userId)),
+  );
+  const pick = (): string => {
+    if (ids.length === 1) return userId;
+    const [sub, account] = summaries;
+    return !hasHistory(sub!) && hasHistory(account!) ? userId : ids[0]!;
+  };
+  const active = summaries.find((s) => s.status === "active");
+  if (active) return { ...active, loginId: pick() };
+  if (summaries.some((s) => s.status === "unavailable")) {
+    return { status: "unavailable", loginId: null };
+  }
+  return {
+    status: "inactive",
+    store: null,
+    managementUrl: null,
+    trialEligible: summaries.every((s) => s.status === "inactive" && s.trialEligible),
+    loginId: pick(),
+  };
+}
+
+/** Keep an upstream outage distinct from a confirmed lack of entitlement. Checks every id of the account. */
 export async function getProEntitlementStatus(
   config: RevenueCatConfig,
-  appUserId: string,
+  userId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ProEntitlementStatus> {
-  return (await getSubscriberSummary(config, appUserId, fetchImpl)).status;
+  return (await getAccountSubscriberSummary(config, userId, fetchImpl)).status;
 }
 
 /** Boolean compatibility helper for authorization-only callers. */
 export async function isProSubscriber(
   config: RevenueCatConfig,
-  appUserId: string,
+  userId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<boolean> {
-  return (await getProEntitlementStatus(config, appUserId, fetchImpl)) === "active";
+  return (await getProEntitlementStatus(config, userId, fetchImpl)) === "active";
 }
 
 /**
@@ -325,4 +399,31 @@ export async function deleteRevenueCatSubscriber(
   } catch {
     return "failed";
   }
+}
+
+/** cancelWebSubscription for every id of a (deleted) account: "failed" if any failed, "cancelled" if any cancelled. */
+export async function cancelAccountWebSubscriptions(
+  config: RevenueCatConfig,
+  userId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<"cancelled" | "none" | "failed"> {
+  const results: ("cancelled" | "none" | "failed")[] = [];
+  for (const id of accountAppUserIds(config, userId)) {
+    results.push(await cancelWebSubscription(config, id, fetchImpl));
+  }
+  if (results.includes("failed")) return "failed";
+  return results.includes("cancelled") ? "cancelled" : "none";
+}
+
+/** deleteRevenueCatSubscriber for every id of a (deleted) account: "erased" only when every id is. */
+export async function deleteAccountSubscribers(
+  config: RevenueCatConfig,
+  userId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<"erased" | "failed"> {
+  let ok = true;
+  for (const id of accountAppUserIds(config, userId)) {
+    if ((await deleteRevenueCatSubscriber(config, id, fetchImpl)) !== "erased") ok = false;
+  }
+  return ok ? "erased" : "failed";
 }

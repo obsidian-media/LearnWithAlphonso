@@ -157,7 +157,12 @@ struct RootView: View {
                         // run, or show Pro, before it is aliased to this account. See
                         // EntitlementStore.login's doc comment.
                         if let userID = session.userID {
-                            await entitlementStore.login(userID: userID)
+                            // RevenueCat gets the account's separate subscription identifier (never shown anywhere);
+                            // any failure falls back to the account id, which the server also accepts.
+                            let subscriptionID = await SubscriptionLogin.resolve(
+                                baseURL: AppConfig.apiBaseURL, accountID: userID,
+                                accessToken: await session.freshAccessToken())
+                            await entitlementStore.login(userID: subscriptionID)
                         }
                         await triggerSync()
                         await hydrateThemeFromServer()
