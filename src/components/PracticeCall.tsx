@@ -173,11 +173,7 @@ export function PracticeCall(props: Props) {
       )}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,.28), transparent 18%, transparent 55%, rgba(0,0,0,.5) 100%)",
-        }}
+        className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(to_bottom,rgba(0,0,0,.28),transparent_18%,transparent_55%,rgba(0,0,0,.5)_100%)]"
       />
 
       {/* Alphonso: the square kit scaled past the screen width so head and shoulders fill the frame. On a short

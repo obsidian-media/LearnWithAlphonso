@@ -287,17 +287,16 @@ export function AlphonsoAvatar({
               maskSize: "100% 100%",
             }}
           >
+            {/* The gradient is a class, not an inline style: jsdom's inline-gradient parser throws. */}
             <div
               ref={band}
+              className="absolute bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.65),rgba(255,255,255,0))]"
               style={{
-                position: "absolute",
                 top: "-70%",
                 left: "30%",
                 width: "40%",
                 height: "240%",
                 transform: "rotate(20deg)",
-                background:
-                  "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.65), rgba(255,255,255,0))",
               }}
             />
           </div>
