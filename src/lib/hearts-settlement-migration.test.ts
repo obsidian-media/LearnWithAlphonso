@@ -136,7 +136,9 @@ describe("hearts settled on the server (real Postgres)", () => {
     await loseHeart(); // before the session
     await db.query("UPDATE public.heart_loss_reports SET at = now() - interval '10 minutes'");
     await loseHeart(); // during the session
-    expect((await settle(1, { since: new Date(Date.now() - 60_000).toISOString() })).charged).toBe(0);
+    expect((await settle(1, { since: new Date(Date.now() - 60_000).toISOString() })).charged).toBe(
+      0,
+    );
     const left = await db.query<{ n: number }>(
       "SELECT count(*)::int n FROM public.heart_loss_reports WHERE NOT claimed AND at < now() - interval '5 minutes'",
     );
