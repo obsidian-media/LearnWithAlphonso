@@ -111,7 +111,7 @@ describe("icons: one SVG source, all three platforms", () => {
     const web = await import("../design/icons.generated");
     expect([...web.DS_ICON_NAMES].sort()).toEqual([...names].sort());
     expect([...web.DS_SOLID_ICONS].sort()).toEqual([...solid].sort());
-    for (const n of names) expect(web.DS_ICONS[n].length, n).toBeGreaterThan(0);
+    for (const n of web.DS_ICON_NAMES) expect(web.DS_ICONS[n].length, n).toBeGreaterThan(0);
   });
 
   it("iOS: every variant is a template, vector-preserving imageset with its SVG, and nothing else is there", () => {
