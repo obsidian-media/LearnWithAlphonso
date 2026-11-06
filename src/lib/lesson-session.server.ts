@@ -63,3 +63,18 @@ export function verifyLessonSessionToken(token: string, expected: LessonSessionC
 
   return true;
 }
+
+/** The signed issue time (ms) of a token that verifies for this claim, or null. */
+export function lessonSessionIssuedAt(token: string, expected: LessonSessionClaim): number | null {
+  if (!verifyLessonSessionToken(token, expected)) return null;
+  try {
+    const iat = (
+      JSON.parse(Buffer.from(token.split(".")[0]!, "base64url").toString("utf8")) as {
+        iat?: unknown;
+      }
+    ).iat;
+    return typeof iat === "number" && Number.isFinite(iat) ? iat : null;
+  } catch {
+    return null;
+  }
+}

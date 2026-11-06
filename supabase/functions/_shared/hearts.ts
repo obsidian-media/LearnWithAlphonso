@@ -73,3 +73,17 @@ export function heartsGateEnforced(
 ): boolean {
   return get("ENFORCE_HEARTS_GATE") !== "false";
 }
+
+/**
+ * Hearts settled on the server when a lesson completes (settle_lesson_hearts). "shadow" (the default) records what
+ * the settlement would charge and charges nothing; "on" charges; "off" skips the settlement entirely. Keep identical
+ * to src/lib/hearts-gate.server.ts's serverHeartsMode.
+ */
+export type ServerHeartsMode = "off" | "shadow" | "on";
+
+export function serverHeartsMode(
+  get: (k: string) => string | undefined = (k) => Deno.env.get(k),
+): ServerHeartsMode {
+  const v = get("SERVER_HEARTS")?.trim().toLowerCase();
+  return v === "on" || v === "off" ? v : "shadow";
+}
