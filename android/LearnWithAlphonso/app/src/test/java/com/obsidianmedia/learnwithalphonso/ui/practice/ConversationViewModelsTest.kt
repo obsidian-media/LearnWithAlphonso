@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
+import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
@@ -34,10 +35,10 @@ class InstantRecorder(private val bytes: Int = 8_000) : RecorderPort {
 class ConversationViewModelsTest {
     @get:Rule val main = MainDispatcherRule()
 
-    private fun server(transcript: String = "I would like a coffee", chatError: Boolean = false) = FakeServer { req ->
+    private fun server(transcript: String = "I would like a coffee", chatError: Boolean = false, verdict: String? = null) = FakeServer { req ->
         when {
             req.path.endsWith("/api/stt") -> json("""{"text":"$transcript","confidence":0.9}""")
-            req.path.endsWith("/api/chat") -> if (chatError) json("""{"error":"quota-exceeded","resetsAt":null,"message":"AI quota reached for today"}""", HttpStatusCode.TooManyRequests) else json("""{"content":"Certainly, what size?"}""")
+            req.path.endsWith("/api/chat") -> if (chatError) json("""{"error":"quota-exceeded","resetsAt":null,"message":"AI quota reached for today"}""", HttpStatusCode.TooManyRequests) else json(if (verdict == null) """{"content":"Certainly, what size?"}""" else """{"content":"Certainly, what size?","verdict":"$verdict"}""")
             req.path.endsWith("/api/tts") -> respond(byteArrayOf(1, 2, 3), HttpStatusCode.OK)
             req.path.endsWith("/api/analyze-weaknesses") -> json("""{"weaknessesDetected":1}""")
             req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B1"}]""")
@@ -67,6 +68,22 @@ class ConversationViewModelsTest {
         assertTrue(chat.body.contains(""""cefrLevel":"B1""""))
         assertEquals(listOf(3), played)
         assertNull(v.state.value.error)
+    }
+
+    @Test
+    fun `the reply's verdict reaches the state once per reply, and an older server reads as none`() = runBlocking {
+        val withVerdict = scenarioVm(server(verdict = "corrected"))
+        withVerdict.pressBegan(); withVerdict.pressEnded()
+        awaitTrue("reply") { withVerdict.state.value.turns.size == 3 && withVerdict.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(1, withVerdict.state.value.verdictSerial)
+        assertEquals(ReplyVerdict.CORRECTED, withVerdict.state.value.verdict)
+        assertEquals("the text carries no tag", "Certainly, what size?", withVerdict.state.value.turns.last().content)
+
+        val older = scenarioVm(server())
+        older.pressBegan(); older.pressEnded()
+        awaitTrue("reply") { older.state.value.turns.size == 3 && older.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(1, older.state.value.verdictSerial)
+        assertEquals(ReplyVerdict.NONE, older.state.value.verdict)
     }
 
     @Test

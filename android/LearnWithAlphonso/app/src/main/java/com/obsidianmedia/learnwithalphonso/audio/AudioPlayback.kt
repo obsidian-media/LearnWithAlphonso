@@ -35,6 +35,12 @@ class AudioPlayback(private val context: Context) {
         }
     }
 
+    /** (position, duration) in seconds while a reply is playing, null otherwise: the lips and caption read this. */
+    fun clock(): Pair<Double, Double>? {
+        val mp = player ?: return null
+        return runCatching { if (mp.isPlaying) (mp.currentPosition / 1000.0) to (mp.duration / 1000.0) else null }.getOrNull()
+    }
+
     fun stop() {
         player?.let { runCatching { it.stop() }; it.release() }
         player = null
