@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -206,13 +207,53 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val palette = AlphonsoColor.palette
     val progress by vm.campaignState.collectAsState()
     val state by vm.state.collectAsState()
+    val context = LocalContext.current
+    // "Show Alphonso while practising" (Settings, on by default): a full-screen call in the default study room.
+    val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
+    val reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
+        AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
+    }
+    val sceneFooter: @Composable () -> Unit = {
+        val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
+        if (progress.finished) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                AlphonsoMascotBanner("Nice work. Campaign complete!")
+                Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+            }
+        } else if (canContinue) {
+            AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = vm::continueToNextScene)
+        }
+    }
     AiConsentGate(container, onDecline = onBack) {
       SaveWordHost(container) {
+        if (showCall) {
+            DisposableEffect(Unit) { onDispose { vm.onLeave() } }
+            PracticeCallScreen(
+                kit = remember { alphonsoKit(context) },
+                title = if (progress.finished) campaign.title else "${campaign.title}: scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}",
+                scenarioId = campaign.id, course = course, vm = vm, playback = playback,
+                reducedMotion = systemMotionReduced(context), onEnd = onBack,
+                statusHost = { AiReportStatusHost(reporting.sender) },
+                extra = {
+                    val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
+                    if (progress.finished) {
+                        Text("Nice work, campaign complete!", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = 14.dp, vertical = 6.dp))
+                    } else if (canContinue) {
+                        AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = vm::continueToNextScene)
+                    }
+                },
+                transcript = {
+                    Column {
+                        if (!progress.finished) TextButton(onClick = vm::restartScene) { Text("Restart scene", color = palette.moss) }
+                        TranscriptList(container, vm, palette.moss, Color.White, reporting, course.code, Modifier, sceneFooter)
+                    }
+                },
+            )
+            return@SaveWordHost
+        }
         ConversationBody(
             container, vm, campaign.title, palette.moss, Color.White, onBack,
-            reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
-                AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
-            },
+            reporting = reporting,
             course = course.code,
             header = {
                 if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = MaterialTheme.typography.labelLarge, color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))

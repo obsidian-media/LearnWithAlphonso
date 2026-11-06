@@ -109,6 +109,8 @@ internal fun PracticeCallScreen(
     reducedMotion: Boolean,
     onEnd: () -> Unit,
     statusHost: @Composable () -> Unit,
+    /** Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption. */
+    extra: (@Composable () -> Unit)? = null,
     transcript: @Composable () -> Unit,
 ) {
     val palette = AlphonsoColor.palette
@@ -189,6 +191,7 @@ internal fun PracticeCallScreen(
                 Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.92f)).padding(horizontal = 12.dp, vertical = 6.dp))
             }
+            extra?.let { Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)) { it() } }
             Caption(vm, playback, mode, recording)
             Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics {}.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)

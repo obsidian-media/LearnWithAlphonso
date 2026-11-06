@@ -114,3 +114,29 @@ describe("the setting", () => {
     expect(hector).not.toContain("PracticeCallScreen");
   });
 });
+
+describe("campaign conversations", () => {
+  const practice = code(
+    "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/PracticeScreens.kt",
+  );
+  const campaign = practice.slice(practice.indexOf("fun CampaignConversationScreen("));
+  it("use the call too, with the campaign id (no picture of its own, so the default room)", () => {
+    expect(campaign).toContain(
+      "container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)",
+    );
+    expect(campaign).toMatch(
+      /if \(showCall\) \{[\s\S]*?PracticeCallScreen\([\s\S]*?scenarioId = campaign\.id/,
+    );
+    // ...and the classic screen is still there for the setting off.
+    expect(campaign).toContain("ConversationBody(");
+  });
+  it("keeps Continue, Restart scene and the transcript reachable in the call", () => {
+    const call = campaign.slice(
+      campaign.indexOf("PracticeCallScreen("),
+      campaign.indexOf("ConversationBody("),
+    );
+    expect(call).toContain("vm::continueToNextScene");
+    expect(call).toContain("vm::restartScene");
+    expect(call).toContain("TranscriptList(");
+  });
+});
