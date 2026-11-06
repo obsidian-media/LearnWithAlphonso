@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "./curriculum";
-import { applyPlacementReviewFixes, applyReviewFixes, REVIEW_FIXES } from "./review-fixes";
+import {
+  applyPlacementReviewFixes,
+  applyReviewFixes,
+  REVIEW_FIXES,
+  REVIEW_FIXES_UNMATCHED,
+} from "./review-fixes";
 import { fullInventory } from "../lib/content-review/inventory";
 import { checkFix } from "../lib/content-review/fixes";
 
@@ -54,12 +59,10 @@ describe("the review overlay", () => {
     expect(out[0]!.lessons[0]!.questions.map((q) => q.id)).toEqual(["q1", "q2"]);
   });
 
-  it("a fix that matches nothing throws (no stale fix sits there silently)", () => {
-    expect(() =>
-      applyReviewFixes(units, "fr", {
-        "fr:question:l1/q9": { patch: { prompt: "x" }, reason: "r" },
-      }),
-    ).toThrow(/match nothing/);
+  it("a fix that matches nothing is recorded (no stale fix sits there silently)", () => {
+    const before = REVIEW_FIXES_UNMATCHED.length;
+    applyReviewFixes(units, "fr", { "fr:question:l1/q9": { patch: { prompt: "x" }, reason: "r" } });
+    expect(REVIEW_FIXES_UNMATCHED.splice(before)).toEqual(["fr:question:l1/q9"]);
   });
 
   it("refuses a field that cannot be patched (ids, types)", () => {
@@ -84,11 +87,17 @@ describe("the review overlay", () => {
         "fr:placement:fp1": { patch: { prompt: "q" }, reason: "r" },
       })[0]!.prompt,
     ).toBe("q");
-    expect(() =>
-      applyPlacementReviewFixes(pq, "fr", {
-        "fr:placement:zz": { patch: { prompt: "q" }, reason: "r" },
-      }),
-    ).toThrow(/match nothing/);
+    const before = REVIEW_FIXES_UNMATCHED.length;
+    applyPlacementReviewFixes(pq, "fr", {
+      "fr:placement:zz": { patch: { prompt: "q" }, reason: "r" },
+    });
+    expect(REVIEW_FIXES_UNMATCHED.splice(before)).toEqual(["fr:placement:zz"]);
+  });
+
+  it("every shipped fix matches the built content (the app records, CI refuses)", () => {
+    // Building the courses (fullInventory below, and the imports) applies the shipped overlay.
+    fullInventory();
+    expect(REVIEW_FIXES_UNMATCHED).toEqual([]);
   });
 
   it("every committed fix still passes the fix checks against the content it was written for", () => {

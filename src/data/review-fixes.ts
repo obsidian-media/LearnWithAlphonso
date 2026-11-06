@@ -27,11 +27,18 @@ export type ReviewFix = {
 export type ReviewFixes = Record<string, ReviewFix>;
 type Course = "en" | "fr" | "es";
 
-export const REVIEW_FIXES: Record<Course, ReviewFixes> = {
-  en: EN as ReviewFixes,
-  fr: FR as ReviewFixes,
-  es: ES as ReviewFixes,
-};
+/** Fixes the built content did not match (see applyReviewFixes). review-fixes.test.ts holds it empty. */
+export const REVIEW_FIXES_UNMATCHED: string[] = [];
+
+/**
+ * LWA_REVIEW_OVERLAY=off builds the content without the overlay: the review pipeline checks and
+ * routes fixes against the original content (scripts/content-review/run.ts). Never set in the app.
+ */
+const OVERLAY_OFF = typeof process !== "undefined" && process.env?.LWA_REVIEW_OVERLAY === "off";
+
+export const REVIEW_FIXES: Record<Course, ReviewFixes> = OVERLAY_OFF
+  ? { en: {}, fr: {}, es: {} }
+  : { en: EN as ReviewFixes, fr: FR as ReviewFixes, es: ES as ReviewFixes };
 
 const QUESTION_FIELDS = new Set([
   "prompt",
@@ -63,7 +70,11 @@ export function applyReviewFixes(
   units: Unit[],
   course: Course,
   fixes: ReviewFixes = REVIEW_FIXES[course],
-  /** strict false: a fix that matches nothing is ignored (for tests comparing partial content). */
+  /**
+   * strict false: a fix that matches nothing is ignored (tests comparing partial content). By
+   * default it is recorded in REVIEW_FIXES_UNMATCHED, which a test holds at zero: the app never
+   * fails to load over a stale fix, and CI never lets one in.
+   */
   opts: { strict?: boolean } = {},
 ): Unit[] {
   const keys = Object.keys(fixes);
@@ -113,8 +124,7 @@ export function applyReviewFixes(
     };
   });
   const unused = [...pending].filter((k) => !k.includes(":placement:"));
-  if (unused.length && opts.strict !== false)
-    throw new Error(`review fixes match nothing: ${unused.slice(0, 5).join(", ")}`);
+  if (opts.strict !== false) REVIEW_FIXES_UNMATCHED.push(...unused);
   return out;
 }
 
@@ -140,8 +150,7 @@ export function applyPlacementReviewFixes(
       ),
     } as PlacementQuestion;
   });
-  if (pending.size)
-    throw new Error(`placement review fixes match nothing: ${[...pending].slice(0, 5).join(", ")}`);
+  REVIEW_FIXES_UNMATCHED.push(...pending);
   return out;
 }
 

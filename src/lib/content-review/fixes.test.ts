@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ReviewItem } from "./inventory";
-import { checkFix, checkFixes, overlayJson } from "./fixes";
+import { fullInventory, type ReviewItem } from "./inventory";
+import { answerText, checkFix, checkFixes, overlayJson } from "./fixes";
 import { parseRulings, route } from "./judge";
 import { chunk } from "./review";
 
@@ -317,5 +317,24 @@ describe("French and Spanish card glosses may carry a grammar note", () => {
         patch: { meaning: "a b c d e f g h i (note)" },
       }).join(),
     ).toMatch(/over 8/);
+  });
+});
+
+describe("earlier reviewed English fixes (question-fixes.ts)", () => {
+  it("refuses a patch that drops their wrong options or rewrites their prompt", async () => {
+    const { QUESTION_FIXES } = await import("../../data/question-fixes");
+    const [key, earlier] = Object.entries(QUESTION_FIXES).find(([, f]) => f.wrong && f.prompt)!;
+    const it = fullInventory().find((x) => x.id === `en:question:${key}`)!;
+    const opts = (it.data.choices ?? it.data.bank) as string[];
+    const answer = String(answerText(it.data));
+    const swapped = opts.map((o) => (o === earlier.wrong![0] ? `${o}x` : o));
+    const field = it.data.choices ? "choices" : "bank";
+    expect(checkFix(it, { id: it.id, reason: "", patch: { [field]: swapped } }).join()).toMatch(
+      /earlier reviewed/,
+    );
+    expect(
+      checkFix(it, { id: it.id, reason: "", patch: { prompt: `${it.data.prompt} (x)` } }).join(),
+    ).toMatch(/earlier reviewed/);
+    expect(answer).toBeTruthy();
   });
 });

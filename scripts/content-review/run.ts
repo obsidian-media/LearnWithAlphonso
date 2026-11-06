@@ -27,6 +27,7 @@
  * path), or .content-review/config.json {"anthropicKeyFile": "...", "mistralKeyFile": "..."}
  * (git-ignored). Read into memory at the point of use; never printed, logged or written.
  */
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -101,6 +102,31 @@ import { ASSUME, MODEL, costPlan, planMarkdown } from "../../src/lib/content-rev
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] ?? "plan";
+// route, and the phases whose fixes route applies, work on the ORIGINAL content: the courses are
+// built with the review overlay off (LWA_REVIEW_OVERLAY=off, read when they are imported), so this
+// process re-runs itself with it set. verify, judge2 and the blind phases read the content as
+// shipped, overlay on.
+const BASE_PHASES = new Set([
+  "review",
+  "second",
+  "judge",
+  "judge-retry",
+  "rewrite-card-meaning",
+  "rewrite-explanation",
+  "rewrite-cloze",
+  "rewrite-drill",
+]);
+if (
+  process.env.LWA_REVIEW_OVERLAY !== "off" &&
+  (cmd === "route" || (cmd === "submit" && BASE_PHASES.has(argv[1] ?? "")))
+) {
+  const { spawnSync: rerun } = await import("node:child_process");
+  const r = rerun(process.execPath, process.argv.slice(1), {
+    stdio: "inherit",
+    env: { ...process.env, LWA_REVIEW_OVERLAY: "off" },
+  });
+  process.exit(r.status ?? 1);
+}
 const arg = (name: string, fallback: string) => {
   const i = argv.indexOf(`--${name}`);
   return i >= 0 && argv[i + 1] ? argv[i + 1]! : fallback;
@@ -475,8 +501,10 @@ async function submitMistralSync(phase: string, work: PhaseWork, chunks: Chunk[]
         } catch (e) {
           const msg = (e as Error).message;
           // 429: rate limit (nothing billed); wait longer each time. Anything else stops the run.
-          if (e instanceof RejectedError && /HTTP 429/.test(msg) && attempt < 8) {
-            await new Promise((r) => setTimeout(r, 4000 * attempt));
+          // Exponential backoff capped at a minute, with jitter so the workers do not retry together.
+          if (e instanceof RejectedError && /HTTP 429/.test(msg) && attempt < 30) {
+            const wait = Math.min(60_000, 2000 * 2 ** Math.min(attempt, 5)) + Math.random() * 3000;
+            await new Promise((r) => setTimeout(r, wait));
             continue;
           }
           if (e instanceof RejectedError) ledger.release(ref, `rejected: ${msg}`);
@@ -820,20 +848,17 @@ function routeCommand() {
           { patch: Record<string, string | string[]>; reason: string; keyChange?: boolean }
         >
       >(file, {});
-      for (const f of checked.ok.filter(
-        (x) => x.id.startsWith(`${course}:`) && OVERLAY_KINDS.test(x.id) && inLevels(x.id),
-      )) {
-        const prev = current[f.id];
+      // route already merged every ruling on an item, so its fix replaces the overlay entry; an
+      // in-scope entry with no passing fix now (refused since) is taken out.
+      const inScope = (id: string) =>
+        id.startsWith(`${course}:`) && OVERLAY_KINDS.test(id) && inLevels(id);
+      for (const k of Object.keys(current)) if (inScope(k)) delete current[k];
+      for (const f of checked.ok.filter((x) => inScope(x.id)))
         current[f.id] = {
-          patch: { ...(prev?.patch ?? {}), ...f.patch },
-          // Re-running route is idempotent: a reason already recorded is not appended again.
-          reason:
-            !prev || prev.reason.includes(f.reason)
-              ? (prev?.reason ?? f.reason)
-              : `${prev.reason} / ${f.reason}`,
-          ...(f.keyChange || prev?.keyChange ? { keyChange: true } : {}),
+          patch: f.patch,
+          reason: f.reason,
+          ...(f.keyChange ? { keyChange: true } : {}),
         };
-      }
       const sorted = Object.fromEntries(
         Object.keys(current)
           .sort()
@@ -844,6 +869,35 @@ function routeCommand() {
         `${JSON.stringify(sorted, null, 1)}
 `,
       );
+    }
+    // Build the courses in a fresh process (the overlay is read at import) and take out any fix
+    // the built content no longer matches (e.g. a card whose term another fix changed); each goes
+    // to gate-refused.json for judge-retry. Repeats until the overlay matches everywhere.
+    const refusedNow = readJson<Record<string, string>>(path.join(STATE, "gate-refused.json"), {});
+    for (let round = 0; round < 5; round++) {
+      const probe = spawnSync(
+        process.execPath,
+        [
+          "-e",
+          "const c = await import('./src/data/courses.ts'); for (const x of ['en','fr','es']) c.getCourse(x); const r = await import('./src/data/review-fixes.ts'); console.log('UNMATCHED' + JSON.stringify(r.REVIEW_FIXES_UNMATCHED));",
+        ],
+        { encoding: "utf8", maxBuffer: 16 * 1024 * 1024, env: overlayOnEnv() },
+      );
+      const m = probe.stdout.match(/UNMATCHED(\[.*\])/);
+      if (!m) throw new Error(`overlay probe failed: ${probe.stderr.slice(0, 500)}`);
+      const unmatched = JSON.parse(m[1]!) as string[];
+      if (!unmatched.length) break;
+      for (const course of ["en", "fr", "es"]) {
+        const file = path.resolve("src", "data", "review-fixes", `${course}.json`);
+        const current = readJson<Record<string, unknown>>(file, {});
+        for (const k of unmatched) delete current[k];
+        fs.writeFileSync(file, `${JSON.stringify(current, null, 1)}\n`);
+      }
+      for (const k of unmatched)
+        refusedNow[k] =
+          "after the other fixes this fix matches nothing (another fix changed its item)";
+      writeJson(path.join(STATE, "gate-refused.json"), refusedNow);
+      console.log(`Took out ${unmatched.length} fixes the built content no longer matches.`);
     }
     console.log(
       "Applied to src/data/review-fixes/*.json; re-export the bundles and run the gates.",
@@ -872,6 +926,77 @@ function routeCommand() {
   console.log(
     `Key changes: ${routed.keyChanges.applied} applied, ${routed.keyChanges.listed} held for the owner. Fixes ${checked.ok.length} (legacy prompt needed: ${checked.ok.filter((f) => f.needsLegacyPrompt).length}), kept ${routed.kept.length}, owner ${owner.length} (${checked.refused.length} of them refused fixes).`,
   );
+}
+
+/** The content gates a fix can trip (docs/CONTENT-PLAYBOOK.md, section 5). */
+const CONTENT_GATES = [
+  "src/data",
+  "src/lib/id-parity.test.ts",
+  "src/lib/course-language-spans.test.ts",
+  "src/lib/save-word-spans-fixture.test.ts",
+];
+
+/**
+ * Runs the content gates on the content as the working overlay leaves it, finds every item a
+ * failure names (lesson/question ids, word cards, bare pack question ids), and records the ones
+ * that carry a fix in gate-refused.json with the gate's message, for judge-retry. Failures that
+ * name no item (a pinned count) are printed for a person to read.
+ */
+function gatesCommand() {
+  const res = spawnSync(process.execPath, ["x", "vitest", "run", ...CONTENT_GATES], {
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+    env: overlayOnEnv(),
+  });
+  const out = `${res.stdout}\n${res.stderr}`;
+  const items = inventory();
+  const ids = new Set(items.map((it) => it.id));
+  const fixed = new Set<string>();
+  for (const c of ["en", "fr", "es"])
+    for (const k of Object.keys(
+      readJson<Record<string, unknown>>(
+        path.resolve("src", "data", "review-fixes", `${c}.json`),
+        {},
+      ),
+    ))
+      fixed.add(k);
+  const bySuffix = new Map<string, string[]>();
+  for (const id of ids) {
+    const m = id.match(/:question:[^/]+\/(.+)$/);
+    if (m) bySuffix.set(m[1]!, [...(bySuffix.get(m[1]!) ?? []), id]);
+  }
+  const refused = readJson<Record<string, string>>(path.join(STATE, "gate-refused.json"), {});
+  const unmatched: string[] = [];
+  let added = 0;
+  for (const raw of out.split("\n")) {
+    const line = raw.replace(/^[\s+-]*/, "").trim();
+    if (!line || !/[a-z0-9]l\d+|q\d+/.test(line)) continue;
+    const found = new Set<string>();
+    for (const m of line.matchAll(/\b([a-z0-9]+l\d+)[/:]([a-z0-9]*q\d+)\b/g))
+      for (const c of ["en", "fr", "es"]) found.add(`${c}:question:${m[1]}/${m[2]}`);
+    for (const m of line.matchAll(/\b([a-z0-9]+l\d+) \\?"([^"\\]+)\\?":/g))
+      for (const c of ["en", "fr", "es"]) {
+        found.add(`${c}:card:${m[1]}/${m[2]!.trim().toLowerCase()}`);
+        for (const id of ids) if (id.startsWith(`${c}:question:${m[1]}/`)) found.add(id);
+      }
+    for (const m of line.matchAll(/\b([a-z]+[a-z0-9]*p\d+q\d+)\b/g))
+      for (const id of bySuffix.get(m[1]!) ?? []) found.add(id);
+    // A full review item id ("en:card:a1p11l2/exact: expected ..."), as review-fixes.test.ts prints.
+    for (const id of fixed) if (line.includes(`${id}:`) || line.includes(`${id} `)) found.add(id);
+    const hits = [...found].filter((id) => fixed.has(id));
+    if (!hits.length) {
+      if (/expected|✗|×|FAIL/.test(raw) || found.size) unmatched.push(line.slice(0, 200));
+      continue;
+    }
+    for (const id of hits) {
+      if (!refused[id]) added++;
+      refused[id] = `a CI content gate failed on this fix: ${line.slice(0, 300)}`;
+    }
+  }
+  writeJson(path.join(STATE, "gate-refused.json"), refused);
+  const summary = out.match(/Tests\s+.*$/m)?.[0] ?? "";
+  console.log(`${summary}\nGate refusals: ${added} new, ${Object.keys(refused).length} in all.`);
+  for (const u of [...new Set(unmatched)].slice(0, 25)) console.log(`  not tied to a fix: ${u}`);
 }
 
 function report() {
@@ -1061,6 +1186,9 @@ switch (cmd) {
   case "collect":
     await collect();
     break;
+  case "gates":
+    gatesCommand();
+    break;
   case "route":
     routeCommand();
     break;
@@ -1070,4 +1198,11 @@ switch (cmd) {
   default:
     console.error(`Unknown command ${cmd}. See the header of this file.`);
     process.exit(1);
+}
+
+/** The environment for a child process that must see the content as shipped (overlay on). */
+function overlayOnEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  delete env.LWA_REVIEW_OVERLAY;
+  return env;
 }

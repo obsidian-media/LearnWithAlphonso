@@ -436,8 +436,9 @@ describe("the A1/A2 English bank", () => {
   });
 
   it("does not add category questions without a clue", () => {
-    const n = all.filter(({ issues }) => issues.some((i) => i.kind === "needs-clue")).length;
-    expect(n).toBeLessThanOrEqual(NEEDS_CLUE_BUDGET);
+    const bad = all.filter(({ issues }) => issues.some((i) => i.kind === "needs-clue"));
+    const ids = bad.map(({ it }) => it.shape.id).join(", ");
+    expect(bad.length, `needs a clue: ${ids}`).toBeLessThanOrEqual(NEEDS_CLUE_BUDGET);
   });
 
   it("does not add inflection questions where another tense also fits", () => {

@@ -18,6 +18,11 @@ import type { ItemKind, ReviewItem } from "./inventory";
 import { FLAG, GENERIC_EXPLANATION, INFINITIVE } from "./gates";
 import { isFormOf } from "../../data/conjugation-form-check";
 import { bracketedVerb } from "../../data/romance-conjugation";
+import { cardProblems } from "../../data/card-rules";
+import type { Question } from "../../data/curriculum";
+import type { Level } from "../../data/levels";
+import { deriveVocab } from "../../data/vocab";
+import { QUESTION_FIXES } from "../../data/question-fixes";
 
 export type Patch = Record<string, string | string[]>;
 
@@ -110,6 +115,12 @@ export function cardRules(term: string, patch: Patch, course: string = "en"): st
   )
     why.push("the card example does not use the term");
   return why;
+}
+
+type CardShape = { term: string; meaning: string; example: string };
+const LEVELS = new Set(["A1", "A2", "B1", "B2", "C1"]);
+function englishCard(card: CardShape, level: string): string[] {
+  return cardProblems(card, (LEVELS.has(level) ? level : "C1") as Level).map((p) => `card: ${p}`);
 }
 
 /** Validates `fix` against `item`. Returns the reasons it is refused; empty means it may be applied. */
@@ -230,12 +241,39 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
       for (const o of options)
         if (o !== answer && !isFormOf(o, verb)) why.push(`"${o}" is not a form of ${verb}`);
   }
-  if (item.kind === "card")
+  // An earlier reviewed English fix (question-fixes.ts, pinned by question-fixes.test.ts) owns its
+  // prompt and wrong options: the review overlay must not undo it.
+  if (item.course === "en" && item.kind === "question") {
+    const earlier = QUESTION_FIXES[item.id.slice(item.id.indexOf(":question:") + 10)];
+    if (earlier?.prompt && "prompt" in fix.patch)
+      why.push("the prompt is owned by an earlier reviewed fix (question-fixes.ts)");
+    if (earlier?.wrong && ("choices" in fix.patch || "bank" in fix.patch)) {
+      const opts = (fix.patch.choices ?? fix.patch.bank) as string[];
+      const lost = earlier.wrong.filter((w) => !opts.includes(w));
+      if (lost.length)
+        why.push(
+          `drops "${lost.join('", "')}", wrong options set by an earlier reviewed fix (question-fixes.ts)`,
+        );
+    }
+  }
+  if (item.kind === "card") {
     why.push(...cardRules(String(item.data.term ?? ""), fix.patch, item.course));
+    // English cards: the gate's own rules (vocab-meanings.test.ts) on the card as it will read.
+    if (item.course === "en") why.push(...englishCard(next as CardShape, item.level));
+  }
   // A question's meaning/example fields ARE its word card: the same rules.
   if (item.kind === "question" && ("meaning" in fix.patch || "example" in fix.patch)) {
     const term = String(next.term ?? answerText(next) ?? "");
     why.push(...cardRules(term, fix.patch, item.course));
+    if (item.course === "en") {
+      const card = deriveVocab({
+        id: "x",
+        title: "",
+        subtitle: "",
+        questions: [next as unknown as Question],
+      })[0];
+      if (card) why.push(...englishCard(card, item.level));
+    }
   }
   if (
     item.kind === "card" &&
