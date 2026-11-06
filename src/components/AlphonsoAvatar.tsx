@@ -128,6 +128,8 @@ export function AlphonsoAvatar({
   useEffect(() => {
     let url: string | null = null;
     let cancelled = false;
+    // A kit with no glint (Hector) has no mask file: do not ask the server for one.
+    if (!kit.rects.glint) return;
     glintMaskUrl((file) => `${kit.basePath}/${file}`)
       .then((made) => {
         if (cancelled && made) URL.revokeObjectURL(made);

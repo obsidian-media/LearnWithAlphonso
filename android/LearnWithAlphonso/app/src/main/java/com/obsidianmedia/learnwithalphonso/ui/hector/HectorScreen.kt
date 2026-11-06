@@ -25,6 +25,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.PracticeCallScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.hectorKit
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.systemMotionReduced
+import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -90,15 +99,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-data class HectorUiState(val turns: List<ChatMessage> = emptyList(), val phase: ConversationPhase = ConversationPhase.IDLE, val error: String? = null)
-
 /**
  * Port of HectorConversationView: the tutor service gets the memory priming
  * turn once at the head of the history (Plan 3 Review Focus 4), then every
  * turn so far.
  */
 class HectorViewModel(
-    recorder: RecorderPort,
+    private val recorder: RecorderPort,
     requestMic: suspend () -> Boolean,
     private val tutor: TutorConversationClient,
     private val ai: AiConversationClient,
@@ -107,10 +114,11 @@ class HectorViewModel(
     private val sessionId: String = UUID.randomUUID().toString(),
     /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
     val course: Course = Course.ENGLISH,
-) : ViewModel() {
-    private val _state = MutableStateFlow(HectorUiState())
-    val state: StateFlow<HectorUiState> = _state.asStateFlow()
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
+) : ViewModel(), CallConversation {
+    // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
+    private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
+    override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
+    override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
     private var analysed = false
@@ -134,18 +142,23 @@ class HectorViewModel(
         }
     }
 
-    fun pressBegan() { _state.update { it.copy(error = null) }; engine.pressBegan() }
-    fun pressEnded() { engine.pressEnded(); if (engine.phase.value == TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+    override fun micLevelDBFS(): Double? = recorder.levelDBFS()
+
+    override fun pressBegan() { _state.update { it.copy(error = null) }; engine.pressBegan() }
+    override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
 
     /** Exposed for tests: the history the tutor receives for the next turn. */
     fun historyForTutor(): List<ChatMessage> = listOfNotNull(memoryContext) + _state.value.turns
 
     private suspend fun sendTurn(text: String) {
+        val call = callGeneration
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
             val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel)
-            _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = ConversationPhase.SPEAKING) }
-            reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
+            // A reply that comes back after the learner hung up joins the transcript but is never spoken.
+            val live = call == callGeneration
+            _state.update { it.copy(turns = it.turns + ChatMessage("assistant", reply.reply), phase = if (live) ConversationPhase.SPEAKING else it.phase) }
+            if (live) reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
             _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
@@ -154,6 +167,15 @@ class HectorViewModel(
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
     fun onLeave() = engine.cancel()
+
+    /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
+    @Volatile private var callGeneration = 0
+
+    /** The red button: cancel any recording, and silence a reply that is still on its way. */
+    fun hangUp() {
+        callGeneration++
+        engine.cancel()
+    }
 
     public override fun onCleared() {
         engine.tearDown()
@@ -206,28 +228,16 @@ fun PaywallScreen(container: AppContainer) {
     }
 }
 
+/** Hector's bubbles and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
 @Composable
-private fun HectorConversation(container: AppContainer) {
+private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modifier: Modifier) {
     val palette = AlphonsoColor.palette
-    val playback = remember { container.newPlayback() }
-    // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
-    val course by container.activeCourse.course.collectAsState()
-    val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course)
-    }
     val state by vm.state.collectAsState()
-    val phase by vm.engine.phase.collectAsState()
     val listState = rememberLazyListState()
-    DisposableEffect(Unit) { onDispose { vm.onLeave() } }
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
-
-    AiConsentGate(container) {
-      SaveWordHost(container) {
-        val saveWord = LocalSaveWordHandler.current
-        Column(Modifier.fillMaxSize().background(palette.surface)) {
-            AiReportStatusHost(container.aiReports)
-            Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
-            // Words are plain-looking links, so say they are tappable.
+    val saveWord = LocalSaveWordHandler.current
+    Column(modifier) {
+        // Words are plain-looking links, so say they are tappable.
             SaveWordHintLine(container, SavedWordCopy.HECTOR_HINT, limited = false)
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { _, turn ->
@@ -252,6 +262,51 @@ private fun HectorConversation(container: AppContainer) {
                     }
                 }
             }
+    }
+}
+
+@Composable
+private fun HectorConversation(container: AppContainer) {
+    val palette = AlphonsoColor.palette
+    val playback = remember { container.newPlayback() }
+    // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
+    val course by container.activeCourse.course.collectAsState()
+    val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course)
+    }
+    val state by vm.state.collectAsState()
+    val phase by vm.engine.phase.collectAsState()
+    val context = LocalContext.current
+    // "Show Alphonso while practising" (Settings, on by default) covers Hector's call too: one switch decides.
+    val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
+    // Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
+    var callEnded by rememberSaveable { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { vm.onLeave() } }
+
+    AiConsentGate(container) {
+      SaveWordHost(container) {
+        if (showCall) {
+            if (callEnded) {
+                Column(Modifier.fillMaxSize().background(palette.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text("Call ended", style = MaterialTheme.typography.headlineMedium, color = palette.ink)
+                    AlphonsoPrimaryButton("Call again", onClick = { callEnded = false })
+                }
+            } else {
+                PracticeCallScreen(
+                    kit = remember { hectorKit(context) }, title = "Your AI tutor", scenarioId = "hector", course = course,
+                    vm = vm, playback = playback, reducedMotion = systemMotionReduced(context),
+                    onEnd = { vm.hangUp(); playback.stop(); callEnded = true },
+                    talkLabel = "Hold to talk to Hector",
+                    statusHost = { AiReportStatusHost(container.aiReports) },
+                    transcript = { HectorTranscript(container, vm, Modifier) },
+                )
+            }
+            return@SaveWordHost
+        }
+        Column(Modifier.fillMaxSize().background(palette.surface)) {
+            AiReportStatusHost(container.aiReports)
+            Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
+            HectorTranscript(container, vm, Modifier.weight(1f))
             state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
             val busy = when (state.phase) { ConversationPhase.IDLE -> if (phase == TurnPhase.TRANSCRIBING) "Listening..." else null; ConversationPhase.TRANSCRIBING -> "Listening..."; ConversationPhase.THINKING -> "Thinking..."; ConversationPhase.SPEAKING -> "..." }
             Column(Modifier.padding(16.dp)) {

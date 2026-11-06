@@ -1,4 +1,5 @@
 import manifest from "../../../public/avatar/manifest.json";
+import hectorManifest from "../../../public/hector/manifest.json";
 import type { EarSide } from "./idle";
 import type { Brows } from "./lipsync";
 import type { Viseme } from "./visemes";
@@ -12,7 +13,7 @@ export type DefaultRoom = { light: string; dark: string };
 /**
  * A character the call can show: his name, where his art folder is served from, the placement of his layers (read
  * from that folder's manifest.json), and his default room. The viseme, plan and state logic does not know which
- * character it is driving. Alphonso is the only kit shipped; Hector's will be another value of this type.
+ * character it is driving. Alphonso and Hector are the kits shipped.
  */
 export type CharacterKit = {
   id: string;
@@ -72,13 +73,19 @@ export const ALPHONSO_KIT: CharacterKit = kitFromManifest(manifest, {
   defaultRoom: { light: "/avatar/scenes/room-light.webp", dark: "/avatar/scenes/room-dark.webp" },
 });
 
+/** Hector's kit: no ears and no glint, and an `eyes-*` expression group behind his goggles. */
+export const HECTOR_KIT: CharacterKit = kitFromManifest(hectorManifest, {
+  id: "hector",
+  displayName: "Hector",
+  basePath: "/hector",
+  expressionPrefix: "eyes",
+  // The default study room for now.
+  defaultRoom: ALPHONSO_KIT.defaultRoom,
+});
+
 export const AVATAR_BASE_PATH = ALPHONSO_KIT.basePath;
 export const MOUTH_RECT = ALPHONSO_KIT.rects.mouth;
 export const BROWS_RECT = ALPHONSO_KIT.rects.expression;
-export const EAR_RECTS: Record<EarSide, LayerRect> = {
-  left: ALPHONSO_KIT.rects.earLeft!,
-  right: ALPHONSO_KIT.rects.earRight!,
-};
 export const GLINT_RECT = ALPHONSO_KIT.rects.glint!;
 
 export const BASE_FILE = "base.webp";
@@ -93,7 +100,7 @@ export function browsFile(brows: Brows): string {
   return `brows-${brows}.webp`;
 }
 
-/** The base has the ear areas removed, so exactly one ear layer per side is always drawn. */
+/** For a kit that has ear layers (none of the shipped kits does). */
 export function earFile(side: EarSide, twitching: boolean): string {
   return `ear-${side}-${twitching ? "twitch" : "neutral"}.webp`;
 }
@@ -113,7 +120,6 @@ export const ALL_FILE_NAMES: readonly string[] = [
   GLINT_MASK_FILE,
   ...MOUTH_SHAPES.map((s) => mouthFile(s)!),
   ...BROWS_STATES.map(browsFile),
-  ...(["left", "right"] as const).flatMap((side) => [earFile(side, false), earFile(side, true)]),
 ];
 
 /** "Show Alphonso while practising": same key and default as the iOS setting. */

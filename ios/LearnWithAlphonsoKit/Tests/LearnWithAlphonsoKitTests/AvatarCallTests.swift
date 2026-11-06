@@ -106,7 +106,7 @@ final class AvatarCallTests: XCTestCase {
         XCTAssertNil(kit.glintRect)
         XCTAssertEqual(kit.expressionFile(.raised), "eyes-raised.webp")
         XCTAssertEqual(CharacterKit.alphonso.expressionFile(.lowered), "brows-lowered.webp")
-        XCTAssertNotNil(CharacterKit.alphonso.earLeftRect)
+        XCTAssertNil(CharacterKit.alphonso.earLeftRect)
         XCTAssertNotNil(CharacterKit.alphonso.glintRect)
     }
 }

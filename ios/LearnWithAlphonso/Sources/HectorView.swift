@@ -24,7 +24,8 @@ struct HectorView: View {
                         session: session,
                         entitlementStore: entitlementStore,
                         course: activeCourse.course,
-                        conversationStore: conversationStore
+                        conversationStore: conversationStore,
+                        onClose: onClose
                     )
                     // A course switch is a fresh Hector
                     // in the new language; each course keeps its own thread.
@@ -53,6 +54,8 @@ private struct HectorConversationView: View {
     let entitlementStore: EntitlementStore
     let course: Course
     let conversationStore: ConversationStore
+    /// Set when Hector is a sheet (from lesson complete): hanging up closes it, since the call hides its Done button.
+    let onClose: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The safety note is shown once per device, before the first time hands-free is turned on.
@@ -69,6 +72,13 @@ private struct HectorConversationView: View {
     /// The word the learner tapped in one of Hector's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var showPaywall = false
+    /// Settings: "Show Alphonso while practising" (default on) covers Hector's call too: one switch decides.
+    @AppStorage(AvatarPreference.key) private var showCall = AvatarPreference.defaultValue
+    /// Hector's endpoint returns no verdict on the learner's turn, so this never changes and he does not react to
+    /// right or wrong answers.
+    private let replyVerdict = AvatarReplyVerdict()
+    /// Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
+    @State private var callEnded = false
     /// @State, not `let`: a View struct is re-created on every render, and a
     /// `let UUID()` minted a new session id each time.
     @State private var sessionID = UUID().uuidString
@@ -79,8 +89,30 @@ private struct HectorConversationView: View {
     private var status: HectorStatus? { HectorStatus.from(phase: voice.phase, handsFree: voice.handsFreeStatus) }
 
     var body: some View {
+        Group {
+            if showCall { callScreen } else { classicScreen }
+        }
+        .aiDisclosureGate()
+        // .notEntitled opens the paywall. The server's RevenueCat check
+        // can disagree with the local isPro (lapsed, refunded, other device).
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(entitlementStore: entitlementStore, source: .hectorRefused, onClose: { showPaywall = false })
+        }
+        .onAppear {
+            conversation = conversationStore.snapshot(for: key, seededWith: nil)
+            voice.onCapture = { capture in await handle(capture) }
+            voice.appeared()
+        }
+        .task(id: course) { await loadLearnerContext() }
+        .onDisappear {
+            voice.disappeared()
+            voice.onCapture = nil
+            analyzeWeaknessesIfNew()
+        }
+    }
+
+    private var transcript: some View {
         VStack(spacing: 0) {
-            hero
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
@@ -98,6 +130,26 @@ private struct HectorConversationView: View {
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var saveWordHint: some View {
+        if conversation.turns.contains(where: { $0.role == "assistant" }) {
+            Text("Tap any word in Hector's reply to save it.")
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .alphonsoGlass(radius: AlphonsoRadius.lg)
+        }
+    }
+
+    /// The setting off: the screen as it was before the call.
+    private var classicScreen: some View {
+        VStack(spacing: 0) {
+            hero
+            transcript
 
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
@@ -109,37 +161,103 @@ private struct HectorConversationView: View {
                     .padding(.horizontal)
             }
 
-            if conversation.turns.contains(where: { $0.role == "assistant" }) {
-                Text("Tap any word in Hector's reply to save it.")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .alphonsoGlass(radius: AlphonsoRadius.lg)
-            }
+            saveWordHint
 
             micButton.padding()
         }
-        .aiDisclosureGate()
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
-        // .notEntitled opens the paywall. The server's RevenueCat check
-        // can disagree with the local isPro (lapsed, refunded, other device).
-        .sheet(isPresented: $showPaywall) {
-            PaywallView(entitlementStore: entitlementStore, source: .hectorRefused, onClose: { showPaywall = false })
+    }
+
+    /// The setting on (the default): the full-screen call. Hands-free keeps its Pause/Resume button and status line on
+    /// the call; its on/off switch, the transcript with its save-word hint and report buttons are in the sheet.
+    private var callScreen: some View {
+        Group {
+            if callEnded {
+                callEndedView
+            } else {
+                PracticeCallView(
+                    title: "Your AI tutor", kit: .hector, talkLabel: "Hold to talk to Hector",
+                    scenarioID: "hector", voice: voice, course: course,
+                    turns: conversation.turns, replyVerdict: replyVerdict,
+                    notice: notice,
+                    onPress: { if voice.pressBegan() { notice = nil } },
+                    onEnd: { endCall() },
+                    sheet: {
+                        VStack(spacing: 0) {
+                            handsFreeToggle
+                            transcript
+                            saveWordHint
+                        }
+                        // The save-word sheet opens from inside the conversation sheet, so it is presented from here.
+                        .sheet(item: $savingWord) { request in
+                            SaveWordSheet(request: request, session: session)
+                        }
+                        // The hands-free switch is in this sheet, and a view under a presented sheet cannot present
+                        // an alert: the first-use safety note is presented from here too.
+                        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
+                            Button(HandsFreeCopy.firstUseConfirm) {
+                                handsFreeNoteSeen = true
+                                voice.setHandsFree(true)
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text(HandsFreeCopy.firstUseBody)
+                        }
+                    }
+                )
+            }
         }
-        .onAppear {
-            conversation = conversationStore.snapshot(for: key, seededWith: nil)
-            voice.onCapture = { capture in await handle(capture) }
-            voice.appeared()
+        // Full screen during the call; once it has ended the bars come back, so the learner can leave the tab.
+        .toolbar(callEnded ? .visible : .hidden, for: .navigationBar)
+        .toolbar(callEnded ? .visible : .hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            // As on the classic screen: a fresh hands-free turn clears the last notice.
+            if new == .listening { notice = nil }
         }
-        .task(id: course) { await loadLearnerContext() }
-        .onDisappear {
-            voice.disappeared()
-            voice.onCapture = nil
-            analyzeWeaknessesIfNew()
+    }
+
+    private func endCall() {
+        voice.setHandsFree(false)
+        voice.disappeared()
+        // As a sheet the call hid its Done button, so hanging up closes it; on the tab it shows "Call ended".
+        if let onClose { onClose() } else { callEnded = true }
+    }
+
+    private var callEndedView: some View {
+        VStack(spacing: 14) {
+            Text("Call ended")
+                .font(AlphonsoFont.display(24, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+            Button("Call again") {
+                callEnded = false
+                voice.appeared()
+            }
+            .buttonStyle(.alphonsoPrimary)
         }
+        .padding(AlphonsoSpacing.lg)
+        .alphonsoGlass(radius: AlphonsoRadius.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// The hands-free switch, with its once-per-device safety note.
+    private var handsFreeToggle: some View {
+        Toggle(HandsFreeCopy.toggle, isOn: Binding(
+            get: { voice.isHandsFreeOn },
+            set: { on in
+                if on, !handsFreeNoteSeen {
+                    showHandsFreeNote = true
+                } else {
+                    voice.setHandsFree(on)
+                }
+            }
+        ))
+        .font(AlphonsoFont.sans(14, weight: .medium))
+        .tint(AlphonsoColor.moss)
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.bottom, 6)
+        .accessibilityIdentifier("hectorHandsFreeToggle")
     }
 
     // MARK: - Hero

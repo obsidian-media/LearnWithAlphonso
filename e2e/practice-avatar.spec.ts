@@ -69,7 +69,7 @@ test("Alphonso appears in a speaking conversation, drawn from this origin, and i
 
   // Every layer loaded from this origin (the CSP's img-src 'self') and decoded.
   const layers = stage.locator("img");
-  await expect(layers).toHaveCount(14);
+  await expect(layers).toHaveCount(10);
   await expect
     .poll(async () =>
       layers.evaluateAll((imgs) =>

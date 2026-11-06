@@ -64,20 +64,19 @@ describe("the stage", () => {
     expect(stage.getAttribute("aria-hidden")).toBe("true");
     expect(stage.className).toContain("pointer-events-none");
     const imgs = [...container.querySelectorAll("img")];
-    expect(imgs).toHaveLength(15 - 1); // 15 files, the glint mask is applied by CSS, not drawn as an image
+    expect(imgs).toHaveLength(11 - 1); // 11 files, the glint mask is applied by CSS, not drawn as an image
     for (const img of imgs) {
       expect(img.getAttribute("alt")).toBe("");
       expect(img.getAttribute("src")).toMatch(/^\/avatar\/[a-z-]+\.webp$/);
     }
   });
 
-  it("draws the closed mouth (no mouth layer), neutral brows and neutral ears when idle", () => {
+  it("draws the closed mouth (no mouth layer) and neutral brows when idle, and the kit has no ears to draw", () => {
     const { container } = render(view());
     tick();
     expect(mouthShown(container)).toEqual([]);
     expect(browsShown(container)).toEqual(["neutral"]);
-    expect(opacity(container, "ear-left-neutral.webp")).toBe("1");
-    expect(opacity(container, "ear-left-twitch.webp")).toBe("0");
+    expect(container.querySelector('img[src*="ear-"]')).toBeNull();
   });
 
   it("lowers the brows while he thinks and raises them on a loud question word... only from the plan", () => {

@@ -2,9 +2,9 @@ import XCTest
 @testable import LearnWithAlphonsoKit
 
 final class AvatarLayoutTests: XCTestCase {
-    func testThereAreFifteenUniqueLayerFiles() {
-        XCTAssertEqual(AvatarLayers.allFileNames.count, 15)
-        XCTAssertEqual(Set(AvatarLayers.allFileNames).count, 15)
+    func testThereAreElevenUniqueLayerFiles() {
+        XCTAssertEqual(AvatarLayers.allFileNames.count, 11)
+        XCTAssertEqual(Set(AvatarLayers.allFileNames).count, 11)
         XCTAssertTrue(AvatarLayers.allFileNames.allSatisfy { $0.hasSuffix(".webp") })
     }
 
@@ -21,16 +21,28 @@ final class AvatarLayoutTests: XCTestCase {
         var drawn: [String] = [AvatarLayers.baseFile, AvatarLayers.glintMaskFile]
         for v in AvatarViseme.allCases { if let f = AvatarLayers.mouthFile(v) { drawn.append(f) } }
         for b in [AvatarBrows.neutral, .raised, .lowered] { drawn.append(AvatarLayers.browsFile(b)) }
-        for side in [AvatarEarSide.left, .right] {
-            for tw in [false, true] { drawn.append(AvatarLayers.earFile(side, twitching: tw)) }
-        }
         XCTAssertEqual(Set(drawn), Set(AvatarLayers.allFileNames))
     }
 
     func testRectsAreFractionsOfTheCanvas() {
-        for r in [AvatarLayers.mouthRect, AvatarLayers.browsRect, AvatarLayers.earLeftRect,
-                  AvatarLayers.earRightRect, AvatarLayers.glintRect] {
+        for r in [AvatarLayers.mouthRect, AvatarLayers.browsRect, AvatarLayers.glintRect,
+                  CharacterKit.hector.mouthRect, CharacterKit.hector.expressionRect] {
             XCTAssertTrue(r.x >= 0 && r.y >= 0 && r.x + r.w <= 1 && r.y + r.h <= 1, "\(r)")
+        }
+    }
+
+    func testTheTwoKitsAreDistinctAndOnlyAlphonsoHasAGlint() {
+        XCTAssertEqual(CharacterKit.alphonso.displayName, "Alphonso")
+        XCTAssertEqual(CharacterKit.hector.displayName, "Hector")
+        XCTAssertEqual(CharacterKit.alphonso.folder, "AlphonsoAvatar")
+        XCTAssertEqual(CharacterKit.hector.folder, "HectorAvatar")
+        XCTAssertEqual(CharacterKit.alphonso.expressionFile(.raised), "brows-raised.webp")
+        XCTAssertEqual(CharacterKit.hector.expressionFile(.raised), "eyes-raised.webp")
+        XCTAssertNotNil(CharacterKit.alphonso.glintRect)
+        XCTAssertNil(CharacterKit.hector.glintRect)
+        for kit in [CharacterKit.alphonso, .hector] {
+            XCTAssertNil(kit.earLeftRect, kit.id)
+            XCTAssertNil(kit.earRightRect, kit.id)
         }
     }
 
