@@ -82,6 +82,8 @@ private struct CampaignSessionView: View {
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var voice = VoiceSessionController()
+    /// Bumped when the opening line should be spoken: the call appeared, or a new conversation or scene began.
+    @State private var openerCue = 0
     @State private var notice: String?
     @State private var cefrLevel: String?
 
@@ -106,12 +108,20 @@ private struct CampaignSessionView: View {
         Group {
             if showAlphonso { callScreen } else { classicScreen }
         }
+        // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
+        // fetched before consent; keyed by openerCue, which onAppear and each new conversation or scene bump after
+        // the conversation and the voice session are ready. Repeats come from OpenerSpeechCache.
+        .task(id: openerCue) {
+            guard openerCue > 0 else { return }
+            await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+        }
         .aiDisclosureGate()
         .tint(AlphonsoColor.moss)
         .onAppear {
             conversation = conversationStore.snapshot(for: key, seededWith: campaign.scenes[0].opener)
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
+            openerCue += 1
         }
         .task(id: course) { cefrLevel = await loadCefrLevel() }
         .onDisappear {
@@ -408,11 +418,13 @@ private struct CampaignSessionView: View {
             $0.sceneAnchor = $0.turns.count - 1
             $0.sceneIndex += 1
         }
+        openerCue += 1
     }
 
     private func restartScene() {
         notice = nil
         conversation = conversationStore.update(key) { $0.restartScene() }
+        openerCue += 1
     }
 
     private func loadCefrLevel() async -> String? {

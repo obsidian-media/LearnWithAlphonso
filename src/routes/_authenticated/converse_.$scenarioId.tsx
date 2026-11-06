@@ -22,6 +22,7 @@ import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "../../lib/sync.functions";
 import { voiceFor } from "@/lib/voice-prefs";
+import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   component: ConverseChatPageWithSave,
@@ -133,22 +134,29 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [messages, sending]);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, opts?: { opener?: boolean }) => {
       if (!ttsOn) return;
       setSpoken(text);
       setVoice("loading");
       try {
-        const resp = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
-          body: JSON.stringify({ text, course, voice: await voiceFor("alphonso", course) }),
-        });
-        if (!resp.ok) {
+        // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
+        const voiceId = await voiceFor("alphonso", course);
+        const fetchBlob = async () => {
+          const resp = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+            body: JSON.stringify({ text, course, voice: voiceId }),
+          });
+          return resp.ok ? await resp.blob() : null;
+        };
+        // An opener is static text: returning to the call replays it instead of fetching (and charging) again.
+        const blob = opts?.opener
+          ? await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), fetchBlob)
+          : await fetchBlob();
+        if (!blob) {
           setVoice("idle");
           return;
         }
-        const blob = await resp.blob();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
@@ -182,9 +190,12 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   const openerSpokenRef = useRef(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
-    openerSpokenRef.current = true;
     // Delay so user gesture-less autoplay policies are less strict after nav
-    const t = setTimeout(() => void speak(scenario.opener), 400);
+    const t = setTimeout(() => {
+      // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
+      openerSpokenRef.current = true;
+      void speak(scenario.opener, { opener: true });
+    }, 400);
     return () => clearTimeout(t);
   }, [scenario.opener, speak]);
 
