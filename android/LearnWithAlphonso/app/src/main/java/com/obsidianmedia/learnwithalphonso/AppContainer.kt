@@ -25,6 +25,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.consentRefusalHook
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
+import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.reportAiResponse
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
@@ -76,6 +77,10 @@ class AppContainer(context: Context) {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     /** The same app-lifetime scope, for work that must outlive the screen that started it (a podcast quiz submit). */
     val appLifetimeScope: CoroutineScope get() = appScope
+
+    /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */
+    suspend fun checkAppUpdate(): AppUpdateGate.Requirement? =
+        if (BuildConfig.DEBUG) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
 
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
     val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
