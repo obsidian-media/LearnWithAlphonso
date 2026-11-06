@@ -2824,7 +2824,7 @@ El hombre ___ casa visitamos es mi tío.|cuya
 Los amigos ___ conocí son de Chile.|que
 La persona a ___ llamé no contestó.|quien
 El coche ___ compré es nuevo.|que
-El libro ___ leo es muy interesante.|que
+El museo ___ visitamos ayer es enorme.|que
 El profesor ___ libro leímos es famoso.|cuyo
 Las chicas ___ vimos ayer son mis primas.|que
 El escritor ___ obras admiro nació en España.|cuyas

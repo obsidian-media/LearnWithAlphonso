@@ -48,6 +48,12 @@ const flag = (name: string) => process.argv.includes(`--${name}`);
 
 const seed = arg("seed", "20261106");
 const maxUsd = Number(arg("max-usd", "5"));
+// A cap that is not a positive number ("--max-usd 5$" reads as NaN) makes every comparison with it
+// false: the run would be neither refused nor stopped.
+if (!Number.isFinite(maxUsd) || maxUsd <= 0) {
+  console.error("--max-usd must be a positive number of US dollars.");
+  process.exit(1);
+}
 const outDir = path.resolve(arg("out", ".content-panel"));
 /** Assumed prices for the dry run, before the live list is read: above today's list prices on purpose. */
 const ASSUMED: Record<"claude" | "mistral", Pricing> = {
