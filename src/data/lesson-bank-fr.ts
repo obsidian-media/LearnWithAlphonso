@@ -3933,7 +3933,7 @@ Il est essentiel de ___ ces variables séparément.|considérer
 Cette hypothèse reste à ___ empiriquement.|vérifier
 Le présent travail s'inscrit dans la ___ de recherches antérieures.|continuité
 Il convient de ___ les limites de cette étude.|souligner
-Ces résultats ___ largement avec la littérature existante.|corroborent
+Ces résultats ___ largement les travaux existants.|corroborent
 Nous allons à présent ___ les implications pratiques.|examiner
 Cette section a pour but de ___ le cadre théorique.|présenter
 Il ressort de cette analyse que plusieurs facteurs ___ en jeu.|entrent
@@ -3941,8 +3941,8 @@ Ces travaux ont grandement ___ à notre compréhension du sujet.|contribué
 En définitive, cette étude ___ que d'autres recherches sont nécessaires.|suggère
 Il convient de ___ ces résultats à un échantillon plus large.|généraliser
 Cette méthode présente plusieurs ___ par rapport aux approches précédentes.|avantages
-Les résultats obtenus ___ notre hypothèse de départ.|confirment
-Il est nécessaire de ___ ces conclusions dans un contexte plus large.|replacer
+Les résultats obtenus nous ___ dans notre hypothèse de départ. (confirm)|confirment
+Il est nécessaire de ___ ces conclusions dans un contexte plus large. (put back)|replacer
 Pour conclure, cette étude ___ un éclairage nouveau sur la question.|apporte`,
   },
   {

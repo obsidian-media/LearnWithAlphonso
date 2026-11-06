@@ -159,3 +159,6 @@ android/LearnWithAlphonso/app/google-services.json
 # Local output of scripts/generate-ios-distribution-signing.ts: a private key
 # and its password. Never commit.
 /out/
+
+# FR/ES review panel raw replies and samples (scripts/content-panel/run.ts); the summary is committed under docs/
+.content-panel/

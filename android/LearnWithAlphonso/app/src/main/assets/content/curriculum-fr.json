@@ -25708,10 +25708,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ces arguments ne m'ont pas du tout convaincu.",
               "choices": [
-                "Le mur du salon est fait en verre.",
-                "Ses arguments ne m'ont pas du tout convaincu.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
                 "Ces arguments ne m'ont pas du tout convaincu.",
-                "Le prix du pain a fortement augmenté cette saison."
+                "Le mur du salon est peint en vert.",
+                "Ce plat traditionnel contient étonnamment du poisson."
               ],
               "answer": "Ces arguments ne m'ont pas du tout convaincu.",
               "explanation": "The audio says \"Ces arguments ne m'ont pas du tout convaincu.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
@@ -25722,10 +25722,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ses arguments ne m'ont pas du tout convaincu.",
               "choices": [
-                "Ces décisions ont surpris toute l'équipe hier.",
-                "Le dessus de l'étagère contenait des livres anciens.",
                 "Ses arguments ne m'ont pas du tout convaincu.",
-                "Ces arguments ne m'ont pas du tout convaincu."
+                "Le mur du salon est peint en vert.",
+                "Ce plat traditionnel contient étonnamment du poisson.",
+                "Il pense souvent à la mère de son enfance avec nostalgie."
               ],
               "answer": "Ses arguments ne m'ont pas du tout convaincu.",
               "explanation": "The audio says \"Ses arguments ne m'ont pas du tout convaincu.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
@@ -25743,9 +25743,9 @@
               "prompt": "What did you hear?",
               "audioText": "Ces décisions ont surpris toute l'équipe hier.",
               "choices": [
-                "Cette enquête a révélé la présence de poisson.",
-                "Ses décisions ont surpris toute l'équipe hier.",
-                "Il pense souvent à la mer de son enfance avec nostalgie.",
+                "Cette enquête a révélé la présence de poison.",
+                "Le mur du salon est fait en verre.",
+                "Le prix du pain a fortement augmenté cette saison.",
                 "Ces décisions ont surpris toute l'équipe hier."
               ],
               "answer": "Ces décisions ont surpris toute l'équipe hier.",
@@ -25757,10 +25757,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ses décisions ont surpris toute l'équipe hier.",
               "choices": [
-                "Le dessus de l'étagère contenait des livres anciens.",
-                "Le cou me fait terriblement mal depuis l'accident.",
                 "Ses décisions ont surpris toute l'équipe hier.",
-                "Ces décisions ont surpris toute l'équipe hier."
+                "Le mur du salon est fait en verre.",
+                "Ce plat traditionnel contient étonnamment du poison.",
+                "Le prix du pain a fortement augmenté cette saison."
               ],
               "answer": "Ses décisions ont surpris toute l'équipe hier.",
               "explanation": "The audio says \"Ses décisions ont surpris toute l'équipe hier.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
@@ -25799,9 +25799,9 @@
               "prompt": "What did you hear?",
               "audioText": "Il pense souvent à la mer de son enfance avec nostalgie.",
               "choices": [
+                "Ses arguments ne m'ont pas du tout convaincu.",
                 "Le dessus de l'étagère contenait des livres anciens.",
                 "Nous avons observé la mer depuis la falaise pendant des heures.",
-                "Il pense souvent à la mère de son enfance avec nostalgie.",
                 "Il pense souvent à la mer de son enfance avec nostalgie."
               ],
               "answer": "Il pense souvent à la mer de son enfance avec nostalgie.",
@@ -25820,10 +25820,10 @@
               "prompt": "What did you hear?",
               "audioText": "Il pense souvent à la mère de son enfance avec nostalgie.",
               "choices": [
+                "Ses arguments ne m'ont pas du tout convaincu.",
+                "Elle achète régulièrement du pain complet.",
                 "Nous avons observé sa mère depuis la falaise pendant des heures.",
-                "Il pense souvent à la mère de son enfance avec nostalgie.",
-                "Il pense souvent à la mer de son enfance avec nostalgie.",
-                "Le prix du pain a fortement augmenté cette saison."
+                "Il pense souvent à la mère de son enfance avec nostalgie."
               ],
               "answer": "Il pense souvent à la mère de son enfance avec nostalgie.",
               "explanation": "The audio says \"Il pense souvent à la mère de son enfance avec nostalgie.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
@@ -25900,7 +25900,7 @@
                 "Le mur du salon est fait en verre.",
                 "Nous avons observé sa mère depuis la falaise pendant des heures.",
                 "Le cou me fait terriblement mal depuis l'accident.",
-                "Le coup me fait terriblement mal depuis l'accident."
+                "Nous avons observé la mer depuis la falaise pendant des heures."
               ],
               "answer": "Le cou me fait terriblement mal depuis l'accident.",
               "explanation": "The audio says \"Le cou me fait terriblement mal depuis l'accident.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
@@ -25912,7 +25912,7 @@
               "audioText": "Le coup me fait terriblement mal depuis l'accident.",
               "choices": [
                 "Le mur du salon est fait en verre.",
-                "Le cou me fait terriblement mal depuis l'accident.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
                 "Nous avons observé la mer depuis la falaise pendant des heures.",
                 "Le coup me fait terriblement mal depuis l'accident."
               ],
@@ -35345,9 +35345,9 @@
               "prompt": "What did you hear?",
               "audioText": "Ces conclusions restent sujettes à caution selon les experts.",
               "choices": [
-                "Ses conclusions restent sujettes à caution selon les experts.",
-                "Le dessus de la pile renfermait les pièces sensibles.",
-                "Ces décisions ont profondément divisé l'opinion publique.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Il repense sans cesse à la mère qui borde son village natal.",
+                "L'analyse a détecté une trace infime de poisson.",
                 "Ces conclusions restent sujettes à caution selon les experts."
               ],
               "answer": "Ces conclusions restent sujettes à caution selon les experts.",
@@ -35359,10 +35359,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ses conclusions restent sujettes à caution selon les experts.",
               "choices": [
-                "Le mur de cette galerie est entièrement en verre profond.",
                 "Ses conclusions restent sujettes à caution selon les experts.",
-                "La pénurie de pain a ravivé les tensions dans la région.",
-                "Ces conclusions restent sujettes à caution selon les experts."
+                "Ce plat gastronomique contient paraît-il du poisson.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Il repense sans cesse à la mère qui borde son village natal."
               ],
               "answer": "Ses conclusions restent sujettes à caution selon les experts.",
               "explanation": "The audio says \"Ses conclusions restent sujettes à caution selon les experts.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35380,10 +35380,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ces décisions ont profondément divisé l'opinion publique.",
               "choices": [
-                "Ses décisions ont profondément divisé l'opinion publique.",
+                "Elle se procure discrètement un jeune pin rare.",
                 "Ces décisions ont profondément divisé l'opinion publique.",
-                "Le coup me fait terriblement mal depuis des semaines.",
-                "Il repense sans cesse à la mer qui borde son village natal."
+                "Le dessous du dossier contenait un résumé synthétique.",
+                "Ces conclusions restent sujettes à caution selon les experts."
               ],
               "answer": "Ces décisions ont profondément divisé l'opinion publique.",
               "explanation": "The audio says \"Ces décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35394,10 +35394,10 @@
               "prompt": "What did you hear?",
               "audioText": "Ses décisions ont profondément divisé l'opinion publique.",
               "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
                 "Ses décisions ont profondément divisé l'opinion publique.",
-                "Ces décisions ont profondément divisé l'opinion publique.",
-                "Le dessus du dossier contenait un résumé synthétique.",
-                "L'analyse a détecté une trace infime de poison."
+                "Elle se procure discrètement un jeune pin rare.",
+                "Le dessous du dossier contenait un résumé synthétique."
               ],
               "answer": "Ses décisions ont profondément divisé l'opinion publique.",
               "explanation": "The audio says \"Ses décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35437,9 +35437,9 @@
               "audioText": "Il repense sans cesse à la mer qui borde son village natal.",
               "choices": [
                 "Nous avons contemplé la mer depuis le sommet de la falaise.",
-                "Il repense sans cesse à la mère qui borde son village natal.",
+                "Ces habitudes institutionnelles sont difficiles à réformer.",
                 "Il repense sans cesse à la mer qui borde son village natal.",
-                "Elle se procure discrètement du pain rare."
+                "L'analyse a détecté une trace infime de poisson."
               ],
               "answer": "Il repense sans cesse à la mer qui borde son village natal.",
               "explanation": "The audio says \"Il repense sans cesse à la mer qui borde son village natal.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35457,9 +35457,9 @@
               "prompt": "What did you hear?",
               "audioText": "Il repense sans cesse à la mère qui borde son village natal.",
               "choices": [
+                "Ces habitudes institutionnelles sont difficiles à réformer.",
                 "Il repense sans cesse à la mère qui borde son village natal.",
-                "Il repense sans cesse à la mer qui borde son village natal.",
-                "Ce plat gastronomique contient paraît-il du poisson.",
+                "La pénurie de pin a ravivé les tensions dans la région.",
                 "Nous avons contemplé sa mère depuis le sommet de la falaise."
               ],
               "answer": "Il repense sans cesse à la mère qui borde son village natal.",
@@ -35471,10 +35471,10 @@
               "prompt": "What did you hear?",
               "audioText": "La pénurie de pain a ravivé les tensions dans la région.",
               "choices": [
-                "La pénurie de pin a ravivé les tensions dans la région.",
                 "La pénurie de pain a ravivé les tensions dans la région.",
                 "Elle se procure discrètement du pain rare.",
-                "Le cou me fait terriblement mal depuis des semaines."
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise."
               ],
               "answer": "La pénurie de pain a ravivé les tensions dans la région.",
               "explanation": "The audio says \"La pénurie de pain a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35487,8 +35487,8 @@
               "choices": [
                 "Elle se procure discrètement un jeune pin rare.",
                 "La pénurie de pin a ravivé les tensions dans la région.",
-                "La pénurie de pain a ravivé les tensions dans la région.",
-                "L'analyse a détecté une trace infime de poisson."
+                "L'analyse a détecté une trace infime de poisson.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise."
               ],
               "answer": "La pénurie de pin a ravivé les tensions dans la région.",
               "explanation": "The audio says \"La pénurie de pin a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -35536,7 +35536,7 @@
               "choices": [
                 "Nous avons contemplé la mer depuis le sommet de la falaise.",
                 "Nous avons contemplé sa mère depuis le sommet de la falaise.",
-                "Le coup me fait terriblement mal depuis des semaines.",
+                "Ce plat gastronomique contient paraît-il du poisson.",
                 "Le cou me fait terriblement mal depuis des semaines."
               ],
               "answer": "Le cou me fait terriblement mal depuis des semaines.",
@@ -35550,8 +35550,8 @@
               "choices": [
                 "Nous avons contemplé la mer depuis le sommet de la falaise.",
                 "Nous avons contemplé sa mère depuis le sommet de la falaise.",
-                "Le coup me fait terriblement mal depuis des semaines.",
-                "Le cou me fait terriblement mal depuis des semaines."
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Le coup me fait terriblement mal depuis des semaines."
               ],
               "answer": "Le coup me fait terriblement mal depuis des semaines.",
               "explanation": "The audio says \"Le coup me fait terriblement mal depuis des semaines.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
@@ -42673,7 +42673,7 @@
             {
               "id": "frc1p19q14",
               "type": "fill",
-              "prompt": "Ces résultats ___ largement avec la littérature existante.",
+              "prompt": "Ces résultats ___ largement les travaux existants.",
               "bank": [
                 "entrent",
                 "révèlent",
@@ -42791,7 +42791,7 @@
             {
               "id": "frc1p19q22",
               "type": "mc",
-              "prompt": "Les résultats obtenus ___ notre hypothèse de départ.",
+              "prompt": "Les résultats obtenus nous ___ dans notre hypothèse de départ. (confirm)",
               "choices": [
                 "confirment",
                 "objectif",
@@ -42804,7 +42804,7 @@
             {
               "id": "frc1p19q23",
               "type": "fill",
-              "prompt": "Il est nécessaire de ___ ces conclusions dans un contexte plus large.",
+              "prompt": "Il est nécessaire de ___ ces conclusions dans un contexte plus large. (put back)",
               "bank": [
                 "contribué",
                 "situer",
@@ -43657,7 +43657,7 @@
               "audioText": "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
               "choices": [
                 "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
-                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
                 "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
                 "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
               ],
@@ -43670,9 +43670,9 @@
               "prompt": "What did you hear?",
               "audioText": "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
               "choices": [
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
                 "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
                 "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
-                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
                 "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
               ],
               "answer": "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
@@ -43691,9 +43691,9 @@
               "prompt": "What did you hear?",
               "audioText": "Ces décisions ont irrémédiablement divisé l'opinion publique.",
               "choices": [
-                "Ses décisions ont irrémédiablement divisé l'opinion publique.",
-                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
-                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Le mur de cette institution historique est repeint en vert sombre.",
+                "Il songe inlassablement à la mère qui borde son village natal.",
+                "L'expertise toxicologique n'a détecté aucune trace de poisson.",
                 "Ces décisions ont irrémédiablement divisé l'opinion publique."
               ],
               "answer": "Ces décisions ont irrémédiablement divisé l'opinion publique.",
@@ -43706,9 +43706,9 @@
               "audioText": "Ses décisions ont irrémédiablement divisé l'opinion publique.",
               "choices": [
                 "Ses décisions ont irrémédiablement divisé l'opinion publique.",
-                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
-                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
-                "Ces décisions ont irrémédiablement divisé l'opinion publique."
+                "Il songe inlassablement à la mère qui borde son village natal.",
+                "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+                "Ces pratiques institutionnelles sont notoirement difficiles à réformer."
               ],
               "answer": "Ses décisions ont irrémédiablement divisé l'opinion publique.",
               "explanation": "The audio says \"Ses décisions ont irrémédiablement divisé l'opinion publique.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
@@ -43747,8 +43747,8 @@
               "prompt": "What did you hear?",
               "audioText": "Il songe inlassablement à la mer qui borde son village natal.",
               "choices": [
-                "Il songe inlassablement à la mère qui borde son village natal.",
-                "Ce mets raffiné comporte, semble-t-il, du poison.",
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
                 "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
                 "Il songe inlassablement à la mer qui borde son village natal."
               ],
@@ -43769,9 +43769,9 @@
               "audioText": "Il songe inlassablement à la mère qui borde son village natal.",
               "choices": [
                 "Il songe inlassablement à la mère qui borde son village natal.",
-                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
-                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
-                "Il songe inlassablement à la mer qui borde son village natal."
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "Elle se procure discrètement un spécimen de pin particulièrement rare.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte."
               ],
               "answer": "Il songe inlassablement à la mère qui borde son village natal.",
               "explanation": "The audio says \"Il songe inlassablement à la mère qui borde son village natal.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
@@ -43847,7 +43847,7 @@
               "choices": [
                 "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
                 "Le mur de cette institution historique est entièrement fait en verre.",
-                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
                 "Nous avons contemplé la mer depuis les falaises escarpées de la côte."
               ],
               "answer": "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
@@ -43859,9 +43859,9 @@
               "prompt": "What did you hear?",
               "audioText": "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
               "choices": [
-                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
                 "Le mur de cette institution historique est entièrement fait en verre.",
                 "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
                 "Nous avons contemplé la mer depuis les falaises escarpées de la côte."
               ],
               "answer": "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
