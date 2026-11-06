@@ -4,8 +4,13 @@ import type { LeagueTier } from "../data/achievements";
  * be unit tested without a database. Keep the DB-touching handler as the
  * only place that reads/writes rows -- this module just computes values. */
 
+/** XP for each right answer in a lesson (the per-answer part of computeXpGain). */
+export const XP_PER_CORRECT = 10;
+/** Extra XP for a lesson with every answer right. */
+export const PERFECT_LESSON_BONUS = 20;
+
 export function computeXpGain(correct: number, total: number): number {
-  return correct * 10 + (correct === total ? 20 : 0);
+  return correct * XP_PER_CORRECT + (correct === total ? PERFECT_LESSON_BONUS : 0);
 }
 
 function daysDiff(a: string, b: string): number {

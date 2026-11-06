@@ -408,8 +408,14 @@ public enum AlphonsoDS {
         public static let display = TextStyle(role: .display, weight: 800, size: 28, lineHeight: 32, width: 88, opsz: 28, tracking: -0.015, uppercase: false, tnum: false)
         /// The question, sheet verdicts
         public static let title = TextStyle(role: .display, weight: 700, size: 22, lineHeight: 27, width: 100, opsz: 24, tracking: 0, uppercase: false, tnum: false)
+        /// The lesson question in Alphonso's bubble
+        public static let question = TextStyle(role: .display, weight: 800, size: 24, lineHeight: 29, width: 94, opsz: 24, tracking: -0.005, uppercase: false, tnum: false)
+        /// The lesson question on a small phone
+        public static let questionSmall = TextStyle(role: .display, weight: 800, size: 20, lineHeight: 25, width: 94, opsz: 20, tracking: -0.005, uppercase: false, tnum: false)
         /// Answers, buttons (800)
         public static let headline = TextStyle(role: .body, weight: 700, size: 17, lineHeight: 22, width: 100, opsz: nil, tracking: 0, uppercase: false, tnum: false)
+        /// Lesson answer buttons and word tiles
+        public static let answer = TextStyle(role: .body, weight: 700, size: 18, lineHeight: 24, width: 100, opsz: nil, tracking: 0, uppercase: false, tnum: false)
         /// Explanations, sheet reasons (600)
         public static let body = TextStyle(role: .body, weight: 500, size: 16, lineHeight: 23, width: 100, opsz: nil, tracking: 0, uppercase: false, tnum: false)
         /// Meta lines, chip labels
