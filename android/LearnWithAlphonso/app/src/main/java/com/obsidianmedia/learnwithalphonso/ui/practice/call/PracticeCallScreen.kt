@@ -84,7 +84,6 @@ import com.obsidianmedia.learnwithalphonso.core.avatar.CallScenes
 import com.obsidianmedia.learnwithalphonso.core.avatar.CharacterKit
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
-import com.obsidianmedia.learnwithalphonso.ui.practice.BaseConversationViewModel
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.delay
@@ -109,10 +108,12 @@ internal fun PracticeCallScreen(
     title: String,
     scenarioId: String,
     course: Course,
-    vm: BaseConversationViewModel,
+    vm: CallConversation,
     playback: AudioPlayback,
     reducedMotion: Boolean,
     onEnd: () -> Unit,
+    /** The hold-to-talk button's spoken label. */
+    talkLabel: String = "Hold to talk",
     statusHost: @Composable () -> Unit,
     /** Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption. */
     extra: (@Composable () -> Unit)? = null,
@@ -198,10 +199,10 @@ internal fun PracticeCallScreen(
             }
             extra?.let { Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)) { it() } }
             Caption(vm, playback, mode, recording)
-            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics {}.padding(horizontal = 10.dp, vertical = 2.dp)) {
+            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
             }
-            Controls(recording, busy, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = onEnd)
+            Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = onEnd)
         }
     }
 
@@ -255,7 +256,7 @@ private fun YouTile(recording: Boolean, levelDBFS: Double?) {
 
 /** Only the current utterance, word by word while it is spoken; the learner's own words in a green tint. */
 @Composable
-private fun Caption(vm: BaseConversationViewModel, playback: AudioPlayback, mode: AvatarMode, recording: Boolean) {
+private fun Caption(vm: CallConversation, playback: AudioPlayback, mode: AvatarMode, recording: Boolean) {
     val state by vm.state.collectAsState()
     val caption = CallCaptionRules.caption(state.turns, recording)
     if (caption == null) { Box(Modifier.height(1.dp)); return }
@@ -290,7 +291,7 @@ private fun Caption(vm: BaseConversationViewModel, playback: AudioPlayback, mode
 }
 
 @Composable
-private fun Controls(recording: Boolean, busy: Boolean, onChat: () -> Unit, onPressBegan: () -> Unit, onPressEnded: () -> Unit, onEnd: () -> Unit) {
+private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onChat: () -> Unit, onPressBegan: () -> Unit, onPressEnded: () -> Unit, onEnd: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(26.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
         RoundButton(GlassStrong, "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = Color.White) }
         Box(

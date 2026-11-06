@@ -1,7 +1,12 @@
 // Run: deno test supabase/functions/_shared/hearts-pro.test.ts
 import { assertEquals } from "jsr:@std/assert@1";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { heartsUnlimitedFor, type ProConfig, proFromSubscriber } from "./hearts-pro.ts";
+import {
+  heartsUnlimitedFor,
+  type ProConfig,
+  proFromSubscriber,
+  subscriptionAppUserId,
+} from "./hearts-pro.ts";
 
 const NOW = Date.parse("2026-11-05T12:00:00Z");
 const CONFIG: ProConfig = { secretApiKey: "sk", testers: [], rejectSandbox: false };
@@ -120,3 +125,55 @@ Deno.test("the Pro rule matches the web: expiry, lifetime, Test Store, testers, 
   assertEquals(proFromSubscriber(sandbox, "u", { ...CONFIG, rejectSandbox: true }, NOW), false);
   assertEquals(proFromSubscriber({}, "u", CONFIG, NOW), null);
 });
+
+const SECRET = "s".repeat(40);
+const USER = "00000000-0000-4000-8000-000000000001";
+
+Deno.test("the subscription identifier matches the web's (pinned value)", () => {
+  // Same input as src/lib/revenuecat-subscription-id.test.ts; both copies must produce this.
+  assertEquals(subscriptionAppUserId(USER, SECRET), "sub_dcd123662574a0f80033b28550db273c");
+});
+
+Deno.test(
+  "Pro under the subscription identifier or under the account id both give unlimited hearts",
+  async () => {
+    const sub = subscriptionAppUserId(USER, SECRET);
+    for (const proId of [sub, USER]) {
+      const { admin } = fakeAdmin(null);
+      const seen: string[] = [];
+      const f = ((url: string) => {
+        seen.push(url);
+        const id = decodeURIComponent(url.split("/v1/subscribers/")[1]!);
+        return Promise.resolve(
+          new Response(
+            JSON.stringify(id === proId ? active() : { subscriber: { entitlements: {} } }),
+            { status: 200 },
+          ),
+        );
+      }) as unknown as typeof fetch;
+      const config = { ...CONFIG, subscriptionIdSecret: SECRET };
+      assertEquals(
+        await heartsUnlimitedFor(admin, USER, { config: () => config, fetch: f, now: () => NOW }),
+        true,
+      );
+      assertEquals(seen.length, 2);
+    }
+  },
+);
+
+Deno.test(
+  "an outage on one id with no Pro on the other fails closed and is not cached",
+  async () => {
+    const { admin, upserts } = fakeAdmin(null);
+    const f = ((url: string) =>
+      Promise.resolve(
+        new Response("{}", { status: url.includes("sub_") ? 503 : 404 }),
+      )) as unknown as typeof fetch;
+    const config = { ...CONFIG, subscriptionIdSecret: SECRET };
+    assertEquals(
+      await heartsUnlimitedFor(admin, USER, { config: () => config, fetch: f, now: () => NOW }),
+      false,
+    );
+    assertEquals(upserts.length, 0);
+  },
+);

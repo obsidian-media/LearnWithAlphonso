@@ -32,6 +32,8 @@ struct PracticeCallView<Sheet: View>: View {
     let title: String
     /// Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise.
     var kit: CharacterKit = .alphonso
+    /// The hold-to-talk button's spoken label.
+    var talkLabel = "Hold to talk"
     let scenarioID: String
     let voice: VoiceSessionController
     let course: Course
@@ -57,8 +59,9 @@ struct PracticeCallView<Sheet: View>: View {
             // The square is held to 72% of the height, so on a short phone the caption and controls stay clear of
             // his mouth.
             let side = min(1.28 * width, 0.72 * height)
+            // The room is a background, not a ZStack child: a scaledToFill image inside the stack would size the
+            // stack to the picture's aspect and push the call bar, tiles and caption off both screen edges.
             ZStack {
-                room
                 AlphonsoAvatarView(
                     voice: voice, replyText: turns.last(where: { $0.role == "assistant" })?.content,
                     replyVerdict: replyVerdict, course: course, kit: kit, onModeChange: { mode = $0 }
@@ -76,7 +79,7 @@ struct PracticeCallView<Sheet: View>: View {
                     }
                     .padding(.top, 8)
                     Spacer(minLength: 0)
-                    if let message = notice ?? voice.failure?.userMessage() {
+                    if let message = notice ?? voice.failure?.userMessage() ?? microphoneMessage {
                         pill(message, color: AlphonsoColor.destructive)
                             .padding(.bottom, 8)
                     }
@@ -84,6 +87,15 @@ struct PracticeCallView<Sheet: View>: View {
                     caption
                     statePill
                         .padding(.top, 10)
+                    if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus) {
+                        Text(line)
+                            .font(AlphonsoFont.sans(13, weight: .semiBold))
+                            .foregroundStyle(.white)
+                            .multilineTextAlignment(.center)
+                            .shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+                            .padding(.top, 8)
+                            .accessibilityAddTraits(.updatesFrequently)
+                    }
                     controls
                         .padding(.top, 14)
                         .padding(.bottom, 8)
@@ -92,8 +104,16 @@ struct PracticeCallView<Sheet: View>: View {
             }
             .frame(width: width, height: height)
         }
+        .background { room }
         .background(Color.black)
         .sheet(isPresented: $showSheet) { conversationSheet }
+    }
+
+    /// The microphone is off in Settings or would not start: the classic screens say so under the button.
+    private var microphoneMessage: String? {
+        if voice.microphoneUnavailable { return VoiceCopy.microphoneOff }
+        if voice.recorderStartFailed { return VoiceCopy.microphoneCouldNotStart }
+        return nil
     }
 
     // MARK: - Room
@@ -271,20 +291,24 @@ struct PracticeCallView<Sheet: View>: View {
             }
             .accessibilityLabel("Show the conversation")
 
-            HoldToTalkButton(
-                isRecording: voice.isRecording,
-                idleColor: .white,
-                recordingColor: Color(red: 0.44, green: 0.88, blue: 0.65),
-                iconColor: Color(red: 0.09, green: 0.14, blue: 0.11),
-                accessibilityLabel: "Hold to talk",
-                onPress: onPress,
-                onRelease: { voice.pressEnded() }
-            )
-            .scaleEffect(78.0 / 72.0)
-            .frame(width: 78, height: 78)
-            // One turn at a time: while the reply is being made the button waits.
-            .opacity(voice.isBusy ? 0.55 : 1)
-            .allowsHitTesting(!voice.isBusy)
+            if voice.isHandsFreeOn {
+                handsFreeButton
+            } else {
+                HoldToTalkButton(
+                    isRecording: voice.isRecording,
+                    idleColor: .white,
+                    recordingColor: Color(red: 0.44, green: 0.88, blue: 0.65),
+                    iconColor: Color(red: 0.09, green: 0.14, blue: 0.11),
+                    accessibilityLabel: talkLabel,
+                    onPress: onPress,
+                    onRelease: { voice.pressEnded() }
+                )
+                .scaleEffect(78.0 / 72.0)
+                .frame(width: 78, height: 78)
+                // One turn at a time: while the reply is being made the button waits.
+                .opacity(voice.isBusy ? 0.55 : 1)
+                .allowsHitTesting(!voice.isBusy)
+            }
 
             Button(action: onEnd) {
                 Image(systemName: "phone.down.fill")
@@ -296,6 +320,28 @@ struct PracticeCallView<Sheet: View>: View {
             .accessibilityLabel("End the call")
         }
         .frame(maxWidth: .infinity)
+    }
+
+    /// Hands-free has no button to hold: one Pause or Resume button takes its place.
+    private var handsFreeButton: some View {
+        let paused: Bool = { if case .paused = voice.handsFreeStatus { return true } else { return false } }()
+        return Button {
+            voice.toggleHandsFreePause()
+        } label: {
+            Image(systemName: paused ? "play.fill" : "pause.fill")
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(Color(red: 0.09, green: 0.14, blue: 0.11))
+                .frame(width: 78, height: 78)
+                .background(.white, in: Circle())
+        }
+        .accessibilityLabel(paused ? HandsFreeCopy.resume : HandsFreeCopy.pause)
+        .accessibilityIdentifier("hectorHandsFreePause")
+        // A pause is a safety stop the learner must hear about; updatesFrequently does not announce it.
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            if case .paused = new, let line = HandsFreeCopy.statusLine(new) {
+                AccessibilityNotification.Announcement(line).post()
+            }
+        }
     }
 
     // MARK: - Sheet

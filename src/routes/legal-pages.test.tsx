@@ -89,6 +89,26 @@ describe("Privacy route", () => {
     expect(screen.getByText(/deleting your account removes your Hector data/i)).toBeInTheDocument();
   });
 
+  // 20261105101100 keeps reports up to 90 days after an account is deleted; the policy must say so and must no
+  // longer promise that deleting an account deletes the reports it made.
+  it("says reports are kept up to 90 days after an account is deleted, without profile data", () => {
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    expect(
+      screen.getByText(
+        /Reports about content are kept for up to 90 days after an account is deleted, for safety, without any personal profile data/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/deletes the reports you made/)).toBeNull();
+    // The "Reports and blocking" section must not still promise the old, shorter lifetime.
+    expect(screen.queryByText(/kept for as long as the accounts involved\s+exist/)).toBeNull();
+    expect(
+      screen.getByText(
+        /kept while the accounts involved exist, and\s+for up to 90 days after one of them is deleted/,
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("describes the in-app export and deletion path, not only the web one", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);

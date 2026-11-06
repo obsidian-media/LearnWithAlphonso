@@ -88,7 +88,9 @@ export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as con
 // listed that way until 2026-10-06; their DELETE grants were revoked in
 // 20261006130000, BACKLOG 0.0-ae). Everything else, including those four, is
 // cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
-// below, so nothing is left behind.
+// below, so nothing is left behind. content_reports is the one exception: its
+// reporter/reported become NULL and the report is kept for 90 days for moderation
+// (20261105101100), with nothing from the profile.
 export const USER_DELETE_TABLES = [
   "review_items",
   "lesson_completions",
@@ -375,17 +377,16 @@ export async function revokeAppleGrantForUser(
  */
 export async function eraseSubscriberRecord(userId: string): Promise<void> {
   try {
-    const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber, cancelWebSubscription } =
+    const { revenueCatConfigFromEnv, deleteAccountSubscribers, cancelAccountWebSubscriptions } =
       await import("@/lib/revenuecat-entitlement");
     const config = revenueCatConfigFromEnv();
+    // Both ids the account's purchases can be under (its subscription identifier and its account id).
     // Web billing is cancelled before the record is erased: erasing first would leave a card being charged with no
     // account left to manage it from. A failed cancel queues the id and erases nothing; the scheduled retry cancels
     // and then erases.
-    const cancelled = config ? await cancelWebSubscription(config, userId) : "failed";
+    const cancelled = config ? await cancelAccountWebSubscriptions(config, userId) : "failed";
     const outcome =
-      config && cancelled !== "failed"
-        ? await deleteRevenueCatSubscriber(config, userId)
-        : "failed";
+      config && cancelled !== "failed" ? await deleteAccountSubscribers(config, userId) : "failed";
     if (outcome === "erased") return;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin

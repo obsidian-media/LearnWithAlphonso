@@ -100,9 +100,9 @@ function ReportRow({
     setBusy(true);
     try {
       await adminDeleteReportedUser({ data: { reportId: report.id } });
-      // content_reports.reported cascades on delete, so this report (and
-      // every other one against the same account) is already gone once the
-      // request above resolves -- invalidating just re-reads the list.
+      // Reports against the account stay for 90 days with the account shown
+      // as deleted (content_reports.reported is ON DELETE SET NULL); re-reading
+      // the list shows that.
       onDeleted();
     } catch (e) {
       onError(e instanceof Error ? e.message : "Delete failed.");
@@ -130,6 +130,13 @@ function ReportRow({
         </p>
       ) : null}
       <p className="mt-1 text-xs text-ink-soft">{new Date(report.createdAt).toLocaleString()}</p>
+      {report.accountDeletedAt ? (
+        <p className="mt-1 text-xs text-ink-soft">
+          An account on this report was deleted{" "}
+          {new Date(report.accountDeletedAt).toLocaleDateString()}; the report is removed 90 days
+          later.
+        </p>
+      ) : null}
 
       <div className="mt-2 flex flex-wrap gap-4">
         {report.reportedId ? (

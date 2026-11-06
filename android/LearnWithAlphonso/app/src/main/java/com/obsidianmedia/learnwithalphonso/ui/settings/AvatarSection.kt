@@ -23,7 +23,7 @@ internal fun AvatarSection(container: AppContainer) {
     var on by remember { mutableStateOf(container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)) }
     Section(
         "Show Alphonso while practising",
-        footer = "Alphonso fills the screen in a speaking conversation and moves his mouth as he talks. It is only a picture: the conversation text is the same either way.",
+        footer = "Alphonso (and Hector, on the Hector tab) fill the screen in a speaking conversation and move their mouths as they talk. It is only a picture: the conversation text is the same either way.",
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Show Alphonso while practising", style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))

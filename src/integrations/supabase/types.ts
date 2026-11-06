@@ -573,31 +573,34 @@ export type Database = {
       };
       content_reports: {
         Row: {
+          account_deleted_at: string | null;
           context: Json | null;
           created_at: string;
           id: string;
           kind: string;
           reason: string;
           reported: string | null;
-          reporter: string;
+          reporter: string | null;
         };
         Insert: {
+          account_deleted_at?: string | null;
           context?: Json | null;
           created_at?: string;
           id?: string;
           kind?: string;
           reason: string;
           reported?: string | null;
-          reporter?: string;
+          reporter?: string | null;
         };
         Update: {
+          account_deleted_at?: string | null;
           context?: Json | null;
           created_at?: string;
           id?: string;
           kind?: string;
           reason?: string;
           reported?: string | null;
-          reporter?: string;
+          reporter?: string | null;
         };
         Relationships: [];
       };
@@ -778,6 +781,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      heart_loss_reports: {
+        Row: {
+          at: string;
+          claimed: boolean;
+          id: number;
+          user_id: string;
+        };
+        Insert: {
+          at?: string;
+          claimed?: boolean;
+          id?: never;
+          user_id: string;
+        };
+        Update: {
+          at?: string;
+          claimed?: boolean;
+          id?: never;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      hearts_pro_status: {
+        Row: {
+          checked_at: string;
+          pro: boolean;
+          user_id: string;
+        };
+        Insert: {
+          checked_at?: string;
+          pro: boolean;
+          user_id: string;
+        };
+        Update: {
+          checked_at?: string;
+          pro?: boolean;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       language_progress: {
         Row: {
           cefr_level: string;
@@ -889,6 +931,45 @@ export type Database = {
           total?: number;
           user_id?: string;
           xp_earned?: number;
+        };
+        Relationships: [];
+      };
+      lesson_heart_settlements: {
+        Row: {
+          charged: number;
+          client_reported: number;
+          credits_left: number;
+          enforced: boolean;
+          misses: number;
+          pro: boolean;
+          settled_at: string;
+          token_hash: string;
+          user_id: string;
+          would_charge: number;
+        };
+        Insert: {
+          charged: number;
+          client_reported: number;
+          credits_left: number;
+          enforced: boolean;
+          misses: number;
+          pro: boolean;
+          settled_at?: string;
+          token_hash: string;
+          user_id: string;
+          would_charge: number;
+        };
+        Update: {
+          charged?: number;
+          client_reported?: number;
+          credits_left?: number;
+          enforced?: boolean;
+          misses?: number;
+          pro?: boolean;
+          settled_at?: string;
+          token_hash?: string;
+          user_id?: string;
+          would_charge?: number;
         };
         Relationships: [];
       };
@@ -2455,6 +2536,7 @@ export type Database = {
           type: string;
         }[];
       };
+      hearts_unlimited: { Args: { _user_id: string }; Returns: boolean };
       join_buddy_pool: {
         Args: { _age_confirmed: boolean; _course: string };
         Returns: {
@@ -2560,6 +2642,10 @@ export type Database = {
           status: string;
         }[];
       };
+      reserve_stt_audio_seconds: {
+        Args: { _budget: number; _seconds: number; _user_id: string };
+        Returns: string;
+      };
       respond_buddy_request: {
         Args: { _accept: boolean; _request: string };
         Returns: {
@@ -2594,6 +2680,31 @@ export type Database = {
       set_ai_consent: { Args: { _granted: boolean }; Returns: string };
       set_cefr_level: {
         Args: { _language: string; _level: string };
+        Returns: undefined;
+      };
+      settle_lesson_hearts: {
+        Args: {
+          _enforce: boolean;
+          _misses: number;
+          _pro: boolean;
+          _since: string;
+          _token_hash: string;
+          _user_id: string;
+        };
+        Returns: {
+          charged: number;
+          hearts: number;
+          hearts_refill_at: string;
+          settled_now: boolean;
+        }[];
+      };
+      settle_stt_audio_seconds: {
+        Args: {
+          _actual: number;
+          _day: string;
+          _reserved: number;
+          _user_id: string;
+        };
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: never; Returns: string };

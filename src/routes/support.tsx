@@ -43,7 +43,7 @@ export const Route = createFileRoute("/support")({
 
 function Support() {
   return (
-    <LegalPage title="Support" updated="4 November 2026">
+    <LegalPage title="Support" updated="5 November 2026">
       <Section heading="Contact us">
         <p>
           Write to {CONTACT} and a person will reply. Tell us what you were doing, what you

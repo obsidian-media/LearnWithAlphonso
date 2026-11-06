@@ -135,7 +135,7 @@ describe("the character is a parameter", () => {
       raised: "eyes-raised.webp",
       lowered: "eyes-lowered.webp",
     });
-    expect(ALPHONSO_KIT.rects.earLeft).toBeDefined();
+    expect(ALPHONSO_KIT.rects.earLeft).toBeUndefined();
     expect(ALPHONSO_KIT.rects.glint).toBeDefined();
     expect(ALPHONSO_KIT.expressionFiles.raised).toBe("brows-raised.webp");
   });

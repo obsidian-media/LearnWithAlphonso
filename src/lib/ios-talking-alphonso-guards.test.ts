@@ -125,10 +125,15 @@ describe("the art", () => {
   const expectedWebp = Object.keys(manifest.layers).map((n) => `${n}.webp`);
 
   it("ships every layer in the manifest, plus the manifest, and nothing else", () => {
-    expect(expectedWebp).toHaveLength(15);
+    expect(expectedWebp).toHaveLength(11);
     expect([...files].sort()).toEqual([...expectedWebp, "manifest.json"].sort());
     for (const f of expectedWebp)
       expect(fs.statSync(path.join(root, ART, f)).size, f).toBeGreaterThan(100);
+  });
+
+  it("has no ear layers: the realistic kit is one base, six mouths, three brows and the glint mask", () => {
+    expect(files.some((f) => f.startsWith("ear-"))).toBe(false);
+    expect(Object.keys(manifest.layers).some((n) => n.startsWith("ear-"))).toBe(false);
   });
 
   it("is a folder reference in the app target's resources", () => {
@@ -163,9 +168,26 @@ describe("the art", () => {
     };
     rect("mouth-ah", "mouthRect");
     rect("brows-neutral", "browsRect");
-    rect("ear-left-neutral", "earLeftRect");
-    rect("ear-right-neutral", "earRightRect");
     rect("glint-mask", "glintRect");
+  });
+
+  it("places Hector with his own manifest's rectangles, and gives him no glint or ears", () => {
+    const hectorManifest = JSON.parse(read(`${APP}/HectorAvatar/manifest.json`)) as typeof manifest;
+    const layers = code(`${KIT}/AvatarLayers.swift`);
+    const hector = layers.slice(layers.indexOf("static let hector = CharacterKit("));
+    const block = hector.slice(0, hector.indexOf("defaultRoom:"));
+    for (const [name, id] of [
+      ["mouth-ah", "mouthRect"],
+      ["eyes-neutral", "expressionRect"],
+    ] as const) {
+      const r = hectorManifest.layers[name];
+      expect(block, name).toMatch(
+        new RegExp(`${id}: AvatarRect\\(x: ${r.x}, y: ${r.y}, w: ${r.w}, h: ${r.h}\\)`),
+      );
+    }
+    expect(block).toMatch(/expressionPrefix: "eyes"/);
+    expect(block).toMatch(/glintRect: nil/);
+    expect(block).toMatch(/earLeftRect: nil, earRightRect: nil/);
   });
 });
 

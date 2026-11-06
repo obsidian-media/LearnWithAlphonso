@@ -8,7 +8,8 @@ import {
   AVATAR_PREFERENCE_DEFAULT,
   AVATAR_PREFERENCE_KEY,
   BROWS_RECT,
-  EAR_RECTS,
+  HECTOR_KIT,
+  ALPHONSO_KIT,
   GLINT_RECT,
   MOUTH_RECT,
 } from "./layers";
@@ -21,7 +22,7 @@ describe("the art served to the web", () => {
   it("has every layer the code can ask for, and no other image", () => {
     const files = fs.readdirSync(WEB).filter((f) => f.endsWith(".webp"));
     expect([...files].sort()).toEqual([...ALL_FILE_NAMES].sort());
-    expect(ALL_FILE_NAMES).toHaveLength(15);
+    expect(ALL_FILE_NAMES).toHaveLength(11);
   });
 
   it("is the same art, byte for byte, as the iOS app bundles", () => {
@@ -41,10 +42,48 @@ describe("the art served to the web", () => {
       expect(manifest.layers[`mouth-${m}`]).toEqual(MOUTH_RECT);
     for (const b of ["neutral", "raised", "lowered"])
       expect(manifest.layers[`brows-${b}`]).toEqual(BROWS_RECT);
-    expect(manifest.layers["ear-left-twitch"]).toEqual(EAR_RECTS.left);
-    expect(manifest.layers["ear-right-twitch"]).toEqual(EAR_RECTS.right);
     expect(manifest.layers["glint-mask"]).toEqual(GLINT_RECT);
     expect(manifest.layers.base).toEqual({ x: 0, y: 0, w: 1, h: 1 });
+  });
+});
+
+describe("the two kits", () => {
+  it("is Alphonso's realistic kit: no ear layers, the glint kept, brows as the expression group", () => {
+    expect(ALPHONSO_KIT.rects.earLeft).toBeUndefined();
+    expect(ALPHONSO_KIT.rects.earRight).toBeUndefined();
+    expect(ALPHONSO_KIT.rects.glint).toBeDefined();
+    expect(ALPHONSO_KIT.expressionFiles.lowered).toBe("brows-lowered.webp");
+    expect(fs.readdirSync(WEB).some((f) => f.startsWith("ear-"))).toBe(false);
+  });
+
+  it("is Hector's kit: no ears, no glint, eyes as the expression group, his own folder", () => {
+    const files = fs.readdirSync(path.join(root, "public/hector")).sort();
+    const expected = [
+      "base",
+      ...["half", "talk", "ah", "oh", "ee", "fv"].map((m) => `mouth-${m}`),
+      ...["neutral", "raised", "lowered"].map((e) => `eyes-${e}`),
+    ].map((n) => `${n}.webp`);
+    expect(files).toEqual([...expected, "manifest.json"].sort());
+    expect(HECTOR_KIT.displayName).toBe("Hector");
+    expect(HECTOR_KIT.basePath).toBe("/hector");
+    expect(HECTOR_KIT.rects.earLeft).toBeUndefined();
+    expect(HECTOR_KIT.rects.glint).toBeUndefined();
+    expect(HECTOR_KIT.expressionFiles.raised).toBe("eyes-raised.webp");
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(root, "public/hector/manifest.json"), "utf8"),
+    );
+    expect(manifest.expressionPrefix).toBe("eyes");
+    expect(HECTOR_KIT.rects.mouth).toEqual(manifest.layers["mouth-ah"]);
+    expect(HECTOR_KIT.rects.expression).toEqual(manifest.layers["eyes-neutral"]);
+  });
+
+  it("is the same art, byte for byte, as iOS bundles for each character", () => {
+    for (const [web, ios] of [["public/hector", "ios/LearnWithAlphonso/HectorAvatar"]] as const)
+      for (const f of fs.readdirSync(path.join(root, web)))
+        expect(
+          fs.readFileSync(path.join(root, web, f)).equals(fs.readFileSync(path.join(root, ios, f))),
+          f,
+        ).toBe(true);
   });
 });
 

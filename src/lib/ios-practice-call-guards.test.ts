@@ -34,6 +34,15 @@ describe("the rooms", () => {
     expect(app).toMatch(/- path: AlphonsoScenes\n\s+type: folder\n\s+buildPhase: resources/);
   });
 
+  it("draws the room as a background, so the fill-scaled picture cannot widen the call's layout", () => {
+    // Found on a simulator: with the room inside the ZStack, the stack took the picture's aspect (about 483 pt on a
+    // 402 pt screen) and the call bar, the "You" tile and the caption were cut off at both edges.
+    const view = code(VIEW);
+    expect(view).toContain(".background { room }");
+    const stack = view.slice(view.indexOf("ZStack {"), view.indexOf("AlphonsoAvatarView("));
+    expect(stack).not.toMatch(/\broom\b/);
+  });
+
   it("dims a scenario picture with navy multiply at half strength in dark mode", () => {
     const view = code(VIEW);
     expect(view).toContain("blendMode(.multiply)");
@@ -111,5 +120,90 @@ describe("campaign conversations", () => {
     const { CAMPAIGNS } = await import("@/data/campaigns");
     const kit = code("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AvatarCall.swift");
     for (const c of CAMPAIGNS) expect(kit, c.id).not.toContain(`"${c.id}"`);
+  });
+});
+
+describe("Hector's call", () => {
+  const hector = code(`${APP}/Sources/HectorView.swift`);
+  const call = code(`${APP}/Sources/PracticeCallView.swift`);
+  it("is the same call with his own kit, controlled by the same setting", () => {
+    expect(hector).toContain("@AppStorage(AvatarPreference.key)");
+    expect(hector).toMatch(/if showCall \{ callScreen \} else \{ classicScreen \}/);
+    expect(hector).toContain("kit: .hector");
+    expect(
+      code("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AvatarLayers.swift"),
+    ).toContain('folder: "HectorAvatar"');
+  });
+  it("bundles his kit folder", () => {
+    const app = yamlTarget(read(`${APP}/project.yml`), "LearnWithAlphonso");
+    expect(app).toMatch(/- path: HectorAvatar\n\s+type: folder\n\s+buildPhase: resources/);
+    const files = fs.readdirSync(path.join(root, APP, "HectorAvatar")).sort();
+    expect(files).toEqual(
+      [
+        "base",
+        ...["half", "talk", "ah", "oh", "ee", "fv"].map((m) => `mouth-${m}`),
+        ...["neutral", "raised", "lowered"].map((e) => `eyes-${e}`),
+      ]
+        .map((n) => `${n}.webp`)
+        .concat("manifest.json")
+        .sort(),
+    );
+  });
+  it("keeps the classic screen, Pro gating and the paywall exactly where they were", () => {
+    const classic = hector.slice(
+      hector.indexOf("private var classicScreen"),
+      hector.indexOf("private var callScreen"),
+    );
+    expect(classic).toContain("hero");
+    expect(classic).toContain("micButton");
+    expect(classic).not.toContain("PracticeCallView");
+    // Pro gating lives in HectorView, outside the conversation screen, and is untouched.
+    expect(hector).toContain("if !entitlementStore.isPro");
+    expect(hector).toContain("source: .hectorRefused");
+    expect(hector).toContain("if tutorError == .notEntitled { showPaywall = true }");
+  });
+  it("keeps hands-free reachable in the call: its switch in the sheet, Pause/Resume and the status line on the call", () => {
+    const callScreen = hector.slice(
+      hector.indexOf("private var callScreen"),
+      hector.indexOf("private func endCall"),
+    );
+    // The sheet's own content: the switch must be in it, and so must the first-use note's alert, because a view
+    // under a presented sheet cannot present an alert (the switch would ask for a note that never appears).
+    const sheet = callScreen.slice(callScreen.indexOf("sheet: {"), callScreen.indexOf(".toolbar("));
+    expect(sheet).toMatch(/VStack\(spacing: 0\) \{\s*handsFreeToggle\s*transcript/);
+    expect(sheet).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
+    expect(sheet).toContain("voice.setHandsFree(true)");
+    expect(call).toMatch(
+      /if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/,
+    );
+    expect(call).toContain("voice.toggleHandsFreePause()");
+    expect(call).toContain("HandsFreeCopy.statusLine(voice.handsFreeStatus)");
+    expect(call).toContain("HandsFreeCopy.pause");
+  });
+  it("shows no reactions: his endpoint returns no verdict, so the verdict never changes", () => {
+    const callScreen = hector.slice(
+      hector.indexOf("private var callScreen"),
+      hector.indexOf("private func endCall"),
+    );
+    expect(callScreen).toContain("replyVerdict: replyVerdict");
+    expect(hector).toMatch(/private let replyVerdict = AvatarReplyVerdict\(\)/);
+    expect(hector).not.toMatch(/replyVerdict = AvatarReplyVerdict\(serial/);
+  });
+  it("hangs up by stopping the session and offering to call again", () => {
+    expect(hector).toContain("private func endCall()");
+    expect(hector).toContain('Button("Call again")');
+  });
+  it("gives the bars back once the call has ended, and closes the lesson-complete sheet on hang-up", () => {
+    // The call hides the tab bar and the sheet's Done button; without this the learner is stuck on the tab.
+    expect(hector).toContain(".toolbar(callEnded ? .visible : .hidden, for: .tabBar)");
+    expect(hector).toContain(".toolbar(callEnded ? .visible : .hidden, for: .navigationBar)");
+    expect(hector).not.toMatch(/\.toolbar\(\.hidden, for: \.tabBar\)/);
+    expect(hector).toMatch(/if let onClose \{ onClose\(\) \} else \{ callEnded = true \}/);
+    expect(hector).toMatch(/conversationStore: conversationStore,\s*onClose: onClose/);
+  });
+  it("says on the call when the microphone is off or would not start, as the classic screen does", () => {
+    expect(call).toMatch(/notice \?\? voice\.failure\?\.userMessage\(\) \?\? microphoneMessage/);
+    expect(call).toContain("VoiceCopy.microphoneOff");
+    expect(call).toContain("VoiceCopy.microphoneCouldNotStart");
   });
 });
