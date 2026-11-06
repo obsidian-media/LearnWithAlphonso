@@ -81,3 +81,40 @@ describe("the room", () => {
     expect(talking.getByTestId("call-state")).toHaveTextContent("Speaking");
   });
 });
+
+describe("the character is a parameter", () => {
+  const rect = (x: number) => ({ x, y: 0.1, w: 0.2, h: 0.1 });
+  const hector = {
+    id: "hector",
+    displayName: "Hector",
+    basePath: "/hector-kit",
+    rects: {
+      mouth: rect(0.4),
+      brows: rect(0.3),
+      earLeft: rect(0.2),
+      earRight: rect(0.6),
+      glint: rect(0.35),
+    },
+    defaultRoom: { light: "/hector-kit/office-light.webp", dark: "/hector-kit/office-dark.webp" },
+  };
+
+  it("names the character, draws his own folder and places his layers by his own manifest", () => {
+    const { container, getByText, getAllByRole } = render(
+      <PracticeCall {...base} kit={hector} scenarioId="free-talk" dark={false} />,
+    );
+    expect(getByText("Hector")).toBeInTheDocument();
+    expect(getAllByRole("link", { name: "End the call" })).toHaveLength(1);
+    const stage = container.querySelector("[data-testid=alphonso-stage]")!;
+    const imgs = [...stage.querySelectorAll("img")];
+    expect(imgs.length).toBeGreaterThan(10);
+    for (const img of imgs) expect(img.getAttribute("src")).toMatch(/^\/hector-kit\//);
+    const mouth = stage.querySelector('img[src$="mouth-ah.webp"]') as HTMLImageElement;
+    expect(mouth.style.left).toBe("40%");
+    expect(room(container)).toBe("/hector-kit/office-light.webp");
+  });
+
+  it("defaults to Alphonso", () => {
+    const { getByText } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
+    expect(getByText("Alphonso")).toBeInTheDocument();
+  });
+});

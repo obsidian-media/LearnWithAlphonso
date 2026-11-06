@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import type { Course } from "@/data/courses";
 import {
-  AVATAR_BASE_PATH,
+  ALPHONSO_KIT,
   BASE_FILE,
-  BROWS_RECT,
   BROWS_STATES,
-  EAR_RECTS,
   GLINT_MASK_FILE,
-  GLINT_RECT,
-  MOUTH_RECT,
   MOUTH_SHAPES,
   browsFile,
   earFile,
   mouthFile,
+  type CharacterKit,
   type LayerRect,
 } from "@/lib/avatar/layers";
 import { IdleScheduler, breathScale, seededRandom, swayDegrees } from "@/lib/avatar/idle";
@@ -28,7 +25,6 @@ import {
 /** The verdict that came with the latest reply, numbered so one reply is reacted to once however often we render. */
 export type AvatarReplyVerdict = { serial: number; verdict: ReplyVerdict };
 
-const src = (file: string) => `${AVATAR_BASE_PATH}/${file}`;
 const pct = (v: number) => `${v * 100}%`;
 const place = (r: LayerRect) => ({
   left: pct(r.x),
@@ -45,7 +41,7 @@ const clock = () => performance.now() / 1000;
  * offscreen canvas, and handed to the browser as a blob: URL (img-src allows 'self', data: and blob:). Resolves to
  * null where OffscreenCanvas is missing: he simply has no glint there.
  */
-async function glintMaskUrl(): Promise<string | null> {
+async function glintMaskUrl(src: (file: string) => string): Promise<string | null> {
   if (typeof OffscreenCanvas === "undefined" || typeof Image === "undefined") return null;
   const image = new Image();
   image.src = src(GLINT_MASK_FILE);
@@ -79,6 +75,8 @@ type Props = {
   onModeChange?: (mode: AvatarMode) => void;
   /** Size and place the stage. The layout is the caller's: the stage fills a square of whatever size it is given. */
   className?: string;
+  /** The character to draw: his art folder and layer placement. Alphonso unless told otherwise. */
+  kit?: CharacterKit;
 };
 
 /**
@@ -98,7 +96,9 @@ export function AlphonsoAvatar({
   reducedMotion,
   onModeChange,
   className = "mx-auto aspect-square h-[clamp(88px,20dvh,170px)]",
+  kit = ALPHONSO_KIT,
 }: Props) {
+  const src = (file: string) => `${kit.basePath}/${file}`;
   const live = useRef({
     phase,
     replyText,
@@ -129,7 +129,7 @@ export function AlphonsoAvatar({
   useEffect(() => {
     let url: string | null = null;
     let cancelled = false;
-    glintMaskUrl()
+    glintMaskUrl((file) => `${kit.basePath}/${file}`)
       .then((made) => {
         if (cancelled && made) URL.revokeObjectURL(made);
         else {
@@ -265,20 +265,20 @@ export function AlphonsoAvatar({
             maxWidth: "none",
           }}
         />
-        {layer(earFile("left", false), EAR_RECTS.left, "1")}
-        {layer(earFile("left", true), EAR_RECTS.left, "0")}
-        {layer(earFile("right", false), EAR_RECTS.right, "1")}
-        {layer(earFile("right", true), EAR_RECTS.right, "0")}
-        {MOUTH_SHAPES.map((shape) => layer(mouthFile(shape)!, MOUTH_RECT, "0"))}
+        {layer(earFile("left", false), kit.rects.earLeft, "1")}
+        {layer(earFile("left", true), kit.rects.earLeft, "0")}
+        {layer(earFile("right", false), kit.rects.earRight, "1")}
+        {layer(earFile("right", true), kit.rects.earRight, "0")}
+        {MOUTH_SHAPES.map((shape) => layer(mouthFile(shape)!, kit.rects.mouth, "0"))}
         {BROWS_STATES.map((brows) =>
-          layer(browsFile(brows), BROWS_RECT, brows === "neutral" ? "1" : "0"),
+          layer(browsFile(brows), kit.rects.brows, brows === "neutral" ? "1" : "0"),
         )}
         {maskUrl && (
           <div
             ref={glint}
             style={{
               position: "absolute",
-              ...place(GLINT_RECT),
+              ...place(kit.rects.glint),
               overflow: "hidden",
               visibility: "hidden",
               WebkitMaskImage: `url(${maskUrl})`,
@@ -287,17 +287,16 @@ export function AlphonsoAvatar({
               maskSize: "100% 100%",
             }}
           >
+            {/* The gradient is a class, not an inline style: jsdom's inline-gradient parser throws. */}
             <div
               ref={band}
+              className="absolute bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.65),rgba(255,255,255,0))]"
               style={{
-                position: "absolute",
                 top: "-70%",
                 left: "30%",
                 width: "40%",
                 height: "240%",
                 transform: "rotate(20deg)",
-                background:
-                  "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.65), rgba(255,255,255,0))",
               }}
             />
           </div>

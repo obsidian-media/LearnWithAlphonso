@@ -37,17 +37,16 @@ export type SceneArt = {
 export function sceneArt(
   scenarioId: string | null | undefined,
   withArt: ReadonlySet<string> = SCENES_WITH_ART,
+  defaultRoom: { light: string; dark: string } = {
+    light: `${BASE}/room-light.webp`,
+    dark: `${BASE}/room-dark.webp`,
+  },
 ): SceneArt {
   if (scenarioId && withArt.has(scenarioId)) {
     const file = `${BASE}/${scenarioId}.webp`;
     return { id: scenarioId, light: file, dark: file, dimInDark: true };
   }
-  return {
-    id: DEFAULT_SCENE,
-    light: `${BASE}/room-light.webp`,
-    dark: `${BASE}/room-dark.webp`,
-    dimInDark: false,
-  };
+  return { id: DEFAULT_SCENE, light: defaultRoom.light, dark: defaultRoom.dark, dimInDark: false };
 }
 
 /** The evening overlay on a scenario image in dark mode: navy #16203c, multiplied, at 50%. */
