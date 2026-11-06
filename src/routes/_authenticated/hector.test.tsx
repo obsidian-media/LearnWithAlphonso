@@ -26,6 +26,7 @@ vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 
 const { Route } = await import("./hector");
 const { useProgress } = await import("../../lib/progress");
+const { useAvatarPreference } = await import("../../lib/avatar/preference");
 
 type Handler = (body: unknown) => Response;
 let routes: Record<string, Handler>;
@@ -398,7 +399,39 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
   it("with the setting off it is the classic screen, mascot and status pill included", async () => {
     localStorage.setItem("showAlphonsoWhilePractising", "false");
     await renderPage();
-    await screen.findByLabelText("Message Hector");
+    // Wait for something only the classic screen has: the call screen also mounts "Message Hector" (in its closed
+    // sheet), so waiting for that box would resolve on either screen.
+    expect(await screen.findByText("Your tutor")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Hector" })).toBeInTheDocument();
     expect(screen.queryByTestId("alphonso-stage")).toBeNull();
+    expect(screen.queryByTestId("call-sheet")).toBeNull();
+  });
+
+  it("with the setting off the call stage never flashes up before the stored choice is read", async () => {
+    // The in-memory switch still says "on" (the default, or a call earlier in this visit) when the page opens.
+    useAvatarPreference.setState({ enabled: true });
+    localStorage.setItem("showAlphonsoWhilePractising", "false");
+    // Record every stage ever attached, however briefly: a one-frame flash is still a flash.
+    let stageMounted = false;
+    const scan = (records: MutationRecord[]) => {
+      for (const r of records)
+        for (const n of r.addedNodes)
+          if (
+            n instanceof Element &&
+            (n.matches('[data-testid="alphonso-stage"]') ||
+              n.querySelector('[data-testid="alphonso-stage"]'))
+          )
+            stageMounted = true;
+    };
+    const observer = new MutationObserver(scan);
+    observer.observe(document.body, { childList: true, subtree: true });
+    try {
+      await renderPage();
+      await screen.findByText("Your tutor");
+      scan(observer.takeRecords());
+    } finally {
+      observer.disconnect();
+    }
+    expect(stageMounted).toBe(false);
   });
 });
