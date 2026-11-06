@@ -94,3 +94,25 @@ two biggest unknowns are the Claude flag rate and how much Opus thinks. Hence:
    - Explanation rewrites on the A1-B1 questions only, the rest in a follow-up: about -$2.
 3. **Whatever happens, the measurement is paid for.** Phases 3 to 6 cannot use the last US$12, so
    the blind sample and its error rate always run.
+
+## Measured run (2026-11-06)
+
+What the run actually cost, against the plan above.
+
+| Phase                                                          | Items                      | Cost                                                   |
+| -------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
+| Sonnet full pass (batch)                                       | 17,196                     | $7.84 + pilot $0.3                                     |
+| Mistral second opinion (synchronous, full price)               | 5,504 + blind samples      | $6.58 in all                                           |
+| Opus judge, waves 1–8 and retries                              | about 8,600                | about $19                                              |
+| Opus second pass (`judge-ok`, every item the full pass passed) | 6,848                      | about $14, including about $5 wasted on re-sent slices |
+| Sonnet rewrites (explanations, card meanings)                  | 6,000                      | $5.14                                                  |
+| Opus rewrites (drills, cloze)                                  | 1,395                      | $4.12                                                  |
+| Sonnet verify and Opus judge2                                  | about 11,000 / about 1,800 | about $10                                              |
+| Blind samples (2 rounds)                                       | 587                        | about $2 Anthropic                                     |
+| **Total**                                                      |                            | **Anthropic $69.15 of $99; Mistral $6.58 of $10**      |
+
+Measured rates that differ from the plan:
+
+- **Sonnet flag rate:** 46.1%, against 20% planned.
+- **Opus judge:** about $0.002–0.003 per item, about 200 output tokens.
+- **Mistral Large 4:** about $0.0012 per item, synchronous. Its reasoning can't be turned off (`reasoning_effort: "low"` is the lowest), and it sometimes spends the whole token budget reasoning.
