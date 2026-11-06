@@ -14,6 +14,10 @@ import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
 import { HectorInvite } from "../../components/HectorInvite";
+import { AlphonsoAvatar, type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
+import { parseVerdict, type VoicePhase } from "../../lib/avatar/machine";
+import { useAvatarPreference } from "../../lib/avatar/preference";
+import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
@@ -104,6 +108,18 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [course]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // The talking Alphonso: what is being spoken, whether its audio is loading or playing, and what the latest reply
+  // said about the learner's turn (he reacts to it once the reply has been spoken).
+  const [spoken, setSpoken] = useState<string | null>(null);
+  const [voice, setVoice] = useState<"idle" | "loading" | "playing">("idle");
+  const [replyVerdict, setReplyVerdict] = useState<AvatarReplyVerdict>({
+    serial: 0,
+    verdict: "none",
+  });
+  const showAlphonso = useAvatarPreference((s) => s.enabled);
+  const hydrateAvatarPreference = useAvatarPreference((s) => s.hydrate);
+  useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
+  const reducedMotion = useReducedMotion() ?? false;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -112,6 +128,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   const speak = useCallback(
     async (text: string) => {
       if (!ttsOn) return;
+      setSpoken(text);
+      setVoice("loading");
       try {
         const resp = await fetch("/api/tts", {
           method: "POST",
@@ -119,7 +137,10 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           // The server picks this course's native voice.
           body: JSON.stringify({ text, course }),
         });
-        if (!resp.ok) return;
+        if (!resp.ok) {
+          setVoice("idle");
+          return;
+        }
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         if (audioRef.current) {
@@ -127,10 +148,22 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         }
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => URL.revokeObjectURL(url);
-        void audio.play().catch(() => {});
+        // A replaced or stopped clip must not flip the avatar back to idle under the clip that replaced it.
+        const settle = () => {
+          if (audioRef.current === audio) setVoice("idle");
+        };
+        audio.onplaying = () => {
+          if (audioRef.current === audio) setVoice("playing");
+        };
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          settle();
+        };
+        audio.onpause = settle;
+        audio.onerror = settle;
+        void audio.play().catch(settle);
       } catch {
-        /* ignore */
+        setVoice("idle");
       }
     },
     [ttsOn, course],
@@ -186,9 +219,11 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
                   : t || "Something went wrong.",
           );
         }
-        const data = (await resp.json()) as { content?: string };
+        const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
         setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        // An older server sends no verdict, which reads as "none".
+        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict: parseVerdict(data.verdict) }));
         void speak(reply);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -222,6 +257,15 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [beginCapture]);
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
+  const avatarPhase: VoicePhase = recording
+    ? { kind: "recording" }
+    : transcribing
+      ? { kind: "transcribing" }
+      : sending || voice === "loading"
+        ? { kind: "thinking" }
+        : voice === "playing"
+          ? { kind: "speaking" }
+          : { kind: "idle" };
 
   useEffect(() => {
     return () => {
@@ -301,6 +345,18 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           </svg>
         </button>
       </header>
+      {showAlphonso && (
+        <div className="border-b border-hairline bg-surface">
+          <AlphonsoAvatar
+            phase={avatarPhase}
+            replyText={spoken}
+            getAudio={() => audioRef.current}
+            replyVerdict={replyVerdict}
+            course={course}
+            reducedMotion={reducedMotion}
+          />
+        </div>
+      )}
       <div className="px-5">
         <SaveWordHint always />
       </div>
