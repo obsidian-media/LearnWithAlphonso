@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
@@ -112,6 +112,8 @@ async function renderPage(consentApi = fakeConsentApi(), { waitForChat = true } 
 
 beforeEach(() => {
   useProgress.setState({ course: "en" });
+  // These tests cover the classic screen; the call screen has its own describe below.
+  localStorage.setItem("showAlphonsoWhilePractising", "false");
   // jsdom doesn't implement scrollTo on elements.
   Element.prototype.scrollTo = vi.fn();
   getSession.mockReset();
@@ -542,5 +544,132 @@ describe("Converse chat page", () => {
     for (const [, init] of calls.filter(([u]) => String(u).includes("/api/tts"))) {
       expect(JSON.parse(init.body as string).course).toBe("fr");
     }
+  });
+});
+
+describe("Converse call screen (setting on, the default)", () => {
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+  });
+
+  async function renderCall() {
+    const Page = Route.options.component!;
+    const result = render(withAiConsent(<Page />, fakeConsentApi()));
+    await screen.findByTestId("call-caption");
+    return result;
+  }
+
+  it("is a full-screen call: Alphonso hidden from assistive technology, the three controls labelled", async () => {
+    await renderCall();
+    expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the conversation" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/converse");
+    expect(screen.getByText(scenario.title)).toBeInTheDocument();
+    expect(screen.getByTestId("call-timer")).toHaveTextContent("0:00");
+    // The caption is a polite live region showing the current utterance only.
+    const caption = screen.getByTestId("call-caption");
+    expect(caption).toHaveAttribute("aria-live", "polite");
+    expect(caption).toHaveTextContent(scenario.opener);
+  });
+
+  it("keeps the conversation reachable as text while the sheet is closed, and opens it as a dialog", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    expect(screen.getByRole("list", { name: "Conversation so far" })).toHaveTextContent(
+      scenario.opener,
+    );
+    expect(screen.queryByRole("dialog", { name: "Conversation" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    expect(sheet).toBeVisible();
+    expect(within(sheet).getByRole("log", { name: "Conversation" })).toBeInTheDocument();
+    expect(within(sheet).getByPlaceholderText("Type or tap the mic")).toBeInTheDocument();
+    await user.click(within(sheet).getByRole("button", { name: "Back to call" }));
+    expect(screen.queryByRole("dialog", { name: "Conversation" })).toBeNull();
+  });
+
+  it("a typed message from the sheet reaches the caption in the learner's green tint, then the reply replaces it", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat"))
+        return jsonResponse({ content: "One latte.", verdict: "correct" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderCall();
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    await user.type(within(sheet).getByPlaceholderText("Type or tap the mic"), "A latte please");
+    await user.click(within(sheet).getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByTestId("call-caption")).toHaveTextContent("One latte."));
+    expect(screen.getByTestId("call-caption")).toHaveAttribute("data-mine", "false");
+  });
+
+  it("puts the voice mute control in the call bar", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await user.click(screen.getByRole("button", { name: "Mute voice" }));
+    expect(screen.getByRole("button", { name: "Unmute voice" })).toBeInTheDocument();
+  });
+
+  it("holding the talk button records, and releasing it stops", async () => {
+    await renderCall();
+    const talk = screen.getByRole("button", { name: "Hold to talk" });
+    fireEvent.pointerDown(talk);
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    await waitFor(() =>
+      expect(screen.getByTestId("call-state")).toHaveTextContent(/listening to you/i),
+    );
+    expect(screen.getByTestId("you-tile")).toHaveAttribute("data-live", "true");
+    fireEvent.pointerUp(talk);
+    expect(lastRecorder?.state).toBe("inactive");
+  });
+
+  it("talking over Alphonso cuts his voice off, so it is not recorded", async () => {
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    const opener = audioInstances[audioInstances.length - 1];
+    expect(opener.pause).not.toHaveBeenCalled();
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Hold to talk" }));
+    expect(opener.pause).toHaveBeenCalled();
+  });
+
+  it("a voice that finishes loading after the learner hung up is never played", async () => {
+    let release: (r: Response) => void = () => {};
+    global.fetch = vi.fn((input: RequestInfo | URL) => {
+      if (String(input).includes("/api/tts")) return new Promise<Response>((r) => (release = r));
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    }) as typeof fetch;
+    const { unmount } = await renderCall();
+    await waitFor(() =>
+      expect(
+        (global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([u]) =>
+          String(u).includes("/api/tts"),
+        ),
+      ).toBe(true),
+    );
+    unmount();
+    await act(async () => {
+      release(new Response(new Blob(["audio"]), { status: 200 }));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(audioInstances).toHaveLength(0);
+  });
+
+  it("a keyboard or screen-reader activation (a click with no pointer) toggles recording", async () => {
+    await renderCall();
+    const talk = screen.getByRole("button", { name: "Hold to talk" });
+    fireEvent.click(talk, { detail: 0 });
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    fireEvent.click(talk, { detail: 0 });
+    expect(lastRecorder?.state).toBe("inactive");
+  });
+
+  it("with the setting off it is the classic screen: the header, no stage", async () => {
+    localStorage.setItem("showAlphonsoWhilePractising", "false");
+    await renderPage();
+    expect(screen.queryByTestId("alphonso-stage")).toBeNull();
+    expect(screen.getByRole("heading", { name: scenario.title })).toBeInTheDocument();
   });
 });
