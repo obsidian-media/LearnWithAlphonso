@@ -378,6 +378,19 @@ class LessonViewModelTest {
     }
 
     @Test
+    fun `the HUD is told once a wrong answer's heart is saved, so it shows one fewer`() = runBlocking {
+        val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 5, null, 0, "bronze")) }
+        val v = vm(okServer(), store)
+        v.begin(); v.startPractice()
+        assertEquals(0, v.state.value.heartsSpent)
+        v.pick(wrongAnswer(lesson.questions[0]))
+        v.check().join()
+        awaitTrue("heart spent") { v.state.value.heartsSpent == 1 }
+        // By the time the HUD hears about it, the store already holds the new count.
+        assertEquals(4, store.lastKnownProgress()!!.hearts)
+    }
+
+    @Test
     fun `a Pro learner's wrong answer spends no heart, locally or on the server`() = runBlocking {
         val server = okServer()
         val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 4, null, 0, "bronze")) }

@@ -77,6 +77,8 @@ data class LessonUiState(
     val missed: List<MissedQuestion> = emptyList(),
     /** The lesson's own time, from Start lesson to the last answer, with the app's background time left out. */
     val elapsedMs: Long? = null,
+    /** Bumped each time a wrong answer has spent a heart in the store, so the HUD reads the new count. */
+    val heartsSpent: Int = 0,
 ) {
     val total: Int get() = lesson.questions.size
     val isReinforcing: Boolean get() = activeReinforcement != null
@@ -306,6 +308,7 @@ class LessonViewModel(
             syncStore.lastKnownProgress()?.takeIf { it.hearts > 0 }?.let {
                 val after = HeartsEconomy.afterLosingHeart(it.hearts, it.heartsRefillAt?.toLong(), now())
                 syncStore.updateLastKnownProgress(it.copy(hearts = after.hearts, heartsRefillAt = after.heartsRefillAt?.toDouble()))
+                _state.update { s -> s.copy(heartsSpent = s.heartsSpent + 1) }
             }
             runCatching { client.loseHeart() }
         }

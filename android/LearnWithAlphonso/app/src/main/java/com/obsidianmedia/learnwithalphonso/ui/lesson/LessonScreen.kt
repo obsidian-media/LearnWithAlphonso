@@ -140,7 +140,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
     val unitLine = if (unit != null && unitIndex >= 0) "Unit ${unitIndex + 1} · ${unit.title}" else state.lesson.subtitle
     // Hearts for the HUD: null (shown as ∞) for Alphonso Pro.
     val pro = container.entitlements.isPro
-    val hearts by produceState<Int?>(if (pro) null else HeartsEconomy.MAX_HEARTS, pro, state.answers.size) {
+    val hearts by produceState<Int?>(if (pro) null else HeartsEconomy.MAX_HEARTS, pro, state.heartsSpent) {
         value = if (pro) null else container.syncStore.lastKnownProgress()?.hearts ?: HeartsEconomy.MAX_HEARTS
     }
 
