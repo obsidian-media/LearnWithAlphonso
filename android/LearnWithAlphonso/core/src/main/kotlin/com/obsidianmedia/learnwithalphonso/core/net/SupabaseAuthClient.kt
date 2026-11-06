@@ -15,6 +15,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.content.TextContent
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
@@ -88,17 +89,22 @@ class SupabaseAuthClient(
     private val client = HttpClient(engine) { expectSuccess = false }
     private val json = ContentJson.json
 
-    suspend fun requestEmailOtp(email: String) {
-        requireSuccess(post("auth/v1/otp", buildJsonObject { put("email", email); put("create_user", true) }))
+    /**
+     * `captchaToken` on the four email requests below is the bot check's single-use token (the native-captcha page),
+     * sent as `gotrue_meta_security.captcha_token`, which the auth server reads when its captcha setting is on.
+     * Without a token each request is exactly what earlier builds sent.
+     */
+    suspend fun requestEmailOtp(email: String, captchaToken: String? = null) {
+        requireSuccess(post("auth/v1/otp", buildJsonObject { put("email", email); put("create_user", true); botCheck(captchaToken) }))
     }
 
     suspend fun verifyEmailOtp(email: String, code: String): SupabaseSession =
         decodeSession(requireSuccess(post("auth/v1/verify", buildJsonObject { put("email", email); put("token", code); put("type", "email") })))
 
-    suspend fun signInWithPassword(email: String, password: String): SupabaseSession =
+    suspend fun signInWithPassword(email: String, password: String, captchaToken: String? = null): SupabaseSession =
         decodeSession(
             requireSuccess(
-                post("auth/v1/token", buildJsonObject { put("email", email); put("password", password) }, mapOf("grant_type" to "password")),
+                post("auth/v1/token", buildJsonObject { put("email", email); put("password", password); botCheck(captchaToken) }, mapOf("grant_type" to "password")),
             ),
         )
 
@@ -106,11 +112,12 @@ class SupabaseAuthClient(
      * Null when the project requires email confirmation: GoTrue then returns
      * the user without a session and the learner must click the link first.
      */
-    suspend fun signUpWithPassword(email: String, password: String, displayName: String, emailRedirectTo: String): SupabaseSession? {
+    suspend fun signUpWithPassword(email: String, password: String, displayName: String, emailRedirectTo: String, captchaToken: String? = null): SupabaseSession? {
         val body = buildJsonObject {
             put("email", email)
             put("password", password)
             putJsonObject("data") { put("display_name", displayName) }
+            botCheck(captchaToken)
         }
         val text = requireSuccess(post("auth/v1/signup", body, mapOf("redirect_to" to emailRedirectTo)))
         val obj = runCatching { json.parseToJsonElement(text).jsonObject }.getOrElse { throw SupabaseAuthError.InvalidPayload() }
@@ -118,8 +125,12 @@ class SupabaseAuthClient(
         return decodeSession(text)
     }
 
-    suspend fun resetPasswordForEmail(email: String, redirectTo: String) {
-        requireSuccess(post("auth/v1/recover", buildJsonObject { put("email", email) }, mapOf("redirect_to" to redirectTo)))
+    suspend fun resetPasswordForEmail(email: String, redirectTo: String, captchaToken: String? = null) {
+        requireSuccess(post("auth/v1/recover", buildJsonObject { put("email", email); botCheck(captchaToken) }, mapOf("redirect_to" to redirectTo)))
+    }
+
+    private fun JsonObjectBuilder.botCheck(captchaToken: String?) {
+        if (!captchaToken.isNullOrEmpty()) putJsonObject("gotrue_meta_security") { put("captcha_token", captchaToken) }
     }
 
     suspend fun exchangeOAuthCode(code: String, codeVerifier: String): SupabaseSession =
