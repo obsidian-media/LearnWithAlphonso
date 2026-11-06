@@ -109,11 +109,38 @@ describe("hearts settled on the server (real Postgres)", () => {
     expect((await settle(1, { token: T2 })).charged).toBe(1);
   });
 
-  it("a report from before the session started is not counted against this lesson", async () => {
-    await loseHeart(); // an earlier, abandoned lesson
+  it("a report from before this learner's previous settlement is never counted against a later lesson", async () => {
+    await loseHeart(); // an earlier lesson's miss, already settled below
+    await settle(0, { token: T2 });
     const s = await settle(2, { since: new Date(Date.now() + 1000).toISOString() });
     expect(s.charged).toBe(2);
     expect((await hearts()).hearts).toBe(2);
+  });
+
+  it("a token issued after the lesson's own lose_heart calls (minted at finish, or re-minted at sync) charges nothing extra", async () => {
+    await loseHeart();
+    await loseHeart();
+    const s = await settle(2, { since: new Date(Date.now() + 60_000).toISOString() });
+    expect(s.charged).toBe(0);
+    expect((await hearts()).hearts).toBe(3);
+  });
+
+  it("reports older than the token lifetime before the session start are not counted", async () => {
+    await loseHeart();
+    await db.query("UPDATE public.heart_loss_reports SET at = now() - interval '4 hours'");
+    const s = await settle(1);
+    expect(s.charged).toBe(1);
+  });
+
+  it("this session's own reports are claimed before earlier unclaimed ones", async () => {
+    await loseHeart(); // before the session
+    await db.query("UPDATE public.heart_loss_reports SET at = now() - interval '10 minutes'");
+    await loseHeart(); // during the session
+    expect((await settle(1, { since: new Date(Date.now() - 60_000).toISOString() })).charged).toBe(0);
+    const left = await db.query<{ n: number }>(
+      "SELECT count(*)::int n FROM public.heart_loss_reports WHERE NOT claimed AND at < now() - interval '5 minutes'",
+    );
+    expect(left.rows[0]!.n).toBe(1);
   });
 
   it("a lose_heart arriving after its lesson was settled uses the settlement's credit instead of charging again", async () => {
