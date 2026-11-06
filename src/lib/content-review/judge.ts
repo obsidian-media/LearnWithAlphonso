@@ -21,15 +21,20 @@ export type Ruling = {
   keyChange?: boolean;
 };
 
-/** Below this, a "fix" goes to the owner list instead of being applied. */
-export const MIN_FIX_CONFIDENCE = 0.7;
+/**
+ * Below this, a "fix" goes to the owner list instead of being applied. 0.5, not 0.7: on the pilot
+ * (2026-11-06) the 0.5-0.65 fixes were real but modest improvements (a vague gloss, a weak option),
+ * and every applied fix is re-read by a fresh reviewer in phase 7; a re-flag goes to a second judge
+ * round before it can reach the owner. At 0.7 the owner list would have been about 1,900 items.
+ */
+export const MIN_FIX_CONFIDENCE = 0.5;
 
 const PATCH_RULES = [
   "A patch lists ONLY the fields you change, with their full new value.",
   "Never change an id, a question type, the number of options, or where the answer sits in the option list. To replace a wrong option, give the whole option list with the answer at the same position.",
   'Keep the answer unless it is wrong; if it is wrong, set "keyChange": true and say why in reason.',
   "A fill-in prompt keeps exactly one ___ blank.",
-  "An explanation says why THIS answer is right for THIS sentence, in one or two plain English sentences, and quotes the answer in double quotes. Never write a generic line such as '\"x\" is correct here.'.",
+  'An explanation says why THIS answer is right for THIS sentence, in one or two plain English sentences, and MUST contain the answer exactly as the key spells it, in double quotes ("parle"); a patch without it is refused. Never write a generic line such as \'"x" is correct here.\'.',
   "Wrong options: the same kind of word as the answer, tempting to a learner, and ruled out by something in the item (add a short bracketed clue to the prompt if two options would fit).",
   'Use "owner" only when a native teacher could reasonably disagree with any fix (a taste or regional call), not because a fix is hard.',
 ];

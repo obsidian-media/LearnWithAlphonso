@@ -204,7 +204,7 @@ describe("the judge's rulings", () => {
   it("routes: confident fixes are applied, low-confidence and 'owner' go to the owner list", () => {
     const routed = route([
       { id: "a", decision: "fix", confidence: 0.9, reason: "", patch: { prompt: "x" } },
-      { id: "b", decision: "fix", confidence: 0.5, reason: "", patch: { prompt: "x" } },
+      { id: "b", decision: "fix", confidence: 0.45, reason: "", patch: { prompt: "x" } },
       { id: "c", decision: "owner", confidence: 0.9, reason: "" },
       { id: "d", decision: "keep", confidence: 0.9, reason: "" },
     ]);

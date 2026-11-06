@@ -161,7 +161,23 @@ const loadVerdicts = (phase: string) =>
 const rulingStore = (phase: string) => path.join(STATE, "rulings", `${phase}.json`);
 const loadRulings = (phase: string) =>
   new Map(Object.entries(readJson<Record<string, Ruling>>(rulingStore(phase), {})));
-const RULING_PHASES = new Set(["judge", "rewrite-explanation", "rewrite-cloze", "blind-judge"]);
+const RULING_PHASES = new Set([
+  "judge",
+  "judge-retry",
+  "rewrite-explanation",
+  "rewrite-cloze",
+  "judge2",
+  "blind-judge",
+]);
+/** Rulings in the order route applies them; a later phase's ruling on the same item wins. */
+const ROUTE_PHASES = ["judge", "judge-retry", "rewrite-explanation", "rewrite-cloze", "judge2"];
+/**
+ * Kinds that get no Mistral second opinion (cost plan trim 3, applied 2026-11-06 because the
+ * measured Claude flag rate, 46%, would put the second opinion above Mistral's US$10 cap). Their
+ * Claude flags still go to the Opus judge, and every resulting change is re-read in phase 7.
+ */
+const SECOND_OPINION_SKIP = new Set(["card", "lesson-meta", "unit-meta"]);
+const verifyHashesPath = () => path.join(STATE, "verify-hashes.json");
 
 function inventory(): ReviewItem[] {
   return withGateFlags(fullInventory());
@@ -261,7 +277,9 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
         throw new Error(
           `The review phase has verdicts for ${claude.size} of ${items.length} items: finish it (re-submit review) first.`,
         );
-      const pool = pilot ? items.filter((it) => claude.has(it.id)) : items;
+      const pool = (pilot ? items.filter((it) => claude.has(it.id)) : items).filter(
+        (it) => !SECOND_OPINION_SKIP.has(it.kind),
+      );
       const s = secondOpinionSet(pool, claude, ASSUME.controlRate, SEED);
       return mistralWork([...s.flagged, ...s.control]);
     }
@@ -272,6 +290,34 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
         items.filter((it) => ids.has(it.id)),
         (c) => judgeSystem(c.course),
         ctx,
+      );
+    }
+    case "judge-retry": {
+      // Fixes the checks refused: the judge tries again, told exactly why.
+      const refused = readJson<{ fix: { id: string }; why: string[] }[]>(
+        path.join(STATE, "refused.json"),
+        [],
+      );
+      const why = new Map(refused.map((r) => [r.fix.id, r.why.join("; ")]));
+      return opus(
+        items.filter((it) => why.has(it.id)),
+        (c) => judgeSystem(c.course),
+        (it) => `${ctx(it)}
+YOUR PREVIOUS PATCH WAS REFUSED: ${why.get(it.id)}. Write a patch that keeps every rule, or decide "keep" or "owner".`,
+      );
+    }
+    case "judge2": {
+      // Phase 7 round 2: a changed item the fresh re-read flagged again.
+      const verify = loadVerdicts("verify");
+      const hashes = readJson<Record<string, string>>(verifyHashesPath(), {});
+      const again = items.filter(
+        (it) => verify.get(it.id)?.verdict === "defect" && hashes[it.id] === it.hash,
+      );
+      return opus(
+        again,
+        (c) => judgeSystem(c.course),
+        (it) => `${judgeContext(it, verify, new Map())}
+This item was already fixed once by the review; the fresh re-read above flagged the CURRENT text.`,
       );
     }
     case "rewrite-explanation": {
@@ -304,10 +350,13 @@ function phaseWork(phase: string, items: ReviewItem[]): PhaseWork {
       const baseline = readJson<Record<string, string>>(path.join(STATE, "baseline.json"), {});
       if (!Object.keys(baseline).length)
         throw new Error("No baseline: the review phase saves it on its first submit.");
-      return sonnet(
-        items.filter((it) => baseline[it.id] !== it.hash),
-        "verify",
-      );
+      // Re-read every item whose text differs from the baseline and has no verdict for its CURRENT
+      // text (a later fix makes it due again).
+      const hashes = readJson<Record<string, string>>(verifyHashesPath(), {});
+      const due = items.filter((it) => baseline[it.id] !== it.hash && hashes[it.id] !== it.hash);
+      const verifyWork = sonnet(due, "verify");
+      verifyWork.chunks = chunk(due, phase);
+      return verifyWork;
     }
     case "blind-sonnet":
       return sonnet(blindSample(items, ASSUME.blindPerCourse, `${SEED}:blind`), "verify");
@@ -505,6 +554,12 @@ async function submit(phase: string) {
             })
           ).id;
         job.status = "submitted";
+        if (phase === "verify") {
+          // The text each verdict will be about: a later change to the item makes it due again.
+          const hashes = readJson<Record<string, string>>(verifyHashesPath(), {});
+          for (const c of group) for (const it of c.items) hashes[it.id] = it.hash;
+          writeJson(verifyHashesPath(), hashes);
+        }
         console.log(
           `Submitted ${ref} (${job.remoteId}); reserved $${usd.toFixed(2)}, remaining $${ledger.status().remainingUsd.toFixed(2)}.`,
         );
@@ -640,9 +695,7 @@ async function collect() {
 
 function routeCommand() {
   const items = new Map(inventory().map((it) => [it.id, it]));
-  const rulings = ["judge", "rewrite-explanation", "rewrite-cloze"].flatMap((p) => [
-    ...loadRulings(p).values(),
-  ]);
+  const rulings = ROUTE_PHASES.flatMap((p) => [...loadRulings(p).values()]);
   // A later ruling on the same item (a rewrite) wins over the judge's.
   const latest = new Map(rulings.map((r) => [r.id, r]));
   const routed = route([...latest.values()]);
