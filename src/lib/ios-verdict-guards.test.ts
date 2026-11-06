@@ -18,6 +18,7 @@ const between = (s: string, a: string, b: string) => {
 };
 
 const lesson = read("LessonPlayerView.swift");
+const deck = read("LessonWordDeck.swift");
 const review = read("ReviewQueueView.swift");
 const panel = read("DesignSystem/AnswerVerdictPanel.swift");
 const components = read("DesignSystem/AlphonsoComponents.swift");
@@ -137,7 +138,7 @@ describe("chunky answer tiles and word chips", () => {
 });
 
 describe("words to learn, one card at a time", () => {
-  const vocab = between(lesson, "private struct VocabScreen: View", "struct VocabImageView: View");
+  const vocab = deck;
 
   it("pages through the words, with the Kit's button wording", () => {
     expect(vocab).toContain(".tabViewStyle(.page(indexDisplayMode: .never))");
@@ -192,13 +193,13 @@ describe("final review fixes", () => {
 
   it("a word card scrolls its own words, and its picture shrinks on a short screen", () => {
     const card = between(
-      lesson,
+      deck,
       "private func cardWords(_ item: VocabItem, index: Int) -> some View",
       "private var listContent",
     );
     expect(card).toContain("ScrollView {");
     expect(card).toContain("VocabImageView(image: image, cardHeight: Self.cardImageHeight)");
-    expect(lesson).toMatch(
+    expect(deck).toMatch(
       /static var cardImageHeight: CGFloat \{[^}]*min\(180,[^}]*UIScreen\.main\.bounds\.height/,
     );
   });

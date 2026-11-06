@@ -137,7 +137,7 @@ describe("Largest accessibility text", () => {
     const quiz = between(player, "private func quizBody(", /\/\/\/ Check, or the verdict sheet/);
     expect(quiz).toMatch(/ScrollView \{\s*VStack\(spacing: 0\) \{\s*LessonRoomView\(/);
     expect(quiz).toContain(".safeAreaInset(edge: .bottom, spacing: 0) { quizControls }");
-    expect(between(player, "private struct VocabScreen", /\n\/\/\/ The one way/)).toMatch(
+    expect(read(`${APP}/LessonWordDeck.swift`)).toMatch(
       /isAccessibilitySize[\s\S]*ScrollView \{ listContent \}/,
     );
   });

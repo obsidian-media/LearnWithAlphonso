@@ -619,6 +619,8 @@ struct LessonCard<Content: View>: View {
 /// why, and the button on. It slides up (a fade under Reduce Motion, set by the caller's transition). Long reasons
 /// scroll inside it while the button stays put.
 struct LessonVerdictSheet<Explanation: View>: View {
+    private static var explanationMaxHeight: CGFloat { 116 }
+    @State private var explanationHeight: CGFloat = 0
     let correct: Bool
     let title: String
     /// "+N XP" when this right answer pays, else nil.
@@ -677,11 +679,14 @@ struct LessonVerdictSheet<Explanation: View>: View {
                 .padding(.vertical, 10)
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(ds.card.opacity(0.75)))
             }
-            ViewThatFits(in: .vertical) {
-                explanation().fixedSize(horizontal: false, vertical: true)
-                ScrollView { explanation().frame(maxWidth: .infinity, alignment: .leading) }
+            // As tall as the explanation, up to 116 pt; a longer one scrolls inside the sheet.
+            ScrollView {
+                explanation()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { explanationHeight = $0 }
             }
-            .frame(maxHeight: 116, alignment: .top)
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(height: min(explanationHeight, Self.explanationMaxHeight))
             Button(continueTitle, action: onContinue)
                 .buttonStyle(LessonEdgeButtonStyle(variant: correct ? .right : .wrong))
                 .padding(.top, 2)
