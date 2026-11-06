@@ -19,21 +19,37 @@ data class CharacterKit(
     /** The assets folder holding the kit's WebP layers (`avatar` for Alphonso). */
     val assetFolder: String,
     val mouth: LayerRect,
-    val brows: LayerRect,
-    val earLeft: LayerRect,
-    val earRight: LayerRect,
-    val glint: LayerRect,
+    /**
+     * The group that shows his mood (neutral / raised / lowered): Alphonso's eyebrows, Hector's eyes behind his
+     * goggles. Its files are `<expressionPrefix>-neutral|raised|lowered.webp`.
+     */
+    val expression: LayerRect,
+    val expressionPrefix: String,
+    /** Ears and the glint are optional: a kit without them has no ear twitch or glint. */
+    val earLeft: LayerRect?,
+    val earRight: LayerRect?,
+    val glint: LayerRect?,
     val defaultRoom: CallRoom,
 ) {
+    fun expressionFile(brows: Brows) = "$expressionPrefix-${brows.wire}.webp"
+
     companion object {
         /** Builds a kit from its manifest.json. The layer names are the kit format's: mouth-*, brows-*, ear-*, glint-mask. */
-        fun fromManifest(manifestJson: String, id: String, displayName: String, assetFolder: String, defaultRoom: CallRoom): CharacterKit {
+        fun fromManifest(
+            manifestJson: String, id: String, displayName: String, assetFolder: String, defaultRoom: CallRoom,
+            expressionPrefix: String = "brows",
+        ): CharacterKit {
             val layers = Json.parseToJsonElement(manifestJson).jsonObject.getValue("layers").jsonObject
-            fun rect(name: String): LayerRect {
-                val o = layers.getValue(name).jsonObject
-                return LayerRect(o.getValue("x").jsonPrimitive.double, o.getValue("y").jsonPrimitive.double, o.getValue("w").jsonPrimitive.double, o.getValue("h").jsonPrimitive.double)
+            fun rect(name: String): LayerRect? = layers[name]?.jsonObject?.let { o ->
+                LayerRect(o.getValue("x").jsonPrimitive.double, o.getValue("y").jsonPrimitive.double, o.getValue("w").jsonPrimitive.double, o.getValue("h").jsonPrimitive.double)
             }
-            return CharacterKit(id, displayName, assetFolder, rect("mouth-ah"), rect("brows-neutral"), rect("ear-left-neutral"), rect("ear-right-neutral"), rect("glint-mask"), defaultRoom)
+            val left = rect("ear-left-neutral")
+            val right = rect("ear-right-neutral")
+            val hasEars = left != null && right != null
+            return CharacterKit(
+                id, displayName, assetFolder, rect("mouth-ah")!!, rect("$expressionPrefix-neutral")!!, expressionPrefix,
+                if (hasEars) left else null, if (hasEars) right else null, rect("glint-mask"), defaultRoom,
+            )
         }
     }
 }

@@ -63,10 +63,13 @@ internal fun rememberKitArt(kit: CharacterKit): Map<String, ImageBitmap> {
     val art by produceState<Map<String, ImageBitmap>>(emptyMap(), kit.assetFolder) {
         value = withContext(Dispatchers.Default) {
             buildList {
-                add(AvatarLayerFiles.BASE); add(AvatarLayerFiles.GLINT_MASK)
+                add(AvatarLayerFiles.BASE)
+                if (kit.glint != null) add(AvatarLayerFiles.GLINT_MASK)
                 AvatarLayerFiles.mouthShapes.forEach { add(AvatarLayerFiles.mouth(it)!!) }
-                Brows.entries.forEach { add(AvatarLayerFiles.brows(it)) }
-                for (side in EarSide.entries) for (t in listOf(false, true)) add(AvatarLayerFiles.ear(side, t))
+                Brows.entries.forEach { add(kit.expressionFile(it)) }
+                if (kit.earLeft != null && kit.earRight != null) {
+                    for (side in EarSide.entries) for (t in listOf(false, true)) add(AvatarLayerFiles.ear(side, t))
+                }
             }.mapNotNull { file -> loadAsset(context, "${kit.assetFolder}/$file")?.let { file to it } }.toMap()
         }
     }
@@ -184,11 +187,11 @@ internal fun CharacterAvatar(
             scale(f.breathX, f.breathY, pivot = Offset(side / 2, side))
         }) {
             layer(art[AvatarLayerFiles.BASE], LayerRect(0.0, 0.0, 1.0, 1.0))
-            layer(art[AvatarLayerFiles.ear(EarSide.LEFT, f.earLeftTwitch)], kit.earLeft)
-            layer(art[AvatarLayerFiles.ear(EarSide.RIGHT, f.earRightTwitch)], kit.earRight)
+            kit.earLeft?.let { layer(art[AvatarLayerFiles.ear(EarSide.LEFT, f.earLeftTwitch)], it) }
+            kit.earRight?.let { layer(art[AvatarLayerFiles.ear(EarSide.RIGHT, f.earRightTwitch)], it) }
             AvatarLayerFiles.mouth(f.mouth)?.let { layer(art[it], kit.mouth) }
-            layer(art[AvatarLayerFiles.brows(f.brows)], kit.brows)
-            f.glint?.let { glint(art[AvatarLayerFiles.GLINT_MASK], kit.glint, it) }
+            layer(art[kit.expressionFile(f.brows)], kit.expression)
+            kit.glint?.let { rect -> f.glint?.let { glint(art[AvatarLayerFiles.GLINT_MASK], rect, it) } }
         }
     }
 }
