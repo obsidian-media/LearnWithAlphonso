@@ -32,6 +32,17 @@ public struct ChatMessage: Sendable, Encodable, Equatable {
     }
 }
 
+/// One conversation reply: the text to show and speak, and the server's verdict on the learner's turn.
+public struct ChatReply: Sendable, Equatable {
+    public let content: String
+    public let verdict: ReplyVerdict
+
+    public init(content: String, verdict: ReplyVerdict) {
+        self.content = content
+        self.verdict = verdict
+    }
+}
+
 public enum AIConversationError: Error, Equatable {
     case badResponse
     case server(status: Int, message: String?)
@@ -149,6 +160,14 @@ public final class AIConversationClient: Sendable {
     public func chat(
         messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil
     ) async throws -> String {
+        try await chatReply(messages: messages, systemPrompt: systemPrompt, cefrLevel: cefrLevel, course: course).content
+    }
+
+    /// The same call as `chat`, keeping the server's `verdict` about the learner's last turn (the talking avatar
+    /// reacts to it). An older server sends no verdict, which reads as `.inconclusive`.
+    public func chatReply(
+        messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil
+    ) async throws -> ChatReply {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -164,7 +183,7 @@ public final class AIConversationClient: Sendable {
               let content = object["content"] as? String else {
             throw TutorError.server(message: nil)
         }
-        return content
+        return ChatReply(content: content, verdict: ReplyVerdict(wire: object["verdict"]))
     }
 
     /// POST /api/grade-translation -- a second opinion on a written translation

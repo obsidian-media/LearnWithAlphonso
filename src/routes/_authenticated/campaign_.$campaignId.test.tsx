@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
@@ -64,6 +64,8 @@ async function sendAndAwaitReply(
 }
 
 beforeEach(() => {
+  // These tests cover the classic screen; the call screen has its own describe below.
+  localStorage.setItem("showAlphonsoWhilePractising", "false");
   reportAiResponse.mockReset();
   reportAiResponse.mockResolvedValue({ ok: true });
   useProgress.setState({ course: "en" });
@@ -489,5 +491,75 @@ describe("Campaign chat page", () => {
     for (const [, init] of calls.filter(([u]) => String(u).includes("/api/tts"))) {
       expect(JSON.parse(init.body as string).course).toBe("es");
     }
+  });
+});
+
+describe("Campaign call screen (setting on, the default)", () => {
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+  });
+
+  async function renderCall() {
+    const Page = Route.options.component!;
+    const result = render(withAiConsent(<Page />, fakeConsentApi()));
+    await screen.findByTestId("call-caption");
+    return result;
+  }
+
+  it("is the full-screen call in the default study room, with the scene in the call bar", async () => {
+    await renderCall();
+    expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/converse");
+    expect(
+      screen.getByText(`${campaign.title}: scene 1 of ${campaign.scenes.length}`),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("call-caption")).toHaveTextContent(campaign.scenes[0].opener);
+    // A campaign has no picture of its own: the default room.
+    expect(screen.getByTestId("call-caption").parentElement!.style.backgroundImage).toContain(
+      "/avatar/scenes/room-light.webp",
+    );
+  });
+
+  it("keeps scene progress reachable: Continue on the call, Restart and the transcript in the sheet", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    const scene = campaign.scenes[0];
+    expect(screen.queryByRole("button", { name: /Continue:/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    for (let i = 0; i < scene.minTurns; i++) {
+      await user.type(within(sheet).getByPlaceholderText("Type or tap the mic"), `turn ${i}`);
+      await user.click(within(sheet).getByRole("button", { name: "Send" }));
+      await waitFor(() =>
+        expect(within(sheet).getByRole("log")).toHaveTextContent(`Reply ${i + 1}`),
+      );
+    }
+    expect(within(sheet).getByRole("button", { name: "Restart this scene" })).toBeInTheDocument();
+    await user.click(within(sheet).getByRole("button", { name: "Back to call" }));
+
+    const next = await screen.findByRole("button", { name: /Continue:/ });
+    await user.click(next);
+    expect(
+      screen.getByText(`${campaign.title}: scene 2 of ${campaign.scenes.length}`),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("call-caption")).toHaveTextContent(campaign.scenes[1].opener);
+  });
+
+  it("holding the talk button records, and releasing it stops", async () => {
+    await renderCall();
+    const talk = screen.getByRole("button", { name: "Hold to talk" });
+    fireEvent.pointerDown(talk);
+    await waitFor(() => expect(talk).toHaveAttribute("aria-pressed", "true"));
+    fireEvent.pointerUp(talk);
+    await waitFor(() => expect(talk).toHaveAttribute("aria-pressed", "false"));
+  });
+
+  it("with the setting off it is the classic screen", async () => {
+    localStorage.setItem("showAlphonsoWhilePractising", "false");
+    await renderPage();
+    expect(screen.queryByTestId("alphonso-stage")).toBeNull();
+    expect(screen.getByRole("heading", { name: campaign.title })).toBeInTheDocument();
   });
 });

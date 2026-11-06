@@ -206,3 +206,24 @@ describe("what he is built from", () => {
       expect(read(f), f).not.toMatch(/[A-Za-z]:[\\/](?:Users|Agent|Temp)|\/Users\/|AgentDev/);
   });
 });
+
+describe("reactions from the reply's verdict", () => {
+  it("reads the verdict in the Practice turn and hands it to the stage", () => {
+    const conversation = code(`${APP}/Sources/ConversationView.swift`);
+    expect(conversation).toContain("client.chatReply(");
+    expect(conversation).toMatch(/verdict: chatReply\.verdict/);
+    expect(conversation).toMatch(/AlphonsoAvatarStage\([\s\S]*?replyVerdict: replyVerdict/);
+  });
+
+  it("queues the reaction in the machine and plays it only when the session is idle", () => {
+    const machine = code(`${KIT}/AvatarMachine.swift`);
+    expect(machine).toMatch(/case \.correct: pendingReaction = \.happy/);
+    expect(machine).toMatch(/case \.corrected: pendingReaction = \.encouraging/);
+    expect(machine).toMatch(/if case \.idle = phase, let reaction = pendingReaction/);
+  });
+
+  it("adds no voice-driven body motion: the reaction changes the face, never the frame", () => {
+    const view = code(VIEW);
+    expect(view).not.toMatch(/replyVerdict[^\n]*(rotationEffect|offset|scaleEffect)/);
+  });
+});
