@@ -229,6 +229,15 @@ ${cssBlock(':root[data-ds-mode="night"]', t.palettes.royal.night)}
 
 ${cssBlock(':root[data-palette="meadow"][data-ds-mode="night"]', t.palettes.meadow.night)}
 
+/* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
+.ds-light {
+  color-scheme: light;
+}
+
+${cssBlock(':root[data-ds-mode="night"] .ds-light', t.palettes.royal.light)}
+
+${cssBlock(':root[data-palette="meadow"][data-ds-mode="night"] .ds-light', t.palettes.meadow.light)}
+
 @theme inline {
 ${themeInline.join("\n")}
 }

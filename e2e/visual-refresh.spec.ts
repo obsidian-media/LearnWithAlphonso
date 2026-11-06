@@ -20,7 +20,7 @@ const LESSON = curriculum[0].lessons[0];
 const SCREENS: { name: string; path: string; ready: string }[] = [
   { name: "learn", path: "/learn", ready: "Continue" },
   { name: "practice", path: "/converse", ready: "Scenarios" },
-  { name: "lesson-overview", path: `/lesson/${LESSON.id}`, ready: "Begin lesson" },
+  { name: "lesson-overview", path: `/lesson/${LESSON.id}`, ready: "Start lesson" },
   { name: "listen", path: "/listen", ready: "Listen" },
   { name: "profile", path: "/profile", ready: "Achievements" },
 ];
@@ -168,7 +168,7 @@ async function playLessonToTheEnd(
   shot?: (name: string) => Promise<unknown>,
 ) {
   await page.goto(`/lesson/${LESSON.id}`);
-  await page.getByRole("button", { name: "Begin lesson" }).click();
+  await page.getByRole("button", { name: "Start lesson" }).click();
   // The words-to-learn deck, one card at a time.
   await page.locator("[data-vocab-card]").waitFor();
   await shot?.("vocab-deck");

@@ -18,10 +18,13 @@ export function AnswerExplanation({
   explanation,
   saveCourse,
   question,
+  className = "mt-0.5 text-ink-soft",
 }: {
   explanation: string;
   saveCourse?: string;
   question?: SpanQuestion;
+  /** The paragraph's classes; the lesson's verdict sheet sets its own token colours. */
+  className?: string;
 }) {
   const allowed = saveCourse !== undefined && allowsSaving(saveCourse);
   const whole = allowed && savesWholeText(saveCourse);
@@ -30,7 +33,7 @@ export function AnswerExplanation({
   const savable = whole || spans.length > 0;
   return (
     <>
-      <p className="mt-0.5 text-ink-soft">
+      <p className={className}>
         {whole ? (
           <TappableText text={explanation} course={saveCourse} />
         ) : spans.length > 0 ? (
