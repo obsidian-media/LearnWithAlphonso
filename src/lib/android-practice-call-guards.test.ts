@@ -60,8 +60,29 @@ describe("the call screen", () => {
     for (const label of ["Hold to talk", "Show the conversation", "End the call", "Back to call"])
       expect(screen).toContain(`"${label}"`);
   });
-  it("makes the caption a polite live region", () => {
-    expect(screen).toContain("liveRegion = LiveRegionMode.Polite");
+  it("makes the caption a polite live region of its plain text, held to four lines", () => {
+    expect(screen).toContain(
+      "clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = caption.text }",
+    );
+    const caption = screen.slice(
+      screen.indexOf("private fun Caption("),
+      screen.indexOf("private fun Controls("),
+    );
+    expect(caption).toContain("maxLines = 4");
+    expect(caption).toMatch(
+      /if \(caption\.mine \|\| mode != AvatarMode\.SPEAKING\) return@produceState/,
+    );
+  });
+  it("gives TalkBack a way to talk: the hold-to-talk button has a click action that toggles", () => {
+    const controls = screen.slice(
+      screen.indexOf("private fun Controls("),
+      screen.indexOf("private fun RoundButton("),
+    );
+    expect(controls).toContain("role = Role.Button");
+    expect(controls).toMatch(
+      /onClick\(label = .*?\) \{\s*if \(recording\) onPressEnded\(\) else onPressBegan\(\)/,
+    );
+    expect(controls).toContain("disabled()");
   });
   it("holds the avatar square to 72% of the height so the controls stay clear of his mouth", () => {
     expect(screen).toContain("minOf(w * 1.28f, h * 0.72f)");

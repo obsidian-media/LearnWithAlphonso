@@ -58,14 +58,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -257,6 +262,9 @@ private fun Caption(vm: BaseConversationViewModel, playback: AudioPlayback, mode
     val words = caption.text.split(Regex("\\s+")).filter { it.isNotEmpty() }
     // Words light with the audio while he speaks the caption; otherwise the whole caption is lit.
     val lit by produceState(words.size, caption.text, mode, caption.mine) {
+        value = words.size
+        // Ticks only while his words are lighting up with the audio; a still caption costs nothing.
+        if (caption.mine || mode != AvatarMode.SPEAKING) return@produceState
         while (true) {
             val c = playback.clock()
             value = if (!caption.mine && mode == AvatarMode.SPEAKING && c != null && c.second > 0) CallCaptionRules.litWords(words.size, c.first / c.second) else words.size
@@ -272,7 +280,12 @@ private fun Caption(vm: BaseConversationViewModel, playback: AudioPlayback, mode
     }
     Text(
         text, textAlign = TextAlign.Center, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 25.sp,
-        modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite; contentDescription = caption.text },
+        // At most four lines on screen, so a long reply (or a large font scale) cannot climb over his mouth or push the
+        // talk button off a small phone. The whole text is the live region's and the sheet's.
+        maxLines = 4, overflow = TextOverflow.Ellipsis,
+        // Cleared and set: the live region is the plain text only, so the word-by-word restyling (a new
+        // AnnotatedString each tick) never makes TalkBack announce the caption again.
+        modifier = Modifier.fillMaxWidth().clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = caption.text },
     )
 }
 
@@ -282,7 +295,20 @@ private fun Controls(recording: Boolean, busy: Boolean, onChat: () -> Unit, onPr
         RoundButton(GlassStrong, "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = Color.White) }
         Box(
             Modifier.size(78.dp).clip(CircleShape).background(if (recording) Green else Color.White)
-                .semantics { contentDescription = "Hold to talk" }
+                .semantics {
+                    contentDescription = "Hold to talk"
+                    role = Role.Button
+                    stateDescription = if (recording) "Recording" else "Not recording"
+                    // TalkBack has no hold: a double-tap starts talking and the next one stops and sends.
+                    if (busy) {
+                        disabled()
+                    } else {
+                        onClick(label = if (recording) "Stop and send" else "Start talking") {
+                            if (recording) onPressEnded() else onPressBegan()
+                            true
+                        }
+                    }
+                }
                 .holdToTalk(enabled = !busy, onPressBegan, onPressEnded),
             contentAlignment = Alignment.Center,
         ) { Icon(Icons.Filled.Mic, null, tint = Color(0xFF17241C), modifier = Modifier.size(30.dp)) }
