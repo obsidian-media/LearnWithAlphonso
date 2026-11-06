@@ -252,7 +252,7 @@ struct PracticeCallView<Sheet: View>: View {
         HStack(spacing: 26) {
             Button { showSheet = true } label: {
                 Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 22, weight: .semiBold))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 54, height: 54)
                     .background(glassStrong, in: Circle())
@@ -276,7 +276,7 @@ struct PracticeCallView<Sheet: View>: View {
 
             Button(action: onEnd) {
                 Image(systemName: "phone.down.fill")
-                    .font(.system(size: 22, weight: .semiBold))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 54, height: 54)
                     .background(Color(red: 0.9, green: 0.28, blue: 0.24), in: Circle())
