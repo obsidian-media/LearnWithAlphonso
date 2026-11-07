@@ -20,12 +20,15 @@ import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getProfileOverview } from "../../lib/profile.functions";
 import { fetchProgress } from "../../lib/sync.functions";
+import type { ProfileTab } from "../../lib/profile-tabs";
 import { useProStatus } from "../../lib/use-pro-status";
-import type { Course } from "../../data/courses";
+import { COURSES, type Course } from "../../data/courses";
+import type { ProfileOverview } from "../../lib/profile-overview";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Achievements,
   BigNumbers,
+  CompactProfileHeader,
   CourseSwitcher,
   FriendsWeek,
   HeatMap,
@@ -34,6 +37,10 @@ import {
   LevelCard,
   ProfileHero,
   ProfileSkeleton,
+  ProfileTabBar,
+  ProgressFold,
+  SkillsSlot,
+  progressFoldSummaries,
   Records,
   ShareWeek,
   ThisWeek,
@@ -60,6 +67,31 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
+function ProgressTab({ o }: { o: ProfileOverview }) {
+  const sum = progressFoldSummaries(o);
+  const course = COURSES.find((c) => c.id === o.course)!;
+  return (
+    <>
+      <SkillsSlot />
+      <ProgressFold headingId="heat-heading" title="Activity heat map" summary={sum.heat}>
+        <HeatMap o={o} />
+      </ProgressFold>
+      <ProgressFold headingId="records-heading" title="Personal records" summary={sum.records}>
+        <Records o={o} />
+      </ProgressFold>
+      <ProgressFold headingId="level-heading" title={`Your ${course.label} level`} summary={sum.level}>
+        <LevelCard o={o} />
+      </ProgressFold>
+      <ProgressFold headingId="weak-heading" title="Weak spots" summary={sum.weak}>
+        <WeakSpots o={o} />
+      </ProgressFold>
+      <ProgressFold headingId="ach-heading" title="Achievements" summary={sum.achievements}>
+        <Achievements o={o} />
+      </ProgressFold>
+    </>
+  );
+}
+
 /** Profile's data in one request, cached per course for a minute so coming back to the tab does not refetch it. */
 function profileOverviewQuery(course: Course) {
   return {
@@ -77,6 +109,7 @@ function ProfilePage() {
   const overview = useQuery(profileOverviewQuery(course));
   const pro = useProStatus();
   const settingsRef = useRef<HTMLHeadingElement>(null);
+  const [tab, setTab] = useState<ProfileTab>("overview");
 
   // The course is app-wide (Learn, Practice and Hector follow it): this is the same switch as Learn's.
   async function switchCourse(next: Course) {
@@ -96,23 +129,49 @@ function ProfilePage() {
       <div className="ds-light bg-ds-surface pb-12 font-[family-name:var(--ds-font-body)] text-ds-brand">
         {o ? (
           <>
-            <ProfileHero
-              o={o}
-              onSettings={() => settingsRef.current?.scrollIntoView({ behavior: "smooth" })}
-            />
+            {tab === "overview" ? (
+              <ProfileHero
+                o={o}
+                onSettings={() => {
+                  setTab("overview");
+                  window.setTimeout(
+                    () => settingsRef.current?.scrollIntoView({ behavior: "smooth" }),
+                    0,
+                  );
+                }}
+              />
+            ) : (
+              <div className="px-3.5 pt-4">
+                <CompactProfileHeader o={o} />
+              </div>
+            )}
             <div className="grid gap-3 px-3.5" aria-busy={switching || overview.isFetching}>
-              <CourseSwitcher o={o} busy={switching} onSwitch={(c) => void switchCourse(c)} />
-              <BigNumbers o={o} />
-              <ThisWeek o={o} />
-              <HeatMap o={o} />
-              <Records o={o} />
-              <LevelCard o={o} />
-              <WeakSpots o={o} />
-              <HectorNoticed o={o} pro={pro.state === "pro"} />
-              <Achievements o={o} />
-              <LeagueCard o={o} />
-              <FriendsWeek o={o} />
-              <ShareWeek o={o} />
+              {tab === "overview" && (
+                <CourseSwitcher o={o} busy={switching} onSwitch={(c) => void switchCourse(c)} />
+              )}
+              <ProfileTabBar tab={tab} onChange={setTab} />
+              <div
+                role="tabpanel"
+                id="profile-tabpanel"
+                aria-labelledby={`profile-tab-${tab}`}
+                className="grid gap-3"
+              >
+                {tab === "overview" && (
+                  <>
+                    <BigNumbers o={o} />
+                    <ThisWeek o={o} />
+                    <HectorNoticed o={o} pro={pro.state === "pro"} />
+                  </>
+                )}
+                {tab === "progress" && <ProgressTab o={o} />}
+                {tab === "social" && (
+                  <>
+                    <LeagueCard o={o} />
+                    <FriendsWeek o={o} />
+                    <ShareWeek o={o} />
+                  </>
+                )}
+              </div>
             </div>
           </>
         ) : overview.isError ? (
@@ -129,7 +188,7 @@ function ProfilePage() {
         ) : (
           <ProfileSkeleton />
         )}
-        <Settings headingRef={settingsRef} />
+        {(tab === "overview" || !o) && <Settings headingRef={settingsRef} />}
       </div>
     </MobileFrame>
   );

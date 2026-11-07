@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useId, useMemo, useState, type ReactNode } from "react";
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
@@ -35,6 +35,15 @@ import {
   type WeakItem,
 } from "@/lib/profile-overview";
 import {
+  PROFILE_TABS,
+  achievementsSummary,
+  heatSummary,
+  recordsSummary,
+  stepTab,
+  weakSummary,
+  type ProfileTab,
+} from "@/lib/profile-tabs";
+import {
   downloadBlob,
   drawShareCard,
   shareOrDownload,
@@ -53,7 +62,14 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
 const CARD = "rounded-[18px] border-2 border-ds-line bg-ds-card";
 
+/** Inside a Progress fold the card header is the fold button, so the section only keeps its aside link. */
+const FoldedContext = createContext(false);
+
 function SectionHead({ id, title, aside }: { id: string; title: string; aside?: ReactNode }) {
+  const folded = useContext(FoldedContext);
+  if (folded) {
+    return aside ? <div className="flex justify-end ds-type-caption text-ds-choice">{aside}</div> : null;
+  }
   return (
     <div className="mt-2 flex items-baseline justify-between gap-3">
       <h2 id={id} className="ds-type-headline font-extrabold text-ds-ink">
@@ -959,4 +975,135 @@ export function ProfileSkeleton() {
       <div className="h-24 animate-pulse rounded-[18px] bg-ds-sunk motion-reduce:animate-none" />
     </div>
   );
+}
+
+// ---------------------------------------------------------------- tabs (round 6.1)
+
+export function ProfileTabBar({
+  tab,
+  onChange,
+}: {
+  tab: ProfileTab;
+  onChange: (t: ProfileTab) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Profile sections"
+      className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-full bg-ds-line p-1"
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight") onChange(stepTab(tab, 1));
+        if (e.key === "ArrowLeft") onChange(stepTab(tab, -1));
+      }}
+    >
+      {PROFILE_TABS.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          id={`profile-tab-${t.id}`}
+          aria-selected={t.id === tab}
+          aria-controls="profile-tabpanel"
+          tabIndex={t.id === tab ? 0 : -1}
+          onClick={() => onChange(t.id)}
+          className={`min-h-11 rounded-full px-2 ds-type-footnote font-extrabold ${
+            t.id === tab ? "bg-ds-card text-ds-ink shadow-[var(--ds-shadow-resting)]" : "text-ds-ink-soft"
+          }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Avatar and name on the Progress and Social tabs, where the full hero would push the content off screen. */
+export function CompactProfileHeader({ o }: { o: ProfileOverview }) {
+  const name = o.profile.displayName || "Learner";
+  return (
+    <div className="flex items-center gap-2.5" data-profile-compact="">
+      <ProfileAvatar
+        seed={o.profile.avatarSeed}
+        name={name}
+        className="size-[38px]"
+        textClass="ds-type-footnote"
+      />
+      <h1 className="ds-type-title break-words text-ds-ink">{name}</h1>
+    </div>
+  );
+}
+
+/** A Progress card that shows a one-line summary and opens in place. Closed by default. */
+export function ProgressFold({
+  headingId,
+  title,
+  summary,
+  children,
+}: {
+  headingId: string;
+  title: string;
+  summary: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  return (
+    <section aria-labelledby={headingId} className={`${CARD} overflow-hidden`}>
+      <h2 id={headingId} className="m-0">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={bodyId}
+          onClick={() => setOpen((v) => !v)}
+          className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left"
+        >
+          <span className="ds-type-headline font-extrabold text-ds-ink">{title}</span>
+          <span className="flex items-center gap-2 ds-type-caption text-ds-ink-soft">
+            {summary}
+            <span aria-hidden="true">{open ? "▾" : "▸"}</span>
+          </span>
+        </button>
+      </h2>
+      {open && (
+        <div id={bodyId} className="px-3 pb-3">
+          <FoldedContext.Provider value={true}>{children}</FoldedContext.Provider>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Where the Skills radar goes. Its data (per-skill scores from answers) does not exist yet, so this is an
+ * honest empty state and no number is invented; a later change replaces the body.
+ */
+export function SkillsSlot() {
+  return (
+    <section aria-labelledby="skills-heading" className={`${CARD} grid gap-1 p-3.5`} data-skills-slot="">
+      <h2 id="skills-heading" className="ds-type-headline font-extrabold text-ds-ink">
+        Skills
+      </h2>
+      <p className="ds-type-footnote text-ds-ink-soft">
+        Your speaking, listening, reading, writing and vocabulary shape will appear here once there is enough
+        practice to show it.
+      </p>
+    </section>
+  );
+}
+
+export function progressFoldSummaries(o: ProfileOverview) {
+  const heat = heatMap(o.today, o.activity);
+  const recs = personalRecords(o);
+  const cefr = o.courses.find((c) => c.course === o.course)?.cefrLevel ?? "A1";
+  const done = o.completions.filter((c) => c.language === o.course).map((c) => c.lessonId);
+  const lvl = levelProgress(o.course, cefr, done);
+  const weak = weakSpots(o.weakItems);
+  const unlocked = o.achievements.filter((a) => ACHIEVEMENTS.some((x) => x.id === a.id)).length;
+  return {
+    heat: heatSummary(heat.activeDays),
+    records: recordsSummary(recs.bestStreak),
+    level: `${lvl.level} · ${lvl.pct}%`,
+    weak: weakSummary(weak.total),
+    achievements: achievementsSummary(unlocked, ACHIEVEMENTS.length),
+  };
 }
