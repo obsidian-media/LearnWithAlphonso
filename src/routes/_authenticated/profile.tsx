@@ -1,13 +1,9 @@
 import { DELETE_WEB_SUBSCRIPTION_NOTE } from "@/lib/account-deletion-copy";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
-import { SceneBackdrop } from "../../components/SceneBackdrop";
-import { AchievementBadge } from "../../components/AchievementBadge";
-import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { SegmentedControl } from "../../components/SegmentedControl";
-import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
@@ -22,10 +18,27 @@ import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
 import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/ProfileAboutYou";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
-import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
+import { getProfileOverview } from "../../lib/profile.functions";
+import { fetchProgress } from "../../lib/sync.functions";
+import { useProStatus } from "../../lib/use-pro-status";
+import type { Course } from "../../data/courses";
 import { supabase } from "@/integrations/supabase/client";
-import { Icon3D } from "../../components/Icon3D";
-import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
+import {
+  Achievements,
+  BigNumbers,
+  CourseSwitcher,
+  FriendsWeek,
+  HeatMap,
+  HectorNoticed,
+  LeagueCard,
+  LevelCard,
+  ProfileHero,
+  ProfileSkeleton,
+  Records,
+  ShareWeek,
+  ThisWeek,
+  WeakSpots,
+} from "../../components/profile/ProfileSections";
 
 /** The name went through confirm_display_name first; only a later write failed. */
 const DETAILS_SAVE_FAILED = "Your name was saved, but something else wasn't. Try again.";
@@ -47,18 +60,91 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
+/** Profile's data in one request, cached per course for a minute so coming back to the tab does not refetch it. */
+function profileOverviewQuery(course: Course) {
+  return {
+    queryKey: ["profile-overview", course],
+    queryFn: () => getProfileOverview({ data: { course } }),
+    staleTime: 60_000,
+  } as const;
+}
+
 function ProfilePage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  const course = useProgress((s) => s.course);
+  const setCourse = useProgress((s) => s.setCourse);
+  const hydrate = useProgress((s) => s.hydrate);
+  const [switching, setSwitching] = useState(false);
+  const overview = useQuery(profileOverviewQuery(course));
+  const pro = useProStatus();
+  const settingsRef = useRef<HTMLHeadingElement>(null);
+
+  // The course is app-wide (Learn, Practice and Hector follow it): this is the same switch as Learn's.
+  async function switchCourse(next: Course) {
+    if (next === course) return;
+    setSwitching(true);
+    setCourse(next);
+    try {
+      hydrate(await fetchProgress({ data: { course: next } }));
+    } finally {
+      setSwitching(false);
+    }
+  }
+
+  const o = overview.data;
+  return (
+    <MobileFrame>
+      <div className="ds-light bg-ds-surface pb-12 font-[family-name:var(--ds-font-body)] text-ds-brand">
+        {o ? (
+          <>
+            <ProfileHero
+              o={o}
+              onSettings={() => settingsRef.current?.scrollIntoView({ behavior: "smooth" })}
+            />
+            <div className="grid gap-3 px-3.5" aria-busy={switching || overview.isFetching}>
+              <CourseSwitcher o={o} busy={switching} onSwitch={(c) => void switchCourse(c)} />
+              <BigNumbers o={o} />
+              <ThisWeek o={o} />
+              <HeatMap o={o} />
+              <Records o={o} />
+              <LevelCard o={o} />
+              <WeakSpots o={o} />
+              <HectorNoticed o={o} pro={pro.state === "pro"} />
+              <Achievements o={o} />
+              <LeagueCard o={o} />
+              <FriendsWeek o={o} />
+              <ShareWeek o={o} />
+            </div>
+          </>
+        ) : overview.isError ? (
+          <div role="alert" className="grid gap-3 px-4 py-16 text-center">
+            <p className="ds-type-headline text-ds-ink">Your profile didn't load.</p>
+            <button
+              type="button"
+              onClick={() => void overview.refetch()}
+              className="mx-auto min-h-11 rounded-[var(--ds-radius-control)] bg-ds-action px-5 ds-type-footnote font-extrabold text-ds-on-action"
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <ProfileSkeleton />
+        )}
+        <Settings headingRef={settingsRef} />
+      </div>
+    </MobileFrame>
+  );
+}
+
+const PANEL = "mt-3 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-4";
+const H2 = "mt-8 ds-type-title text-ds-ink";
+
+/** Everything Profile did before round 6: picture and name, About you, theme, AI, voices, your data, sign out. */
+function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const p = useProgress();
   const theme = useTheme((s) => s.theme);
   const setTheme = useTheme((s) => s.setTheme);
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
-  const { data: weaknessTrend } = useQuery({
-    queryKey: ["weakness-trend"],
-    queryFn: () => getWeaknessTrend(),
-  });
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -88,6 +174,7 @@ function ProfilePage() {
         );
       }
       await qc.invalidateQueries({ queryKey: ["me"] });
+      await qc.invalidateQueries({ queryKey: ["profile-overview"] });
     } catch (e) {
       setNameError(socialFailureMessage(e));
     } finally {
@@ -102,224 +189,129 @@ function ProfilePage() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const unlockedSet = new Set(p.unlockedAchievements);
-
   return (
-    <MobileFrame>
-      <SceneBackdrop scene="profile" focus="50% 60%" />
-      <div className="relative z-10 px-6 pb-12 pt-6">
-        <div className="flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md">
-          <ProfileAvatarEditor
-            seed={avatarSeed}
-            name={name}
-            onSaved={(seed) => {
-              setAvatarSeed(seed);
-              void qc.invalidateQueries({ queryKey: ["me"] });
-            }}
-          />
-          <div className="flex-1">
-            <h1 className="font-display text-[22px] font-semibold text-ink">{name || "Learner"}</h1>
-            <div className="mt-1 flex items-center gap-2">
-              <LeagueTierBadge tier={p.leagueTier} size="sm" />
-              <span className="text-[11px] text-ink-soft">{p.longestStreak}-day best streak</span>
-            </div>
-          </div>
-        </div>
+    <section aria-labelledby="settings-heading" className="mt-10 px-5">
+      <h2
+        id="settings-heading"
+        ref={headingRef}
+        className="scroll-mt-4 ds-type-display text-ds-ink"
+      >
+        Settings
+      </h2>
 
-        <div className="mt-24 grid grid-cols-3 gap-2">
-          <Stat label="XP" value={p.xp} emoji="⚡" tone="sun" />
-          <Stat label="Streak" value={p.streak} emoji="🔥" tone="coral" />
-          <Stat label="Freezes" value={p.streakFreezes} emoji="❄️" tone="sky" />
-        </div>
-
-        <div
-          data-sheet
-          className="-mx-6 mt-5 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-3 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
-        >
-          <ActivityHeatmap dates={p.activityDates} isStudioInk={isStudioInk} />
-
-          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Achievements</h2>
-          <p className="text-xs text-ink-soft">
-            {unlockedSet.size} of {ACHIEVEMENTS.length} unlocked
-          </p>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {[
-              ...ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)),
-              ...ACHIEVEMENTS.filter((a) => !unlockedSet.has(a.id)),
-            ].map((a) => (
-              <div key={a.id} data-achievement={a.id}>
-                <AchievementBadge achievement={a} unlocked={unlockedSet.has(a.id)} />
-              </div>
-            ))}
-          </div>
-
-          {weaknessTrend && weaknessTrend.categories.length > 0 && (
-            <>
-              <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
-                Weakness trend
-              </h2>
-              <p className="text-xs text-ink-soft">
-                Grammar gaps we've spotted, and how they're going
-              </p>
-              <div
-                className={
-                  isStudioInk
-                    ? "mt-3 space-y-3 border-b border-hairline pb-4"
-                    : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
-                }
-              >
-                {weaknessTrend.categories.slice(0, 8).map((c) => (
-                  <div key={c.category} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="capitalize text-ink">{c.category.replace(/-/g, " ")}</span>
-                    {c.openCount > 0 ? (
-                      <span className="whitespace-nowrap text-xs font-medium text-ember">
-                        Still working on it
-                      </span>
-                    ) : (
-                      <span className="whitespace-nowrap text-xs font-medium text-moss">
-                        Mastered ({c.resolvedCount}×)
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          <Link
-            to="/profile/friends"
-            className={
-              isStudioInk
-                ? "mt-8 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
-                : "mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
-            }
-          >
-            <span className="flex items-center gap-3">
-              <Icon3D emoji="👥" size={36} />
-              <span>
-                <span className="block font-display text-base font-semibold text-ink">Friends</span>
-                <span className="block text-xs text-ink-soft/80">
-                  See how your friends are doing, or invite one
-                </span>
-              </span>
-            </span>
-            <span className="text-ink-soft">→</span>
-          </Link>
-
-          <ProfileAboutYou leaderboardCountry={profile?.country ?? null} />
-
-          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
-          <div
-            className={
-              isStudioInk
-                ? "mt-3 border-b border-hairline pb-4"
-                : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
-            }
-          >
-            <SegmentedControl
-              ariaLabel="Choose a theme"
-              value={theme}
-              onChange={setTheme}
-              options={[
-                { value: "meadow", label: "Meadow" },
-                { value: "studio-ink", label: "Studio Ink" },
-                { value: "manuscript", label: "Manuscript" },
-                { value: "canopy", label: "Canopy" },
-              ]}
-            />
-          </div>
-
-          <AiFeaturesSetting />
-
-          <AvatarSetting />
-
-          <SoundEffectsSetting />
-
-          <VoicesSetting />
-
-          <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
-          <div
-            className={
-              isStudioInk
-                ? "mt-3 space-y-2 border-b border-hairline pb-4"
-                : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
-            }
-          >
-            <label
-              htmlFor="profile-display-name"
-              className="block text-[11px] uppercase tracking-wider text-ink-soft"
-            >
-              Display name
-            </label>
-            <input
-              id="profile-display-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setNameError(null);
-              }}
-              maxLength={40}
-              className={
-                isStudioInk
-                  ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm outline-none focus:border-moss"
-                  : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
-              }
-            />
-            {nameError && (
-              <p role="alert" className="mt-2 text-sm text-ember">
-                {nameError}
-              </p>
-            )}
-            <button
-              onClick={save}
-              disabled={saving}
-              className="mt-2 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
-
-          <YourData
-            isStudioInk={isStudioInk}
-            onSignedOut={() => navigate({ to: "/auth", replace: true })}
-          />
-
-          <button
-            onClick={signOut}
-            className="mt-4 w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
-          >
-            Sign out
-          </button>
-
-          {/* A visible way to report a problem or send feedback (the page has the address and the answers
-            people arrive with). The iOS Settings screen has no equivalent yet; that needs a build. */}
-          <Link
-            to="/support"
-            className="mt-3 block w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-center text-sm font-medium text-ink-soft hover:text-ink"
-          >
-            Help and feedback
-          </Link>
-
-          <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
-            <Link to="/privacy" className="hover:text-ink">
-              Privacy
-            </Link>
-            <span aria-hidden>·</span>
-            <Link to="/terms" className="hover:text-ink">
-              Terms
-            </Link>
-            <span aria-hidden>·</span>
-            <Link to="/cookies" className="hover:text-ink">
-              Cookies
-            </Link>
-          </div>
-        </div>
+      <div className={`${PANEL} flex items-center gap-4`}>
+        <ProfileAvatarEditor
+          seed={avatarSeed}
+          name={name}
+          onSaved={(seed) => {
+            setAvatarSeed(seed);
+            void qc.invalidateQueries({ queryKey: ["me"] });
+            void qc.invalidateQueries({ queryKey: ["profile-overview"] });
+          }}
+        />
+        <p className="ds-type-footnote text-ds-ink-soft">
+          Your picture shows on Profile, friends and leaderboards.
+        </p>
       </div>
-    </MobileFrame>
+
+      <ProfileAboutYou leaderboardCountry={profile?.country ?? null} />
+
+      <h2 className={H2}>Theme</h2>
+      <div className={PANEL}>
+        <SegmentedControl
+          ariaLabel="Choose a theme"
+          value={theme}
+          onChange={setTheme}
+          options={[
+            { value: "meadow", label: "Meadow" },
+            { value: "studio-ink", label: "Studio Ink" },
+            { value: "manuscript", label: "Manuscript" },
+            { value: "canopy", label: "Canopy" },
+          ]}
+        />
+      </div>
+
+      <AiFeaturesSetting />
+
+      <AvatarSetting />
+
+      <SoundEffectsSetting />
+
+      <VoicesSetting />
+
+      <h2 className={H2}>Account</h2>
+      <div className={`${PANEL} space-y-2`}>
+        <label htmlFor="profile-display-name" className="block ds-type-overline text-ds-ink-soft">
+          Display name
+        </label>
+        <input
+          id="profile-display-name"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameError(null);
+          }}
+          maxLength={40}
+          className="min-h-11 w-full rounded-[var(--ds-radius-key)] border-2 border-ds-line bg-ds-surface px-3 ds-type-body text-ds-ink outline-none focus:border-ds-choice"
+        />
+        {nameError && (
+          <p role="alert" className="mt-2 ds-type-footnote text-ds-wrong-ink">
+            {nameError}
+          </p>
+        )}
+        <button
+          onClick={save}
+          disabled={saving}
+          className="mt-2 min-h-11 w-full rounded-full bg-ds-brand px-4 ds-type-footnote font-bold text-ds-card disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      </div>
+
+      <Link
+        to="/profile/friends"
+        className={`${PANEL} flex min-h-11 items-center justify-between ds-type-footnote font-bold text-ds-brand`}
+      >
+        Friends and invites
+        <span aria-hidden="true">→</span>
+      </Link>
+
+      <YourData onSignedOut={() => navigate({ to: "/auth", replace: true })} />
+
+      <button
+        onClick={signOut}
+        className="mt-4 min-h-11 w-full rounded-full border-2 border-ds-line bg-ds-card px-4 ds-type-footnote text-ds-ink-soft hover:text-ds-ink"
+      >
+        Sign out
+      </button>
+
+      {/* A visible way to report a problem or send feedback (the page has the address and the answers people
+        arrive with). */}
+      <Link
+        to="/support"
+        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-full border-2 border-ds-line bg-ds-card px-4 ds-type-footnote text-ds-ink-soft hover:text-ds-ink"
+      >
+        Help and feedback
+      </Link>
+
+      <div className="mt-6 flex items-center justify-center gap-4 ds-type-caption text-ds-ink-soft">
+        <Link to="/privacy" className="hover:text-ds-ink">
+          Privacy
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/terms" className="hover:text-ds-ink">
+          Terms
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/cookies" className="hover:text-ds-ink">
+          Cookies
+        </Link>
+      </div>
+    </section>
   );
 }
 
-function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSignedOut: () => void }) {
+function YourData({ onSignedOut }: { onSignedOut: () => void }) {
   const [busy, setBusy] = useState<null | "export" | "delete">(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -364,91 +356,40 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
 
   return (
     <>
-      <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Your data</h2>
-      <div
-        className={
-          isStudioInk
-            ? "mt-3 space-y-3 border-b border-hairline pb-4"
-            : "mt-3 space-y-3 rounded-2xl border border-hairline bg-surface p-4"
-        }
-      >
-        <p className="text-xs leading-relaxed text-ink-soft">
+      <h2 className={H2}>Your data</h2>
+      <div className={`${PANEL} space-y-3`}>
+        <p className="ds-type-footnote text-ds-ink-soft">
           Download everything we hold about you, or permanently erase your account.
         </p>
-        {isStudioInk ? (
-          <button
-            onClick={download}
-            disabled={busy !== null}
-            className="text-sm font-medium text-moss underline underline-offset-4 disabled:opacity-50"
-          >
-            {busy === "export" ? "Preparing…" : "Download my data"}
-          </button>
-        ) : (
-          <button
-            onClick={download}
-            disabled={busy !== null}
-            className="w-full rounded-full border border-hairline bg-parchment px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
-          >
-            {busy === "export" ? "Preparing…" : "Download my data"}
-          </button>
-        )}
+        <button
+          onClick={download}
+          disabled={busy !== null}
+          className="min-h-11 w-full rounded-full border-2 border-ds-line bg-ds-surface px-4 ds-type-footnote font-bold text-ds-ink disabled:opacity-50"
+        >
+          {busy === "export" ? "Preparing…" : "Download my data"}
+        </button>
 
         {!confirming ? (
           <button
             onClick={() => setConfirming(true)}
             disabled={busy !== null}
-            className={
-              isStudioInk
-                ? "block text-sm font-medium text-rose-500 underline underline-offset-4 disabled:opacity-50"
-                : "w-full rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 disabled:opacity-50"
-            }
+            className="min-h-11 w-full rounded-full border-2 border-ds-wrong-tint bg-ds-wrong-tint px-4 ds-type-footnote font-bold text-ds-wrong-ink disabled:opacity-50"
           >
             Delete my account
           </button>
-        ) : isStudioInk ? (
-          <div className="space-y-2 border-l-[3px] border-l-rose-400 py-1 pl-4">
-            <p className="text-xs leading-relaxed text-rose-500">
-              This permanently deletes your account, progress, streaks, achievements and review
-              history. It cannot be undone. Type DELETE to confirm.
-            </p>
-            <p className="text-xs leading-relaxed text-rose-700">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
-            <input
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-              placeholder="DELETE"
-              className="w-full border-b border-rose-300 bg-transparent px-0 py-2 text-sm outline-none"
-            />
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setConfirming(false);
-                  setConfirmText("");
-                }}
-                className="text-sm text-ink-soft underline underline-offset-4"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={remove}
-                disabled={confirmText !== "DELETE" || busy !== null}
-                className="text-sm font-semibold text-rose-500 underline underline-offset-4 disabled:opacity-50"
-              >
-                {busy === "delete" ? "Deleting…" : "Delete forever"}
-              </button>
-            </div>
-          </div>
         ) : (
-          <div className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-3">
-            <p className="text-xs leading-relaxed text-rose-800">
+          <div className="space-y-2 rounded-[var(--ds-radius-key)] border-2 border-ds-wrong-tint bg-ds-wrong-tint p-3">
+            <p className="ds-type-footnote text-ds-wrong-ink">
               This permanently deletes your account, progress, streaks, achievements and review
               history. It cannot be undone. Type DELETE to confirm.
             </p>
-            <p className="text-xs leading-relaxed text-rose-700">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
+            <p className="ds-type-footnote text-ds-wrong-ink">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
             <input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
               placeholder="DELETE"
-              className="w-full rounded-lg border border-rose-200 bg-surface px-3 py-2 text-sm outline-none"
+              aria-label="Type DELETE to confirm"
+              className="min-h-11 w-full rounded-[var(--ds-radius-key)] border-2 border-ds-line bg-ds-card px-3 ds-type-body outline-none"
             />
             <div className="flex gap-2">
               <button
@@ -456,14 +397,14 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
                   setConfirming(false);
                   setConfirmText("");
                 }}
-                className="flex-1 rounded-full border border-hairline bg-surface px-3 py-2 text-sm text-ink-soft"
+                className="min-h-11 flex-1 rounded-full border-2 border-ds-line bg-ds-card px-3 ds-type-footnote text-ds-ink-soft"
               >
                 Cancel
               </button>
               <button
                 onClick={remove}
                 disabled={confirmText !== "DELETE" || busy !== null}
-                className="flex-1 rounded-full bg-rose-600 px-3 py-2 text-sm font-semibold text-surface disabled:opacity-50"
+                className="min-h-11 flex-1 rounded-full bg-ds-wrong px-3 ds-type-footnote font-bold text-ds-on-wrong disabled:opacity-50"
               >
                 {busy === "delete" ? "Deleting…" : "Delete forever"}
               </button>
@@ -471,67 +412,11 @@ function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSigned
           </div>
         )}
         {error && (
-          <p role="alert" className="text-xs text-rose-700">
+          <p role="alert" className="ds-type-footnote text-ds-wrong-ink">
             {error}
           </p>
         )}
       </div>
     </>
-  );
-}
-
-/** A big-number stat with a 3D icon on a colour tile. */
-function Stat({
-  label,
-  value,
-  emoji,
-  tone,
-}: {
-  label: string;
-  value: number;
-  emoji: string;
-  tone: TileTone;
-}) {
-  return (
-    <div
-      data-big-stat=""
-      data-tone={tone}
-      className={`card-lift flex flex-col items-center rounded-3xl px-3 py-3 text-center ${TILE_TONE_CLASSES[tone]}`}
-    >
-      <Icon3D emoji={emoji} size={32} />
-      <p className="tnum mt-1 font-display text-[26px] font-bold leading-none text-ink">{value}</p>
-      <p className="mt-1 text-xs font-semibold">{label}</p>
-    </div>
-  );
-}
-
-function ActivityHeatmap({ dates, isStudioInk }: { dates: string[]; isStudioInk: boolean }) {
-  const set = new Set(dates);
-  const cells: { date: string; active: boolean }[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const iso = d.toISOString().slice(0, 10);
-    cells.push({ date: iso, active: set.has(iso) });
-  }
-  return (
-    <div
-      className={
-        isStudioInk
-          ? "mt-5 border-b border-hairline pb-4"
-          : "mt-5 rounded-2xl border border-hairline bg-parchment p-4"
-      }
-    >
-      <p className="mb-2 text-[10px] uppercase tracking-wider text-ink-soft">Last 30 days</p>
-      <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(15, 1fr)" }}>
-        {cells.map((c) => (
-          <span
-            key={c.date}
-            title={c.date}
-            className={`aspect-square rounded ${c.active ? "bg-moss" : "bg-surface ring-1 ring-hairline"}`}
-          />
-        ))}
-      </div>
-    </div>
   );
 }

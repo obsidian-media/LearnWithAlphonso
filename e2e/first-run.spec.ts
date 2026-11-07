@@ -1,5 +1,6 @@
 import { expect, test, type Page, type Request } from "@playwright/test";
 import { fakeServerFns, signInAsFakeUser } from "./lesson-helpers";
+import { newLearner } from "../src/lib/__testutils__/profile-fixtures";
 
 /**
  * The first run (visual round 6, BACKLOG 0.0-bd) in a real browser, with no backend. What it guards that a unit test
@@ -264,7 +265,9 @@ test("Profile: change the picture to one of the 16 animals", async ({ page }) =>
   await fakeServerFns(page, {
     getMyProfile: { display_name: "Sam", country: null, avatar_seed: "3fa9c1d2" },
     getNameStatus: null,
-    getWeaknessTrend: { categories: [] },
+    getProfileOverview: newLearner({
+      profile: { displayName: "Sam", avatarSeed: "3fa9c1d2", country: null, createdAt: null },
+    }),
     updateProfile: { ok: true },
   });
   await page.addInitScript(() =>
