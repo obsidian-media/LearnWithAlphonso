@@ -86,11 +86,16 @@ struct FirstRunScreen<Room: View, Content: View, Footer: View>: View {
             .scrollBounceBehavior(.basedOnSize)
             .ignoresSafeArea(.container, edges: underStatusBar ? .top : [])
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                footer()
-                    .padding(.horizontal, AlphonsoDS.Space.gutter)
-                    .padding(.top, AlphonsoDS.Space.s3)
-                    .padding(.bottom, AlphonsoDS.Space.s2)
-                    .background(ds.surface.ignoresSafeArea(edges: .bottom))
+                // A screen with no footer (EmptyView) must add NOTHING here: padding and a background on an
+                // EmptyView make the inset fill the whole screen with the surface colour, which painted the
+                // sign-in step blank (the accessibility tree was complete, the pixels were not).
+                if Footer.self != EmptyView.self {
+                    footer()
+                        .padding(.horizontal, AlphonsoDS.Space.gutter)
+                        .padding(.top, AlphonsoDS.Space.s3)
+                        .padding(.bottom, AlphonsoDS.Space.s2)
+                        .background(ds.surface.ignoresSafeArea(edges: .bottom))
+                }
             }
             // The room runs up under the status bar; the HUD over it keeps clear of it.
             .environment(\.firstRunTopInset, underStatusBar ? outer.safeAreaInsets.top : 0)
