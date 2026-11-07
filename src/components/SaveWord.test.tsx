@@ -9,6 +9,12 @@ import { AnswerExplanation } from "./AnswerFeedback";
 import { SaveWordHint, SaveWordProvider } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
+const playSfx = vi.hoisted(() => vi.fn((_event: string) => true));
+vi.mock("../lib/sfx", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/sfx")>();
+  return { ...actual, playSfx: (event: string) => playSfx(event) };
+});
+
 const saved: SavedWordResult = {
   alreadySaved: false,
   word: "tea",
@@ -324,5 +330,27 @@ describe("SaveWordHint", () => {
     render(withProvider(<SaveWordHint />));
     expect(screen.getByText(/tap a word to save it/i)).toBeInTheDocument();
     spy.mockRestore();
+  });
+});
+
+describe("the save-word sound", () => {
+  it("a saved word plays the soft tap, once", async () => {
+    const user = userEvent.setup();
+    playSfx.mockClear();
+    setup();
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    await screen.findByText(/a hot drink made from leaves/i);
+    expect(playSfx.mock.calls).toEqual([["tap"]]);
+  });
+
+  it("a failed save is silent", async () => {
+    const user = userEvent.setup();
+    playSfx.mockClear();
+    setup(vi.fn().mockRejectedValue(new SavedWordError("limitReached")));
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    await screen.findByRole("alert");
+    expect(playSfx).not.toHaveBeenCalled();
   });
 });

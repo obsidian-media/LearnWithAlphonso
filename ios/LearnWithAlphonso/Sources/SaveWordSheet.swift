@@ -161,6 +161,7 @@ struct SaveWordSheet: View {
         do {
             phase = .saved(try await client.defineWord(
                 word: request.word, sentence: request.sentence, course: request.course))
+            SoundEffectsPlayer.shared.play(.tap)
         } catch let error as SavedWordError where error == .aiConsentRequired {
             // Withdrawn on another device since this sheet opened.
             await aiConsent.refresh()

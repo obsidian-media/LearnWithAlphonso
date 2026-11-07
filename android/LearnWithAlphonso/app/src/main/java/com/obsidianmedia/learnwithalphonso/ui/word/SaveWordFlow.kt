@@ -40,6 +40,8 @@ class SaveWordFlow(
     private val hasSession: () -> Boolean,
     /** The sheet's own scope: the flow lives and dies with the sheet, never in an Activity-wide store (see [SaveWordTaps]). */
     private val scope: CoroutineScope,
+    /** A word was saved: the sheet plays its soft sound (once per save, never on a failure). */
+    private val onSaved: () -> Unit = {},
 ) {
     private val _phase = MutableStateFlow<SaveWordPhase>(SaveWordPhase.Idle)
     val phase: StateFlow<SaveWordPhase> = _phase.asStateFlow()
@@ -75,6 +77,7 @@ class SaveWordFlow(
         if (valid == null) { _phase.value = SaveWordPhase.Failed(SavedWordError.INVALID); return }
         try {
             _phase.value = SaveWordPhase.Saved(define(valid.word, valid.sentence, valid.course))
+            onSaved()
         } catch (e: CancellationException) {
             throw e
         } catch (e: SavedWordException) {
