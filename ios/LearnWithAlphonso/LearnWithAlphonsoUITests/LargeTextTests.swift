@@ -11,6 +11,7 @@ final class LargeTextTests: UICompatTestCase {
         if app.tabBars.firstMatch.waitForExistence(timeout: 5) {
             return XCTFail("signed in at launch: the simulator was not erased before this suite")
         }
+        openSignIn()
         let apple = button(containing: "Apple")
         let google = button(containing: "Continue with Google")
         requireUsable(apple, "Continue with Apple")

@@ -7,12 +7,7 @@ import SwiftUI
 /// HSB, not HSL -- a different color model that would render visibly
 /// different colors here -- so this converts HSL to RGB directly instead.
 ///
-/// NOTE: `LeaderboardView.swift` (a separate, concurrently-developed PR)
-/// currently carries its own private copy of this same conversion, per the
-/// v2 friends kickoff doc's own note that factoring this out is "worth
-/// doing if both land close together." Once both PRs are merged, that
-/// private copy should be replaced with a call to this type -- tracked
-/// here rather than silently left duplicated.
+/// Used by ProfileAvatarView for every seed that is not one of the animal pictures (ProfileAvatars).
 enum AvatarColor {
     static func forSeed(_ seed: String) -> Color {
         let firstCharCode = seed.unicodeScalars.first.map { Int($0.value) } ?? 0

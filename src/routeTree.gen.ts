@@ -44,6 +44,7 @@ import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
+import { Route as ApiLearnerProfileRouteImport } from './routes/api/learner-profile'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
 import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
@@ -237,6 +238,11 @@ const ApiHectorRespondRoute = ApiHectorRespondRouteImport.update({
   path: '/api/hector-respond',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearnerProfileRoute = ApiLearnerProfileRouteImport.update({
+  id: '/api/learner-profile',
+  path: '/api/learner-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   id: '/api/learning-goal',
   path: '/api/learning-goal',
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
@@ -416,6 +423,7 @@ export interface FileRoutesByTo {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
@@ -471,6 +479,7 @@ export interface FileRoutesById {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
@@ -526,6 +535,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
     | '/api/practice'
     | '/api/pro-offering'
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
     | '/api/practice'
     | '/api/pro-offering'
@@ -633,6 +644,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
     | '/api/practice'
     | '/api/pro-offering'
@@ -674,6 +686,7 @@ export interface RootRouteChildren {
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
+  ApiLearnerProfileRoute: typeof ApiLearnerProfileRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
   ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
@@ -933,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHectorRespondRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learner-profile': {
+      id: '/api/learner-profile'
+      path: '/api/learner-profile'
+      fullPath: '/api/learner-profile'
+      preLoaderRoute: typeof ApiLearnerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/learning-goal': {
       id: '/api/learning-goal'
       path: '/api/learning-goal'
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
+  ApiLearnerProfileRoute: ApiLearnerProfileRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
   ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
@@ -1151,13 +1172,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,7 +1,9 @@
 package com.obsidianmedia.learnwithalphonso
 
 import android.content.Context
+import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
 import io.sentry.Breadcrumb
+import io.sentry.Sentry
 import io.sentry.SentryEvent
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
@@ -25,6 +27,8 @@ object CrashReporting {
 
     fun start(context: Context) {
         if (BuildConfig.DEBUG) return
+        // A device that answered Under 13 never starts reporting (the first run's block).
+        if (FirstRunDevice.isBlocked) return
         SentryAndroid.init(context) { options -> configure(options) }
     }
 
@@ -41,8 +45,14 @@ object CrashReporting {
         options.isEnableUserInteractionBreadcrumbs = false
         options.isEnableUserInteractionTracing = false
         options.isEnableNetworkEventBreadcrumbs = false
-        options.beforeSend = SentryOptions.BeforeSendCallback { event, _ -> scrub(event) }
-        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { crumb, _ -> scrub(crumb) }
+        // Started before the block (Under 13 chosen in this launch): nothing more is sent or kept.
+        options.beforeSend = SentryOptions.BeforeSendCallback { event, _ -> if (FirstRunDevice.isBlocked) null else scrub(event) }
+        options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { crumb, _ -> if (FirstRunDevice.isBlocked) null else scrub(crumb) }
+    }
+
+    /** Under 13 was just chosen: close the client so nothing queued is sent. */
+    fun stop() {
+        runCatching { Sentry.close() }
     }
 
     fun scrub(event: SentryEvent): SentryEvent {

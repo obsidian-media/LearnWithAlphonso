@@ -139,9 +139,14 @@ fun ReportSheet(target: SocialTarget?, container: AppContainer, onDismiss: () ->
     )
 }
 
-/** Initial-letter avatar tinted from the seed, same colour rule as iOS and web. */
+/** The learner's picture: their animal, or the initial tinted from the seed (same colour rule as iOS and web). */
 @Composable
 fun AvatarCircle(seed: String, displayName: String, size: Dp = 36.dp) {
+    // A chosen animal (profiles.avatar_seed "animal:<id>") shows its picture; any other seed keeps the initial.
+    if (com.obsidianmedia.learnwithalphonso.core.firstrun.ProfileAvatars.animalFromSeed(seed) != null) {
+        com.obsidianmedia.learnwithalphonso.ui.firstrun.ProfileAvatar(seed, displayName, size)
+        return
+    }
     val (r, g, b) = avatarRgb(seed)
     Box(Modifier.size(size).clip(CircleShape).background(Color(r, g, b)), contentAlignment = Alignment.Center) {
         Text(displayName.take(1).uppercase(), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = (size.value * 0.38f).sp)
