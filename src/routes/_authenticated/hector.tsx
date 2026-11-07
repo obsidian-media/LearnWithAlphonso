@@ -25,6 +25,12 @@ import { useStoredAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
+import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
+import { waitForCallCue } from "@/lib/sfx";
+import { buildHectorGreeting, recentWeakSpot } from "@/lib/hector-greeting";
+import { getWeaknessTrend } from "@/lib/weakness-trend.functions";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
@@ -150,6 +156,12 @@ function HectorConversation({
   const [cefrLevel, setCefrLevel] = useState<string>("");
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Hector's greeting is messages[0] once said; the mic waits while its voice loads.
+  const [greeted, setGreeted] = useState(false);
+  const [greetingLoading, setGreetingLoading] = useState(false);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  const leftRef = useRef(false);
   // The call screen ("Show Alphonso while practising" covers Hector too, so one switch decides).
   const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
   // Read before the first render (this screen mounts only after the client-side Pro check), so with the setting off
@@ -158,24 +170,9 @@ function HectorConversation({
   const reducedMotion = useReducedMotion() ?? false;
   const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
-  useEffect(() => {
-    let cancelled = false;
-    void fetchProgress({ data: { course } })
-      .then((p) => {
-        if (!cancelled) setCefrLevel(p.cefrLevel ?? "");
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      audioRef.current?.pause();
-    };
-  }, [course]);
-
-  const play = useCallback((audioBase64: string | undefined) => {
-    if (!audioBase64) return;
+  const playBlob = useCallback((blob: Blob) => {
     try {
-      const bytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
-      const url = URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
+      const url = URL.createObjectURL(blob);
       audioRef.current?.pause();
       const audio = new Audio(url);
       audioRef.current = audio;
@@ -192,6 +189,99 @@ function HectorConversation({
       setSpeaking(false);
     }
   }, []);
+
+  const play = useCallback(
+    (audioBase64: string | undefined) => {
+      if (!audioBase64) return;
+      try {
+        const bytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
+        playBlob(new Blob([bytes], { type: "audio/mpeg" }));
+      } catch {
+        /* the text reply still shows */
+      }
+    },
+    [playBlob],
+  );
+
+  /** Talking over Hector cuts him off, as on a call: his greeting or a reply. */
+  const interrupt = useCallback(() => {
+    audioRef.current?.pause();
+    setSpeaking(false);
+  }, []);
+
+  /**
+   * Hector speaks first (BACKLOG 0.0-bp). The greeting is his first turn, so it is in the history the model gets
+   * with the learner's first turn, and it is spoken in Hector's chosen voice through the reply player, so his lips
+   * follow it. It is our own fixed text, so its speech is cached like Alphonso's openers
+   * (src/lib/opener-speech-cache.ts): reopening the call does not fetch, or charge /api/tts, again. Only reached
+   * inside the AI consent gate and the Pro check, like every Hector turn.
+   */
+  const greet = useCallback(
+    async (text: string) => {
+      if (messagesRef.current.length > 0) return;
+      messagesRef.current = [{ role: "assistant", content: text }];
+      setMessages(messagesRef.current);
+      setGreeted(true);
+      setGreetingLoading(true);
+      try {
+        const voiceId = await voiceFor("hector", course);
+        const blob = await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), async () => {
+          const resp = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+            body: JSON.stringify({ text, course, voice: voiceId, character: "hector" }),
+          });
+          return resp.ok ? await resp.blob() : null;
+        });
+        if (!blob) return;
+        // The call-start sound finishes before his first words.
+        await waitForCallCue();
+        // Never after the learner left, and never over a turn they already started.
+        if (leftRef.current || messagesRef.current.length > 1) return;
+        playBlob(blob);
+      } catch {
+        /* the greeting still shows */
+      } finally {
+        setGreetingLoading(false);
+      }
+    },
+    [course, playBlob],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    leftRef.current = false;
+    const progress = fetchProgress({ data: { course } });
+    void progress
+      .then((p) => {
+        if (!cancelled) setCefrLevel(p.cefrLevel ?? "");
+      })
+      .catch(() => {});
+    // Everything the greeting uses is best effort: without it Hector still says hello.
+    void Promise.allSettled([progress, getWeaknessTrend(), supabase.auth.getSession()]).then(
+      ([p, trend, session]) => {
+        if (cancelled) return;
+        const meta =
+          session.status === "fulfilled" ? session.value.data.session?.user?.user_metadata : null;
+        void greet(
+          buildHectorGreeting({
+            course,
+            cefr: p.status === "fulfilled" ? p.value.cefrLevel : null,
+            name: parseLearnerProfile(meta?.[LEARNER_PROFILE_KEY]).name,
+            weakSpot:
+              trend.status === "fulfilled"
+                ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
+                : null,
+          }),
+        );
+      },
+    );
+    return () => {
+      cancelled = true;
+      leftRef.current = true;
+      audioRef.current?.pause();
+    };
+  }, [course, greet]);
 
   const send = useCallback(
     async (text: string) => {
@@ -261,7 +351,13 @@ function HectorConversation({
   } = useSpeechCapture({ course, onTranscript: (t) => send(t) });
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
-  const status = hectorStatus({ recording, transcribing, sending, speaking });
+  // While the greeting's voice loads Hector is "thinking", as before a reply.
+  const status = hectorStatus({
+    recording,
+    transcribing,
+    sending: sending || greetingLoading,
+    speaking,
+  });
 
   const hintAndLog = (
     <>
@@ -282,7 +378,10 @@ function HectorConversation({
                   <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
                     <TappableText text={m.content} course={course} />
                   </div>
-                  <AiMessageReport message={m.content} surface="hector" course={course} />
+                  {/* The greeting is our own fixed text, not the model's: nothing to report. */}
+                  {!(greeted && i === 0) && (
+                    <AiMessageReport message={m.content} surface="hector" course={course} />
+                  )}
                 </div>
               ) : (
                 <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
@@ -325,11 +424,14 @@ function HectorConversation({
           onClick={() => {
             setError(null);
             if (recording) stopRecording();
-            else void beginCapture();
+            else {
+              interrupt();
+              void beginCapture();
+            }
           }}
           aria-label={recording ? "Stop recording and send" : "Record a voice message"}
           aria-pressed={recording}
-          disabled={sending || transcribing}
+          disabled={sending || transcribing || greetingLoading}
           className={`grid size-11 shrink-0 place-items-center rounded-full ${
             recording ? "bg-ember text-ink-on-ember" : "bg-moss text-surface"
           } disabled:opacity-50`}
@@ -411,7 +513,7 @@ function HectorConversation({
     ? { kind: "recording" }
     : transcribing
       ? { kind: "transcribing" }
-      : sending
+      : sending || greetingLoading
         ? { kind: "thinking" }
         : speaking
           ? { kind: "speaking" }
@@ -444,10 +546,14 @@ function HectorConversation({
           mode={avatarMode}
           caption={caption}
           recording={recording}
-          talkDisabled={sending || transcribing}
+          talkDisabled={sending || transcribing || greetingLoading}
           onHoldStart={() => {
             setError(null);
-            if (captureState === "idle" && !sending) void beginCapture();
+            if (captureState === "idle" && !sending && !greetingLoading) {
+              // Talking over Hector cuts him off; his voice must not end up in the recording.
+              interrupt();
+              void beginCapture();
+            }
           }}
           onHoldEnd={() => {
             if (captureState !== "transcribing") stopRecording();
@@ -455,7 +561,10 @@ function HectorConversation({
           onToggle={() => {
             setError(null);
             if (recording) stopRecording();
-            else void beginCapture();
+            else if (!greetingLoading) {
+              interrupt();
+              void beginCapture();
+            }
           }}
           getStream={getStream}
           error={error ?? captureError}
