@@ -34,6 +34,9 @@ export const USER_ID_EXPORT_TABLES = [
   "podcast_play_events",
   "podcast_playback",
   "podcast_quiz_awards",
+  // Practice stars and each call's server-held tally (20261107032021); own-row SELECT.
+  "practice_calls",
+  "practice_stars",
   "review_items",
   "review_grade_attempts",
   "season_cohort_members",
@@ -172,10 +175,15 @@ export const exportMyData = createServerFn({ method: "POST" })
         USER_ID_EXPORT_TABLES.map((table) =>
           readAllExportPages(table, (first, last) =>
             supabase
-              // podcast_quiz_awards and speech_days are not in the generated types until they are regenerated
-              // against a database that has their migrations (regenerate-supabase-types.yml, after deploy). Every
-              // table here has a user_id.
-              .from(table as Exclude<typeof table, "podcast_quiz_awards" | "speech_days">)
+              // podcast_quiz_awards, speech_days and the practice tables are not in the generated types until they are
+              // regenerated against a database that has their migrations (regenerate-supabase-types.yml, after
+              // deploy). Every table here has a user_id.
+              .from(
+                table as Exclude<
+                  typeof table,
+                  "podcast_quiz_awards" | "speech_days" | "practice_calls" | "practice_stars"
+                >,
+              )
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {
                 count: "exact",
               })

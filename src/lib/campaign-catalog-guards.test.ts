@@ -42,6 +42,7 @@ export function hardCodedCampaignIds(source: string): string[] {
 
 const UI_SOURCES = [
   "src/routes/_authenticated/converse.tsx",
+  "src/components/practice/PracticeHub.tsx",
   "src/routes/_authenticated/campaign_.$campaignId.tsx",
   "ios/LearnWithAlphonso/Sources/CampaignView.swift",
   "ios/LearnWithAlphonso/Sources/ConversationView.swift",
@@ -62,10 +63,13 @@ describe("bundled campaign JSON matches the catalogue on every platform", () => 
 });
 
 describe("the campaign list screens show every campaign", () => {
-  it("web: the converse list maps over every campaign for the course, with no slice or filter", () => {
-    const src = read("src/routes/_authenticated/converse.tsx");
+  // The Practice hub (round 6) draws the list; it looks a campaign up by id with find() for "Continue" and the
+  // pre-call sheet, so only slice and filter are ruled out here.
+  it("web: the Practice hub maps over every campaign for the course, with no slice or filter", () => {
+    const src = read("src/components/practice/PracticeHub.tsx");
     expect(src).toMatch(/campaigns\.map\(\(c, i\) =>/);
-    expect(src).not.toMatch(/campaigns\.(slice|filter|find)\(/);
+    expect(src).toContain("CAMPAIGNS.map((c) => localizeCampaign(c, course))");
+    expect(src).not.toMatch(/campaigns\.(slice|filter)\(/);
   });
 
   it("iOS: CampaignPickerSection iterates the whole campaigns array", () => {
@@ -85,8 +89,11 @@ describe("the campaign list screens show every campaign", () => {
   });
 
   it("opens a campaign by the id it was listed with, not by a fixed one", () => {
+    expect(read("src/components/practice/PracticeHub.tsx")).toContain(
+      "onClick={() => openScene(c.id, nextSceneIndex(c.id, rows))}",
+    );
     expect(read("src/routes/_authenticated/converse.tsx")).toContain(
-      "params={{ campaignId: c.id }}",
+      "params: { campaignId: t.campaignId }",
     );
     expect(read(`${ANDROID_APP}/PracticeScreens.kt`)).toContain("onOpenCampaign(c.id)");
   });
