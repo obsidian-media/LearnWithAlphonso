@@ -133,10 +133,11 @@ describe("Largest accessibility text", () => {
   it("the lesson question column and the vocabulary screen scroll as one at accessibility sizes", () => {
     // The question always scrolls now (Check and the verdict panel are pinned below it), so it holds at
     // accessibility sizes too.
-    expect(between(player, "private var quizBody", /private var quizContent/)).toMatch(
-      /ScrollView \{\s*quizContent/,
-    );
-    expect(between(player, "private struct VocabScreen", /\n\/\/\/ The one way/)).toMatch(
+    // Round 6: the room, bubble and answers are one ScrollView; Check and the verdict sheet sit in the bottom inset.
+    const quiz = between(player, "private func quizBody(", /\/\/\/ Check, or the verdict sheet/);
+    expect(quiz).toMatch(/ScrollView \{\s*VStack\(spacing: 0\) \{\s*LessonRoomView\(/);
+    expect(quiz).toContain(".safeAreaInset(edge: .bottom, spacing: 0) { quizControls }");
+    expect(read(`${APP}/LessonWordDeck.swift`)).toMatch(
       /isAccessibilitySize[\s\S]*ScrollView \{ listContent \}/,
     );
   });
@@ -177,9 +178,12 @@ describe("Name prompt prefill", () => {
 describe("Lesson finish headline", () => {
   const player = read(`${APP}/LessonPlayerView.swift`);
   it("comes from the score, not a fixed string", () => {
-    const finish = typeBody(player, "private struct FinishView");
-    expect(finish).toContain("LessonFinishCopy.headline(correct: correct, total: total)");
-    expect(finish).not.toContain('message: "Nice work!"');
+    // Round 6: Alphonso says it in his bubble on the complete screen, with the score.
+    const finish = between(player, "private func completeScreen(", /\n {4}\}\n/);
+    expect(finish).toContain(
+      "LessonFinishCopy.headline(correct: correctCount, total: total)) You got \\(correctCount) of \\(total).",
+    );
+    expect(finish).not.toContain('"Nice work!');
   });
 });
 

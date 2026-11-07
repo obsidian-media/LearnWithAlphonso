@@ -83,7 +83,9 @@ const completeLessonSchema = z.object({
  * (handler.test.ts). `liveDeps()` is what production uses.
  */
 export type CompleteLessonDeps = {
-  authenticate: (req: Request) => Promise<{ userId: string; userClient: SupabaseClient } | Response>;
+  authenticate: (
+    req: Request,
+  ) => Promise<{ userId: string; userClient: SupabaseClient } | Response>;
   admin: () => SupabaseClient;
   translateQuotaCheck: (userClient: SupabaseClient) => () => Promise<boolean>;
   hasAiConsent: (admin: SupabaseClient, userId: string) => Promise<boolean>;
@@ -101,7 +103,11 @@ export type CompleteLessonDeps = {
   now: () => Date;
 };
 
-async function consumeCompletionSlot(admin: SupabaseClient, userId: string, atIso: string): Promise<boolean> {
+async function consumeCompletionSlot(
+  admin: SupabaseClient,
+  userId: string,
+  atIso: string,
+): Promise<boolean> {
   const { data, error } = await admin.rpc("consume_lesson_completion_slot", {
     _user_id: userId,
     _at: atIso,
@@ -111,14 +117,22 @@ async function consumeCompletionSlot(admin: SupabaseClient, userId: string, atIs
     // FAIL OPEN: never block a real lesson because the guard could not run (e.g. code deployed ahead of its
     // migration). Logged under a stable event name so an alert can be attached to it.
     console.error(
-      JSON.stringify({ event: "completion_slot_unavailable", fn: "complete-lesson", message: error.message }),
+      JSON.stringify({
+        event: "completion_slot_unavailable",
+        fn: "complete-lesson",
+        message: error.message,
+      }),
     );
     return true;
   }
   return data !== false;
 }
 
-async function releaseCompletionSlot(admin: SupabaseClient, userId: string, atIso: string): Promise<void> {
+async function releaseCompletionSlot(
+  admin: SupabaseClient,
+  userId: string,
+  atIso: string,
+): Promise<void> {
   await admin.rpc("release_lesson_completion_slot", { _user_id: userId, _at: atIso });
 }
 
@@ -169,16 +183,18 @@ async function settleLessonHearts(
       _enforce: mode === "on",
       _pro: pro,
     });
-    const row = (Array.isArray(data) ? data[0] : data) as
-      | { hearts?: unknown; hearts_refill_at?: unknown }
-      | null;
+    const row = (Array.isArray(data) ? data[0] : data) as {
+      hearts?: unknown;
+      hearts_refill_at?: unknown;
+    } | null;
     if (error || !row || typeof row.hearts !== "number") {
       console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
       return null;
     }
     return {
       hearts: row.hearts,
-      heartsRefillAt: typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+      heartsRefillAt:
+        typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
     };
   } catch {
     console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
@@ -186,7 +202,9 @@ async function settleLessonHearts(
   }
 }
 
-export function createCompleteLessonHandler(deps: CompleteLessonDeps): (req: Request) => Promise<Response> {
+export function createCompleteLessonHandler(
+  deps: CompleteLessonDeps,
+): (req: Request) => Promise<Response> {
   return (req) => handleRequest(req, deps);
 }
 
@@ -294,9 +312,10 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
   const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course });
-  const trustedCompletionDay = completedAt && sessionIssuedAt !== null
-    ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
-    : null;
+  const trustedCompletionDay =
+    completedAt && sessionIssuedAt !== null
+      ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
+      : null;
   // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
   // a 400 here would dead-letter a real lesson on both native clients.
 
@@ -359,9 +378,10 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const existingComp = compResult.data;
   // A dated replay may never move the account's activity marker backwards.
   const claimedDay = trustedCompletionDay ?? serverToday;
-  const today = pRow?.last_active_date && pRow.last_active_date > claimedDay
-    ? pRow.last_active_date
-    : claimedDay;
+  const today =
+    pRow?.last_active_date && pRow.last_active_date > claimedDay
+      ? pRow.last_active_date
+      : claimedDay;
   const dayResult = await admin
     .from("activity_days")
     .select("xp_earned")
@@ -462,10 +482,18 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   // (a retry after a lost response, a queued duplicate) is a no-op and uses no slot. Refused before any write, so a
   // refusal changes neither XP nor streak. Counted at the clamped completion instant, so an offline queue replayed
   // after reconnecting is spread over the hours it was played.
-  const slotAtIso = new Date(completionInstantMs(completedAt, sessionIssuedAt, now.getTime())).toISOString();
+  const slotAtIso = new Date(
+    completionInstantMs(completedAt, sessionIssuedAt, now.getTime()),
+  ).toISOString();
   const slotTaken = xpGain > 0;
   if (slotTaken && !(await deps.consumeCompletionSlot(admin, userId, slotAtIso))) {
-    console.log(JSON.stringify({ event: "completion_refused", fn: "complete-lesson", reason: "rate-limited" }));
+    console.log(
+      JSON.stringify({
+        event: "completion_refused",
+        fn: "complete-lesson",
+        reason: "rate-limited",
+      }),
+    );
     return jsonResponse({ error: "rate-limited" }, 429);
   }
 
@@ -543,13 +571,15 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
           .lte("xp", xp);
         await Promise.all(
           (overtaken ?? []).map((row) =>
-            deps.sendPush(
-              admin,
-              row.user_id as string,
-              "Leaderboard update",
-              "Someone passed you on the leaderboard!",
-              { type: "overtake" },
-            ).catch(() => undefined),
+            deps
+              .sendPush(
+                admin,
+                row.user_id as string,
+                "Leaderboard update",
+                "Someone passed you on the leaderboard!",
+                { type: "overtake" },
+              )
+              .catch(() => undefined),
           ),
         );
       }
@@ -633,6 +663,9 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   return jsonResponse(
     {
       xpGain,
+      // Right answers by this server's own grading: the count xpGain was computed from. The apps' complete screens
+      // explain the award with it (right answers, perfect bonus, already earned), as the web does.
+      correct,
       newlyUnlocked,
       heartsBonus,
       progress: {
@@ -649,4 +682,3 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     200,
   );
 }
-

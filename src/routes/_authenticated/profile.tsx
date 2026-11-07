@@ -19,14 +19,15 @@ import {
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { AvatarSetting } from "../../components/AvatarSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
+import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/ProfileAboutYou";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Icon3D } from "../../components/Icon3D";
 import { type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
 
-/** The name went through confirm_display_name first; only the country write after it failed. */
-const DETAILS_SAVE_FAILED = "Your name was saved, but your country wasn't. Try again.";
+/** The name went through confirm_display_name first; only a later write failed. */
+const DETAILS_SAVE_FAILED = "Your name was saved, but something else wasn't. Try again.";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -58,7 +59,6 @@ function ProfilePage() {
     queryFn: () => getWeaknessTrend(),
   });
   const [name, setName] = useState("");
-  const [country, setCountry] = useState("");
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("");
@@ -66,7 +66,6 @@ function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setName(profile.display_name ?? "");
-      setCountry(profile.country ?? "");
       setAvatarSeed(profile.avatar_seed ?? "");
     }
   }, [profile]);
@@ -76,10 +75,7 @@ function ProfilePage() {
     setNameError(null);
     try {
       const result = await updateProfile({
-        data: {
-          display_name: name || undefined,
-          country: country ? country.toUpperCase().slice(0, 2) : null,
-        },
+        data: { display_name: name || undefined },
       });
       if (!result.ok) {
         setNameError(
@@ -98,15 +94,6 @@ function ProfilePage() {
     }
   }
 
-  async function shuffleAvatar() {
-    const next = Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join(
-      "",
-    );
-    setAvatarSeed(next);
-    await updateProfile({ data: { avatar_seed: next } });
-    await qc.invalidateQueries({ queryKey: ["me"] });
-  }
-
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
@@ -121,24 +108,14 @@ function ProfilePage() {
       <SceneBackdrop scene="profile" focus="50% 60%" />
       <div className="relative z-10 px-6 pb-12 pt-6">
         <div className="flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md">
-          <div className="flex flex-col items-center gap-1.5">
-            <span
-              className="grid size-16 place-items-center rounded-full text-xl font-semibold text-surface"
-              style={{
-                backgroundColor: `hsl(${((avatarSeed || "a").charCodeAt(0) * 37) % 360} 40% 45%)`,
-              }}
-            >
-              {(name || "?").slice(0, 1).toUpperCase()}
-            </span>
-            <button
-              type="button"
-              onClick={shuffleAvatar}
-              aria-label="Shuffle avatar color"
-              className="text-[11px] font-medium text-moss underline underline-offset-4"
-            >
-              Shuffle
-            </button>
-          </div>
+          <ProfileAvatarEditor
+            seed={avatarSeed}
+            name={name}
+            onSaved={(seed) => {
+              setAvatarSeed(seed);
+              void qc.invalidateQueries({ queryKey: ["me"] });
+            }}
+          />
           <div className="flex-1">
             <h1 className="font-display text-[22px] font-semibold text-ink">{name || "Learner"}</h1>
             <div className="mt-1 flex items-center gap-2">
@@ -228,6 +205,8 @@ function ProfilePage() {
             <span className="text-ink-soft">→</span>
           </Link>
 
+          <ProfileAboutYou leaderboardCountry={profile?.country ?? null} />
+
           <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
           <div
             className={
@@ -288,23 +267,6 @@ function ProfilePage() {
                 {nameError}
               </p>
             )}
-            <label
-              htmlFor="profile-country"
-              className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft"
-            >
-              Country (ISO code, e.g. US, GB)
-            </label>
-            <input
-              id="profile-country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value.toUpperCase())}
-              maxLength={2}
-              className={
-                isStudioInk
-                  ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm uppercase outline-none focus:border-moss"
-                  : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm uppercase outline-none focus:border-moss"
-              }
-            />
             <button
               onClick={save}
               disabled={saving}

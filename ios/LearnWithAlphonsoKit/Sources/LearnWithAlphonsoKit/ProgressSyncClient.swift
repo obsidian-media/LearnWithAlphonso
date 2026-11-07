@@ -275,6 +275,9 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
 
 public struct LessonCompletionResult: Sendable, Decodable, Equatable {
     public let xpGain: Int
+    /// Right answers by the server's own grading: the count `xpGain` was computed from, so the complete screen's XP
+    /// lines (right answers, perfect bonus, already earned) use it. Nil from a server older than this field.
+    public var correct: Int? = nil
     public let newlyUnlocked: [String]
     /// "streak" | "perfect" | nil -- which heart bonus (if any) this
     /// completion earned. See hearts.ts's streakHeartMilestoneReached /
@@ -1171,6 +1174,23 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         return rows.compactMap { $0["lesson_id"] as? String }
+    }
+
+    /// The best score this account has on one lesson (its lesson_completions row), or nil when it has never been
+    /// completed. A replay pays only past this best, so the lesson's per-answer XP starts from it.
+    public func fetchLessonBest(lessonID: String, course: String) async throws -> Int? {
+        var request = restRequest(path: "lesson_completions", query: [
+            URLQueryItem(name: "select", value: "correct"),
+            URLQueryItem(name: "lesson_id", value: "eq.\(lessonID)"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { $0["correct"] as? Int }.max()
     }
 
     public func fetchCefrLevel(course: String) async throws -> String? {

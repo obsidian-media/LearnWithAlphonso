@@ -113,6 +113,40 @@ final class VoiceSessionController {
 
     func pressEnded() { send(.pressEnded) }
 
+    /// Claims the session for the scene's opening line (OpenerPlayback.speak). Returns the generation to play it
+    /// under with `play(_:generation:)`, or nil when a recording or turn is in progress or the screen is hidden.
+    func beginOpener() -> Int? {
+        guard state.canStartPress else { return nil }
+        send(.openerRequested)
+        return state.generation
+    }
+
+    /// Says a scene's opening line out loud in Alphonso's chosen voice for the course, through the same player as a
+    /// reply (so his lips move with it). Practice and Campaigns call it when the call opens and when a new scene or
+    /// conversation starts; `opener` is `ConversationSnapshot.pendingOpener`, nil once the learner has answered.
+    /// Static openers are cached (OpenerSpeechCache), so returning to the call does not fetch or charge again.
+    func speakOpener(_ opener: String?, session: Session, course: Course) async {
+        let courseCode = course.wireCode
+        let voiceID = VoicePrefsCache().voice(.alphonso, course: courseCode)
+        await OpenerPlayback.speak(
+            opener,
+            begin: { beginOpener() },
+            audio: { text in
+                try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
+                    guard let accessToken = await session.freshAccessToken() else {
+                        throw URLError(.userAuthenticationRequired)
+                    }
+                    let client = AIConversationClient(
+                        baseURL: AppConfig.apiBaseURL,
+                        accessToken: { accessToken },
+                        refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+                    return try await client.synthesizeSpeech(text: text, voice: voiceID, course: courseCode)
+                }
+            },
+            play: { audio, generation in play(audio, generation: generation) },
+            withoutAudio: { generation in replyWithoutAudio(generation) })
+    }
+
     func isCurrent(_ generation: Int) -> Bool { state.accepts(generation: generation) }
 
     /// Where the reply audio is, for the talking avatar's lips. nil unless a reply is playing right now.

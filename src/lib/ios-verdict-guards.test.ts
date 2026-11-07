@@ -18,6 +18,7 @@ const between = (s: string, a: string, b: string) => {
 };
 
 const lesson = read("LessonPlayerView.swift");
+const deck = read("LessonWordDeck.swift");
 const review = read("ReviewQueueView.swift");
 const panel = read("DesignSystem/AnswerVerdictPanel.swift");
 const components = read("DesignSystem/AlphonsoComponents.swift");
@@ -29,12 +30,13 @@ describe("the verdict panel after Check", () => {
       "private var quizControls: some View",
       "private func settleTranslationVerdict",
     );
-    expect(quiz).toContain("AnswerVerdictPanel(");
-    // The panel is handed the settled verdict, as its `correct:` argument, not merely mentioned near it.
-    expect(quiz).toMatch(/AnswerVerdictPanel\(\s*correct: lastAnswerCorrect,/);
+    // Round 6: the verdict sheet (LessonStageViews.swift) replaced the panel in the lesson.
+    expect(quiz).toContain("LessonVerdictSheet(");
+    // The sheet is handed the settled verdict, as its `correct:` argument, not merely mentioned near it.
+    expect(quiz).toMatch(/LessonVerdictSheet\(\s*correct: lastAnswerCorrect,/);
     expect(quiz).toContain("AnswerVerdict.correctAnswer(for: currentQuestion)");
-    // The old plain Continue button is gone: the panel carries it, with the same Continue / Finish wording.
-    expect(quiz).toContain('"Continue" : "Finish"');
+    // The sheet carries the button: Continue after a right answer, Got it after a miss, Finish on the last.
+    expect(quiz).toContain('? (lastAnswerCorrect ? "Continue" : "Got it") : "Finish"');
     expect(quiz).not.toMatch(
       /\}\s*\n\s*\.buttonStyle\(\.alphonsoPrimary\)\s*\n\s*\}\s*\n\s*\}\s*\n\s*\.padding\(\)/,
     );
@@ -69,10 +71,11 @@ describe("the verdict panel after Check", () => {
 });
 
 describe("chunky answer tiles and word chips", () => {
-  it("lesson and review share one answer tile instead of two private copies", () => {
+  it("lesson and review each draw their answers through one shared tile, never a private copy", () => {
     expect(lesson).not.toContain("private func choiceButton");
     expect(review).not.toContain("private func choiceButton");
-    expect(lesson).toContain("AnswerChoiceButton(");
+    // Round 6: the lesson's numbered answer (LessonStageViews.swift); review keeps AnswerChoiceButton.
+    expect(lesson).toContain("LessonAnswerButton(");
     expect(review).toContain("AnswerChoiceButton(");
     // The accessibility wording moved with it.
     expect(panel).toContain('"\\(choice), your answer, correct"');
@@ -118,7 +121,10 @@ describe("chunky answer tiles and word chips", () => {
   });
 
   it("word banks and reorder pools use the chunky chip, highlighted when picked", () => {
-    for (const file of [lesson, review]) {
+    // Round 6: the lesson's word tiles, highlighted when picked and solid when placed.
+    expect(lesson).toContain("LessonWordTile(word: word, picked: picked == word)");
+    expect(lesson).toContain("LessonWordTile(word: tokens[tokenIdx], placed: true)");
+    for (const file of [review]) {
       expect(file).toContain(".buttonStyle(.alphonsoWordChip(picked: picked == word))");
       expect(file).toContain(".buttonStyle(.alphonsoWordChip(picked: false))");
     }
@@ -132,7 +138,7 @@ describe("chunky answer tiles and word chips", () => {
 });
 
 describe("words to learn, one card at a time", () => {
-  const vocab = between(lesson, "private struct VocabScreen: View", "struct VocabImageView: View");
+  const vocab = deck;
 
   it("pages through the words, with the Kit's button wording", () => {
     expect(vocab).toContain(".tabViewStyle(.page(indexDisplayMode: .never))");
@@ -147,8 +153,8 @@ describe("words to learn, one card at a time", () => {
   });
 
   it("Alphonso peeks over the card, decorative", () => {
-    expect(vocab).toContain('Image("Alphonso-encouraging")');
-    expect(from(vocab, 'Image("Alphonso-encouraging")').slice(0, 300)).toContain(
+    expect(vocab).toContain("LessonArt.expression(.talk)");
+    expect(from(vocab, "LessonArt.expression(.talk)").slice(0, 600)).toContain(
       ".accessibilityHidden(true)",
     );
   });
@@ -157,26 +163,25 @@ describe("words to learn, one card at a time", () => {
 // Final review fixes (round 4): the taller question layout must stay reachable on a small phone, the deck card
 // must not clip its words, VoiceOver hears one verdict, and word chips respect Reduce Motion.
 describe("final review fixes", () => {
-  it("the lesson question scrolls, and Check / the verdict panel are pinned above the tab bar", () => {
+  it("the lesson question scrolls, and Check / the verdict sheet are pinned at the foot", () => {
     const quizBody = between(
       lesson,
-      "private var quizBody: some View",
-      "private var quizContent: some View",
+      "private func quizBody(",
+      "private var quizControls: some View",
     );
-    expect(quizBody).toMatch(/ScrollView \{\s*quizContent/);
-    expect(quizBody).toContain(".safeAreaInset(edge: .bottom)");
-    expect(from(quizBody, ".safeAreaInset(edge: .bottom)").slice(0, 200)).toContain("quizControls");
-    // The panel and Check live in the pinned controls, not in the scrolling content.
+    expect(quizBody).toMatch(/ScrollView \{\s*VStack\(spacing: 0\) \{\s*LessonRoomView\(/);
+    expect(quizBody).toContain(".safeAreaInset(edge: .bottom, spacing: 0) { quizControls }");
+    // The sheet and Check live in the pinned controls, not in the scrolling content.
     const controls = between(
       lesson,
       "private var quizControls: some View",
-      "private var lastAnswerCorrect",
+      "private func advance()",
     );
-    expect(controls).toContain("AnswerVerdictPanel(");
+    expect(controls).toContain("LessonVerdictSheet(");
     expect(controls).toContain('Button("Check")');
-    expect(
-      between(lesson, "private var quizContent: some View", "private var quizControls"),
-    ).not.toContain("AnswerVerdictPanel(");
+    expect(between(quizBody, "ScrollView {", ".safeAreaInset")).not.toContain(
+      "LessonVerdictSheet(",
+    );
   });
 
   it("review scrolls the same way, its controls pinned", () => {
@@ -188,13 +193,13 @@ describe("final review fixes", () => {
 
   it("a word card scrolls its own words, and its picture shrinks on a short screen", () => {
     const card = between(
-      lesson,
+      deck,
       "private func cardWords(_ item: VocabItem, index: Int) -> some View",
       "private var listContent",
     );
     expect(card).toContain("ScrollView {");
     expect(card).toContain("VocabImageView(image: image, cardHeight: Self.cardImageHeight)");
-    expect(lesson).toMatch(
+    expect(deck).toMatch(
       /static var cardImageHeight: CGFloat \{[^}]*min\(180,[^}]*UIScreen\.main\.bounds\.height/,
     );
   });
@@ -208,7 +213,17 @@ describe("final review fixes", () => {
       "struct SaveWordHintLine: View",
     );
     expect(explanation).toContain("verdictAnnouncedByPanel");
-    expect(explanation).toMatch(/guard !verdictAnnouncedByPanel else \{ return \}/);
+    expect(explanation).toMatch(/guard !verdictAnnouncedByPanel, !inSheet else \{ return \}/);
+    // The lesson's sheet announces the verdict (and the XP) once, itself.
+    const sheet = between(
+      read("LessonStageViews.swift"),
+      "struct LessonVerdictSheet",
+      "// MARK: - Lesson start",
+    );
+    expect(sheet).toMatch(
+      /\.onAppear \{[\s\S]{0,300}AccessibilityNotification\.Announcement\(spoken\)\.post\(\)/,
+    );
+    expect(lesson).toContain("inSheet: true)");
     for (const file of [lesson, review])
       expect(file).toContain(".environment(\\.verdictAnnouncedByPanel, true)");
   });

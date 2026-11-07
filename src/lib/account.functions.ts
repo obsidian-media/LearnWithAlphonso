@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { LEARNER_PROFILE_KEY } from "./learner-profile";
+import { VOICE_PREFS_METADATA_KEY } from "./voice-catalog";
 
 // Every table with a `user_id` column, exported via `.eq("user_id", ...)`.
 // NOTE: "achievements" is the static catalogue (no user_id column at all --
@@ -249,6 +251,13 @@ export const exportMyData = createServerFn({ method: "POST" })
       created_at: authData.user.created_at ?? null,
       last_sign_in_at: authData.user.last_sign_in_at ?? null,
       sign_in_methods: [...new Set((authData.user.identities ?? []).map((i) => i.provider))],
+    };
+    // Choices kept on the account record rather than in a table: the first-run answers (name, native language,
+    // country, goal, level, daily time, age range, interests, how they heard about us) and the voice choices.
+    const meta = (authData.user.user_metadata ?? {}) as Record<string, unknown>;
+    exported.preferences = {
+      learner_profile: meta[LEARNER_PROFILE_KEY] ?? null,
+      voices: meta[VOICE_PREFS_METADATA_KEY] ?? null,
     };
     return {
       exported_at: new Date().toISOString(),

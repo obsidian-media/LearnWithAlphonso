@@ -50,3 +50,20 @@ public extension View {
             .textCase(style.uppercase ? .uppercase : nil)
     }
 }
+
+/// The type roles by name, so a screen writes `.dsText(.question)`. The values live in `AlphonsoDS.Typography`.
+public extension AlphonsoDS.TextStyle {
+    static var displayXL: Self { AlphonsoDS.Typography.displayXL }
+    static var display: Self { AlphonsoDS.Typography.display }
+    static var title: Self { AlphonsoDS.Typography.title }
+    static var question: Self { AlphonsoDS.Typography.question }
+    static var questionSmall: Self { AlphonsoDS.Typography.questionSmall }
+    static var headline: Self { AlphonsoDS.Typography.headline }
+    static var answer: Self { AlphonsoDS.Typography.answer }
+    static var body: Self { AlphonsoDS.Typography.body }
+    static var footnote: Self { AlphonsoDS.Typography.footnote }
+    static var caption: Self { AlphonsoDS.Typography.caption }
+    static var overline: Self { AlphonsoDS.Typography.overline }
+    static var numeralXL: Self { AlphonsoDS.Typography.numeralXL }
+    static var numeral: Self { AlphonsoDS.Typography.numeral }
+}

@@ -272,6 +272,13 @@ class ProgressSyncClientTest {
         assertEquals(listOf("u1l3", "u1l1"), client(ids).fetchCompletedLessonIds("en"))
         assertEquals("completed_at.desc", ids.seen.single().query["order"])
 
+        val best = FakeSupabase { json("""[{"correct":6}]""") }
+        assertEquals(6, client(best).fetchLessonBest("u1l1", "en"))
+        assertEquals("eq.u1l1", best.seen.single().query["lesson_id"])
+        assertEquals("eq.en", best.seen.single().query["language"])
+        assertEquals("correct", best.seen.single().query["select"])
+        assertNull(client(FakeSupabase { json("[]") }).fetchLessonBest("u1l1", "en"))
+
         val level = FakeSupabase { json("""[{"cefr_level":"B2"}]""") }
         assertEquals("B2", client(level).fetchCefrLevel("en"))
         assertNull(client(FakeSupabase { json("[]") }).fetchCefrLevel("en"))

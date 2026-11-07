@@ -3,14 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Outlet, isRedirect } from "@tanstack/react-router";
 
 const getUser = vi.fn();
+const signOut = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { getUser } },
+  supabase: { auth: { getUser, signOut } },
 }));
 
 const { Route } = await import("./route");
 
 beforeEach(() => {
   getUser.mockReset();
+  signOut.mockReset();
+  localStorage.removeItem("lwa.under13.v1");
 });
 
 describe("_authenticated route guard", () => {
@@ -30,6 +33,38 @@ describe("_authenticated route guard", () => {
     await expect(Route.options.beforeLoad!({} as never)).rejects.toSatisfy((err: unknown) =>
       isRedirect(err),
     );
+  });
+
+  it("signs out and sends to /auth (the kind stop) on a device that answered Under 13", async () => {
+    localStorage.setItem("lwa.under13.v1", "1");
+    getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+    await expect(Route.options.beforeLoad!({} as never)).rejects.toSatisfy(
+      (err: unknown) =>
+        isRedirect(err) && (err as { options: { to: string } }).options.to === "/auth",
+    );
+    expect(signOut).toHaveBeenCalled();
+  });
+
+  it("sends a learner who never completed their profile from /learn to Complete your profile, once", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } }, error: null });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).rejects.toSatisfy(
+      (err: unknown) =>
+        isRedirect(err) && (err as { options: { to: string } }).options.to === "/complete-profile",
+    );
+  });
+
+  it("does not redirect once completed or dismissed, nor away from any page but /learn", async () => {
+    const done = { learner_profile: { dismissedAt: "2026-11-06T00:00:00Z" } };
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: done } }, error: null });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } }, error: null });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/lesson/a1-1" } } as never),
+    ).resolves.toBeTruthy();
   });
 
   it("returns the user in context when signed in", async () => {
@@ -59,6 +94,16 @@ describe("_authenticated route guard", () => {
       typeof child.type === "function" ? child.type.name : child.type,
     );
     expect(types).toContain("PodcastAudio");
+  });
+
+  // Last on purpose: the skip is module state that lasts the visit.
+  it("a Not now whose save failed still lets the learner into /learn for the rest of the visit", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } }, error: null });
+    const { skipCompleteProfileThisVisit } = await import("@/lib/first-run");
+    skipCompleteProfileThisVisit();
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
   });
 
   it("mounts the one-time name prompt beside the Outlet", () => {

@@ -14,7 +14,7 @@ import {
   normalizeName,
   skipNote,
 } from "../lib/name-onboarding";
-import { setNamePromptBlocking } from "../lib/name-prompt-gate";
+import { setNamePromptBlocking, useNamePromptHeld } from "../lib/name-prompt-gate";
 import { SOCIAL_COPY, socialReasonMessage } from "../lib/social-reason-copy";
 
 type Check =
@@ -46,7 +46,9 @@ export function NamePrompt() {
   const noteId = useId();
   const messageId = useId();
 
-  const open = Boolean(status?.needsPrompt) && !closed;
+  // Held back while a first-run screen is up; it asks once the learner leaves it.
+  const held = useNamePromptHeld();
+  const open = Boolean(status?.needsPrompt) && !closed && !held;
   const value = edited ?? status?.prefill ?? "";
 
   // Tell the AI consent sheet to wait while this prompt is, or is about to be, showing.

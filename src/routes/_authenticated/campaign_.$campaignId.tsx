@@ -27,6 +27,7 @@ import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
+import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 
 export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   component: CampaignChatPageWithSave,
@@ -165,22 +166,29 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   }, [messages, sending, finished]);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, opts?: { opener?: boolean }) => {
       if (!ttsOn) return;
       setSpoken(text);
       setVoice("loading");
       try {
-        const resp = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
-          body: JSON.stringify({ text, course, voice: await voiceFor("alphonso", course) }),
-        });
-        if (!resp.ok) {
+        // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
+        const voiceId = await voiceFor("alphonso", course);
+        const fetchBlob = async () => {
+          const resp = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+            body: JSON.stringify({ text, course, voice: voiceId }),
+          });
+          return resp.ok ? await resp.blob() : null;
+        };
+        // An opener is static text: returning to the call replays it instead of fetching (and charging) again.
+        const blob = opts?.opener
+          ? await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), fetchBlob)
+          : await fetchBlob();
+        if (!blob) {
           setVoice("idle");
           return;
         }
-        const blob = await resp.blob();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
@@ -213,8 +221,11 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   const openerSpokenRef = useRef(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
-    openerSpokenRef.current = true;
-    const t = setTimeout(() => void speak(firstScene.opener), 400);
+    const t = setTimeout(() => {
+      // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
+      openerSpokenRef.current = true;
+      void speak(firstScene.opener, { opener: true });
+    }, 400);
     return () => clearTimeout(t);
   }, [firstScene.opener, speak]);
 
@@ -284,13 +295,15 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     });
     setSceneIndex((i) => i + 1);
     setError(null);
-    void speak(nextScene.opener);
+    void speak(nextScene.opener, { opener: true });
   }, [campaign.scenes, isLastScene, sceneIndex, speak]);
 
   const restartScene = useCallback(() => {
     setMessages((m) => m.slice(0, sceneAnchor + 1));
     setError(null);
-  }, [sceneAnchor]);
+    // The scene starts over, so Alphonso says its opener again (from the cache: no second /api/tts charge).
+    void speak(scene.opener, { opener: true });
+  }, [sceneAnchor, scene.opener, speak]);
 
   const startRecording = useCallback(async () => {
     setError(null);

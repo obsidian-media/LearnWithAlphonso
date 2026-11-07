@@ -49,6 +49,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
+import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 
 /**
  * Renders any of the six question types with a `picked` binding. Shared by
@@ -143,7 +144,7 @@ fun QuestionCard(
  * and so stays English-only. Only on a screen that can open the save sheet; a hint says so for the first few times.
  */
 @Composable
-internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course, question: Question? = null) {
+internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanation: String, course: Course, question: Question? = null, inSheet: Boolean = false) {
     val mode = if (question != null) {
         SavedWordPolicy.scope(question, explanation, course.code)
     } else if (SavedWordPolicy.savesWholeText(course.code)) {
@@ -153,7 +154,18 @@ internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanatio
     }
     val saveCourse = course.code.takeIf { mode != SaveWordMode.Plain }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, saveMode = mode)
+        if (inSheet) {
+            // In the lesson's verdict sheet (round 6) the sheet already says right or wrong with Alphonso's face, so
+            // this is only the one-line why, with no tip card and no "Correct." prefix for TalkBack.
+            val onSave = LocalSaveWordHandler.current
+            if (saveCourse != null && onSave != null) {
+                TappableText(explanation, saveCourse, mode, onSave, style = MaterialTheme.typography.bodyLarge, color = AlphonsoColor.palette.ink)
+            } else {
+                Text(explanation, style = MaterialTheme.typography.bodyLarge, color = AlphonsoColor.palette.ink)
+            }
+        } else {
+            ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, saveMode = mode)
+        }
         if (saveCourse != null && LocalSaveWordHandler.current != null) SaveWordHintLine(container)
     }
 }

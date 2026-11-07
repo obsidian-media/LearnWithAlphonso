@@ -1,5 +1,5 @@
 {
   "scenes": ["complete", "hector", "learn", "listen", "practice", "profile"],
   "figures": ["alphonso-proud", "alphonso-waving", "hector-waving"],
-  "clips": ["complete", "hector", "learn"]
+  "clips": ["hector", "learn"]
 }
