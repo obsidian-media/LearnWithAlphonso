@@ -252,20 +252,13 @@ function AuthPage() {
                 disabled={busy}
                 className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
               >
-                <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                  <path
-                    d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z"
-                    fill="#4285F4"
-                  />
-                </svg>
+                <img src="/brand/google-g.svg" alt="" width={20} height={20} className="size-5" />
                 Continue with Google
               </button>
 
               <div className="relative py-2 text-center">
                 <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-                <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ds-ink-soft">
-                  or
-                </span>
+                <span className="bg-surface px-3 ds-type-overline text-ds-ink-soft">or</span>
               </div>
             </>
           )}
@@ -426,7 +419,7 @@ function AuthPage() {
                   : "New here? Create an account"}
           </button>
 
-          <p className="pt-2 text-center text-[11px] leading-relaxed text-ds-ink-soft">
+          <p className="pt-2 text-center ds-type-caption text-ds-ink-soft">
             By continuing, you agree to the{" "}
             <Link to="/terms" className="underline hover:text-ink">
               Terms of Use
