@@ -530,7 +530,7 @@ describe("POST /api/hector-respond: Hector's memory", () => {
     }));
 
   function upstream() {
-    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+    const fetchMock = vi.fn(async (url: string | URL | Request, _init?: RequestInit) => {
       if (String(url).includes("openrouter.ai")) {
         return new Response(JSON.stringify({ choices: [{ message: { content: "Hola" } }] }), {
           status: 200,
