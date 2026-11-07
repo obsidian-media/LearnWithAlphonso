@@ -6,6 +6,8 @@ import { formatDuration, usePodcastPlayer } from "../lib/podcast-player";
 import type { SavedWordCourse } from "../lib/saved-word";
 import type { PodcastQuizOffer } from "../lib/podcast-quiz.functions";
 import { PodcastQuiz } from "./PodcastQuiz";
+import { roomArt } from "./ListenLibrary";
+import { FullPlayer } from "./FullPlayer";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
 /**
@@ -29,6 +31,7 @@ export function PodcastPlayer() {
   const finished = usePodcastPlayer((state) => state.finished);
 
   const [showTranscript, setShowTranscript] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
   const activeCourse = useProgress((s) => s.course);
   // Null until the folders are read; the active course stands in, never a fixed one.
@@ -107,9 +110,31 @@ export function PodcastPlayer() {
   }, [finished, episodeId]);
 
   if (!episode) return null;
+  const room = episode.room ?? "radio";
+  const length = mediaDuration ?? episode.durationSeconds;
 
   return (
     <>
+      {expanded ? (
+        <FullPlayer
+          room={room}
+          title={episode.title}
+          aiNarrated={episode.aiNarrated}
+          elapsed={elapsedSeconds}
+          duration={mediaDuration ?? episode.durationSeconds}
+          isPlaying={isPlaying}
+          failed={failed}
+          onToggle={toggle}
+          onRetry={retry}
+          onSeek={seek}
+          onTranscript={() => setShowTranscript(true)}
+          onCollapse={() => setExpanded(false)}
+          onClose={() => {
+            setExpanded(false);
+            close();
+          }}
+        />
+      ) : null}
       {showTranscript ? (
         <PodcastTranscriptPanel
           title={episode.title}
@@ -137,12 +162,12 @@ export function PodcastPlayer() {
           }
         />
       ) : null}
-      <div className="sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md">
+      <div className="sticky bottom-0 z-30 px-3 pb-2">
         {/* Inside the player bar, not a sibling: sticky siblings pinned to the same edge cover one another. */}
         {finished && offer ? (
           <div
             data-testid="quiz-offer"
-            className="mx-auto flex max-w-[430px] items-center gap-3 border-b border-ds-line px-5 py-3"
+            className="mx-auto mb-2 flex max-w-[430px] items-center gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
           >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ds-ink">Test what you heard</p>
@@ -162,28 +187,37 @@ export function PodcastPlayer() {
             </button>
           </div>
         ) : null}
-        <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-ds-ink">{episode.title}</p>
-            {episode.aiNarrated ? (
-              <p className="text-xs text-ds-ink-soft/70">{AI_NARRATED_LABEL}</p>
-            ) : null}
-            {failed ? (
-              <p className="text-xs text-rose-600">We couldn&apos;t play this episode.</p>
-            ) : (
-              <Scrubber
-                elapsed={elapsedSeconds}
-                duration={mediaDuration ?? episode.durationSeconds}
-                onSeek={seek}
-              />
-            )}
-          </div>
-
+        <div className="relative mx-auto flex max-w-[430px] items-center gap-3 overflow-hidden rounded-2xl bg-ds-hero px-3 py-2.5 text-ds-on-hero">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            aria-label={`Open player: ${episode.title}`}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          >
+            <span
+              aria-hidden="true"
+              className="size-11 shrink-0 rounded-xl bg-cover bg-center"
+              style={{ backgroundImage: `url(${roomArt(room)})` }}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-extrabold">{episode.title}</span>
+              {failed ? (
+                <span className="block text-xs text-ds-on-hero-soft">
+                  We couldn&apos;t play this episode.
+                </span>
+              ) : (
+                <span className="block text-xs text-ds-on-hero-soft">
+                  Alphonso · {formatDuration(Math.max(length - Math.round(elapsedSeconds), 0))} left
+                  {episode.aiNarrated ? ` · ${AI_NARRATED_LABEL}` : ""}
+                </span>
+              )}
+            </span>
+          </button>
           {failed ? (
             <button
               type="button"
               onClick={retry}
-              className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink"
+              className="rounded-full bg-ds-on-hero/15 px-3 py-1.5 text-xs font-bold"
             >
               Try again
             </button>
@@ -192,117 +226,31 @@ export function PodcastPlayer() {
               type="button"
               onClick={toggle}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="rounded-full bg-ds-brand px-3 py-1.5 text-xs font-semibold text-white"
+              className="grid size-11 place-items-center rounded-full bg-ds-action text-ds-on-action"
             >
-              {isPlaying ? "Pause" : "Play"}
+              <span aria-hidden="true">{isPlaying ? "❚❚" : "▶"}</span>
             </button>
           )}
-
-          {/* The accessibility affordance, always present rather than hidden
-            when an episode has no transcript: hiding it would make the gap
-            invisible instead of stated. */}
-          <button
-            type="button"
-            onClick={() => setShowTranscript(true)}
-            aria-label="Show transcript"
-            className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink"
-          >
-            Text
-          </button>
-
           <button
             type="button"
             onClick={close}
             aria-label="Close player"
-            className="text-ds-ink-soft/60"
+            className="grid size-9 place-items-center text-ds-on-hero-soft"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" />
             </svg>
           </button>
+          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-ds-on-hero/20" aria-hidden="true">
+            <div
+              className="h-full bg-ds-xp"
+              style={{
+                width: `${length > 0 ? Math.min(100, (elapsedSeconds / length) * 100) : 0}%`,
+              }}
+            />
+          </div>
         </div>
       </div>
     </>
-  );
-}
-
-const ARROW_STEP_SECONDS = 5;
-const PAGE_STEP_SECONDS = 30;
-
-/**
- * Seek bar with elapsed on the left and time remaining on the right (the iOS mini-bar has a Slider too).
- * A native range input, so pointer, touch and assistive-technology adjustment all work; the keys are
- * overridden only to take bigger steps than one second, which is useless on a five-minute episode.
- * Nothing here animates, so there is no motion for Reduce Motion to remove. A drag moves only the readout;
- * the seek happens once on release, so the audio element is not flooded with requests.
- */
-function Scrubber({
-  elapsed,
-  duration,
-  onSeek,
-}: {
-  elapsed: number;
-  duration: number;
-  onSeek: (seconds: number) => void;
-}) {
-  const max = duration > 0 ? Math.round(duration) : 0;
-  const value = Math.min(Math.max(Math.round(elapsed), 0), max);
-  const [draft, setDraft] = useState<number | null>(null);
-  const dragging = useRef(false);
-  const shown = draft ?? value;
-  const remaining = Math.max(max - shown, 0);
-
-  const commit = () => {
-    dragging.current = false;
-    if (draft !== null) onSeek(draft);
-    setDraft(null);
-  };
-
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const delta: Record<string, number> = {
-      ArrowRight: ARROW_STEP_SECONDS,
-      ArrowUp: ARROW_STEP_SECONDS,
-      ArrowLeft: -ARROW_STEP_SECONDS,
-      ArrowDown: -ARROW_STEP_SECONDS,
-      PageUp: PAGE_STEP_SECONDS,
-      PageDown: -PAGE_STEP_SECONDS,
-    };
-    if (event.key === "Home") onSeek(0);
-    else if (event.key === "End") onSeek(max);
-    else if (event.key in delta) onSeek(value + delta[event.key]);
-    else return;
-    event.preventDefault();
-  };
-
-  return (
-    <div className="mt-1 flex items-center gap-2">
-      <span className="tnum w-9 shrink-0 text-xs text-ds-ink-soft/70">{formatDuration(shown)}</span>
-      <input
-        type="range"
-        aria-label="Seek"
-        aria-valuetext={`${formatDuration(shown)} of ${formatDuration(max)}`}
-        min={0}
-        max={max}
-        step={1}
-        value={shown}
-        disabled={max === 0}
-        onPointerDown={() => {
-          dragging.current = true;
-        }}
-        onPointerUp={commit}
-        onPointerCancel={commit}
-        onChange={(event) => {
-          const next = Number(event.target.value);
-          // Without a pointer drag (assistive technology, a click on the track) there is no release to wait for.
-          if (dragging.current) setDraft(next);
-          else onSeek(next);
-        }}
-        onKeyDown={onKeyDown}
-        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-brand/60 rounded-full"
-      />
-      <span className="tnum w-10 shrink-0 text-right text-xs text-ds-ink-soft/70">
-        -{formatDuration(remaining)}
-      </span>
-    </div>
   );
 }

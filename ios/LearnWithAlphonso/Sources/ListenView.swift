@@ -157,16 +157,15 @@ struct ListenView: View {
             .alphonsoGlass()
             .padding(AlphonsoSpacing.md)
         } else {
-            PodcastFolderListing(
-                folder: nil,
-                folders: visibleFolders,
+            // The Listen home is the rooms shelf (ListenShelfViews.swift); a folder opens its own episode list.
+            ListenShelfRoot(
                 session: session,
                 player: player,
                 downloads: downloads,
                 networkMonitor: networkMonitor,
-                onEpisodesLoaded: rememberEpisodes,
-                // The root screen already paints the studio behind every state, the listing included.
-                showsScene: false
+                folders: visibleFolders,
+                initialCourse: courseCode,
+                onEpisodesLoaded: rememberEpisodes
             )
         }
     }
@@ -516,7 +515,7 @@ private struct PodcastSearchResultsView: View {
 ///
 /// Refusal for lack of budget is a prompt, never a silent deletion: it names what could
 /// be removed and waits for the learner to choose.
-private struct PodcastDownloadButton: View {
+struct PodcastDownloadButton: View {
     let episode: PodcastEpisode
     let downloads: PodcastDownloadManager
     let player: PodcastAudioPlayer

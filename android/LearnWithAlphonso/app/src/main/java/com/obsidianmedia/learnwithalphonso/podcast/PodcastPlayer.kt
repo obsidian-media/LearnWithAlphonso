@@ -413,6 +413,8 @@ class PodcastPlayer(
         val seconds = position.roundToInt()
         val epoch = saveGate.epoch
         val observedWhenRequested = saveGate.lastSeenUpdatedAt
+        // The Listen shelf's own progress, through the clamping database function. Best effort, never blocks playback.
+        scope.launch { runCatching { c.saveListenProgress(episodeId, if (completed) Int.MAX_VALUE else seconds) } }
         val previous = saveJob
         saveJob = scope.launch {
             previous?.join()

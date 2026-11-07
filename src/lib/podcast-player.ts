@@ -41,6 +41,9 @@ type PodcastPlayerState = {
   retry: () => void;
   /** Jump to a position; clamped to the episode, and the readout updates at once. */
   seek: (seconds: number) => void;
+  /** Playback speed; the audio element applies it. */
+  rate: number;
+  setRate: (rate: number) => void;
   close: () => void;
 };
 
@@ -51,6 +54,8 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
   failed: false,
   finished: false,
   markFinished: () => set({ finished: true }),
+  rate: 1,
+  setRate: (rate) => set({ rate: [0.75, 1, 1.25, 1.5].includes(rate) ? rate : 1 }),
   retryToken: 0,
   seekRequest: null,
   mediaDuration: null,

@@ -42,17 +42,19 @@ describe("PodcastPlayer (mini-bar)", () => {
   it("labels an AI-narrated episode, and not a recorded one", () => {
     usePodcastPlayer.getState().play(episode);
     const { unmount } = render(<PodcastPlayer />);
-    expect(screen.getByText("AI-narrated")).toBeInTheDocument();
+    expect(screen.getByText(/AI-narrated/)).toBeInTheDocument();
     unmount();
     usePodcastPlayer.getState().play({ ...episode, id: "e2", aiNarrated: false });
     render(<PodcastPlayer />);
-    expect(screen.queryByText("AI-narrated")).not.toBeInTheDocument();
+    expect(screen.queryByText(/AI-narrated/)).not.toBeInTheDocument();
   });
 
   it("shows elapsed time against the episode length", () => {
     usePodcastPlayer.getState().play(episode);
     usePodcastPlayer.getState().setElapsed(65);
     render(<PodcastPlayer />);
+    expect(screen.getByText(/3:55 left/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /open player/i }));
     expect(screen.getByText("1:05")).toBeInTheDocument();
     expect(screen.getByText("-3:55")).toBeInTheDocument();
   });
@@ -100,6 +102,7 @@ describe("PodcastPlayer scrubber", () => {
     usePodcastPlayer.getState().play(episode);
     usePodcastPlayer.getState().setElapsed(elapsed);
     render(<PodcastPlayer />);
+    fireEvent.click(screen.getByRole("button", { name: /open player/i }));
     return screen.getByRole("slider", { name: "Seek" });
   };
 
@@ -144,11 +147,12 @@ describe("PodcastPlayer scrubber", () => {
     expect(usePodcastPlayer.getState().elapsedSeconds).toBe(0);
   });
 
-  it("is the first stop in the tab order and takes focus from the keyboard", async () => {
+  it("is reachable from the keyboard within the player's few tab stops", async () => {
     const user = userEvent.setup();
     const slider = load();
     expect(slider).toBeEnabled();
-    await user.tab();
+    // Minimise and Close come first in the full player; the seek bar is the next stop.
+    for (let i = 0; i < 3; i++) await user.tab();
     expect(slider).toHaveFocus();
   });
 
@@ -157,6 +161,7 @@ describe("PodcastPlayer scrubber", () => {
     usePodcastPlayer.getState().setMediaDuration(200);
     usePodcastPlayer.getState().setElapsed(50);
     render(<PodcastPlayer />);
+    fireEvent.click(screen.getByRole("button", { name: /open player/i }));
     const slider = screen.getByRole("slider", { name: "Seek" });
     expect(slider).toHaveAttribute("max", "200");
     expect(screen.getByText("-2:30")).toBeInTheDocument();

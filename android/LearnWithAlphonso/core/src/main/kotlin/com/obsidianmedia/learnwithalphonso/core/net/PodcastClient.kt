@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress
+import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelf
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
@@ -107,8 +109,14 @@ class PodcastClient(
     }
 
     /** Published episodes in one folder merged with this user's saved positions; a failed playback read never fails the listing. */
-    suspend fun fetchEpisodes(folderId: String): List<PodcastEpisode> {
-        val episodeRows = rows(http.rest(HttpMethod.Get, "podcast_episodes", mapOf("select" to EPISODE_SELECT, "folder_id" to "eq.$folderId", "order" to "sort_order.asc")))
+    suspend fun fetchEpisodes(folderId: String? = null): List<PodcastEpisode> {
+        // With no folder, every published episode (the Listen shelf's one-read library).
+        val episodeQuery = buildMap {
+            put("select", EPISODE_SELECT)
+            if (folderId != null) put("folder_id", "eq.$folderId")
+            put("order", "sort_order.asc")
+        }
+        val episodeRows = rows(http.rest(HttpMethod.Get, "podcast_episodes", episodeQuery))
         val positions = HashMap<String, Pair<Int, String?>>()
         if (episodeRows.isNotEmpty()) {
             runCatching { rows(http.rest(HttpMethod.Get, "podcast_playback", mapOf("select" to "episode_id,position_seconds,updated_at"))) }
@@ -157,6 +165,25 @@ class PodcastClient(
         }
         val saved = rows(response).firstOrNull() ?: throw PodcastClientError.StaleWrite()
         return saved.str("updated_at")
+    }
+
+    /** This user's listening progress (the `listen_progress` table; own rows only by RLS). */
+    suspend fun fetchListenProgress(): List<ListenProgress> =
+        rows(http.rest(HttpMethod.Get, "listen_progress", mapOf("select" to "episode_id,position_s,completed_at,updated_at"))).mapNotNull { row ->
+            ListenProgress(
+                episodeId = row.str("episode_id") ?: return@mapNotNull null,
+                positionS = row.int("position_s") ?: 0,
+                completedAt = row.str("completed_at"),
+                updatedAt = row.str("updated_at") ?: return@mapNotNull null,
+            )
+        }
+
+    /**
+     * Through `save_listen_progress`, which takes the user from auth.uid(), requires a published episode and clamps the
+     * position into the episode. The table has no client write grant.
+     */
+    suspend fun saveListenProgress(episodeId: String, positionSeconds: Int) {
+        requireSuccess(http.rpc("save_listen_progress", buildJsonObject { put("p_episode_id", episodeId); put("p_position_s", ListenShelf.wirePosition(positionSeconds)) }))
     }
 
     /** Through the SECURITY DEFINER RPC only; authenticated has no INSERT grant on the table. */

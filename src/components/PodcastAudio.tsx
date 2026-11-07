@@ -27,6 +27,7 @@ async function podcastApi() {
 export function PodcastAudio() {
   const episode = usePodcastPlayer((state) => state.episode);
   const isPlaying = usePodcastPlayer((state) => state.isPlaying);
+  const rate = usePodcastPlayer((state) => state.rate);
   const retryToken = usePodcastPlayer((state) => state.retryToken);
   const seekRequest = usePodcastPlayer((state) => state.seekRequest);
   const setPlaying = usePodcastPlayer((state) => state.setPlaying);
@@ -54,6 +55,14 @@ export function PodcastAudio() {
         }),
       )
       .catch(() => {});
+    // The Listen shelf's own progress (clamped and validated in the database); a finished episode reports its end.
+    void podcastApi()
+      .then(({ saveListenProgress }) =>
+        saveListenProgress({
+          data: { episodeId: id, positionSeconds: completed ? Number.MAX_SAFE_INTEGER : seconds },
+        }),
+      )
+      .catch(() => {});
   }, []);
 
   const flushPlayEvent = useCallback((id: string) => {
@@ -72,6 +81,10 @@ export function PodcastAudio() {
     listenedRef.current = 0;
     lastTickRef.current = null;
   }, [episodeId]);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  }, [rate, episodeId]);
 
   useEffect(() => {
     const audio = audioRef.current;

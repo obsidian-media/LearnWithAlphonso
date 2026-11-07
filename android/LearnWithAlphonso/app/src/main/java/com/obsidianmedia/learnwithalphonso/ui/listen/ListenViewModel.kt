@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClient
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClientError
+import com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastCache
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastCacheEntry
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
@@ -37,6 +38,11 @@ data class ListenUiState(
     val offline: List<PodcastEpisode>? = null,
     /** Episodes (of the folders opened so far) that have a quiz; each gets a "Take the quiz" button under its row. */
     val quizEpisodeIds: Set<String> = emptySet(),
+    /** Every published episode and this user's listening progress: what the rooms shelf draws. */
+    val libraryEpisodes: List<PodcastEpisode> = emptyList(),
+    val progress: List<ListenProgress> = emptyList(),
+    val libraryLoading: Boolean = true,
+    val libraryFailed: Boolean = false,
 )
 
 /** Port of ListenView.swift's state: the folder tree, per-folder episodes, search and the offline listing. */
@@ -83,6 +89,7 @@ class ListenViewModel(
                     isLoading = false, offline = null,
                 )
             }
+            viewModelScope.launch { loadLibrary() }
             // Licensing: downloads of unpublished episodes go, but only after a successful read. A read with no folders
             // is a role or policy problem, not "everything was unpublished".
             if (PodcastLibrary.canPruneDownloads(folders)) {
@@ -98,6 +105,20 @@ class ListenViewModel(
                 _state.update { it.copy(isLoading = false, error = "Something went wrong loading the library.") }
             }
         }
+    }
+
+    /** The shelf's one read: every episode, then progress (garnish: a failed progress read shows an unlistened shelf). */
+    suspend fun loadLibrary() {
+        _state.update { it.copy(libraryLoading = true, libraryFailed = false) }
+        val episodes = runCatching { client.fetchEpisodes() }
+        episodes.getOrNull()?.let { remember(it) }
+        _state.update { it.copy(libraryEpisodes = episodes.getOrNull() ?: it.libraryEpisodes, libraryFailed = episodes.isFailure, libraryLoading = false) }
+        refreshProgress()
+    }
+
+    /** Re-reads progress, for example after an episode played or the player closed. */
+    suspend fun refreshProgress() {
+        runCatching { client.fetchListenProgress() }.getOrNull()?.let { rows -> _state.update { it.copy(progress = rows) } }
     }
 
     fun loadEpisodes(folderId: String) {

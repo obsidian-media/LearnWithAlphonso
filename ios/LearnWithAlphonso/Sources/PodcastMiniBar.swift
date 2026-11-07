@@ -42,6 +42,7 @@ struct PodcastMiniBar: View {
     let networkMonitor: NetworkMonitor
 
     @State private var showTranscript = false
+    @State private var showFull = false
     @State private var transcript: String?
     @State private var isLoadingTranscript = false
     /// Nil until the folders are read; the active course stands in, never a fixed one.
@@ -82,31 +83,32 @@ struct PodcastMiniBar: View {
                 if player.machine.phase == .finished, let offer = quizOffer {
                     quizOfferRow(offer: offer)
                 }
-                if episode.durationSeconds > 0 {
-                    Slider(
-                        value: Binding(
-                            get: { min(max(player.elapsedSeconds, 0), Double(episode.durationSeconds)) },
-                            set: { player.seek(to: $0) }
-                        ),
-                        in: 0...Double(episode.durationSeconds)
-                    )
-                    .tint(AlphonsoColor.moss)
-                    .padding(.horizontal, AlphonsoSpacing.md)
-                    .accessibilityLabel("Playback position")
-                    .accessibilityValue("\(format(player.elapsedSeconds)) of \(format(Double(episode.durationSeconds)))")
-                }
                 HStack(spacing: AlphonsoSpacing.sm + 2) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(episode.title)
-                            .font(AlphonsoFont.sans(14, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.ink)
-                            .lineLimit(1)
-                        Text(progressLabel(for: episode))
-                            .font(AlphonsoFont.sans(12))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                            .monospacedDigit()
+                    Button {
+                        showFull = true
+                    } label: {
+                        HStack(spacing: AlphonsoSpacing.sm + 2) {
+                            Image(uiImage: LessonArt.room("radio") ?? UIImage())
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(episode.title)
+                                    .font(AlphonsoFont.sans(14, weight: .semiBold))
+                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .lineLimit(1)
+                                Text(progressLabel(for: episode))
+                                    .font(AlphonsoFont.sans(12))
+                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .monospacedDigit()
+                            }
+                            Spacer(minLength: 0)
+                        }
                     }
-                    Spacer(minLength: 0)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Open player: \(episode.title)")
 
                     switch player.control {
                     case .play, .pause:
@@ -114,9 +116,9 @@ struct PodcastMiniBar: View {
                             player.toggle()
                         } label: {
                             Image(systemName: player.control == .pause ? "pause.fill" : "play.fill")
-                                .foregroundStyle(AlphonsoColor.onPrimary)
+                                .foregroundStyle(AlphonsoColor.onAccent)
                                 .padding(AlphonsoSpacing.sm)
-                                .background(Circle().fill(AlphonsoColor.moss))
+                                .background(Circle().fill(AlphonsoColor.ember))
                         }
                         .accessibilityLabel(player.control == .pause ? "Pause" : "Play")
                     case .spinner:
@@ -125,9 +127,9 @@ struct PodcastMiniBar: View {
                             player.toggle()
                         } label: {
                             ProgressView()
-                                .tint(AlphonsoColor.onPrimary)
+                                .tint(AlphonsoColor.onAccent)
                                 .padding(AlphonsoSpacing.sm)
-                                .background(Circle().fill(AlphonsoColor.moss))
+                                .background(Circle().fill(AlphonsoColor.ember))
                         }
                         .accessibilityLabel("Loading. Double-tap to pause.")
                     case .retry, .none:
@@ -150,7 +152,7 @@ struct PodcastMiniBar: View {
                             downloads.markPlayed(episodeID: next.id)
                         } label: {
                             Image(systemName: "forward.end.fill")
-                                .foregroundStyle(AlphonsoColor.inkSoft)
+                                .foregroundStyle(AlphonsoColor.onPrimary)
                         }
                         .accessibilityLabel("Next episode")
                     }
@@ -162,7 +164,7 @@ struct PodcastMiniBar: View {
                         showTranscript = true
                     } label: {
                         Image(systemName: "text.alignleft")
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .foregroundStyle(AlphonsoColor.onPrimary)
                     }
                     .accessibilityLabel("Show transcript")
 
@@ -170,18 +172,32 @@ struct PodcastMiniBar: View {
                         player.close()
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .foregroundStyle(AlphonsoColor.onPrimary)
                     }
                     .accessibilityLabel("Close player")
                 }
                 .padding(.horizontal, AlphonsoSpacing.md)
                 .padding(.vertical, AlphonsoSpacing.sm)
+                // The control row is a navy pill; a failure or a quiz offer above it stays on the parchment.
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(AlphonsoColor.mossDeep))
+                .padding(.horizontal, AlphonsoSpacing.sm)
+                .padding(.vertical, AlphonsoSpacing.xs)
             }
             .background(AlphonsoColor.parchment)
             .overlay(alignment: .top) {
                 Rectangle()
                     .fill(AlphonsoColor.hairline)
                     .frame(height: 1)
+            }
+            .fullScreenCover(isPresented: $showFull) {
+                PodcastFullPlayer(
+                    player: player,
+                    episode: episode,
+                    onTranscript: {
+                        showFull = false
+                        showTranscript = true
+                    }
+                )
             }
             .sheet(isPresented: $showTranscript) {
                 PodcastTranscriptSheet(
@@ -287,7 +303,7 @@ struct PodcastMiniBar: View {
 
     private func progressLabel(for episode: PodcastEpisode) -> String {
         if player.machine.phase == .buffering { return PodcastPlaybackCopy.bufferingLabel }
-        return format(player.elapsedSeconds) + " / " + format(Double(episode.durationSeconds))
+        return "Alphonso \u{00B7} " + format(max(0, Double(episode.durationSeconds) - player.elapsedSeconds)) + " left"
     }
 
     private func format(_ seconds: Double) -> String {

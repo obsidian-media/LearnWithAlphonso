@@ -36,6 +36,7 @@ export const USER_ID_EXPORT_TABLES = [
   "lesson_completions",
   "mastered_words",
   "podcast_play_events",
+  "listen_progress",
   "podcast_playback",
   "podcast_quiz_awards",
   // Practice stars and each call's server-held tally (20261107032021); own-row SELECT.

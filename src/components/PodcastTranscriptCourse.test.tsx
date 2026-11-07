@@ -100,6 +100,7 @@ describe("a transcript word is saved under the episode's course", () => {
   async function openTranscript(own: "en" | "fr" | "es" | null = null) {
     usePodcastPlayer.getState().play({ ...episode, course: own });
     render(withAiConsent(<PodcastPlayer />, fakeConsentApi()));
+    await userEvent.click(screen.getByRole("button", { name: /open player/i }));
     await userEvent.click(screen.getByRole("button", { name: "Show transcript" }));
   }
 
