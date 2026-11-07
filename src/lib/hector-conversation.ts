@@ -102,6 +102,7 @@ export function buildHectorMessages(
   history: TutorHistoryMessage[],
   text: string,
   systemPrompt: string,
+  memory: ChatMessage | null = null,
 ): ChatMessage[] {
   const priorTurns: ChatMessage[] = (Array.isArray(history) ? history : [])
     .filter(
@@ -117,6 +118,7 @@ export function buildHectorMessages(
 
   return [
     { role: "system", content: systemPrompt },
+    ...(memory ? [memory] : []),
     ...priorTurns,
     { role: "user", content: text.slice(0, MAX_MESSAGE_LENGTH) },
   ];
