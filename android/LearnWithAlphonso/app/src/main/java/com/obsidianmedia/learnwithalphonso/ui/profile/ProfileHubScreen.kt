@@ -55,7 +55,9 @@ fun ProfileHubScreen(
         val id = userId ?: return@LaunchedEffect
         try {
             val data = container.progressClient.fetchProfileOverview(id, course.code)
-            overview = ProfileOverviewModel(data, container.content, course, isPro)
+            // The learner's chosen daily time; a failed or empty read just means no goal (rings keep the XP rule).
+            val goal = runCatching { container.learnerProfileClient.fetch().answers.dailyMinutes }.getOrNull()
+            overview = ProfileOverviewModel(data, container.content, course, isPro, goal)
             failed = false
         } catch (e: CancellationException) {
             throw e
@@ -84,7 +86,7 @@ fun ProfileHubScreen(
                         }
                         ProfileTab.PROGRESS -> {
                             ProfileCompactHeader(m)
-                            ProfileSkillsSlot()
+                            ProfileSkills(m)
                             ProfileFold("Last 3 months", ProfileTabs.heatSummary(m.heat.activeDays)) { ProfileHeatMap(m) }
                             ProfileFold("Personal records", ProfileTabs.recordsSummary(m.records.bestStreak)) { ProfileRecords(m) }
                             ProfileFold("Level ${m.level.level}", "${m.level.level} · ${m.level.pct}%") { ProfileLevel(m) }

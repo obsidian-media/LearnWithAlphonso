@@ -39,7 +39,7 @@ import {
   ProfileSkeleton,
   ProfileTabBar,
   ProgressFold,
-  SkillsSlot,
+  SkillsChart,
   progressFoldSummaries,
   Records,
   ShareWeek,
@@ -72,7 +72,7 @@ function ProgressTab({ o }: { o: ProfileOverview }) {
   const course = COURSES.find((c) => c.id === o.course)!;
   return (
     <>
-      <SkillsSlot />
+      <SkillsChart o={o} />
       <ProgressFold headingId="heat-heading" title="Activity heat map" summary={sum.heat}>
         <HeatMap o={o} />
       </ProgressFold>

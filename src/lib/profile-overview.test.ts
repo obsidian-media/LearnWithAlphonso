@@ -17,6 +17,7 @@ import {
   threeMonthsWindow,
   weakSpots,
   weekRings,
+  goalRings,
   type ProfileOverview,
 } from "./profile-overview";
 
@@ -69,6 +70,7 @@ function overview(over: Partial<ProfileOverview> = {}): ProfileOverview {
     league: null,
     timeZone: null,
     skills: [],
+    dailyGoalMinutes: null,
     ...over,
   };
 }
@@ -197,6 +199,7 @@ describe("the four big numbers match their sources", () => {
       totalXp: 0,
       xpThisWeek: 0,
       wordsLearned: 0,
+      masteredWords: 0,
       savedWords: 0,
       lessonsDone: 0,
       accuracyPct: null,
@@ -358,5 +361,29 @@ describe("friends this week", () => {
       ["Sam", true],
       ["Jon", false],
     ]);
+  });
+});
+
+describe("goalRings", () => {
+  const learning = [
+    { day: "2026-11-02", lessonSeconds: 420, practiceSeconds: 240 },
+    { day: "2026-11-03", lessonSeconds: 300, practiceSeconds: 0 },
+  ];
+  it("a day is done when learning minutes reach the goal, and today is open until then", () => {
+    const g = goalRings("2026-11-04", learning, 10);
+    expect(g.days.map((d) => d.state)).toEqual([
+      "done",
+      "missed",
+      "today",
+      "future",
+      "future",
+      "future",
+      "future",
+    ]);
+    expect(g.days[0]?.minutes).toBe(11);
+    expect(g.metDays).toBe(1);
+  });
+  it("a bigger goal is not met by the same minutes", () => {
+    expect(goalRings("2026-11-04", learning, 15).metDays).toBe(0);
   });
 });

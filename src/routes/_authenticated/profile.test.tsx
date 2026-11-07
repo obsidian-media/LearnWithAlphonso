@@ -422,7 +422,7 @@ describe("Profile, round 6", () => {
       document.querySelector(`[data-big-stat="${name}"] [data-value]`)?.textContent;
     expect(value("streak")).toBe(String(o.progress.streak));
     expect(value("xp")).toBe(n.totalXp.toLocaleString("en-US"));
-    expect(value("words")).toBe(n.wordsLearned.toLocaleString("en-US"));
+    expect(value("words")).toBe(n.masteredWords.toLocaleString("en-US"));
     expect(value("lessons")).toBe(String(o.completions.length));
     expect(document.querySelector('[data-big-stat="streak"]')).toHaveTextContent(
       `Longest: ${o.progress.longestStreak}`,
@@ -578,5 +578,103 @@ describe("Profile, round 6", () => {
     renderPage();
     expect(await screen.findByText("Your profile didn't load.")).toBeInTheDocument();
     expect(document.querySelector("[data-big-stat]")).toBeNull();
+  });
+});
+
+describe("Profile: skills radar, goal rings, mastered words, league standing", () => {
+  const day = "2026-11-05";
+  const answers = (skill: string, right: number, total: number) => ({ day, skill, right, total });
+
+  it("too little data shows the designed empty state and no shape", async () => {
+    getProfileOverview.mockResolvedValue(richLearner({ skills: [answers("listening", 3, 4)] }));
+    renderPage();
+    await openTab("Progress");
+    const card = await find("[data-skills-chart]");
+    expect(card.getAttribute("data-skills-chart")).toBe("empty");
+    expect(card.querySelector("[data-radar-shape]")).toBeNull();
+    expect(card).toHaveTextContent(/Your listening, speaking, vocabulary, grammar and reading/);
+    expect(card).toHaveTextContent(/Speaking: \d+ more answers to score/);
+  });
+
+  it("draws one vertex per scored skill, from the rows, and calls out the lowest", async () => {
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        skills: [
+          answers("listening", 9, 10),
+          answers("vocabulary", 6, 10),
+          answers("grammar", 4, 10),
+          answers("reading", 8, 10),
+        ],
+      }),
+    );
+    renderPage();
+    await openTab("Progress");
+    const card = await find('[data-skills-chart="radar"]');
+    expect(card.querySelector('[data-skill="listening"]')?.getAttribute("data-score")).toBe("90");
+    expect(card.querySelector('[data-skill="grammar"]')?.getAttribute("data-score")).toBe("40");
+    // Speaking was never answered: no score, no dot.
+    const speaking = card.querySelector('[data-skill="speaking"]')!;
+    expect(speaking.getAttribute("data-score")).toBe("");
+    expect(speaking.querySelector("circle")).toBeNull();
+    expect(
+      card.querySelector("[data-radar-shape]")?.getAttribute("points")?.split(" "),
+    ).toHaveLength(4);
+    expect(card.querySelector("[data-skills-lowest]")).toHaveTextContent("Lowest: Grammar · 40");
+  });
+
+  it("the week rings measure the daily goal in learning minutes", async () => {
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        dailyGoalMinutes: 10,
+        learning: [
+          { day: "2026-11-02", lessonSeconds: 420, practiceSeconds: 240 },
+          { day: "2026-11-03", lessonSeconds: 300, practiceSeconds: 0 },
+        ],
+      }),
+    );
+    renderPage();
+    const week = await find("[data-ring-measure]");
+    expect(week.getAttribute("data-ring-measure")).toBe("minutes");
+    // Monday: 11 minutes reaches the 10-minute goal; Tuesday: 5 does not, whatever the XP was.
+    const rings = [...week.querySelectorAll("[data-ring]")].map((e) => e.getAttribute("data-ring"));
+    expect(rings.slice(0, 2)).toEqual(["done", "missed"]);
+    expect(week).toHaveTextContent("Goal: 10 learning minutes a day");
+  });
+
+  it("without a chosen daily time the rings keep the XP rule and say how to set one", async () => {
+    getProfileOverview.mockResolvedValue(richLearner({ dailyGoalMinutes: null }));
+    renderPage();
+    const week = await find("[data-ring-measure]");
+    expect(week.getAttribute("data-ring-measure")).toBe("xp");
+    expect(week).toHaveTextContent(/Pick a daily time in Edit your answers/);
+  });
+
+  it("Words mastered comes from the mastered markers", async () => {
+    getProfileOverview.mockResolvedValue(richLearner({ masteredWords: 17 }));
+    renderPage();
+    const tile = await find('[data-big-stat="words"]');
+    expect(tile.querySelector("[data-value]")).toHaveTextContent("17");
+    expect(tile).toHaveTextContent("words mastered");
+  });
+
+  it("the league card shows rank and when the week ends, in the learner's zone", async () => {
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        league: {
+          leagueTier: "silver",
+          rank: 4,
+          size: 12,
+          weekStart: "2026-11-02",
+          weekEnd: "2026-11-08",
+          weekXp: 80,
+        },
+        timeZone: "Pacific/Auckland",
+      }),
+    );
+    renderPage();
+    await openTab("Social");
+    const standing = await find("[data-league-standing]");
+    // Sunday ends at 23:59 UTC, which is already Monday the 9th in Auckland: shown as the learner lives it.
+    expect(standing).toHaveTextContent("Rank 4 of 12 · ends Mon, Nov 9");
   });
 });

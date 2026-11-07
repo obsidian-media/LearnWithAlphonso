@@ -286,6 +286,37 @@ object ProfileMath {
         return DailyGoal(minutes, goalMinutes, goalMinutes > 0 && minutes >= goalMinutes)
     }
 
+    data class GoalRingDay(val day: String, val minutes: Int, val goalMinutes: Int, val state: RingState)
+    data class GoalRings(val days: List<GoalRingDay>, val metDays: Int)
+
+    /**
+     * This week's rings against the learner's own daily goal in learning minutes. A day is done when its minutes reach
+     * the goal. The streak is NOT computed here: it keeps its XP rule.
+     */
+    fun goalRings(today: String, learning: List<ProfileLearningDay>, goalMinutes: Int): GoalRings {
+        val monday = weekStart(today)
+        val days = (0 until 7).map { i ->
+            val day = addDays(monday, i)
+            val p = dailyGoalProgress(learning, day, goalMinutes)
+            val state = when {
+                day > today -> RingState.FUTURE
+                p.reached -> RingState.DONE
+                day == today -> RingState.TODAY
+                else -> RingState.MISSED
+            }
+            GoalRingDay(day, if (day > today) 0 else p.minutes, goalMinutes, state)
+        }
+        return GoalRings(days, days.count { it.state == RingState.DONE })
+    }
+
+    /** "ends Mon, Nov 9": when the league week closes (the last moment of its Sunday UTC), in the learner's zone. Display only. */
+    fun leagueWeekEnds(weekEnd: String, timeZone: String?): String {
+        val zone = runCatching { java.time.ZoneId.of(timeZone!!) }.getOrDefault(java.time.ZoneOffset.UTC)
+        val end = LocalDate.parse(weekEnd).atTime(23, 59, 59).atZone(java.time.ZoneOffset.UTC).withZoneSameInstant(zone)
+        val fmt = java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d", java.util.Locale.US)
+        return "ends " + fmt.format(end)
+    }
+
     const val SHARE_APP_NAME = "Learn with Alphonso"
 
     /** Every line of text on the share card: real stats only, no link. */
