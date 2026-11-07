@@ -143,7 +143,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
           ),
         },
         opener: {
-          en: "Hi! You look like you're on a mission. Can I help you find something?",
+          en: "Hi! You look a bit lost. Can I help you find something?",
           fr: "Salut ! Tu as l'air de chercher quelque chose. Je peux t'aider ?",
           es: "¡Hola! Parece que andas buscando algo. ¿Te ayudo a encontrarlo?",
         },
@@ -211,7 +211,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
         opener: {
           en: "Hey, there you are! Four days in. How's the first week going so far?",
           fr: "Tiens, te voilà ! Déjà quatre jours. Alors, cette première semaine, ça se passe comment ?",
-          es: "¡Hola! Ya van cuatro días. ¿Cómo te ha ido en esta primera semana?",
+          es: "¡Hola! Ya van cuatro días. ¿Cómo va tu primera semana?",
         },
       },
     ],
@@ -235,7 +235,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
     premise: {
       en: "The learner has felt unwell for a couple of days and decides to see a doctor. This roleplay follows one practical errand: calling the clinic to book an appointment, describing how they feel to the doctor, and picking something up at the pharmacy. It is language practice only. Nobody in the story gives medical advice, names a medicine or states a dose; the doctor asks questions and writes a note, and the pharmacist handles the practical side.",
       fr: "Contexte : l'apprenant ne se sent pas bien depuis deux jours et décide de voir un médecin à Bordeaux. Ce jeu de rôle suit une démarche pratique : appeler le cabinet pour prendre rendez-vous, décrire comment l'apprenant se sent au médecin, puis passer à la pharmacie. C'est un exercice de langue uniquement. Personne dans l'histoire ne donne de conseil médical, ne nomme un médicament ni ne donne une dose : le médecin pose des questions et rédige un mot, et le pharmacien s'occupe de la partie pratique. Toute la conversation se déroule en français.",
-      es: "Contexto: el estudiante no se siente bien desde hace dos días y decide ver a un médico en Lima. Este juego de rol sigue una gestión práctica: llamar al consultorio para pedir una cita, describirle al médico cómo se siente y pasar por la farmacia. Es solo práctica de idioma. Nadie en la historia da consejos médicos, nombra un medicamento ni indica una dosis: la médica hace preguntas y escribe una nota, y el farmacéutico se ocupa de la parte práctica. Toda la conversación es en español.",
+      es: "Contexto: el estudiante no se siente bien desde hace dos días y decide ver a un médico en Lima. Este juego de rol sigue una gestión práctica: llamar al consultorio para pedir una cita, describirle a la médica cómo se siente y pasar por la farmacia. Es solo práctica de idioma. Nadie en la historia da consejos médicos, nombra un medicamento ni indica una dosis: la médica hace preguntas y escribe una nota, y el farmacéutico se ocupa de la parte práctica. Toda la conversación es en español.",
     },
     scenes: [
       {
@@ -348,7 +348,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
     emoji: "🗺",
     level: "Intermediate",
     title: {
-      en: "Trip by train",
+      en: "Traveling by train",
       fr: "Voyage en train",
       es: "Un viaje en tren",
     },
@@ -358,7 +358,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
       es: "Buy a ticket in Santiago, cope with a delay and check into a hotel in Rancagua.",
     },
     premise: {
-      en: "The learner is taking a day trip that turns into an overnight stay: buying a train ticket at the station, dealing with a delayed train and asking staff for help, and finally checking into a hotel after a long evening. It is one journey on one day, so staff may refer to the delay or the ticket if it comes up naturally, but don't force it.",
+      en: "The learner is taking a day trip that turns into an overnight stay: buying a train ticket at the station, dealing with a delayed train and asking staff for help, and finally checking into a hotel after a long evening. It is one journey, so staff may refer to the delay or the ticket if it comes up naturally, but don't force it.",
       fr: "Contexte : l'apprenant fait un voyage de Lyon à Marseille qui finit par une nuit sur place : acheter un billet de train à la gare, faire face à un train en retard et demander de l'aide au personnel, puis s'enregistrer à l'hôtel après une longue soirée. C'est un seul voyage, le même jour : le personnel peut mentionner le retard ou le billet si l'occasion se présente, mais sans le forcer. Toute la conversation se déroule en français.",
       es: "Contexto: el estudiante hace un viaje de Santiago a Rancagua que termina con una noche en la ciudad: comprar un boleto de tren en la estación, enfrentar un tren retrasado y pedir ayuda al personal, y por último registrarse en un hotel después de una tarde larga. Es un solo viaje, el mismo día: el personal puede mencionar el retraso o el boleto si surge, pero sin forzarlo. Toda la conversación es en español.",
     },
@@ -478,14 +478,14 @@ export const MORE_CAMPAIGNS: Campaign[] = [
       es: "Mudarse a un departamento nuevo",
     },
     blurb: {
-      en: "View a flat, report a broken heater and meet the neighbour.",
+      en: "View an apartment, report a broken heater and meet a neighbor.",
       fr: "View a flat, report a broken heater and meet the neighbour, in Toulouse.",
-      es: "View a flat, report a broken heater and meet the neighbour, in Mexico City.",
+      es: "View an apartment, report a broken heater and meet your neighbor, in Mexico City.",
     },
     premise: {
       en: "The learner is moving to a new city and is settling into a rented flat. This roleplay follows the first weeks: viewing the flat with the letting agent, calling the landlord when the heater stops working in the first cold week, and meeting a neighbour in the stairwell. It is one flat and one building, so people may refer to earlier events if it comes up naturally, but don't force it.",
       fr: "Contexte : l'apprenant déménage à Toulouse et s'installe dans un appartement en location. Ce jeu de rôle suit les premières semaines : visiter l'appartement avec l'agent immobilier, appeler la propriétaire quand le chauffage tombe en panne pendant la première semaine de froid, puis croiser une voisine dans l'escalier. C'est le même appartement et le même immeuble : tu peux mentionner naturellement ce qui s'est passé plus tôt si l'occasion se présente, mais sans le forcer. Toute la conversation se déroule en français.",
-      es: "Contexto: el estudiante se muda a la Ciudad de México y se instala en un departamento rentado. Este juego de rol sigue las primeras semanas: ver el departamento con la agente inmobiliaria, llamar al propietario cuando el calentador de agua deja de funcionar en la primera semana de frío y conocer a una vecina en la escalera. Es el mismo departamento y el mismo edificio: puedes mencionar con naturalidad algo que pasó antes si surge, pero sin forzarlo. Toda la conversación es en español.",
+      es: "Contexto: el estudiante se muda a la Ciudad de México y se instala en un departamento rentado. Este juego de rol sigue las primeras semanas: ver el departamento con la agente inmobiliaria, llamar al propietario cuando el calentador de agua deja de funcionar en la primera semana de frío y conocer a una vecina en la escalera. Es el mismo departamento y el mismo edificio: puedes mencionar con naturalidad algo que pasó antes si surge, pero sin forzarlo. Usa usted con la agente inmobiliaria y con el propietario, y tú con la vecina si ella lo propone; no cambies de trato dentro de una misma escena. Toda la conversación es en español.",
     },
     scenes: [
       {

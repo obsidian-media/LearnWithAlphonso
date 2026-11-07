@@ -1070,6 +1070,13 @@
   },
   "reason": "Meaning was empty."
  },
+ "es:card:esa2p3l3/derecha": {
+  "patch": {
+   "meaning": "right (direction)",
+   "example": "Gire a la derecha en la esquina."
+  },
+  "reason": "The meaning gloss is empty, and the example is an English question wrapped around the Spanish sentence instead of a plain Spanish example."
+ },
  "es:card:esa2p4l1/alta": {
   "patch": {
    "meaning": "tall (feminine)"
@@ -3232,6 +3239,12 @@
    "meaning": "no, not any (feminine)"
   },
   "reason": "Meaning missing."
+ },
+ "es:card:esb2p12l2/ningún": {
+  "patch": {
+   "meaning": "no, not any (before a masculine singular noun)"
+  },
+  "reason": "The meaning field is empty, so the card has no gloss."
  },
  "es:card:esb2p12l2/nunca": {
   "patch": {
@@ -17971,6 +17984,19 @@
    "explanation": "A negative tú command uses the subjunctive, so venir becomes \"vengas\" after \"No\". The irregular \"ven\" is only for affirmative commands."
   },
   "reason": "The wrong options mixed in other verbs, so they are replaced with forms of venir; a (tú) clue rules out \"venga\". / Generic explanation replaced with a specific one."
+ },
+ "es:question:esb1p9l2/esb1p9q8": {
+  "patch": {
+   "prompt": "¡___ (hacer, tú) tu tarea!",
+   "choices": [
+    "Hagas",
+    "Haga",
+    "Haz",
+    "Haces"
+   ],
+   "explanation": "Hacer has an irregular affirmative tú command, \"Haz\". \"Hagas\" is the negative form and would need \"no\" before it."
+  },
+  "reason": "\"Di\" and \"comas\" belong to other verbs, so they are replaced with forms of hacer; a (tú) clue rules out \"Haga\". / Generic explanation replaced with a specific one."
  },
  "es:question:esb1p9l2/esb1p9q9": {
   "patch": {

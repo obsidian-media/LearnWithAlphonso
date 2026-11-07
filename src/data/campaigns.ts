@@ -2,6 +2,7 @@ import type { Course } from "./courses";
 import type { Localized, ScenarioLevel } from "./scenarios";
 import { BATCH2_CAMPAIGNS } from "./campaigns-batch2";
 import { MORE_CAMPAIGNS } from "./campaigns-more";
+import SCENE_PROMPT_FIXES from "./campaign-scene-prompt-fixes.json" with { type: "json" };
 
 /**
  * V4 candidate #4: multi-turn conversation campaigns. Deliberately a
@@ -78,7 +79,7 @@ const CITY_DAY: Campaign = {
     es: "Coffee, directions, and a new acquaintance in Mexico City, all in one morning.",
   },
   premise: {
-    en: "You've just arrived in a new city for the first time. It's a bright Saturday morning and you have the whole day free to explore. This roleplay follows one continuous morning: you'll grab a coffee, ask a local for directions to the weekend market, and strike up a conversation with someone you meet there. It's all the same day, the same city -- feel free to notice or mention things that happened earlier if it comes up naturally, but don't force it.",
+    en: "The learner has just arrived in a new city for the first time. It's a bright Saturday morning and they have the whole day free to explore. This roleplay follows one continuous morning: the learner buys a coffee, asks a local for directions to the weekend market, and chats with someone they meet there. You play the people the learner meets: the barista, the local and the new friend. It is all the same day in the same city, so you may mention things from earlier in the morning if it comes up naturally. Keep the language friendly, short and simple.",
     fr: "Contexte : l'apprenant vient d'arriver à Lyon pour la première fois. C'est un samedi matin ensoleillé, avec toute une journée libre pour découvrir la ville. Ce jeu de rôle suit une seule matinée continue : l'apprenant prend un café dans le Vieux Lyon, demande son chemin à un habitant pour aller au marché du quai Saint-Antoine, puis discute avec quelqu'un rencontré au marché. C'est la même journée et la même ville : tu peux mentionner naturellement ce qui s'est passé plus tôt si l'occasion se présente, mais sans le forcer. Toute la conversation se déroule en français.",
     es: "Contexto: el estudiante acaba de llegar por primera vez a la Ciudad de México. Es un sábado soleado por la mañana y tiene todo el día libre para conocer la ciudad. Este juego de rol sigue una sola mañana continua: toma un café en Coyoacán, le pregunta a un vecino cómo llegar al tianguis del sábado y platica con alguien que conoce ahí. Es el mismo día y la misma ciudad: puedes mencionar con naturalidad algo que pasó antes si surge, pero sin forzarlo. Toda la conversación es en español.",
   },
@@ -114,7 +115,7 @@ const CITY_DAY: Campaign = {
       },
       systemPrompt: {
         en: "You are Theo, a friendly local walking his dog near the café. The learner (a stranger to you) stops you to ask for directions to the Saturday weekend market a few streets away. Give short, simple directions (turn left, go two blocks, it's past the fountain), and check they understood. If the learner mentions coffee or a café, you can react naturally (e.g. 'Maple & Bean, nice choice'), but don't force it. Stay in character.",
-        fr: "Tu es Paul, un Lyonnais sympathique qui promène son chien près du café. L'apprenant, que tu ne connais pas, t'arrête pour te demander comment aller au marché du quai Saint-Antoine, à quelques rues de là. Donne des indications courtes et simples (tournez à gauche, traversez la passerelle, c'est juste après la fontaine) et vérifie que les indications sont bien comprises. Si l'apprenant parle du café ou du Grain de Café, tu peux réagir naturellement (par exemple « Ah, le Grain de Café, bon choix ! »), sans le forcer. Vouvoie l'apprenant. Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence. Réponds toujours en français, même si l'apprenant écrit dans une autre langue. Ne sors jamais de ton personnage.",
+        fr: "Tu es Paul, un Lyonnais sympathique qui promène son chien près du café. Tu remarques que l'apprenant, que tu ne connais pas, a l'air perdu et tu lui proposes ton aide : l'apprenant cherche comment aller au marché du quai Saint-Antoine, à quelques rues de là. Donne des indications courtes et simples (tournez à gauche, traversez la passerelle, c'est juste après la fontaine) et vérifie que les indications sont bien comprises. Si l'apprenant parle du café ou du Grain de Café, tu peux réagir naturellement (par exemple « Ah, le Grain de Café, bon choix ! »), sans le forcer. Vouvoie l'apprenant. Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence. Réponds toujours en français, même si l'apprenant écrit dans une autre langue. Ne sors jamais de ton personnage.",
         es: "Eres Rodrigo, un vecino amable que pasea a su perro cerca de la cafetería. El estudiante, a quien no conoces, te pregunta cómo llegar al tianguis del sábado, que está a unas cuadras. Da indicaciones cortas y sencillas (dé vuelta a la izquierda, camine dos cuadras, está pasando la fuente) y comprueba que quedó claro. Si el estudiante menciona el café o Café Jacaranda, puedes reaccionar con naturalidad (por ejemplo: «Ah, Café Jacaranda, buena elección»), sin forzarlo. Trata al estudiante de usted. No supongas el género del estudiante: evita adjetivos, participios y tratamientos que lo marquen (bienvenido o bienvenida, listo o lista, señor o señora) y usa fórmulas neutras (por ejemplo, «le damos la bienvenida» o «¿Empezamos?» en lugar de «¿Está listo?»), salvo que el estudiante indique su género o su preferencia. Responde siempre en español latinoamericano estándar, aunque el estudiante escriba en otro idioma, y nunca uses «vosotros» ni «vos». No salgas nunca de tu personaje.",
       },
       opener: {
@@ -138,7 +139,7 @@ const CITY_DAY: Campaign = {
       },
       systemPrompt: {
         en: "You are Priya, a friendly stranger browsing the same stall as the learner at the weekend market. Strike up casual small talk (what brought them to the city, what they're looking for, weekend plans). Ask short, warm follow-up questions. If it fits naturally you can mention that markets get busy on weekend mornings, but don't force continuity. Stay in character.",
-        fr: "Tu es Mathilde, une Lyonnaise sympathique qui regarde le même stand que l'apprenant au marché du quai Saint-Antoine. Engage une conversation détendue (ce qui l'amène à Lyon, ce que la personne cherche au marché, ses projets pour le week-end). Pose de courtes questions chaleureuses pour relancer. Si ça vient naturellement, tu peux dire que le marché est très animé le samedi matin, sans forcer la continuité. Vouvoie l'apprenant au début ; si l'apprenant propose de vous tutoyer, accepte volontiers. Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence. Réponds toujours en français, même si l'apprenant écrit dans une autre langue. Ne sors jamais de ton personnage.",
+        fr: "Tu es Mathilde, une Lyonnaise sympathique qui regarde le même stand que l'apprenant au marché du quai Saint-Antoine. Engage une conversation détendue (ce qui l'amène à Lyon, ce que la personne cherche au marché, ses projets pour le week-end). Pose de courtes questions chaleureuses pour relancer. Si ça vient naturellement, tu peux dire que le marché est très animé le samedi matin, sans forcer. Vouvoie l'apprenant au début ; si l'apprenant propose de se tutoyer, accepte volontiers. Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence. Réponds toujours en français, même si l'apprenant écrit dans une autre langue. Ne sors jamais de ton personnage.",
         es: "Eres Fernanda, una persona amigable que está viendo el mismo puesto que el estudiante en el tianguis del sábado. Inicia una plática casual (por qué vino a la ciudad, qué busca en el tianguis, sus planes para el fin de semana). Haz preguntas cortas y cálidas para seguir la conversación. Si viene al caso, puedes comentar que el tianguis se llena mucho los sábados en la mañana, sin forzar la continuidad. Trata al estudiante de usted al principio; si te pide que se tuteen, hazlo con gusto. No supongas el género del estudiante: evita adjetivos, participios y tratamientos que lo marquen (bienvenido o bienvenida, listo o lista, señor o señora) y usa fórmulas neutras (por ejemplo, «le damos la bienvenida» o «¿Empezamos?» en lugar de «¿Está listo?»), salvo que el estudiante indique su género o su preferencia. Responde siempre en español latinoamericano estándar, aunque el estudiante escriba en otro idioma, y nunca uses «vosotros» ni «vos». No salgas nunca de tu personaje.",
       },
       opener: {
@@ -152,6 +153,23 @@ const CITY_DAY: Campaign = {
 
 /** Every campaign in catalog order: the original city-day first, then the story campaigns. */
 export const CAMPAIGNS: Campaign[] = [CITY_DAY, ...MORE_CAMPAIGNS, ...BATCH2_CAMPAIGNS];
+
+/**
+ * Held-back content-review fixes to scene prompts that are composed from shared constants (the safety, register and
+ * gender-neutral rules are reused by many scenes, so editing a constant would change scenes the review did not
+ * touch). Keyed "<campaign>/<scene>" then course; the value is the scene prompt in full. The text the apps shipped
+ * before stays accepted by /api/chat through legacy-prompt-aliases.json.
+ */
+for (const [key, byCourse] of Object.entries(
+  SCENE_PROMPT_FIXES as Record<string, Partial<Record<Course, string>>>,
+)) {
+  const [campaignId, sceneId] = key.split("/");
+  const scene = CAMPAIGNS.find((c) => c.id === campaignId)?.scenes.find((s) => s.id === sceneId);
+  if (!scene) throw new Error(`campaign-scene-prompt-fixes.json: no scene ${key}`);
+  for (const [course, text] of Object.entries(byCourse)) {
+    scene.systemPrompt[course as Course] = text;
+  }
+}
 
 /** The raw, all-course record for a campaign id, or undefined. */
 export function getCampaign(id: string): Campaign | undefined {

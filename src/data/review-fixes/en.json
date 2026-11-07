@@ -1208,6 +1208,13 @@
   },
   "reason": "British English usually writes \"per cent\" as two words."
  },
+ "en:card:b1p12l4/increased": {
+  "patch": {
+   "meaning": "went up in number",
+   "example": "The number of students increased last year."
+  },
+  "reason": "The term is the past form \"increased\", but the gloss and example use the present \"increases\", so they are aligned to the term."
+ },
  "en:card:b1p12l5/climbed": {
   "patch": {
    "meaning": "went up, often steadily"
