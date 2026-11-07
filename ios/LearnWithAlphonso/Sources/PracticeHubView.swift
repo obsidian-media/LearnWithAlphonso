@@ -290,7 +290,7 @@ struct PracticeResultView: View {
                     HStack(spacing: AlphonsoDS.Space.s3) { stats }
                     VStack(spacing: AlphonsoDS.Space.s3) { stats }
                 }
-                if let slip {
+                if let slip = result.slipToShow(slip) {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                         Text("Your slip").dsText(.caption)
                         Text(slip.said).strikethrough().foregroundStyle(ds.wrongInk)

@@ -6,6 +6,7 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.toByteArray
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -52,6 +53,12 @@ class PracticeHubTest {
         }))
         client.chatReply(listOf(ChatMessage("user", "Hi")), callId = "random-call")
         assertEquals(1, client.finishPractice("random-call").displayedStars)
+    }
+    @Test fun `slip hidden when every reply right`() {
+        val clean = ContentJson.json.decodeFromString<PracticeResult>("""{"kind":"scenario","itemKey":"coffee","stars":3,"bestBefore":0,"bestAfter":3,"replies":8,"rightReplies":8,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}""")
+        assertEquals(null, clean.slipToShow("Soy cansado" to "Estoy cansado"))
+        val slipped = ContentJson.json.decodeFromString<PracticeResult>(resultJson.replace("\"rightReplies\":5", "\"rightReplies\":4"))
+        assertEquals("a" to "b", slipped.slipToShow("a" to "b"))
     }
     private val resultJson = """{"kind":"scenario","itemKey":"coffee","stars":1,"bestBefore":3,"bestAfter":3,"replies":5,"rightReplies":5,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}"""
 }

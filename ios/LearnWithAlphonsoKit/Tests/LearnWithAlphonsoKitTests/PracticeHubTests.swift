@@ -70,5 +70,11 @@ final class PracticeHubTests: XCTestCase {
         let result = try await client.finishPractice(callId: "random-call")
         XCTAssertEqual(result.displayedStars, 1)
     }
+    func testSlipHiddenWhenEveryReplyRight() throws {
+        let clean = try JSONDecoder().decode(PracticeResult.self, from: Data("{\"kind\":\"scenario\",\"itemKey\":\"coffee\",\"stars\":3,\"bestBefore\":0,\"bestAfter\":3,\"replies\":8,\"rightReplies\":8,\"shortReplies\":0,\"englishReplies\":0,\"finishMinReplies\":3}".utf8))
+        XCTAssertNil(clean.slipToShow((said: "Soy cansado", reply: "Estoy cansado")))
+        let slipped = try JSONDecoder().decode(PracticeResult.self, from: Data(Self.resultJSON.replacingOccurrences(of: "\"rightReplies\":5", with: "\"rightReplies\":4").utf8))
+        XCTAssertNotNil(slipped.slipToShow((said: "a", reply: "b")))
+    }
     static let resultJSON = "{\"kind\":\"scenario\",\"itemKey\":\"coffee\",\"stars\":1,\"bestBefore\":3,\"bestAfter\":3,\"replies\":5,\"rightReplies\":5,\"shortReplies\":0,\"englishReplies\":0,\"finishMinReplies\":3}"
 }

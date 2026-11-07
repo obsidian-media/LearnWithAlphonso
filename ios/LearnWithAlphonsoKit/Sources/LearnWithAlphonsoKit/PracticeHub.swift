@@ -39,6 +39,8 @@ public struct PracticeResult: Codable, Sendable, Equatable {
     public let finishMinReplies: Int
     /// Display the server's award even if the transcript or best suggests a different score.
     public var displayedStars: Int { stars }
+    /// The slip block only shows when the server counted a wrong reply; a clean call has none.
+    public func slipToShow<T>(_ slip: T?) -> T? { rightReplies < replies ? slip : nil }
     public var retryLabel: String { stars == 3 ? "Play again" : stars == 0 ? "Try again" : "Try for \(stars + 1)" }
     public func headline(course: String) -> String {
         let praise = ["en": "Well done.", "fr": "Très bien.", "es": "Muy bien."][course] ?? "Well done."

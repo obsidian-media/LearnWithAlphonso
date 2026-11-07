@@ -39,7 +39,7 @@ All mutated runs failed on assertions, not on compilation. All restored runs pas
 
 ## Emulator captures
 
-Offline Spanish fixtures: [hub](../design/reviews/practice-native/android/01-hub.png), [pre-call sheet](../design/reviews/practice-native/android/02-pre-call.png), [Advanced scenarios](../design/reviews/practice-native/android/03-advanced.png), [one star](../design/reviews/practice-native/android/04-result-1.png), [two stars](../design/reviews/practice-native/android/05-result-2.png), [three stars](../design/reviews/practice-native/android/06-result-3.png), [200% text actions](../design/reviews/practice-native/android/07-large-text-actions.png).
+Offline Spanish emulator captures (hub, pre-call sheet, Advanced, one/two/three stars, 200% text) were checked locally and are not committed.
 
 ## Native differences and remaining verification
 

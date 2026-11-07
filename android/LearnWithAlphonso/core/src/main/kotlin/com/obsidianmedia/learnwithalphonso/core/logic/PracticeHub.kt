@@ -21,6 +21,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class PracticeResult(val kind: String, val itemKey: String, val stars: Int, val bestBefore: Int, val bestAfter: Int, val replies: Int, val rightReplies: Int, val shortReplies: Int, val englishReplies: Int, val finishMinReplies: Int) {
 
     val displayedStars get() = stars
+    /** The slip block only shows when the server counted a wrong reply; a clean call has none. */
+    fun <T> slipToShow(slip: T?): T? = if (rightReplies < replies) slip else null
 
     val retryLabel get() = if (stars == 3) "Play again" else if (stars == 0) "Try again" else "Try for ${stars + 1}"
 

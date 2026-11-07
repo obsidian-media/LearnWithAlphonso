@@ -263,11 +263,12 @@ internal fun PracticeHubContent(
                 stats.forEach { (value, label) -> Box(Modifier.weight(1f)) { ResultStat(value, label) } }
             }
         }
-        if (slip != null) item {
+        val shownSlip = result.slipToShow(slip)
+        if (shownSlip != null) item {
             Column(Modifier.fillMaxWidth().background(ds.card).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
                 Text("Your slip", style = Type.caption.toTextStyle(), color = ds.inkSoft)
-                Text(slip.first, textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough, style = Type.footnote.toTextStyle(), color = ds.wrongInk)
-                Text("Alphonso: ${slip.second}", style = Type.footnote.toTextStyle(), color = ds.rightInk)
+                Text(shownSlip.first, textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough, style = Type.footnote.toTextStyle(), color = ds.wrongInk)
+                Text("Alphonso: ${shownSlip.second}", style = Type.footnote.toTextStyle(), color = ds.rightInk)
             }
         }
         item {
