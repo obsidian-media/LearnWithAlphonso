@@ -73,8 +73,16 @@ final class FirstRunShotsTests: UICompatTestCase {
         tap("Save my plan")
 
         XCTAssertTrue(button(containing: "Continue with email").waitForExistence(timeout: 10))
-        requireUsable(button(containing: "Apple"), "Continue with Apple")
-        requireUsable(button(containing: "Continue with Google"), "Continue with Google")
+        // Let the slide-in finish before looking (the shot was once taken mid-transition and came out blank).
+        sleep(2)
+        let screen = app.windows.firstMatch.frame
+        for label in ["Apple", "Continue with Google", "Continue with email"] {
+            let b = button(containing: label)
+            XCTAssertTrue(b.exists && b.isHittable, "\(label) is on the sign-in screen and tappable")
+            XCTAssertTrue(screen.contains(b.frame), "\(label) sits inside the screen, not off to the side: \(b.frame)")
+        }
+        XCTAssertTrue(element(labeled: "Your plan").exists, "the plan card is drawn")
+        note(app.debugDescription)
         save("11-sign-in")
     }
 
