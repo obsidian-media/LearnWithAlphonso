@@ -199,9 +199,8 @@ describe("Hector's call", () => {
     );
   });
   it("keeps Pro gating outside the conversation", () => {
-    expect(hector).toContain(
-      "if (entitlement.isPro) HectorConversation(container) else PaywallScreen(container)",
-    );
+    expect(hector).toContain("!entitlement.isPro -> ProPaywallScreen(container");
+    expect(hector).toContain("else -> HectorConversation(container)");
   });
   it("shows no reactions: his endpoint returns no verdict", () => {
     expect(hector).toContain("ConversationUiState(openerIndices = emptySet())");

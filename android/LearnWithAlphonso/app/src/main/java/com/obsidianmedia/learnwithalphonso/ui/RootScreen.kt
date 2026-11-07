@@ -310,6 +310,8 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                     onOpenFriends = { nav.navigate(Routes.FRIENDS) },
                     onOpenAchievements = { nav.navigate(Routes.ACHIEVEMENTS) },
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                    onOpenReview = { course -> nav.navigate(Routes.review(course.code)) },
+                    onOpenPaywall = { nav.navigate(Routes.HECTOR) { launchSingleTop = true } },
                 )
             }
             composable(Routes.LEAGUE) { LeaderboardScreen(container, onBack = { nav.popBackStack() }, onOpenTeams = { nav.navigate(Routes.TEAMS) }, onOpenSeason = { nav.navigate(Routes.SEASON) }) }

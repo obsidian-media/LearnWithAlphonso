@@ -6793,6 +6793,12 @@
   },
   "reason": "The explanation teaches the -est/most rule, but \"good\" is irregular, so the rule does not explain this answer."
  },
+ "en:question:a2p10l2/a2p10q28": {
+  "patch": {
+   "prompt": "Put the words in order to make a sentence that starts with \"This is\"."
+  },
+  "reason": "\"This book is the thinnest here\" is also a correct order of the same tokens; starting with \"This is\" leaves one."
+ },
  "en:question:a2p10l2/a2p10q5": {
   "patch": {
    "explanation": "\"Bad\" is irregular: its superlative is \"worst\", not \"baddest\" or \"most bad\" (\"worse\" is the comparative)."
@@ -6840,6 +6846,12 @@
    "explanation": "Two-syllable adjectives ending in -le, like \"simple\", take -est, and since it already ends in -e you add only -st: \"simplest\"."
   },
   "reason": "\"simple\" has two syllables, so calling it a \"short adjective\" is misleading; the real rule is that two-syllable adjectives ending in -le take -est."
+ },
+ "en:question:a2p10l3/a2p10q31": {
+  "patch": {
+   "prompt": "Put the words in order to make a sentence that starts with \"This is\"."
+  },
+  "reason": "\"This game is the simplest to learn\" is also a correct order of the same tokens; starting with \"This is\" leaves one."
  },
  "en:question:a2p10l4/a2p10q15": {
   "patch": {
@@ -11143,6 +11155,19 @@
    "explanation": "The fixed phrase is 'It seems to me that...', which introduces your opinion, so \"me\" is needed after 'to'."
   },
   "reason": "Generic explanation replaced."
+ },
+ "en:question:b1p17l4/b1p17q19": {
+  "patch": {
+   "bank": [
+    "view",
+    "notice",
+    "observation",
+    "opinion"
+   ],
+   "explanation": "A comment about something you noticed is an \"observation\". \"Notice\" is a verb here, so it does not fit after \"good\"."
+  },
+  "reason": "\"point\" also fits after \"good\", so a learner who picks it is marked wrong; \"point\" is replaced with \"notice\", which does not fit, and the key stays \"observation\".",
+  "keyChange": true
  },
  "en:question:b1p17l5/b1p17q21": {
   "patch": {

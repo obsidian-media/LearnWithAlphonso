@@ -23,71 +23,27 @@ struct PaywallView: View {
     @State private var isPresentingManageSubscriptions = false
     @Environment(\.openURL) private var openURL
 
-    /// On the Hector tab the paywall paints the library clip behind itself, with Hector waving in it (his head is at 47%
-    /// of the clip, his feet at 80%). Sheets from lesson complete or a refusal keep the flat surface. Look only: no
-    /// copy or logic depends on this.
-    private var onScene: Bool { source == .hectorTab }
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.paywallLearner) private var learner
+    /// Pro just landed (a purchase or a restore): show Hector's welcome.
+    @State private var welcome = false
+    /// Tells a host that swaps this view away once Pro is active (the Hector tab) to keep it for the welcome.
+    var onWelcome: ((Bool) -> Void)? = nil
 
     var body: some View {
         let presentation = entitlementStore.presentation
         let state = entitlementStore.state
-        ScrollView {
-            VStack(spacing: AlphonsoSpacing.lg) {
-                if onScene {
-                    // Room for Hector: the offer starts around his waist, below the head and the wave.
-                    Color.clear
-                        .containerRelativeFrame(.vertical) { height, _ in height * 0.6 }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("Hector, waving in his library")
-                        .accessibilityAddTraits(.isImage)
+        Group {
+            if welcome {
+                ProWelcomeView(name: learner.name, course: learner.course) {
+                    welcome = false
+                    onWelcome?(false)
+                    onClose?()
                 }
-
-                VStack(spacing: AlphonsoSpacing.lg) {
-                Text(presentation.titleText)
-                    .font(AlphonsoFont.display(28, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-
-                AlphonsoMascotBanner(mascot: .hector, message: PaywallCopy.mascotMessage)
-
-                Text(PaywallCopy.featureBlurb)
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                offer(presentation, state: state)
-
-                if let notice = state.notice {
-                    noticeText(notice)
-                }
-
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: AlphonsoSpacing.md) { restoreButton(state); manageButton }
-                    VStack(spacing: AlphonsoSpacing.sm) { restoreButton(state); manageButton }
-                }
-                .font(AlphonsoFont.sans(13, weight: .medium))
-                .tint(AlphonsoColor.moss)
-
-                Text(presentation.renewalDisclosure)
-                    .font(font(presentation.disclosureStyle))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                legalLinks
-                }
-                .padding(onScene ? AlphonsoSpacing.md : 0)
-                .alphonsoGlass(if: onScene)
+            } else {
+                paywall(presentation, state: state)
             }
-            .padding(AlphonsoSpacing.md)
-            .frame(maxWidth: 480)
-            .frame(maxWidth: .infinity)
         }
-        .background(onScene ? Color.clear : AlphonsoColor.surface)
-        // The clip is anchored 30% down, like the web's backdrop, so a wide screen keeps Hector's head and wave in view.
-        .screenScene(.hector, clip: .hector, clipAnchor: 0.3, if: onScene)
         .task {
             entitlementStore.presented(from: source)
             await entitlementStore.loadOffering()
@@ -102,17 +58,66 @@ struct PaywallView: View {
         }
         .manageSubscriptionsSheet(isPresented: $isPresentingManageSubscriptions)
         .onChange(of: entitlementStore.isPro) { _, isPro in
-            if isPro { onClose?() }
+            if isPro {
+                welcome = true
+                onWelcome?(true)
+            }
         }
         .overlay(alignment: .topTrailing) {
             if let onClose {
-                Button("Close", action: onClose)
-                    .font(AlphonsoFont.sans(15, weight: .medium))
-                    .foregroundStyle(AlphonsoColor.moss)
-                    .padding(AlphonsoSpacing.md)
-                    .accessibilityIdentifier("paywallClose")
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .dsText(.headline)
+                        .foregroundStyle(ds.brand)
+                        .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                        .background(ds.card.opacity(0.9), in: Circle())
+                }
+                .padding(AlphonsoDS.Space.s3)
+                .accessibilityLabel("Close")
+                .accessibilityIdentifier("paywallClose")
             }
         }
+    }
+
+    private func paywall(_ presentation: PaywallPresentation, state: EntitlementState) -> some View {
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s4) {
+                PaywallRoomTop(name: learner.name)
+                VStack(spacing: AlphonsoDS.Space.s4) {
+                    PaywallHeadline()
+                    PaywallExampleCall(course: learner.course)
+                    PaywallFacts()
+                    if presentation.state == .loaded { ProCardBanner(name: learner.name) }
+                    PaywallFreeRow()
+
+                    offer(presentation, state: state)
+
+                    if let notice = state.notice {
+                        noticeText(notice)
+                    }
+
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: AlphonsoSpacing.md) { restoreButton(state); manageButton }
+                        VStack(spacing: AlphonsoSpacing.sm) { restoreButton(state); manageButton }
+                    }
+                    .dsText(.footnote)
+                    .tint(ds.choice)
+
+                    Text(presentation.renewalDisclosure)
+                        .font(font(presentation.disclosureStyle))
+                        .foregroundStyle(ds.inkSoft)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    legalLinks
+                }
+                .padding(.horizontal, AlphonsoDS.Space.s4)
+            }
+            .padding(.bottom, AlphonsoDS.Space.s4)
+            .frame(maxWidth: 480)
+            .frame(maxWidth: .infinity)
+        }
+        .background(ds.surface.ignoresSafeArea())
     }
 
     @ViewBuilder
@@ -124,7 +129,7 @@ struct PaywallView: View {
             VStack(spacing: AlphonsoSpacing.sm) {
                 Text("Loading the price").font(font(presentation.priceStyle))
                 Text("Loading the free trial details").font(font(presentation.trialStyle))
-                Text("Loading").font(AlphonsoFont.sans(17, weight: .semiBold))
+                Text("Loading").dsText(.headline)
                     .padding(.vertical, AlphonsoSpacing.sm)
             }
             .redacted(reason: .placeholder)
@@ -134,8 +139,8 @@ struct PaywallView: View {
         case .failed(let message):
             VStack(spacing: AlphonsoSpacing.sm) {
                 Text(message)
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.body)
+                    .foregroundStyle(ds.ink)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 Button(presentation.retryTitle ?? PaywallCopy.tryAgain) {
@@ -147,27 +152,32 @@ struct PaywallView: View {
         case .loaded:
             VStack(spacing: AlphonsoSpacing.sm) {
                 if !presentation.options.isEmpty {
-                    planPicker(presentation.options, disabled: state.isPurchasing || state.isRestoring)
+                    PaywallPlanPicker(options: presentation.options, disabled: state.isPurchasing || state.isRestoring) {
+                        entitlementStore.select(productID: $0)
+                    }
                 }
                 if let priceLine = presentation.priceLine {
                     Text(priceLine)
                         .font(font(presentation.priceStyle))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .foregroundStyle(ds.ink)
                         .multilineTextAlignment(.center)
                 }
                 if let trialLine = presentation.trialLine {
                     Text(trialLine)
                         .font(font(presentation.trialStyle))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .foregroundStyle(ds.ink)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
+                }
+                if let when = presentation.whenLine {
+                    PaywallWhenRow(line: when)
                 }
                 if let ctaTitle = presentation.ctaTitle {
                     Button {
                         Task { await entitlementStore.purchase() }
                     } label: {
                         if state.isPurchasing {
-                            ProgressView().tint(AlphonsoColor.onAccent)
+                            ProgressView().tint(ds.onAction)
                         } else {
                             Text(ctaTitle)
                         }
@@ -176,47 +186,6 @@ struct PaywallView: View {
                     .disabled(state.isPurchasing || state.isRestoring)
                     .accessibilityLabel(ctaTitle)
                 }
-            }
-        }
-    }
-
-    /// One card per plan. The selected plan's price, trial and renewal lines show below, so the
-    /// learner always reads the terms of the plan the button buys.
-    private func planPicker(_ options: [PaywallPlanOption], disabled: Bool) -> some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
-            ForEach(options) { option in
-                Button {
-                    entitlementStore.select(productID: option.id)
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(option.title).font(AlphonsoFont.sans(16, weight: .semiBold))
-                            Text(option.priceLine).font(AlphonsoFont.sans(14))
-                            if let trial = option.trialNote {
-                                Text(trial).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.moss)
-                            }
-                        }
-                        Spacer()
-                        if let savings = option.savingsLine {
-                            Text(savings)
-                                .font(AlphonsoFont.sans(13, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.moss)
-                        }
-                        Image(systemName: option.isSelected ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(option.isSelected ? AlphonsoColor.moss : AlphonsoColor.inkSoft)
-                            .accessibilityHidden(true)
-                    }
-                    .foregroundStyle(AlphonsoColor.ink)
-                    .padding(AlphonsoSpacing.md)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(option.isSelected ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: option.isSelected ? 2 : 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(disabled)
-                .accessibilityElement(children: .combine)
-                .accessibilityAddTraits(option.isSelected ? [.isButton, .isSelected] : .isButton)
             }
         }
     }
@@ -249,8 +218,8 @@ struct PaywallView: View {
             }
             Link(PaywallCopy.appleEULA, destination: PaywallLinks.appleStandardEULA)
         }
-        .font(AlphonsoFont.sans(12))
-        .tint(AlphonsoColor.inkSoft)
+        .dsText(.caption)
+        .tint(ds.inkSoft)
     }
 
     // Same domain the rest of the app trusts for these pages (AppConfig.apiBaseURL).
@@ -265,12 +234,12 @@ struct PaywallView: View {
     private func noticeText(_ notice: EntitlementState.Notice) -> some View {
         let (text, color): (String, Color) = {
             switch notice {
-            case .info(let text): return (text, AlphonsoColor.inkSoft)
-            case .error(let text): return (text, AlphonsoColor.destructive)
+            case .info(let text): return (text, ds.inkSoft)
+            case .error(let text): return (text, ds.wrong)
             }
         }()
         return Text(text)
-            .font(AlphonsoFont.sans(13))
+            .dsText(.footnote)
             .foregroundStyle(color)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
