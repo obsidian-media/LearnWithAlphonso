@@ -263,7 +263,7 @@ function AuthPage() {
 
               <div className="relative py-2 text-center">
                 <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-                <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">
+                <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ds-ink-soft">
                   or
                 </span>
               </div>
@@ -388,7 +388,7 @@ function AuthPage() {
               type="button"
               onClick={resendCode}
               disabled={busy}
-              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink disabled:opacity-50"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink disabled:opacity-50"
             >
               Send a new code
             </button>
@@ -402,7 +402,7 @@ function AuthPage() {
                 setError(null);
                 setNotice(null);
               }}
-              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink"
             >
               Forgot your password?
             </button>
@@ -415,7 +415,7 @@ function AuthPage() {
               setError(null);
               setNotice(null);
             }}
-            className="w-full py-2 text-center text-xs text-ink-soft/70 hover:text-ink"
+            className="w-full py-2 text-center text-xs text-ds-ink-soft hover:text-ink"
           >
             {mode === "verify"
               ? "Use a different email"
@@ -426,7 +426,7 @@ function AuthPage() {
                   : "New here? Create an account"}
           </button>
 
-          <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
+          <p className="pt-2 text-center text-[11px] leading-relaxed text-ds-ink-soft">
             By continuing, you agree to the{" "}
             <Link to="/terms" className="underline hover:text-ink">
               Terms of Use

@@ -185,10 +185,7 @@ export function FirstRunHud({
         )}
       </div>
       {showCounter && total > 0 && (
-        <p
-          aria-hidden="true"
-          className="absolute inset-x-0 top-[70px] z-[3] flex justify-center"
-        >
+        <p aria-hidden="true" className="absolute inset-x-0 top-[70px] z-[3] flex justify-center">
           <span className="rounded-full bg-ds-card px-2.5 py-1 ds-type-overline text-ds-brand shadow-sm">
             Question {step} of {total}
           </span>
