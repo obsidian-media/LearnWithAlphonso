@@ -60,7 +60,9 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
   it("the paywall opens on Hector's room, above the headline and the offer", () => {
     expect(paywall).toContain("PaywallRoomTop(");
     expect(paywall.indexOf("PaywallRoomTop(")).toBeLessThan(paywall.indexOf("PaywallHeadline()"));
-    expect(paywall.indexOf("PaywallHeadline()")).toBeLessThan(paywall.indexOf("offer(presentation"));
+    expect(paywall.indexOf("PaywallHeadline()")).toBeLessThan(
+      paywall.indexOf("offer(presentation"),
+    );
     expect(paywall).toContain(".background(ds.surface.ignoresSafeArea())");
   });
 
