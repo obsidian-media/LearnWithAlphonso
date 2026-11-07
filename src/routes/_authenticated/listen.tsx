@@ -6,13 +6,14 @@ import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { AI_NARRATED_LABEL } from "../../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../../lib/podcast-player";
 import {
-  listEpisodes,
-  listFolders,
+  listLibrary,
   searchEpisodes,
   type PodcastEpisode,
 } from "../../lib/podcast.functions";
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
+import { buildShelves } from "../../lib/listen-library";
+import { ListenLibraryView, ListenShelfView } from "../../components/ListenLibrary";
 import { Icon3D } from "../../components/Icon3D";
 import { PodcastQuizLauncher } from "../../components/PodcastQuizLauncher";
 import { fetchQuizEpisodeIds } from "../../lib/podcast-quiz.functions";
@@ -259,21 +260,18 @@ export function ListenFolderView({
  * folder list, resolves the path, then fetches that folder's episodes.
  */
 export function ListenBrowser({ segments }: { segments: string[] }) {
-  const { data: folders, isLoading } = useQuery({
-    queryKey: ["podcast-folders"],
-    queryFn: () => listFolders(),
+  // One read for the whole shelf: folders, every episode, this user's progress and the month total.
+  const { data: library, isLoading } = useQuery({
+    queryKey: ["podcast-library"],
+    queryFn: () => listLibrary(),
   });
+  const folders = library?.folders;
 
   const current = folders ? resolveFolderPath(folders, segments) : null;
-
-  const { data: episodes } = useQuery({
-    queryKey: ["podcast-episodes", current?.id],
-    queryFn: () => listEpisodes({ data: { folderId: current!.id } }),
-    enabled: Boolean(current?.id),
-  });
+  const episodes = library && current ? library.episodes.filter((e) => e.folderId === current.id) : [];
 
   // Which of these episodes have a quiz. A failed read just means no buttons.
-  const episodeIds = (episodes ?? []).map((episode) => episode.id);
+  const episodeIds = episodes.map((episode) => episode.id);
   const { data: quizIds } = useQuery({
     queryKey: ["podcast-quiz-ids", episodeIds.join(",")],
     queryFn: () => fetchQuizEpisodeIds({ data: { episodeIds } }),
@@ -281,6 +279,13 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
     retry: false,
   });
   const quizEpisodeIds = new Set(quizIds ?? []);
+
+  const shelf =
+    library && current
+      ? ((["en", "fr", "es"] as const)
+          .flatMap((c) => buildShelves(library.folders, library.episodes, library.progress, c))
+          .find((x) => x.folder.id === current.id) ?? null)
+      : null;
 
   const [query, setQuery] = useState("");
   const searching = normalizeQuery(query) !== null;
@@ -293,7 +298,7 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
     enabled: searching,
   });
 
-  if (isLoading || !folders) {
+  if (isLoading || !library || !folders) {
     return (
       <div className="px-5 py-8">
         <SceneBackdrop scene="listen" />
@@ -325,10 +330,14 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
           as it was, since the folder state was never touched. */}
       {searching ? (
         <PodcastSearchResults query={query} results={searchResults ?? []} isLoading={isSearching} />
+      ) : segments.length === 0 ? (
+        <ListenLibraryView library={library} />
+      ) : shelf ? (
+        <ListenShelfView library={library} shelf={shelf} quizEpisodeIds={quizEpisodeIds} />
       ) : (
         <ListenFolderView
           folders={folders}
-          episodes={episodes ?? []}
+          episodes={episodes}
           segments={segments}
           quizEpisodeIds={quizEpisodeIds}
         />

@@ -54,6 +54,14 @@ export function PodcastAudio() {
         }),
       )
       .catch(() => {});
+    // The Listen shelf's own progress (clamped and validated in the database); a finished episode reports its end.
+    void podcastApi()
+      .then(({ saveListenProgress }) =>
+        saveListenProgress({
+          data: { episodeId: id, positionSeconds: completed ? Number.MAX_SAFE_INTEGER : seconds },
+        }),
+      )
+      .catch(() => {});
   }, []);
 
   const flushPlayEvent = useCallback((id: string) => {

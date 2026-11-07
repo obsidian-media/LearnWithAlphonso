@@ -274,3 +274,75 @@ export const fetchTranscript = createServerFn({ method: "GET" })
     if (error) throw publicError(null, error);
     return row?.text ?? null;
   });
+
+export type PodcastLibrary = {
+  folders: PodcastFolder[];
+  /** Every published episode, playable as-is, with sortOrder for folder order. */
+  episodes: (PodcastEpisode & { sortOrder: number })[];
+  progress: { episodeId: string; positionS: number; completedAt: string | null; updatedAt: string }[];
+  /** Seconds this user listened since the start of the current UTC month (from play events). */
+  monthSeconds: number;
+};
+
+/** Everything the Listen shelf draws in one round trip: folders, episodes, this user's progress, month total. */
+export const listLibrary = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PodcastLibrary> => {
+    const db = context.supabase;
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+    const [folders, episodes, progress, events] = await Promise.all([
+      listFolders(),
+      db
+        .from("podcast_episodes")
+        .select(
+          "id, folder_id, slug, title, description, audio_path, duration_seconds, source, course, sort_order",
+        )
+        .order("sort_order", { ascending: true }),
+      db.from("listen_progress").select("episode_id, position_s, completed_at, updated_at").eq("user_id", context.userId),
+      db
+        .from("podcast_play_events")
+        .select("seconds_listened")
+        .eq("user_id", context.userId)
+        .gte("started_at", monthStart),
+    ]);
+    if (episodes.error) throw publicError(null, episodes.error);
+    // Progress and the month total are garnish: a failed read shows an unlistened shelf, not an error page.
+    const prog = progress.error ? [] : (progress.data ?? []);
+    const pos = new Map(prog.map((r) => [r.episode_id, r.position_s]));
+    return {
+      folders,
+      episodes: (episodes.data ?? []).map((row) => ({
+        ...toPodcastEpisode(
+          row,
+          db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl,
+          clampPosition(pos.get(row.id) ?? 0, row.duration_seconds),
+        ),
+        sortOrder: row.sort_order,
+      })),
+      progress: prog.map((r) => ({
+        episodeId: r.episode_id,
+        positionS: r.position_s,
+        completedAt: r.completed_at,
+        updatedAt: r.updated_at,
+      })),
+      monthSeconds: events.error
+        ? 0
+        : (events.data ?? []).reduce((a, r) => a + r.seconds_listened, 0),
+    };
+  });
+
+/** Saves progress through the clamping, own-row-only database function. */
+export const saveListenProgress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ episodeId: z.string().uuid(), positionSeconds: z.number().min(0) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<void> => {
+    const { error } = await context.supabase.rpc("save_listen_progress", {
+      p_episode_id: data.episodeId,
+      // Capped below int4 so "the very end" (a huge number) reaches the database's own clamp instead of overflowing it.
+      p_position_s: Math.min(Math.round(data.positionSeconds), 2_000_000_000),
+    });
+    if (error) throw publicError(null, error);
+  });

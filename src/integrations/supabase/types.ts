@@ -1255,6 +1255,38 @@ export type Database = {
           },
         ];
       };
+      listen_progress: {
+        Row: {
+          completed_at: string | null;
+          episode_id: string;
+          position_s: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          episode_id: string;
+          position_s?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          episode_id?: string;
+          position_s?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listen_progress_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       podcast_playback: {
         Row: {
           completed_at: string | null;
@@ -2799,6 +2831,10 @@ export type Database = {
         }[];
       };
       run_maintenance_sweep: { Args: never; Returns: undefined };
+      save_listen_progress: {
+        Args: { p_episode_id: string; p_position_s: number };
+        Returns: { completed_at: string; position_s: number }[];
+      };
       save_placement_result: {
         Args: { _language: string; _level: string; _score: number };
         Returns: string;
