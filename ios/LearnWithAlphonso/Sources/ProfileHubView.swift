@@ -37,51 +37,13 @@ struct ProfileHubView: View {
     @State private var overview: ProfileOverviewModel?
     @State private var loadFailed = false
     @State private var loading = true
+    @State private var tab: ProfileTab = .overview
 
     var body: some View {
         NavigationStack {
             List {
                 overviewRows
-
-                ProfileEditAnswersRow(onEditAnswers: onEditAnswers)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-
-                Section {
-                    row(
-                        .league,
-                        title: "League",
-                        subtitle: "Leaderboards, teams, and the season ladder",
-                        emoji: "🏆",
-                        tone: .sun
-                    )
-                    row(
-                        .friends,
-                        title: "Friends",
-                        subtitle: "Your friends, their activity, and duels",
-                        emoji: "👥",
-                        tone: .sky
-                    )
-                    row(
-                        .achievements,
-                        title: "Achievements",
-                        subtitle: "Badges earned and weak spots to work on",
-                        emoji: "⭐️",
-                        tone: .lilac
-                    )
-                }
-                .listRowBackground(Color.clear)
-
-                Section {
-                    row(
-                        .settings,
-                        title: "Settings",
-                        subtitle: "Theme and account",
-                        emoji: "⚙️",
-                        tone: .mint
-                    )
-                }
-                .listRowBackground(Color.clear)
+                tabNavRows
             }
             .scrollContentBackground(.hidden)
             .screenScene(.profile)
@@ -147,12 +109,35 @@ extension ProfileHubView {
                         .dsText(.body)
                         .padding(.horizontal, AlphonsoDS.Space.s2)
                 }
-                ProfileWeekSection(model: m)
-                ProfileHeatMapSection(model: m)
-                ProfileRecordsLevelSection(model: m)
-                ProfileWeakAndHectorSection(model: m, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
-                ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count)
-                ProfileShareSection(model: m, course: course, level: m.level.level)
+                ProfileTabPicker(selection: $tab)
+                switch tab {
+                case .overview:
+                    ProfileWeekSection(model: m)
+                    ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
+                case .progress:
+                    ProfileSkillsSlot()
+                    ProfileFold(title: "Activity", summary: ProfileTabs.heatSummary(activeDays: m.heat.activeDays)) {
+                        ProfileHeatMapSection(model: m)
+                    }
+                    ProfileFold(
+                        title: "Records and level",
+                        summary: "\(ProfileTabs.recordsSummary(bestStreak: m.records.bestStreak)) · \(m.level.level) · \(m.level.pct)%"
+                    ) {
+                        ProfileRecordsLevelSection(model: m)
+                    }
+                    ProfileFold(title: "Weak spots", summary: ProfileTabs.weakSummary(total: m.weak.total)) {
+                        ProfileWeakAndHectorSection(model: m, showWeak: true, showHector: false, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
+                    }
+                    ProfileFold(
+                        title: "Achievements",
+                        summary: ProfileTabs.achievementsSummary(unlocked: m.unlockedCount, total: contentStore.achievements.count)
+                    ) {
+                        ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count, showAchievements: true, showSocial: false)
+                    }
+                case .social:
+                    ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count, showAchievements: false, showSocial: true)
+                    ProfileShareSection(model: m, course: course, level: m.level.level)
+                }
             }
             .listRowInsets(EdgeInsets(top: AlphonsoDS.Space.s2, leading: AlphonsoDS.Space.s4, bottom: AlphonsoDS.Space.s2, trailing: AlphonsoDS.Space.s4))
             .listRowSeparator(.hidden)
@@ -165,6 +150,32 @@ extension ProfileHubView {
                 Button("Try again") { Task { await load() } }.frame(minHeight: AlphonsoDS.Space.minTouch)
             }
             .frame(maxWidth: .infinity).listRowBackground(Color.clear)
+        }
+    }
+
+    /// The rows that open full screens, kept on the tab where each belongs: settings and "Edit your answers" on
+    /// Overview, Achievements on Progress, League and Friends on Social.
+    @ViewBuilder fileprivate var tabNavRows: some View {
+        switch tab {
+        case .overview:
+            ProfileEditAnswersRow(onEditAnswers: onEditAnswers)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            Section {
+                row(.settings, title: "Settings", subtitle: "Theme and account", emoji: "⚙️", tone: .mint)
+            }
+            .listRowBackground(Color.clear)
+        case .progress:
+            Section {
+                row(.achievements, title: "Achievements", subtitle: "Badges earned and weak spots to work on", emoji: "⭐️", tone: .lilac)
+            }
+            .listRowBackground(Color.clear)
+        case .social:
+            Section {
+                row(.league, title: "League", subtitle: "Leaderboards, teams, and the season ladder", emoji: "🏆", tone: .sun)
+                row(.friends, title: "Friends", subtitle: "Your friends, their activity, and duels", emoji: "👥", tone: .sky)
+            }
+            .listRowBackground(Color.clear)
         }
     }
 

@@ -106,3 +106,39 @@ struct JumpToCurrentButton: View {
         .accessibilityHint("Scrolls back to the unit you are on")
     }
 }
+
+/// The id the Jump to current button scrolls to.
+enum LearnFoldAnchor {
+    static let current = "learn-current-unit"
+}
+
+/// Marks the current unit's banner: gives it the scroll id and reports whether it is on screen.
+struct CurrentUnitMarker: ViewModifier {
+    let active: Bool
+    let onVisibility: (Bool) -> Void
+
+    func body(content: Content) -> some View {
+        if active {
+            content
+                .id(LearnFoldAnchor.current)
+                .onAppear { onVisibility(true) }
+                .onDisappear { onVisibility(false) }
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    /// A fold row sits in the List as a bare slim card: no separator, no row background, a little air.
+    func foldRowStyle() -> some View {
+        listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: AlphonsoDS.Space.s1, leading: AlphonsoDS.Space.s4, bottom: AlphonsoDS.Space.s1, trailing: AlphonsoDS.Space.s4))
+    }
+}
+
+/// The motion for opening and closing a fold: the design system's selection timing, none under Reduce Motion.
+func learnFoldAnimation(reduceMotion: Bool) -> Animation? {
+    reduceMotion ? nil : .easeOut(duration: AlphonsoDS.Motion.select)
+}

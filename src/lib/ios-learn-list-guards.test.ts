@@ -13,7 +13,8 @@ const from = (s: string, marker: string) => {
 
 const browser = read("LessonBrowserView.swift");
 const rowFile = read("DesignSystem/LessonPathRow.swift");
-const unitList = from(browser, "ForEach(unitsForSelectedLevel) { unit in");
+// Round 6.1: the unit rows live in unitContent, called from the fold rows.
+const unitList = from(browser, "private func unitContent(");
 
 describe("Learn: the unit list", () => {
   it("each lesson is a LessonPathRow whose status comes from progress and the next lesson", () => {
@@ -27,7 +28,7 @@ describe("Learn: the unit list", () => {
     // The screenshot tests still find the first row.
     expect(unitList).toContain('"firstLessonRow"');
     // The unit rows no longer use the plain dot card.
-    expect(unitList.slice(0, unitList.indexOf("} header: {"))).not.toContain("AlphonsoRowCard(");
+    expect(unitList.slice(0, unitList.indexOf("private func unitBanner("))).not.toContain("AlphonsoRowCard(");
   });
 
   it("the row is a chunky tile with a status medallion and one spoken label, without a chevron", () => {
@@ -46,7 +47,7 @@ describe("Learn: the unit list", () => {
   });
 
   it("the unit header is a glass banner with the unit title large and a done count", () => {
-    const header = from(unitList, "} header: {").slice(0, 2200);
+    const header = from(browser, "private func unitBanner(").slice(0, 2200);
     expect(header).toContain(".alphonsoGlass(");
     expect(header).toContain("AlphonsoFont.display(20, weight: .bold)");
     expect(header).toContain("unit.lessons.filter { completedLessonIDs.contains($0.id) }.count");

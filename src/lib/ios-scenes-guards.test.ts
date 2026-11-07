@@ -149,7 +149,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
   it("the stat chips, Up next card and everything below stay, on solid or material surfaces", () => {
     for (const keep of [
       "StatusHeaderView(progress:",
-      "LearnContinueCard(",
+      "LearnCurrentUnitCard(",
       "GoalCardView(",
       "TeamMissionSection(",
       "WeeklyChallengesSection(",

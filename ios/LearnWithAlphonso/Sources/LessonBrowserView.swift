@@ -64,6 +64,10 @@ struct LessonBrowserView: View {
     /// ... right now endless scrolling."
     @State private var mostRecentlyCompletedLessonID: String?
     @State private var hasScrolledToContinue = false
+    /// Round 6.1: which folded rows the learner opened, and whether the current unit is on screen (for Jump to current).
+    @State private var expandedFolds: Set<String> = []
+    @State private var currentUnitVisible = true
+    @Environment(.accessibilityReduceMotion) private var reduceMotion
     /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
     /// A wrapper type, not a bare String: a String destination is already registered for the NavigationLinks.
     @State private var openedLesson: OpenedLesson?
@@ -136,6 +140,93 @@ struct LessonBrowserView: View {
         return nil
     }
 
+    // MARK: Round 6.1 fold
+
+    private var foldRows: [FoldRow] {
+        LearnFold.foldLearn(
+            unitsForSelectedLevel.map { FoldUnit(id: $0.id, eyebrow: $0.eyebrow, title: $0.title, lessonIDs: $0.lessons.map(\.id)) },
+            completed: completedLessonIDs
+        )
+    }
+
+    private var currentUnit: LearnFold.CurrentUnit? {
+        LearnFold.currentUnitOf(
+            unitsForSelectedLevel.map { FoldUnit(id: $0.id, eyebrow: $0.eyebrow, title: $0.title, lessonIDs: $0.lessons.map(\.id)) },
+            completed: completedLessonIDs
+        )
+    }
+
+    /// The painted room behind a unit: the bundled unit -> room map first, then the fixed rotation by place in the band.
+    private func roomID(for unit: LearnWithAlphonsoKit.Unit) -> String {
+        if let mapped = LessonData.roomMap?.roomID(forUnit: unit.id) { return mapped }
+        let index0 = unitsForSelectedLevel.firstIndex(where: { $0.id == unit.id }) ?? 0
+        return LearnFold.roomArtFor(index0)
+    }
+
+    private func toggleFold(_ key: String) {
+        withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
+            if expandedFolds.contains(key) { expandedFolds.remove(key) } else { expandedFolds.insert(key) }
+        }
+    }
+
+    /// A unit's banner and its lesson tiles, as plain List rows.
+    @ViewBuilder
+    private func unitContent(_ unit: LearnWithAlphonsoKit.Unit, isCurrent: Bool) -> some View {
+        unitBanner(unit)
+            .modifier(CurrentUnitMarker(active: isCurrent, onVisibility: { currentUnitVisible = $0 }))
+        ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
+            // A chunky tile with a status medallion: done (completed), next (the band's next lesson), or
+            // its number. The link sits invisibly behind it, so List adds no disclosure chevron.
+            LessonPathRow(
+                number: index + 1,
+                title: lesson.title,
+                subtitle: lesson.subtitle,
+                status: completedLessonIDs.contains(lesson.id)
+                    ? .done
+                    : (nextLesson?.lesson.id == lesson.id ? .next : .open)
+            )
+            .background(NavigationLink(value: lesson.id) { EmptyView() }.opacity(0))
+            .accessibilityAddTraits(.isButton)
+            // Lazy List rows fire onAppear as they scroll into view, so the first screenful cascades in.
+            .springEntrance(delay: Double(index % 8) * 0.04)
+            // A stable, level-independent identifier on whichever lesson renders first, for the screenshot UI test.
+            .accessibilityIdentifier(
+                unit.id == unitsForSelectedLevel.first?.id && index == 0 ? "firstLessonRow" : ""
+            )
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+        }
+    }
+
+    /// A glass banner over the scene: the unit's number small, its title large, and how many lessons are done.
+    private func unitBanner(_ unit: LearnWithAlphonsoKit.Unit) -> some View {
+        HStack(alignment: .center, spacing: AlphonsoSpacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(unit.eyebrow.uppercased())
+                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
+                Text(unit.title)
+                    .font(AlphonsoFont.display(20, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+            }
+            Spacer(minLength: 0)
+            Text("\(unit.lessons.filter { completedLessonIDs.contains($0.id) }.count)/\(unit.lessons.count) done")
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .monospacedDigit()
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding(.horizontal, AlphonsoSpacing.md)
+        .padding(.vertical, AlphonsoSpacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .alphonsoGlass(radius: AlphonsoRadius.xl)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
+
     var body: some View {
         NavigationStack {
             ScrollViewReader { scrollProxy in
@@ -178,11 +269,13 @@ struct LessonBrowserView: View {
 
                     // The link sits invisibly behind the card: a visible NavigationLink in a List adds a
                     // disclosure chevron beside the card and narrows it.
-                    LearnContinueCard(
+                    LearnCurrentUnitCard(
+                        unitNumber: currentUnit?.index ?? 1,
+                        unitCount: currentUnit?.count ?? 1,
                         unitTitle: next.unit.title,
-                        lessonTitle: next.lesson.title
+                        lessonTitle: next.lesson.title,
+                        roomID: roomID(for: next.unit)
                     )
-                    .background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))
                     .accessibilityAddTraits(.isButton)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -247,76 +340,59 @@ struct LessonBrowserView: View {
                 // bands exist to close. The placement banner above and
                 // the band picker are complementary -- placement chooses
                 // your level, the picker lets you move off it.
-                ForEach(unitsForSelectedLevel) { unit in
-                    let lessonRows = ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
-                        // A chunky tile with a status medallion: done (completed), next (the band's next lesson), or
-                        // its number. The link sits invisibly behind it, so List adds no disclosure chevron (same as
-                        // LearnContinueCard).
-                        LessonPathRow(
-                            number: index + 1,
-                            title: lesson.title,
-                            subtitle: lesson.subtitle,
-                            status: completedLessonIDs.contains(lesson.id)
-                                ? .done
-                                : (nextLesson?.lesson.id == lesson.id ? .next : .open)
-                        )
-                        .background(NavigationLink(value: lesson.id) { EmptyView() }.opacity(0))
-                        .accessibilityAddTraits(.isButton)
-                        // Lazy List rows already fire onAppear as they
-                        // scroll into view, so this cascades naturally
-                        // rather than animating the whole (possibly
-                        // 100+ row) list at once -- a small index-based
-                        // delay just makes the *first* screenful cascade
-                        // in visibly instead of popping in together.
-                        .springEntrance(delay: Double(index % 8) * 0.04)
-                        // 2026-09-29: the App Store screenshot UI test
-                        // hardcoded u1l1's title ("Saying Hello," an A1
-                        // lesson) to find a lesson row to open -- broke
-                        // silently once the test started correctly waiting
-                        // for the demo account's real saved level (B2) to
-                        // load, since that lesson isn't in the visible list
-                        // at all then. A stable, level-independent
-                        // identifier on whichever lesson actually renders
-                        // first is what the test should target instead.
-                        .accessibilityIdentifier(
-                            unit.id == unitsForSelectedLevel.first?.id && index == 0 ? "firstLessonRow" : ""
-                        )
-                    }
-                    Section {
-                        lessonRows
-                    } header: {
-                        // A glass banner over the scene: the unit's number small, its title large, and how many of
-                        // its lessons are done.
-                        HStack(alignment: .center, spacing: AlphonsoSpacing.sm) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(unit.eyebrow.uppercased())
-                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
-                                    .tracking(0.4)
-                                    .foregroundStyle(AlphonsoColor.ember)
-                                Text(unit.title)
-                                    .font(AlphonsoFont.display(20, weight: .bold))
-                                    .foregroundStyle(AlphonsoColor.ink)
+                // Round 6.1 (option A): finished units fold into one row per run, the current unit stays open,
+                // and units ahead fold to their name. The rules are LearnFold in the Kit. Filtered by the selected
+                // band as before: the placement banner chooses your level, the picker lets you move off it.
+                ForEach(foldRows, id: \.key) { row in
+                    switch row {
+                    case .doneRun(let key, let unitIDs, let first, let last, let done, let total):
+                        Section {
+                            LearnFoldRow(
+                                title: LearnFold.runLabel(first: first, last: last),
+                                detail: "\(done) / \(total)",
+                                isExpanded: expandedFolds.contains(key),
+                                spokenDetail: "\(done) of \(total) lessons done"
+                            ) { toggleFold(key) }
+                            .foldRowStyle()
+                            if expandedFolds.contains(key) {
+                                ForEach(unitsForSelectedLevel.filter { unitIDs.contains($0.id) }) { unit in
+                                    unitContent(unit, isCurrent: false)
+                                }
                             }
-                            Spacer(minLength: 0)
-                            Text("\(unit.lessons.filter { completedLessonIDs.contains($0.id) }.count)/\(unit.lessons.count) done")
-                                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                                .monospacedDigit()
-                                .foregroundStyle(AlphonsoColor.inkSoft)
                         }
-                        .textCase(nil)
-                        .padding(.horizontal, AlphonsoSpacing.md)
-                        .padding(.vertical, AlphonsoSpacing.sm)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .alphonsoGlass(radius: AlphonsoRadius.xl)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityAddTraits(.isHeader)
+                    case .unit(let key, let unitID, let state, _, _):
+                        if let unit = unitsForSelectedLevel.first(where: { $0.id == unitID }) {
+                            Section {
+                                if state == .current {
+                                    unitContent(unit, isCurrent: true)
+                                } else {
+                                    LearnFoldRow(
+                                        title: "\(unit.eyebrow) · \(unit.title)",
+                                        detail: "",
+                                        isExpanded: expandedFolds.contains(key),
+                                        spokenDetail: ""
+                                    ) { toggleFold(key) }
+                                    .foldRowStyle()
+                                    if expandedFolds.contains(key) {
+                                        unitContent(unit, isCurrent: false)
+                                    }
+                                }
+                            }
+                        }
                     }
-                    .listRowBackground(Color.clear)
-                    // The tiles carry their own edges; a hairline between them would cut through the bottom edge.
-                    .listRowSeparator(.hidden)
                 }
             }
             .scrollContentBackground(.hidden)
+            .overlay(alignment: .bottom) {
+                if !currentUnitVisible, currentUnit != nil {
+                    JumpToCurrentButton {
+                        withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
+                            scrollProxy.scrollTo(LearnFoldAnchor.current, anchor: .top)
+                        }
+                    }
+                    .padding(.bottom, AlphonsoSpacing.md)
+                }
+            }
             .screenScene(
                 .learn,
                 clip: .learn,
@@ -585,41 +661,5 @@ private struct PlacementBannerSection: View {
             }
             .listRowBackground(AlphonsoColor.ember.opacity(0.1))
         }
-    }
-}
-
-/// The Learn screen's "Continue" card: the next lesson, big and in ember. The unit's lessons are drawn on
-/// the path map above it (LearnPathMap), so the card no longer repeats them.
-private struct LearnContinueCard: View {
-    let unitTitle: String
-    let lessonTitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Small text sits on a surface chip: straight on ember it is below 4.5:1 in most themes.
-            Text("Up next · \(unitTitle)".uppercased())
-                .font(AlphonsoFont.sans(11, weight: .bold))
-                .tracking(0.6)
-                .foregroundStyle(AlphonsoColor.ink)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(AlphonsoColor.surface, in: Capsule())
-            Text(lessonTitle)
-                .font(AlphonsoFont.display(24, weight: .bold))
-                .fixedSize(horizontal: false, vertical: true)
-            Text("Continue")
-                .font(AlphonsoFont.display(15, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(AlphonsoColor.surface, in: Capsule())
-        }
-        .foregroundStyle(AlphonsoColor.onAccent)
-        .padding(AlphonsoSpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AlphonsoColor.ember, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous))
-        .alphonsoLift()
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Continue: \(lessonTitle)")
     }
 }
