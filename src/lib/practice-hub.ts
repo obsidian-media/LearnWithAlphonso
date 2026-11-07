@@ -67,6 +67,13 @@ export function topWeakSpots(events: readonly WeaknessEventRow[]): string[] {
     .map(([category]) => category);
 }
 
+/**
+ * Weak spots that only exist on the page: a spoken call cannot practise them, so Today's pick skips them. The
+ * taxonomy (WEAKNESS_TAXONOMY) has one such key today; the test pins every key against this list, so a new
+ * written-only key must be classified here or that test fails.
+ */
+export const WRITTEN_ONLY_WEAK_SPOTS: ReadonlySet<string> = new Set(["spelling"]);
+
 export type TodaysPick = {
   scenarioId: string;
   level: ScenarioLevel;
@@ -75,7 +82,7 @@ export type TodaysPick = {
 };
 
 /**
- * A scenario at the learner's level that exercises their top weak spot. Weak spots are tried worst first; among the
+ * A scenario at the learner's level that exercises their top weak spot. Weak spots are tried worst first, skipping written-only ones (spelling); among the
  * scenarios that fit, the one with the fewest stars wins (unplayed first), then catalog order. With no weak spot a
  * scenario at the level fits, the level's least-starred scenario is picked and no weak spot is claimed.
  */
@@ -89,6 +96,7 @@ export function todaysPick(data: PracticeHubData): TodaysPick | null {
       null,
     );
   for (const weak of topWeakSpots(data.weaknessEvents)) {
+    if (WRITTEN_ONLY_WEAK_SPOTS.has(weak)) continue;
     const pick = leastStarred(atLevel.filter((s) => SCENARIO_FOCUS[s.id]?.includes(weak)));
     if (pick) return { scenarioId: pick.id, level, weakSpot: weak };
   }

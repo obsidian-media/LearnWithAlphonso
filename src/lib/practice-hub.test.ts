@@ -19,6 +19,7 @@ import {
   nextSceneIndex,
   starTally,
   todaysPick,
+  WRITTEN_ONLY_WEAK_SPOTS,
   topWeakSpots,
   type StarRow,
   type WeaknessEventRow,
@@ -154,6 +155,30 @@ describe("topWeakSpots", () => {
   });
 });
 
+describe("todaysPick never names a weak spot that only exists in writing", () => {
+  const spokenSpots = WEAKNESS_TAXONOMY.filter((c) => !WRITTEN_ONLY_WEAK_SPOTS.has(c));
+  it("classifies every taxonomy key, and only spelling is written-only today", () => {
+    expect([...WRITTEN_ONLY_WEAK_SPOTS]).toEqual(["spelling"]);
+    for (const c of WRITTEN_ONLY_WEAK_SPOTS)
+      expect(WEAKNESS_TAXONOMY as readonly string[]).toContain(c);
+    expect(spokenSpots.length).toBe(WEAKNESS_TAXONOMY.length - 1);
+  });
+  it("skips spelling as the top weak spot and uses the next speakable one", () => {
+    const events = [detected("spelling"), detected("spelling"), detected("past-tense")];
+    const pick = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: events })!;
+    expect(pick.weakSpot).toBe("past-tense");
+    expect(SCENARIO_FOCUS[pick.scenarioId]).toContain("past-tense");
+  });
+  it("falls back to the generic level pick when spelling is the only weak spot", () => {
+    const pick = todaysPick({
+      stars: [],
+      cefrLevel: "A2",
+      weaknessEvents: [detected("spelling")],
+    })!;
+    expect(pick.weakSpot).toBeNull();
+  });
+});
+
 describe("todaysPick: a scenario at the learner's level that uses their top weak spot", () => {
   it("picks a scenario of the learner's level whose focus holds the top weak spot", () => {
     const pick = todaysPick({
@@ -167,9 +192,9 @@ describe("todaysPick: a scenario at the learner's level that uses their top weak
     expect(SCENARIO_FOCUS[s.id]).toContain("past-tense");
   });
   it("follows the weak spot: a different top weak spot gives a scenario that practises it", () => {
-    const a = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: [detected("spelling")] })!;
+    const a = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: [detected("articles")] })!;
     const b = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: [detected("past-tense")] })!;
-    expect(SCENARIO_FOCUS[a.scenarioId]).toContain("spelling");
+    expect(SCENARIO_FOCUS[a.scenarioId]).toContain("articles");
     expect(SCENARIO_FOCUS[b.scenarioId]).toContain("past-tense");
     expect(a.scenarioId).not.toBe(b.scenarioId);
   });
