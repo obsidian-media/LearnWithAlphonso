@@ -42,6 +42,7 @@ export function hardCodedCampaignIds(source: string): string[] {
 
 const UI_SOURCES = [
   "src/routes/_authenticated/converse.tsx",
+  "src/components/practice/PracticeHub.tsx",
   "src/routes/_authenticated/campaign_.$campaignId.tsx",
   "ios/LearnWithAlphonso/Sources/CampaignView.swift",
   "ios/LearnWithAlphonso/Sources/ConversationView.swift",
@@ -54,7 +55,12 @@ describe("bundled campaign JSON matches the catalogue on every platform", () => 
     for (const course of ["en", "fr", "es"] as const) {
       it(`${label} ${course}: same campaigns, scenes and text as src/data`, () => {
         const bundled = JSON.parse(read(file(course)));
-        expect(bundled).toEqual(campaignsFor(course));
+        // Native bundles add a per-scene `persona` (the pre-call sheet's speaker line); it is not in the web catalogue shape.
+        const withoutPersona = bundled.map((c: { scenes: Record<string, unknown>[] }) => ({
+          ...c,
+          scenes: c.scenes.map(({ persona: _persona, ...scene }) => scene),
+        }));
+        expect(withoutPersona).toEqual(campaignsFor(course));
         expect(bundled.map((c: { id: string }) => c.id)).toEqual(CAMPAIGNS.map((c) => c.id));
       });
     }
@@ -62,33 +68,37 @@ describe("bundled campaign JSON matches the catalogue on every platform", () => 
 });
 
 describe("the campaign list screens show every campaign", () => {
-  it("web: the converse list maps over every campaign for the course, with no slice or filter", () => {
-    const src = read("src/routes/_authenticated/converse.tsx");
+  // The Practice hub (round 6) draws the list; it looks a campaign up by id with find() for "Continue" and the
+  // pre-call sheet, so only slice and filter are ruled out here.
+  it("web: the Practice hub maps over every campaign for the course, with no slice or filter", () => {
+    const src = read("src/components/practice/PracticeHub.tsx");
     expect(src).toMatch(/campaigns\.map\(\(c, i\) =>/);
-    expect(src).not.toMatch(/campaigns\.(slice|filter|find)\(/);
+    expect(src).toContain("CAMPAIGNS.map((c) => localizeCampaign(c, course))");
+    expect(src).not.toMatch(/campaigns\.(slice|filter)\(/);
   });
 
   it("iOS: CampaignPickerSection iterates the whole campaigns array", () => {
-    const src = read("ios/LearnWithAlphonso/Sources/CampaignView.swift");
-    expect(src).toMatch(/ForEach\(campaigns\) \{ campaign in/);
-    expect(src).not.toMatch(/campaigns\.(prefix|first|filter|dropFirst)\b/);
-    const host = read("ios/LearnWithAlphonso/Sources/ConversationView.swift");
-    expect(host).toContain("contentStore.campaigns(for: course)");
-    expect(host).not.toMatch(/campaigns\.(prefix|first|filter)\b/);
+    const src = read("ios/LearnWithAlphonso/Sources/PracticeHubView.swift");
+    expect(src).toMatch(/ForEach\(campaigns\) \{ c in/);
+    expect(src).not.toMatch(/campaigns\.(prefix|filter|dropFirst)\b/);
+    expect(src).toContain("contentStore.campaigns(for: course)");
   });
 
   it("Android: PracticeScreen lists every campaign of the course", () => {
-    const src = read(`${ANDROID_APP}/PracticeScreens.kt`);
-    expect(src).toContain("val campaigns = container.content.campaigns(course)");
-    expect(src).toMatch(/items\(campaigns, key = \{ "c-\$\{course\.code\}-\$\{it\.id\}" \}\)/);
+    const src = read(`${ANDROID_APP}/PracticeHubScreen.kt`);
+    expect(src).toContain("container.content.campaigns(course)");
+    expect(src).toMatch(/items\(campaigns, key = \{ "c-\$\{it\.id\}" \}\)/);
     expect(src).not.toMatch(/campaigns\.(take|first|filter)\b/);
   });
 
   it("opens a campaign by the id it was listed with, not by a fixed one", () => {
-    expect(read("src/routes/_authenticated/converse.tsx")).toContain(
-      "params={{ campaignId: c.id }}",
+    expect(read("src/components/practice/PracticeHub.tsx")).toContain(
+      "onClick={() => openScene(c.id, nextSceneIndex(c.id, rows))}",
     );
-    expect(read(`${ANDROID_APP}/PracticeScreens.kt`)).toContain("onOpenCampaign(c.id)");
+    expect(read("src/routes/_authenticated/converse.tsx")).toContain(
+      "params: { campaignId: t.campaignId }",
+    );
+    expect(read(`${ANDROID_APP}/PracticeHubScreen.kt`)).toContain("onOpenCampaign(t.campaign!!.id");
   });
 });
 

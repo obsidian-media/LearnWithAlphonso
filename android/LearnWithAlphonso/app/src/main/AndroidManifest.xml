@@ -23,6 +23,9 @@
 
         <!-- Sentry is started by hand in AlphonsoApplication (release only), never by the library's auto-init. -->
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <!-- No push token at launch: PushRegistrar asks for one only for a signed-in learner, so a device that answered
+             Under 13 in the first run never reaches Firebase. -->
+        <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
 
         <activity
             android:name=".MainActivity"
@@ -69,6 +72,14 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/streak_widget_info" />
         </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/share_paths" />
+        </provider>
 
         <!-- Supabase redirects the Google PKCE flow back here; the redirect URI must be allow-listed in the Supabase dashboard. -->
         <activity

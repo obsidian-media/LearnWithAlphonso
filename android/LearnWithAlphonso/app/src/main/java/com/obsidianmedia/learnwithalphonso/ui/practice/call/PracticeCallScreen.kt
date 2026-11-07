@@ -1,5 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice.call
 
+import androidx.compose.runtime.DisposableEffect
+import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
 import android.os.SystemClock
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -123,6 +126,18 @@ internal fun PracticeCallScreen(
     val dark = palette.isDark
     val state by vm.state.collectAsState()
     val turnPhase by vm.engine.phase.collectAsState()
+    // Sound effects: the call-start sound once per call (keyed), the call-end sound on hang-up, and none while he speaks.
+    val sfx = (LocalContext.current.applicationContext as? AlphonsoApplication)?.container?.soundEffects
+    val callKey = rememberSaveable { "call-${java.util.UUID.randomUUID()}" }
+    DisposableEffect(sfx) {
+        sfx?.registerVoiceProbe("call") { playback.clock() != null || vm.state.value.phase == ConversationPhase.SPEAKING }
+        sfx?.play(SoundEffect.CALL_START, callKey)
+        onDispose { sfx?.unregisterVoiceProbe("call") }
+    }
+    val endCall = {
+        sfx?.play(SoundEffect.CALL_END)
+        onEnd()
+    }
     val recording = turnPhase == TurnPhase.RECORDING || turnPhase == TurnPhase.REQUESTING_MIC
     val busy = state.phase != ConversationPhase.IDLE || turnPhase == TurnPhase.TRANSCRIBING
     var mode by remember { mutableStateOf(AvatarMode.IDLE) }
@@ -139,7 +154,7 @@ internal fun PracticeCallScreen(
         level = null
     }
 
-    val room = CallScenes.room(scenarioId, fallback = kit.defaultRoom)
+    val room = CallScenes.room(scenarioId, withArt = CallScenes.scenariosWithArt + com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = kit.defaultRoom)
     val roomFile = if (dark) room.dark else room.light
     val context = LocalContext.current
     val roomImage by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, roomFile) {
@@ -202,7 +217,7 @@ internal fun PracticeCallScreen(
             Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
             }
-            Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = onEnd)
+            Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = endCall)
         }
     }
 

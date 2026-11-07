@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
@@ -58,12 +59,13 @@ class AiConversationClient(private val http: ApiHttp) {
      * The same call as [chat], keeping the server's `verdict` about the learner's last turn (the talking avatar reacts
      * to it). An older server sends no verdict, which reads as [ReplyVerdict.NONE].
      */
-    suspend fun chatReply(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null): ChatReply {
+    suspend fun chatReply(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null, callId: String? = null): ChatReply {
         val body = buildJsonObject {
             putJsonArray("messages") { messages.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
             if (systemPrompt != null) put("systemPrompt", systemPrompt)
             if (cefrLevel != null) put("cefrLevel", cefrLevel)
             if (course != null) put("course", course)
+            if (callId != null) put("callId", callId)
         }
         // The server says 502 empty-reply when the model returned nothing. One retry, never a loop.
         val first = http.post("api/chat", body)
@@ -77,9 +79,22 @@ class AiConversationClient(private val http: ApiHttp) {
         return ChatReply(content, ReplyVerdict.fromWire(obj.str("verdict")))
     }
 
+    suspend fun practiceHub(course: String): com.obsidianmedia.learnwithalphonso.core.logic.PracticeHubData =
+        json.decodeFromString(requireSuccess(http.get("api/practice", mapOf("course" to course))))
+
+    suspend fun finishPractice(callId: String): com.obsidianmedia.learnwithalphonso.core.logic.PracticeResult =
+        json.decodeFromString(requireSuccess(http.post("api/practice", buildJsonObject { put("callId", callId) })))
+
     /** `voice` is Alphonso's chosen voice (Settings > Voices); the server uses it only when it is on `course`'s allow-list. */
-    suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null): ByteArray {
-        val response = http.post("api/tts", buildJsonObject { put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course) })
+    /**
+     * `character` is sent only for Hector (his greeting), so a voice the server refuses falls back to his default,
+     * never Alphonso's; the server treats a missing one as Alphonso.
+     */
+    suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null, character: VoiceCharacter? = null): ByteArray {
+        val response = http.post("api/tts", buildJsonObject {
+            put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course)
+            if (character != null && character != VoiceCharacter.Alphonso) put("character", character.wire)
+        })
         requireSuccess(response)
         return response.readRawBytes()
     }

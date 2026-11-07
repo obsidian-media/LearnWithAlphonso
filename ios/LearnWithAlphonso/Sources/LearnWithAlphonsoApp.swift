@@ -38,7 +38,11 @@ struct LearnWithAlphonsoApp: App {
         // that case, so nothing touches `Purchases.shared`, which fatalErrors
         // if accessed pre-configure. RevenueCatPurchases and EntitlementStore
         // are inert until start() or a call, so building them below is safe.
-        if let revenueCatAPIKey = AppConfig.revenueCatAPIKey {
+        //
+        // An under-13 device (FirstRunDevice) never configures RevenueCat: configuring it talks to RevenueCat.
+        // With no provider, EntitlementStore and RevenueCatPurchases stay inert.
+        let purchasesKey = FirstRunDevice.isBlocked ? nil : AppConfig.revenueCatAPIKey
+        if let revenueCatAPIKey = purchasesKey {
             Purchases.configure(withAPIKey: revenueCatAPIKey)
         }
 
@@ -54,14 +58,21 @@ struct LearnWithAlphonsoApp: App {
         podcastDownloadManager = podcastDownloads
 
         let lifecycle = SessionLifecycle()
-        let entitlements = EntitlementStore(provider: AppConfig.revenueCatAPIKey == nil ? nil : RevenueCatPurchases())
+        let entitlements = EntitlementStore(provider: purchasesKey == nil ? nil : RevenueCatPurchases())
         AccountDataCleanup.register(
             on: lifecycle,
             queue: queue,
             caches: AccountLocalCaches(),
             clearWidget: { WidgetProgressPublisher.clear() },
-            entitlements: entitlements
+            // RevenueCat's log-out is a call to RevenueCat: skipped once the device answered Under 13.
+            entitlements: BlockAwareEntitlements(inner: entitlements)
         )
+        // The first run's answers on this device and "Not now this launch" belong to the account that is leaving
+        // (sign-out and account deletion). The under-13 block is the device's, not an account's, and stays.
+        lifecycle.register("firstRun") { _ in
+            FirstRunDevice.store.clearDraft()
+            CompleteProfileSkip.reset()
+        }
         // After the core handlers. The player registers PodcastLifecycleHooks.stopPlayback from RootView with
         // the one player it keeps; before that exists there is nothing to stop.
         PodcastAccountCleanup.register(
@@ -79,6 +90,7 @@ struct LearnWithAlphonsoApp: App {
             deviceToken: { pushRegistrar.deviceTokenHex },
             retiringAccessToken: { session.retiringAccessToken },
             unregisterDeviceToken: { token, accessToken in
+                guard !FirstRunDevice.isBlocked else { return }
                 try await ProgressSyncClient(
                     supabaseURL: AppConfig.supabaseURL,
                     anonKey: AppConfig.supabasePublishableKey,
@@ -86,6 +98,7 @@ struct LearnWithAlphonsoApp: App {
                 ).unregisterDeviceToken(token)
             },
             endServerSession: { accessToken in
+                guard !FirstRunDevice.isBlocked else { return }
                 try await SupabaseAuthClient(
                     supabaseURL: AppConfig.supabaseURL,
                     publishableKey: AppConfig.supabasePublishableKey
@@ -115,7 +128,7 @@ struct LearnWithAlphonsoApp: App {
                     syncQueueStore: syncQueueStore,
                     podcastDownloadManager: podcastDownloadManager
                 )
-                .task { await entitlementStore.start() }
+                .task { if !FirstRunDevice.isBlocked { await entitlementStore.start() } }
                 .environment(\.sessionLifecycle, sessionLifecycle)
                 .environmentObject(aiConsentStore)
                 .environment(networkMonitor)
@@ -133,5 +146,16 @@ struct LearnWithAlphonsoApp: App {
                 )
             }
         }
+    }
+}
+
+/// Account cleanup's entitlement reset, silent on an under-13 device (no RevenueCat call after the choice).
+@MainActor
+private final class BlockAwareEntitlements: EntitlementResetting {
+    let inner: EntitlementStore
+    init(inner: EntitlementStore) { self.inner = inner }
+    func reset() async {
+        guard !FirstRunDevice.isBlocked else { return }
+        await inner.reset()
     }
 }

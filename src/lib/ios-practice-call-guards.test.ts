@@ -95,9 +95,10 @@ describe("performance", () => {
 describe("campaign conversations", () => {
   const campaign = code(`${APP}/Sources/CampaignView.swift`);
   it("use the call too, in the default study room, and keep the classic screen when the setting is off", () => {
-    expect(campaign).toContain("@AppStorage(AvatarPreference.key)");
-    expect(campaign).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
-    expect(campaign).toContain("scenarioID: campaign.id");
+    // The Practice hub reads the setting once to pick its initial call/chat mode and hands chatMode to the session.
+    expect(code(`${APP}/Sources/PracticeHubView.swift`)).toContain("AvatarPreference.key");
+    expect(campaign).toMatch(/if !chatMode \{ callScreen \} else \{ classicScreen \}/);
+    expect(campaign).toContain("PracticeHub.room(campaignID: campaign.id");
     const classic = campaign.slice(
       campaign.indexOf("private var classicScreen"),
       campaign.indexOf("private var callScreen"),

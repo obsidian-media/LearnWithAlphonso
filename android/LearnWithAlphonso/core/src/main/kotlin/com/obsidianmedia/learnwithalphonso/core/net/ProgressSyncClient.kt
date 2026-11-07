@@ -235,6 +235,18 @@ class ProgressSyncClient(
             ),
         ).mapNotNull { it.string("lesson_id") }
 
+    /**
+     * The best score this account has on one lesson (its lesson_completions row), or null when it was never completed.
+     * A replay pays only past this best, so the lesson's per-answer XP starts from it.
+     */
+    suspend fun fetchLessonBest(lessonId: String, course: String): Int? =
+        rowsOf(
+            http.rest(
+                HttpMethod.Get, "lesson_completions",
+                mapOf("select" to "correct", "lesson_id" to "eq.$lessonId", "language" to "eq.$course"),
+            ),
+        ).mapNotNull { it.int("correct") }.maxOrNull()
+
     suspend fun fetchCefrLevel(course: String): String? =
         rowsOf(http.rest(HttpMethod.Get, "language_progress", mapOf("select" to "cefr_level", "language" to "eq.$course")))
             .firstOrNull()?.string("cefr_level")

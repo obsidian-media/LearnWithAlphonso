@@ -6,6 +6,9 @@ appId: com.obsidianmedia.learnwithalphonso
 ---
 - launchApp:
     clearState: true
+# Signed out, the app opens on the first run's first question (visual round 6, part 3); Back opens sign-in.
+- assertVisible: "Hi, I'm Alphonso! What should I call you?"
+- tapOn: "Back to sign in"
 - assertVisible: "Learn with Alphonso"
 - assertVisible: "Sign in to start learning"
 - assertVisible: "Continue with Google"

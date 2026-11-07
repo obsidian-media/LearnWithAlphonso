@@ -24,6 +24,11 @@ data class LessonCompletionProgress(
 @Serializable
 data class LessonCompletionResult(
     val xpGain: Int,
+    /**
+     * Right answers by the server's own grading: the count [xpGain] was computed from, so the complete screen's XP
+     * lines use it. Null from a server older than this field.
+     */
+    val correct: Int? = null,
     val newlyUnlocked: List<String> = emptyList(),
     val heartsBonus: String? = null,
     val progress: LessonCompletionProgress,

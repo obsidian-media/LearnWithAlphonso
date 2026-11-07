@@ -25,3 +25,34 @@ export function useNamePromptBlocking(): boolean {
     () => false,
   );
 }
+
+/**
+ * The first run's own screens (after sign-in, and Complete your profile) hold the name prompt back: it would cover
+ * the screen the learner is answering. It asks as soon as they leave. Returns the release.
+ */
+let holds = 0;
+const holdListeners = new Set<() => void>();
+const notifyHolds = () => holdListeners.forEach((l) => l());
+
+export function holdNamePrompt(): () => void {
+  holds += 1;
+  notifyHolds();
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    holds -= 1;
+    notifyHolds();
+  };
+}
+
+export function useNamePromptHeld(): boolean {
+  return useSyncExternalStore(
+    (listener) => {
+      holdListeners.add(listener);
+      return () => holdListeners.delete(listener);
+    },
+    () => holds > 0,
+    () => false,
+  );
+}

@@ -5,8 +5,11 @@ import { ALPHONSO_KIT, type CharacterKit } from "@/lib/avatar/layers";
 import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
+import { playSfx, registerVoiceProbe } from "@/lib/sfx";
 
 const GLASS = "rgba(18, 26, 21, 0.46)";
+/** The red hang-up button. */
+const HANG_UP = { background: "#e5483d", color: "#fff" } as const;
 const GLASS_STRONG = "rgba(18, 26, 21, 0.62)";
 
 export type CallCaption = {
@@ -43,6 +46,8 @@ type Props = {
   error: string | null;
   /** The screen the red hang-up button leads to. */
   endTo: string;
+  /** Instead of leading to `endTo`, hanging up calls this (Practice scores the call, then shows its result). */
+  onEnd?: () => void;
   /** The conversation so far, as plain text for assistive technology while the sheet is closed. */
   messages: { role: "user" | "assistant"; content: string }[];
   /** The full conversation, its hints and the typed-message box: shown in the bottom sheet. */
@@ -87,6 +92,7 @@ export function PracticeCall(props: Props) {
     onToggleTts,
     error,
     endTo,
+    onEnd,
     messages,
     sheet,
     extra,
@@ -96,6 +102,23 @@ export function PracticeCall(props: Props) {
   const stateLabel = MODE_LABEL[mode];
   const art = sceneArt(scenarioId, undefined, kit.defaultRoom);
   const room = dark ? art.dark : art.light;
+
+  // The call-start sound, once per call (keyed, so a re-render or a development double effect cannot repeat it).
+  const [callKey] = useState(() => `call:${Date.now()}:${Math.random()}`);
+  useEffect(() => {
+    playSfx("callStart", callKey);
+  }, [callKey]);
+  // While he speaks, no effect plays over him: the effects ask this probe before playing.
+  const voiceNow = useRef({ speaking, getAudio: avatar.getAudio });
+  voiceNow.current = { speaking, getAudio: avatar.getAudio };
+  useEffect(
+    () =>
+      registerVoiceProbe(() => {
+        const audio = voiceNow.current.getAudio();
+        return voiceNow.current.speaking || (!!audio && !audio.paused && !audio.ended);
+      }),
+    [],
+  );
 
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
@@ -394,25 +417,52 @@ export function PracticeCall(props: Props) {
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
           </svg>
         </button>
-        <Link
-          to={endTo}
-          aria-label="End the call"
-          className="grid size-[54px] place-items-center rounded-full"
-          style={{ background: "#e5483d", color: "#fff" }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        {onEnd ? (
+          <button
+            type="button"
+            onClick={() => {
+              playSfx("callEnd");
+              onEnd();
+            }}
+            aria-label="End the call"
+            className="grid size-[54px] place-items-center rounded-full"
+            style={HANG_UP}
           >
-            <path d="M3 15.5c5-4.7 13-4.7 18 0l-2.4 2.4-3.2-1.3v-2.5a12 12 0 0 0-6.8 0v2.5l-3.2 1.3z" />
-          </svg>
-        </Link>
+            <svg
+              viewBox="0 0 24 24"
+              className="size-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 15.5c5-4.7 13-4.7 18 0l-2.4 2.4-3.2-1.3v-2.5a12 12 0 0 0-6.8 0v2.5l-3.2 1.3z" />
+            </svg>
+          </button>
+        ) : (
+          <Link
+            to={endTo}
+            onClick={() => playSfx("callEnd")}
+            aria-label="End the call"
+            className="grid size-[54px] place-items-center rounded-full"
+            style={HANG_UP}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 15.5c5-4.7 13-4.7 18 0l-2.4 2.4-3.2-1.3v-2.5a12 12 0 0 0-6.8 0v2.5l-3.2 1.3z" />
+            </svg>
+          </Link>
+        )}
       </div>
       <div
         className="absolute inset-x-0 bottom-2 z-[6] text-center text-[11px] font-bold opacity-85"

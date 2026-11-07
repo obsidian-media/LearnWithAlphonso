@@ -110,54 +110,8 @@ describe("SceneClip: the looping clip view", () => {
   });
 });
 
-describe("Lesson complete plays the celebration clip", () => {
-  const lesson = read("LessonPlayerView.swift");
-  const finish = between(
-    lesson,
-    "private struct FinishView: View",
-    "private struct GeneratedPracticeSection",
-  );
-
-  it("the complete clip fills the whole screen behind the card, Alphonso in the top half", () => {
-    const stage = from(finish, "ClipBackdrop(clip: .complete").slice(0, 400);
-    expect(stage).toContain("verticalAnchor: 0.2");
-    expect(stage).toContain(".ignoresSafeArea()");
-    expect(finish).not.toContain(".aspectRatio(10.0 / 13.0");
-    expect(finish).not.toContain("stageMaxHeight");
-  });
-
-  it("the primary button is pinned above the tab bar, so it never scrolls out of view", () => {
-    const inset = from(finish, ".safeAreaInset(edge: .bottom)").slice(0, 600);
-    expect(inset).toContain('"Continue to next lesson"');
-    expect(inset).toContain('"Back to Learn"');
-  });
-
-  it("the headline is ink, not moss, so it reads over the dark glass", () => {
-    const headline = from(finish, "Text(LessonFinishCopy.headline").slice(0, 250);
-    expect(headline).toContain("AlphonsoColor.ink");
-    expect(headline).not.toContain("AlphonsoColor.moss");
-  });
-
-  it("the still stage, the cut-out Alphonso and the code confetti are gone", () => {
-    expect(finish).not.toContain("ConfettiBurst");
-    expect(finish).not.toContain("Figure-alphonso-proud");
-    expect(finish).not.toContain("SceneFigure");
-    expect(finish).not.toContain(".screenScene(.complete)");
-    expect(read("DesignSystem/Celebration.swift")).not.toContain("ConfettiBurst");
-    expect(finish).toContain('.accessibilityLabel("Alphonso celebrating on the stage")');
-  });
-
-  it("the haptic, the count-up, the chips and both buttons are kept", () => {
-    expect(finish).toContain(".sensoryFeedback(.success, trigger: celebrated)");
-    expect(finish).toContain("LessonRewardChipView(chip: chip, index: index)");
-    expect(finish).toContain('Text("Lesson complete")');
-    expect(finish).toContain('Button("Continue to next lesson"');
-    expect(finish).toContain('Button("Practise with Hector"');
-    expect(finish).toContain("GeneratedPracticeSection(");
-    expect(finish).toContain("LeaguePromotionOverlay(");
-    expect(lesson).toContain("CountingText(");
-  });
-});
+// Lesson complete no longer plays a clip: since visual round 6 it is drawn in code in the unit's room, and the
+// complete clip is retired (ios-lesson-room-guards.test.ts, scenes.test.ts).
 
 describe("Learn plays the garden clip with Alphonso's bubble pinned on him", () => {
   const browser = read("LessonBrowserView.swift");
@@ -185,12 +139,13 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
   const paywall = read("PaywallView.swift");
   const hector = read("HectorView.swift");
 
-  it("the hector clip backs the paywall only when source is .hectorTab", () => {
-    expect(paywall).toContain("source == .hectorTab");
-    expect(paywall).toMatch(/\.screenScene\(\s*\.hector,\s*clip: \.hector[^)]*if: onScene/);
-    // Hector's head is at 47% of the clip: the offer starts at his waist, so a spacer holds it down.
-    expect(paywall).toContain("containerRelativeFrame(.vertical)");
-    expect(paywall).toContain('"Hector, waving in his library"');
+  it("the redesigned paywall paints its own static Hector room, not a clip, and no longer branches on the source", () => {
+    const parts = read("ProPaywallParts.swift");
+    expect(paywall).toContain("PaywallRoomTop(");
+    expect(parts).toContain('Image("Scene-hector")');
+    expect(parts).toContain('Image("Hector-talking")');
+    expect(paywall).not.toContain("source == .hectorTab");
+    expect(paywall).not.toContain(".screenScene(");
   });
 
   it("the 220 pt cut-out is gone, and the Pro conversation keeps the still library", () => {

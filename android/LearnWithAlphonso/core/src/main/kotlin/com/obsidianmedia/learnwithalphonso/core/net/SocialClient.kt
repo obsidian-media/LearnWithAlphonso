@@ -263,6 +263,16 @@ suspend fun ProgressSyncClient.fetchProfileIdentity(userId: String): ProfileIden
     return ProfileIdentity(row.string("display_name") ?: return null, row.string("avatar_seed") ?: return null)
 }
 
+/**
+ * The leaderboard country (profiles.country). Complete your profile reads it so a country the learner already shows
+ * stays on (the web's prefill). Null for no row, no country, or one off the list. Written only by the server's
+ * learner-profile save (LearnerProfileClient).
+ */
+suspend fun ProgressSyncClient.fetchProfileCountry(userId: String): String? {
+    val row = rowsOf(http.rest(HttpMethod.Get, "profiles", mapOf("select" to "country", "id" to "eq.$userId"))).firstOrNull() ?: return null
+    return row.string("country")?.takeIf { it in com.obsidianmedia.learnwithalphonso.core.firstrun.LearnerProfileLists.countries }
+}
+
 suspend fun ProgressSyncClient.updateProfileDisplayName(displayName: String, userId: String) {
     http.requireSuccess(http.rest(HttpMethod.Patch, "profiles", mapOf("id" to "eq.$userId"), body = buildJsonObject { put("display_name", displayName) }, headers = mapOf("Prefer" to "return=minimal")))
 }

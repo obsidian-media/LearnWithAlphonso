@@ -49,7 +49,8 @@ final class RevenueCatPurchases: PurchasesProviding {
                 localizedPriceString: storeProduct.localizedPriceString,
                 price: storeProduct.price,
                 period: storeProduct.subscriptionPeriod.flatMap(Self.period),
-                eligibleFreeTrial: await Self.eligibleFreeTrial(for: storeProduct)
+                eligibleFreeTrial: await Self.eligibleFreeTrial(for: storeProduct),
+                currencyCode: storeProduct.currencyCode
             ))
         }
         packagesByProductID = byID

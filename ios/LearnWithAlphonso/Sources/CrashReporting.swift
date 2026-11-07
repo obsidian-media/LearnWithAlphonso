@@ -18,6 +18,9 @@ enum CrashReporting {
         #if DEBUG
         return
         #else
+        // A device that answered Under 13 in the first run sends us nothing at all, crash reports included
+        // (privacy policy, Children). It never starts; one blocked mid-run is closed by stop().
+        guard !FirstRunDevice.isBlocked else { return }
         SentrySDK.start { options in
             options.dsn = dsn
             options.sendDefaultPii = false
@@ -29,15 +32,24 @@ enum CrashReporting {
             options.enableNetworkBreadcrumbs = false
             options.enableCaptureFailedRequests = false
             options.enableAutoSessionTracking = false
+            // Read at send time too: the block can happen while the SDK is running.
             options.beforeSend = { event in
-                scrub(event)
+                FirstRunDevice.isBlocked ? nil : scrub(event)
             }
             options.beforeBreadcrumb = { crumb in
+                if FirstRunDevice.isBlocked { return nil }
                 crumb.message = crumb.message.map(scrubText)
                 crumb.data = nil
                 return crumb
             }
         }
+        #endif
+    }
+
+    /// Under 13 was just chosen: close the SDK so nothing queued or cached is sent, now or at the next launch.
+    static func stop() {
+        #if !DEBUG
+        if SentrySDK.isEnabled { SentrySDK.close() }
         #endif
     }
 

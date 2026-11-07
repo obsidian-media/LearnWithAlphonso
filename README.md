@@ -92,6 +92,10 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both native-only (iOS and Android, not on web; see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both native-only (iOS and Android)
 - **Themes**: 4 user-selectable themes on web (Canopy, the default since the web port, then Meadow, Studio Ink and Manuscript — `/profile`), synced to the account and persisted locally
+- **The round-6 look** (web, iOS and Android; native not yet run on a device): one design-token source (`design/tokens.json`, Royal and Meadow palettes, light and night, bundled Bricolage Grotesque and Figtree fonts) behind every screen. Lessons play in the unit's painted room with Alphonso reacting; a new learner gets an 8-question first run (name, course, language, country, goal, level, daily time, age range, interests), a taste of two real questions and a plan before sign-in, then picks one of 16 animal profile pictures (presets only). The Profile page shows streak, XP, words, a week ring, minutes spoken, a 3-month heat map, records, weak spots and a shareable image. Age is stored as a range, and a learner who chooses Under 13 is stopped on the device with nothing sent.
+- **Practice hub with stars**: scenarios and story campaigns in their rooms, a "Today's pick" that practises your top weak spot, "Continue", and 1 to 3 stars per call that the server awards (finished; 80% right; all right, 4+ words each, no English). Alphonso speaks his opening line, and Hector greets you by name when a call opens.
+- **Sound effects**: nine short CC0 sounds (right, wrong, complete, taps, call start and end) with a Settings switch; they never play over a voice.
+- **Minutes spoken**: the daily total of seconds you spoke in practice is kept (the number only, never audio or text) and shown on your Profile.
 - **iOS navigation** (Phase 0, 2026-09-24): five tabs — **Learn · Listen · Practice ·
   Hector · Profile**. It was seven, and iPhone renders five before collapsing the rest
   into the system "More" list, so Achievements was already buried. League, Friends and
@@ -217,6 +221,9 @@ REVENUECAT_PROJECT_ID          # RevenueCat project id for the v2 API
 REVENUECAT_WEB_PRODUCT_ID      # RevenueCat id of the Web Billing Pro product (price + trial)
 REVENUECAT_WEB_PURCHASE_LINK   # Web Purchase Link with the trial (https://pay.rev.cat/<token>)
 REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL # required: link with no trial, for learners who already had Pro
+REVENUECAT_WEB_YEARLY_PRODUCT_ID # optional yearly plan; set all three YEARLY_* or none (partial = monthly only)
+REVENUECAT_WEB_YEARLY_PURCHASE_LINK
+REVENUECAT_WEB_YEARLY_PURCHASE_LINK_NO_TRIAL
 DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 STT_DAILY_AUDIO_SECONDS        # optional: daily voice seconds per learner (default 1200)
 STT_MAX_CALL_SECONDS           # optional: longest single recording in seconds (default 120)

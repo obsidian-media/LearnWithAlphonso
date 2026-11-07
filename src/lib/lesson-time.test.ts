@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import timing from "../data/lesson-timing.json";
 import { ActiveTimer, estimateLessonMinutes, formatElapsed } from "./lesson-time";
 import type { Question } from "../data/curriculum";
@@ -54,5 +56,19 @@ describe("formatElapsed", () => {
     expect(formatElapsed(222_000)).toBe("3:42");
     expect(formatElapsed(5_000)).toBe("0:05");
     expect(formatElapsed(3_725_000)).toBe("62:05");
+  });
+});
+
+describe("native copies of the timing rules", () => {
+  // iOS (LessonTiming.bundled) and Android (LessonTiming.fromJson) read these, so "About N min" agrees everywhere.
+  // Written by bun scripts/export-ios-content.ts / export-android-content.ts.
+  it.each([
+    "ios/LearnWithAlphonso/Resources/lesson-timing.json",
+    "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Resources/lesson-timing.json",
+    "android/LearnWithAlphonso/app/src/main/assets/content/lesson-timing.json",
+  ])("%s carries the same rules", (rel) => {
+    const file = path.join(import.meta.dirname, "../..", rel);
+    expect(fs.existsSync(file), rel).toBe(true);
+    expect(JSON.parse(fs.readFileSync(file, "utf8"))).toEqual(timing);
   });
 });

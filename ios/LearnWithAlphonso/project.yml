@@ -57,8 +57,23 @@ targets:
       - path: AlphonsoScenes
         type: folder
         buildPhase: resources
+      # Alphonso's five lesson expressions (talk, neutral, happy, hmm, wow), the same WebP cut-outs as the web's
+      # public/alphonso/lesson, read by name at run time (LessonStageViews).
+      - path: AlphonsoLesson
+        type: folder
+        buildPhase: resources
       # Hector's kit for the same call: base, six mouths, three eyes layers (no ears, no glint) plus manifest.json.
       - path: HectorAvatar
+        type: folder
+        buildPhase: resources
+      # The first run (visual round 6, part 3): Hector's two cut-outs for the plan and Meet Hector, the web's
+      # public/firstrun art, read by name at run time (FirstRunViews).
+      - path: FirstRunArt
+        type: folder
+        buildPhase: resources
+      # The 16 preset animal profile pictures (ProfileAvatars in the Kit), 288 px WebP cut from the web's
+      # public/avatars/animals, read by id at run time (ProfileAvatarView).
+      - path: ProfileAvatars
         type: folder
         buildPhase: resources
       - path: Sources
@@ -312,7 +327,7 @@ targets:
         # accident, which made App Store Connect require 13-inch iPad
         # screenshots at Add for Review. No code change.
         # 50: first build after build 49; resubmission.
-        CURRENT_PROJECT_VERSION: "59"
+        CURRENT_PROJECT_VERSION: "60"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -443,7 +458,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "59"
+        CURRENT_PROJECT_VERSION: "60"
         SKIP_INSTALL: true
       configs:
         Release:

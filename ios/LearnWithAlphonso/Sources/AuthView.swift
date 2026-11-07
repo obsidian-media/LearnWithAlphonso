@@ -4,81 +4,94 @@ import LearnWithAlphonsoKit
 
 struct AuthView: View {
     @Bindable var session: Session
-    @FocusState private var codeFieldFocused: Bool
+    private enum Field { case email, code }
+    @FocusState private var focusedField: Field?
+    @Environment(\.alphonsoDS) private var ds
+
+    private var awaitingCode: Bool {
+        if case .awaitingCode = session.state { return true }
+        return false
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: AlphonsoSpacing.xl) {
-                    VStack(spacing: AlphonsoSpacing.md) {
-                        Text("Learn with Alphonso")
-                            .font(AlphonsoFont.display(32, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.ink)
-                            .multilineTextAlignment(.center)
-
-                        // Alphonso himself greets you -- the app's own
-                        // namesake had zero visual presence anywhere
-                        // before this; the sign-in screen is the first
-                        // thing every user ever sees. A banner (not just
-                        // a small circular avatar) so he's actually
-                        // "speaking" the greeting, not just decorating it.
-                        AlphonsoMascotBanner(mascot: .alphonso, message: "Sign in to start learning")
-                            .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.9)
-                    }
-
-                    VStack(spacing: AlphonsoSpacing.md) {
-                        Group {
-                            switch session.state {
-                            case .signedOut:
-                                emailStep
-                            case .awaitingCode(let email):
-                                codeStep(email: email)
-                            case .signedIn:
-                                EmptyView()
-                            }
+            FirstRunScreen {
+                // Alphonso in his room, with his speech bubble: the same look as the first run's sign-in step.
+                FirstRunRoom(roomID: "room-light", figure: LessonArt.expression(.talk), figureLabel: "Alphonso") {
+                    FirstRunHUD(showCounter: false)
+                }
+                FirstRunBubble(
+                    title: awaitingCode ? "Check your email." : "Welcome back.",
+                    sub: awaitingCode ? "Type the 6-digit code." : "Sign in to start learning."
+                ) { FirstRunVoice.speak(awaitingCode ? "Check your email." : "Welcome back.") }
+            } content: {
+                VStack(spacing: AlphonsoDS.Space.s3) {
+                    VStack(spacing: AlphonsoDS.Space.s2) {
+                        switch session.state {
+                        case .signedOut:
+                            emailStep
+                        case .awaitingCode(let email):
+                            codeStep(email: email)
+                        case .signedIn:
+                            EmptyView()
                         }
 
                         if let notice = session.notice ?? session.emailFlow.notice {
                             Text(notice)
-                                .font(AlphonsoFont.sans(13))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
+                                .dsText(.footnote)
+                                .foregroundStyle(ds.inkSoft)
                                 .multilineTextAlignment(.center)
                         }
                         if let message = session.emailFlow.failure?.message ?? session.errorMessage {
                             Text(message)
-                                .font(AlphonsoFont.sans(13))
-                                .foregroundStyle(AlphonsoColor.destructive)
+                                .dsText(.footnote)
+                                .foregroundStyle(ds.wrongInk)
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .padding(AlphonsoSpacing.lg)
-                    .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
-                            .strokeBorder(AlphonsoColor.hairline, lineWidth: 1)
-                    )
 
                     // What continuing means, with both documents one tap away.
                     Text(Self.footer)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                        .tint(AlphonsoColor.moss)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
+                        .tint(ds.brand)
                         .multilineTextAlignment(.center)
+                        .padding(.top, AlphonsoDS.Space.s1)
                 }
-                .frame(maxWidth: 400)
-                .padding(AlphonsoSpacing.lg)
-                .padding(.top, AlphonsoSpacing.xxl)
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal, AlphonsoDS.Space.gutter)
+                .padding(.top, AlphonsoDS.Space.s4)
+                // A tap outside a field puts the keyboard away.
+                .contentShape(Rectangle())
+                .simultaneousGesture(TapGesture().onEnded { focusedField = nil })
+            } footer: {
+                EmptyView()
             }
-            .background(AlphonsoColor.surface)
+            // Dragging the content down also dismisses it, and the keyboard bar always offers Done.
             .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { focusedField = nil }
+                }
+            }
         }
+    }
+
+    private func inputField<F: View>(_ field: F) -> some View {
+        let shape = RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+        return field
+            .dsText(.headline)
+            .foregroundStyle(ds.brand)
+            .padding(.horizontal, AlphonsoDS.Space.s4)
+            .padding(.vertical, AlphonsoDS.Space.s3)
+            .background { shape.fill(ds.card) }
+            .overlay { shape.strokeBorder(ds.line, lineWidth: 2) }
     }
 
     // MARK: - Email step: Apple, Google, then email
 
     private var emailStep: some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
+        VStack(spacing: AlphonsoDS.Space.s2) {
             // Apple's own button (HIG), "Continue" title, black on light and white on dark, 50 pt, first.
             // The style is read once when the button is created, so .id rebuilds it after a theme switch.
             SignInWithAppleButton(.continue) { request in
@@ -97,7 +110,7 @@ struct AuthView: View {
                 Task { await session.signInWithGoogle() }
             }
 
-            HStack(spacing: AlphonsoSpacing.sm) {
+            HStack(spacing: AlphonsoDS.Space.s2) {
                 // A plain Divider() in an HStack wants to stretch to fill
                 // all available cross-axis (vertical) height -- a real bug
                 // found on a real device, where this pushed "Continue with
@@ -105,21 +118,23 @@ struct AuthView: View {
                 // explicit height so it stays a plain 1pt rule.
                 Divider().frame(height: 1)
                 Text("or")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.inkSoft)
                 Divider().frame(height: 1)
             }
 
-            TextField("Email", text: $session.emailFlow.email)
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm + 2)
-                .alphonsoInputBackground()
+            inputField(TextField("Email", text: $session.emailFlow.email))
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .submitLabel(.send)
-                .onSubmit { if session.botCheck.canSend { Task { await session.requestCode() } } }
+                .focused($focusedField, equals: .email)
+                .onSubmit {
+                    // Return always puts the keyboard away so the bot check and Send code are in view.
+                    focusedField = nil
+                    if session.botCheck.canSend { Task { await session.requestCode() } }
+                }
 
             // Bot check (Cloudflare Turnstile, usually no tap needed). Apple and Google sign-in never need it.
             BotCheckView(model: session.botCheck)
@@ -129,12 +144,12 @@ struct AuthView: View {
                 Task { await session.requestCode() }
             } label: {
                 if session.isBusy {
-                    ProgressView().tint(AlphonsoColor.surface)
+                    ProgressView().tint(ds.onAction)
                 } else {
                     Text("Send code")
                 }
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
             .disabled(session.isBusy || !session.emailFlow.canSendCode || !session.botCheck.canSend)
             .accessibilityLabel(session.isBusy ? "Sending code" : "Send code")
         }
@@ -147,35 +162,32 @@ struct AuthView: View {
     // MARK: - Code step (never a dead end)
 
     private func codeStep(email: String) -> some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
+        VStack(spacing: AlphonsoDS.Space.s2) {
             Text(AuthCopy.codeSentTo(email))
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
                 .multilineTextAlignment(.center)
 
-            TextField(AuthCopy.codeFieldLabel, text: Binding(
+            inputField(TextField(AuthCopy.codeFieldLabel, text: Binding(
                 get: { session.emailFlow.code },
                 set: { session.enterCode($0) }
-            ))
-            .textFieldStyle(.plain)
-            .padding(AlphonsoSpacing.sm + 2)
-            .alphonsoInputBackground()
+            )))
             .textContentType(.oneTimeCode)
             .keyboardType(.numberPad)
             .multilineTextAlignment(.center)
-            .focused($codeFieldFocused)
+            .focused($focusedField, equals: .code)
             .accessibilityLabel(AuthCopy.codeFieldLabel)
 
             Button {
                 Task { await session.verifyCode() }
             } label: {
                 if session.isBusy {
-                    ProgressView().tint(AlphonsoColor.surface)
+                    ProgressView().tint(ds.onAction)
                 } else {
                     Text("Verify")
                 }
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
             .disabled(session.isBusy || !session.emailFlow.isCodeComplete)
             .accessibilityLabel(session.isBusy ? "Verifying" : "Verify")
 
@@ -184,7 +196,7 @@ struct AuthView: View {
                 Button(remaining > 0 ? AuthCopy.resendIn(remaining) : AuthCopy.resendCode) {
                     Task { await session.resendCode() }
                 }
-                .buttonStyle(.alphonsoSecondary)
+                .buttonStyle(LessonEdgeButtonStyle(variant: .secondary))
                 .disabled(session.isBusy || remaining > 0 || !session.botCheck.canSend)
             }
 
@@ -195,12 +207,12 @@ struct AuthView: View {
             Button(AuthCopy.useDifferentEmail) {
                 session.useDifferentEmail()
             }
-            .font(AlphonsoFont.sans(14, weight: .medium))
-            .foregroundStyle(AlphonsoColor.moss)
-            .frame(minHeight: 44)
+            .dsText(.headline)
+            .foregroundStyle(ds.choice)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
             .disabled(session.isBusy)
         }
-        .onAppear { codeFieldFocused = true }
+        .onAppear { focusedField = .code }
     }
 
     // MARK: - Footer

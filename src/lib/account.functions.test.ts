@@ -503,6 +503,40 @@ describe("exportMyData, rows the caller cannot read itself", () => {
     });
   });
 
+  it("exports the first-run answers and the voice choices kept on the account record", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles" ? chainable({ data: {} }) : chainable({ data: [] }),
+    );
+    supabaseAdminFrom.mockImplementation(() => chainable({ data: [], error: null, count: 0 }));
+    const learner_profile = {
+      name: "Sam",
+      nativeLanguage: "en",
+      country: "CA",
+      showFlag: false,
+      goal: "travel",
+      level: "some",
+      dailyMinutes: 10,
+      ageRange: "25-34",
+      interests: ["food", "music"],
+      heardFrom: "friend",
+      completedAt: "2026-11-06T00:00:00.000Z",
+    };
+    getUserById.mockResolvedValue({
+      data: {
+        user: {
+          id: USER_ID,
+          identities: [],
+          user_metadata: { learner_profile, voices: { alphonso: { es: "aura-2-javier-es" } } },
+        },
+      },
+      error: null,
+    });
+    const tables = JSON.parse((await exportMyData({ context: ctx(supabase) })).tables);
+    expect(tables.preferences.learner_profile).toEqual(learner_profile);
+    expect(tables.preferences.voices).toEqual({ alphonso: { es: "aura-2-javier-es" } });
+  });
+
   it("fails rather than exporting without the account record", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation(() => chainable({ data: [] }));

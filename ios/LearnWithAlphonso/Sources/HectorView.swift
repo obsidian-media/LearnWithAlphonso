@@ -14,11 +14,14 @@ struct HectorView: View {
     /// Set when Hector is shown as a sheet (from lesson complete): adds a Done button.
     var onClose: (() -> Void)? = nil
 
+    /// Pro just landed: the paywall stays up for Hector's welcome before the conversation replaces it.
+    @State private var showingWelcome = false
+
     var body: some View {
         NavigationStack {
             Group {
-                if !entitlementStore.isPro {
-                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
+                if !entitlementStore.isPro || showingWelcome {
+                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab, onWelcome: { showingWelcome = $0 })
                 } else {
                     HectorConversationView(
                         session: session,
@@ -64,6 +67,8 @@ private struct HectorConversationView: View {
 
     @State private var conversation = ConversationSnapshot()
     @State private var voice = VoiceSessionController()
+    /// Bumped when Hector's greeting should be spoken: once his learner context has loaded, and on "Call again".
+    @State private var openerCue = 0
     @State private var notice: String?
     @State private var cefrLevel: String?
     /// V3 package 3b "tutor persona memory": open weaknesses, prepended to
@@ -92,6 +97,13 @@ private struct HectorConversationView: View {
         Group {
             if showCall { callScreen } else { classicScreen }
         }
+        // Hector speaks first (BACKLOG 0.0-bp): his greeting, in his own chosen voice, through the reply player like
+        // Alphonso's opener. Inside the AI gate, so nothing is fetched before consent; repeats come from
+        // OpenerSpeechCache. pendingOpener is nil once the learner has answered.
+        .task(id: openerCue) {
+            guard openerCue > 0 else { return }
+            await voice.speakOpener(conversation.pendingOpener, session: session, course: course, speaker: .hector)
+        }
         .aiDisclosureGate()
         // .notEntitled opens the paywall. The server's RevenueCat check
         // can disagree with the local isPro (lapsed, refunded, other device).
@@ -117,7 +129,7 @@ private struct HectorConversationView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(conversation.turns.enumerated()), id: \.offset) { index, turn in
-                            bubble(for: turn).id(index)
+                            bubble(for: turn, isOpener: conversation.openerIndices.contains(index)).id(index)
                         }
                     }
                     .padding()
@@ -233,6 +245,7 @@ private struct HectorConversationView: View {
             Button("Call again") {
                 callEnded = false
                 voice.appeared()
+                openerCue += 1
             }
             .buttonStyle(.alphonsoPrimary)
         }
@@ -342,28 +355,37 @@ private struct HectorConversationView: View {
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let level = (try? await client.fetchCefrLevel(course: course.wireCode)) ?? nil
         let trend = (try? await client.fetchWeaknessTrend()) ?? []
+        // A name the learner chose; an unconfirmed one is a generated handle.
+        let nameStatus = (try? await client.fetchNameStatus()) ?? nil
         let openCategories = trend.filter { $0.openCount > 0 }.map(\.category)
         cefrLevel = level
         memoryContext = TutorMemoryContext.buildPrimingMessage(cefrLevel: level, openWeaknessCategories: openCategories)
+        // Hector speaks first: a conversation with no turns yet opens with his greeting (built locally, no LLM call).
+        conversation = conversationStore.openWithGreeting(key, greeting: HectorGreeting.build(
+            course: course, cefrLevel: level,
+            name: nameStatus?.nameConfirmed == true ? nameStatus?.displayName : nil,
+            weakSpot: HectorGreeting.recentWeakSpot(trend)))
+        openerCue += 1
     }
 
     // MARK: - Bubbles
 
     @ViewBuilder
-    private func bubbleText(for turn: ChatMessage) -> some View {
+    private func bubbleText(for turn: ChatMessage, isOpener: Bool) -> some View {
         if turn.role == "assistant" {
+            // The greeting is our own fixed text, not the model's: nothing to report.
             AssistantReply(
-                turn: turn, isOpener: false, course: course, color: AlphonsoColor.ink,
+                turn: turn, isOpener: isOpener, course: course, color: AlphonsoColor.ink,
                 surface: .hector, session: session, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(AlphonsoColor.onAccent)
         }
     }
 
-    private func bubble(for turn: ChatMessage) -> some View {
+    private func bubble(for turn: ChatMessage, isOpener: Bool) -> some View {
         HStack(alignment: .bottom, spacing: 6) {
             if turn.role == "user" { Spacer(minLength: 40) }
-            bubbleText(for: turn)
+            bubbleText(for: turn, isOpener: isOpener)
                 .font(AlphonsoFont.sans(15))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)

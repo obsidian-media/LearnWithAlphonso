@@ -60,3 +60,20 @@ export function lessonXpBreakdown({
     });
   return { lines, total: lines.reduce((sum, l) => sum + l.xp, 0) };
 }
+
+/**
+ * The verdict sheet's "+N XP" for a right answer, or null for none. `rightSoFar` counts this answer; `previousBest`
+ * is the learner's best earlier score on this lesson (null on a first try). A replay pays only what improves on that
+ * best (computeLessonReplayXp), so a right answer shows XP only once the learner is past it: the chips never promise
+ * XP the server will not pay, and they add up to the award's per-answer part.
+ */
+export function answerXpChip({
+  rightSoFar,
+  previousBest,
+}: {
+  rightSoFar: number;
+  previousBest: number | null;
+}): number | null {
+  if (previousBest !== null && rightSoFar <= previousBest) return null;
+  return XP_PER_RIGHT_ANSWER;
+}

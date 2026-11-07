@@ -46,6 +46,9 @@ class IdentityViewModel(private val client: ProgressSyncClient, private val user
         }
     }
 
+    /** The picture picker saved a new seed (AvatarPickerDialog writes it); show it here too. */
+    fun avatarSaved(seed: String) = _state.update { it.copy(avatarSeed = seed, error = null) }
+
     fun shuffleAvatar() {
         val id = userId ?: return
         val next = buildString { repeat(8) { append("0123456789abcdef"[random.nextInt(16)]) } }

@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
+const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
     ...actual,
+    useNavigate: () => navigate,
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
       <a href={to} {...rest}>
         {children}
@@ -49,6 +52,10 @@ const scenario = localizeScenario(rawScenario, "en");
 // function; the real one needs a <RouterProvider>, which this test
 // doesn't set up (nothing else here depends on router context).
 Route.useLoaderData = () => ({ scenario: rawScenario });
+// The search params the pre-call sheet passes (?mode, ?scene); none by default, as for a link from elsewhere.
+const search: { current: Record<string, unknown> } = { current: {} };
+// @ts-expect-error -- same as useLoaderData above: no RouterProvider here.
+Route.useSearch = () => search.current;
 
 class FakeMediaRecorder {
   static isTypeSupported = vi.fn((mime: string) => mime === "audio/webm");
@@ -111,6 +118,7 @@ async function renderPage(consentApi = fakeConsentApi(), { waitForChat = true } 
 }
 
 beforeEach(() => {
+  clearOpenerSpeechCache();
   useProgress.setState({ course: "en" });
   // These tests cover the classic screen; the call screen has its own describe below.
   localStorage.setItem("showAlphonsoWhilePractising", "false");
@@ -606,7 +614,9 @@ describe("Converse call screen (setting on, the default)", () => {
     expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show the conversation" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/converse");
+    // Hanging up scores the call first (Practice stars); with no reply yet it goes straight back to Practice.
+    fireEvent.click(screen.getByRole("button", { name: "End the call" }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/converse" }));
     expect(screen.getByText(scenario.title)).toBeInTheDocument();
     expect(screen.getByTestId("call-timer")).toHaveTextContent("0:00");
     // The caption is a polite live region showing the current utterance only.
@@ -668,6 +678,56 @@ describe("Converse call screen (setting on, the default)", () => {
     expect(lastRecorder?.state).toBe("inactive");
   });
 
+  it("says the scenario's opener out loud when the call starts, in Alphonso's voice", async () => {
+    getSession.mockResolvedValue({
+      data: {
+        session: { user: { user_metadata: { voices: { alphonso: { en: "aura-2-thalia-en" } } } } },
+      },
+    });
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    const tts = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+      String(u).includes("/api/tts"),
+    );
+    expect(tts).toHaveLength(1);
+    expect(JSON.parse(tts[0][1].body as string)).toMatchObject({
+      text: scenario.opener,
+      course: "en",
+      voice: "aura-2-thalia-en",
+    });
+    expect(audioInstances[0].play).toHaveBeenCalled();
+  });
+
+  it("fetches the opener's voice once: a second call replays it", async () => {
+    const first = await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(1));
+    first.unmount();
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(2));
+    const tts = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+      String(u).includes("/api/tts"),
+    );
+    expect(tts).toHaveLength(1);
+  });
+
+  it("a voice changed in Settings fetches the opener again, in the new voice", async () => {
+    const withVoice = (id: string) =>
+      getSession.mockResolvedValue({
+        data: { session: { user: { user_metadata: { voices: { alphonso: { en: id } } } } } },
+      });
+    withVoice("aura-2-thalia-en");
+    const first = await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(1));
+    first.unmount();
+    withVoice("aura-2-apollo-en");
+    await renderCall();
+    await waitFor(() => expect(audioInstances.length).toBe(2));
+    const voices = (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+      .filter(([u]) => String(u).includes("/api/tts"))
+      .map(([, init]) => JSON.parse((init as RequestInit).body as string).voice);
+    expect(voices).toEqual(["aura-2-thalia-en", "aura-2-apollo-en"]);
+  });
+
   it("talking over Alphonso cuts his voice off, so it is not recorded", async () => {
     await renderCall();
     await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
@@ -713,5 +773,98 @@ describe("Converse call screen (setting on, the default)", () => {
     await renderPage();
     expect(screen.queryByTestId("alphonso-stage")).toBeNull();
     expect(screen.getByRole("heading", { name: scenario.title })).toBeInTheDocument();
+  });
+});
+
+describe("Practice stars on a scenario call", () => {
+  const scored = {
+    kind: "scenario",
+    itemKey: "coffee",
+    stars: 2,
+    bestBefore: 1,
+    bestAfter: 2,
+    replies: 2,
+    rightReplies: 1,
+    shortReplies: 0,
+    englishReplies: 0,
+    finishMinReplies: 3,
+  };
+  function serve(practice: unknown) {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat"))
+        return jsonResponse({ content: "Ah, I see.", verdict: "corrected" });
+      if (url.includes("/api/practice")) return jsonResponse(practice);
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+  }
+  const calls = (part: string) =>
+    (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) => String(u).includes(part));
+  async function say(user: ReturnType<typeof userEvent.setup>, text: string, n: number) {
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), text);
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(calls("/api/chat")).toHaveLength(n));
+    await waitFor(() => expect(screen.getByPlaceholderText("Type or tap the mic")).toBeEnabled());
+  }
+
+  it("every reply carries one call id; finishing sends only that id and shows the server's stars", async () => {
+    serve(scored);
+    const user = userEvent.setup();
+    await renderPage();
+    await say(user, "I want coffee", 1);
+    await say(user, "Big one", 2);
+    const ids = calls("/api/chat").map(([, init]) => JSON.parse(init.body as string).callId);
+    expect(ids[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(ids[1]).toBe(ids[0]);
+
+    await user.click(screen.getByRole("button", { name: "Finish" }));
+    const result = await screen.findByRole("heading", { name: "Two stars. Well done." });
+    expect(JSON.parse(calls("/api/practice")[0][1].body as string)).toEqual({ callId: ids[0] });
+    const screenEl = result.closest("[data-practice-result]")!;
+    expect(screenEl).toHaveAttribute("data-practice-result", "2");
+    expect(screenEl).toHaveTextContent("replies right1/2");
+    // The slip is the learner's first corrected reply, with Alphonso's answer.
+    expect(screenEl.querySelector("[data-slip]")).toHaveTextContent("I want coffee");
+  });
+
+  it("Try again starts a new call with a new id", async () => {
+    serve(scored);
+    const user = userEvent.setup();
+    await renderPage();
+    await say(user, "I want coffee", 1);
+    const first = JSON.parse(calls("/api/chat")[0][1].body as string).callId;
+    await user.click(screen.getByRole("button", { name: "Finish" }));
+    await user.click(await screen.findByRole("button", { name: "Try for 3" }));
+    await say(user, "A latte, please, to go", 2);
+    const second = JSON.parse(calls("/api/chat")[1][1].body as string).callId;
+    expect(second).not.toBe(first);
+  });
+
+  it("with no reply there is no Finish and nothing to score", async () => {
+    serve(scored);
+    await renderPage();
+    expect(screen.queryByRole("button", { name: "Finish" })).toBeNull();
+  });
+
+  it("an unscored call (the server judged no reply) goes back to Practice without a result", async () => {
+    serve({ error: "no-call" });
+    const user = userEvent.setup();
+    await renderPage();
+    await say(user, "Hello", 1);
+    await user.click(screen.getByRole("button", { name: "Finish" }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/converse" }));
+    expect(document.querySelector("[data-practice-result]")).toBeNull();
+  });
+
+  it("?mode=call from the pre-call sheet opens the call even when the setting says chat", async () => {
+    search.current = { mode: "call" };
+    try {
+      serve(scored);
+      const Page = Route.options.component!;
+      render(withAiConsent(<Page />, fakeConsentApi()));
+      expect(await screen.findByTestId("call-caption")).toBeInTheDocument();
+    } finally {
+      search.current = {};
+    }
   });
 });

@@ -14,7 +14,12 @@ import com.obsidianmedia.learnwithalphonso.testContent
 import com.obsidianmedia.learnwithalphonso.ui.lesson.SpeakQuestionViewModel
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -160,6 +165,7 @@ class ConversationViewModelsTest {
         if (campaign.scenes.size > 1) {
             v.continueToNextScene()
             assertEquals(1, v.campaignState.value.sceneIndex)
+            assertEquals(0, v.state.value.sceneOffset)
             assertEquals(campaign.scenes[1].opener, v.state.value.turns.last().content)
             assertFalse("new scene starts with zero user turns", v.canContinue)
             v.pressBegan(); v.pressEnded(); awaitTrue("scene 2 turn") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == v.campaignState.value.sceneAnchor + 3 }
@@ -200,6 +206,76 @@ class ConversationViewModelsTest {
         assertEquals(setOf(0), scenario.state.value.openerIndices)
     }
 
+    // Build 59: the call showed the scene's opening line and Alphonso never said it.
+
+    private fun ttsTexts(s: FakeServer) = s.seen.filter { it.path.endsWith("/api/tts") }
+        .map { Json.parseToJsonElement(it.body).jsonObject }
+
+    @Test
+    fun `the call start sends the scenario's opener to TTS in Alphonso's voice and plays it`() = runBlocking {
+        val s = server()
+        val scenario = testContent.scenarios.first()
+        val v = ScenarioConversationViewModel(
+            scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player,
+            alphonsoVoice = { "aura-2-thalia-en" }, openerCache = OpenerSpeechCache(),
+        )
+        assertEquals(scenario.opener, v.pendingOpener)
+        v.speakOpener()
+        awaitTrue("opener played") { played.isNotEmpty() && v.state.value.phase == ConversationPhase.IDLE }
+        val tts = ttsTexts(s).single()
+        assertEquals(scenario.opener, tts["text"]!!.jsonPrimitive.content)
+        assertEquals("aura-2-thalia-en", tts["voice"]!!.jsonPrimitive.content)
+        assertEquals(listOf(3), played)
+        assertEquals("the opener adds no turn", 1, v.state.value.turns.size)
+    }
+
+    @Test
+    fun `the opener is fetched once, and returning to the call replays it from the cache`() = runBlocking {
+        val s = server()
+        val cache = OpenerSpeechCache()
+        val scenario = testContent.scenarios.first()
+        repeat(2) { i ->
+            val v = ScenarioConversationViewModel(scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player, openerCache = cache)
+            v.speakOpener()
+            awaitTrue("opener $i") { played.size == i + 1 && v.state.value.phase == ConversationPhase.IDLE }
+        }
+        assertEquals(1, ttsTexts(s).size)
+    }
+
+    @Test
+    fun `an answered opener is not said again, and holding to talk cuts the opener off`() = runBlocking {
+        val s = server()
+        val gate = CompletableDeferred<Unit>()
+        var started = 0
+        val slowPlayer = ReplyPlayer { started++; gate.await(); true }
+        val v = ScenarioConversationViewModel(testContent.scenarios.first(), InstantRecorder(), { true }, ai(s), s.progressClient, slowPlayer, openerCache = OpenerSpeechCache())
+        v.speakOpener()
+        awaitTrue("opener speaking") { started == 1 && v.state.value.phase == ConversationPhase.SPEAKING }
+        // The mic does not open by itself while he speaks; the learner's press interrupts him.
+        v.pressBegan()
+        assertEquals(ConversationPhase.IDLE, v.state.value.phase)
+        v.pressEnded()
+        gate.complete(Unit)
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        assertNull(v.pendingOpener)
+        val before = ttsTexts(s).size
+        v.speakOpener()
+        assertEquals(before, ttsTexts(s).size)
+    }
+
+    @Test
+    fun `a campaign says each scene's opener`() = runBlocking {
+        val s = server()
+        val campaign = testContent.campaigns.first()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player, openerCache = OpenerSpeechCache())
+        v.speakOpener()
+        awaitTrue("scene 1 opener") { ttsTexts(s).size == 1 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(campaign.scenes[0].opener, ttsTexts(s)[0]["text"]!!.jsonPrimitive.content)
+        repeat(campaign.scenes[0].minTurns) { i -> v.pressBegan(); v.pressEnded(); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 1 + 2 * (i + 1) } }
+        v.continueToNextScene()
+        awaitTrue("scene 2 opener") { ttsTexts(s).any { it["text"]!!.jsonPrimitive.content == campaign.scenes[1].opener } }
+    }
+
     @Test
     fun `speak question sets picked from a real transcript and never from silence`() = runBlocking {
         // Plan 3 Review Focus 2.
@@ -218,4 +294,82 @@ class ConversationViewModelsTest {
         denied.pressBegan()
         awaitTrue("denied") { denied.state.value.micUnavailable }
     }
+    @Test
+    fun `hub continue opens its selected scene and every retry gets a fresh call id`() = runBlocking {
+        val s = server()
+        val campaign = testContent.campaigns.first()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player, startScene = 1)
+        v.chatMode = true
+        assertEquals(1, v.campaignState.value.sceneIndex)
+        assertEquals(1, v.state.value.sceneOffset)
+        assertEquals(campaign.scenes[1].opener, v.state.value.turns.single().content)
+        val original = v.callId
+        v.sendText("I would like a coffee please")
+        awaitTrue("typed reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/chat") }.body).jsonObject
+        assertEquals(original, body["callId"]!!.jsonPrimitive.content)
+        assertEquals("${campaign.premise}\n\n${campaign.scenes[1].systemPrompt}", body["systemPrompt"]!!.jsonPrimitive.content)
+        assertFalse("typing never records or synthesises audio", s.seen.any { it.path.endsWith("/api/stt") || it.path.endsWith("/api/tts") })
+        v.restartScene()
+        assertTrue(original != v.callId)
+        assertEquals(campaign.scenes[1].opener, v.state.value.turns.single().content)
+    }
+
+    @Test
+    fun `finish displays server award and waits for an in-flight judged reply`() = runBlocking {
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("/api/chat") -> {
+                    entered.complete(Unit)
+                    release.await()
+                    json("""{"content":"A corrected reply","verdict":"corrected"}""")
+                }
+                req.path.endsWith("/api/practice") -> json("""{"kind":"scenario","itemKey":"coffee","stars":1,"bestBefore":3,"bestAfter":3,"replies":5,"rightReplies":5,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}""")
+                else -> json("[]")
+            }
+        }
+        val v = scenarioVm(s)
+        v.chatMode = true
+        val id = v.callId
+        v.sendText("My first reply")
+        entered.await()
+        val finish = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.currentCoroutineContext()).async { v.finishPractice() }
+        kotlinx.coroutines.delay(30)
+        assertFalse("no finish request before chat records its reply", s.seen.any { it.path.endsWith("/api/practice") })
+        release.complete(Unit)
+        assertEquals(1, finish.await()!!.displayedStars)
+        assertEquals(1, v.result.value!!.stars)
+        assertEquals("My first reply" to "A corrected reply", v.slip)
+        assertEquals("""{"callId":"$id"}""", s.seen.single { it.path.endsWith("/api/practice") }.body)
+        v.retryScenario()
+        assertNull(v.result.value)
+        assertTrue(id != v.callId)
+    }
+
+    @Test
+    fun `hang-up cancels pending speech and repeated finish requests share one server result`() = runBlocking {
+        val ttsEntered = CompletableDeferred<Unit>()
+        val neverFinishTts = CompletableDeferred<Unit>()
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("/api/chat") -> json("""{"content":"Certainly","verdict":"correct"}""")
+                req.path.endsWith("/api/tts") -> { ttsEntered.complete(Unit); neverFinishTts.await(); respond(byteArrayOf(1), HttpStatusCode.OK) }
+                req.path.endsWith("/api/practice") -> json("""{"kind":"scenario","itemKey":"coffee","stars":1,"bestBefore":1,"bestAfter":1,"replies":3,"rightReplies":2,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}""")
+                else -> json("[]")
+            }
+        }
+        val v = scenarioVm(s)
+        v.sendText("I would like a coffee")
+        ttsEntered.await()
+        kotlinx.coroutines.withTimeout(3000) { assertEquals(1, v.finishPractice()!!.stars) }
+        assertEquals(1, v.finishPractice()!!.stars)
+        assertEquals(1, s.seen.count { it.path.endsWith("/api/practice") })
+        assertTrue("no late reply audio on the result screen", played.isEmpty())
+        awaitTrue("speech stopped") { v.state.value.phase == ConversationPhase.IDLE }
+        v.retryScenario(speak = false)
+        assertEquals(v.scenario.opener, v.state.value.turns.single().content)
+    }
+
 }

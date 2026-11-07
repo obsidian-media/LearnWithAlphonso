@@ -7,16 +7,24 @@ import {
   TOO_SHORT_MESSAGE,
 } from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
 import { safeNextPath } from "../lib/safe-next-path";
+import { browserFirstRunStore } from "../lib/first-run";
+import { Under13Stop } from "../components/firstrun/Under13Stop";
+import { FirstRunBubble, FirstRunRoom, FirstRunScreen } from "../components/firstrun/FirstRunParts";
+import { roomSrc } from "../lib/first-run";
+import { expressionSrc } from "../lib/lesson-stage";
+import { edgeButtonClass } from "../components/lesson/LessonParts";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
-  validateSearch: (s: Record<string, unknown>): { next?: string } =>
-    safeNextPath(s.next) ? { next: safeNextPath(s.next) } : {},
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: "signup" } => ({
+    ...(safeNextPath(s.next) ? { next: safeNextPath(s.next) } : {}),
+    // The first run's "Continue with email" opens straight on Create your account.
+    ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Alphonso" },
@@ -38,7 +46,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const { next, mode: startMode } = Route.useSearch();
+  // A device that answered Under 13 in the first run cannot make an account here either (BACKLOG 0.0-bd).
+  const [firstRun] = useState(() => browserFirstRunStore());
+  const blocked = firstRun.isBlocked();
   // `fallback` lets signup default somewhere other than /learn (see the
   // signup branch below) while every other caller keeps today's
   // behavior. An explicit `next` always wins over either default -- a
@@ -52,10 +63,13 @@ function AuthPage() {
     },
     [next, navigate],
   );
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">(
+    startMode === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  // The first run's name, if they gave one; the field says it is the public display name, and they can change it.
+  const [displayName, setDisplayName] = useState(() => firstRun.readDraft().name ?? "");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   // Turnstile, only when a site key is configured (src/lib/turnstile.ts). Each token is single-use, so every request
@@ -188,45 +202,48 @@ function AuthPage() {
     }
   }
 
-  return (
-    <div className="grain min-h-dvh bg-surface text-ink">
-      <main
-        id="main-content"
-        className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-10 pt-10"
-      >
-        <Link to="/" className="mb-8 inline-flex items-center gap-2 text-ink-soft/70">
-          <span className="text-lg">←</span>
-          <span className="text-sm">Back</span>
-        </Link>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="mb-2 grid size-11 place-items-center rounded-xl bg-moss text-surface">
-            <span className="font-display text-lg font-semibold">A</span>
-          </div>
-          <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-            {mode === "verify"
-              ? "Check your email"
-              : mode === "signup"
-                ? "Create your account"
-                : mode === "forgot"
-                  ? "Reset your password"
-                  : "Welcome back"}
-          </h1>
-          <p className="mt-1.5 text-sm text-ink-soft/80">
-            {mode === "verify"
-              ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
-              : mode === "signup"
-                ? "Save your streak and pick up on any device."
-                : mode === "forgot"
-                  ? "Enter your email and we'll send you a link to set a new password."
-                  : "Sign in to continue where you left off."}
-          </p>
-        </motion.div>
+  if (blocked) return <Under13Stop onOk={() => navigate({ to: "/" })} />;
 
-        <div className="mt-8 space-y-3">
+  return (
+    <FirstRunScreen>
+      <FirstRunRoom
+        room={roomSrc("room-light")}
+        figure={expressionSrc("talk")}
+        figureAlt="Alphonso"
+        top={
+          <Link
+            to="/"
+            aria-label="Back"
+            className="grid size-11 place-items-center rounded-full bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
+          >
+            <span aria-hidden="true" className="text-lg">
+              ←
+            </span>
+          </Link>
+        }
+      />
+      <FirstRunBubble
+        title={
+          mode === "verify"
+            ? "Check your email"
+            : mode === "signup"
+              ? "Create your account"
+              : mode === "forgot"
+                ? "Reset your password"
+                : "Welcome back"
+        }
+        sub={
+          mode === "verify"
+            ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+            : mode === "signup"
+              ? "Save your streak and pick up on any device."
+              : mode === "forgot"
+                ? "Enter your email and we'll send you a link to set a new password."
+                : "Sign in to continue where you left off."
+        }
+      />
+      <div className="px-4 pb-10 pt-4">
+        <div className="space-y-3">
           {mode !== "verify" && (
             <>
               <button
@@ -235,20 +252,13 @@ function AuthPage() {
                 disabled={busy}
                 className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
               >
-                <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                  <path
-                    d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z"
-                    fill="#4285F4"
-                  />
-                </svg>
+                <img src="/brand/google-g.svg" alt="" width={20} height={20} className="size-5" />
                 Continue with Google
               </button>
 
               <div className="relative py-2 text-center">
                 <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-                <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">
-                  or
-                </span>
+                <span className="bg-surface px-3 ds-type-overline text-ds-ink-soft">or</span>
               </div>
             </>
           )}
@@ -352,7 +362,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={busy || (needsCaptcha && !captchaToken)}
-              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
+              className={`w-full ${edgeButtonClass("primary")}`}
             >
               {busy
                 ? "Please wait…"
@@ -371,7 +381,7 @@ function AuthPage() {
               type="button"
               onClick={resendCode}
               disabled={busy}
-              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink disabled:opacity-50"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink disabled:opacity-50"
             >
               Send a new code
             </button>
@@ -385,7 +395,7 @@ function AuthPage() {
                 setError(null);
                 setNotice(null);
               }}
-              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink"
             >
               Forgot your password?
             </button>
@@ -398,7 +408,7 @@ function AuthPage() {
               setError(null);
               setNotice(null);
             }}
-            className="w-full py-2 text-center text-xs text-ink-soft/70 hover:text-ink"
+            className="w-full py-2 text-center text-xs text-ds-ink-soft hover:text-ink"
           >
             {mode === "verify"
               ? "Use a different email"
@@ -409,7 +419,7 @@ function AuthPage() {
                   : "New here? Create an account"}
           </button>
 
-          <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
+          <p className="pt-2 text-center ds-type-caption text-ds-ink-soft">
             By continuing, you agree to the{" "}
             <Link to="/terms" className="underline hover:text-ink">
               Terms of Use
@@ -425,7 +435,7 @@ function AuthPage() {
             .
           </p>
         </div>
-      </main>
-    </div>
+      </div>
+    </FirstRunScreen>
   );
 }

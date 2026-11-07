@@ -9,6 +9,10 @@ appId: com.obsidianmedia.learnwithalphonso
 ---
 - launchApp:
     clearState: false
+    # The demo account is App Review's: skip the one-time covers (Complete your profile, the name prompt) so this
+    # read-only walk never answers or dismisses them for it (RootView, DEBUG only).
+    arguments:
+      UITestSkipOnboarding: true
 # The five-tab bar only exists once signed in.
 - assertVisible: "Learn"
 - assertVisible: "Listen"

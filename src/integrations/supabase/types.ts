@@ -1383,6 +1383,87 @@ export type Database = {
           },
         ];
       };
+      practice_calls: {
+        Row: {
+          course: string;
+          english_replies: number;
+          finished_at: string | null;
+          id: string;
+          item_key: string;
+          kind: string;
+          last_reply_at: string;
+          replies: number;
+          right_replies: number;
+          short_replies: number;
+          stars: number | null;
+          started_at: string;
+          user_id: string;
+        };
+        Insert: {
+          course: string;
+          english_replies?: number;
+          finished_at?: string | null;
+          id: string;
+          item_key: string;
+          kind: string;
+          last_reply_at?: string;
+          replies?: number;
+          right_replies?: number;
+          short_replies?: number;
+          stars?: number | null;
+          started_at?: string;
+          user_id: string;
+        };
+        Update: {
+          course?: string;
+          english_replies?: number;
+          finished_at?: string | null;
+          id?: string;
+          item_key?: string;
+          kind?: string;
+          last_reply_at?: string;
+          replies?: number;
+          right_replies?: number;
+          short_replies?: number;
+          stars?: number | null;
+          started_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      practice_stars: {
+        Row: {
+          best_stars: number;
+          course: string;
+          item_key: string;
+          kind: string;
+          last_played_at: string;
+          plays: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          best_stars: number;
+          course: string;
+          item_key: string;
+          kind: string;
+          last_played_at?: string;
+          plays?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          best_stars?: number;
+          course?: string;
+          item_key?: string;
+          kind?: string;
+          last_played_at?: string;
+          plays?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           ai_consent_at: string | null;
@@ -2387,6 +2468,19 @@ export type Database = {
           status: string;
         }[];
       };
+      finish_practice_call: {
+        Args: {
+          _call_id: string;
+          _replies: number;
+          _stars: number;
+          _user_id: string;
+        };
+        Returns: {
+          best_after: number;
+          best_before: number;
+          call_stars: number;
+        }[];
+      };
       generate_learner_handle: { Args: never; Returns: string };
       get_ai_consent: { Args: never; Returns: string };
       get_buddy_messages: {
@@ -2640,6 +2734,19 @@ export type Database = {
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
         Returns: undefined;
+      };
+      record_practice_reply: {
+        Args: {
+          _call_id: string;
+          _course: string;
+          _english: boolean;
+          _item_key: string;
+          _kind: string;
+          _right: boolean;
+          _short: boolean;
+          _user_id: string;
+        };
+        Returns: number;
       };
       record_signup_attribution: {
         Args: {

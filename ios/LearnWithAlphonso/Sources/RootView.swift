@@ -42,6 +42,8 @@ struct RootView: View {
     @State private var onboarding: OnboardingPresentation?
     @State private var onboardingDone: Set<OnboardingStep> = []
     @State private var nameConfirmed: Bool?
+    /// The first name pinned on the Pro paywall's card; nil for a generated handle.
+    @State private var paywallName: String?
     @State private var placementTaken: Bool?
     /// True once checkOnboarding has finished for the current account (the Learn tab's placement banner waits for it).
     @State private var onboardingChecked = false
@@ -49,6 +51,17 @@ struct RootView: View {
     /// Set when the server says this build is below the lowest one it still supports (AppUpdateGate). Nil (the app
     /// opens normally) unless the owner sets a minimum, and on any failure to ask.
     @State private var updateRequired: AppUpdateGate.Requirement?
+    /// The first run (visual round 6, part 3). Signed out: the questions come first, and the sign-in screen opens
+    /// from their sign-in step, "I already have an account" or Back on the first question.
+    @State private var showSignIn = false
+    /// This device answered Under 13: nothing but the stop screen, and nothing sent (FirstRunDevice).
+    @State private var firstRunBlocked = FirstRunDevice.isBlocked
+    /// Signed in: saving the device's answers, or Complete your profile, then the placement test a first-run
+    /// answer asked for. Shown before the name prompt, which waits its turn (the web's holdNamePrompt).
+    @State private var firstRunCover: FirstRunCover?
+    @State private var firstRunNext: FirstRun.Destination?
+    @State private var firstRunName: String?
+    @State private var selectedTab = RootTab.learn
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -70,7 +83,9 @@ struct RootView: View {
         // Mode instead of fighting it. See AlphonsoTheme.swift's
         // AlphonsoThemeManager.palette doc comment for the actual switch.
         Group {
-            if session.isRestoring {
+            if let screen = Self.harnessScreen {
+                harnessView(screen)
+            } else if session.isRestoring {
                 // Keeps this identical, briefly, to a cold launch that has
                 // no persisted session at all -- see Session.restoreSession's
                 // own doc comment. Avoids flashing AuthView and then
@@ -81,7 +96,7 @@ struct RootView: View {
             } else {
                 switch session.state {
                 case .signedOut, .awaitingCode:
-                    AuthView(session: session)
+                    signedOutView
                 case .signedIn:
                     // Exactly five tabs, deliberately. iPhone renders five and
                     // collapses the rest into a system "More" list, so the
@@ -97,10 +112,11 @@ struct RootView: View {
                     // the TabView: an inset on the TabView is consumed inside
                     // the tab bar's own region and the bar overlaps it (device
                     // check #12). See View.podcastMiniBar.
-                    TabView {
+                    TabView(selection: $selectedTab) {
                         LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, onboardingSettled: onboardingChecked && onboarding == nil, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse, hectorAccess: HectorAccess(entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore))
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
+                            .tag(RootTab.learn)
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))
                         ListenView(
                             session: session,
@@ -111,15 +127,21 @@ struct RootView: View {
                         )
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Listen", systemImage: "headphones") }
+                            .tag(RootTab.listen)
                         ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore, entitlementStore: entitlementStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
+                            .tag(RootTab.practice)
                         HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Hector", systemImage: "sparkles") }
-                        ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+                            .tag(RootTab.hector)
+                        ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler,
+                                       entitlementStore: entitlementStore, activeCourse: activeCourse, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore,
+                                       onEditAnswers: { firstRunCover = .complete(edit: true) })
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
+                            .tag(RootTab.profile)
                     }
                     // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
                     // for selected tab items, parchment tab-bar background instead
@@ -127,6 +149,9 @@ struct RootView: View {
                     .tint(AlphonsoColor.moss)
                     .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                     .toolbarBackground(.visible, for: .tabBar)
+                    .fullScreenCover(item: $firstRunCover, onDismiss: firstRunDismissed) { cover in
+                        firstRunCoverView(cover)
+                    }
                     .fullScreenCover(item: $onboarding, onDismiss: advanceOnboarding) { presentation in
                         switch presentation {
                         case .displayName(let nameOnboarding):
@@ -175,6 +200,9 @@ struct RootView: View {
                             await uploadDeviceToken(token)
                         }
                         await session.checkAppleCredential()
+                        // The first run's answers (or Complete your profile) come first; the name prompt and placement
+                        // follow when that cover closes (firstRunDismissed).
+                        if await checkFirstRun() { return }
                         let onboardingUser = session.userID
                         await checkOnboarding()
                         if session.userID == onboardingUser { onboardingChecked = true }
@@ -233,12 +261,20 @@ struct RootView: View {
             if let updateRequired { UpdateRequiredView(requirement: updateRequired) }
         }
         .task {
+            // An under-13 device asks nothing of the server, not even the update check.
+            guard !FirstRunDevice.isBlocked else { return }
             updateRequired = await AppUpdateGate.check(
                 baseURL: AppConfig.apiBaseURL,
                 currentBuild: AppUpdateGate.build(
                     fromBundleVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String))
         }
         .task {
+            // An under-13 device restores no session (that would refresh it with the auth server): it stays signed
+            // out on the stop screen, and any stored session is dropped locally.
+            if FirstRunDevice.isBlocked {
+                session.dropStoredSessionLocally()
+                return
+            }
             await session.restoreSession()
             // No stored session: RevenueCat must not keep a previous account's identity.
             if session.userID == nil {
@@ -258,6 +294,11 @@ struct RootView: View {
             placementTaken = nil
             nameOnboarding = nil
             onboardingChecked = false
+            firstRunCover = nil
+            firstRunNext = nil
+            firstRunName = nil
+            showSignIn = false
+            selectedTab = .learn
         }
         .onChange(of: session.userID, initial: true) {
             activeCourse.accountChanged(to: session.userID)
@@ -274,6 +315,7 @@ struct RootView: View {
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
         // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
         .alphonsoDesignSystem()
+        .environment(\.paywallLearner, PaywallLearner(course: activeCourse.course, name: paywallName))
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
             PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
@@ -290,6 +332,21 @@ struct RootView: View {
                 .allowsHitTesting(false)
             }
         }
+        #endif
+    }
+
+    /// DEBUG only: one first-run screen with a made-up learner, for screenshots (FirstRunHarness). Nil in Release.
+    private static var harnessScreen: String? {
+        #if DEBUG
+        return FirstRunHarness.screen
+        #else
+        return nil
+        #endif
+    }
+
+    @ViewBuilder private func harnessView(_ screen: String) -> some View {
+        #if DEBUG
+        FirstRunHarnessView(screen: screen, session: session, entitlementStore: entitlementStore, contentStore: contentStore)
         #endif
     }
 
@@ -315,6 +372,126 @@ struct RootView: View {
     /// this method re-arms the gate and re-reads on return to the foreground.
     private func updateRealSystemColorScheme() {
         appearanceObserver.applyCurrent(rearm: true)
+    }
+
+    // MARK: - First run
+
+    /// Signed out: the stop screen on an under-13 device; the sign-in screen when asked for (or while a code is
+    /// awaited); otherwise the first run.
+    @ViewBuilder private var signedOutView: some View {
+        if firstRunBlocked {
+            Under13StopView()
+        } else if showSignIn || session.state != .signedOut {
+            AuthView(session: session)
+                .overlay(alignment: .topLeading) {
+                    if session.state == .signedOut {
+                        Button {
+                            showSignIn = false
+                        } label: {
+                            Image(systemName: "chevron.left").fontWeight(.semibold)
+                                .frame(width: 44, height: 44)
+                        }
+                        .tint(AlphonsoColor.moss)
+                        .accessibilityLabel("Back to the questions")
+                        .padding(.leading, AlphonsoSpacing.sm)
+                    }
+                }
+        } else {
+            FirstRunFlowView(
+                mode: .new, store: FirstRunDevice.store, contentStore: contentStore,
+                onExit: { showSignIn = true },
+                onBlocked: blockThisDevice,
+                onUnder13Ok: {},
+                session: session,
+                onEmail: { showSignIn = true },
+                onHaveAccount: { showSignIn = true })
+        }
+    }
+
+    /// Under 13 was chosen: from here on nothing is sent from this device. Crash reporting stops now (it may already
+    /// be running), and the rest checks FirstRunDevice.isBlocked before it would send.
+    private func blockThisDevice() {
+        CrashReporting.stop()
+        firstRunBlocked = true
+    }
+
+    /// Picks the first-run cover for this account, if any. True when one is showing.
+    private func checkFirstRun() async -> Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") { return false }
+        #endif
+        let checkedUser = session.userID
+        if let answers = FirstRun.answersToSend(FirstRunDevice.store) {
+            firstRunName = answers.name
+            firstRunCover = .hello(answers)
+            return true
+        }
+        guard !CompleteProfileSkip.skippedThisLaunch,
+              let profile = try? await learnerProfileClient(session)?.fetch(),
+              session.userID == checkedUser, profile.needsCompleteProfile else { return false }
+        firstRunCover = .complete(edit: false)
+        return true
+    }
+
+    @ViewBuilder private func firstRunCoverView(_ cover: FirstRunCover) -> some View {
+        switch cover {
+        case .hello(let answers):
+            FirstRunHelloView(
+                session: session, entitlementStore: entitlementStore, answers: answers, store: FirstRunDevice.store,
+                onFinish: { destination in
+                    if let course = answers.course.flatMap(Course.init(wireCode:)) { activeCourse.course = course }
+                    finishFirstRun(destination)
+                },
+                placementTaken: { await placementTaken(for: answers.course ?? "en") })
+        case .complete(let edit):
+            CompleteProfileView(
+                session: session, entitlementStore: entitlementStore, contentStore: contentStore,
+                course: activeCourse.course, edit: edit, store: FirstRunDevice.store,
+                onFinish: { finishFirstRun($0) },
+                onBlocked: blockThisDevice,
+                onUnder13Ok: {
+                    firstRunCover = nil
+                    session.signOutBlockedDevice()
+                },
+                placementTaken: { await placementTaken(for: activeCourse.course.wireCode) })
+        case .placement(let course):
+            PlacementView(contentStore: contentStore, session: session, course: course) {
+                firstRunCover = nil
+            }
+        }
+    }
+
+    private func finishFirstRun(_ destination: FirstRun.Destination?) {
+        firstRunNext = destination
+        firstRunCover = nil
+    }
+
+    /// The cover closed: the placement test the answers asked for, Hector, or straight on; then the name prompt.
+    private func firstRunDismissed() {
+        if FirstRunDevice.isBlocked { return }
+        let next = firstRunNext
+        firstRunNext = nil
+        switch next {
+        case .placement?:
+            firstRunCover = .placement(activeCourse.course)
+            return
+        case .hector?:
+            selectedTab = .hector
+        default:
+            break
+        }
+        guard session.userID != nil, !onboardingChecked else { return }
+        Task {
+            let onboardingUser = session.userID
+            await checkOnboarding()
+            if session.userID == onboardingUser { onboardingChecked = true }
+        }
+    }
+
+    private func placementTaken(for course: String) async -> Bool {
+        guard let token = await session.freshAccessToken() else { return true }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
+        return ((try? await client.fetchPlacementTakenAt(course: course)) ?? nil) != nil
     }
 
     /// Drains the offline sync queue (docs/v2-kickoffs/01-offline-first.md)
@@ -346,6 +523,7 @@ struct RootView: View {
         onboarding = nil
         onboardingDone = []
         nameConfirmed = nil
+        paywallName = nil
         placementTaken = nil
         nameOnboarding = nil
         guard let accessToken = session.accessToken else { return }
@@ -359,13 +537,14 @@ struct RootView: View {
                     let names = await session.fetchUserNames()
                     guard session.userID == checkedUser else { return }
                     let prefill = DisplayNameOnboarding.prefill(
-                        appleGivenName: session.appleGivenNameForCurrentUser,
+                        appleGivenName: session.appleGivenNameForCurrentUser ?? firstRunName,
                         names: names,
                         currentName: status.displayName
                     )
                     nameOnboarding = DisplayNameOnboarding(prefill: prefill, currentName: status.displayName)
                 }
                 nameConfirmed = !status.needsPrompt
+                paywallName = status.nameConfirmed ? ProPaywallContent.cardFirstName(status.displayName) : nil
             }
         } catch {
             // Deliberately silent: no prompt this launch, never a blocked app.
@@ -434,5 +613,22 @@ struct RootView: View {
         guard let accessToken = session.accessToken else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         try? await client.registerDeviceToken(token)
+    }
+}
+
+enum RootTab: Hashable { case learn, listen, practice, hector, profile }
+
+/// What the first-run cover shows for a signed-in learner.
+enum FirstRunCover: Identifiable {
+    case hello(LearnerAnswers)
+    case complete(edit: Bool)
+    case placement(Course)
+
+    var id: String {
+        switch self {
+        case .hello: return "hello"
+        case .complete(let edit): return edit ? "edit" : "complete"
+        case .placement: return "placement"
+        }
     }
 }

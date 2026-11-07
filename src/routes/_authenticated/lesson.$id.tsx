@@ -21,9 +21,10 @@ import {
 } from "../../components/lesson/LessonParts";
 import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
-import { XP_PER_RIGHT_ANSWER, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
+import { answerXpChip, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
 import { ActiveTimer, estimateLessonMinutes, formatElapsed } from "../../lib/lesson-time";
 import { correctAnswerText, verdictTitle } from "../../lib/answer-verdict";
+import { finishCues, playSfx, playSfxCues, SFX_DURATION_MS } from "../../lib/sfx";
 import { deckButtonTitle } from "../../lib/vocab-deck";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
@@ -303,6 +304,8 @@ function LessonPage() {
       // No AI consent: the curated answer list is the whole verdict, and nothing is sent anywhere.
       setTranslationVerdict({ correct: false, reason: null, source: "local" });
     } else if (!isCorrect && q.type === "translate") {
+      // The grader takes a moment: the tap says the press landed.
+      playSfx("tap");
       setChecking(true);
       const verdict = await requestTranslationVerdict(
         {
@@ -324,6 +327,21 @@ function LessonPage() {
       setTranslationVerdict({ correct: true, reason: null, source: "local" });
     }
     setChecked(true);
+    // The verdict's sound (a lost heart follows the wrong-answer sound rather than over it). The heart sound plays only
+    // when the header really shows one fewer: never for Pro, a reinforcement round, or with no hearts left to lose.
+    const losesHeart =
+      !isCorrect && !isReinforcing && proStatus.state !== "pro" && state.hearts > 0;
+    if (isCorrect) playSfx("right");
+    else
+      playSfxCues(
+        losesHeart
+          ? [
+              { event: "wrong", atMs: 0 },
+              { event: "heartLost", atMs: SFX_DURATION_MS.wrong },
+            ]
+          : [{ event: "wrong", atMs: 0 }],
+        `verdict:${attemptSeed}:${idx}:${isReinforcing ? "r" : "q"}`,
+      );
     // Reinforcement rounds are supplementary practice only -- they never
     // touch correct/missed/hearts/XP, regardless of outcome.
     if (isReinforcing) return;
@@ -357,6 +375,7 @@ function LessonPage() {
   }
 
   async function next() {
+    playSfx("tap");
     if (pendingReinforcement) {
       setActiveReinforcement(pendingReinforcement);
       setPendingReinforcement(null);
@@ -412,7 +431,11 @@ function LessonPage() {
         activityDates,
         answersByLesson: {
           ...state.answersByLesson,
-          [lesson.id]: { correct, total },
+          // The best score is kept (as the server keeps it), so the next replay's XP chips start from it.
+          [lesson.id]: {
+            correct: Math.max(state.answersByLesson[lesson.id]?.correct ?? 0, correct),
+            total,
+          },
         },
         unlockedAchievements: [
           ...state.unlockedAchievements,
@@ -443,6 +466,13 @@ function LessonPage() {
     q.type === "translate" && translationVerdict
       ? translationVerdict.correct
       : deriveAnswerCorrectness(q, submittedAnswer ?? "", course);
+
+  // The learner's best earlier score on this lesson (the server's lesson_completions row), or null on a first try.
+  const previousBest = state.answersByLesson[lesson.id]?.correct ?? null;
+  const xpChipLabel = (rightSoFar: number) => {
+    const xp = answerXpChip({ rightSoFar, previousBest });
+    return xp === null ? null : `+${xp} XP`;
+  };
 
   const close = () => navigate({ to: "/learn" });
   const hud = (progress: number, onLight = false, valueText?: string) => (
@@ -696,8 +726,9 @@ function LessonPage() {
           <VerdictSheet
             correct={answered}
             title={answered ? "Exactly!" : verdictTitle(false)}
-            // The per-answer part of the server's XP formula; reinforcement rounds earn nothing.
-            xp={answered && !isReinforcing ? `+${XP_PER_RIGHT_ANSWER} XP` : null}
+            // The per-answer part of the server's XP formula; reinforcement rounds earn nothing, and a replay shows XP
+            // only once the learner is past their best earlier score (a replay pays only the improvement).
+            xp={answered && !isReinforcing ? xpChipLabel(correct) : null}
             correctAnswer={correctAnswerText(q)}
             onHearAnswer={hearAnswer}
             explanation={
@@ -1060,6 +1091,15 @@ export function FinishScreen({
   const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
   // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
   const [amazed, setAmazed] = useState(!reduceMotion);
+  // The jingle with the confetti, then XP and any achievement as their tiles land. Keyed per screen, so a re-render
+  // (or React's development double effect) never plays them twice. Sound plays under Reduce Motion too.
+  const [cueKey] = useState(() => `finish:${lessonId}:${Date.now()}:${Math.random()}`);
+  const cueXp = saved ? xp : 0;
+  const cueUnlocked = unlocked.length;
+  useEffect(
+    () => playSfxCues(finishCues({ xp: cueXp, unlocked: cueUnlocked }), cueKey),
+    [cueKey, cueXp, cueUnlocked],
+  );
   useEffect(() => {
     if (reduceMotion) return;
     const t = window.setTimeout(() => setAmazed(false), 1400);

@@ -210,6 +210,15 @@ class SessionManager(
     fun signOut() = endSession(endOnServer = true)
 
     /**
+     * Signs out on this device only, with no call to the auth server, and ends the launch restore. For a device that
+     * answered Under 13 in the first run: nothing is sent from it again, not even the logout.
+     */
+    fun endLocally() {
+        endSession(endOnServer = false)
+        _isRestoring.value = false
+    }
+
+    /**
      * Local sign-out is immediate. Then, best effort, this device's session is ended on the auth server with the ending
      * access token (captured first), so a copied refresh token stops working. Not when the server already rejected the
      * refresh token: that session is gone.

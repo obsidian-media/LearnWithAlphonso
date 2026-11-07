@@ -40,6 +40,8 @@ class SaveWordSourceGuardsTest {
             mapOf(
                 "components/AlphonsoComponents.kt" to listOf("saveMode", "saveMode"),
                 "hector/HectorScreen.kt" to listOf("SaveWordMode.AllWords"),
+                // The lesson's verdict sheet (round 6): the explanation's mode from SavedWordPolicy, as the card's.
+                "lesson/QuestionCard.kt" to listOf("mode"),
                 "listen/ListenScreen.kt" to listOf("SaveWordMode.AllWords"),
                 "practice/PracticeScreens.kt" to listOf("SaveWordMode.AllWords"),
             ),

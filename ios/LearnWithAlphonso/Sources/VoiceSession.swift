@@ -113,6 +113,46 @@ final class VoiceSessionController {
 
     func pressEnded() { send(.pressEnded) }
 
+    /// Claims the session for the scene's opening line (OpenerPlayback.speak). Returns the generation to play it
+    /// under with `play(_:generation:)`, or nil when a recording or turn is in progress or the screen is hidden.
+    func beginOpener() -> Int? {
+        guard state.canStartPress else { return nil }
+        send(.openerRequested)
+        return state.generation
+    }
+
+    /// Says a scene's opening line out loud in Alphonso's chosen voice for the course, through the same player as a
+    /// reply (so his lips move with it). Practice and Campaigns call it when the call opens and when a new scene or
+    /// conversation starts; `opener` is `ConversationSnapshot.pendingOpener`, nil once the learner has answered.
+    /// Static openers are cached (OpenerSpeechCache), so returning to the call does not fetch or charge again.
+    /// Hector's greeting (HectorView) passes `speaker: .hector`: his own chosen voice, never Alphonso's.
+    func speakOpener(_ opener: String?, session: Session, course: Course, speaker: VoiceCharacter = .alphonso) async {
+        let courseCode = course.wireCode
+        let voiceID = VoicePrefsCache().voice(speaker, course: courseCode)
+        await OpenerPlayback.speak(
+            opener,
+            begin: { beginOpener() },
+            audio: { text in
+                let speech = try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
+                    guard let accessToken = await session.freshAccessToken() else {
+                        throw URLError(.userAuthenticationRequired)
+                    }
+                    let client = AIConversationClient(
+                        baseURL: AppConfig.apiBaseURL,
+                        accessToken: { accessToken },
+                        refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+                    return try await client.synthesizeSpeech(
+                        text: text, voice: voiceID, course: courseCode, character: speaker)
+                }
+                // The call-start sound finishes before his first words.
+                let wait = await SoundEffectsPlayer.shared.callCueRemaining()
+                if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
+                return speech
+            },
+            play: { audio, generation in play(audio, generation: generation) },
+            withoutAudio: { generation in replyWithoutAudio(generation) })
+    }
+
     func isCurrent(_ generation: Int) -> Bool { state.accepts(generation: generation) }
 
     /// Where the reply audio is, for the talking avatar's lips. nil unless a reply is playing right now.
@@ -155,6 +195,7 @@ final class VoiceSessionController {
     /// nonisolated: passed as VoiceRecorder.start's synchronous `configureSession`
     /// closure, which is not main-actor typed.
     nonisolated static func configureForVoice() throws {
+        VoiceSessionHold.set(true) // before the category: sound effects must never switch it away mid-turn
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: categoryOptions)
         try session.setActive(true)
@@ -196,6 +237,7 @@ final class VoiceSessionController {
 
     private func deactivateSession() {
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        VoiceSessionHold.set(false)
     }
 
     /// Feeds the recorder's level to hands-free ten times a second while it is on and recording.
@@ -252,6 +294,7 @@ final class VoiceSessionController {
             // Hands the session back; .notifyOthersOnDeactivation lets other
             // apps' audio resume. PodcastAudioPlayer is never auto-resumed.
             try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+            VoiceSessionHold.set(false)
         }
     }
 

@@ -19,9 +19,12 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
 import { Route as AuthenticatedHectorRouteImport } from './routes/_authenticated/hector'
+import { Route as AuthenticatedHelloRouteImport } from './routes/_authenticated/hello'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
@@ -41,7 +44,9 @@ import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
+import { Route as ApiLearnerProfileRouteImport } from './routes/api/learner-profile'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
+import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
@@ -107,6 +112,17 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCompleteProfileRoute =
+  AuthenticatedCompleteProfileRouteImport.update({
+    id: '/complete-profile',
+    path: '/complete-profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConverseRoute = AuthenticatedConverseRouteImport.update({
   id: '/converse',
   path: '/converse',
@@ -120,6 +136,11 @@ const AuthenticatedDuelsRoute = AuthenticatedDuelsRouteImport.update({
 const AuthenticatedHectorRoute = AuthenticatedHectorRouteImport.update({
   id: '/hector',
   path: '/hector',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHelloRoute = AuthenticatedHelloRouteImport.update({
+  id: '/hello',
+  path: '/hello',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
@@ -217,9 +238,19 @@ const ApiHectorRespondRoute = ApiHectorRespondRouteImport.update({
   path: '/api/hector-respond',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearnerProfileRoute = ApiLearnerProfileRouteImport.update({
+  id: '/api/learner-profile',
+  path: '/api/learner-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   id: '/api/learning-goal',
   path: '/api/learning-goal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPracticeRoute = ApiPracticeRouteImport.update({
+  id: '/api/practice',
+  path: '/api/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
@@ -313,9 +344,12 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
+  '/hello': typeof AuthenticatedHelloRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -335,7 +369,9 @@ export interface FileRoutesByFullPath {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -362,9 +398,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
+  '/hello': typeof AuthenticatedHelloRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -384,7 +423,9 @@ export interface FileRoutesByTo {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -413,9 +454,12 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
+  '/_authenticated/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
   '/_authenticated/hector': typeof AuthenticatedHectorRoute
+  '/_authenticated/hello': typeof AuthenticatedHelloRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
@@ -435,7 +479,9 @@ export interface FileRoutesById {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -464,9 +510,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/complete-profile'
     | '/converse'
     | '/duels'
     | '/hector'
+    | '/hello'
     | '/league'
     | '/learn'
     | '/listen'
@@ -486,7 +535,9 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -513,9 +564,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/complete-profile'
     | '/converse'
     | '/duels'
     | '/hector'
+    | '/hello'
     | '/league'
     | '/learn'
     | '/listen'
@@ -535,7 +589,9 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -563,9 +619,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/support'
     | '/terms'
+    | '/welcome'
+    | '/_authenticated/complete-profile'
     | '/_authenticated/converse'
     | '/_authenticated/duels'
     | '/_authenticated/hector'
+    | '/_authenticated/hello'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
@@ -585,7 +644,9 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -614,6 +675,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  WelcomeRoute: typeof WelcomeRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
@@ -624,7 +686,9 @@ export interface RootRouteChildren {
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
+  ApiLearnerProfileRoute: typeof ApiLearnerProfileRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
+  ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
@@ -707,6 +771,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/complete-profile': {
+      id: '/_authenticated/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/complete-profile'
+      preLoaderRoute: typeof AuthenticatedCompleteProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/converse': {
       id: '/_authenticated/converse'
       path: '/converse'
@@ -726,6 +804,13 @@ declare module '@tanstack/react-router' {
       path: '/hector'
       fullPath: '/hector'
       preLoaderRoute: typeof AuthenticatedHectorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hello': {
+      id: '/_authenticated/hello'
+      path: '/hello'
+      fullPath: '/hello'
+      preLoaderRoute: typeof AuthenticatedHelloRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/league': {
@@ -861,11 +946,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHectorRespondRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learner-profile': {
+      id: '/api/learner-profile'
+      path: '/api/learner-profile'
+      fullPath: '/api/learner-profile'
+      preLoaderRoute: typeof ApiLearnerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/learning-goal': {
       id: '/api/learning-goal'
       path: '/api/learning-goal'
       fullPath: '/api/learning-goal'
       preLoaderRoute: typeof ApiLearningGoalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/practice': {
+      id: '/api/practice'
+      path: '/api/practice'
+      fullPath: '/api/practice'
+      preLoaderRoute: typeof ApiPracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pro-offering': {
@@ -988,9 +1087,11 @@ const AuthenticatedListenRouteWithChildren =
   AuthenticatedListenRoute._addFileChildren(AuthenticatedListenRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
   AuthenticatedHectorRoute: typeof AuthenticatedHectorRoute
+  AuthenticatedHelloRoute: typeof AuthenticatedHelloRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
@@ -1009,9 +1110,11 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompleteProfileRoute: AuthenticatedCompleteProfileRoute,
   AuthenticatedConverseRoute: AuthenticatedConverseRoute,
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
   AuthenticatedHectorRoute: AuthenticatedHectorRoute,
+  AuthenticatedHelloRoute: AuthenticatedHelloRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
@@ -1043,6 +1146,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  WelcomeRoute: WelcomeRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
@@ -1053,7 +1157,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
+  ApiLearnerProfileRoute: ApiLearnerProfileRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
+  ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
@@ -1066,13 +1172,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

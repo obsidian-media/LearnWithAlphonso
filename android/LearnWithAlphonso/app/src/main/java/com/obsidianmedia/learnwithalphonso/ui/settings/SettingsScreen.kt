@@ -1,5 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.AvatarPickerDialog
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.ProfileAvatar
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonLightScope
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -68,6 +71,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     var showDelete by remember { mutableStateOf(false) }
     var confirmText by remember { mutableStateOf("") }
+    var pickingAvatar by remember { mutableStateOf(false) }
 
     val saveExport = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         val bytes = exportBytes
@@ -83,10 +87,10 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             Text("Settings", style = MaterialTheme.typography.titleMedium, color = palette.ink)
         }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Section("Profile", footer = "Your name and avatar color are visible to other learners on leaderboards, friends, and duels.") {
+            Section("Profile", footer = "Your name and picture are visible to other learners on leaderboards, friends, and duels.") {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    AvatarCircle(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, 40.dp)
-                    AlphonsoSecondaryButton("Shuffle", onClick = identityVm::shuffleAvatar, busy = identity.shuffling, fullWidth = false)
+                    ProfileAvatar(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, 40.dp)
+                    AlphonsoSecondaryButton("Change picture", onClick = { pickingAvatar = true }, fullWidth = false)
                 }
                 OutlinedTextField(value = identity.displayName, onValueChange = identityVm::editName, label = { Text("Display name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 RowButton("Save Name", enabled = !identity.saving && identity.displayName.isNotBlank()) { identityVm.saveName() }
@@ -94,6 +98,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             }
             AiFeaturesSection(container)
             AvatarSection(container)
+            SoundEffectsSection(container)
             VoicesSection(container)
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->
@@ -133,6 +138,12 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             Section("Session") {
                 RowButton("Sign out", destructive = true) { container.pushRegistrar.onSignOut(); container.session.signOut() }
             }
+        }
+    }
+
+    if (pickingAvatar) {
+        LessonLightScope(theme, container.themeManager.palette.collectAsState().value) {
+            AvatarPickerDialog(container, identity.displayName, identity.avatarSeed.ifEmpty { "a" }, onClose = { pickingAvatar = false }, onSaved = identityVm::avatarSaved)
         }
     }
 

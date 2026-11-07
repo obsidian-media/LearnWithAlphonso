@@ -9,6 +9,7 @@ import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
+import { recordPracticeReply } from "@/lib/practice-calls.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -89,6 +90,8 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     systemPrompt?: string;
     cefrLevel?: string;
     course?: string;
+    /** Practice stars: the call this reply belongs to (a uuid the client made when the call started). Optional. */
+    callId?: string;
   };
   try {
     body = await request.json();
@@ -176,7 +179,20 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   });
   // `verdict` is an extra field: shipped iOS and Android builds read `content` only and ignore it. A reply the
   // filter replaced says nothing about the learner's answer.
-  return Response.json({ content: safe.text, verdict: safe.blocked ? "none" : verdict });
+  const replyVerdict = safe.blocked ? "none" : verdict;
+  // Practice stars: the judged reply is recorded against the call, here on the server, so a call's stars come from
+  // verdicts no client wrote. Only a learner's turn counts; a call with no id (older clients) records nothing.
+  const last = messages[messages.length - 1];
+  if (last?.role === "user") {
+    await recordPracticeReply(supabaseAdmin, {
+      userId: access.userId,
+      callId: body.callId,
+      systemPrompt: body.systemPrompt,
+      learnerText: last.content,
+      verdict: replyVerdict,
+    });
+  }
+  return Response.json({ content: safe.text, verdict: replyVerdict });
 }
 
 export const Route = createFileRoute("/api/chat")({

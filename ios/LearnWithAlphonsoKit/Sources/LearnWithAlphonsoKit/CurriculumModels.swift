@@ -226,6 +226,7 @@ public struct ContentBundle: Decodable, Sendable {
 /// /api/chat; `opener` is shown as the assistant's first message without a
 /// round trip, matching the web app's converse.$scenarioId.tsx.
 public struct Scenario: Decodable, Identifiable, Sendable {
+    public let persona: String?
     public let id: String
     public let title: String
     public let emoji: String
@@ -243,6 +244,7 @@ public struct Scenario: Decodable, Identifiable, Sendable {
 /// -- not a fixed cutoff, not an AI self-reported "done" signal -- is the
 /// scene-completion gate).
 public struct CampaignScene: Decodable, Identifiable, Sendable {
+    public let persona: String?
     public let id: String
     public let title: String
     public let systemPrompt: String

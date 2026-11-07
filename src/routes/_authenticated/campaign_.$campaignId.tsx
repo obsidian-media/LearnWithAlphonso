@@ -1,5 +1,5 @@
 import { postChat } from "../../lib/chat-request";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -27,9 +27,21 @@ import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
+import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
+import { waitForCallCue } from "@/lib/sfx";
+import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
+import { PracticeResult } from "@/components/practice/PracticeResult";
+import { sceneRoom } from "@/lib/practice-catalog";
+import { campaignSearch, firstSlip, type CampaignSearch } from "@/lib/practice-session";
+
+/** No campaign has anywhere near this many scenes; the page clamps ?scene to its own campaign. */
+const MAX_SCENE_PARAM = 50;
 
 export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   component: CampaignChatPageWithSave,
+  // ?scene=N (where "Continue" resumes) and ?mode=call|chat, both from the Practice hub's pre-call sheet.
+  validateSearch: (search: Record<string, unknown>): CampaignSearch =>
+    campaignSearch(search, MAX_SCENE_PARAM),
   loader: ({ params }) => {
     const campaign = getCampaign(params.campaignId);
     if (!campaign) throw notFound();
@@ -58,12 +70,19 @@ function CampaignChatPageWithSave() {
   const { campaign: raw } = Route.useLoaderData();
   const course = useProgress((s) => s.course);
   const campaign = useMemo(() => localizeCampaign(raw, course), [raw, course]);
+  const search = Route.useSearch();
   return (
     <SaveWordProvider>
       {/* Keyed by course: a course switch restarts the campaign in the new
           language rather than mixing two in one transcript. */}
       <AiConsentGate backTo="/converse">
-        <CampaignChatPage key={`${raw.id}:${course}`} campaign={campaign} course={course} />
+        <CampaignChatPage
+          key={`${raw.id}:${course}`}
+          campaign={campaign}
+          course={course}
+          startScene={Math.min(search.scene ?? 0, campaign.scenes.length - 1)}
+          mode={search.mode}
+        />
       </AiConsentGate>
     </SaveWordProvider>
   );
@@ -82,17 +101,41 @@ type Msg = {
   confidence?: number | null;
   /** A scene's fixed opening line: written by us, not the model, so there is nothing to report. */
   opener?: boolean;
+  /** The reply verdict on the learner turn before this reply (assistant replies only). */
+  verdict?: ReturnType<typeof parseVerdict>;
 };
 
-function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; course: Course }) {
+function CampaignChatPage({
+  campaign,
+  course,
+  startScene,
+  mode,
+}: {
+  campaign: LocalizedCampaign;
+  course: Course;
+  /** The scene to begin at ("Continue" resumes a campaign mid-way). */
+  startScene: number;
+  mode: CampaignSearch["mode"];
+}) {
   const consent = useAiConsent();
-  const firstScene = campaign.scenes[0];
+  const navigate = useNavigate();
+  const firstScene = campaign.scenes[startScene];
+  // Practice stars: each scene is its own call with its own id; /api/chat records each judged reply against it and
+  // finishing the scene asks the server to score it. A restarted scene starts a new call.
+  const [callId, setCallId] = useState(newCallId);
+  const [sceneStartedAt, setSceneStartedAt] = useState(() => Date.now());
+  const [ending, setEnding] = useState(false);
+  const [result, setResult] = useState<{
+    result: Result;
+    seconds: number;
+    fromHangUp: boolean;
+  } | null>(null);
 
   // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
   // campaigns-design.md): client-side, in-memory only -- matches the
   // existing single-scenario chat's own "zero persistence" baseline
   // rather than inventing new resume behavior for campaigns alone.
-  const [sceneIndex, setSceneIndex] = useState(0);
+  const [sceneIndex, setSceneIndex] = useState(startScene);
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: firstScene.opener, opener: true },
   ]);
@@ -165,22 +208,31 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   }, [messages, sending, finished]);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, opts?: { opener?: boolean }) => {
       if (!ttsOn) return;
       setSpoken(text);
       setVoice("loading");
       try {
-        const resp = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
-          body: JSON.stringify({ text, course, voice: await voiceFor("alphonso", course) }),
-        });
-        if (!resp.ok) {
+        // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
+        const voiceId = await voiceFor("alphonso", course);
+        const fetchBlob = async () => {
+          const resp = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+            body: JSON.stringify({ text, course, voice: voiceId }),
+          });
+          return resp.ok ? await resp.blob() : null;
+        };
+        // An opener is static text: returning to the call replays it instead of fetching (and charging) again.
+        const blob = opts?.opener
+          ? await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), fetchBlob)
+          : await fetchBlob();
+        if (!blob) {
           setVoice("idle");
           return;
         }
-        const blob = await resp.blob();
+        // The call-start sound finishes before his first words.
+        if (opts?.opener) await waitForCallCue();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
@@ -213,8 +265,11 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   const openerSpokenRef = useRef(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
-    openerSpokenRef.current = true;
-    const t = setTimeout(() => void speak(firstScene.opener), 400);
+    const t = setTimeout(() => {
+      // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
+      openerSpokenRef.current = true;
+      void speak(firstScene.opener, { opener: true });
+    }, 400);
     return () => clearTimeout(t);
   }, [firstScene.opener, speak]);
 
@@ -234,6 +289,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
             cefrLevel,
             course,
             messages: next.map(({ role, content }) => ({ role, content })),
+            callId,
           },
           await authHeaders(),
         );
@@ -258,9 +314,10 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         }
         const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
-        setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        const verdict = parseVerdict(data.verdict);
+        setMessages((m) => [...m, { role: "assistant", content: reply, verdict }]);
         // An older server sends no verdict, which reads as "none".
-        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict: parseVerdict(data.verdict) }));
+        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict }));
         void speak(reply);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -268,10 +325,28 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         setSending(false);
       }
     },
-    [messages, scene, systemPromptForScene, cefrLevel, course, sending, finished, speak, consent],
+    [
+      messages,
+      scene,
+      systemPromptForScene,
+      cefrLevel,
+      course,
+      callId,
+      sending,
+      finished,
+      speak,
+      consent,
+    ],
   );
 
-  const continueToNextScene = useCallback(() => {
+  /** A new call for the scene being entered (or entered again). */
+  const freshCall = useCallback(() => {
+    setCallId(newCallId());
+    setSceneStartedAt(Date.now());
+    setEnding(false);
+  }, []);
+
+  const advanceScene = useCallback(() => {
     if (isLastScene) {
       setFinished(true);
       return;
@@ -284,13 +359,43 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     });
     setSceneIndex((i) => i + 1);
     setError(null);
-    void speak(nextScene.opener);
-  }, [campaign.scenes, isLastScene, sceneIndex, speak]);
+    freshCall();
+    void speak(nextScene.opener, { opener: true });
+  }, [campaign.scenes, isLastScene, sceneIndex, speak, freshCall]);
+
+  /**
+   * Ends this scene's call: the server scores it and the result screen shows its stars. Without a scored result
+   * (no judged reply, or offline) a "Continue" simply moves on, and a hang-up leaves for Practice.
+   */
+  const finishScene = useCallback(
+    async (fromHangUp: boolean) => {
+      if (ending) return;
+      audioRef.current?.pause();
+      setEnding(true);
+      const scored = userTurnsInScene > 0 ? await finishPracticeCall(callId) : null;
+      if (scored) {
+        setResult({
+          result: scored,
+          seconds: Math.round((Date.now() - sceneStartedAt) / 1000),
+          fromHangUp,
+        });
+        return;
+      }
+      setEnding(false);
+      if (fromHangUp) void navigate({ to: "/converse" });
+      else advanceScene();
+    },
+    [ending, userTurnsInScene, callId, sceneStartedAt, navigate, advanceScene],
+  );
+  const continueToNextScene = useCallback(() => void finishScene(false), [finishScene]);
 
   const restartScene = useCallback(() => {
     setMessages((m) => m.slice(0, sceneAnchor + 1));
     setError(null);
-  }, [sceneAnchor]);
+    freshCall();
+    // The scene starts over, so Alphonso says its opener again (from the cache: no second /api/tts charge).
+    void speak(scene.opener, { opener: true });
+  }, [sceneAnchor, scene.opener, speak, freshCall]);
 
   const startRecording = useCallback(async () => {
     setError(null);
@@ -660,7 +765,38 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     </header>
   );
 
-  if (showAlphonso) {
+  if (result) {
+    const r = result.result;
+    const canGoOn = r.stars >= 1 || !result.fromHangUp;
+    return (
+      <LessonFrame>
+        <PracticeResult
+          result={r}
+          course={course}
+          room={sceneRoom(campaign.id, scene.id)}
+          seconds={result.seconds}
+          slip={firstSlip(messages, sceneAnchor)}
+          onRetry={() => {
+            setResult(null);
+            restartScene();
+          }}
+          next={
+            canGoOn
+              ? {
+                  label: isLastScene ? "Finish campaign" : "Next scene",
+                  onClick: () => {
+                    setResult(null);
+                    advanceScene();
+                  },
+                }
+              : { label: "Done", onClick: () => void navigate({ to: "/converse" }) }
+          }
+        />
+      </LessonFrame>
+    );
+  }
+
+  if (mode ? mode === "call" : showAlphonso) {
     const last = messages[messages.length - 1];
     const caption =
       recordingState || !last
@@ -714,6 +850,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           onToggleTts={() => setTtsOn((v) => !v)}
           error={error}
           endTo="/converse"
+          onEnd={finished ? undefined : () => void finishScene(true)}
           messages={messages}
           reducedMotion={reducedMotion}
           extra={

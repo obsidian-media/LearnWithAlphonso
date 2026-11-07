@@ -165,8 +165,24 @@ public final class AIConversationClient: Sendable {
 
     /// The same call as `chat`, keeping the server's `verdict` about the learner's last turn (the talking avatar
     /// reacts to it). An older server sends no verdict, which reads as `.inconclusive`.
+    public func practiceHub(course: String) async throws -> PracticeHubData {
+        var parts = URLComponents(url: baseURL.appendingPathComponent("api/practice"), resolvingAgainstBaseURL: false)!
+        parts.queryItems = [URLQueryItem(name: "course", value: course)]
+        var request = URLRequest(url: parts.url!)
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        return try JSONDecoder().decode(PracticeHubData.self, from: await performConversationCall(request))
+    }
+    public func finishPractice(callId: String) async throws -> PracticeResult {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/practice"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["callId": callId])
+        return try JSONDecoder().decode(PracticeResult.self, from: await performConversationCall(request))
+    }
+
     public func chatReply(
-        messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil
+        messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil, callId: String? = nil
     ) async throws -> ChatReply {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
         request.httpMethod = "POST"
@@ -176,6 +192,7 @@ public final class AIConversationClient: Sendable {
         if let systemPrompt { payload["systemPrompt"] = systemPrompt }
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         if let course { payload["course"] = course }
+        if let callId { payload["callId"] = callId }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let data = try await performConversationCall(request, retryEmptyReply: true)
@@ -332,8 +349,11 @@ public final class AIConversationClient: Sendable {
         }
     }
 
-    /// POST /api/tts -- returns raw MP3 audio bytes for `text`.
-    public func synthesizeSpeech(text: String, voice: String? = nil, course: String? = nil) async throws -> Data {
+    /// POST /api/tts -- returns raw MP3 audio bytes for `text`. `character` is sent only for Hector, so a voice the
+    /// server refuses falls back to his default, never Alphonso's; the server treats a missing one as Alphonso.
+    public func synthesizeSpeech(
+        text: String, voice: String? = nil, course: String? = nil, character: VoiceCharacter? = nil
+    ) async throws -> Data {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/tts"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -341,6 +361,7 @@ public final class AIConversationClient: Sendable {
         var payload: [String: Any] = ["text": text]
         if let voice { payload["voice"] = voice }
         if let course { payload["course"] = course }
+        if let character, character != .alphonso { payload["character"] = character.rawValue }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         return try await performConversationCall(request)

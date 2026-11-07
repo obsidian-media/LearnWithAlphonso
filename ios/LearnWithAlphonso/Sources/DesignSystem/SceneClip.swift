@@ -5,7 +5,7 @@ import UIKit
 /// The approved scene clips (Visual refresh, living scenes). Each is a looping 9:16 mp4 with its character baked in,
 /// bundled as the data asset `Clip-<name>` plus a first-frame image set `Clip-<name>-poster`.
 enum ClipName: String, CaseIterable {
-    case complete, hector, learn
+    case hector, learn
 
     var dataAssetName: String { "Clip-\(rawValue)" }
     var posterName: String { "Clip-\(rawValue)-poster" }

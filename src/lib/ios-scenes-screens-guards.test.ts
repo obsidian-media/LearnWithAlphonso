@@ -19,83 +19,7 @@ const between = (s: string, a: string, b: string) => {
   return tail.slice(0, end);
 };
 
-describe("Lesson complete: celebration clip, count-up, haptic", () => {
-  const lesson = read("LessonPlayerView.swift");
-  const finish = between(
-    lesson,
-    "private struct FinishView: View",
-    "private struct GeneratedPracticeSection",
-  );
-  const celebration = read("DesignSystem/Celebration.swift");
-
-  it("the stage is the complete clip with Alphonso in it (the still stage and cut-out are gone)", () => {
-    expect(finish).toContain("ClipBackdrop(clip: .complete");
-    expect(finish).not.toContain(".screenScene(.complete)");
-    expect(finish).not.toContain("Figure-alphonso-proud");
-    // The 180 pt sticker tile is gone from the finish screen.
-    expect(finish).not.toContain("MascotTile(moment: .lessonComplete");
-    // The clip fills the screen behind the card now; the spring entrance moved to the card over it.
-    expect(finish).toMatch(/\.alphonsoGlass\(\)\s*\n\s*\.springEntrance\(\)/);
-  });
-
-  it("text sits on a glass card, not straight on the stage", () => {
-    expect(finish).toContain(".alphonsoGlass(");
-    const glassAt = finish.lastIndexOf(".alphonsoGlass()");
-    expect(glassAt).toBeGreaterThan(-1);
-    expect(finish.indexOf("LessonFinishCopy.headline")).toBeLessThan(glassAt);
-    expect(finish.indexOf("GeneratedPracticeSection(")).toBeLessThan(glassAt);
-  });
-
-  it("the three buttons and the practice section behave and read exactly as before", () => {
-    // Continue (or Back to Learn at the end of a band) is pinned in the bottom inset, in the ember style.
-    expect(finish).toMatch(
-      /Button\("Continue to next lesson", action: onContinueToNextLesson\)[\s\S]{0,160}\.buttonStyle\(\.alphonsoEmber\)/,
-    );
-    expect(finish).toMatch(
-      /Button\("Practise with Hector", action: onPractiseWithHector\)\s*\n\s*\.buttonStyle\(\.alphonsoSecondary\)/,
-    );
-    expect(finish).toContain("if let onContinueToNextLesson {");
-    expect(finish).toContain("if let onPractiseWithHector {");
-    expect(finish).toContain(
-      "GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)",
-    );
-    expect(lesson).toContain('Text("Generate more practice")');
-  });
-
-  it("the code confetti is gone: the clip carries the confetti, so there is one celebration on screen", () => {
-    expect(celebration).not.toContain("ConfettiBurst");
-    expect(finish).not.toContain("ConfettiBurst");
-    // The count-up helpers it shared a file with stay.
-    expect(celebration).toContain("struct CountingText: View, Animatable");
-  });
-
-  it("XP and streak count up from 0 over about 0.8 s; accuracy and Reduce Motion show the final value", () => {
-    expect(celebration).toContain("struct CountingText: View, Animatable");
-    expect(celebration).toMatch(/static let duration: Double = 0\.8/);
-    const chip = from(lesson, "private struct LessonRewardChipView");
-    expect(chip).toContain("CountingText(");
-    expect(chip).toContain("RewardCountUp.duration");
-    expect(chip).toMatch(/reduceMotion \|\| reached \? split\.number : 0/);
-    // Only the XP and streak chips count; accuracy is shown as it is.
-    expect(chip).toMatch(/chip\.kind != \.accuracy/);
-    expect(chip).toContain('.accessibilityLabel("\\(title): \\(chip.value)")');
-  });
-
-  it("the chips pop in one after another, and all at once under Reduce Motion", () => {
-    expect(finish).toContain("@Environment(\\.accessibilityReduceMotion)");
-    expect(finish).toMatch(
-      /\.springEntrance\(delay: reduceMotion \? 0 : 0\.15 \+ Double\(index\) \* 0\.12\)/,
-    );
-  });
-
-  it("a success haptic fires once on appear, and is kept under Reduce Motion", () => {
-    expect(finish).toContain(".sensoryFeedback(.success, trigger: celebrated)");
-    expect(finish).toMatch(/\.onAppear \{[\s\S]{0,200}celebrated = true/);
-    // The haptic is not behind the reduceMotion check.
-    const onAppear = between(finish, ".onAppear {", ".fullScreenCover");
-    expect(onAppear).not.toContain("reduceMotion");
-  });
-});
+// Lesson complete (count-up, haptic, buttons) is guarded in ios-lesson-room-guards.test.ts since visual round 6.
 
 describe("Hector: the library scene behind the tab, the hero and the paywall", () => {
   const hector = read("HectorView.swift");
@@ -133,25 +57,17 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     );
   });
 
-  it("on the Hector tab the paywall plays Hector's library clip and the offer starts below him", () => {
-    expect(paywall).toContain("source == .hectorTab");
-    expect(paywall).not.toContain("Figure-hector-waving");
-    // The room for Hector comes before the title and offer, above them.
-    expect(paywall.indexOf("containerRelativeFrame(.vertical)")).toBeLessThan(
-      paywall.indexOf("presentation.titleText"),
+  it("the paywall opens on Hector's room, above the headline and the offer", () => {
+    expect(paywall).toContain("PaywallRoomTop(");
+    expect(paywall.indexOf("PaywallRoomTop(")).toBeLessThan(paywall.indexOf("PaywallHeadline()"));
+    expect(paywall.indexOf("PaywallHeadline()")).toBeLessThan(
+      paywall.indexOf("offer(presentation"),
     );
-    // Everything the learner reads sits on glass when the library is behind it.
-    expect(paywall).toContain(".alphonsoGlass(if: onScene)");
-    // Other presentations (sheets from lesson complete or a refusal) keep the flat surface.
-    expect(paywall).toContain(".background(onScene ? Color.clear : AlphonsoColor.surface)");
+    expect(paywall).toContain(".background(ds.surface.ignoresSafeArea())");
   });
 
   it("paywall copy, legal text, buttons and purchase logic are untouched", () => {
     for (const keep of [
-      "presentation.titleText",
-      "PaywallCopy.mascotMessage",
-      "AlphonsoMascotBanner(mascot: .hector",
-      "PaywallCopy.featureBlurb",
       "presentation.renewalDisclosure",
       "presentation.priceLine",
       "presentation.trialLine",
@@ -166,7 +82,7 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
       "PaywallLinks.appleStandardEULA",
       "await entitlementStore.purchase()",
       "await entitlementStore.restorePurchases()",
-      "entitlementStore.select(productID: option.id)",
+      "entitlementStore.select(productID: $0)",
       "entitlementStore.presented(from: source)",
       "await entitlementStore.loadOffering()",
       ".buttonStyle(.alphonsoEmber)",
@@ -238,27 +154,19 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
   const profile = read("ProfileHubView.swift");
   const components = read("DesignSystem/AlphonsoComponents.swift");
 
-  it("the hall of achievements is behind Profile, with a hero row at the top", () => {
+  it("the hall of achievements is behind Profile, with the overview hero at the top", () => {
     expect(profile).toContain(".screenScene(.profile)");
     expect(profile).not.toContain(".background(AlphonsoColor.surface)");
-    expect(profile).toContain("ProfileHero()");
+    expect(profile).toContain("ProfileHeroSection(");
     expect(profile).toContain(".sceneScrollProbe()");
-    const hero = from(profile, "private struct ProfileHero: View");
-    expect(hero).toContain("minHeight: 190");
-    expect(hero).toContain(".alphonsoGlass(");
+    expect(read("ProfileOverviewView.swift")).toContain("struct ProfileHeroSection: View");
   });
 
-  it("tracks nothing new: the hub still loads no progress, so the hero shows no numbers", () => {
-    for (const forbidden of [
-      "syncQueueStore",
-      "lastKnownProgress",
-      "ProgressSyncClient",
-      ".task",
-      "xp",
-      "streak",
-    ]) {
+  it("loads the overview only through the own-row Kit read, never the offline queue or cached progress", () => {
+    for (const forbidden of ["syncQueueStore.", "lastKnownProgress"]) {
       expect(profile, forbidden).not.toContain(forbidden);
     }
+    expect(profile).toContain("fetchProfileOverview");
   });
 
   it("the four menu cards are the same four, as glass cards that open the same destinations", () => {

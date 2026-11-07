@@ -14,7 +14,7 @@ describe("iPhone visual polish", () => {
   });
 
   it("Practice drops to one column at accessibility text sizes", () => {
-    const practice = read("ConversationView.swift");
+    const practice = read("PracticeHubView.swift");
     expect(practice).toMatch(/dynamicTypeSize\.isAccessibilitySize/);
   });
 

@@ -8,9 +8,17 @@ import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.PROGRESS_JSON
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonPreviousBest
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.testContent
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectRequest
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -96,6 +104,81 @@ class LessonViewModelTest {
         assertEquals(lesson.questions.map { it.id }, answers.map { it.jsonObject["questionId"]!!.jsonPrimitive.content })
         assertEquals(lesson.questions.size, completeBody["total"]!!.jsonPrimitive.content.toInt())
         assertEquals(lesson.questions.size - 1, v.state.value.correctCount)
+    }
+
+    @Test
+    fun `a second Finish while the completion is in flight completes the lesson once`() = runBlocking {
+        val server = okServer()
+        val v = vm(server)
+        v.begin(); v.startPractice()
+        lesson.questions.forEachIndexed { i, q ->
+            v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }
+            v.continueOrFinish()
+            if (i == lesson.questions.lastIndex) v.continueOrFinish()
+        }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        delay(100)
+        assertEquals(1, server.seen.count { it.path.endsWith("complete-lesson") })
+    }
+
+    @Test
+    fun `a replay shows XP only past the best earlier score, a first try on every right answer`() = runBlocking {
+        val replay = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+                req.path.endsWith("lesson_completions") -> json("""[{"correct":1}]""")
+                else -> json("[]")
+            }
+        }
+        val v = vm(replay)
+        v.onScreenShown()
+        awaitTrue("best read") { v.state.value.previousBest == LessonPreviousBest.Best(1) }
+        v.begin(); v.startPractice()
+        val chips = lesson.questions.take(3).map { q ->
+            v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }
+            v.answerXp().also { v.continueOrFinish() }
+        }
+        assertEquals(listOf(null, 10, 10), chips)
+
+        val first = vm(okServer())
+        first.onScreenShown()
+        awaitTrue("first try") { first.state.value.previousBest == LessonPreviousBest.FirstTry }
+        first.begin(); first.startPractice()
+        first.pick(correctAnswer(lesson.questions[0])); first.check().join()
+        assertEquals(10, first.answerXp())
+    }
+
+    @Test
+    fun `an unreadable history promises no XP, and a wrong answer never shows any`() = runBlocking {
+        val v = vm(okServer(), connected = false)
+        v.begin(); v.startPractice()
+        v.pick(correctAnswer(lesson.questions[0])); v.check().join()
+        assertEquals(LessonPreviousBest.Unknown, v.state.value.previousBest)
+        assertNull(v.answerXp())
+        val w = vm(okServer())
+        w.onScreenShown()
+        awaitTrue("first try") { w.state.value.previousBest == LessonPreviousBest.FirstTry }
+        w.begin(); w.startPractice()
+        w.pick(wrongAnswer(lesson.questions[0])); w.check().join()
+        assertNull(w.answerXp())
+        assertEquals(1, w.state.value.missed.size)
+    }
+
+    @Test
+    fun `the lesson's time leaves out the time the app was in the background`() = runBlocking {
+        var clock = 0L
+        val v = LessonViewModel(
+            lesson, Course.ENGLISH, testContent, okServer().progressClient, okServer().translation, MemorySyncStore(),
+            isConnected = { true }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { clock }, hasAiConsent = { true },
+            ownerUserId = { "u1" },
+        )
+        v.begin(); v.startPractice()
+        clock = 10_000; v.onAppVisible(false)
+        clock = 70_000; v.onAppVisible(true)
+        clock = 80_000
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check().join(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        assertEquals(20_000L, v.state.value.elapsedMs)
     }
 
     @Test
@@ -302,6 +385,19 @@ class LessonViewModelTest {
     }
 
     @Test
+    fun `the HUD is told once a wrong answer's heart is saved, so it shows one fewer`() = runBlocking {
+        val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 5, null, 0, "bronze")) }
+        val v = vm(okServer(), store)
+        v.begin(); v.startPractice()
+        assertEquals(0, v.state.value.heartsSpent)
+        v.pick(wrongAnswer(lesson.questions[0]))
+        v.check().join()
+        awaitTrue("heart spent") { v.state.value.heartsSpent == 1 }
+        // By the time the HUD hears about it, the store already holds the new count.
+        assertEquals(4, store.lastKnownProgress()!!.hearts)
+    }
+
+    @Test
     fun `a Pro learner's wrong answer spends no heart, locally or on the server`() = runBlocking {
         val server = okServer()
         val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 4, null, 0, "bronze")) }
@@ -388,5 +484,82 @@ class LessonViewModelTest {
         awaitTrue("failure shown") { v.state.value.phase is LessonPhase.SaveFailed }
         assertTrue((v.state.value.phase as LessonPhase.SaveFailed).message.contains("signed out"))
         assertTrue(store.completions.isEmpty())
+    }
+
+    // Sound effects: the view model says which effects a moment asks for; the player (switch, voice, once per key) is
+    // core's SoundEffectGate, tested in SoundEffectsTest.
+
+    private fun recordEffects(v: LessonViewModel): Pair<MutableList<SoundEffectRequest>, CoroutineScope> {
+        // Written by the collector while the test reads it: a copy-on-write list, so a read never races a write.
+        val got: MutableList<SoundEffectRequest> = java.util.concurrent.CopyOnWriteArrayList()
+        val scope = CoroutineScope(Dispatchers.Unconfined + Job())
+        scope.launch { v.soundEffects.collect { got += it } }
+        return got to scope
+    }
+
+    private fun List<SoundEffectRequest>.effects() = map { r -> r.cues.map { it.effect } }
+
+    @Test
+    fun `a right answer asks for the right-answer effect, once`() = runBlocking {
+        val v = vm(okServer())
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(correctAnswer(lesson.questions[0])); v.check().join()
+        v.check().join()
+        assertEquals(listOf(listOf(SoundEffect.RIGHT)), got.effects())
+        scope.cancel()
+    }
+
+    private suspend fun storeWithHearts(hearts: Int) =
+        MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, hearts, null, 0, "bronze")) }
+
+    @Test
+    fun `a wrong answer asks for the wrong effect, then the heart going once the HUD shows it`() = runBlocking {
+        val v = vm(okServer(), storeWithHearts(5))
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        awaitTrue("heart spent") { v.state.value.heartsSpent == 1 }
+        awaitTrue("heart sound") { got.size == 2 }
+        assertEquals(setOf(listOf(SoundEffect.WRONG), listOf(SoundEffect.HEART_LOST)), got.effects().toSet())
+        // It follows the wrong-answer sound rather than playing over it.
+        assertEquals(SoundEffect.WRONG.durationMs, got.single { r -> r.cues.any { it.effect == SoundEffect.HEART_LOST } }.cues.single().delayMs)
+        scope.cancel()
+    }
+
+    @Test
+    fun `with no hearts left to lose, the HUD shows no change, so no heart sound`() = runBlocking {
+        val v = vm(okServer(), storeWithHearts(0))
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        delay(200)
+        assertEquals(0, v.state.value.heartsSpent)
+        assertEquals(listOf(listOf(SoundEffect.WRONG)), got.effects())
+        scope.cancel()
+    }
+
+    @Test
+    fun `a Pro learner's wrong answer loses no heart, so no heart sound`() = runBlocking {
+        val v = vm(okServer(), storeWithHearts(5), pro = true)
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        delay(200)
+        assertEquals(listOf(listOf(SoundEffect.WRONG)), got.effects())
+        scope.cancel()
+    }
+
+    @Test
+    fun `Continue taps, and finishing asks for the jingle and XP once`() = runBlocking {
+        val v = vm(okServer())
+        val (got, scope) = recordEffects(v)
+        playThrough(v)
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        val effects = got.effects()
+        assertEquals(lesson.questions.size, effects.count { it == listOf(SoundEffect.TAP) })
+        assertEquals(listOf(listOf(SoundEffect.LESSON_COMPLETE, SoundEffect.XP)), effects.filter { SoundEffect.LESSON_COMPLETE in it })
+        assertEquals(1, got.count { it.key?.startsWith("finish-") == true })
+        scope.cancel()
     }
 }

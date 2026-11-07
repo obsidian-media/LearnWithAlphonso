@@ -328,7 +328,7 @@
     "id": "ep8c",
     "level": "B1",
     "type": "mc",
-    "prompt": "Me preguntó ___ estaba listo.",
+    "prompt": "Me preguntó ___ yo estaba listo.",
     "choices": [
       "que",
       "si",
@@ -406,10 +406,10 @@
     "id": "ep11b",
     "level": "B2",
     "type": "mc",
-    "prompt": "Manera más formal de decir \"mucho crecimiento\":",
+    "prompt": "¿Cuál es la manera más formal de decir \"mucho crecimiento\"?",
     "choices": [
       "un montón de crecimiento",
-      "mucho crecimiento",
+      "muchísimo crecimiento",
       "un crecimiento sustancial",
       "bastante crecimiento"
     ],
@@ -475,7 +475,7 @@
     "choices": [
       "adquirir",
       "agenciarse",
-      "pillar",
+      "conseguir",
       "llevarse"
     ],
     "answer": 0
@@ -564,7 +564,7 @@
     "type": "mc",
     "prompt": "Mejor alternativa formal a \"un problema grande\":",
     "choices": [
-      "un problema enorme",
+      "un problema gordo",
       "un desafío importante",
       "un lío gigante",
       "un verdadero problemón"
@@ -575,7 +575,7 @@
     "id": "ep15c",
     "level": "C1",
     "type": "mc",
-    "prompt": "¿Qué oración usa un matiz apropiado en la escritura académica?",
+    "prompt": "¿Qué oración muestra la cautela propia de la escritura académica?",
     "choices": [
       "Esto prueba que la teoría es correcta.",
       "Esto sugiere que la teoría podría ser correcta.",

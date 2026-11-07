@@ -1,5 +1,5 @@
 import { postChat } from "../../lib/chat-request";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -22,9 +22,18 @@ import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "../../lib/sync.functions";
 import { voiceFor } from "@/lib/voice-prefs";
+import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
+import { waitForCallCue } from "@/lib/sfx";
+import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
+import { PracticeResult } from "@/components/practice/PracticeResult";
+import { roomUrl } from "@/lib/practice-catalog";
+import { firstSlip, practiceModeSearch, type PracticeModeSearch } from "@/lib/practice-session";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   component: ConverseChatPageWithSave,
+  // ?mode=call|chat from the pre-call sheet; without it the learner's own setting decides.
+  validateSearch: (search: Record<string, unknown>): PracticeModeSearch =>
+    practiceModeSearch(search),
   loader: ({ params }) => {
     const scenario = getScenario(params.scenarioId);
     if (!scenario) throw notFound();
@@ -50,12 +59,21 @@ function ConverseChatPageWithSave() {
   const { scenario: raw } = Route.useLoaderData();
   const course = useProgress((s) => s.course);
   const scenario = useMemo(() => localizeScenario(raw, course), [raw, course]);
+  const { mode } = Route.useSearch();
+  // "Try again" on the result screen starts a fresh call: a new mount, a new call id, the opener again.
+  const [attempt, setAttempt] = useState(0);
   return (
     <SaveWordProvider>
       {/* Keyed by course, so switching course mid-chat starts a fresh
           conversation in the new language instead of mixing two. */}
       <AiConsentGate backTo="/converse">
-        <ConverseChatPage key={`${raw.id}:${course}`} scenario={scenario} course={course} />
+        <ConverseChatPage
+          key={`${raw.id}:${course}:${attempt}`}
+          scenario={scenario}
+          course={course}
+          mode={mode}
+          onRetry={() => setAttempt((a) => a + 1)}
+        />
       </AiConsentGate>
     </SaveWordProvider>
   );
@@ -82,10 +100,29 @@ type Msg = {
   confidence?: number | null;
   /** The scene's fixed opening line: written by us, not the model, so there is nothing to report. */
   opener?: boolean;
+  /** The reply verdict on the learner turn before this reply (assistant replies only). */
+  verdict?: ReturnType<typeof parseVerdict>;
 };
 
-function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; course: Course }) {
+function ConverseChatPage({
+  scenario,
+  course,
+  mode,
+  onRetry,
+}: {
+  scenario: LocalizedScenario;
+  course: Course;
+  mode: PracticeModeSearch["mode"];
+  onRetry: () => void;
+}) {
   const consent = useAiConsent();
+  const navigate = useNavigate();
+  // Practice stars: every reply of this call carries its id to /api/chat, which records the judged reply; hanging
+  // up asks the server to score the call. The client never sends stars.
+  const [callId] = useState(newCallId);
+  const [startedAt] = useState(() => Date.now());
+  const [ending, setEnding] = useState(false);
+  const [result, setResult] = useState<{ result: Result; seconds: number } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: scenario.opener, opener: true },
   ]);
@@ -133,22 +170,31 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   }, [messages, sending]);
 
   const speak = useCallback(
-    async (text: string) => {
+    async (text: string, opts?: { opener?: boolean }) => {
       if (!ttsOn) return;
       setSpoken(text);
       setVoice("loading");
       try {
-        const resp = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
-          body: JSON.stringify({ text, course, voice: await voiceFor("alphonso", course) }),
-        });
-        if (!resp.ok) {
+        // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
+        const voiceId = await voiceFor("alphonso", course);
+        const fetchBlob = async () => {
+          const resp = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+            body: JSON.stringify({ text, course, voice: voiceId }),
+          });
+          return resp.ok ? await resp.blob() : null;
+        };
+        // An opener is static text: returning to the call replays it instead of fetching (and charging) again.
+        const blob = opts?.opener
+          ? await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), fetchBlob)
+          : await fetchBlob();
+        if (!blob) {
           setVoice("idle");
           return;
         }
-        const blob = await resp.blob();
+        // The call-start sound finishes before his first words.
+        if (opts?.opener) await waitForCallCue();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
         const url = URL.createObjectURL(blob);
@@ -182,9 +228,12 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
   const openerSpokenRef = useRef(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
-    openerSpokenRef.current = true;
     // Delay so user gesture-less autoplay policies are less strict after nav
-    const t = setTimeout(() => void speak(scenario.opener), 400);
+    const t = setTimeout(() => {
+      // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
+      openerSpokenRef.current = true;
+      void speak(scenario.opener, { opener: true });
+    }, 400);
     return () => clearTimeout(t);
   }, [scenario.opener, speak]);
 
@@ -203,6 +252,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
             systemPrompt: scenario.systemPrompt,
             cefrLevel,
             course,
+            callId,
             // Only role/content -- confidence is this app's own UI
             // metadata, not part of the chat wire format.
             messages: next.map(({ role, content }) => ({ role, content })),
@@ -230,9 +280,10 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         }
         const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
-        setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        const verdict = parseVerdict(data.verdict);
+        setMessages((m) => [...m, { role: "assistant", content: reply, verdict }]);
         // An older server sends no verdict, which reads as "none".
-        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict: parseVerdict(data.verdict) }));
+        setReplyVerdict((v) => ({ serial: v.serial + 1, verdict }));
         void speak(reply);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -240,7 +291,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         setSending(false);
       }
     },
-    [messages, scenario.systemPrompt, cefrLevel, course, sending, speak, consent],
+    [messages, scenario.systemPrompt, cefrLevel, course, callId, sending, speak, consent],
   );
 
   // The capture flow lives in useSpeechCapture so the speaking question type
@@ -284,6 +335,24 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
       audioRef.current?.pause();
     };
   }, []);
+
+  const learnerReplies = messages.filter((m) => m.role === "user").length;
+  /** Hang up or finish: with no reply there is nothing to score, so straight back to Practice. */
+  const endCall = useCallback(async () => {
+    if (ending) return;
+    audioRef.current?.pause();
+    if (learnerReplies === 0) {
+      void navigate({ to: "/converse" });
+      return;
+    }
+    setEnding(true);
+    const scored = await finishPracticeCall(callId);
+    if (!scored) {
+      void navigate({ to: "/converse" });
+      return;
+    }
+    setResult({ result: scored, seconds: Math.round((Date.now() - startedAt) / 1000) });
+  }, [ending, learnerReplies, navigate, callId, startedAt]);
 
   const hint = (
     <div className="px-5">
@@ -468,6 +537,16 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         </div>
         <p className="truncate text-[11px] text-ink-soft/70">{scenario.blurb}</p>
       </div>
+      {learnerReplies > 0 && (
+        <button
+          type="button"
+          onClick={() => void endCall()}
+          disabled={ending || sending}
+          className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-50"
+        >
+          Finish
+        </button>
+      )}
       <button
         onClick={() => setTtsOn((v) => !v)}
         aria-pressed={ttsOn}
@@ -515,7 +594,23 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
     </header>
   );
 
-  if (showAlphonso) {
+  if (result) {
+    return (
+      <LessonFrame>
+        <PracticeResult
+          result={result.result}
+          course={course}
+          room={roomUrl(scenario.id)}
+          seconds={result.seconds}
+          slip={firstSlip(messages)}
+          onRetry={onRetry}
+          next={{ label: "Done", onClick: () => void navigate({ to: "/converse" }) }}
+        />
+      </LessonFrame>
+    );
+  }
+
+  if (mode ? mode === "call" : showAlphonso) {
     const last = messages[messages.length - 1];
     const caption =
       recording || !last
@@ -565,6 +660,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           onToggleTts={() => setTtsOn((v) => !v)}
           error={error ?? captureError}
           endTo="/converse"
+          onEnd={() => void endCall()}
           messages={messages}
           reducedMotion={reducedMotion}
           sheet={

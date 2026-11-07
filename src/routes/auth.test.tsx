@@ -4,7 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const navigate = vi.fn();
-let searchParams: { next?: string } = {};
+let searchParams: { next?: string; mode?: "signup" } = {};
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
@@ -90,12 +90,44 @@ describe("validateSearch", () => {
     expect(validate({})).toEqual({});
   });
 
+  it("keeps mode=signup (the first run's Continue with email) and drops any other mode", () => {
+    expect(validate({ mode: "signup", next: "/hello" })).toEqual({
+      mode: "signup",
+      next: "/hello",
+    });
+    expect(validate({ mode: "admin" })).toEqual({});
+  });
+
   it("drops an absolute URL that doesn't start with /", () => {
     expect(validate({ next: "https://evil.com" })).toEqual({});
   });
 });
 
 describe("Auth page", () => {
+  it("opens on Create your account when the first run sends the learner here, with their name", async () => {
+    localStorage.setItem("lwa.firstRun.v1", JSON.stringify({ name: "Sam" }));
+    searchParams = { mode: "signup", next: "/hello" };
+    renderPage();
+    expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Display name")).toHaveValue("Sam");
+    localStorage.removeItem("lwa.firstRun.v1");
+  });
+
+  it("on a device that answered Under 13, shows the kind stop and no way to make an account", async () => {
+    localStorage.setItem("lwa.under13.v1", "1");
+    searchParams = { mode: "signup" };
+    renderPage();
+    expect(
+      screen.getByRole("heading", { name: "Thanks for wanting to learn with me!" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Google/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create account" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+    expect(signUp).not.toHaveBeenCalled();
+    expect(signInWithOAuth).not.toHaveBeenCalled();
+    localStorage.removeItem("lwa.under13.v1");
+  });
+
   it("redirects to /learn immediately if already signed in", async () => {
     getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
     renderPage();

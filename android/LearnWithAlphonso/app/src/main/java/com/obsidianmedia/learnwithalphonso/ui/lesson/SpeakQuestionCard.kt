@@ -89,7 +89,7 @@ class SpeakQuestionViewModel(
 }
 
 @Composable
-fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course: Course, checked: Boolean, isCorrect: Boolean, picked: String?, onPick: (String?) -> Unit) {
+fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course: Course, checked: Boolean, isCorrect: Boolean, picked: String?, onPick: (String?) -> Unit, inStage: Boolean = false) {
     val palette = AlphonsoColor.palette
     val context = LocalContext.current
     val isConnected by container.connectivity.isConnected.collectAsState()
@@ -109,12 +109,17 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
     val canCapture = isConnected && !state.micUnavailable && hasAiConsent
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        AlphonsoSectionHeader("Speaking")
-        AskingAlphonso(question.prompt, hasMedia = true)
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("YOUR PHRASE", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-            Text(question.answer, style = MaterialTheme.typography.titleLarge, color = palette.ink)
-            AlphonsoSecondaryButton("🔊  Hear it first", onClick = { Speech.get(context).speak(question.answer, course) }, fullWidth = false)
+        if (inStage) {
+            // In the lesson's room (round 6): Alphonso's bubble asks, the verdict sheet explains.
+            LessonSpeakPhraseCard(question.answer) { Speech.get(context).speak(question.answer, course) }
+        } else {
+            AlphonsoSectionHeader("Speaking")
+            AskingAlphonso(question.prompt, hasMedia = true)
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("YOUR PHRASE", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                Text(question.answer, style = MaterialTheme.typography.titleLarge, color = palette.ink)
+                AlphonsoSecondaryButton("🔊  Hear it first", onClick = { Speech.get(context).speak(question.answer, course) }, fullWidth = false)
+            }
         }
         if (canCapture) {
             val hint = when (phase) {
@@ -151,12 +156,13 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
                     else -> Unit
                 }
             }
-            AnswerField(picked ?: "", onPick, "Type the phrase", enabled = !checked)
+            if (inStage) LessonTextField(picked ?: "", { onPick(it) }, "Type the phrase", enabled = !checked)
+            else AnswerField(picked ?: "", onPick, "Type the phrase", enabled = !checked)
         }
         // A consent refusal has no line of its own: the typing fallback already says why voice is off, and a line left
         // over from before would outlive the learner opting back in.
         state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
-        if (checked) Explanation(container, isCorrect, question.explanation, course, question)
+        if (checked && !inStage) Explanation(container, isCorrect, question.explanation, course, question)
     }
 }
