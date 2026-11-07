@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
+import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelf
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastDownloadState
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
@@ -136,7 +137,8 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                 Text(PodcastLibrary.EMPTY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
                 AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
             }
-            else -> FolderListing(container, vm, folderId = null, onOpenFolder = onOpenFolder)
+            // The Listen home is the rooms shelf (ListenShelfUi.kt); a folder opens its own episode list.
+            else -> ListenShelfRoot(container, vm, onOpenFolder)
         }
     }
 }
@@ -148,6 +150,14 @@ fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: S
     val state by vm.state.collectAsState()
     val folder = state.folders.firstOrNull { it.id == folderId }
     LaunchedEffect(folderId) { vm.loadEpisodes(folderId) }
+    // A folder that directly holds episodes opens as a room with its episode list; any other folder keeps the tree listing.
+    val shelf = remember(state.allFolders, state.libraryEpisodes, state.progress, folderId) {
+        listOf("en", "fr", "es").flatMap { ListenShelf.shelves(state.allFolders, state.libraryEpisodes, state.progress, it) }.firstOrNull { it.folder.id == folderId }
+    }
+    if (shelf != null) {
+        ListenShelfFolderScreen(container, vm, shelf, onBack)
+        return
+    }
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -232,7 +242,7 @@ private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitl
 
 /** Download or remove one episode; a refusal is a prompt naming what could be removed, never a silent deletion. */
 @Composable
-private fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
+internal fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
     val palette = AlphonsoColor.palette
     val states by container.downloads.states.collectAsState()
     val scope = rememberCoroutineScope()
