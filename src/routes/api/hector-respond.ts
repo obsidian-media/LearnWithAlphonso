@@ -111,6 +111,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const systemPrompt = buildHectorSystemPrompt(course, body.cefr_level ?? "");
   const sessionId = body.session_id || crypto.randomUUID();
   const agent = body.agent_id || "tutor";
+  // Hector's memory (Pro only: this point is past the entitlement and consent gates). Built here from the learner's
+  // own rows, never taken from the request.
+  const { loadMemoryPrimingMessage } = await import("@/lib/hector-memory.server");
+  const memory = await loadMemoryPrimingMessage(supabaseAdmin as never, userId);
 
   // --- LLM turn (OpenRouter, OpenAI-compatible, same as /api/chat) ---
   const llmStart = performance.now();
@@ -121,7 +125,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
         body: {
           model: resolveLlmChatModel(),
-          messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
+          messages: buildHectorMessages(body.history ?? [], text, systemPrompt, memory),
           max_tokens: 512,
         },
       });
