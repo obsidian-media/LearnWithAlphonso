@@ -5,10 +5,12 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
+const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
     ...actual,
+    useNavigate: () => navigate,
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
       <a href={to} {...rest}>
         {children}
@@ -37,6 +39,10 @@ const rawCampaign = getCampaign("city-day")!;
 const campaign = localizeCampaign(rawCampaign, "en");
 // @ts-expect-error -- same override pattern as converse_.$scenarioId.test.tsx.
 Route.useLoaderData = () => ({ campaign: rawCampaign });
+// The search params the pre-call sheet passes (?mode, ?scene); none by default, as for a link from elsewhere.
+const search: { current: Record<string, unknown> } = { current: {} };
+// @ts-expect-error -- same as useLoaderData above: no RouterProvider here.
+Route.useSearch = () => search.current;
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status });
@@ -585,7 +591,9 @@ describe("Campaign call screen (setting on, the default)", () => {
     await renderCall();
     expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/converse");
+    // Hanging up scores the call first (Practice stars); with no reply yet it goes straight back to Practice.
+    fireEvent.click(screen.getByRole("button", { name: "End the call" }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/converse" }));
     expect(
       screen.getByText(`${campaign.title}: scene 1 of ${campaign.scenes.length}`),
     ).toBeInTheDocument();
@@ -636,5 +644,83 @@ describe("Campaign call screen (setting on, the default)", () => {
     await renderPage();
     expect(screen.queryByTestId("alphonso-stage")).toBeNull();
     expect(screen.getByRole("heading", { name: campaign.title })).toBeInTheDocument();
+  });
+});
+
+describe("Practice stars on a campaign", () => {
+  const chatIds = () =>
+    (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+      .filter(([u]) => String(u).includes("/api/chat"))
+      .map(([, init]) => JSON.parse(init.body as string).callId as string);
+  function servePractice(body: unknown) {
+    const base = global.fetch;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).includes("/api/practice")
+        ? new Response(JSON.stringify(body), { status: 200 })
+        : base(input, init),
+    ) as typeof fetch;
+  }
+
+  it("?scene=N (Continue) starts the campaign at that scene, with its opener and its own prompt", async () => {
+    search.current = { scene: 1 };
+    try {
+      const user = userEvent.setup();
+      await renderPage();
+      expect(
+        screen.getByText(`Scene 2 of ${campaign.scenes.length} — ${campaign.scenes[1].title}`),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[1].opener);
+      await sendAndAwaitReply(user, "where is the museum", "Reply 1");
+      const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(([u]) =>
+        String(u).includes("/api/chat"),
+      )!;
+      expect(JSON.parse(init.body as string).systemPrompt).toBe(
+        `${campaign.premise}\n\n${campaign.scenes[1].systemPrompt}`,
+      );
+    } finally {
+      search.current = {};
+    }
+  });
+
+  it("finishing a scene shows its stars; Next scene moves on with a new call id", async () => {
+    servePractice({
+      kind: "scene",
+      itemKey: "city-day/coffee-stop",
+      stars: 1,
+      bestBefore: 0,
+      bestAfter: 1,
+      replies: campaign.scenes[0].minTurns,
+      rightReplies: 0,
+      shortReplies: 1,
+      englishReplies: 0,
+      finishMinReplies: campaign.scenes[0].minTurns,
+    });
+    const user = userEvent.setup();
+    await renderPage();
+    for (let i = 0; i < campaign.scenes[0].minTurns; i++) {
+      await sendAndAwaitReply(user, `turn ${i}`, `Reply ${i + 1}`);
+    }
+    await user.click(await screen.findByRole("button", { name: /Continue:/ }));
+    expect(
+      await screen.findByRole("heading", { name: "One star. You finished." }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Next scene" }));
+    expect(
+      screen.getByText(`Scene 2 of ${campaign.scenes.length} — ${campaign.scenes[1].title}`),
+    ).toBeInTheDocument();
+    await sendAndAwaitReply(user, "excuse me", `Reply ${campaign.scenes[0].minTurns + 1}`);
+    const ids = chatIds();
+    expect(new Set(ids.slice(0, -1)).size).toBe(1);
+    expect(ids.at(-1)).not.toBe(ids[0]);
+  });
+
+  it("restarting a scene starts a new call", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await sendAndAwaitReply(user, "hello there", "Reply 1");
+    await user.click(screen.getByRole("button", { name: "Restart this scene" }));
+    await sendAndAwaitReply(user, "hello again", "Reply 2");
+    const ids = chatIds();
+    expect(ids[1]).not.toBe(ids[0]);
   });
 });

@@ -19,11 +19,53 @@ const COPY = {
  * prompt. Shown only to a learner confirmed not to have Pro: hidden for Pro, while loading, and when Pro cannot be
  * checked. Tapping it opens the paywall in place, attributed to where it was opened.
  */
-export function HectorInvite({ source }: { source: keyof typeof COPY }) {
+export function HectorInvite({
+  source,
+  look = "plain",
+}: {
+  source: keyof typeof COPY;
+  /** "hub": the Practice hub's navy card with Hector's face (round 6). Same rules either way. */
+  look?: "plain" | "hub";
+}) {
   const pro = useProStatus();
   const [open, setOpen] = useState(false);
   if (pro.state !== "free") return null;
   const copy = COPY[source];
+  if (look === "hub") {
+    return (
+      <div className="space-y-3">
+        <button
+          type="button"
+          data-hector-card=""
+          onClick={() => setOpen(true)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-2.5 rounded-[20px] bg-ds-hero px-3 py-2.5 text-left text-ds-on-hero shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--c-action)_35%,transparent)]"
+        >
+          <span
+            aria-hidden="true"
+            className="size-12 shrink-0 rounded-full bg-ds-sunk bg-no-repeat shadow-[0_0_0_2px_var(--c-action)]"
+            style={{
+              backgroundImage: "url(/firstrun/hector-happy.webp)",
+              backgroundSize: "175%",
+              backgroundPosition: "center 16%",
+            }}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5 ds-type-headline font-extrabold">
+              {copy.title}
+              <span className="rounded-[5px] bg-ds-action px-1.5 ds-type-overline text-ds-on-action">
+                Pro
+              </span>
+            </span>
+            <span className="mt-0.5 block ds-type-caption font-semibold text-ds-on-hero-soft">
+              {copy.subtitle}
+            </span>
+          </span>
+        </button>
+        {open && <WebPaywall source={source} />}
+      </div>
+    );
+  }
   return (
     <div className="space-y-3">
       <button
