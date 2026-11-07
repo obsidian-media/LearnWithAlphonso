@@ -30,13 +30,30 @@ describe("the opening line waits for the call-start sound", () => {
     expect(wait).toBeLessThan(fn.indexOf("play(audio, generation: generation)"));
   });
 
-  it("Android: speakOpener waits out the cue before it starts speaking", () => {
-    const src = code(
-      "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/ConversationViewModels.kt",
+  it("web: Hector's greeting awaits the cue before its audio starts", () => {
+    const src = code("src/routes/_authenticated/hector.tsx");
+    const fn = src.slice(src.indexOf("const greet = useCallback"));
+    const wait = fn.indexOf("await waitForCallCue();");
+    expect(wait).toBeGreaterThan(fn.indexOf("cachedOpenerSpeech("));
+    expect(wait).toBeLessThan(fn.indexOf("playBlob(blob)"));
+  });
+
+  it("iOS: Hector's greeting goes through speakOpener, so it waits too", () => {
+    expect(code("ios/LearnWithAlphonso/Sources/HectorView.swift")).toContain(
+      "voice.speakOpener(conversation.pendingOpener, session: session, course: course, speaker: .hector)",
     );
-    const fn = src.slice(src.indexOf("fun speakOpener"));
+  });
+
+  it("Android: the shared opener player (Alphonso's openers, Hector's greeting) waits out the cue", () => {
+    const practice =
+      "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui";
+    const src = code(`${practice}/practice/OpenerSpeaker.kt`);
+    const fn = src.slice(src.indexOf("fun speak("));
     const wait = fn.indexOf("delay(SoundEffectsPlayer.callCueRemainingMs())");
-    expect(wait).toBeGreaterThan(-1);
+    expect(wait).toBeGreaterThan(fn.indexOf("cache.audio("));
     expect(wait).toBeLessThan(fn.indexOf("player.play(audio)"));
+    // Both callers use it.
+    expect(code(`${practice}/practice/ConversationViewModels.kt`)).toContain("opener.speak(");
+    expect(code(`${practice}/hector/HectorScreen.kt`)).toContain("opener.speak(");
   });
 });
