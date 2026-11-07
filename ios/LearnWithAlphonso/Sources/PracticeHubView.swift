@@ -153,7 +153,7 @@ struct PracticeHubView: View {
     }
     private func load() async {
         do { data = try await practiceClient(session).practiceHub(course: course.wireCode); error = false }
-        catch { error = true }
+        catch { self.error = true }
     }
 }
 
@@ -310,11 +310,11 @@ struct PracticeResultView: View {
         PracticeButton(nextLabel, action: done)
     }
     @ViewBuilder private var stats: some View {
-        stat("\(result.rightReplies)/\(result.replies)", "replies right")
-        stat(CallClock.format(seconds: seconds), "on the call")
-        stat("\(result.replies - result.shortReplies)/\(result.replies)", "full sentences")
+        resultStat("\(result.rightReplies)/\(result.replies)", "replies right")
+        resultStat(CallClock.format(seconds: seconds), "on the call")
+        resultStat("\(result.replies - result.shortReplies)/\(result.replies)", "full sentences")
     }
-    private func stat(_ value: String, _ label: String) -> some View {
+    private func resultStat(_ value: String, _ label: String) -> some View {
         VStack { Text(value).dsText(.numeral); Text(label).dsText(.caption) }.padding(AlphonsoDS.Space.s2).frame(maxWidth: .infinity).background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
     }
 }
