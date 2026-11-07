@@ -250,7 +250,7 @@ function AuthPage() {
                 type="button"
                 onClick={google}
                 disabled={busy}
-                className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2.5 rounded-full border border-ds-line bg-ds-card px-4 py-3 text-sm font-medium text-ds-ink transition hover:bg-ds-sunk disabled:opacity-50"
               >
                 <img src="/brand/google-g.svg" alt="" width={20} height={20} className="size-5" />
                 Continue with Google
@@ -258,7 +258,7 @@ function AuthPage() {
 
               <div className="relative py-2 text-center">
                 <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-                <span className="bg-surface px-3 ds-type-overline text-ds-ink-soft">or</span>
+                <span className="bg-ds-surface px-3 ds-type-overline text-ds-ink-soft">or</span>
               </div>
             </>
           )}
