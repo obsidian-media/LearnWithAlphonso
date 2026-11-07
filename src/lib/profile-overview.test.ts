@@ -318,7 +318,15 @@ describe("league", () => {
 
 describe("friends this week", () => {
   it("my XP uses the friends board's rule: the last 7 days including today", () => {
-    expect(rollingWeekXp("2026-11-06", overview().activity)).toBe(60 + 120 + 40);
+    // Friday 6 November: the 7 days are Saturday 31 October to today, across the Monday that starts the ISO week.
+    const rows = [
+      { day: "2026-10-30", xp: 500 }, // 8 days ago: out
+      { day: "2026-10-31", xp: 25 }, // last Saturday: in, though it is last ISO week
+      { day: "2026-11-01", xp: 15 }, // last Sunday: in
+      { day: "2026-11-02", xp: 60 },
+      { day: "2026-11-06", xp: 40 },
+    ];
+    expect(rollingWeekXp("2026-11-06", rows)).toBe(25 + 15 + 60 + 40);
   });
   it("ranks me among friends by that number", () => {
     const rows = friendsWeek(
