@@ -137,6 +137,7 @@ struct RootView: View {
                             .tabItem { Label("Hector", systemImage: "sparkles") }
                             .tag(RootTab.hector)
                         ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler,
+                                       entitlementStore: entitlementStore, activeCourse: activeCourse, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore,
                                        onEditAnswers: { firstRunCover = .complete(edit: true) })
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
