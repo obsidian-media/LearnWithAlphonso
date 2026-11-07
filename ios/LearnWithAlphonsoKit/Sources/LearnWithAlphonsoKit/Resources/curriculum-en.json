@@ -1095,15 +1095,15 @@
               "type": "mc",
               "prompt": "Reply to \"Thanks a lot!\"",
               "choices": [
-                "It's nothing.",
+                "Excuse me.",
+                "Sorry.",
                 "You're welcome.",
-                "Both are fine.",
-                "Neither."
+                "Please."
               ],
               "answer": 2,
-              "explanation": "Both are common polite replies.",
-              "meaning": "says two answers are both correct",
-              "example": "You can say either one. Both are fine."
+              "explanation": "\"You're welcome.\" is the usual polite reply when someone thanks you.",
+              "meaning": "a polite reply when someone thanks you",
+              "example": "Thanks a lot! — You're welcome."
             },
             {
               "id": "q4",
@@ -44251,13 +44251,13 @@
               "choices": [
                 "stable",
                 "prevent",
-                "kept",
+                "dressed",
                 "admitted"
               ],
-              "answer": 2,
-              "explanation": "\"kept\" is correct here. Intermediate-plus vocabulary for talking about health.",
-              "meaning": "made someone stay in a place",
-              "example": "The hospital kept him overnight."
+              "answer": 3,
+              "explanation": "Hospitals \"admitted\" patients when they take them in, here overnight for observation. The other options are not past-tense verbs that fit.",
+              "meaning": "accepted into hospital as a patient",
+              "example": "The hospital admitted him overnight."
             },
             {
               "id": "b2p9q17",
@@ -47777,13 +47777,13 @@
               "choices": [
                 "to solve a problem or exercise",
                 "to perform or complete a task",
-                "to feel excited about something future",
+                "to feel excited about something in the future",
                 "to complete something as planned"
               ],
               "answer": 2,
-              "explanation": "look forward to → to feel excited about something future. B2-level phrasal verbs beyond the basics.",
+              "explanation": "You \"look forward to\" things that have not happened yet and that you are happy about, so \"to feel excited about something in the future\" is right.",
               "term": "look forward to",
-              "meaning": "to feel excited about the future",
+              "meaning": "to feel excited about something that will happen",
               "example": "I look forward to the holidays."
             },
             {

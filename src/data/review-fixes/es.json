@@ -15096,6 +15096,15 @@
   },
   "reason": "The cognate is fine, but the explanation is generic and should point out the accent."
  },
+ "es:question:esb1p23l5/esb1p23q23": {
+  "patch": {
+   "prompt": "How do you say \"bay\" in Spanish? ___",
+   "answer": "bahía",
+   "explanation": "\"Bay\" is \"bahía\". The accent on the í splits the vowels into separate syllables (ba-hí-a)."
+  },
+  "reason": "\"Delta\" is spelled identically in both languages, so the item tests nothing; switching the target to \"bay\" uses a word already in the bank.",
+  "keyChange": true
+ },
  "es:question:esb1p23l5/esb1p23q24": {
   "patch": {
    "explanation": "Spanish uses the same word, \"tundra\" (la tundra), for the cold, treeless plains of the Arctic."
@@ -15887,6 +15896,21 @@
   },
   "reason": "Under seseo 'poso' sounds exactly like the audio's 'pozo', so option C is a second correct answer."
  },
+ "es:question:esb1p28l2/esb1p28q9": {
+  "patch": {
+   "choices": [
+    "Cerca de la casa había un pozo.",
+    "El agua brotaba del pozo constantemente.",
+    "Nadie sabía que había un pozo ahí.",
+    "Cerca de la granja había un pozo."
+   ],
+   "answer": "Cerca de la granja había un pozo.",
+   "audioText": "Cerca de la granja había un pozo.",
+   "explanation": "The audio says \"Cerca de la granja había un pozo.\" A \"pozo\" is a well; in Latin American Spanish it sounds the same as \"poso\" (sediment), so listen to the rest of the sentence: \"granja\", not \"casa\"."
+  },
+  "reason": "Under seseo, option A (pozo) sounds identical to the key, and \"un poso\" (sediment) near a farm is unnatural, so the key becomes the natural \"pozo\" sentence and the homophone option is replaced.",
+  "keyChange": true
+ },
  "es:question:esb1p28l3/esb1p28q10": {
   "patch": {
    "choices": [
@@ -16025,6 +16049,21 @@
   },
   "reason": "Option B (gravar) is a b/v homophone of the key and describes a nonsense action."
  },
+ "es:question:esb1p28l5/esb1p28q21": {
+  "patch": {
+   "choices": [
+    "El equipo tuvo que grabar el evento completo.",
+    "Prometieron grabar toda la ceremonia.",
+    "Decidieron grabar el evento completo.",
+    "Prometieron filmar toda la ceremonia."
+   ],
+   "answer": "Prometieron grabar toda la ceremonia.",
+   "audioText": "Prometieron grabar toda la ceremonia.",
+   "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" In Spanish b and v sound the same, so \"grabar\" (to record) and \"gravar\" (to tax) are told apart only by meaning, and recording a ceremony is what makes sense here."
+  },
+  "reason": "\"grabar\" and \"gravar\" sound the same in all Spanish, so D cannot be told apart from the key by ear; also \"gravar\" (to tax) makes the key and options A and C nonsensical, so the key should be the sensible \"grabar\" sentence at the same position, with a distractor that sounds different.",
+  "keyChange": true
+ },
  "es:question:esb1p28l5/esb1p28q22": {
   "patch": {
    "choices": [
@@ -16036,6 +16075,21 @@
    "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" In Latin American Spanish \"pozo\" (well) and \"poso\" (sediment) sound the same, so meaning tells you it is \"pozo\": water flows from a well."
   },
   "reason": "Under seseo \"poso\" sounds exactly like \"pozo\", so option C is a second answer by ear."
+ },
+ "es:question:esb1p28l5/esb1p28q23": {
+  "patch": {
+   "choices": [
+    "Encontraron un pozo al fondo del jardín.",
+    "Nadie sabía que había un pozo ahí.",
+    "El agua brotaba del pozo constantemente.",
+    "El agua brotaba del manantial constantemente."
+   ],
+   "answer": "El agua brotaba del pozo constantemente.",
+   "audioText": "El agua brotaba del pozo constantemente.",
+   "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" With seseo \"pozo\" and \"poso\" sound the same, but only a well (\"pozo\") makes sense as a place water flows from."
+  },
+  "reason": "\"pozo\" in D sounds identical to the key under seseo, and \"poso\" (sediment) makes the key and options A and B nonsensical, so the key should be the \"pozo\" sentence at the same position, with a distractor that sounds different.",
+  "keyChange": true
  },
  "es:question:esb1p29l1/esb1p29q1": {
   "patch": {
@@ -21120,6 +21174,21 @@
   },
   "reason": "Under seseo, options B (consejo) and D (concejo) sound identical, so two options match the audio."
  },
+ "es:question:esb2p28l5/esb2p28q23": {
+  "patch": {
+   "audioText": "El concejo municipal se reunió por la tarde.",
+   "choices": [
+    "El consejo escolar se reunió por la tarde.",
+    "Desde arriba se veía toda la sima.",
+    "Nadie se atrevía a acercarse a la cima.",
+    "El concejo municipal se reunió por la tarde."
+   ],
+   "answer": "El concejo municipal se reunió por la tarde.",
+   "explanation": "The audio says \"El concejo municipal se reunió por la tarde.\" \"Concejo\" (town council) sounds like \"consejo\" under seseo, so the word municipal, not escolar, tells you which sentence you heard."
+  },
+  "reason": "Options A and D sound identical under seseo, and \"concejo escolar\" is unnatural because a concejo is a town council, so the key and audio are changed to \"El concejo municipal se reunió por la tarde.\", which the learner can tell apart by ear.",
+  "keyChange": true
+ },
  "es:question:esb2p28l5/esb2p28q24": {
   "patch": {
    "explanation": "The audio says \"La sima resultó ser más profunda de lo esperado.\" Only this option contains más profunda, which also fits \"sima\" (a deep pit) rather than its sound-alike \"cima\" (a summit)."
@@ -23289,6 +23358,18 @@
   },
   "reason": "The key is correct, but the explanation is a generic gloss line and does not quote the answer."
  },
+ "es:question:esc1p14l3/esc1p14q14": {
+  "patch": {
+   "choices": [
+    "metáfora",
+    "tono",
+    "analepsis"
+   ],
+   "explanation": "In literary analysis a flashback is called \"analepsis\" (also \"escena retrospectiva\"); the anglicism \"flashback\" is common only in everyday speech."
+  },
+  "reason": "The key is the English word itself, so the item tests nothing; the literary Spanish term \"analepsis\" should be taught instead.",
+  "keyChange": true
+ },
  "es:question:esc1p15l1/esc1p15q0": {
   "patch": {
    "explanation": "The fact of being or living is \"existencia\" (spelled with -cia, not -ce); \"identidad\" is identity and \"ética\" is ethics."
@@ -25361,6 +25442,21 @@
    "answer": "Nadie sospechaba que el escándalo los estuviera acechando."
   },
   "reason": "Options B and C differ only by acechando/asechando, which sound identical under seseo, so a learner who picks C is marked wrong for what they heard. C is replaced with a sound-distinct near miss. / The two baby sentences are unrelated to the audio and easy to rule out, so replace them with near-minimal variants of the audio sentence."
+ },
+ "es:question:esc1p28l5/esc1p28q21": {
+  "patch": {
+   "audioText": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
+   "choices": [
+    "Nadie sabía que el bebé era varón.",
+    "Nadie sospechaba que el juez fuera a encausarlos.",
+    "Nadie sospechaba que sus rivales lo estuvieran asechando.",
+    "Nadie sabía que el bebé era barón."
+   ],
+   "answer": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
+   "explanation": "The audio says \"Nadie sospechaba que sus rivales lo estuvieran asechando.\" The rivals were plotting traps, which is the meaning of \"asechar\" with an s, a word that sounds the same as \"acechar\" under seseo."
+  },
+  "reason": "Options B and C are homophones under seseo, and 'un escándalo asechando' is semantically odd. The key becomes a natural asechar sentence and B is replaced with a non-homophone. / Under seseo, options B and C sound identical, and a scandal can only \"acechar\", so the key was also misspelled; the key is replaced (key change) and option B is swapped for a sentence that does not sound like it.",
+  "keyChange": true
  },
  "es:question:esc1p29l1/esc1p29q0": {
   "patch": {
