@@ -23475,7 +23475,7 @@
             {
               "id": "a2p10q28",
               "type": "reorder",
-              "prompt": "Put the words in order to make a sentence.",
+              "prompt": "Put the words in order to make a sentence that starts with \"This is\".",
               "tokens": [
                 "This",
                 "here",
@@ -23602,7 +23602,7 @@
             {
               "id": "a2p10q31",
               "type": "reorder",
-              "prompt": "Put the words in order to make a sentence.",
+              "prompt": "Put the words in order to make a sentence that starts with \"This is\".",
               "tokens": [
                 "to",
                 "game",
@@ -38322,12 +38322,12 @@
               "prompt": "That's a good ___, actually.",
               "bank": [
                 "view",
-                "point",
+                "notice",
                 "observation",
                 "opinion"
               ],
               "answer": "observation",
-              "explanation": "\"observation\" is correct here. B1-level phrases for discussion and debate.",
+              "explanation": "A comment about something you noticed is an \"observation\". \"Notice\" is a verb here, so it does not fit after \"good\".",
               "meaning": "a comment about something you noticed",
               "example": "That's a good observation."
             }
