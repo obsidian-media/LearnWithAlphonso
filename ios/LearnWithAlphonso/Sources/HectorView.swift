@@ -14,11 +14,14 @@ struct HectorView: View {
     /// Set when Hector is shown as a sheet (from lesson complete): adds a Done button.
     var onClose: (() -> Void)? = nil
 
+    /// Pro just landed: the paywall stays up for Hector's welcome before the conversation replaces it.
+    @State private var showingWelcome = false
+
     var body: some View {
         NavigationStack {
             Group {
-                if !entitlementStore.isPro {
-                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
+                if !entitlementStore.isPro || showingWelcome {
+                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab, onWelcome: { showingWelcome = $0 })
                 } else {
                     HectorConversationView(
                         session: session,
