@@ -45,10 +45,12 @@ const LEVELS: readonly ScenarioLevel[] = ["Beginner", "Intermediate", "Advanced"
 
 const HEAD_SCRIM =
   "linear-gradient(180deg, color-mix(in srgb, var(--c-hero-b) 42%, transparent) 0%, transparent 32%, transparent 55%, var(--c-surface) 98%)";
+// The rooms are light paintings: the text sits on a shade that reaches near-solid navy behind it (mock: 86% at the
+// foot), starting high enough that the gold overline stays readable.
 const CARD_SHADE =
-  "linear-gradient(180deg, transparent 22%, color-mix(in srgb, var(--c-hero-b) 86%, transparent) 100%)";
+  "linear-gradient(180deg, transparent 8%, color-mix(in srgb, var(--c-hero-b) 72%, transparent) 48%, color-mix(in srgb, var(--c-hero-b) 92%, transparent) 100%)";
 const TILE_SHADE =
-  "linear-gradient(180deg, transparent 38%, color-mix(in srgb, var(--c-hero-b) 86%, transparent) 100%)";
+  "linear-gradient(180deg, transparent 30%, color-mix(in srgb, var(--c-hero-b) 78%, transparent) 62%, color-mix(in srgb, var(--c-hero-b) 92%, transparent) 100%)";
 
 type Sheet = { target: PreCallTarget; start: (mode: CallMode) => StartTarget };
 
