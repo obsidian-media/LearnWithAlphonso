@@ -514,10 +514,10 @@ internal fun FirstRunFooter(
 }
 
 @Composable
-internal fun FirstRunTextButton(label: String, onClick: () -> Unit) {
+internal fun FirstRunTextButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth()) {
     val ds = LocalAlphonsoTokens.current
     Box(
-        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onClick),
+        modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Text(label, style = HeadlineType, color = ds.choice, textAlign = TextAlign.Center) }
 }
@@ -542,7 +542,7 @@ internal fun FirstRunPickerDialog(
         Column(Modifier.fillMaxSize().background(ds.surface)) {
             Row(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = TitleType, color = ds.brand, modifier = Modifier.weight(1f).padding(start = AlphonsoTokens.Space.s2).semantics { heading() })
-                FirstRunTextButton("Close", onClose)
+                FirstRunTextButton("Close", onClose, Modifier.padding(horizontal = AlphonsoTokens.Space.s2))
             }
             BasicTextField(
                 value = query, onValueChange = { query = it }, singleLine = true,

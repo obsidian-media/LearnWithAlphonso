@@ -85,7 +85,7 @@ fun AvatarPickerDialog(container: AppContainer, name: String, current: String, o
         Column(Modifier.fillMaxSize().background(ds.surface).statusBarsPadding()) {
             Row(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
                 Text("Your picture", style = TitleType, color = ds.brand, modifier = Modifier.weight(1f).padding(start = AlphonsoTokens.Space.s2).semantics { heading() })
-                FirstRunTextButton("Close", onClose)
+                FirstRunTextButton("Close", onClose, Modifier.padding(horizontal = AlphonsoTokens.Space.s2))
             }
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.s5),
