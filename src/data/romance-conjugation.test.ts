@@ -146,9 +146,8 @@ describe("B1 to C1 conjugation drills (not fixed yet: the count may only go down
     const bad = found.filter((d) => nonForms(d).length > 0).length;
     // 2026-11-06: 490 of the 507 drill questions this detector finds (477 before the form check
     // compared vowels: it had read "estoy" as a form of ser). Lower this number when you fix some;
-    // never raise it. 2026-11-06 content review: French 143 -> 3, so 490 -> 350 (Spanish lowers it
-    // again in its own PR; if both merge, keep the lower measured number).
-    expect(bad).toBeLessThanOrEqual(350);
+    // never raise it. 2026-11-06 content review: French 143 -> 3 and Spanish 347 -> 0, so 490 -> 3.
+    expect(bad).toBeLessThanOrEqual(3);
   });
 });
 

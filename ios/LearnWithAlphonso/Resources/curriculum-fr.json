@@ -6005,15 +6005,15 @@
             {
               "id": "fra1p17q6",
               "type": "mc",
-              "prompt": "The French word for \"internet\" is…",
+              "prompt": "The French word for \"screen\" is…",
               "choices": [
                 "la batterie",
                 "le courriel",
-                "internet",
+                "l'écran",
                 "la télévision"
               ],
               "answer": 2,
-              "explanation": "internet → internet. Common technology and device vocabulary."
+              "explanation": "A screen is \"l'écran\". The masculine \"le\" becomes \"l'\" because \"écran\" starts with a vowel."
             },
             {
               "id": "fra1p17q7",
@@ -18939,15 +18939,15 @@
             {
               "id": "frb1p2q10",
               "type": "mc",
-              "prompt": "The French word for \"intelligent\" is…",
+              "prompt": "The French word for \"lazy\" is…",
               "choices": [
-                "intelligent",
                 "paresseux",
+                "intelligent",
                 "ennuyeux",
                 "jeune"
               ],
               "answer": 0,
-              "explanation": "intelligent → intelligent. Common descriptive adjectives (masculine form)."
+              "explanation": "\"paresseux\" means \"lazy\" and describes someone who avoids effort; its feminine form is \"paresseuse\"."
             },
             {
               "id": "frb1p2q11",
