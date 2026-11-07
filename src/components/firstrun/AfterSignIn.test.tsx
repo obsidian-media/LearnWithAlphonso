@@ -47,7 +47,13 @@ describe("Meet Hector", () => {
   it("shows the trial length the store offers, never a number of its own", async () => {
     fetchSpy.mockResolvedValue(
       new Response(
-        JSON.stringify({ price: null, period: "month", trialDays: 3, purchaseUrl: "https://x" }),
+        // Test fixture: /api/pro-offering's { plans } answer, yearly first.
+        JSON.stringify({
+          plans: [
+            { price: null, period: "year", trialDays: 3, purchaseUrl: "https://x/y" },
+            { price: null, period: "month", trialDays: 3, purchaseUrl: "https://x/m" },
+          ],
+        }),
       ),
     );
     renderAt("hector");
@@ -73,10 +79,7 @@ describe("Meet Hector", () => {
     fetchSpy.mockResolvedValue(
       new Response(
         JSON.stringify({
-          price: "$9.99",
-          period: "month",
-          trialDays: null,
-          purchaseUrl: "https://x",
+          plans: [{ price: "$9.99", period: "month", trialDays: null, purchaseUrl: "https://x" }],
         }),
       ),
     );

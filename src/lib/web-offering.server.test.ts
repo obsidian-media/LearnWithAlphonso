@@ -42,6 +42,8 @@ describe("getWebOffering", () => {
     expect(await getWebOffering(CONFIG, "prod_web", fetchImpl)).toEqual({
       price: new Intl.NumberFormat("en", { style: "currency", currency: "CAD" }).format(12.99),
       priceCountry: "CA",
+      amountMicros: 12_990_000,
+      currency: "CAD",
       period: "month",
       trialDays: 7,
     });
@@ -97,6 +99,18 @@ describe("getWebOffering", () => {
     await getWebOffering(CONFIG, "prod_web", fetchImpl);
     await getWebOffering(CONFIG, "prod_web", fetchImpl);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("caches each product on its own, so yearly and monthly do not evict each other", async () => {
+    const fetchImpl = productsResponse([
+      product,
+      { ...product, id: "prod_year", subscription: { duration: "P1Y", trial_duration: "P7D" } },
+    ]);
+    expect(await getWebOffering(CONFIG, "prod_web", fetchImpl)).toMatchObject({ period: "month" });
+    expect(await getWebOffering(CONFIG, "prod_year", fetchImpl)).toMatchObject({ period: "year" });
+    expect(await getWebOffering(CONFIG, "prod_web", fetchImpl)).toMatchObject({ period: "month" });
+    expect(await getWebOffering(CONFIG, "prod_year", fetchImpl)).toMatchObject({ period: "year" });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 });
 

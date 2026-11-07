@@ -111,16 +111,8 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "free" || refusedSource) {
     return (
       <LessonFrame>
-        {/* Hector waves in the library clip (his head at 47% down, feet at 80%); the offer starts at his waist. */}
-        <SceneBackdrop scene="hector" focus="50% 30%" clip="hector" />
-        <div className="relative z-10 px-5 pt-4">
-          <div
-            role="img"
-            aria-label="Hector, waving in his library"
-            className="h-[calc(74svh-4.5rem)]"
-          />
-          <WebPaywall source={refusedSource ?? "hector_tab"} />
-        </div>
+        {/* The round-6 paywall paints Hector in his library itself. */}
+        <WebPaywall source={refusedSource ?? "hector_tab"} />
       </LessonFrame>
     );
   }

@@ -166,9 +166,10 @@ function useTrialOffer(): Offer {
           headers: await authHeaders(),
         });
         if (!res.ok) return live && setOffer({ kind: "none" });
-        const body = (await res.json()) as { trialDays?: unknown };
-        const days =
-          typeof body.trialDays === "number" && body.trialDays >= 1 ? body.trialDays : null;
+        // { plans }, the selected (first) plan's trial; every plan shares the learner's eligibility.
+        const body = (await res.json()) as { plans?: { trialDays?: unknown }[] };
+        const trialDays = body.plans?.[0]?.trialDays;
+        const days = typeof trialDays === "number" && trialDays >= 1 ? trialDays : null;
         if (live) setOffer(days ? { kind: "trial", days } : { kind: "plain" });
       } catch {
         if (live) setOffer({ kind: "none" });
