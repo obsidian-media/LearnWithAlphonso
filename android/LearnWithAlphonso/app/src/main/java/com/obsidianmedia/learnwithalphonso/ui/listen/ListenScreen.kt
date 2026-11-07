@@ -292,38 +292,38 @@ fun PodcastMiniBar(container: AppContainer) {
     // The language of the episode's text: its ROOT folder's course. Unknown (folders not readable) means no saving rather than a guess.
     var transcriptCourse by remember(episode.id) { mutableStateOf<String?>(null) }
 
-    Column(Modifier.fillMaxWidth().background(palette.parchment)) {
-        HorizontalDivider(color = palette.hairline)
+    var expanded by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxWidth().background(palette.mossDeep)) {
         // The quiz is offered once the episode has played to its end (and only if it has one the learner can see).
         PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Column(Modifier.weight(1f)) {
-                Text(episode.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Column(Modifier.weight(1f).clickable(role = androidx.compose.ui.semantics.Role.Button) { expanded = true }.semantics { contentDescription = "Open player: ${episode.title}" }) {
+                Text(episode.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.onPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 val failure = state.failure
                 when {
-                    failure != null -> Text(PodcastPlaybackCopy.message(failure), style = MaterialTheme.typography.bodySmall, color = palette.destructive)
-                    state.phase == PodcastPlayerPhase.Buffering -> Text(PodcastPlaybackCopy.BUFFERING_LABEL, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    else -> Text("${length(state.elapsedSeconds.toInt())} / ${length(episode.durationSeconds)}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    failure != null -> Text(PodcastPlaybackCopy.message(failure), style = MaterialTheme.typography.bodySmall, color = palette.emberSoft)
+                    state.phase == PodcastPlayerPhase.Buffering -> Text(PodcastPlaybackCopy.BUFFERING_LABEL, style = MaterialTheme.typography.bodySmall, color = palette.onPrimary)
+                    else -> Text("Alphonso · ${ListenShelf.clock(episode.durationSeconds - state.elapsedSeconds.toInt())} left", style = MaterialTheme.typography.bodySmall, color = palette.onPrimary)
                 }
             }
             // Only a confirmed player shows Pause; a loading one shows a spinner; a failed one offers Retry.
-            Box(Modifier.size(40.dp).background(palette.moss, CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(48.dp).background(palette.ember, CircleShape), contentAlignment = Alignment.Center) {
                 when (state.control) {
                     PodcastPlayerControl.SPINNER -> {
-                        CircularProgressIndicator(color = palette.onPrimary, strokeWidth = 2.dp, modifier = Modifier.size(22.dp).semantics { contentDescription = "Loading" })
+                        CircularProgressIndicator(color = palette.onAccent, strokeWidth = 2.dp, modifier = Modifier.size(22.dp).semantics { contentDescription = "Loading" })
                     }
-                    else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(40.dp)) {
+                    else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(48.dp)) {
                         val (icon, label) = when (state.control) {
                             PodcastPlayerControl.PAUSE -> Icons.Filled.Pause to "Pause"
                             PodcastPlayerControl.RETRY -> Icons.Filled.Refresh to PodcastPlaybackCopy.RETRY_TITLE
                             else -> Icons.Filled.PlayArrow to "Play"
                         }
-                        Icon(icon, contentDescription = label, tint = palette.onPrimary)
+                        Icon(icon, contentDescription = label, tint = palette.onAccent)
                     }
                 }
             }
             state.nextEpisode?.let { next ->
-                IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = palette.inkSoft) }
+                IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = palette.onPrimary) }
             }
             IconButton(onClick = {
                 showTranscript = true
@@ -333,8 +333,29 @@ fun PodcastMiniBar(container: AppContainer) {
                     transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
                     loadingTranscript = false
                 }
-            }) { Icon(Icons.Filled.Notes, contentDescription = "Show transcript", tint = palette.inkSoft) }
-            IconButton(onClick = { container.podcastPlayer.close() }) { Icon(Icons.Filled.Close, contentDescription = "Close player", tint = palette.inkSoft) }
+            }) { Icon(Icons.Filled.Notes, contentDescription = "Show transcript", tint = palette.onPrimary) }
+            IconButton(onClick = { container.podcastPlayer.close() }) { Icon(Icons.Filled.Close, contentDescription = "Close player", tint = palette.onPrimary) }
+        }
+    }
+
+    if (expanded) {
+        ModalBottomSheet(onDismissRequest = { expanded = false }, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = palette.mossDeep) {
+            FullPlayerContent(
+                title = episode.title, aiNarrated = episode.aiNarrated, elapsed = state.elapsedSeconds, duration = episode.durationSeconds,
+                control = state.control, onToggle = { container.podcastPlayer.toggle() },
+                onSkip = { container.podcastPlayer.skip(it) },
+                onTranscript = {
+                    expanded = false
+                    showTranscript = true
+                    if (transcript == null && !loadingTranscript) scope.launch {
+                        loadingTranscript = true
+                        transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
+                        transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
+                        loadingTranscript = false
+                    }
+                },
+                onClose = { expanded = false; container.podcastPlayer.close() },
+            )
         }
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -299,4 +300,55 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
 private suspend fun playEpisode(container: AppContainer, episode: com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode, queue: List<com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode>) {
     container.podcastPlayer.play(episode, container.downloads.localFile(episode.id)?.toURI()?.toString(), queue)
     container.downloads.markPlayed(episode.id)
+}
+
+/**
+ * The full-screen player body: the room, Alphonso, the title, progress with time left, back 15 / play / forward 30 and the
+ * transcript. The audio is untouched by opening or closing it. Seeking is by the skip buttons (the player has no absolute seek).
+ */
+@Composable
+internal fun FullPlayerContent(
+    title: String,
+    aiNarrated: Boolean,
+    elapsed: Double,
+    duration: Int,
+    control: com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl,
+    onToggle: () -> Unit,
+    onSkip: (Double) -> Unit,
+    onTranscript: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val palette = AlphonsoColor.palette
+    val left = ListenShelf.clock(duration - elapsed.toInt())
+    Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Box(Modifier.size(240.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(24.dp))) {
+            RoomImage("radio", Modifier.matchParentSize())
+            Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).width(120.dp))
+        }
+        Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+        Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodyMedium)
+        LinearProgressIndicator(
+            progress = { if (duration > 0) (elapsed / duration).toFloat().coerceIn(0f, 1f) else 0f },
+            color = palette.ember, trackColor = palette.onPrimary.copy(alpha = 0.25f),
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Playback position, ${ListenShelf.clock(elapsed.toInt())} of ${ListenShelf.clock(duration)}" },
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(ListenShelf.clock(elapsed.toInt()), color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
+            Text("-$left", color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+            TextButtonLike("−15") { onSkip(-15.0) }
+            Box(Modifier.size(64.dp).background(palette.ember, CircleShape), contentAlignment = Alignment.Center) {
+                IconButton(onClick = onToggle, modifier = Modifier.size(64.dp)) {
+                    val (icon, label) = if (control == com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl.PAUSE) Icons.Filled.Pause to "Pause" else Icons.Filled.PlayArrow to "Play"
+                    Icon(icon, contentDescription = label, tint = palette.onAccent)
+                }
+            }
+            TextButtonLike("+30") { onSkip(30.0) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TextButtonLike("Transcript", onTranscript)
+            TextButtonLike("Stop and close", onClose)
+        }
+    }
 }

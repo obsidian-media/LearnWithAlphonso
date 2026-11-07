@@ -51,7 +51,7 @@ struct ListenShelfRoot: View {
                             ForEach([nil] + levels.map { Optional($0) }, id: \.self) { chip in
                                 Button { level = chip } label: {
                                     Text(chip ?? "All")
-                                        .font(AlphonsoFont.sans(13, weight: .bold))
+                                        .dsText(.footnote)
                                         .padding(.horizontal, AlphonsoSpacing.md)
                                         .frame(minHeight: AlphonsoSpacing.minTouchTarget)
                                         .foregroundStyle(level == chip ? AlphonsoColor.onPrimary : AlphonsoColor.inkSoft)
@@ -69,7 +69,7 @@ struct ListenShelfRoot: View {
                 } else if loadFailed {
                     VStack(spacing: AlphonsoSpacing.sm) {
                         Text(networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.")
-                            .font(AlphonsoFont.sans(14)).foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.body).foregroundStyle(AlphonsoColor.inkSoft)
                         Button("Try again") { Task { await load() } }.tint(AlphonsoColor.moss)
                     }
                     .frame(maxWidth: .infinity)
@@ -79,7 +79,7 @@ struct ListenShelfRoot: View {
                         Text(episodes.isEmpty
                             ? PodcastLibraryCopy.emptyMessage
                             : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.")
-                            .font(AlphonsoFont.sans(14, weight: .semiBold))
+                            .dsText(.body)
                             .foregroundStyle(AlphonsoColor.ink)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
@@ -155,15 +155,15 @@ private struct RoomTile: View {
             LinearGradient(colors: [.clear, AlphonsoColor.mossDeep.opacity(0.85)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 2) {
                 if let level = shelf.level {
-                    Text(level).font(AlphonsoFont.sans(12, weight: .bold)).foregroundStyle(AlphonsoColor.ink)
+                    Text(level).dsText(.caption).foregroundStyle(AlphonsoColor.ink)
                         .padding(.horizontal, AlphonsoSpacing.sm).background(Capsule().fill(AlphonsoColor.parchment))
                 }
                 Spacer(minLength: 0)
                 Text(shelf.folder.title)
-                    .font(AlphonsoFont.display(16, weight: .bold)).foregroundStyle(AlphonsoColor.onPrimary)
+                    .dsText(.headline).foregroundStyle(AlphonsoColor.onPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("\(shelf.episodes.count) \(shelf.episodes.count == 1 ? "episode" : "episodes") \u{00B7} \(shelf.percent == 100 ? "finished \u{2713}" : "\(shelf.percent)%")")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold)).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
+                    .dsText(.caption).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
             }
             .padding(AlphonsoSpacing.sm + 2)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,13 +196,13 @@ private struct ContinueCard: View {
                 LinearGradient(colors: [AlphonsoColor.mossDeep.opacity(0.4), AlphonsoColor.mossDeep.opacity(0.9)], startPoint: .top, endPoint: .bottom)
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                        Text("CONTINUE LISTENING").font(AlphonsoFont.sans(12, weight: .bold)).foregroundStyle(AlphonsoColor.emberSoft)
+                        Text("CONTINUE LISTENING").dsText(.caption).foregroundStyle(AlphonsoColor.emberSoft)
                         Spacer(minLength: 0)
-                        Text(target.episode.title).font(AlphonsoFont.display(21, weight: .bold))
+                        Text(target.episode.title).dsText(.title)
                             .foregroundStyle(AlphonsoColor.onPrimary).fixedSize(horizontal: false, vertical: true)
                         Text(([target.shelf.level, "Episode \(number)", target.progress == nil ? ListenShelf.clock(left) : "\(ListenShelf.clock(left)) left"]
                             .compactMap { $0 }).joined(separator: " \u{00B7} "))
-                            .font(AlphonsoFont.sans(13, weight: .semiBold)).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
+                            .dsText(.footnote).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
                         ProgressView(value: ListenShelf.fraction(target.episode, target.progress)).tint(AlphonsoColor.ember)
                     }
                     Image(MascotArt.assetName(for: .learnGreeting)).resizable().scaledToFit().frame(width: 96)
@@ -246,13 +246,13 @@ struct ListenShelfDetail: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
                             if let level = shelf.level {
-                                Text(level).font(AlphonsoFont.sans(12, weight: .bold)).foregroundStyle(AlphonsoColor.ink)
+                                Text(level).dsText(.caption).foregroundStyle(AlphonsoColor.ink)
                                     .padding(.horizontal, AlphonsoSpacing.sm).background(Capsule().fill(AlphonsoColor.surface))
                             }
-                            Text(shelf.folder.title).font(AlphonsoFont.display(30, weight: .bold)).foregroundStyle(AlphonsoColor.ink)
+                            Text(shelf.folder.title).dsText(.display).foregroundStyle(AlphonsoColor.ink)
                                 .fixedSize(horizontal: false, vertical: true)
                             Text("Hosted by Alphonso \u{00B7} \(shelf.episodes.count) \(shelf.episodes.count == 1 ? "episode" : "episodes") \u{00B7} \(minutes) min")
-                                .font(AlphonsoFont.sans(13, weight: .semiBold)).foregroundStyle(AlphonsoColor.inkSoft)
+                                .dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
                         }
                         Spacer(minLength: 0)
                         Image(MascotArt.assetName(for: .lessonComplete)).resizable().scaledToFit().frame(width: 110)
@@ -269,7 +269,7 @@ struct ListenShelfDetail: View {
                         play(target)
                     } label: {
                         Label("\(isContinue ? "Continue" : "Start") Episode \(number)", systemImage: "play.fill")
-                            .font(AlphonsoFont.sans(16, weight: .bold))
+                            .dsText(.headline)
                             .frame(maxWidth: .infinity, minHeight: 48)
                             .foregroundStyle(AlphonsoColor.onPrimary)
                             .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(AlphonsoColor.moss))
@@ -285,18 +285,18 @@ struct ListenShelfDetail: View {
                             Button { play(episode) } label: {
                                 HStack(spacing: AlphonsoSpacing.sm + 2) {
                                     Text(state == .done ? "\u{2713}" : "\(index + 1)")
-                                        .font(AlphonsoFont.sans(14, weight: .bold))
+                                        .dsText(.body)
                                         .foregroundStyle(state == .done ? AlphonsoColor.onPrimary : AlphonsoColor.ink)
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(state == .done ? AlphonsoColor.moss : state == .inProgress ? AlphonsoColor.emberSoft : AlphonsoColor.surface))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(episode.title).font(AlphonsoFont.display(15, weight: .bold)).foregroundStyle(AlphonsoColor.ink)
+                                        Text(episode.title).dsText(.headline).foregroundStyle(AlphonsoColor.ink)
                                             .fixedSize(horizontal: false, vertical: true)
                                         if state == .inProgress {
                                             ProgressView(value: ListenShelf.fraction(episode, p)).tint(AlphonsoColor.ember)
                                         }
                                         Text(subtitle(episode, state: state, left: ListenShelf.secondsLeft(episode, p)))
-                                            .font(AlphonsoFont.sans(12)).foregroundStyle(AlphonsoColor.inkSoft)
+                                            .dsText(.caption).foregroundStyle(AlphonsoColor.inkSoft)
                                     }
                                     Spacer(minLength: 0)
                                 }
