@@ -153,6 +153,9 @@ describe("web Hector", () => {
     await renderPage();
     const box = await screen.findByRole("textbox", { name: "Message Hector" });
     await waitFor(() => expect(fetchProgress).toHaveBeenCalled());
+    // Hector speaks first (hector.greeting.test.tsx): his greeting is the first turn of the history.
+    const greeting = "Salut ! Moi, c'est Hector. De quoi tu veux parler aujourd'hui ?";
+    await waitFor(() => expect(screen.getByRole("log").textContent).toContain("Moi, c'est Hector"));
     await userEvent.type(box, "Salut Hector{Enter}");
     expect(await screen.findByText(/Comment ça va/)).toBeInTheDocument();
     await userEvent.type(box, "Ça va bien{Enter}");
@@ -162,7 +165,7 @@ describe("web Hector", () => {
     const turns = sent.filter((s) => s.url === "/api/hector-respond").map((s) => s.body);
     expect(turns[0]).toEqual({
       text: "Salut Hector",
-      history: [],
+      history: [{ role: "assistant", content: greeting }],
       course: "fr",
       cefr_level: "A2",
       voice: "aura-2-hector-fr",
@@ -170,6 +173,7 @@ describe("web Hector", () => {
     expect(turns[1]).toEqual({
       text: "Ça va bien",
       history: [
+        { role: "assistant", content: greeting },
         { role: "user", content: "Salut Hector" },
         { role: "assistant", content: "Bonjour ! Comment ça va ?" },
       ],

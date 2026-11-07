@@ -125,9 +125,10 @@ final class VoiceSessionController {
     /// reply (so his lips move with it). Practice and Campaigns call it when the call opens and when a new scene or
     /// conversation starts; `opener` is `ConversationSnapshot.pendingOpener`, nil once the learner has answered.
     /// Static openers are cached (OpenerSpeechCache), so returning to the call does not fetch or charge again.
-    func speakOpener(_ opener: String?, session: Session, course: Course) async {
+    /// Hector's greeting (HectorView) passes `speaker: .hector`: his own chosen voice, never Alphonso's.
+    func speakOpener(_ opener: String?, session: Session, course: Course, speaker: VoiceCharacter = .alphonso) async {
         let courseCode = course.wireCode
-        let voiceID = VoicePrefsCache().voice(.alphonso, course: courseCode)
+        let voiceID = VoicePrefsCache().voice(speaker, course: courseCode)
         await OpenerPlayback.speak(
             opener,
             begin: { beginOpener() },
@@ -140,7 +141,8 @@ final class VoiceSessionController {
                         baseURL: AppConfig.apiBaseURL,
                         accessToken: { accessToken },
                         refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
-                    return try await client.synthesizeSpeech(text: text, voice: voiceID, course: courseCode)
+                    return try await client.synthesizeSpeech(
+                        text: text, voice: voiceID, course: courseCode, character: speaker)
                 }
             },
             play: { audio, generation in play(audio, generation: generation) },

@@ -146,8 +146,11 @@ describe("iOS AI consent wiring", () => {
     expect(code("CampaignView.swift")).toContain(
       "isOpener: conversation.openerIndices.contains(index)",
     );
-    // Hector has no scripted opener, so nothing there may be excluded.
-    for (const call of replyCalls("HectorView.swift")) expect(call).toContain("isOpener: false");
+    // Hector's only scripted line is his greeting (an opener position); every model reply stays reportable.
+    expect(code("HectorView.swift")).toContain(
+      "isOpener: conversation.openerIndices.contains(index)",
+    );
+    for (const call of replyCalls("HectorView.swift")) expect(call).toContain("isOpener: isOpener");
   });
 
   it("the tutor screens keep their consent wall", () => {
