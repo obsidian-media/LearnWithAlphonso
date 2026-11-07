@@ -420,6 +420,10 @@ describe("Profile, round 6", () => {
     expect(document.querySelector('[data-big-stat="words"]')).toHaveTextContent(
       `${o.savedWords} saved to review`,
     );
+    // This week's XP is account-wide (activity_days), so with several courses it says so next to a course total.
+    expect(document.querySelector('[data-big-stat="xp"]')).toHaveTextContent(
+      `+${n.xpThisWeek.toLocaleString("en-US")} this week, all courses`,
+    );
   });
 
   it("the heat map draws exactly the 3-month window, one square a day", async () => {

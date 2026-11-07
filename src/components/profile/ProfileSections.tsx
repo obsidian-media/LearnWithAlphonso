@@ -252,7 +252,11 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         iconClass="text-ds-xp"
         value={n.courseXp}
         label="total XP"
-        note={n.xpThisWeek > 0 ? `+${fmt(n.xpThisWeek)} this week` : "None yet this week"}
+        note={
+          n.xpThisWeek > 0
+            ? `+${fmt(n.xpThisWeek)} this week${o.courses.length > 1 ? ", all courses" : ""}`
+            : "None yet this week"
+        }
         noteTone={n.xpThisWeek > 0 ? "right" : "soft"}
         className="border-ds-line bg-ds-card"
       />
@@ -285,7 +289,7 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
 const WEEKDAY = (day: string, style: "narrow" | "long") =>
   new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", { weekday: style, timeZone: "UTC" });
 
-function Ring({ d }: { d: RingDay }) {
+function Ring({ d, today }: { d: RingDay; today: string }) {
   const done = d.state === "done";
   const label = `${WEEKDAY(d.day, "long")}: ${
     d.state === "future"
@@ -306,7 +310,7 @@ function Ring({ d }: { d: RingDay }) {
         aria-hidden="true"
         data-ring={d.state}
         className={`grid size-[30px] place-items-center rounded-full ${done ? "bg-ds-action" : "bg-ds-line"} ${
-          d.state === "today" ? "shadow-[0_0_0_2px_var(--c-choice)]" : ""
+          d.day === today ? "shadow-[0_0_0_2px_var(--c-choice)]" : ""
         } ${d.state === "future" ? "opacity-50" : ""}`}
       >
         <span
@@ -376,7 +380,7 @@ export function ThisWeek({ o }: { o: ProfileOverview }) {
       <div className={`${CARD} p-3`}>
         <ol className="grid grid-cols-7 gap-1 text-center">
           {w.days.map((d) => (
-            <Ring key={d.day} d={d} />
+            <Ring key={d.day} d={d} today={o.today} />
           ))}
         </ol>
       </div>

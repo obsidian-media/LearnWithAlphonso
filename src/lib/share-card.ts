@@ -69,7 +69,7 @@ export function drawShareCard(
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  if (mascot) ctx.drawImage(mascot, W - 560, H - 640, 620, 620);
+  if (mascot) ctx.drawImage(mascot, W - 560, H - 620, 620, 620);
 
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = p.onHeroSoft;
