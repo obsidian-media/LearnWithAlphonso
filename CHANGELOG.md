@@ -10,7 +10,20 @@ works now_.
 
 ## Unreleased
 
-### Build 60 batch (2026-11-06 to 2026-11-07, #430 to #466; the iOS build is cut after this docs pass)
+### Build 61 batch (2026-11-07, #452 to #477; the iOS build is cut after this docs pass)
+
+- **Design tokens for the marketing site (#452).** A `marketing` block in `design/tokens.json` (heading sizes, section spacing, frame radius); the apps and the exporter ignore it. The marketing site (separate repo) went live reading it.
+- **Web QA fixes (#469).** `/listen` renders an `Outlet`, so folders open; sign-in, settings, consent and voice sheets use the round-6 `ds-*` tokens; French profile shows one XP total; "Practice" spelling; the two "Adult" age bands are distinguished ("Mid-life"); the Sound effects switch also turns haptics off. New tests: `listen.route.test.tsx`, `signin-round6-tokens.test.tsx`, `settings-round6-tokens.test.ts`.
+- **Hector remembers on the web (#470).** `/api/hector-respond` reads the learner's own open weak-spot labels on the server (Pro and AI consent only) and primes the call, as on iOS; no client field can supply it.
+- **Held-back content fixes (#471).** 56 of 59 held roleplay, premise and podcast-quiz fixes applied (3 partial, 3 skipped with reasons), plus 16 previously refused fixes. 45 shipped prompts changed, so `legacy-prompt-aliases.json` (frozen old to new) lets `/api/chat` accept older builds' text (`canonicalSystemPrompt`); `ALL_SYSTEM_PROMPTS` is unchanged. Curriculum reseeded and the podcast quiz seed file run once by hand.
+- **Profile data (#472, migration `20261107120000_profile_data.sql`).** `learning_days`, `mastered_words`, `learner_time_zones`, `skill_days`, `get_my_league_standing`, and a mastered marker in `apply_review_grade`. Server-written, own-row read, cascade on deletion, in the export. Time zone is display only. Tested against real SQL in PGlite.
+- **Learn and Profile layout (#473).** Learn pins the current unit and folds finished units and rooms; Profile has Overview, Progress and Social tabs. Same rules on web, iOS and Android.
+- **Listen redesign (#474, migration `20261107130000_listen_progress.sql`).** Rooms shelf, folder view, mini and full players, and "continue listening" through `listen_progress` and `save_listen_progress`. No transcript follow-along, sleep timer or backfill.
+- **Skills radar and new Profile data in the UI (#475).** Radar (3 skills with 5 answers each, else the empty state), week rings in learning minutes, words mastered, league rank and week end.
+- **iOS QA fixes (#476).** Listen tiles and headers sized correctly, the "Call Alphonso" button works again (pictures no longer take taps), words no longer break at the largest Dynamic Type sizes, "1 lessons done" pluralised.
+- **Final polish (#477).** The first run that ends on Hector opens Hector (placement is skipped for it); the Canopy theme and web legacy colour names read the round-6 tokens; one Achievements entry; segmented Call/Chat; iOS chat bubbles with the learner on the right; Friends skips the age gate when an age band is known; Listen leaves room for the mini player.
+
+### Build 60 batch (2026-11-06 to 2026-11-07, #430 to #466; cut as iOS build 60, #468)
 
 **Visual round 6, the new look on every platform.**
 
