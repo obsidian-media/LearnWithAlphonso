@@ -26,6 +26,59 @@ final class VoiceSessionStateTests: XCTestCase {
         return generation
     }
 
+    // MARK: - The opening line (build 59: shown, never spoken)
+
+    func testTheOpenerThinksWhileItsVoiceLoadsThenSpeaks() {
+        var state = appeared()
+        XCTAssertEqual(state.handle(.openerRequested), [.pauseOtherAudio])
+        let generation = state.generation
+        XCTAssertEqual(state.phase, .thinking(generation: generation))
+        // The mic does not open while the opener's voice is loading.
+        XCTAssertFalse(state.canStartPress)
+        XCTAssertEqual(state.handle(.pressBegan), [])
+        _ = state.handle(.replyReady(generation: generation, hasAudio: true))
+        XCTAssertEqual(state.phase, .speaking(generation: generation))
+        // Talking over Alphonso interrupts him, as for any reply.
+        XCTAssertEqual(
+            state.handle(.pressBegan), [.stopPlayback, .pauseOtherAudio, .requestPermission(generation: generation)])
+    }
+
+    func testAnOpenerWithoutAVoiceReturnsToIdle() {
+        var state = appeared()
+        _ = state.handle(.openerRequested)
+        _ = state.handle(.replyReady(generation: state.generation, hasAudio: false))
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertTrue(state.canStartPress)
+    }
+
+    func testNoOpenerOverARecordingOrWhileHidden() {
+        var hidden = VoiceSessionState()
+        XCTAssertEqual(hidden.handle(.openerRequested), [])
+        XCTAssertEqual(hidden.phase, .idle)
+
+        var state = appeared()
+        startRecording(&state)
+        XCTAssertEqual(state.handle(.openerRequested), [])
+        XCTAssertEqual(state.phase, .recording(generation: state.generation))
+    }
+
+    /// "Continue" while the last reply is still playing: the next scene's opener replaces it.
+    func testANewScenesOpenerReplacesAReplyStillPlaying() {
+        var state = appeared()
+        let generation = reachSpeaking(&state)
+        XCTAssertEqual(state.handle(.openerRequested), [.stopPlayback, .pauseOtherAudio])
+        XCTAssertEqual(state.phase, .thinking(generation: generation))
+    }
+
+    func testLeavingWhileTheOpenerLoadsDropsItsLateVoice() {
+        var state = appeared()
+        _ = state.handle(.openerRequested)
+        let generation = state.generation
+        _ = state.handle(.disappeared)
+        XCTAssertEqual(state.handle(.replyReady(generation: generation, hasAudio: true)), [])
+        XCTAssertEqual(state.phase, .idle)
+    }
+
     func testFreshStateIsIdleAndInvisible() {
         let state = VoiceSessionState()
         XCTAssertEqual(state.phase, .idle)

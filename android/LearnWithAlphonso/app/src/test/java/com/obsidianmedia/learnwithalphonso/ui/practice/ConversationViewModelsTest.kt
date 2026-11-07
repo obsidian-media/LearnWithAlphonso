@@ -14,7 +14,11 @@ import com.obsidianmedia.learnwithalphonso.testContent
 import com.obsidianmedia.learnwithalphonso.ui.lesson.SpeakQuestionViewModel
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -198,6 +202,76 @@ class ConversationViewModelsTest {
         assertEquals(setOf(0, secondOpener), v.state.value.openerIndices)
         val scenario = ScenarioConversationViewModel(testContent.scenarios.first(), InstantRecorder(), { true }, ai(s), s.progressClient, player)
         assertEquals(setOf(0), scenario.state.value.openerIndices)
+    }
+
+    // Build 59: the call showed the scene's opening line and Alphonso never said it.
+
+    private fun ttsTexts(s: FakeServer) = s.seen.filter { it.path.endsWith("/api/tts") }
+        .map { Json.parseToJsonElement(it.body).jsonObject }
+
+    @Test
+    fun `the call start sends the scenario's opener to TTS in Alphonso's voice and plays it`() = runBlocking {
+        val s = server()
+        val scenario = testContent.scenarios.first()
+        val v = ScenarioConversationViewModel(
+            scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player,
+            alphonsoVoice = { "aura-2-thalia-en" }, openerCache = OpenerSpeechCache(),
+        )
+        assertEquals(scenario.opener, v.pendingOpener)
+        v.speakOpener()
+        awaitTrue("opener played") { played.isNotEmpty() && v.state.value.phase == ConversationPhase.IDLE }
+        val tts = ttsTexts(s).single()
+        assertEquals(scenario.opener, tts["text"]!!.jsonPrimitive.content)
+        assertEquals("aura-2-thalia-en", tts["voice"]!!.jsonPrimitive.content)
+        assertEquals(listOf(3), played)
+        assertEquals("the opener adds no turn", 1, v.state.value.turns.size)
+    }
+
+    @Test
+    fun `the opener is fetched once, and returning to the call replays it from the cache`() = runBlocking {
+        val s = server()
+        val cache = OpenerSpeechCache()
+        val scenario = testContent.scenarios.first()
+        repeat(2) { i ->
+            val v = ScenarioConversationViewModel(scenario, InstantRecorder(), { true }, ai(s), s.progressClient, player, openerCache = cache)
+            v.speakOpener()
+            awaitTrue("opener $i") { played.size == i + 1 && v.state.value.phase == ConversationPhase.IDLE }
+        }
+        assertEquals(1, ttsTexts(s).size)
+    }
+
+    @Test
+    fun `an answered opener is not said again, and holding to talk cuts the opener off`() = runBlocking {
+        val s = server()
+        val gate = CompletableDeferred<Unit>()
+        var started = 0
+        val slowPlayer = ReplyPlayer { started++; gate.await(); true }
+        val v = ScenarioConversationViewModel(testContent.scenarios.first(), InstantRecorder(), { true }, ai(s), s.progressClient, slowPlayer, openerCache = OpenerSpeechCache())
+        v.speakOpener()
+        awaitTrue("opener speaking") { started == 1 && v.state.value.phase == ConversationPhase.SPEAKING }
+        // The mic does not open by itself while he speaks; the learner's press interrupts him.
+        v.pressBegan()
+        assertEquals(ConversationPhase.IDLE, v.state.value.phase)
+        v.pressEnded()
+        gate.complete(Unit)
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        assertNull(v.pendingOpener)
+        val before = ttsTexts(s).size
+        v.speakOpener()
+        assertEquals(before, ttsTexts(s).size)
+    }
+
+    @Test
+    fun `a campaign says each scene's opener`() = runBlocking {
+        val s = server()
+        val campaign = testContent.campaigns.first()
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player, openerCache = OpenerSpeechCache())
+        v.speakOpener()
+        awaitTrue("scene 1 opener") { ttsTexts(s).size == 1 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(campaign.scenes[0].opener, ttsTexts(s)[0]["text"]!!.jsonPrimitive.content)
+        repeat(campaign.scenes[0].minTurns) { i -> v.pressBegan(); v.pressEnded(); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 1 + 2 * (i + 1) } }
+        v.continueToNextScene()
+        awaitTrue("scene 2 opener") { ttsTexts(s).any { it["text"]!!.jsonPrimitive.content == campaign.scenes[1].opener } }
     }
 
     @Test

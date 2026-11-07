@@ -164,3 +164,6 @@ android/LearnWithAlphonso/app/google-services.json
 .content-panel/
 # Full content review state: ledger, jobs, raw replies, verdicts, local key config (scripts/content-review/run.ts)
 .content-review/
+
+# Swift tests on Windows write UserDefaults(suiteName: #file) next to the test source.
+ios/LearnWithAlphonsoKit/Tests/**/*.swift.plist

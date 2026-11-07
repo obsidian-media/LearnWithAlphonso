@@ -63,6 +63,10 @@ public struct VoiceSessionState: Equatable, Sendable {
         case turnFinished(generation: Int)
         case interrupted
         case outputRouteLost
+        /// The call opened (or a new scene began): Alphonso says the scene's opening line. It runs like a reply
+        /// that needs no recording: thinking while its voice loads (no press can start), then speaking, which a
+        /// press interrupts as usual. Finish it with `replyReady` and `playbackFinished` at the current generation.
+        case openerRequested
     }
 
     public private(set) var phase: VoicePhase = .idle
@@ -234,6 +238,14 @@ public struct VoiceSessionState: Equatable, Sendable {
             guard case .speaking = phase else { return [] }
             phase = .idle
             return [.stopPlayback, .deactivateAudioSession]
+
+        case .openerRequested:
+            // Same rule as a press: never over a recording, a permission prompt or a turn with the network.
+            guard canStartPress else { return [] }
+            let wasSpeaking: Bool
+            if case .speaking = phase { wasSpeaking = true } else { wasSpeaking = false }
+            phase = .thinking(generation: generation)
+            return wasSpeaking ? [.stopPlayback, .pauseOtherAudio] : [.pauseOtherAudio]
         }
     }
 }
