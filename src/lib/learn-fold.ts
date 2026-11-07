@@ -115,3 +115,28 @@ export function roomName(art: string): string {
   const names: Record<string, string> = { techshop: "Tech Shop", newsroom: "Newsroom" };
   return names[art] ?? art.charAt(0).toUpperCase() + art.slice(1);
 }
+
+/**
+ * Future rooms fold too: the current room is open, the NEXT room is one collapsed row, and every room after it hides
+ * behind a "Show all units" control. `hidden` is how many rooms that control would reveal.
+ */
+export function limitAhead(
+  rows: readonly FoldRow[],
+  showAll: boolean,
+): { rows: FoldRow[]; hidden: number } {
+  if (showAll) return { rows: [...rows], hidden: 0 };
+  let seenAhead = 0;
+  let hidden = 0;
+  const out: FoldRow[] = [];
+  for (const r of rows) {
+    if (r.kind === "unit" && r.state === "ahead") {
+      seenAhead += 1;
+      if (seenAhead > 1) {
+        hidden += 1;
+        continue;
+      }
+    }
+    out.push(r);
+  }
+  return { rows: out, hidden };
+}

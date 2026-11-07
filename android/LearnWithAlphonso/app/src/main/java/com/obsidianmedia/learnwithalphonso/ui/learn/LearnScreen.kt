@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -82,7 +83,6 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonStage
 import androidx.compose.foundation.layout.Box
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
-import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import kotlinx.coroutines.launch
 
 val Course.flag: String get() = when (this) { Course.ENGLISH -> "🇬🇧"; Course.FRENCH -> "🇫🇷"; Course.SPANISH -> "🇪🇸" }
@@ -96,6 +96,7 @@ val Course.displayName: String get() = when (this) { Course.ENGLISH -> "English"
 @Composable
 private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
     val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val lessons by vm.pendingLessons.collectAsState()
     val reviewAnswers by vm.pendingReviewAnswers.collectAsState()
     val syncing by container.syncCoordinator.syncing.collectAsState()
@@ -112,9 +113,9 @@ private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
 
     PendingSyncNotice.message(lessons, reviewAnswers, isConnected)?.let { message ->
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(message, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.weight(1f))
+            Text(message, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft, modifier = Modifier.weight(1f))
             TextButton(onClick = { container.syncCoordinator.syncNow() }, enabled = !syncing) {
-                Text(if (syncing) PendingSyncNotice.SYNCING_TITLE else PendingSyncNotice.SYNC_NOW_TITLE, color = palette.moss)
+                Text(if (syncing) PendingSyncNotice.SYNCING_TITLE else PendingSyncNotice.SYNC_NOW_TITLE, color = ds.actionText)
             }
         }
     }
@@ -127,8 +128,8 @@ private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
                     val reasons = dead.filter { it.identity in visible }.map { it.reason }
                     // No mail app installed: the notice stays, and there is nothing to crash on.
                     runCatching { uriHandler.openUri(DeadLetterNotice.supportMailUri(visible, reasons, BuildConfig.VERSION_NAME)) }
-                }) { Text(DeadLetterNotice.CONTACT_TITLE, color = palette.moss) }
-                TextButton(onClick = { dismissals.dismiss(visible); dismissed = dismissals.dismissed }) { Text(DeadLetterNotice.DISMISS_TITLE, color = palette.inkSoft) }
+                }) { Text(DeadLetterNotice.CONTACT_TITLE, color = ds.actionText) }
+                TextButton(onClick = { dismissals.dismiss(visible); dismissed = dismissals.dismissed }) { Text(DeadLetterNotice.DISMISS_TITLE, color = ds.inkSoft) }
             }
         }
     }
@@ -150,7 +151,7 @@ fun LearnScreen(
     LaunchedEffect(Unit) { container.activeCourse.course.collect { if (it != vm.state.value.course) vm.selectCourse(it) } }
     val progress by vm.progress.collectAsState()
     val dueCount by vm.dueCount.collectAsState()
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val units = state.unitsForLevel(container.content)
     val listState = rememberLazyListState()
 
@@ -166,7 +167,9 @@ fun LearnScreen(
     val courseUnits = remember(state.course, container.content) { container.content.bundle(state.course).units.map(::foldUnitOf) }
     val completedSet = state.completedLessonIds
     val currentUnit = LearnFold.currentUnitOf(courseUnits, completedSet)
-    val rows = LearnFold.foldLearn(units.map(::foldUnitOf), completedSet)
+    var showAllUnits by rememberSaveable { mutableStateOf(false) }
+    val limited = LearnFold.limitAhead(LearnFold.foldLearn(units.map(::foldUnitOf), completedSet), showAllUnits)
+    val rows = limited.rows
     var expandedKeys by rememberSaveable { mutableStateOf("") }
     fun isExpanded(key: String) = expandedKeys.split(",").contains(key)
     fun toggle(key: String) { expandedKeys = (expandedKeys.split(",").filter { it.isNotEmpty() && it != key } + if (isExpanded(key)) emptyList() else listOf(key)).joinToString(",") }
@@ -181,13 +184,13 @@ fun LearnScreen(
         listState.animateScrollToItem(currentRowIndex)
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().background(ds.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
             Spacer(Modifier.weight(1f))
-            Text("Learn with Alphonso", style = MaterialTheme.typography.titleMedium, color = palette.ink)
+            Text("Learn with Alphonso", style = MaterialTheme.typography.titleMedium, color = ds.ink)
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = palette.moss) }
+            IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = ds.actionText) }
         }
         ToastBanner(state.notice, onClear = vm::clearNotice)
         SyncNotices(container, vm)
@@ -214,17 +217,17 @@ fun LearnScreen(
             teamMission?.let { mission -> item(key = "team-mission") { TeamMissionCard(mission) } }
             if (state.challenges.isNotEmpty()) {
                 item(key = "challenges") {
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         AlphonsoSectionHeader("This week's challenges")
                         state.challenges.forEach { c ->
                             val done = c.progress >= c.threshold
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(c.title, style = MaterialTheme.typography.bodyLarge, color = if (c.completed) palette.inkSoft else palette.ink)
+                                Text(c.title, style = MaterialTheme.typography.bodyLarge, color = if (c.completed) ds.inkSoft else ds.ink)
                                 AlphonsoProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, modifier = Modifier.weight(1f))
-                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) TextButton(onClick = { vm.claimChallenge(c) }) { Text("Claim", color = palette.moss, fontWeight = FontWeight.SemiBold) }
-                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = MaterialTheme.typography.labelMedium, color = palette.moss)
+                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) TextButton(onClick = { vm.claimChallenge(c) }) { Text("Claim", color = ds.actionText, fontWeight = FontWeight.SemiBold) }
+                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = MaterialTheme.typography.labelMedium, color = ds.actionText)
                                 }
                             }
                         }
@@ -233,14 +236,14 @@ fun LearnScreen(
             }
             item(key = "review") {
                 val subtitle = when (dueCount) { 0 -> "Nothing due right now"; 1 -> "1 item ready to review"; else -> "$dueCount items ready to review" }
-                AlphonsoRowCard("Review", subtitle, accent = if (dueCount > 0) palette.ember else palette.hairline, modifier = Modifier.clickable { onOpenReview(state.course) })
+                AlphonsoRowCard("Review", subtitle, accent = if (dueCount > 0) ds.flame else ds.line, modifier = Modifier.clickable { onOpenReview(state.course) })
             }
             if (state.placementTaken == false) {
                 item(key = "placement") {
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp)) {
-                        Text("Find your level", style = MaterialTheme.typography.titleSmall, color = palette.ink)
-                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                        TextButton(onClick = { onOpenPlacement(state.course) }) { Text("Take the placement test", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp)) {
+                        Text("Find your level", style = MaterialTheme.typography.titleSmall, color = ds.ink)
+                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                        TextButton(onClick = { onOpenPlacement(state.course) }) { Text("Take the placement test", color = ds.actionText, fontWeight = FontWeight.SemiBold) }
                     }
                 }
             }
@@ -250,7 +253,7 @@ fun LearnScreen(
                     TextButton(
                         onClick = { scope.launch { listState.animateScrollToItem(currentRowIndex) } },
                         modifier = Modifier.heightIn(min = 48.dp),
-                    ) { Text("Jump to current", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+                    ) { Text("Jump to current", color = ds.actionText, fontWeight = FontWeight.SemiBold) }
                 }
             }
             rows.forEach { row ->
@@ -274,6 +277,13 @@ fun LearnScreen(
                     }
                 }
             }
+            if (limited.hidden > 0) {
+                item(key = "show-all-units") {
+                    TextButton(onClick = { showAllUnits = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("Show all units in ${state.selectedLevel} (${limited.hidden} more)", color = ds.ink, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
         }
     }
 }
@@ -291,11 +301,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.lessonItem(
     lesson: com.obsidianmedia.learnwithalphonso.core.content.Lesson, index: Int, completed: Set<String>, course: Course, onOpenLesson: (Course, String) -> kotlin.Unit,
 ) {
     item(key = lesson.id) {
-        val palette = AlphonsoColor.palette
+        val ds = LocalAlphonsoTokens.current
         val accent = when {
-            lesson.id in completed -> palette.hairline
-            index == 0 -> palette.ember
-            else -> palette.moss
+            lesson.id in completed -> ds.line
+            index == 0 -> ds.flame
+            else -> ds.actionText
         }
         AlphonsoRowCard(lesson.title, lesson.subtitle, accent = accent, modifier = Modifier.clickable { onOpenLesson(course, lesson.id) })
     }
@@ -351,9 +361,9 @@ private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.conte
 @Composable
 fun CoursePicker(course: Course, onSelect: (Course) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     TextButton(onClick = { open = true }, modifier = Modifier.semantics { contentDescription = "Course: ${course.displayName}" }) {
-        Text("${course.flag} ${course.code.uppercase()}", color = palette.moss, fontWeight = FontWeight.SemiBold)
+        Text("${course.flag} ${course.code.uppercase()}", color = ds.actionText, fontWeight = FontWeight.SemiBold)
     }
     DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
         Course.entries.forEach { c ->
@@ -364,22 +374,22 @@ fun CoursePicker(course: Course, onSelect: (Course) -> Unit) {
 
 @Composable
 private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         LEVELS.forEach { (id, name) ->
             val isSelected = id == selected
             Column(
                 Modifier
                     .clip(CircleShape)
-                    .background(if (isSelected) palette.moss else palette.parchment)
-                    .border(if (isSelected) 0.dp else 1.dp, palette.hairline, CircleShape)
+                    .background(if (isSelected) ds.action else ds.card)
+                    .border(if (isSelected) 0.dp else 1.dp, ds.line, CircleShape)
                     .clickable { onSelect(id) }
                     .padding(horizontal = 14.dp, vertical = 6.dp)
                     .semantics { contentDescription = "$id $name${if (isSelected) ", selected" else ""}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(id, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isSelected) palette.onPrimary else palette.ink)
-                Text(name, fontSize = 9.sp, color = if (isSelected) palette.onPrimary else palette.ink)
+                Text(id, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isSelected) ds.onAction else ds.ink)
+                Text(name, fontSize = 9.sp, color = if (isSelected) ds.onAction else ds.ink)
             }
         }
     }
@@ -389,7 +399,7 @@ private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
 @Composable
 fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> Unit)? = null) {
     if (progress == null) return
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             StatPill("🔥", "${progress.streak}", "Streak: ${progress.streak} day${if (progress.streak == 1) "" else "s"}")
@@ -410,9 +420,9 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
             // Ink on parchment, and the buy button is the secondary button: moss text alone is under 4.5:1 on Studio Ink's parchment.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).border(1.dp, palette.hairline, RoundedCornerShape(14.dp)).padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).border(1.dp, ds.line, RoundedCornerShape(14.dp)).padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             ) {
-                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelLarge, color = palette.ink, modifier = Modifier.weight(1f))
+                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelLarge, color = ds.ink, modifier = Modifier.weight(1f))
                 AlphonsoSecondaryButton("Buy freeze ($STREAK_FREEZE_XP_COST XP)", onClick = onBuyStreakFreeze, fullWidth = false)
             }
         }
@@ -421,14 +431,14 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
 
 @Composable
 private fun StatPill(icon: String, value: String, label: String) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Row(
-        Modifier.clip(CircleShape).background(palette.parchment).border(1.dp, palette.hairline, CircleShape).padding(horizontal = 10.dp, vertical = 6.dp).semantics(mergeDescendants = true) { contentDescription = label },
+        Modifier.clip(CircleShape).background(ds.card).border(1.dp, ds.line, CircleShape).padding(horizontal = 10.dp, vertical = 6.dp).semantics(mergeDescendants = true) { contentDescription = label },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(icon, fontSize = 13.sp)
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = palette.ink)
+        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = ds.ink)
     }
 }
 

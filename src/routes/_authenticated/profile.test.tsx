@@ -538,7 +538,10 @@ describe("Profile, round 6", () => {
     await openFold(/^Weak spots/);
     expect(screen.getByText("Your first lesson lights up a square.")).toBeInTheDocument();
     expect(screen.getByText(/No weak spots yet/)).toBeInTheDocument();
-    expect(screen.getByText(/Your speaking, listening/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your listening, speaking, vocabulary, grammar and reading/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/writing/i)).not.toBeInTheDocument();
     await openTab("Social");
     expect(screen.getByText(/Learning sticks better with a friend/)).toBeInTheDocument();
     expect(document.querySelector("[data-league]")).toHaveTextContent("300 XP to Sapling");

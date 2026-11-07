@@ -44,7 +44,7 @@ struct ProfileSkillsSlot: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
             Text("Skills").dsText(.headline).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
-            Text("Your speaking, listening, reading, writing and vocabulary shape will appear here once there is enough practice to show it.")
+            Text("Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.")
                 .dsText(.footnote).foregroundStyle(ds.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
         }

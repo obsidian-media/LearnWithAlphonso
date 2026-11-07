@@ -84,4 +84,19 @@ class LearnFoldTest {
         assertEquals("Tech Shop", LearnFold.roomName("techshop"))
         assertEquals("Library", LearnFold.roomName("library"))
     }
+
+    @Test
+    fun `limitAhead keeps the current room and one next room and counts the hidden rest`() {
+        val rows = LearnFold.foldLearn(mk(8), all(1, 2))
+        val r = LearnFold.limitAhead(rows, false)
+        assertEquals(listOf("done-run", "unit:current", "unit:ahead"), shape(r.rows))
+        assertEquals(4, r.hidden)
+    }
+
+    @Test
+    fun `limitAhead shows everything once asked and hides nothing with one room ahead`() {
+        val rows = LearnFold.foldLearn(mk(8), all(1, 2))
+        assertEquals(LearnFold.Limited(rows, 0), LearnFold.limitAhead(rows, true))
+        assertEquals(0, LearnFold.limitAhead(LearnFold.foldLearn(mk(3), all(1)), false).hidden)
+    }
 }

@@ -6,6 +6,7 @@ import LearnWithAlphonsoKit
 /// comment) -- no network call, works offline. Tapping a lesson opens
 /// LessonPlayerView, which does hit the network on finish.
 struct LessonBrowserView: View {
+    @Environment(\.alphonsoDS) private var ds
     let contentStore: ContentStore
     let session: Session
     let notificationScheduler: NotificationScheduler
@@ -66,6 +67,7 @@ struct LessonBrowserView: View {
     @State private var hasScrolledToContinue = false
     /// Round 6.1: which folded rows the learner opened, and whether the current unit is on screen (for Jump to current).
     @State private var expandedFolds: Set<String> = []
+    @State private var showAllUnits = false
     @State private var currentUnitVisible = true
     @Environment(.accessibilityReduceMotion) private var reduceMotion
     /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
@@ -143,6 +145,12 @@ struct LessonBrowserView: View {
     // MARK: Round 6.1 fold
 
     private var foldRows: [FoldRow] {
+        LearnFold.limitAhead(allFoldRows, showAll: showAllUnits).rows
+    }
+
+    private var hiddenFoldRooms: Int { LearnFold.limitAhead(allFoldRows, showAll: showAllUnits).hidden }
+
+    private var allFoldRows: [FoldRow] {
         LearnFold.foldLearn(
             unitsForSelectedLevel.map { FoldUnit(id: $0.id, eyebrow: $0.eyebrow, title: $0.title, lessonIDs: $0.lessons.map(\.id)) },
             completed: completedLessonIDs
@@ -203,18 +211,17 @@ struct LessonBrowserView: View {
         HStack(alignment: .center, spacing: AlphonsoSpacing.sm) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(unit.eyebrow.uppercased())
-                    .font(AlphonsoFont.sans(11, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.flame)
                 Text(unit.title)
-                    .font(AlphonsoFont.display(20, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.headline)
+                    .foregroundStyle(ds.ink)
             }
             Spacer(minLength: 0)
             Text("\(unit.lessons.filter { completedLessonIDs.contains($0.id) }.count)/\(unit.lessons.count) done")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .dsText(.caption)
                 .monospacedDigit()
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
         }
         .padding(.horizontal, AlphonsoSpacing.md)
         .padding(.vertical, AlphonsoSpacing.sm)
@@ -305,7 +312,7 @@ struct LessonBrowserView: View {
                     AlphonsoRowCard(
                         title: "Review",
                         subtitle: reviewSubtitle,
-                        accent: dueReviewCount > 0 ? AlphonsoColor.ember : AlphonsoColor.hairline
+                        accent: dueReviewCount > 0 ? ds.flame : ds.line
                     )
                 }
                 .buttonStyle(.plain)
@@ -381,8 +388,16 @@ struct LessonBrowserView: View {
                         }
                     }
                 }
+                if hiddenFoldRooms > 0 {
+                    Button("Show all units in \(selectedLevel) (\(hiddenFoldRooms) more)") { showAllUnits = true }
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.ink)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .listRowBackground(Color.clear)
+                }
             }
             .scrollContentBackground(.hidden)
+            .background(ds.surface)
             .overlay(alignment: .bottom) {
                 if !currentUnitVisible, currentUnit != nil {
                     JumpToCurrentButton {
@@ -432,7 +447,7 @@ struct LessonBrowserView: View {
                     } label: {
                         Image(systemName: "gearshape.fill")
                     }
-                    .tint(AlphonsoColor.moss)
+                    .tint(ds.choice)
                     .accessibilityLabel("Settings")
                 }
             }
@@ -465,7 +480,7 @@ struct LessonBrowserView: View {
             }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
     }
 
     /// The lesson screen, shared by the list rows, the Up next card and the path map's current node.
@@ -569,6 +584,7 @@ private extension Course {
 /// style to reuse today (CoursePicker above uses `.pickerStyle(.menu)`,
 /// wrong shape for "show all five bands at once").
 private struct LevelBandPicker: View {
+    @Environment(\.alphonsoDS) private var ds
     @Binding var selectedLevel: String
 
     var body: some View {
@@ -580,18 +596,18 @@ private struct LevelBandPicker: View {
                     } label: {
                         VStack(spacing: 1) {
                             Text(level.id)
-                                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                                .dsText(.footnote)
                             Text(level.name)
-                                .font(AlphonsoFont.sans(9))
+                                .dsText(.caption)
                         }
                         .padding(.horizontal, AlphonsoSpacing.sm + 2)
                         .padding(.vertical, AlphonsoSpacing.sm - 2)
-                        .foregroundStyle(level.id == selectedLevel ? AlphonsoColor.onPrimary : AlphonsoColor.ink)
+                        .foregroundStyle(level.id == selectedLevel ? ds.onAction : ds.ink)
                         .background(
-                            Capsule().fill(level.id == selectedLevel ? AlphonsoColor.moss : AlphonsoColor.parchment)
+                            Capsule().fill(level.id == selectedLevel ? ds.action : ds.sunk)
                         )
                         .overlay(
-                            Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: level.id == selectedLevel ? 0 : 1)
+                            Capsule().strokeBorder(ds.line, lineWidth: level.id == selectedLevel ? 0 : 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -605,6 +621,7 @@ private struct LevelBandPicker: View {
 /// Same shape as web's WeeklyChallengesCard -- renders nothing until the host has loaded challenges (the host
 /// owns the load; see the note on LessonBrowserView's state), so it never disrupts the otherwise-offline list.
 private struct WeeklyChallengesSection: View {
+    @Environment(\.alphonsoDS) private var ds
     let challenges: [WeeklyChallenge]
 
     var body: some View {
@@ -613,23 +630,22 @@ private struct WeeklyChallengesSection: View {
                 ForEach(challenges) { c in
                     VStack(alignment: .leading, spacing: 4) {
                         Text(c.title)
-                            .font(AlphonsoFont.sans(15, weight: .medium))
+                            .dsText(.footnote)
                             .strikethrough(c.completed)
-                            .foregroundStyle(c.completed ? AlphonsoColor.inkSoft : AlphonsoColor.ink)
+                            .foregroundStyle(c.completed ? ds.inkSoft : ds.ink)
                         AlphonsoProgressBar(progress: Double(min(c.progress, c.threshold)) / Double(max(c.threshold, 1)))
                         Text("\(min(c.progress, c.threshold))/\(c.threshold)")
-                            .font(AlphonsoFont.sans(11))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.caption)
+                            .foregroundStyle(ds.inkSoft)
                     }
                     .padding(.vertical, 2)
                 }
             } header: {
                 Text("This week's challenges")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.flame)
             }
-            .listRowBackground(AlphonsoTileTone.sky.background)
+            .listRowBackground(ds.choiceTint)
         }
     }
 }
@@ -637,6 +653,7 @@ private struct WeeklyChallengesSection: View {
 /// Mirrors learn.tsx's own persistent "Take the placement test" banner: shown only when the host has resolved
 /// that this course's placement genuinely hasn't been taken.
 private struct PlacementBannerSection: View {
+    @Environment(\.alphonsoDS) private var ds
     let isVisible: Bool
     let onTap: () -> Void
 
@@ -646,20 +663,20 @@ private struct PlacementBannerSection: View {
                 Button(action: onTap) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Not sure where to start?")
-                            .font(AlphonsoFont.sans(15, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.ink)
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.ink)
                         Text("Take a quick placement test and we'll set your CEFR level for you.")
-                            .font(AlphonsoFont.sans(12))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.caption)
+                            .foregroundStyle(ds.inkSoft)
                         Text("Take the placement test")
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .foregroundStyle(AlphonsoColor.moss)
+                            .dsText(.caption)
+                            .foregroundStyle(ds.action)
                     }
                     .padding(.vertical, 4)
                 }
                 .buttonStyle(.plain)
             }
-            .listRowBackground(AlphonsoColor.ember.opacity(0.1))
+            .listRowBackground(ds.action.opacity(0.1))
         }
     }
 }

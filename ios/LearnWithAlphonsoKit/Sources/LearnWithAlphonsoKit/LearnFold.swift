@@ -97,4 +97,22 @@ public enum LearnFold {
         let names = ["techshop": "Tech Shop", "newsroom": "Newsroom"]
         return names[art] ?? art.prefix(1).uppercased() + art.dropFirst()
     }
+
+    /// Future rooms fold too: the current room is open, the NEXT room is one collapsed row, and every room after it
+    /// hides behind a "Show all units" control. `hidden` is how many rooms that control reveals (same as limitAhead
+    /// in src/lib/learn-fold.ts).
+    public static func limitAhead(_ rows: [FoldRow], showAll: Bool) -> (rows: [FoldRow], hidden: Int) {
+        if showAll { return (rows, 0) }
+        var seenAhead = 0
+        var hidden = 0
+        var out: [FoldRow] = []
+        for r in rows {
+            if case .unit(_, _, let state, _, _) = r, state == .ahead {
+                seenAhead += 1
+                if seenAhead > 1 { hidden += 1; continue }
+            }
+            out.append(r)
+        }
+        return (out, hidden)
+    }
 }

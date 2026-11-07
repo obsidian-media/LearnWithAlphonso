@@ -18,6 +18,7 @@ import LearnWithAlphonsoKit
 /// working screens untouched, and matches how LessonBrowserView already
 /// presents SettingsView from its gear.
 struct ProfileHubView: View {
+    @Environment(\.alphonsoDS) private var ds
     let session: Session
     let contentStore: ContentStore
     let notificationScheduler: NotificationScheduler
@@ -46,12 +47,13 @@ struct ProfileHubView: View {
                 tabNavRows
             }
             .scrollContentBackground(.hidden)
+            .background(ds.surface)
             .screenScene(.profile)
             .navigationTitle("Profile")
             .task(id: activeCourse.course.wireCode) { await load() }
             .refreshable { await load() }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .sheet(item: $destination) { target in
             switch target {
             case .league:

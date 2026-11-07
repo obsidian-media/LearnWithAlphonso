@@ -74,4 +74,18 @@ final class LearnFoldTests: XCTestCase {
         XCTAssertEqual(LearnFold.roomName("techshop"), "Tech Shop")
         XCTAssertEqual(LearnFold.roomName("garden"), "Garden")
     }
+
+    func testLimitAheadKeepsCurrentAndOneNextAndCountsHidden() {
+        let rows = LearnFold.foldLearn(mk(8), completed: all(1, 2))
+        let r = LearnFold.limitAhead(rows, showAll: false)
+        XCTAssertEqual(kinds(r.rows), ["done-run", "unit:current", "unit:ahead"])
+        XCTAssertEqual(r.hidden, 4)
+    }
+
+    func testLimitAheadShowsAllWhenAskedAndHidesNothingWithOneAhead() {
+        let rows = LearnFold.foldLearn(mk(8), completed: all(1, 2))
+        XCTAssertEqual(LearnFold.limitAhead(rows, showAll: true).rows.count, rows.count)
+        XCTAssertEqual(LearnFold.limitAhead(rows, showAll: true).hidden, 0)
+        XCTAssertEqual(LearnFold.limitAhead(LearnFold.foldLearn(mk(3), completed: all(1)), showAll: false).hidden, 0)
+    }
 }

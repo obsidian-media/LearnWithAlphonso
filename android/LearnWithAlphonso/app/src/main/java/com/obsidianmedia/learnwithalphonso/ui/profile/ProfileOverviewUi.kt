@@ -293,7 +293,7 @@ fun ProfileFold(title: String, summary: String, content: @Composable () -> Unit)
 fun ProfileSkillsSlot() {
     ProfileCard("Skills") {
         Text(
-            "Your speaking, listening, reading, writing and vocabulary shape will appear here once there is enough practice to show it.",
+            "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.",
             style = FootnoteType, color = LocalAlphonsoTokens.current.inkSoft,
         )
     }

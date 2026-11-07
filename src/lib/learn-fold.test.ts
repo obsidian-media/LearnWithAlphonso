@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   currentUnitOf,
   foldLearn,
+  limitAhead,
   roomArtFor,
   ROOM_ART,
   runLabel,
@@ -76,5 +77,25 @@ describe("roomArtFor", () => {
     expect(roomArtFor(0)).toBe(ROOM_ART[0]);
     expect(roomArtFor(ROOM_ART.length)).toBe(ROOM_ART[0]);
     expect(roomArtFor(-1)).toBe(ROOM_ART[ROOM_ART.length - 1]);
+  });
+});
+
+describe("limitAhead", () => {
+  it("keeps the current room and ONE next room, hides the rest, and counts them", () => {
+    const rows = foldLearn(mk(8), all(1, 2));
+    const r = limitAhead(rows, false);
+    expect(r.rows.map((x) => (x.kind === "unit" ? x.state : x.kind))).toEqual([
+      "done-run",
+      "current",
+      "ahead",
+    ]);
+    expect(r.hidden).toBe(4);
+  });
+  it("shows everything once asked", () => {
+    const rows = foldLearn(mk(8), all(1, 2));
+    expect(limitAhead(rows, true)).toEqual({ rows, hidden: 0 });
+  });
+  it("hides nothing when there is only one room ahead", () => {
+    expect(limitAhead(foldLearn(mk(3), all(1)), false).hidden).toBe(0);
   });
 });

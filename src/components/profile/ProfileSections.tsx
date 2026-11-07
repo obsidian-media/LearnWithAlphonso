@@ -1092,7 +1092,7 @@ export function SkillsSlot() {
         Skills
       </h2>
       <p className="ds-type-footnote text-ds-ink-soft">
-        Your speaking, listening, reading, writing and vocabulary shape will appear here once there
+        Your listening, speaking, vocabulary, grammar and reading shape will appear here once there
         is enough practice to show it.
       </p>
     </section>

@@ -22,6 +22,7 @@ import { XP_HEART_COST } from "../../lib/hearts";
 import {
   currentUnitOf,
   foldLearn,
+  limitAhead,
   roomArtFor,
   roomName,
   runLabel,
@@ -64,7 +65,7 @@ function YouAreHere({
 }) {
   const art = roomArtFor(index - 1);
   const body = (
-    <span className="relative block h-48 overflow-hidden rounded-3xl border-2 border-ink bg-ink text-left">
+    <span className="relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
       <img
         src={`/avatar/scenes/${art}.webp`}
         alt=""
@@ -72,22 +73,22 @@ function YouAreHere({
       />
       <span
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-ds-brand/85 via-ds-brand/20 to-transparent"
       />
       <img
         src="/alphonso/lesson/happy.webp"
         alt=""
         className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
       />
-      <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-surface">
+      <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-ds-card">
         You are here · Unit {index} of {count}
       </span>
-      <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-surface">
+      <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-ds-card">
         <span className="text-xs font-semibold">
           {roomName(art)} · {level} · {unitTitle}
         </span>
         <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
-        <span className="mt-2 inline-flex min-h-11 items-center self-start rounded-full bg-ember px-4 font-display text-sm font-bold text-ink-on-ember">
+        <span className="mt-2 inline-flex min-h-11 items-center self-start rounded-full bg-ds-action px-4 font-display text-sm font-bold text-ds-on-action">
           Continue →
         </span>
       </span>
@@ -142,13 +143,13 @@ function FoldRowButton({
       className="flex min-h-11 w-full items-center gap-2 px-3.5 py-2.5 text-left"
     >
       {done && (
-        <span aria-hidden="true" className="text-moss">
+        <span aria-hidden="true" className="text-ds-action">
           ✓
         </span>
       )}
-      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ink">{label}</span>
-      <span className="tnum shrink-0 text-xs text-ink-soft">{count}</span>
-      <span aria-hidden="true" className="text-ink-soft">
+      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ds-ink">{label}</span>
+      <span className="tnum shrink-0 text-xs text-ds-ink-soft">{count}</span>
+      <span aria-hidden="true" className="text-ds-ink-soft">
         {open ? "▾" : "▸"}
       </span>
     </button>
@@ -174,21 +175,21 @@ function LessonRow({
     state === "done" ? (
       <span
         aria-hidden="true"
-        className="grid size-8 shrink-0 place-items-center rounded-full bg-moss text-surface"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-action text-ds-on-action"
       >
         ✓
       </span>
     ) : state === "locked" ? (
       <span
         aria-hidden="true"
-        className="grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-ink-soft"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-sunk text-ds-ink-soft"
       >
         🔒
       </span>
     ) : (
       <span
         aria-hidden="true"
-        className="grid size-8 shrink-0 place-items-center rounded-full bg-ember text-sm font-bold text-ink-on-ember"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-action text-sm font-bold text-ds-on-action"
       >
         {number}
       </span>
@@ -196,9 +197,9 @@ function LessonRow({
   const inner = (
     <>
       {badge}
-      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ink">{title}</span>
+      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ds-ink">{title}</span>
       {state === "active" && (
-        <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-surface">
+        <span className="shrink-0 rounded-full bg-ds-brand px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-ds-card">
           Now
         </span>
       )}
@@ -367,6 +368,8 @@ function LearnPage() {
       ),
     [hydrated, levelFoldUnits, completedSet],
   );
+  const [showAllUnits, setShowAllUnits] = useState(false);
+  const shown = useMemo(() => limitAhead(rows, showAllUnits), [rows, showAllUnits]);
   const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const [hereVisible, setHereVisible] = useState(true);
   const hereRef = useRef<HTMLElement | null>(null);
@@ -407,19 +410,19 @@ function LearnPage() {
 
   return (
     <MobileFrame>
-      <div className="relative z-10 px-6 pb-24 pt-6">
+      <div className="ds-light relative z-10 min-h-dvh bg-ds-surface px-6 pb-24 pt-6">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h1 className="font-display text-3xl font-extrabold text-ink">Learn</h1>
+          <h1 className="font-display text-3xl font-extrabold text-ds-ink">Learn</h1>
           {hydrated && (
             <div className="flex gap-1.5 text-sm font-bold">
               <span
-                className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-ember"
+                className="rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-flame"
                 aria-label={`${streak}-day streak`}
               >
                 🔥 {streak}
               </span>
               <span
-                className="tnum rounded-full border border-hairline bg-surface px-2.5 py-1 text-ink"
+                className="tnum rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-ink"
                 aria-label={`${xp} XP`}
               >
                 ★ {xp.toLocaleString("en-US")}
@@ -436,8 +439,8 @@ function LearnPage() {
               onClick={() => void switchCourse(c.id)}
               className={`min-h-11 flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
                 c.id === course
-                  ? "border-ink bg-ink text-surface"
-                  : "border-hairline bg-surface/90 text-ink-soft hover:bg-parchment"
+                  ? "border-ds-brand bg-ds-brand text-ds-card"
+                  : "border-ds-line bg-ds-card/90 text-ds-ink-soft hover:bg-ds-sunk"
               }`}
             >
               {c.flag} {c.label}
@@ -458,11 +461,11 @@ function LearnPage() {
           />
         ) : hydrated ? (
           <div
-            className="rounded-3xl border-2 border-ink bg-parchment p-5 text-center"
+            className="rounded-3xl border-2 border-ds-brand bg-ds-sunk p-5 text-center"
             data-learn-finished=""
           >
-            <p className="font-display text-xl font-bold text-ink">Course complete</p>
-            <p className="mt-1 text-sm text-ink-soft">
+            <p className="font-display text-xl font-bold text-ds-ink">Course complete</p>
+            <p className="mt-1 text-sm text-ds-ink-soft">
               You have finished every unit. Review keeps it fresh.
             </p>
           </div>
@@ -480,17 +483,17 @@ function LearnPage() {
           />
         </div>
 
-        <div className="mb-4 rounded-2xl border border-hairline bg-parchment p-4">
+        <div className="mb-4 rounded-2xl border border-ds-line bg-ds-sunk p-4">
           <div className="flex items-baseline justify-between">
-            <p className="font-display text-lg font-semibold text-ink">
+            <p className="font-display text-lg font-semibold text-ds-ink">
               {meta.id} · {meta.name}
             </p>
-            <span className="tnum text-xs font-medium text-ink-soft">{pct}%</span>
+            <span className="tnum text-xs font-medium text-ds-ink-soft">{pct}%</span>
           </div>
-          <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
+          <p className="mt-1 text-xs text-ds-ink-soft/80">{meta.blurb}</p>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ds-line">
             <motion.div
-              className="h-full rounded-full bg-moss"
+              className="h-full rounded-full bg-ds-action"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -502,17 +505,17 @@ function LearnPage() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 rounded-2xl border border-ember/30 bg-ember/10 p-4"
+            className="mb-4 rounded-2xl border border-ds-action/30 bg-ds-action/10 p-4"
           >
-            <p className="font-display text-base font-semibold text-ink">
+            <p className="font-display text-base font-semibold text-ds-ink">
               Not sure where to start?
             </p>
-            <p className="mt-1 text-xs text-ink-soft/80">
+            <p className="mt-1 text-xs text-ds-ink-soft/80">
               Take a quick placement test and we&apos;ll set your CEFR level for you.
             </p>
             <Link
               to="/placement"
-              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-xs font-semibold text-surface"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-brand px-4 text-xs font-semibold text-ds-card"
             >
               Take the placement test
             </Link>
@@ -520,13 +523,13 @@ function LearnPage() {
         )}
 
         <div className="grid gap-2" data-learn-list="">
-          {rows.map((row) => {
+          {shown.rows.map((row) => {
             if (row.kind === "done-run") {
               const id = `fold-${row.key}`;
               const open = opened.has(row.key);
               const first = curriculum.find((u) => u.id === row.unitIds[0])!;
               return (
-                <div key={row.key} className="rounded-2xl border border-hairline bg-surface">
+                <div key={row.key} className="rounded-2xl border border-ds-line bg-ds-card">
                   <FoldRowButton
                     done
                     open={open}
@@ -541,7 +544,7 @@ function LearnPage() {
                         const u = curriculum.find((x) => x.id === uid)!;
                         return (
                           <div key={uid}>
-                            <p className="pt-2 text-xs font-bold uppercase tracking-widest text-ink-soft">
+                            <p className="pt-2 text-xs font-bold uppercase tracking-widest text-ds-ink-soft">
                               {u.eyebrow} · {u.title}
                             </p>
                             {u.lessons.map((l, li) => (
@@ -572,7 +575,7 @@ function LearnPage() {
                 key={row.key}
                 ref={isCurrent ? hereRef : undefined}
                 aria-label={`${unit.eyebrow}: ${unit.title}`}
-                className={`rounded-2xl border bg-surface ${isCurrent ? "border-ink" : "border-hairline"}`}
+                className={`rounded-2xl border bg-ds-card ${isCurrent ? "border-ds-brand" : "border-ds-line"}`}
               >
                 <FoldRowButton
                   open={open}
@@ -583,7 +586,7 @@ function LearnPage() {
                 />
                 {open && (
                   <div id={id} className="grid px-3.5 pb-3">
-                    <p className="pb-1 text-xs text-ink-soft/80">{unit.description}</p>
+                    <p className="pb-1 text-xs text-ds-ink-soft/80">{unit.description}</p>
                     {unit.lessons.map((lesson, li) => {
                       const isDone = hydrated && completedSet.has(lesson.id);
                       const isActive = hydrated && !isDone && here?.lessonId === lesson.id;
@@ -611,31 +614,40 @@ function LearnPage() {
               </section>
             );
           })}
+          {shown.hidden > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAllUnits(true)}
+              className="min-h-11 rounded-2xl border border-ds-line bg-ds-card px-4 text-sm font-bold text-ds-ink"
+            >
+              Show all units in {level} ({shown.hidden} more)
+            </button>
+          )}
         </div>
 
         <Link
           to="/review"
-          className="mt-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+          className="mt-6 flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card px-4 py-3.5 transition hover:border-ds-brand/30"
         >
           <span>
             <span className="flex items-center gap-2">
-              <span className="block font-display text-base font-semibold text-ink">
+              <span className="block font-display text-base font-semibold text-ds-ink">
                 Review missed items
               </span>
               {dueCount > 0 && (
                 <span
-                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-xs font-semibold text-ink-on-ember"
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ds-action px-1.5 py-0.5 text-xs font-semibold text-ds-on-action"
                   aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
                 >
                   {dueCount}
                 </span>
               )}
             </span>
-            <span className="block text-xs text-ink-soft/80">
+            <span className="block text-xs text-ds-ink-soft/80">
               Spaced repetition brings back what you got wrong.
             </span>
           </span>
-          <span className="text-ink-soft">→</span>
+          <span className="text-ds-ink-soft">→</span>
         </Link>
 
         <div data-sheet className="mt-6 grid gap-6">
@@ -649,7 +661,7 @@ function LearnPage() {
           type="button"
           onClick={jumpToCurrent}
           aria-label={`Jump to where I am, unit ${here.index}`}
-          className="fixed bottom-24 left-1/2 z-20 min-h-11 -translate-x-1/2 rounded-full bg-ink px-5 text-sm font-bold text-surface shadow-lg"
+          className="fixed bottom-24 left-1/2 z-20 min-h-11 -translate-x-1/2 rounded-full bg-ds-brand px-5 text-sm font-bold text-ds-card shadow-lg"
         >
           Jump to current ↓
         </button>

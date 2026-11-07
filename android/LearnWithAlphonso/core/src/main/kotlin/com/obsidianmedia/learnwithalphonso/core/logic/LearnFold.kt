@@ -80,4 +80,26 @@ object LearnFold {
         "techshop" -> "Tech Shop"
         else -> art.replaceFirstChar { it.uppercase() }
     }
+
+    /** Rows after [limitAhead]: [hidden] is how many future rooms the "Show all units" control would reveal. */
+    data class Limited(val rows: List<FoldRow>, val hidden: Int)
+
+    /**
+     * Future rooms fold too: the current room is open, the NEXT room is one collapsed row, and every room after it
+     * hides behind a "Show all units" control (same as limitAhead in src/lib/learn-fold.ts).
+     */
+    fun limitAhead(rows: List<FoldRow>, showAll: Boolean): Limited {
+        if (showAll) return Limited(rows, 0)
+        var seenAhead = 0
+        var hidden = 0
+        val out = mutableListOf<FoldRow>()
+        for (r in rows) {
+            if (r is FoldRow.UnitRow && !r.current) {
+                seenAhead += 1
+                if (seenAhead > 1) { hidden += 1; continue }
+            }
+            out.add(r)
+        }
+        return Limited(out, hidden)
+    }
 }

@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -326,6 +327,28 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
     expect(screen.getByRole("link", { name: `Start ${title}` })).toBeInTheDocument();
     // The pinned card moved on to unit 2.
     expect(screen.getByRole("link", { name: /^Continue:/ })).toHaveTextContent(/Unit 2 of/);
+  });
+
+  it("folds future rooms: the next room is one row, the rest sit behind Show all units", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
+    expect(a1Units.length).toBeGreaterThan(2);
+    const third = a1Units[2];
+    expect(screen.getByRole("button", { name: new RegExp(a1Units[1].title) })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: new RegExp(`^${third.eyebrow} · `) })).toBeNull();
+    const more = screen.getByRole("button", { name: /^Show all units in A1/ });
+    await user.click(more);
+    expect(
+      screen.getByRole("button", { name: new RegExp(`^${third.eyebrow} · `) }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Show all units in/ })).toBeNull();
+  });
+
+  it("paints on the round-6 cream surface, not the old tokens", () => {
+    const src = readFileSync(`${import.meta.dirname}/learn.tsx`, "utf8");
+    expect(src).toContain("bg-ds-surface");
+    expect(src).not.toMatch(/\b(bg|text|border)-(ink|surface|parchment|hairline|moss|ember)\b/);
   });
 
   it("shows Jump to current only when the current unit is off screen, and scrolls to it", async () => {

@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,7 +67,7 @@ fun ProfileHubScreen(
         val ds = LocalAlphonsoTokens.current
         val context = LocalContext.current
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.s4),
+            Modifier.fillMaxSize().background(ds.surface).verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.s4),
             verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
         ) {
             Text("Profile", style = TitleType, color = ds.brand, modifier = Modifier.semantics { heading() })
