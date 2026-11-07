@@ -187,9 +187,11 @@ export function FirstRunHud({
       {showCounter && total > 0 && (
         <p
           aria-hidden="true"
-          className="absolute inset-x-0 top-[70px] z-[3] text-center ds-type-overline text-ds-card [text-shadow:0_1px_6px_color-mix(in_srgb,var(--c-hero-b)_75%,transparent)]"
+          className="absolute inset-x-0 top-[70px] z-[3] flex justify-center"
         >
-          Question {step} of {total}
+          <span className="rounded-full bg-ds-card px-2.5 py-1 ds-type-overline text-ds-brand shadow-sm">
+            Question {step} of {total}
+          </span>
         </p>
       )}
     </>

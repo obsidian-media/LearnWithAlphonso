@@ -252,8 +252,11 @@ struct FirstRunHUD: View {
             if showCounter && total > 0 {
                 Text("Question \(step) of \(total)")
                     .dsText(.overline)
-                    .foregroundStyle(ds.card)
-                    .shadow(color: ds.heroB.opacity(0.6), radius: 2, y: 1)
+                    .foregroundStyle(ds.brand)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(ds.card))
+                    .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
                     .accessibilityHidden(true)
             }
         }

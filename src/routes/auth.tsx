@@ -7,13 +7,16 @@ import {
   TOO_SHORT_MESSAGE,
 } from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
 import { safeNextPath } from "../lib/safe-next-path";
 import { browserFirstRunStore } from "../lib/first-run";
 import { Under13Stop } from "../components/firstrun/Under13Stop";
+import { FirstRunBubble, FirstRunRoom, FirstRunScreen } from "../components/firstrun/FirstRunParts";
+import { roomSrc } from "../lib/first-run";
+import { expressionSrc } from "../lib/lesson-stage";
+import { edgeButtonClass } from "../components/lesson/LessonParts";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -202,44 +205,45 @@ function AuthPage() {
   if (blocked) return <Under13Stop onOk={() => navigate({ to: "/" })} />;
 
   return (
-    <div className="grain min-h-dvh bg-surface text-ink">
-      <main
-        id="main-content"
-        className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-10 pt-10"
-      >
-        <Link to="/" className="mb-8 inline-flex items-center gap-2 text-ink-soft/70">
-          <span className="text-lg">←</span>
-          <span className="text-sm">Back</span>
-        </Link>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="mb-2 grid size-11 place-items-center rounded-xl bg-moss text-surface">
-            <span className="font-display text-lg font-semibold">A</span>
-          </div>
-          <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-            {mode === "verify"
-              ? "Check your email"
-              : mode === "signup"
-                ? "Create your account"
-                : mode === "forgot"
-                  ? "Reset your password"
-                  : "Welcome back"}
-          </h1>
-          <p className="mt-1.5 text-sm text-ink-soft/80">
-            {mode === "verify"
-              ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
-              : mode === "signup"
-                ? "Save your streak and pick up on any device."
-                : mode === "forgot"
-                  ? "Enter your email and we'll send you a link to set a new password."
-                  : "Sign in to continue where you left off."}
-          </p>
-        </motion.div>
-
-        <div className="mt-8 space-y-3">
+    <FirstRunScreen>
+      <FirstRunRoom
+        room={roomSrc("room-light")}
+        figure={expressionSrc("talk")}
+        figureAlt="Alphonso"
+        top={
+          <Link
+            to="/"
+            aria-label="Back"
+            className="grid size-11 place-items-center rounded-full bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
+          >
+            <span aria-hidden="true" className="text-lg">
+              ←
+            </span>
+          </Link>
+        }
+      />
+      <FirstRunBubble
+        title={
+          mode === "verify"
+            ? "Check your email"
+            : mode === "signup"
+              ? "Create your account"
+              : mode === "forgot"
+                ? "Reset your password"
+                : "Welcome back"
+        }
+        sub={
+          mode === "verify"
+            ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+            : mode === "signup"
+              ? "Save your streak and pick up on any device."
+              : mode === "forgot"
+                ? "Enter your email and we'll send you a link to set a new password."
+                : "Sign in to continue where you left off."
+        }
+      />
+      <div className="px-4 pb-10 pt-4">
+        <div className="space-y-3">
           {mode !== "verify" && (
             <>
               <button
@@ -365,7 +369,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={busy || (needsCaptcha && !captchaToken)}
-              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
+              className={`w-full ${edgeButtonClass("primary")}`}
             >
               {busy
                 ? "Please wait…"
@@ -438,7 +442,7 @@ function AuthPage() {
             .
           </p>
         </div>
-      </main>
-    </div>
+      </div>
+    </FirstRunScreen>
   );
 }
