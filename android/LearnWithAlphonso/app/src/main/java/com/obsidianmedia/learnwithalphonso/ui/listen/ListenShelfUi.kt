@@ -262,7 +262,6 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
                 if (st == ListenEpisodeState.InProgress) add("${ListenShelf.clock(left)} left")
                 if (st == ListenEpisodeState.New) add("New")
                 if (episode.aiNarrated) add(PodcastLabel.AI_NARRATED)
-                add("Transcript")
             }.joinToString(" · ")
             Column(Modifier.padding(horizontal = 16.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
