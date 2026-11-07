@@ -298,9 +298,9 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
                 ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
-            composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { nav.navigate(Routes.scenario(it)) }, onOpenCampaign = { nav.navigate(Routes.campaign(it)) }) }
-            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
-            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
+            composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { id, mode -> nav.navigate(Routes.scenario(id, mode)) }, onOpenCampaign = { id, scene, mode -> nav.navigate(Routes.campaign(id, scene, mode)) }, onHector = { nav.navigate(Routes.HECTOR) }) }
+            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }) }
+            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", startScene = entry.arguments?.getString("scene")?.toIntOrNull() ?: 0, chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }) }
             composable(Routes.HECTOR) { HectorTab(container) }
             composable(Routes.PROFILE) {
                 ProfileHubScreen(

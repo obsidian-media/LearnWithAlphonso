@@ -6,8 +6,8 @@ import {
   buildIOSPlacementBundle,
 } from "./ios-content-export";
 import { PLACEMENT_ORDER } from "@/data/placement";
-import { scenarioPrompt } from "@/data/scenarios";
-import { campaignScenePrompt } from "@/data/campaigns";
+import { SCENARIOS, scenarioPrompt } from "@/data/scenarios";
+import { CAMPAIGNS, campaignScenePrompt } from "@/data/campaigns";
 
 describe("buildIOSContentBundle", () => {
   it("exports the full English curriculum with the expected lesson count", () => {
@@ -52,9 +52,11 @@ describe("buildIOSContentBundle", () => {
           "level",
           "systemPrompt",
           "opener",
+          "persona",
         ]);
         expect(s.systemPrompt).toBe(scenarioPrompt(s.id, course));
         expect(s.opener).toBeTruthy();
+        expect(s.persona).toBe(SCENARIOS.find((raw) => raw.id === s.id)!.persona[course]);
       }
     }
   });
@@ -73,7 +75,19 @@ describe("buildIOSContentBundle", () => {
       ]);
       expect(campaign.scenes.map((s) => s.id)).toEqual(["coffee-stop", "directions", "small-talk"]);
       for (const scene of campaign.scenes) {
-        expect(Object.keys(scene)).toEqual(["id", "title", "systemPrompt", "opener", "minTurns"]);
+        expect(Object.keys(scene)).toEqual([
+          "id",
+          "title",
+          "systemPrompt",
+          "opener",
+          "minTurns",
+          "persona",
+        ]);
+        expect(scene.persona).toBe(
+          CAMPAIGNS.find((raw) => raw.id === campaign.id)!.scenes.find(
+            (raw) => raw.id === scene.id,
+          )!.persona[course],
+        );
         expect(`${campaign.premise}\n\n${scene.systemPrompt}`).toBe(
           campaignScenePrompt(campaign.id, scene.id, course),
         );

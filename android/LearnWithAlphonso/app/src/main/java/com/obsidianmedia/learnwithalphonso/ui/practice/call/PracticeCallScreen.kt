@@ -154,7 +154,7 @@ internal fun PracticeCallScreen(
         level = null
     }
 
-    val room = CallScenes.room(scenarioId, fallback = kit.defaultRoom)
+    val room = CallScenes.room(scenarioId, withArt = CallScenes.scenariosWithArt + com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = kit.defaultRoom)
     val roomFile = if (dark) room.dark else room.light
     val context = LocalContext.current
     val roomImage by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, roomFile) {

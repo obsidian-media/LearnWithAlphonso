@@ -27,10 +27,10 @@ object Routes {
     const val DUELS = "duels"
     const val ACHIEVEMENTS = "achievements"
 
-    const val SCENARIO = "practice/scenario/{id}"
-    fun scenario(id: String) = "practice/scenario/$id"
-    const val CAMPAIGN = "practice/campaign/{id}"
-    fun campaign(id: String) = "practice/campaign/$id"
+    const val SCENARIO = "practice/scenario/{id}?mode={mode}"
+    fun scenario(id: String, mode: String = "call") = "practice/scenario/$id?mode=$mode"
+    const val CAMPAIGN = "practice/campaign/{id}?scene={scene}&mode={mode}"
+    fun campaign(id: String, scene: Int = 0, mode: String = "call") = "practice/campaign/$id?scene=$scene&mode=$mode"
 
     const val LISTEN_FOLDER = "listen/folder/{id}"
     fun listenFolder(id: String) = "listen/folder/$id"

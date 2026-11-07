@@ -22,6 +22,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.cancelAndJoin
+import com.obsidianmedia.learnwithalphonso.core.logic.PracticeResult
+import java.util.UUID
 
 enum class ConversationPhase { IDLE, TRANSCRIBING, THINKING, SPEAKING }
 
@@ -36,6 +42,8 @@ data class ConversationUiState(
      * position, so a model reply that repeats an opener's words is still a model reply (and reportable).
      */
     val openerIndices: Set<Int> = setOf(0),
+    /** The first scene of a transcript resumed from the hub. */
+    val sceneOffset: Int = 0,
     /** The server's verdict on the learner's last turn, numbered so one reply is reacted to once. */
     val verdictSerial: Int = 0,
     val verdict: ReplyVerdict = ReplyVerdict.NONE,
@@ -75,6 +83,55 @@ abstract class BaseConversationViewModel(
         ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
     }
 
+    var callId: String = UUID.randomUUID().toString()
+        private set
+    var startedAt = System.currentTimeMillis()
+        private set
+    var elapsedSeconds = 0
+        private set
+    var slip: Pair<String, String>? = null
+        private set
+    private val _result = MutableStateFlow<PracticeResult?>(null)
+    val result = _result.asStateFlow()
+    private var finishing = false
+    private var sending = false
+    private var judging = false
+    private var replyAudioJob: Deferred<Unit>? = null
+    private var finishJob: Deferred<PracticeResult?>? = null
+    protected val awaitingResult get() = finishing && _result.value == null
+    var chatMode = false
+    fun sendText(text: String) {
+        if (text.isBlank() || sending || finishing) return
+        stopOpener()
+        viewModelScope.launch { sendTurn(text.trim(), null) }
+    }
+    suspend fun finishPractice(): PracticeResult? {
+        finishJob?.let { return it.await() }
+        finishing = true
+        stopOpener()
+        engine.cancel()
+        val id = callId
+        val job = viewModelScope.async {
+            // /api/chat must record the judged reply before finishing; speech can stop immediately.
+            while (judging) delay(50)
+            replyAudioJob?.cancelAndJoin()
+            elapsedSeconds = ((System.currentTimeMillis() - startedAt) / 1000).toInt()
+            val r = runCatching { ai.finishPractice(id) }.getOrNull()
+            _result.value = r
+            r
+        }
+        finishJob = job
+        return job.await()
+    }
+    fun resetPractice() {
+        _result.value = null; callId = UUID.randomUUID().toString(); startedAt = System.currentTimeMillis(); slip = null; finishing = false; finishJob = null
+    }
+    fun retryScenario(speak: Boolean = true) {
+        resetPractice()
+        _state.update { it.copy(turns = it.turns.take(1), openerIndices = setOf(0), error = null) }
+        if (speak && !chatMode) speakOpener()
+    }
+
     protected abstract fun systemPrompt(): String
 
     init {
@@ -94,7 +151,7 @@ abstract class BaseConversationViewModel(
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
     override fun micLevelDBFS(): Double? = recorder.levelDBFS()
 
-    override fun pressBegan() { stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
+    override fun pressBegan() { if (finishing) return; stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
     override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
 
     /** Campaign only: a finished campaign has no line left to say. */
@@ -119,12 +176,16 @@ abstract class BaseConversationViewModel(
      * too. A reply still playing finishes first. Thinking while the voice loads, speaking while it plays; never over
      * a recording. Holding to talk cancels it, which stops its playback.
      */
-    fun speakOpener() = opener.speak({ pendingOpener }, { alphonsoVoice(course.code) })
+    fun speakOpener() { if (!chatMode) opener.speak({ pendingOpener }, { alphonsoVoice(course.code) }) }
 
     /** The learner talked over the opener, or left: cancel it, which stops its playback. */
     private fun stopOpener() = opener.stop()
 
     private suspend fun sendTurn(text: String, confidence: Double?) {
+        if (sending || finishing) return
+        sending = true
+        judging = true
+        val attemptId = callId
         _state.update { s ->
             s.copy(
                 turns = s.turns + ChatMessage("user", text),
@@ -133,18 +194,24 @@ abstract class BaseConversationViewModel(
             )
         }
         try {
-            val chatReply = ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code)
+            val chatReply = try { ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code, attemptId) } finally { judging = false }
             val reply = chatReply.content
+            if (slip == null && chatReply.verdict == ReplyVerdict.CORRECTED) slip = text to reply
             _state.update {
                 it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
             }
             onReply(reply)
-            val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)
-            if (!player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
+            if (chatMode || finishing) { _state.update { it.copy(phase = ConversationPhase.IDLE) }; return }
+            val audioJob = viewModelScope.async {
+                val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)
+                if (!finishing && callId == attemptId && !player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
+            }
+            replyAudioJob = audioJob
+            audioJob.await()
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
-            _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
-        }
+            if (callId == attemptId) _state.update { it.copy(error = if (finishing) null else AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
+        } finally { sending = false; judging = false }
     }
 
     protected open fun onReply(reply: String) {}
@@ -190,9 +257,11 @@ class CampaignConversationViewModel(
     course: Course = Course.ENGLISH,
     alphonsoVoice: (String) -> String? = { null },
     openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
-) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[0].opener, course, alphonsoVoice, openerCache) {
-    private val _campaign = MutableStateFlow(CampaignProgress())
+    startScene: Int = 0,
+) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, campaign.scenes[startScene.coerceIn(campaign.scenes.indices)].opener, course, alphonsoVoice, openerCache) {
+    private val _campaign = MutableStateFlow(CampaignProgress(sceneIndex = startScene.coerceIn(campaign.scenes.indices)))
     val campaignState: StateFlow<CampaignProgress> = _campaign.asStateFlow()
+    init { _state.update { it.copy(sceneOffset = startScene.coerceIn(campaign.scenes.indices)) } }
 
     val scene get() = campaign.scenes[_campaign.value.sceneIndex]
     val isLastScene get() = _campaign.value.sceneIndex == campaign.scenes.size - 1
@@ -201,20 +270,24 @@ class CampaignConversationViewModel(
 
     override fun systemPrompt(): String = "${campaign.premise}\n\n${scene.systemPrompt}"
 
-    fun continueToNextScene() {
+    fun continueToNextScene(speak: Boolean = true) {
+        if (awaitingResult) return
         if (!canContinue) return
         if (isLastScene) { _campaign.update { it.copy(finished = true) }; return }
+        resetPractice()
         val next = campaign.scenes[_campaign.value.sceneIndex + 1]
         _state.update { it.copy(turns = it.turns + ChatMessage("assistant", next.opener), openerIndices = it.openerIndices + it.turns.size, error = null) }
         _campaign.update { it.copy(sceneIndex = it.sceneIndex + 1, sceneAnchor = _state.value.turns.size - 1) }
-        speakOpener()
+        if (speak) speakOpener()
     }
 
     override val conversationFinished: Boolean get() = _campaign.value.finished
 
-    fun restartScene() {
+    fun restartScene(speak: Boolean = true) {
+        if (awaitingResult) return
+        resetPractice()
         val anchor = _campaign.value.sceneAnchor
         _state.update { it.copy(turns = it.turns.take(anchor + 1), openerIndices = it.openerIndices.filter { i -> i <= anchor }.toSet(), error = null) }
-        speakOpener()
+        if (speak) speakOpener()
     }
 }

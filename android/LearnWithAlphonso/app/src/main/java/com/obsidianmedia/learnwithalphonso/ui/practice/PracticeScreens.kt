@@ -25,6 +25,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.toTextStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.AppContainer
@@ -67,51 +72,29 @@ import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
 import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 
-/** Port of ConversationView.swift's list: campaigns first, then scenarios. */
-@Composable
-fun PracticeScreen(container: AppContainer, onOpenScenario: (String) -> Unit, onOpenCampaign: (String) -> Unit) {
-    val palette = AlphonsoColor.palette
-    // Practice follows the course chosen on the Learn tab, so a French learner practises with the French partners.
-    val course by container.activeCourse.course.collectAsState()
-    val campaigns = container.content.campaigns(course)
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        item { Text("Practice speaking", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(bottom = 8.dp)) }
-        if (campaigns.isNotEmpty()) {
-            item { AlphonsoSectionHeader("Campaigns") }
-            items(campaigns, key = { "c-${course.code}-${it.id}" }) { c ->
-                AlphonsoRowCard(c.title, c.blurb, leadingEmoji = c.emoji, modifier = Modifier.clickable { onOpenCampaign(c.id) })
-            }
-            item { AlphonsoSectionHeader("Scenarios", Modifier.padding(top = 8.dp)) }
-        }
-        items(container.content.scenarios(course), key = { "s-${course.code}-${it.id}" }) { s ->
-            AlphonsoRowCard(s.title, s.blurb, leadingEmoji = s.emoji, modifier = Modifier.clickable { onOpenScenario(s.id) })
-        }
-    }
-}
-
 /** What a conversation screen needs to report one of its replies: the client and how to build the report for a turn. */
 private class ReplyReporting(val sender: AiReportSender, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
 
 @Composable
 private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport, course: String) {
-    val palette = AlphonsoColor.palette
+    val palette = LocalAlphonsoTokens.current
     val isUser = turn.role == "user"
     val saveWord = LocalSaveWordHandler.current
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
-            if (isUser) Spacer(Modifier.width(40.dp))
+            if (isUser) Spacer(Modifier.width(AlphonsoTokens.Space.minTouch))
             ReportableAiMessage(enabled = reportable, sender = sender, makeReport = makeReport) { reportModifier, reportActions ->
-                val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) userTint else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
+                val bubble = Modifier.widthIn(max = AlphonsoTokens.Space.s12 * 6).clip(RoundedCornerShape(AlphonsoTokens.Radius.bubble)).then(reportModifier).background(if (isUser) userTint else palette.card).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3)
                 // The partner speaks the course's language, so every word of a reply is a word of the course.
                 if (!isUser && saveWord != null) {
-                    TappableText(turn.content, course, SaveWordMode.AllWords, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
+                    TappableText(turn.content, course, SaveWordMode.AllWords, saveWord, modifier = bubble, style = AlphonsoTokens.Type.body.toTextStyle(), color = palette.ink, extraActions = reportActions)
                 } else {
-                    Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) userText else palette.ink)
+                    Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = AlphonsoTokens.Type.body.toTextStyle(), color = if (isUser) userText else palette.ink)
                 }
             }
-            if (!isUser) Spacer(Modifier.width(40.dp))
+            if (!isUser) Spacer(Modifier.width(AlphonsoTokens.Space.minTouch))
         }
-        confidence?.let { Text(BaseConversationViewModel.clarityLabel(it), style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, modifier = Modifier.padding(end = 6.dp)) }
+        confidence?.let { Text(BaseConversationViewModel.clarityLabel(it), style = AlphonsoTokens.Type.caption.toTextStyle(), color = palette.inkSoft, modifier = Modifier.padding(end = AlphonsoTokens.Space.s2)) }
     }
 }
 
@@ -124,13 +107,13 @@ private fun TranscriptList(container: AppContainer, vm: BaseConversationViewMode
     Column(modifier) {
         // Words are plain-looking links, so say they are tappable.
         SaveWordHintLine(container, SavedWordCopy.REPLY_HINT, limited = false)
-        LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
             itemsIndexed(state.turns) { index, turn ->
                 Bubble(
                     turn, state.confidenceByTurn[index], tint, userText,
                     reportable = AiReplyReporting.isReportable(turn.role, index, state.openerIndices),
                     sender = reporting.sender,
-                    makeReport = { reason -> reporting.makeReport(turn.content, AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },
+                    makeReport = { reason -> reporting.makeReport(turn.content, state.sceneOffset + AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },
                     course = course,
                 )
             }
@@ -141,7 +124,7 @@ private fun TranscriptList(container: AppContainer, vm: BaseConversationViewMode
 
 @Composable
 private fun ConversationBody(container: AppContainer, vm: BaseConversationViewModel, title: String, tint: Color, userText: Color, onBack: () -> Unit, reporting: ReplyReporting, course: String, header: @Composable () -> Unit = {}, footer: @Composable () -> Unit = {}, actions: @Composable () -> Unit = {}) {
-    val palette = AlphonsoColor.palette
+    val palette = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
     DisposableEffect(Unit) { onDispose { vm.onLeave() } }
@@ -151,11 +134,11 @@ private fun ConversationBody(container: AppContainer, vm: BaseConversationViewMo
         ScreenHeader(title, onBack, actions)
         header()
         TranscriptList(container, vm, tint, userText, reporting, course, Modifier.weight(1f), footer)
-        state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
+        state.error?.let { Text(it, style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.wrongInk, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.s4)) }
         val busy = when (state.phase) { ConversationPhase.TRANSCRIBING -> "Listening..."; ConversationPhase.THINKING -> "Thinking..."; ConversationPhase.SPEAKING -> "..."; ConversationPhase.IDLE -> null }
             ?: if (phase == TurnPhase.TRANSCRIBING) "Listening..." else null
-        Column(Modifier.padding(16.dp)) {
-            HoldToTalkButton(
+        Column(Modifier.padding(AlphonsoTokens.Space.s4)) {
+            if (vm.chatMode) PracticeTextComposer(vm) else HoldToTalkButton(
                 phase = phase, busyLabel = busy, tint = tint,
                 hint = if (phase == TurnPhase.RECORDING) "Listening. Release to send" else "Hold to talk",
                 accessibilityLabel = "Hold to talk", onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded,
@@ -165,7 +148,7 @@ private fun ConversationBody(container: AppContainer, vm: BaseConversationViewMo
 }
 
 @Composable
-fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBack: () -> Unit) {
+fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBack: () -> Unit, chatMode: Boolean = false) {
     // The course is fixed when the screen opens; the conversation stays in it. The view model is keyed by it.
     val course = remember { container.activeCourse.course.value }
     val scenario = container.content.scenarios(course).firstOrNull { it.id == scenarioId } ?: run { onBack(); return }
@@ -173,10 +156,19 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     val vm: ScenarioConversationViewModel = viewModel(key = "scenario-${course.code}-$scenarioId") {
         ScenarioConversationViewModel(scenario, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course, alphonsoVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Alphonso, c) })
     }
-    val palette = AlphonsoColor.palette
+    vm.chatMode = chatMode
+    val scope = rememberCoroutineScope()
+    val result by vm.result.collectAsState()
+    val endCall: () -> Unit = { scope.launch { if (vm.finishPractice() == null) onBack() } }
+    androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
+    result?.let { r ->
+        PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, retry = { vm.retryScenario(speak = false) }, nextLabel = "Done", done = onBack)
+        return
+    }
+    val palette = LocalAlphonsoTokens.current
     val context = LocalContext.current
     // "Show Alphonso while practising" (Settings, on by default): a full-screen call. Off keeps the classic screen.
-    val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
+    val showCall = !chatMode
     val reporting = ReplyReporting(container.aiReports) { message, _, reason ->
         AiReplyReports.scenario(message, course.code, scenario.id, reason)
     }
@@ -189,43 +181,54 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
                 DisposableEffect(Unit) { onDispose { vm.onLeave() } }
                 PracticeCallScreen(
                     kit = remember { alphonsoKit(context) }, title = scenario.title, scenarioId = scenario.id, course = course,
-                    vm = vm, playback = playback, reducedMotion = systemMotionReduced(context), onEnd = onBack,
+                    vm = vm, playback = playback, reducedMotion = systemMotionReduced(context), onEnd = endCall,
                     statusHost = { AiReportStatusHost(reporting.sender) },
-                    transcript = { TranscriptList(container, vm, palette.moss, Color.White, reporting, course.code, Modifier) },
+                    transcript = { TranscriptList(container, vm, palette.choice, LocalAlphonsoTokens.current.onHero, reporting, course.code, Modifier) },
                 )
             } else {
-                ConversationBody(container, vm, scenario.title, palette.moss, Color.White, onBack, reporting = reporting, course = course.code)
+                ConversationBody(container, vm, scenario.title, palette.choice, LocalAlphonsoTokens.current.onHero, endCall, reporting = reporting, course = course.code)
             }
         }
     }
 }
 
 @Composable
-fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBack: () -> Unit) {
+fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBack: () -> Unit, startScene: Int = 0, chatMode: Boolean = false) {
     val course = remember { container.activeCourse.course.value }
     val campaign = container.content.campaigns(course).firstOrNull { it.id == campaignId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
     val vm: CampaignConversationViewModel = viewModel(key = "campaign-${course.code}-$campaignId") {
-        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course, alphonsoVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Alphonso, c) })
+        CampaignConversationViewModel(campaign, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course, alphonsoVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Alphonso, c) }, startScene = startScene)
     }
-    val palette = AlphonsoColor.palette
+    vm.chatMode = chatMode
+    val scope = rememberCoroutineScope()
+    val result by vm.result.collectAsState()
+    var advancing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val endCall: () -> Unit = { advancing = false; scope.launch { if (vm.finishPractice() == null) onBack() } }
+    val advanceCall: () -> Unit = { advancing = true; scope.launch { if (vm.finishPractice() == null) { vm.resetPractice(); vm.continueToNextScene() } } }
+    androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
+    result?.let { r ->
+        PracticeResultScreen(r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip, retry = { vm.restartScene(speak = false) }, nextLabel = if (vm.isLastScene || (r.stars == 0 && !advancing)) "Done" else "Continue", done = { if (vm.isLastScene || (r.stars == 0 && !advancing)) onBack() else vm.continueToNextScene(speak = false) })
+        return
+    }
+    val palette = LocalAlphonsoTokens.current
     val progress by vm.campaignState.collectAsState()
     val state by vm.state.collectAsState()
     val context = LocalContext.current
     // "Show Alphonso while practising" (Settings, on by default): a full-screen call in the default study room.
-    val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
+    val showCall = !chatMode
     val reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
         AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
     }
     val sceneFooter: @Composable () -> Unit = {
         val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
         if (progress.finished) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 AlphonsoMascotBanner("Nice work. Campaign complete!")
-                Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center)
             }
         } else if (canContinue) {
-            AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = vm::continueToNextScene)
+            AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
         }
     }
     AiConsentGate(container, onDecline = onBack) {
@@ -237,45 +240,45 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
             PracticeCallScreen(
                 kit = remember { alphonsoKit(context) },
                 title = if (progress.finished) campaign.title else "${campaign.title}: scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}",
-                scenarioId = campaign.id, course = course, vm = vm, playback = playback,
-                reducedMotion = systemMotionReduced(context), onEnd = onBack,
+                scenarioId = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course = course, vm = vm, playback = playback,
+                reducedMotion = systemMotionReduced(context), onEnd = endCall,
                 statusHost = { AiReportStatusHost(reporting.sender) },
                 extra = {
                     val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
                     if (progress.finished) {
-                        Text("Nice work, campaign complete!", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = 14.dp, vertical = 6.dp))
+                        Text("Nice work, campaign complete!", color = LocalAlphonsoTokens.current.onHero, fontWeight = FontWeight.Bold, modifier = Modifier.clip(RoundedCornerShape(AlphonsoTokens.Radius.pill)).background(LocalAlphonsoTokens.current.hero).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s2))
                     } else if (canContinue) {
-                        AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = vm::continueToNextScene)
+                        AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
                     }
                 },
                 transcript = {
                     Column {
-                        if (!progress.finished) TextButton(onClick = vm::restartScene) { Text("Restart scene", color = palette.moss) }
-                        TranscriptList(container, vm, palette.moss, Color.White, reporting, course.code, Modifier, sceneFooter)
+                        if (!progress.finished) TextButton(onClick = { vm.restartScene() }) { Text("Restart scene", color = palette.choice) }
+                        TranscriptList(container, vm, palette.choice, LocalAlphonsoTokens.current.onHero, reporting, course.code, Modifier, sceneFooter)
                     }
                 },
             )
             return@SaveWordHost
         }
         ConversationBody(
-            container, vm, campaign.title, palette.moss, Color.White, onBack,
+            container, vm, campaign.title, palette.choice, LocalAlphonsoTokens.current.onHero, endCall,
             reporting = reporting,
             course = course.code,
             header = {
-                if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = MaterialTheme.typography.labelLarge, color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
+                if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1))
             },
             footer = {
                 val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
                 if (progress.finished) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                         AlphonsoMascotBanner("Nice work. Campaign complete!")
-                        Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                        Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center)
                     }
                 } else if (canContinue) {
-                    AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = vm::continueToNextScene)
+                    AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
                 }
             },
-            actions = { if (!progress.finished) TextButton(onClick = vm::restartScene) { Text("Restart scene", color = palette.moss) } },
+            actions = { if (!progress.finished) TextButton(onClick = { vm.restartScene() }) { Text("Restart scene", color = palette.choice) } },
         )
       }
     }
