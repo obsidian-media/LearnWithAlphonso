@@ -147,11 +147,13 @@ public final class PodcastClient: Sendable {
     /// web server function's join. RLS already restricts episodes to
     /// `published = true` and playback rows to the caller, so neither is
     /// re-checked here.
-    public func fetchEpisodes(folderID: String) async throws -> [PodcastEpisode] {
+    ///
+    /// With no `folderID`, every published episode (the Listen shelf's one-read library).
+    public func fetchEpisodes(folderID: String? = nil) async throws -> [PodcastEpisode] {
         let episodesRequest = request(
             path: "rest/v1/podcast_episodes",
             query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds,source,course"
-                + "&folder_id=eq.\(folderID)&order=sort_order.asc",
+                + (folderID.map { "&folder_id=eq.\($0)" } ?? "") + "&order=sort_order.asc",
             method: "GET"
         )
         let (episodeData, episodeResponse) = try await requester(episodesRequest)
@@ -381,6 +383,39 @@ public final class PodcastClient: Sendable {
         request.httpBody = try JSONSerialization.data(withJSONObject: [
             "_episode_id": episodeID,
             "_seconds_listened": secondsListened,
+        ])
+        let (_, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+    }
+
+    /// This user's listening progress (the `listen_progress` table; own rows only by RLS).
+    public func fetchListenProgress() async throws -> [ListenProgress] {
+        let request = request(
+            path: "rest/v1/listen_progress",
+            query: "select=episode_id,position_s,completed_at,updated_at",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+        return try Self.rows(from: data).compactMap { row in
+            guard let id = row["episode_id"] as? String,
+                  let updated = row["updated_at"] as? String else { return nil }
+            return ListenProgress(
+                episodeID: id,
+                positionS: row["position_s"] as? Int ?? 0,
+                completedAt: row["completed_at"] as? String,
+                updatedAt: updated
+            )
+        }
+    }
+
+    /// Saves progress through `save_listen_progress`, which takes the user from `auth.uid()`, requires a
+    /// published episode and clamps the position into the episode. There is no direct write grant.
+    public func saveListenProgress(episodeID: String, positionSeconds: Int) async throws {
+        var request = request(path: "rest/v1/rpc/save_listen_progress", method: "POST")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "p_episode_id": episodeID,
+            "p_position_s": ListenShelf.wirePosition(positionSeconds),
         ])
         let (_, response) = try await requester(request)
         try Self.requireSuccess(response: response)

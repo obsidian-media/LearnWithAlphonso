@@ -520,6 +520,8 @@ final class PodcastAudioPlayer {
         let epoch = saveGate.epoch
         // What this device had observed when the save was requested, for an episode it has no stored stamp for yet.
         let observedWhenRequested = saveGate.lastSeenUpdatedAt
+        // The Listen shelf's own progress, through the clamping database function. Best effort, never blocks playback.
+        Task { try? await client.saveListenProgress(episodeID: episodeID, positionSeconds: completed ? .max : seconds) }
         let previous = saveTask
         saveTask = Task { @MainActor [weak self] in
             await previous?.value
