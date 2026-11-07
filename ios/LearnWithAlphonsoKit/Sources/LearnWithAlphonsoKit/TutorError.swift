@@ -66,7 +66,7 @@ public enum TutorError: Error, Equatable, Sendable {
         case .entitlementUnavailable:
             return "We can't check your Pro access right now. Please try again shortly."
         case .aiConsentRequired:
-            return "Turn on AI features to practise speaking with a tutor."
+            return "Turn on AI features to practice speaking with a tutor."
         case let .quotaExceeded(resetsAt):
             guard let resetsAt else {
                 return "You've reached today's AI practice limit. Try again tomorrow."
@@ -87,7 +87,7 @@ public enum TutorError: Error, Equatable, Sendable {
     }
 
     /// Copy for a lesson card (speaking question) rather than a tutor conversation: a withdrawn consent there
-    /// means "type the phrase", not "turn on AI to practise with a tutor".
+    /// means "type the phrase", not "turn on AI to practice with a tutor".
     public func cardMessage(now: Date = Date(), timeZone: TimeZone = .current) -> String {
         if self == .aiConsentRequired {
             return "Voice answers are turned off. Type the phrase instead."

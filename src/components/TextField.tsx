@@ -13,8 +13,8 @@ export function TextField({ className, ...props }: InputHTMLAttributes<HTMLInput
     <input
       className={cn(
         isStudioInk
-          ? "w-full border-b border-hairline bg-transparent px-0 py-3 text-sm outline-none focus:border-moss"
-          : "w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss",
+          ? "w-full border-b border-ds-line bg-transparent px-0 py-3 text-sm outline-none focus:border-ds-brand"
+          : "w-full rounded-2xl border border-ds-line bg-ds-card px-4 py-3 text-sm text-ds-ink outline-none placeholder:text-ds-ink-faint focus:border-ds-brand",
         className,
       )}
       {...props}

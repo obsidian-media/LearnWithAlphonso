@@ -18,7 +18,7 @@ class HectorGreetingTest {
     @Test
     fun `a weak spot is named with the learner's name`() {
         assertEquals(
-            "Hi Sam! Last time the past tense tripped you up. Want to practise that in conversation?",
+            "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?",
             HectorGreeting.build(Course.ENGLISH, "B1", "Sam", "past-tense"),
         )
     }
@@ -34,7 +34,7 @@ class HectorGreetingTest {
     fun `beginners and unknown levels get the simpler lines`() {
         assertEquals("Hi! I'm Hector. What do you want to talk about today?", HectorGreeting.build(Course.ENGLISH, "A1", null, null))
         assertEquals(
-            "Hi Sam! Last time you had trouble with articles. Let's practise together. Ready?",
+            "Hi Sam! Last time you had trouble with articles. Let's practice together. Ready?",
             HectorGreeting.build(Course.ENGLISH, null, "Sam", "articles"),
         )
     }

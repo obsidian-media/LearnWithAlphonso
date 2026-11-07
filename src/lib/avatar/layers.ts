@@ -122,6 +122,6 @@ export const ALL_FILE_NAMES: readonly string[] = [
   ...BROWS_STATES.map(browsFile),
 ];
 
-/** "Show Alphonso while practising": same key and default as the iOS setting. */
+/** "Show Alphonso while practicing": same key and default as the iOS setting. */
 export const AVATAR_PREFERENCE_KEY = "showAlphonsoWhilePractising";
 export const AVATAR_PREFERENCE_DEFAULT = true;

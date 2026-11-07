@@ -36,9 +36,9 @@ export type StartTarget =
   | { kind: "scene"; campaignId: string; sceneIndex: number; mode: CallMode };
 
 const GREETING: Record<Course, { line: string; gloss?: string }> = {
-  en: { line: "Shall we practise a bit today?" },
-  fr: { line: "On pratique un peu aujourd'hui ?", gloss: "Shall we practise a bit today?" },
-  es: { line: "¿Practicamos un poco hoy?", gloss: "Shall we practise a bit today?" },
+  en: { line: "Shall we practice a bit today?" },
+  fr: { line: "On pratique un peu aujourd'hui ?", gloss: "Shall we practice a bit today?" },
+  es: { line: "¿Practicamos un poco hoy?", gloss: "Shall we practice a bit today?" },
 };
 
 const LEVELS: readonly ScenarioLevel[] = ["Beginner", "Intermediate", "Advanced"];
@@ -199,7 +199,7 @@ export function PracticeHub({
               ) : (
                 <>
                   A {pick.level.toLowerCase()} scene at your level. Your weak spots will steer this
-                  pick as you practise.
+                  pick as you practice.
                 </>
               )}
             </p>
@@ -322,7 +322,7 @@ export function PracticeHub({
           })}
         </section>
 
-        {/* Hector: Pro's one feature, offered where the learner already practises speaking (hidden for Pro). */}
+        {/* Hector: Pro's one feature, offered where the learner already practices speaking (hidden for Pro). */}
         <HectorInvite source="practice_hector_card" look="hub" />
 
         {/* Scenarios. */}

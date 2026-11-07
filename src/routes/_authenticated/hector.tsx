@@ -66,7 +66,7 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "loading") {
     return (
       <LessonFrame>
-        <p role="status" className="px-6 pt-10 text-sm text-ink-soft/70">
+        <p role="status" className="px-6 pt-10 text-sm text-ds-ink-soft/70">
           …
         </p>
       </LessonFrame>
@@ -76,13 +76,13 @@ function HectorGate({ course }: { course: Course }) {
     return (
       <LessonFrame>
         <div className="space-y-3 px-6 pt-10">
-          <p role="alert" className="text-sm text-ink-soft">
+          <p role="alert" className="text-sm text-ds-ink-soft">
             {WEB_PAYWALL_COPY.checkFailed}
           </p>
           <button
             type="button"
             onClick={() => void pro.retry()}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+            className="rounded-full border border-ds-line px-4 py-2 text-sm font-semibold text-ds-ink"
           >
             {PAYWALL_COPY.tryAgain}
           </button>
@@ -94,13 +94,13 @@ function HectorGate({ course }: { course: Course }) {
     return (
       <LessonFrame>
         <div className="space-y-3 px-6 pt-10">
-          <p role="status" className="font-display text-xl font-semibold text-ink">
+          <p role="status" className="font-display text-xl font-semibold text-ds-ink">
             {WEB_PAYWALL_COPY.activating}
           </p>
           <button
             type="button"
             onClick={() => void pro.retry()}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+            className="rounded-full border border-ds-line px-4 py-2 text-sm font-semibold text-ds-ink"
           >
             {PAYWALL_COPY.tryAgain}
           </button>
@@ -128,13 +128,13 @@ function HectorGate({ course }: { course: Course }) {
 function ManageSubscription({ pro }: { pro: ProStatus }) {
   if (pro.store === "web" && pro.manageUrl) {
     return (
-      <a href={pro.manageUrl} className="text-[11px] font-medium text-ink-soft underline">
+      <a href={pro.manageUrl} className="ds-type-caption font-medium text-ds-ink-soft underline">
         {PAYWALL_COPY.manage}
       </a>
     );
   }
   if (pro.store === "app_store") {
-    return <p className="text-[11px] text-ink-soft/70">{WEB_PAYWALL_COPY.manageOnIphone}</p>;
+    return <p className="ds-type-caption text-ds-ink-soft/70">{WEB_PAYWALL_COPY.manageOnIphone}</p>;
   }
   return null;
 }
@@ -162,7 +162,7 @@ function HectorConversation({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const leftRef = useRef(false);
-  // The call screen ("Show Alphonso while practising" covers Hector too, so one switch decides).
+  // The call screen ("Show Alphonso while practicing" covers Hector too, so one switch decides).
   const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
   // Read before the first render (this screen mounts only after the client-side Pro check), so with the setting off
   // the call never flashes up for a frame.
@@ -361,7 +361,7 @@ function HectorConversation({
 
   const hintAndLog = (
     <>
-      <div className="relative z-10 mx-4 mt-3 rounded-2xl bg-surface/85 px-3 backdrop-blur-md">
+      <div className="relative z-10 mx-4 mt-3 rounded-2xl bg-ds-card/85 px-3 backdrop-blur-md">
         <SaveWordHint always />
       </div>
       <div
@@ -375,7 +375,7 @@ function HectorConversation({
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
                 <div className="flex max-w-[85%] flex-col items-start">
-                  <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                  <div className="rounded-2xl rounded-bl-md bg-ds-sunk px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-ink">
                     <TappableText text={m.content} course={course} />
                   </div>
                   {/* The greeting is our own fixed text, not the model's: nothing to report. */}
@@ -384,7 +384,7 @@ function HectorConversation({
                   )}
                 </div>
               ) : (
-                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ds-ink px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-card">
                   {m.content}
                 </div>
               )}
@@ -393,7 +393,7 @@ function HectorConversation({
           {(sending || transcribing) && (
             <p
               role="status"
-              className="self-start rounded-full bg-surface/90 px-3 py-1 text-xs text-ink-soft backdrop-blur-md"
+              className="self-start rounded-full bg-ds-card/90 px-3 py-1 text-xs text-ds-ink-soft backdrop-blur-md"
             >
               {transcribing ? "Transcribing…" : "Hector is thinking…"}
             </p>
@@ -401,7 +401,7 @@ function HectorConversation({
           {(error ?? captureError) && (
             <div
               role="alert"
-              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 ds-type-caption font-medium text-rose-700"
             >
               {error ?? captureError}
             </div>
@@ -411,7 +411,7 @@ function HectorConversation({
     </>
   );
   const composer = (
-    <div className="sticky bottom-0 z-20 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+    <div className="sticky bottom-0 z-20 border-t border-ds-line bg-ds-card/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -433,12 +433,12 @@ function HectorConversation({
           aria-pressed={recording}
           disabled={sending || transcribing || greetingLoading}
           className={`grid size-11 shrink-0 place-items-center rounded-full ${
-            recording ? "bg-ember text-ink-on-ember" : "bg-moss text-surface"
+            recording ? "bg-ember text-ink-on-ember" : "bg-ds-brand text-ds-card"
           } disabled:opacity-50`}
         >
           <span aria-hidden="true">🎙</span>
         </button>
-        <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+        <div className="flex flex-1 items-end rounded-2xl border border-ds-line bg-ds-card px-3 py-2">
           <textarea
             aria-label="Message Hector"
             value={input}
@@ -452,7 +452,7 @@ function HectorConversation({
             rows={1}
             placeholder={recording ? "Listening…" : "Type or tap the mic"}
             disabled={sending || transcribing || recording}
-            className="max-h-32 w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+            className="max-h-32 w-full resize-none bg-transparent ds-type-footnote text-ds-ink outline-none placeholder:text-ds-ink-soft/50"
           />
         </div>
         <button
@@ -468,16 +468,18 @@ function HectorConversation({
   const classicTop = (
     <>
       <SceneBackdrop scene="hector" focus="50% 30%" />
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[17px] font-semibold text-ink">Hector</h1>
-          <p className="truncate text-[11px] text-ink-soft/70">{PAYWALL_COPY.mascotMessage}</p>
+          <h1 className="font-display ds-type-headline font-semibold text-ds-ink">Hector</h1>
+          <p className="truncate ds-type-caption text-ds-ink-soft/70">
+            {PAYWALL_COPY.mascotMessage}
+          </p>
         </div>
         <ManageSubscription pro={pro} />
       </header>
       <section
         aria-label="Hector"
-        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-surface/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
+        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-ds-card/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
       >
         <MascotImage
           moment={hectorMoment(status)}
@@ -488,21 +490,21 @@ function HectorConversation({
           className="card-lift"
         />
         <div className="min-w-0 space-y-1.5">
-          <p className="font-display text-2xl font-bold text-ink">Your tutor</p>
+          <p className="font-display text-2xl font-bold text-ds-ink">Your tutor</p>
           {status ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-ink card-lift">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-ds-card px-2.5 py-1 text-xs font-semibold text-ds-ink card-lift">
               <span
                 aria-hidden="true"
                 className={`size-2 rounded-full ${
                   status === "listening"
                     ? "animate-pulse bg-ember motion-reduce:animate-none"
-                    : "bg-moss"
+                    : "bg-ds-brand"
                 }`}
               />
               {hectorStatusLabel(status)}
             </span>
           ) : (
-            <p className="text-xs text-ink-soft/70">Type or tap the mic to start talking.</p>
+            <p className="text-xs text-ds-ink-soft/70">Type or tap the mic to start talking.</p>
           )}
         </div>
       </section>

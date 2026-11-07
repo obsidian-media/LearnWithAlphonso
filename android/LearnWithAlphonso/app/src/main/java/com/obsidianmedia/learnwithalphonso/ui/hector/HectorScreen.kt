@@ -270,7 +270,7 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier, reportActions ->
                             val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
-                            // Hector's replies are in the language being practised, so every word is a word of the course.
+                            // Hector's replies are in the language being practiced, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
                                 TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
                             } else {
@@ -295,7 +295,7 @@ private fun HectorConversation(container: AppContainer) {
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
     val context = LocalContext.current
-    // "Show Alphonso while practising" (Settings, on by default) covers Hector's call too: one switch decides.
+    // "Show Alphonso while practicing" (Settings, on by default) covers Hector's call too: one switch decides.
     val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
     // Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
     var callEnded by rememberSaveable { mutableStateOf(false) }

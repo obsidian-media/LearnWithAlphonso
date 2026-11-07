@@ -80,7 +80,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return Response.json({ error: "not-entitled" }, { status: 403 });
   }
 
-  // Pro's own daily allowance, not the free `chat` quota Practice spends: practising must never block the feature a
+  // Pro's own daily allowance, not the free `chat` quota Practice spends: practicing must never block the feature a
   // learner pays for. Reached only after the entitlement check above, so a learner without Pro spends nothing.
   const quota = await timer.time("quota", async () => {
     const { consumeQuota } = await import("@/lib/ai-quota.server");

@@ -27,26 +27,26 @@ export function AiFeaturesSetting() {
 
   return (
     <section aria-labelledby="ai-features-heading">
-      <h2 id="ai-features-heading" className="mt-8 font-display text-[18px] font-semibold text-ink">
+      <h2 id="ai-features-heading" className="mt-8 font-display ds-type-headline text-ds-ink">
         {AI_CONSENT_COPY.settingsTitle}
       </h2>
       {consent.status === "unknown" ? (
         <div
           role="alert"
-          className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-hairline bg-parchment px-4 py-3"
+          className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-sunk px-4 py-3"
         >
-          <span className="text-sm text-ink">{AI_CONSENT_COPY.checkFailedTitle}</span>
+          <span className="text-sm text-ds-ink">{AI_CONSENT_COPY.checkFailedTitle}</span>
           <button
             type="button"
             onClick={() => void consent.refresh()}
-            className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink"
+            className="rounded-full border border-ds-line bg-ds-card px-3 py-1.5 text-xs font-semibold text-ds-ink"
           >
             {AI_CONSENT_COPY.retry}
           </button>
         </div>
       ) : (
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-hairline bg-parchment px-4 py-3">
-          <span className="text-sm text-ink">{on ? "On" : "Off"}</span>
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-ds-line bg-ds-sunk px-4 py-3">
+          <span className="text-sm text-ds-ink">{on ? "On" : "Off"}</span>
           <button
             type="button"
             role="switch"
@@ -54,15 +54,15 @@ export function AiFeaturesSetting() {
             aria-label={AI_CONSENT_COPY.settingsTitle}
             disabled={busy || consent.status === "loading"}
             onClick={() => void toggle()}
-            className={`relative h-7 w-12 rounded-full transition ${on ? "bg-moss" : "bg-hairline"} disabled:opacity-50`}
+            className={`relative h-7 w-12 rounded-full transition ${on ? "bg-ds-brand" : "bg-ds-line"} disabled:opacity-50`}
           >
             <span
-              className={`absolute top-0.5 size-6 rounded-full bg-surface transition ${on ? "left-5" : "left-0.5"}`}
+              className={`absolute top-0.5 size-6 rounded-full bg-ds-card transition ${on ? "left-5" : "left-0.5"}`}
             />
           </button>
         </div>
       )}
-      <p className="mt-2 text-xs text-ink-soft">{AI_CONSENT_COPY.settingsFooter}</p>
+      <p className="mt-2 text-xs text-ds-ink-soft">{AI_CONSENT_COPY.settingsFooter}</p>
       {error && (
         <p role="alert" className="mt-2 text-xs text-rose-700">
           {error}

@@ -157,6 +157,8 @@ export type BigNumbers = {
   streak: number;
   longestStreak: number;
   courseXp: number;
+  /** XP across every course: the same scope as xpThisWeek (activity_days is account-wide), so the two always agree. */
+  totalXp: number;
   xpThisWeek: number;
   wordsLearned: number;
   savedWords: number;
@@ -176,6 +178,7 @@ export function bigNumbers(o: ProfileOverview): BigNumbers {
     streak: o.progress.streak,
     longestStreak: o.progress.longestStreak,
     courseXp: o.courses.find((c) => c.course === o.course)?.xp ?? 0,
+    totalXp: o.courses.reduce((s, c) => s + c.xp, 0),
     xpThisWeek: o.activity
       .filter((r) => r.day >= monday && r.day <= o.today)
       .reduce((s, r) => s + r.xp, 0),
@@ -220,7 +223,7 @@ export function levelProgress(course: Course, cefr: string, completedIds: string
   };
 }
 
-/** The weak spots to fix first: the most-missed, then the least-practised. */
+/** The weak spots to fix first: the most-missed, then the least-practiced. */
 export function weakSpots(items: WeakItem[], n = 3): { top: WeakItem[]; total: number } {
   const sorted = [...items].sort((a, b) => b.lapses - a.lapses || a.repetitions - b.repetitions);
   return { top: sorted.slice(0, n), total: items.length };

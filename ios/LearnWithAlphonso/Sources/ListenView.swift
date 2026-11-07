@@ -298,7 +298,7 @@ private struct PodcastFolderListing: View {
     var body: some View {
         List {
             // A large header over the studio scene; it also reports the scroll position for the parallax.
-            ListenSceneHeader(title: folder?.title ?? "Listen", subtitle: folder == nil ? "Podcasts to practise your ear" : "Episodes and folders")
+            ListenSceneHeader(title: folder?.title ?? "Listen", subtitle: folder == nil ? "Podcasts to practice your ear" : "Episodes and folders")
                 .sceneScrollProbe()
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)

@@ -57,19 +57,19 @@ function InvitePage() {
   return (
     <LessonFrame>
       <div className="flex flex-1 flex-col items-center justify-center px-7 text-center">
-        {state === "loading" && <p className="text-sm text-ink-soft">Loading invite…</p>}
+        {state === "loading" && <p className="text-sm text-ds-ink-soft">Loading invite…</p>}
 
         {state === "self" && (
           <>
-            <h1 className="font-display text-lg font-semibold text-ink">
+            <h1 className="font-display text-lg font-semibold text-ds-ink">
               That's your own invite link
             </h1>
-            <p className="mt-2 text-sm text-ink-soft/80">
+            <p className="mt-2 text-sm text-ds-ink-soft/80">
               Share it with a friend instead — they'll become friends with you when they open it.
             </p>
             <Link
               to="/profile/friends"
-              className="mt-6 w-full max-w-[280px] rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-surface"
+              className="mt-6 w-full max-w-[280px] rounded-full bg-ds-ink px-6 py-3.5 text-sm font-semibold text-ds-card"
             >
               Back to friends
             </Link>
@@ -78,13 +78,13 @@ function InvitePage() {
 
         {state === "not-found" && (
           <>
-            <h1 className="font-display text-lg font-semibold text-ink">Invite not found</h1>
-            <p className="mt-2 text-sm text-ink-soft/80">
+            <h1 className="font-display text-lg font-semibold text-ds-ink">Invite not found</h1>
+            <p className="mt-2 text-sm text-ds-ink-soft/80">
               This invite link doesn't look right. Ask your friend for a fresh one.
             </p>
             <Link
               to="/learn"
-              className="mt-6 w-full max-w-[280px] rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-surface"
+              className="mt-6 w-full max-w-[280px] rounded-full bg-ds-ink px-6 py-3.5 text-sm font-semibold text-ds-card"
             >
               Back to learning
             </Link>
@@ -93,19 +93,19 @@ function InvitePage() {
 
         {state === "confirm" && (
           <>
-            <div className="grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
+            <div className="grid size-16 place-items-center rounded-full bg-ds-brand text-ds-card hard-shadow">
               <StarIcon className="size-8" />
             </div>
-            <h1 className="mt-6 font-display text-lg font-semibold text-ink">
+            <h1 className="mt-6 font-display text-lg font-semibold text-ds-ink">
               Add {inviterName} as a friend?
             </h1>
-            <p className="mt-2 text-sm text-ink-soft/80">
+            <p className="mt-2 text-sm text-ds-ink-soft/80">
               You'll be able to see each other's streak and weekly progress.
             </p>
             <button
               type="button"
               onClick={confirmAccept}
-              className="mt-6 w-full max-w-[280px] rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+              className="mt-6 w-full max-w-[280px] rounded-full bg-ds-ink px-6 py-3.5 text-sm font-semibold text-ds-card transition hover:opacity-90"
             >
               Add friend
             </button>
@@ -114,14 +114,14 @@ function InvitePage() {
 
         {state === "done" && (
           <>
-            <div className="grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
+            <div className="grid size-16 place-items-center rounded-full bg-ds-brand text-ds-card hard-shadow">
               <StarIcon className="size-8" />
             </div>
-            <h1 className="mt-6 font-display text-lg font-semibold text-ink">You're friends!</h1>
+            <h1 className="mt-6 font-display text-lg font-semibold text-ds-ink">You're friends!</h1>
             <button
               type="button"
               onClick={() => navigate({ to: "/profile/friends" })}
-              className="mt-6 w-full max-w-[280px] rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-surface"
+              className="mt-6 w-full max-w-[280px] rounded-full bg-ds-ink px-6 py-3.5 text-sm font-semibold text-ds-card"
             >
               See your friends
             </button>
@@ -130,8 +130,8 @@ function InvitePage() {
 
         {state === "error" && (
           <>
-            <h1 className="font-display text-lg font-semibold text-ink">Something went wrong</h1>
-            <p className="mt-2 text-sm text-ink-soft/80">Please try opening the link again.</p>
+            <h1 className="font-display text-lg font-semibold text-ds-ink">Something went wrong</h1>
+            <p className="mt-2 text-sm text-ds-ink-soft/80">Please try opening the link again.</p>
           </>
         )}
       </div>

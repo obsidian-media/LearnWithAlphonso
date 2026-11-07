@@ -85,7 +85,7 @@ describe("Practice hub: a new learner", () => {
   it("greets in the course language with an English gloss", () => {
     hub(NEW_LEARNER, "es");
     expect(screen.getByText("¿Practicamos un poco hoy?")).toHaveAttribute("lang", "es");
-    expect(screen.getByText("Shall we practise a bit today?")).toBeInTheDocument();
+    expect(screen.getByText("Shall we practice a bit today?")).toBeInTheDocument();
   });
 });
 

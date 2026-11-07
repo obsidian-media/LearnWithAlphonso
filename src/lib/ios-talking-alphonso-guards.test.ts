@@ -27,7 +27,7 @@ const manifest = JSON.parse(read(`${ART}/manifest.json`)) as {
 };
 
 describe("the setting", () => {
-  it("is 'Show Alphonso while practising', stored under one key that defaults to on", () => {
+  it("is 'Show Alphonso while practicing', stored under one key that defaults to on", () => {
     const layers = code(`${KIT}/AvatarLayers.swift`);
     expect(layers).toMatch(
       /enum AvatarPreference\s*\{[^}]*static let key = "showAlphonsoWhilePractising"/s,
@@ -41,7 +41,7 @@ describe("the setting", () => {
       "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
     );
     expect(settings).toContain("Toggle(isOn: $showAlphonso)");
-    expect(settings).toContain("Show Alphonso while practising");
+    expect(settings).toContain("Show Alphonso while practicing");
   });
 
   it("gates the call on the Practice speaking screen, so off leaves the screen as it was", () => {

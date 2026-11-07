@@ -46,7 +46,7 @@ export const TappableText = memo(function TappableText({
             onClick={(event) =>
               open(saveRequestFor(text, segment, course as SavedWordCourse), event.currentTarget)
             }
-            className="inline cursor-pointer appearance-none rounded-sm border-0 bg-transparent p-0 text-left font-[inherit] text-[length:inherit] leading-[inherit] text-inherit underline-offset-2 hover:underline hover:decoration-dotted focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60"
+            className="inline cursor-pointer appearance-none rounded-sm border-0 bg-transparent p-0 text-left font-[inherit] text-[length:inherit] leading-[inherit] text-inherit underline-offset-2 hover:underline hover:decoration-dotted focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-brand/60"
           >
             {segment.text}
           </button>

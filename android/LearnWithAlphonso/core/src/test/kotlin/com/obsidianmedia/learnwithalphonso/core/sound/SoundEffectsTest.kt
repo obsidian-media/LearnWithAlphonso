@@ -131,4 +131,14 @@ class SoundEffectsTest {
             assertNull(e.haptic, "$e")
         }
     }
+
+    @Test
+    fun switchOffMeansNoHapticsEither() {
+        val off = gate(on = { false })
+        for (e in SoundEffect.entries) assertFalse(off.shouldVibrate(e), "$e")
+        val on = gate(on = { true })
+        assertTrue(on.shouldVibrate(SoundEffect.RIGHT))
+        assertTrue(on.shouldVibrate(SoundEffect.WRONG))
+        assertFalse(on.shouldVibrate(SoundEffect.TAP), "an effect with no haptic never vibrates")
+    }
 }

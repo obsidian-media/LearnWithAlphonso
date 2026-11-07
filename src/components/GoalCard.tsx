@@ -189,7 +189,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       aria-label="Learning goal"
       className="card-lift rounded-3xl bg-tile-sun-bg p-4 outline-none"
     >
-      {view === "loading" && <p className="text-sm text-ink-soft">Loading your goal…</p>}
+      {view === "loading" && <p className="text-sm text-ds-ink-soft">Loading your goal…</p>}
 
       {view === "error" && (
         <div>
@@ -208,7 +208,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
 
       {view === "empty" && (
         <div>
-          <p className="text-sm text-ink-soft">
+          <p className="text-sm text-ds-ink-soft">
             Set a target level and date and we&apos;ll work out how many lessons a week it takes.
           </p>
           <button type="button" onClick={openSetup} className={PRIMARY}>
@@ -219,14 +219,14 @@ export function GoalCard({ course }: { course: GoalCourse }) {
 
       {view === "setup" && (
         <div>
-          <h2 className="font-display text-base font-semibold text-ink">Set a learning goal</h2>
+          <h2 className="font-display text-base font-semibold text-ds-ink">Set a learning goal</h2>
           <div className="mt-3 flex flex-col gap-3">
-            <label className="text-sm text-ink">
+            <label className="text-sm text-ds-ink">
               Finish level
               <select
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-hairline bg-surface px-3 py-2"
+                className="mt-1 block w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2"
               >
                 {LEVEL_ORDER.map((l) => (
                   <option key={l} value={l}>
@@ -235,14 +235,14 @@ export function GoalCard({ course }: { course: GoalCourse }) {
                 ))}
               </select>
             </label>
-            <label className="text-sm text-ink">
+            <label className="text-sm text-ds-ink">
               Target date
               <input
                 type="date"
                 min={tomorrowUtc()}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-hairline bg-surface px-3 py-2"
+                className="mt-1 block w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2"
               />
             </label>
             <div className="flex gap-2">
@@ -260,7 +260,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
           </div>
 
           <div className="mt-3 min-h-[3rem] text-sm" aria-live="polite">
-            {preview.kind === "loading" && <p className="text-ink-soft">Working it out…</p>}
+            {preview.kind === "loading" && <p className="text-ds-ink-soft">Working it out…</p>}
             {preview.kind === "ok" && <PreviewLines plan={preview.plan} />}
             {preview.kind === "error" && (
               <p role="alert" className="font-medium text-rose-600">
@@ -273,7 +273,9 @@ export function GoalCard({ course }: { course: GoalCourse }) {
               {saveError}
             </p>
           )}
-          <p className="mt-2 text-xs text-ink-soft/80">An estimate of lessons, not of fluency.</p>
+          <p className="mt-2 text-xs text-ds-ink-soft/80">
+            An estimate of lessons, not of fluency.
+          </p>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
@@ -296,18 +298,18 @@ export function GoalCard({ course }: { course: GoalCourse }) {
 
       {view === "goal" && state.goal && (
         <div>
-          <h2 className="font-display text-base font-semibold text-ink">
+          <h2 className="font-display text-base font-semibold text-ds-ink">
             Finish {state.goal.targetLevel} by {formatDate(state.goal.targetDate)}
           </h2>
           {state.plan ? (
             <GoalBody plan={state.plan} />
           ) : (
-            <p className="mt-2 text-sm text-ink">
+            <p className="mt-2 text-sm text-ds-ink">
               Your level has passed this target. Pick a new target.
             </p>
           )}
           {offline && (
-            <p role="status" className="mt-2 text-xs text-ink-soft">
+            <p role="status" className="mt-2 text-xs text-ds-ink-soft">
               {goalErrorMessage(loadError)}
               {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
             </p>
@@ -317,7 +319,9 @@ export function GoalCard({ course }: { course: GoalCourse }) {
               {actionError}
             </p>
           )}
-          <p className="mt-2 text-xs text-ink-soft/80">An estimate of lessons, not of fluency.</p>
+          <p className="mt-2 text-xs text-ds-ink-soft/80">
+            An estimate of lessons, not of fluency.
+          </p>
           <div className="mt-3 flex gap-2">
             <button type="button" onClick={openSetup} disabled={offline} className={SECONDARY}>
               Change goal
@@ -340,8 +344,8 @@ export function GoalCard({ course }: { course: GoalCourse }) {
 function PreviewLines({ plan }: { plan: GoalPlan }) {
   return (
     <div>
-      <p className="font-semibold text-ink">{plan.requiredPerWeek} lessons a week</p>
-      <p className="text-ink-soft">
+      <p className="font-semibold text-ds-ink">{plan.requiredPerWeek} lessons a week</p>
+      <p className="text-ds-ink-soft">
         {plan.lessonsRemaining} lessons left to finish {plan.targetLevel}.
       </p>
       <Suggestion plan={plan} />
@@ -365,7 +369,7 @@ function Realism({ plan }: { plan: GoalPlan }) {
 function Suggestion({ plan }: { plan: GoalPlan }) {
   if (!plan.suggestedDate) return null;
   return (
-    <p className="text-ink-soft">
+    <p className="text-ds-ink-soft">
       At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
     </p>
   );
@@ -394,13 +398,13 @@ const STATUS_LINE: Record<GoalPlan["status"], string> = {
 function GoalBody({ plan }: { plan: GoalPlan }) {
   const done = plan.lessonsInScope - plan.lessonsRemaining;
   return (
-    <div className="mt-2 text-sm text-ink">
+    <div className="mt-2 text-sm text-ds-ink">
       <p>
         {done} of {plan.lessonsInScope} lessons done
       </p>
       <p className="mt-1 font-semibold">{STATUS_LINE[plan.status]}</p>
       {plan.status !== "done" && plan.status !== "expired" && (
-        <p className="text-ink-soft">
+        <p className="text-ds-ink-soft">
           {plan.requiredPerWeek} lessons a week to finish on time; {plan.lessonsDoneLast7Days} in
           the last 7 days.
         </p>
@@ -412,6 +416,6 @@ function GoalBody({ plan }: { plan: GoalPlan }) {
 }
 
 const PRIMARY =
-  "mt-3 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50";
+  "mt-3 rounded-full bg-ds-ink px-4 py-2 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50";
 const SECONDARY =
-  "rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-parchment disabled:opacity-50";
+  "rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink transition hover:bg-ds-sunk disabled:opacity-50";

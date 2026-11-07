@@ -250,13 +250,9 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         name="xp"
         icon="bolt"
         iconClass="text-ds-xp"
-        value={n.courseXp}
+        value={n.totalXp}
         label="total XP"
-        note={
-          n.xpThisWeek > 0
-            ? `+${fmt(n.xpThisWeek)} this week${o.courses.length > 1 ? ", all courses" : ""}`
-            : "None yet this week"
-        }
+        note={n.xpThisWeek > 0 ? `+${fmt(n.xpThisWeek)} this week` : "None yet this week"}
         noteTone={n.xpThisWeek > 0 ? "right" : "soft"}
         className="border-ds-line bg-ds-card"
       />
@@ -535,7 +531,7 @@ function weakMark(label: string): string {
 function weakNote(w: WeakItem): string {
   if (w.lapses > 0) return `Missed ${w.lapses} ${plural(w.lapses, "time", "times")} in review`;
   if (w.repetitions > 0) return `Right ${w.repetitions} in a row so far`;
-  return "Not practised yet";
+  return "Not practiced yet";
 }
 
 export function WeakSpots({ o }: { o: ProfileOverview }) {
@@ -549,7 +545,7 @@ export function WeakSpots({ o }: { o: ProfileOverview }) {
       />
       {w.top.length === 0 ? (
         <p className={`${CARD} p-3 ds-type-footnote text-ds-ink-soft`}>
-          No weak spots yet. When you miss something in a lesson, it shows up here to practise.
+          No weak spots yet. When you miss something in a lesson, it shows up here to practice.
         </p>
       ) : (
         <ul className="grid gap-[7px]">
@@ -571,10 +567,10 @@ export function WeakSpots({ o }: { o: ProfileOverview }) {
               </div>
               <Link
                 to="/review"
-                aria-label={`Practise ${x.display}`}
+                aria-label={`Practice ${x.display}`}
                 className="ml-auto inline-flex min-h-9 items-center rounded-[10px] bg-ds-action px-2.5 ds-type-caption font-extrabold text-ds-on-action shadow-[0_3px_0_var(--c-action-edge)] active:translate-y-0.5 active:shadow-[0_1px_0_var(--c-action-edge)]"
               >
-                Practise
+                Practice
               </Link>
             </li>
           ))}
@@ -612,7 +608,7 @@ export function HectorNoticed({ o, pro }: { o: ProfileOverview; pro: boolean }) 
         </b>
         {card.kind === "pro" ? (
           <small className="block ds-type-caption text-ds-on-hero-soft">
-            You're still working on {joinTopics(card.topics)}. Ask him to practise{" "}
+            You're still working on {joinTopics(card.topics)}. Ask him to practice{" "}
             {plural(card.topics.length, "it", "them")} in your next call.{" "}
             <Link to="/hector" className="text-ds-on-hero-kick underline underline-offset-2">
               Talk to Hector

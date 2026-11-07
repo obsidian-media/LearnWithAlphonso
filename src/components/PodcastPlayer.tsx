@@ -137,16 +137,16 @@ export function PodcastPlayer() {
           }
         />
       ) : null}
-      <div className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
+      <div className="sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md">
         {/* Inside the player bar, not a sibling: sticky siblings pinned to the same edge cover one another. */}
         {finished && offer ? (
           <div
             data-testid="quiz-offer"
-            className="mx-auto flex max-w-[430px] items-center gap-3 border-b border-hairline px-5 py-3"
+            className="mx-auto flex max-w-[430px] items-center gap-3 border-b border-ds-line px-5 py-3"
           >
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-ink">Test what you heard</p>
-              <p className="text-xs text-ink-soft/70">
+              <p className="text-sm font-semibold text-ds-ink">Test what you heard</p>
+              <p className="text-xs text-ds-ink-soft/70">
                 {offer.questions.length} questions · 10 XP for each correct answer
                 {offer.best
                   ? ` · your best: ${offer.best.correct} of ${offer.questions.length}`
@@ -156,7 +156,7 @@ export function PodcastPlayer() {
             <button
               type="button"
               onClick={() => setQuizOpen(true)}
-              className="rounded-full bg-moss px-3 py-1.5 text-xs font-semibold text-white"
+              className="rounded-full bg-ds-brand px-3 py-1.5 text-xs font-semibold text-white"
             >
               Take the quiz
             </button>
@@ -164,9 +164,9 @@ export function PodcastPlayer() {
         ) : null}
         <div className="mx-auto flex max-w-[430px] items-center gap-3 px-5 py-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-ink">{episode.title}</p>
+            <p className="truncate text-sm font-semibold text-ds-ink">{episode.title}</p>
             {episode.aiNarrated ? (
-              <p className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</p>
+              <p className="text-xs text-ds-ink-soft/70">{AI_NARRATED_LABEL}</p>
             ) : null}
             {failed ? (
               <p className="text-xs text-rose-600">We couldn&apos;t play this episode.</p>
@@ -183,7 +183,7 @@ export function PodcastPlayer() {
             <button
               type="button"
               onClick={retry}
-              className="rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink"
+              className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink"
             >
               Try again
             </button>
@@ -192,7 +192,7 @@ export function PodcastPlayer() {
               type="button"
               onClick={toggle}
               aria-label={isPlaying ? "Pause" : "Play"}
-              className="rounded-full bg-moss px-3 py-1.5 text-xs font-semibold text-white"
+              className="rounded-full bg-ds-brand px-3 py-1.5 text-xs font-semibold text-white"
             >
               {isPlaying ? "Pause" : "Play"}
             </button>
@@ -205,7 +205,7 @@ export function PodcastPlayer() {
             type="button"
             onClick={() => setShowTranscript(true)}
             aria-label="Show transcript"
-            className="rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink"
+            className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink"
           >
             Text
           </button>
@@ -214,7 +214,7 @@ export function PodcastPlayer() {
             type="button"
             onClick={close}
             aria-label="Close player"
-            className="text-ink-soft/60"
+            className="text-ds-ink-soft/60"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" />
@@ -276,7 +276,7 @@ function Scrubber({
 
   return (
     <div className="mt-1 flex items-center gap-2">
-      <span className="tnum w-9 shrink-0 text-xs text-ink-soft/70">{formatDuration(shown)}</span>
+      <span className="tnum w-9 shrink-0 text-xs text-ds-ink-soft/70">{formatDuration(shown)}</span>
       <input
         type="range"
         aria-label="Seek"
@@ -298,9 +298,9 @@ function Scrubber({
           else onSeek(next);
         }}
         onKeyDown={onKeyDown}
-        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 rounded-full"
+        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-brand/60 rounded-full"
       />
-      <span className="tnum w-10 shrink-0 text-right text-xs text-ink-soft/70">
+      <span className="tnum w-10 shrink-0 text-right text-xs text-ds-ink-soft/70">
         -{formatDuration(remaining)}
       </span>
     </div>

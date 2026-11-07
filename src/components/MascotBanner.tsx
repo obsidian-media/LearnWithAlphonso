@@ -30,7 +30,7 @@ export function MascotBanner(
   const moment = props.moment ?? MASCOT_MOMENT[props.mascot!];
   const mascot = moment.startsWith("hector") || moment === "paywall" ? "hector" : "alphonso";
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-moss to-moss-deep p-4">
+    <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-ds-brand to-ds-action-edge p-4">
       <MascotImage
         moment={moment}
         size={52}

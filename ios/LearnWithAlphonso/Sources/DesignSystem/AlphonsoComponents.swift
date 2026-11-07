@@ -39,7 +39,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
                     .offset(y: configuration.isPressed ? 0 : 4)
             )
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
-            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed && SoundEffectsPreference.isOn() }
     }
 }
 
@@ -70,7 +70,7 @@ struct AlphonsoSecondaryButtonStyle: ButtonStyle {
                     .offset(y: configuration.isPressed ? 0 : 3)
             )
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
-            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed && SoundEffectsPreference.isOn() }
     }
 }
 

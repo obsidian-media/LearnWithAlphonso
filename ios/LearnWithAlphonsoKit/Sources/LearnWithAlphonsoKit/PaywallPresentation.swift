@@ -52,9 +52,9 @@ public enum PaywallSource: String, Sendable, Equatable, CaseIterable {
     case hectorTab = "hector_tab"
     /// The server refused Hector mid-conversation (lapsed, refunded, other device).
     case hectorRefused = "hector_not_entitled"
-    /// The "Practise speaking with Hector" card on the Practice tab.
+    /// The "Practice speaking with Hector" card on the Practice tab.
     case practiceCard = "practice_hector_card"
-    /// The "Practise with Hector" button on the lesson-complete screen.
+    /// The "Practice with Hector" button on the lesson-complete screen.
     case lessonComplete = "lesson_complete"
 
     /// The RevenueCat custom attribute key the source is written under.
@@ -126,7 +126,7 @@ public enum PaywallCopy {
     public static let purchasedNotActive = "Your purchase went through, but Pro isn't active yet. Tap Restore Purchases to check again."
     public static let genericRenewal = "Alphonso Pro renews automatically until you cancel. Cancel in your Apple Account settings at least 24 hours before the current period ends."
     /// The Practice tab's invitation to Hector, shown only to learners without Pro.
-    public static let practiceCardTitle = "Practise speaking with Hector"
+    public static let practiceCardTitle = "Practice speaking with Hector"
     public static let practiceCardSubtitle = "A voice tutor that remembers your level and weak spots. Part of Alphonso Pro."
 
     /// Wording that must never reach the paywall again.

@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { AVATAR_PREFERENCE_DEFAULT, AVATAR_PREFERENCE_KEY } from "./layers";
 
 /**
- * "Show Alphonso while practising". On by default, kept on this device (like the iOS setting). The store starts at
+ * "Show Alphonso while practicing". On by default, kept on this device (like the iOS setting). The store starts at
  * the default on both server and client so the first render always matches; `hydrate()` then reads the stored
  * choice after mount.
  */

@@ -94,7 +94,8 @@ public enum AgeChoice: String, CaseIterable, Sendable {
         case .under13: return "Under 13"
         case .teen: return "Teen"
         case .youngAdult: return "Young adult"
-        case .adult, .midAdult: return "Adult"
+        case .adult: return "Adult"
+        case .midAdult: return "Mid-life"
         case .mature: return "Mature"
         }
     }

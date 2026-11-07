@@ -54,18 +54,18 @@ function TeamsPage() {
   if (loadingMyTeam)
     return (
       <MobileFrame>
-        <p className="p-6 text-sm text-ink-soft">Loading…</p>
+        <p className="p-6 text-sm text-ds-ink-soft">Loading…</p>
       </MobileFrame>
     );
   if (myTeamFailed)
     return (
       <MobileFrame>
         <div className="px-6 pt-6">
-          <p className="text-sm text-ink-soft">Couldn't load your team.</p>
+          <p className="text-sm text-ds-ink-soft">Couldn't load your team.</p>
           <button
             type="button"
             onClick={() => retryMyTeam()}
-            className="mt-3 rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink"
+            className="mt-3 rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink"
           >
             Try again
           </button>
@@ -131,10 +131,10 @@ function TeamsPage() {
     <MobileFrame>
       <div className="px-6 pb-12 pt-6">
         <div className="flex items-center gap-3">
-          <Link to="/league" aria-label="Back to league" className="text-ink-soft/70">
+          <Link to="/league" aria-label="Back to league" className="text-ds-ink-soft/70">
             ←
           </Link>
-          <h1 className="font-display text-[22px] font-semibold text-ink">Teams</h1>
+          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Teams</h1>
         </div>
 
         <div className="mt-6 space-y-3">
@@ -142,13 +142,13 @@ function TeamsPage() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Join code"
-            className="w-full rounded-xl border border-hairline px-4 py-2.5 text-sm"
+            className="w-full rounded-xl border border-ds-line px-4 py-2.5 text-sm"
           />
           <button
             type="button"
             onClick={handleJoinByCode}
             disabled={busy || !code}
-            className="w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface disabled:opacity-50"
+            className="w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card disabled:opacity-50"
           >
             Join by code
           </button>
@@ -156,21 +156,23 @@ function TeamsPage() {
             type="button"
             onClick={handleAutoJoin}
             disabled={busy}
-            className="w-full rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+            className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
           >
             Put me on a team
           </button>
           {error && <p className="text-xs text-rose-500">{error}</p>}
         </div>
 
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Create a team</h2>
+        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
+          Create a team
+        </h2>
         <div className="mt-3 space-y-3">
           <input
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             placeholder="Team name"
             maxLength={40}
-            className="w-full rounded-xl border border-hairline px-4 py-2.5 text-sm"
+            className="w-full rounded-xl border border-ds-line px-4 py-2.5 text-sm"
           />
           <SegmentedControl
             ariaLabel="Team visibility"
@@ -185,28 +187,28 @@ function TeamsPage() {
             type="button"
             onClick={handleCreate}
             disabled={busy || !teamName.trim()}
-            className="w-full rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+            className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
           >
             Create team
           </button>
         </div>
 
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
+        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
           This week's top teams
         </h2>
         {loadingBoard ? (
-          <p className="mt-3 text-sm text-ink-soft">Loading…</p>
+          <p className="mt-3 text-sm text-ds-ink-soft">Loading…</p>
         ) : (
           <div className="mt-3 space-y-2">
             {(leaderboard ?? []).map((t, i) => (
               <div
                 key={t.teamId}
-                className="flex items-center justify-between rounded-2xl border border-hairline bg-surface p-3.5"
+                className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5"
               >
-                <span className="text-sm font-semibold text-ink">
+                <span className="text-sm font-semibold text-ds-ink">
                   {i + 1}. {t.name}
                 </span>
-                <span className="tnum text-sm text-ink-soft">{t.weeklyXp} XP</span>
+                <span className="tnum text-sm text-ds-ink-soft">{t.weeklyXp} XP</span>
               </div>
             ))}
           </div>

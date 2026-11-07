@@ -14,7 +14,7 @@ describe("Hector's greeting", () => {
     expect(
       buildHectorGreeting({ course: "en", cefr: "B1", name: "Sam", weakSpot: "past-tense" }),
     ).toBe(
-      "Hi Sam! Last time the past tense tripped you up. Want to practise that in conversation?",
+      "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?",
     );
   });
 
@@ -30,7 +30,7 @@ describe("Hector's greeting", () => {
     );
     expect(
       buildHectorGreeting({ course: "en", cefr: null, name: "Sam", weakSpot: "articles" }),
-    ).toBe("Hi Sam! Last time you had trouble with articles. Let's practise together. Ready?");
+    ).toBe("Hi Sam! Last time you had trouble with articles. Let's practice together. Ready?");
   });
 
   it("speaks the course language, with tu in French and tú in Spanish", () => {

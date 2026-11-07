@@ -50,6 +50,7 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
             prefs.getBoolean(SoundEffectsPreference.KEY, SoundEffectsPreference.DEFAULT) &&
                 audioManager.ringerMode == AudioManager.RINGER_MODE_NORMAL
         },
+        isSwitchOn = { prefs.getBoolean(SoundEffectsPreference.KEY, SoundEffectsPreference.DEFAULT) },
         isVoiceActive = { Speech.isSpeakingNow() || voiceProbes.values.any { runCatching { it() }.getOrDefault(false) } },
     )
 
@@ -64,8 +65,8 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
     }
 
     /**
-     * Plays a moment's cues at their times, each under its own key; its haptics fire with them (not gated by the
-     * switch). Suspends until the last cue: the caller's scope is the screen's, so leaving the screen cancels the cues
+     * Plays a moment's cues at their times, each under its own key; its haptics fire with them (only with the
+     * switch on). Suspends until the last cue: the caller's scope is the screen's, so leaving the screen cancels the cues
      * still to come (the complete screen's XP and achievement never play after the learner has left).
      */
     suspend fun play(request: SoundEffectRequest, haptic: (SoundEffectHaptic) -> Unit = {}) {
@@ -75,7 +76,7 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
                 delay(cue.delayMs - elapsed)
                 elapsed = cue.delayMs
             }
-            cue.effect.haptic?.let(haptic)
+            if (gate.shouldVibrate(cue.effect)) cue.effect.haptic?.let(haptic)
             play(cue.effect, request.key?.let { "$it-${cue.effect.name}" })
         }
     }

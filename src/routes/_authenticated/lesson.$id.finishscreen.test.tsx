@@ -154,7 +154,7 @@ describe("FinishScreen", () => {
   });
 });
 
-describe("FinishScreen Practise with Hector", () => {
+describe("FinishScreen Practice with Hector", () => {
   function serveStatus(pro: boolean) {
     const urls: string[] = [];
     global.fetch = vi.fn(async (input: string) => {
@@ -187,10 +187,10 @@ describe("FinishScreen Practise with Hector", () => {
     return urls;
   }
 
-  it("lesson complete shows Practise with Hector, which opens /hector for Pro and the paywall with source lesson_complete otherwise", async () => {
+  it("lesson complete shows Practice with Hector, which opens /hector for Pro and the paywall with source lesson_complete otherwise", async () => {
     serveStatus(true);
     const { unmount } = renderFinish();
-    expect(await screen.findByRole("link", { name: "Practise with Hector" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Practice with Hector" })).toHaveAttribute(
       "href",
       "/hector",
     );
@@ -198,7 +198,7 @@ describe("FinishScreen Practise with Hector", () => {
 
     const urls = serveStatus(false);
     renderFinish();
-    await userEvent.click(await screen.findByRole("button", { name: "Practise with Hector" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Practice with Hector" }));
     expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(urls).toContain("/api/pro-offering?source=lesson_complete");
   });

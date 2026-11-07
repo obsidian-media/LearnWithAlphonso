@@ -30,7 +30,7 @@ struct LessonBrowserView: View {
     /// Shared with Practice and Hector, so the course picked here is the course
     /// every conversation speaks. Persisted across launches.
     @Bindable var activeCourse: ActiveCourseModel
-    /// For the lesson-complete screen's "Practise with Hector" button.
+    /// For the lesson-complete screen's "Practice with Hector" button.
     var hectorAccess: HectorAccess? = nil
     private var course: Course { activeCourse.course }
     @State private var showingSettings = false

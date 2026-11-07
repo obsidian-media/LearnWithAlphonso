@@ -75,7 +75,7 @@ fun ProfileHubScreen(
                     ProfileWeekSection(m)
                     ProfileHeatMap(m)
                     ProfileRecordsAndLevel(m)
-                    ProfileWeakAndHector(m, onPractise = { onOpenReview(course) }, onPaywall = onOpenPaywall)
+                    ProfileWeakAndHector(m, onPractice = { onOpenReview(course) }, onPaywall = onOpenPaywall)
                     ProfileProgressCards(m)
                     ProfileShare(m, onShare = { shareProfileCard(context, m, ds) })
                     if (picking) {

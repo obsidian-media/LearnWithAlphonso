@@ -19,7 +19,7 @@ struct AssistantReply: View {
     @Binding var savingWord: SaveWordRequest?
 
     var body: some View {
-        // Hector replies are wholly in the language being practised.
+        // Hector replies are wholly in the language being practiced.
         TappableText(text: turn.content, color: color, course: course.wireCode, mode: .allWords) {
             savingWord = $0
         }

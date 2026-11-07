@@ -44,18 +44,18 @@ export function AnswerOption({
   if (isStudioInk) {
     const barColor =
       state === "correct"
-        ? "border-l-moss"
+        ? "border-l-ds-brand"
         : state === "incorrect"
           ? "border-l-rose-400"
           : state === "selected"
-            ? "border-l-ink"
+            ? "border-l-ds-ink"
             : "border-l-transparent";
     return (
       <button
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-base text-ink transition ${barColor}`}
+        className={`w-full border-b border-ds-line border-l-[3px] py-3 pl-3 pr-4 text-left text-base text-ds-ink transition ${barColor}`}
       >
         {label}
       </button>
@@ -66,12 +66,12 @@ export function AnswerOption({
   // say picked / right / wrong; the edge takes the same hue so the tile reads as one solid piece.
   const boxClasses =
     state === "correct"
-      ? "border-moss bg-moss/20 text-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
+      ? "border-ds-brand bg-ds-brand/20 text-ds-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
       : state === "incorrect"
-        ? "border-rose-400 bg-rose-500/15 text-ink shadow-[0_4px_0_0_rgba(190,18,60,0.55)]"
+        ? "border-rose-400 bg-rose-500/15 text-ds-ink shadow-[0_4px_0_0_rgba(190,18,60,0.55)]"
         : state === "selected"
-          ? "border-moss bg-moss/10 text-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
-          : "border-hairline bg-parchment text-ink shadow-[0_4px_0_0_var(--color-hairline)] hover:border-ink/30";
+          ? "border-ds-brand bg-ds-brand/10 text-ds-ink shadow-[0_4px_0_0_var(--color-edge-moss)]"
+          : "border-ds-line bg-ds-sunk text-ds-ink shadow-[0_4px_0_0_var(--color-hairline)] hover:border-ds-ink/30";
   return (
     <button
       type="button"
@@ -84,7 +84,7 @@ export function AnswerOption({
       {state === "correct" && (
         <span
           aria-hidden="true"
-          className="grid size-6 place-items-center rounded-full bg-moss text-xs font-bold text-surface"
+          className="grid size-6 place-items-center rounded-full bg-ds-brand text-xs font-bold text-ds-card"
         >
           ✓
         </span>

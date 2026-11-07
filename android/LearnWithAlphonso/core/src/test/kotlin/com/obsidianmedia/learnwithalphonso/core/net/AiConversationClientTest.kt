@@ -196,7 +196,7 @@ class AiConversationClientTest {
         assertEquals("Too many requests. Wait a minute and try again.", msg(429, "quota-exceeded", "2026-10-16T20:01:00Z"))
         assertEquals("Hector is part of Alphonso Pro.", msg(403, "not-entitled"))
         assertEquals("We can't check your Pro access right now. Please try again shortly.", msg(503, "entitlement-unavailable"))
-        assertEquals("Turn on AI features to practise speaking with a tutor.", msg(403, "ai-consent-required"))
+        assertEquals("Turn on AI features to practice speaking with a tutor.", msg(403, "ai-consent-required"))
         assertEquals("You've been signed out. Please sign in again.", msg(401, "unauthorized"))
         // An upstream 429 without the quota code is not the learner's daily cap.
         assertEquals(AiErrorCopy.GENERIC, msg(429, null))

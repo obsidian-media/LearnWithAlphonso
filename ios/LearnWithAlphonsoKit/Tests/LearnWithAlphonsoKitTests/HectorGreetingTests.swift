@@ -14,7 +14,7 @@ final class HectorGreetingTests: XCTestCase {
     func testAWeakSpotIsNamedWithTheLearnersName() {
         XCTAssertEqual(
             HectorGreeting.build(course: .english, cefrLevel: "B1", name: "Sam", weakSpot: "past-tense"),
-            "Hi Sam! Last time the past tense tripped you up. Want to practise that in conversation?")
+            "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?")
     }
 
     func testWithoutAWeakSpotItIsTheGenericLine() {
@@ -29,7 +29,7 @@ final class HectorGreetingTests: XCTestCase {
             "Hi! I'm Hector. What do you want to talk about today?")
         XCTAssertEqual(
             HectorGreeting.build(course: .english, cefrLevel: nil, name: "Sam", weakSpot: "articles"),
-            "Hi Sam! Last time you had trouble with articles. Let's practise together. Ready?")
+            "Hi Sam! Last time you had trouble with articles. Let's practice together. Ready?")
     }
 
     func testTheCourseLanguageWithTuAndTu() {

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/listen")({
       { title: "Listen — Alphonso" },
       {
         name: "description",
-        content: "Short audio episodes to practise listening, organised by course and level.",
+        content: "Short audio episodes to practice listening, organised by course and level.",
       },
       { property: "og:title", content: "Listen — Alphonso" },
       { property: "og:description", content: "Short audio episodes for listening practice." },
@@ -64,7 +64,7 @@ export function PodcastSearchResults({
       <SceneBackdrop scene="listen" />
       <p
         data-surface
-        className="relative z-10 mx-5 my-6 rounded-2xl bg-surface/90 px-4 py-3 text-sm text-ink-soft backdrop-blur-md"
+        className="relative z-10 mx-5 my-6 rounded-2xl bg-ds-card/90 px-4 py-3 text-sm text-ds-ink-soft backdrop-blur-md"
       >
         {text}
       </p>
@@ -83,17 +83,17 @@ export function PodcastSearchResults({
             <button
               type="button"
               onClick={() => play(episode)}
-              className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left"
+              className="flex w-full items-center justify-between rounded-2xl border border-ds-line bg-ds-card px-4 py-3 text-left"
             >
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-ink">
+                <span className="block truncate text-sm font-semibold text-ds-ink">
                   {episode.title}
                 </span>
                 {episode.aiNarrated ? (
-                  <span className="text-xs text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+                  <span className="text-xs text-ds-ink-soft/70">{AI_NARRATED_LABEL}</span>
                 ) : null}
               </span>
-              <span className="tnum ml-3 text-xs text-ink-soft/70">
+              <span className="tnum ml-3 text-xs text-ds-ink-soft/70">
                 {formatDuration(episode.durationSeconds)}
               </span>
             </button>
@@ -131,12 +131,12 @@ export function ListenFolderView({
     return (
       <div className="px-5 py-8">
         <SceneBackdrop scene="listen" />
-        <div data-surface className="relative z-10 rounded-3xl bg-surface/90 p-5 backdrop-blur-md">
-          <h1 className="font-display text-3xl font-bold text-ink">Listen</h1>
-          <p className="mt-3 text-sm text-ink-soft/80">
+        <div data-surface className="relative z-10 rounded-3xl bg-ds-card/90 p-5 backdrop-blur-md">
+          <h1 className="font-display text-3xl font-bold text-ds-ink">Listen</h1>
+          <p className="mt-3 text-sm text-ds-ink-soft/80">
             We couldn&apos;t find that folder. It may have been renamed or removed.
           </p>
-          <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-moss">
+          <Link to="/listen" className="mt-4 inline-block text-sm font-medium text-ds-brand">
             Back to all folders
           </Link>
         </div>
@@ -155,15 +155,17 @@ export function ListenFolderView({
     <div className="px-5 py-6">
       <SceneBackdrop scene="listen" />
       <div className="relative z-10">
-        <h1 className="font-display text-3xl font-bold text-ink">{current?.title ?? "Listen"}</h1>
+        <h1 className="font-display text-3xl font-bold text-ds-ink">
+          {current?.title ?? "Listen"}
+        </h1>
         {current?.description ? (
-          <p className="mt-1 text-sm text-ink-soft">{current.description}</p>
+          <p className="mt-1 text-sm text-ds-ink-soft">{current.description}</p>
         ) : null}
 
         {isEmpty ? (
           <div
             data-surface
-            className="mt-6 flex flex-col items-center gap-3 rounded-3xl bg-surface/90 p-5 text-center backdrop-blur-md"
+            className="mt-6 flex flex-col items-center gap-3 rounded-3xl bg-ds-card/90 p-5 text-center backdrop-blur-md"
           >
             <MascotImage
               moment="emptyState"
@@ -172,7 +174,7 @@ export function ListenFolderView({
               alt="Alphonso"
               className="card-lift"
             />
-            <p className="text-sm text-ink-soft/70">
+            <p className="text-sm text-ds-ink-soft/70">
               Nothing here yet. New episodes appear as they are published.
             </p>
           </div>
@@ -185,7 +187,7 @@ export function ListenFolderView({
                 <Link
                   to="/listen/$"
                   params={{ _splat: [...segments, folder.slug].join("/") }}
-                  className="card-lift flex items-center justify-between gap-3 rounded-3xl bg-surface/95 px-4 py-4 backdrop-blur-md"
+                  className="card-lift flex items-center justify-between gap-3 rounded-3xl bg-ds-card/95 px-4 py-4 backdrop-blur-md"
                 >
                   <span className="flex items-center gap-4">
                     <span
@@ -193,9 +195,11 @@ export function ListenFolderView({
                     >
                       <Icon3D emoji="📁" size={36} />
                     </span>
-                    <span className="font-display text-lg font-bold text-ink">{folder.title}</span>
+                    <span className="font-display text-lg font-bold text-ds-ink">
+                      {folder.title}
+                    </span>
                   </span>
-                  <span aria-hidden="true" className="text-ink-soft/50">
+                  <span aria-hidden="true" className="text-ds-ink-soft/50">
                     →
                   </span>
                 </Link>
@@ -211,7 +215,7 @@ export function ListenFolderView({
                 <button
                   type="button"
                   onClick={() => play(episode)}
-                  className="card-lift flex w-full items-center justify-between gap-3 rounded-3xl bg-surface px-3 py-3 text-left"
+                  className="card-lift flex w-full items-center justify-between gap-3 rounded-3xl bg-ds-card px-3 py-3 text-left"
                 >
                   <span
                     data-tone={tileTone(i)}
@@ -220,19 +224,19 @@ export function ListenFolderView({
                     <Icon3D emoji="🎧" size={30} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-base font-bold text-ink">
+                    <span className="block truncate font-display text-base font-bold text-ds-ink">
                       {episode.title}
                     </span>
                     <span className="flex gap-2 text-xs">
                       {episode.positionSeconds > 0 ? (
-                        <span className="text-moss">Resume</span>
+                        <span className="text-ds-brand">Resume</span>
                       ) : null}
                       {episode.aiNarrated ? (
-                        <span className="text-ink-soft/70">{AI_NARRATED_LABEL}</span>
+                        <span className="text-ds-ink-soft/70">{AI_NARRATED_LABEL}</span>
                       ) : null}
                     </span>
                   </span>
-                  <span className="tnum ml-3 text-xs text-ink-soft/70">
+                  <span className="tnum ml-3 text-xs text-ds-ink-soft/70">
                     {formatDuration(episode.durationSeconds)}
                   </span>
                 </button>
@@ -295,7 +299,7 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
         <SceneBackdrop scene="listen" />
         <p
           data-surface
-          className="relative z-10 rounded-2xl bg-surface/90 px-4 py-3 text-sm text-ink-soft backdrop-blur-md"
+          className="relative z-10 rounded-2xl bg-ds-card/90 px-4 py-3 text-sm text-ds-ink-soft backdrop-blur-md"
         >
           Loading…
         </p>
@@ -312,7 +316,7 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search episodes"
           aria-label="Search episodes"
-          className="w-full rounded-2xl border border-hairline bg-surface/90 px-4 py-2.5 text-sm text-ink backdrop-blur-md placeholder:text-ink-soft/60"
+          className="w-full rounded-2xl border border-ds-line bg-ds-card/90 px-4 py-2.5 text-sm text-ds-ink backdrop-blur-md placeholder:text-ds-ink-soft/60"
         />
       </div>
       {/* Search replaces the tree rather than filtering it: results are flat
@@ -333,7 +337,14 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
   );
 }
 
-function ListenPage() {
+/**
+ * `/listen` is the parent of the `/listen/$` folder route, so a folder URL such as
+ * `/listen/en` must render the child. Without the Outlet the parent kept showing
+ * the root folder list and no folder could be opened.
+ */
+export function ListenPage() {
+  const hasChild = useChildMatches().length > 0;
+  if (hasChild) return <Outlet />;
   return (
     <MobileFrame>
       <ListenBrowser segments={[]} />

@@ -83,14 +83,14 @@ function ProReturnPage() {
         <p className="ds-type-overline tracking-[0.18em] text-ds-action-text">
           {PAYWALL_COPY.fallbackTitle}
         </p>
-        <p role="status" className="font-display text-2xl font-semibold text-ink">
+        <p role="status" className="font-display text-2xl font-semibold text-ds-ink">
           {WEB_PAYWALL_COPY.activating}
         </p>
         {!waiting && (
           <button
             type="button"
             onClick={() => void poll()}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+            className="rounded-full border border-ds-line px-4 py-2 text-sm font-semibold text-ds-ink"
           >
             {PAYWALL_COPY.tryAgain}
           </button>
