@@ -15158,6 +15158,20 @@
   },
   "reason": "The explanation is a generic line: it does not quote the answer or show the verb in context."
  },
+ "en:question:b2p17l5/b2p17q22": {
+  "patch": {
+   "choices": [
+    "to solve a problem or exercise",
+    "to perform or complete a task",
+    "to feel excited about something in the future",
+    "to complete something as planned"
+   ],
+   "meaning": "to feel excited about something that will happen",
+   "explanation": "You \"look forward to\" things that have not happened yet and that you are happy about, so \"to feel excited about something in the future\" is right."
+  },
+  "reason": "\"Something future\" is not natural English, so the key gloss, the card meaning and the explanation all need rewording. / The key \"to feel excited about something future\" is ungrammatical, because \"future\" cannot follow \"something\" like this, so the answer text is reworded at the same position.",
+  "keyChange": true
+ },
  "en:question:b2p17l5/b2p17q23": {
   "patch": {
    "explanation": "In \"He pointed out my mistake\", he made me notice it, so \"point out\" means \"to draw attention to something\"."
@@ -17659,6 +17673,22 @@
    "explanation": "Symptoms that get better over a few days \"improved\"; the other words are not past-tense verbs that fit 'symptoms ___ after a few days'."
   },
   "reason": "Specific explanation needed."
+ },
+ "en:question:b2p9l4/b2p9q16": {
+  "patch": {
+   "choices": [
+    "stable",
+    "prevent",
+    "dressed",
+    "admitted"
+   ],
+   "answer": 3,
+   "explanation": "Hospitals \"admitted\" patients when they take them in, here overnight for observation. The other options are not past-tense verbs that fit.",
+   "meaning": "accepted into hospital as a patient",
+   "example": "The hospital admitted him overnight."
+  },
+  "reason": "'admitted' also fits; make it the key and replace 'kept' with a clearly wrong verb, keeping the answer position.",
+  "keyChange": true
  },
  "en:question:b2p9l4/b2p9q17": {
   "patch": {
@@ -22231,6 +22261,21 @@
    "explanation": "After \"an\" you need one thing, so the singular noun \"alarm\" fits: you set an alarm to wake up."
   },
   "reason": "\"Set the alarms for 7 a.m.\" is also grammatical, so the plural is a second answer; using \"an\" rules out the plural and keeps the form drill."
+ },
+ "en:question:u3l1/q3": {
+  "patch": {
+   "choices": [
+    "Excuse me.",
+    "Sorry.",
+    "You're welcome.",
+    "Please."
+   ],
+   "explanation": "\"You're welcome.\" is the usual polite reply when someone thanks you.",
+   "meaning": "a polite reply when someone thanks you",
+   "example": "Thanks a lot! — You're welcome."
+  },
+  "reason": "Options A and B are both correct replies, so a learner who picks either one is marked wrong; the answer at position 2 is changed to a single correct reply with clear distractors.",
+  "keyChange": true
  },
  "en:question:u3l3/q4": {
   "patch": {

@@ -25914,15 +25914,15 @@
             {
               "id": "esb1p23q23",
               "type": "fill",
-              "prompt": "How do you say \"delta\" in Spanish? ___",
+              "prompt": "How do you say \"bay\" in Spanish? ___",
               "bank": [
                 "cascada",
                 "estanque",
                 "delta",
                 "bahía"
               ],
-              "answer": "delta",
-              "explanation": "delta → delta. Landscape and geography vocabulary."
+              "answer": "bahía",
+              "explanation": "\"Bay\" is \"bahía\". The accent on the í splits the vowels into separate syllables (ba-hí-a)."
             },
             {
               "id": "esb1p23q24",
@@ -27753,15 +27753,15 @@
               "id": "esb1p28q9",
               "type": "listening",
               "prompt": "¿Qué escuchaste?",
-              "audioText": "Cerca de la granja había un poso.",
+              "audioText": "Cerca de la granja había un pozo.",
               "choices": [
-                "Cerca de la granja había un pozo.",
-                "El agua brotaba del poso constantemente.",
-                "Nadie sabía que había un poso ahí.",
-                "Cerca de la granja había un poso."
+                "Cerca de la casa había un pozo.",
+                "El agua brotaba del pozo constantemente.",
+                "Nadie sabía que había un pozo ahí.",
+                "Cerca de la granja había un pozo."
               ],
-              "answer": "Cerca de la granja había un poso.",
-              "explanation": "The audio says \"Cerca de la granja había un poso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+              "answer": "Cerca de la granja había un pozo.",
+              "explanation": "The audio says \"Cerca de la granja había un pozo.\" A \"pozo\" is a well; in Latin American Spanish it sounds the same as \"poso\" (sediment), so listen to the rest of the sentence: \"granja\", not \"casa\"."
             }
           ]
         },
@@ -27942,15 +27942,15 @@
               "id": "esb1p28q21",
               "type": "listening",
               "prompt": "¿Qué escuchaste?",
-              "audioText": "Prometieron gravar toda la ceremonia.",
+              "audioText": "Prometieron grabar toda la ceremonia.",
               "choices": [
-                "El equipo tuvo que gravar el evento completo.",
-                "Prometieron gravar toda la ceremonia.",
-                "Decidieron gravar el evento completo.",
-                "Prometieron grabar toda la ceremonia."
+                "El equipo tuvo que grabar el evento completo.",
+                "Prometieron grabar toda la ceremonia.",
+                "Decidieron grabar el evento completo.",
+                "Prometieron filmar toda la ceremonia."
               ],
-              "answer": "Prometieron gravar toda la ceremonia.",
-              "explanation": "The audio says \"Prometieron gravar toda la ceremonia.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+              "answer": "Prometieron grabar toda la ceremonia.",
+              "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" In Spanish b and v sound the same, so \"grabar\" (to record) and \"gravar\" (to tax) are told apart only by meaning, and recording a ceremony is what makes sense here."
             },
             {
               "id": "esb1p28q22",
@@ -27970,15 +27970,15 @@
               "id": "esb1p28q23",
               "type": "listening",
               "prompt": "¿Qué escuchaste?",
-              "audioText": "El agua brotaba del poso constantemente.",
+              "audioText": "El agua brotaba del pozo constantemente.",
               "choices": [
-                "Encontraron un poso al fondo del jardín.",
-                "Nadie sabía que había un poso ahí.",
-                "El agua brotaba del poso constantemente.",
-                "El agua brotaba del pozo constantemente."
+                "Encontraron un pozo al fondo del jardín.",
+                "Nadie sabía que había un pozo ahí.",
+                "El agua brotaba del pozo constantemente.",
+                "El agua brotaba del manantial constantemente."
               ],
-              "answer": "El agua brotaba del poso constantemente.",
-              "explanation": "The audio says \"El agua brotaba del poso constantemente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+              "answer": "El agua brotaba del pozo constantemente.",
+              "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" With seseo \"pozo\" and \"poso\" sound the same, but only a well (\"pozo\") makes sense as a place water flows from."
             },
             {
               "id": "esb1p28q24",
@@ -36503,15 +36503,15 @@
               "id": "esb2p28q23",
               "type": "listening",
               "prompt": "¿Qué escuchaste?",
-              "audioText": "El concejo escolar se reunió por la tarde.",
+              "audioText": "El concejo municipal se reunió por la tarde.",
               "choices": [
                 "El consejo escolar se reunió por la tarde.",
                 "Desde arriba se veía toda la sima.",
                 "Nadie se atrevía a acercarse a la cima.",
-                "El concejo escolar se reunió por la tarde."
+                "El concejo municipal se reunió por la tarde."
               ],
-              "answer": "El concejo escolar se reunió por la tarde.",
-              "explanation": "The audio says \"El concejo escolar se reunió por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": "El concejo municipal se reunió por la tarde.",
+              "explanation": "The audio says \"El concejo municipal se reunió por la tarde.\" \"Concejo\" (town council) sounds like \"consejo\" under seseo, so the word municipal, not escolar, tells you which sentence you heard."
             },
             {
               "id": "esb2p28q24",
@@ -40506,10 +40506,10 @@
               "choices": [
                 "metáfora",
                 "tono",
-                "flashback"
+                "analepsis"
               ],
               "answer": 2,
-              "explanation": "flashback → flashback. Vocabulary for discussing literature and narrative technique."
+              "explanation": "In literary analysis a flashback is called \"analepsis\" (also \"escena retrospectiva\"); the anglicism \"flashback\" is common only in everyday speech."
             }
           ]
         }
@@ -44896,15 +44896,15 @@
               "id": "esc1p28q21",
               "type": "listening",
               "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sospechaba que el escándalo los estuviera asechando.",
+              "audioText": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
               "choices": [
                 "Nadie sabía que el bebé era varón.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
-                "Nadie sospechaba que el escándalo los estuviera asechando.",
+                "Nadie sospechaba que el juez fuera a encausarlos.",
+                "Nadie sospechaba que sus rivales lo estuvieran asechando.",
                 "Nadie sabía que el bebé era barón."
               ],
-              "answer": "Nadie sospechaba que el escándalo los estuviera asechando.",
-              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera asechando.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
+              "explanation": "The audio says \"Nadie sospechaba que sus rivales lo estuvieran asechando.\" The rivals were plotting traps, which is the meaning of \"asechar\" with an s, a word that sounds the same as \"acechar\" under seseo."
             },
             {
               "id": "esc1p28q22",
