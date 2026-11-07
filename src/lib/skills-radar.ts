@@ -39,7 +39,7 @@ export function radarModel(scores: SkillScore[]): RadarModel {
       skill,
       label: SKILL_LABEL[skill],
       answered,
-      pct: enough ? (s!.pct as number) : null,
+      pct: enough ? Math.min(100, Math.max(0, s!.pct as number)) : null,
       needed: Math.max(0, MIN_SKILL_ANSWERS - answered),
     };
   });

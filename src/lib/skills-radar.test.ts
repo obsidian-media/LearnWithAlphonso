@@ -43,3 +43,10 @@ describe("radar geometry", () => {
     expect(radarPolygon(m.skills, 100, 150).split(" ")[0]).toBe("150,50");
   });
 });
+
+describe("radar bounds", () => {
+  it("never plots outside the chart, even for rows with more right answers than total", () => {
+    const m = model([row("listening", 30, 10), row("grammar", 5, 10), row("reading", 10, 10)]);
+    expect(m.skills.find((s) => s.skill === "listening")?.pct).toBe(100);
+  });
+});
