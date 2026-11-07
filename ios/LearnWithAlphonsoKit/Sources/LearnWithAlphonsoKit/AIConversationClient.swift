@@ -332,8 +332,11 @@ public final class AIConversationClient: Sendable {
         }
     }
 
-    /// POST /api/tts -- returns raw MP3 audio bytes for `text`.
-    public func synthesizeSpeech(text: String, voice: String? = nil, course: String? = nil) async throws -> Data {
+    /// POST /api/tts -- returns raw MP3 audio bytes for `text`. `character` is sent only for Hector, so a voice the
+    /// server refuses falls back to his default, never Alphonso's; the server treats a missing one as Alphonso.
+    public func synthesizeSpeech(
+        text: String, voice: String? = nil, course: String? = nil, character: VoiceCharacter? = nil
+    ) async throws -> Data {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/tts"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -341,6 +344,7 @@ public final class AIConversationClient: Sendable {
         var payload: [String: Any] = ["text": text]
         if let voice { payload["voice"] = voice }
         if let course { payload["course"] = course }
+        if let character, character != .alphonso { payload["character"] = character.rawValue }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         return try await performConversationCall(request)
