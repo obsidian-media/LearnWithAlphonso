@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.map
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.sync.PassClients
 import com.obsidianmedia.learnwithalphonso.sync.SessionStartup
+import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
+import com.obsidianmedia.learnwithalphonso.core.net.LearnerProfileClient
 import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
@@ -141,6 +143,8 @@ class AppContainer(context: Context) {
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)
     val goalClient = LearningGoalClient(apiHttp)
+    /** The first-run answers on the account (/api/learner-profile), the same checked save as the web. */
+    val learnerProfileClient = LearnerProfileClient(apiHttp)
     /** The last learning goal and plan per user and course, shown only when the network is down. */
     val goalCache = GoalCache(GoalPrefsStore(prefs))
     val tutorClient = TutorConversationClient(apiHttp, deviceId())
@@ -152,7 +156,10 @@ class AppContainer(context: Context) {
     )
     fun newRecorder() = TurnRecorder(app)
     fun newPlayback() = AudioPlayback(app)
-    val entitlements = EntitlementStore(RevenueCatBilling.createIfConfigured(app, BuildConfig.REVENUECAT_PUBLIC_KEY))
+    /** No store on a device that answered Under 13: RevenueCat is never configured there. */
+    val entitlements = EntitlementStore(
+        if (FirstRunDevice.isBlocked) null else RevenueCatBilling.createIfConfigured(app, BuildConfig.REVENUECAT_PUBLIC_KEY),
+    )
 
     /** A stable per-install id for the tutor service's rate limiting; never a hardware identifier. */
     private fun deviceId(): String {
@@ -181,11 +188,22 @@ class AppContainer(context: Context) {
 
     init {
         // Restore here, not in a screen: a sync, a sign-out or a rejected refresh can happen with no screen composed.
-        appScope.launch { SessionStartup(session::restore, { session.userId }, syncStore, startup).run() }
+        // A device that answered Under 13 restores nothing: a stored session is dropped here, never refreshed.
+        appScope.launch {
+            val restore: suspend () -> Unit = { if (FirstRunDevice.isBlocked) session.endLocally() else session.restore() }
+            SessionStartup(restore, { session.userId }, syncStore, startup).run()
+        }
     }
 
     /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
-    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended -> voicePrefs.clear(); syncCoordinator.clearAccount(ended) }
+    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended ->
+        voicePrefs.clear()
+        syncCoordinator.clearAccount(ended)
+        // Sign-out or a deleted account: no first-run answers or "Not now for this launch" carry to the next account.
+        // The under-13 block is never cleared.
+        FirstRunDevice.store.clearDraft()
+        com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip.reset()
+    }
 
     // ---- Plan 4: podcasts, reminders, push ----
 
@@ -210,5 +228,5 @@ class AppContainer(context: Context) {
 
     /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */
     suspend fun checkAppUpdate(): AppUpdateGate.Requirement? =
-        if (BuildConfig.DEBUG) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
+        if (BuildConfig.DEBUG || FirstRunDevice.isBlocked) null else AppUpdateGate.check(BuildConfig.API_BASE_URL, BuildConfig.VERSION_CODE, engine)
 }

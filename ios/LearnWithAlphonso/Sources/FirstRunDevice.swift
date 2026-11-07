@@ -5,10 +5,13 @@ import UIKit
 import LearnWithAlphonsoKit
 
 /// The first run's storage on this device (Kit FirstRunStore): the answers in UserDefaults until sign-in, the under-13
-/// block in the Keychain. The Keychain item is this-device-only and outlives a relaunch (and a reinstall), so going
-/// back, relaunching or reinstalling cannot get an under-13 learner past the stop screen.
+/// block in the Keychain AND UserDefaults. The Keychain item is this-device-only and outlives a reinstall; the
+/// UserDefaults copy keeps the block across a relaunch even where the Keychain write fails (an unsigned simulator
+/// build has no Keychain entitlement: the relaunch UI test caught exactly that). Either copy blocks.
 enum FirstRunDevice {
-    static let store = FirstRunStore(draftStorage: DefaultsKeyValue(), blockStorage: KeychainFlagKeyValue())
+    static let store = FirstRunStore(
+        draftStorage: DefaultsKeyValue(),
+        blockStorage: EitherKeyValue(first: KeychainFlagKeyValue(), second: DefaultsKeyValue()))
 
     /// True once this device answered Under 13. Read by everything that would send: crash reporting, RevenueCat,
     /// the update check, the session restore, sign-out's server calls and speech.
@@ -19,6 +22,19 @@ private final class DefaultsKeyValue: FirstRunKeyValue {
     func string(forKey key: String) -> String? { UserDefaults.standard.string(forKey: key) }
     func set(_ value: String?, forKey key: String) {
         if let value { UserDefaults.standard.set(value, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+        UserDefaults.standard.synchronize()
+    }
+}
+
+/// Writes both stores; a value in either one counts.
+private final class EitherKeyValue: FirstRunKeyValue {
+    private let first: FirstRunKeyValue
+    private let second: FirstRunKeyValue
+    init(first: FirstRunKeyValue, second: FirstRunKeyValue) { self.first = first; self.second = second }
+    func string(forKey key: String) -> String? { first.string(forKey: key) ?? second.string(forKey: key) }
+    func set(_ value: String?, forKey key: String) {
+        first.set(value, forKey: key)
+        second.set(value, forKey: key)
     }
 }
 

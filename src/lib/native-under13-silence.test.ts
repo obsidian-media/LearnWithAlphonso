@@ -30,8 +30,14 @@ describe("iOS: an under-13 device sends nothing", () => {
   const device = ios("FirstRunDevice.swift");
   const flow = ios("FirstRunFlowView.swift");
 
-  it("keeps the block in the Keychain, so a relaunch or a reinstall cannot clear it", () => {
-    expect(device).toMatch(/blockStorage:\s*KeychainFlagKeyValue\(\)/);
+  it("keeps the block in the Keychain and UserDefaults, so a relaunch or a reinstall cannot clear it", () => {
+    expect(device).toMatch(
+      /blockStorage:\s*EitherKeyValue\(first:\s*KeychainFlagKeyValue\(\),\s*second:\s*DefaultsKeyValue\(\)\)/,
+    );
+    // A value in either copy blocks (the simulator's Keychain write can fail: the relaunch UI test caught it).
+    expect(between(device, "func string(forKey key: String) -> String? { first", "}")).toMatch(
+      /\?\? second/,
+    );
     expect(device).toMatch(/kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly/);
     expect(device).not.toMatch(/kSecAttrSynchronizable/);
   });
@@ -107,5 +113,113 @@ describe("iOS: an under-13 device sends nothing", () => {
     expect(age).toMatch(/if FirstRun\.chooseAge\(store, agePicked\) == \.blocked \{/);
     expect(age).toMatch(/onBlocked\(\)/);
     expect(age).toMatch(/blocked = true/);
+  });
+});
+
+const androidApp = (f: string) =>
+  stripComments(
+    read(`android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/${f}`),
+  );
+
+describe("Android: an under-13 device sends nothing", () => {
+  const application = androidApp("AlphonsoApplication.kt");
+  const crash = androidApp("CrashReporting.kt");
+  const container = androidApp("AppContainer.kt");
+  const root = androidApp("ui/RootScreen.kt");
+  const activity = androidApp("MainActivity.kt");
+  const device = androidApp("firstrun/FirstRunDevice.kt");
+  const flow = androidApp("ui/firstrun/FirstRunFlowScreen.kt");
+  const manifest = read("android/LearnWithAlphonso/app/src/main/AndroidManifest.xml");
+
+  it("reads the block before anything starts, and keeps it on this device only", () => {
+    expect(application).toMatch(/FirstRunDevice\.init\(this\)\s*CrashReporting\.start\(this\)/);
+    expect(manifest).toMatch(/android:allowBackup="false"/);
+    // commit, not apply: the block is on disk before the next line runs.
+    expect(between(device, "override fun set(", "\n    }")).toMatch(/\.commit\(\)/);
+  });
+
+  it("Sentry: never starts, drops events and breadcrumbs at send time, and closes when blocked mid-run", () => {
+    expect(between(crash, "fun start(context: Context) {", "SentryAndroid.init")).toMatch(
+      /if \(FirstRunDevice\.isBlocked\) return/,
+    );
+    expect(crash).toMatch(
+      /BeforeSendCallback \{ event, _ -> if \(FirstRunDevice\.isBlocked\) null else scrub\(event\) \}/,
+    );
+    expect(crash).toMatch(
+      /BeforeBreadcrumbCallback \{ crumb, _ -> if \(FirstRunDevice\.isBlocked\) null else scrub\(crumb\) \}/,
+    );
+    expect(between(crash, "fun stop() {", "\n    }")).toMatch(/Sentry\.close\(\)/);
+    expect(between(root, "val blockThisDevice: () -> Unit = {", "\n    }")).toMatch(
+      /CrashReporting\.stop\(\)/,
+    );
+  });
+
+  it("RevenueCat: never configured on a blocked device", () => {
+    expect(container).toMatch(
+      /EntitlementStore\(\s*if \(FirstRunDevice\.isBlocked\) null else RevenueCatBilling\.createIfConfigured\(/,
+    );
+    expect(container.match(/RevenueCatBilling\.createIfConfigured/g)).toHaveLength(1);
+  });
+
+  it("auth: no session restore or refresh, and the under-13 sign-out makes no server call", () => {
+    expect(container).toMatch(
+      /if \(FirstRunDevice\.isBlocked\) session\.endLocally\(\) else session\.restore\(\)/,
+    );
+    const core = stripComments(
+      read(
+        "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/auth/SessionManager.kt",
+      ),
+    );
+    expect(between(core, "fun endLocally() {", "\n    }")).toMatch(
+      /endSession\(endOnServer = false\)/,
+    );
+    const signOut = stripComments(
+      read(
+        "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/firstrun/AfterSignInScreen.kt",
+      ),
+    );
+    expect(between(signOut, "fun signOutBlockedDevice(", "\n}")).toMatch(
+      /container\.session\.endLocally\(\)/,
+    );
+    expect(between(signOut, "fun signOutBlockedDevice(", "\n}")).not.toMatch(
+      /signOut\(\)|pushRegistrar/,
+    );
+  });
+
+  it("no update check, no resume work, no push token at launch, and the stop screen comes first", () => {
+    expect(container).toMatch(
+      /if \(BuildConfig\.DEBUG \|\| FirstRunDevice\.isBlocked\) null else AppUpdateGate\.check/,
+    );
+    expect(between(activity, "override fun onResume() {", "\n    }")).toMatch(
+      /super\.onResume\(\)\s*if \(FirstRunDevice\.isBlocked\) return/,
+    );
+    expect(manifest).toMatch(
+      /android:name="firebase_messaging_auto_init_enabled" android:value="false"/,
+    );
+    const branches = between(
+      root,
+      "Box(Modifier.fillMaxSize().background(palette.surface)) {",
+      "\n}",
+    );
+    const stop = branches.indexOf("firstRunBlocked -> ");
+    expect(stop).toBeGreaterThan(-1);
+    for (const later of ["gate != null ->", "AuthScreen(container)", "SignedInApp("]) {
+      expect(branches.indexOf(later)).toBeGreaterThan(stop);
+    }
+  });
+
+  it("no speech after the choice, and every first-run speaker goes through the gated voice", () => {
+    expect(between(device, "fun speak(", "\n    }")).toMatch(/if \(isBlocked\) return/);
+    expect(flow).not.toMatch(/TextToSpeech|Speech\.get\(context\)\.speak/);
+  });
+
+  it("the age step blocks through the core and hands over to the stop screen at once", () => {
+    const age = between(flow, "private fun AgeStep(", "private fun InterestsStep");
+    expect(age).toMatch(
+      /if \(FirstRun\.chooseAge\(store, choice\) == AgeOutcome\.BLOCKED\) \{\s*onBlocked\(\)/,
+    );
+    const handover = between(flow, "FirstRun.QuestionStep.AGE -> AgeStep(ctx, store) {", "}");
+    expect(handover).toMatch(/onBlocked\(\)/);
+    expect(handover).toMatch(/blocked = true/);
   });
 });

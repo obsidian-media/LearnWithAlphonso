@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso
 
+import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,7 +32,11 @@ class MainActivity : ComponentActivity() {
             val themeId by container.themeManager.theme.collectAsState()
             val paletteId by container.themeManager.palette.collectAsState()
             AlphonsoTheme(themeId, isSystemInDarkTheme(), paletteId) {
-                RootScreen(container, pendingInviteCode, onInviteConsumed = { pendingInviteCode = null })
+                RootScreen(
+                    container, pendingInviteCode, onInviteConsumed = { pendingInviteCode = null },
+                    // DEBUG screenshots only: `adb shell am start -n ... --es firstRunHarness hector` (FirstRunHarness).
+                    harness = if (BuildConfig.DEBUG) intent?.getStringExtra("firstRunHarness") else null,
+                )
             }
         }
     }
@@ -53,6 +58,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (FirstRunDevice.isBlocked) return
         lifecycleScope.launch { container.syncCoordinator.triggerSync() }
         lifecycleScope.launch { container.aiConsent.refresh() }
     }

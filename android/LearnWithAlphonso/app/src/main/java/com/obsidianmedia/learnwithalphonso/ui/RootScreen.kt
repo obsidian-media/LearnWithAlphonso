@@ -1,5 +1,25 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
+import com.obsidianmedia.learnwithalphonso.CrashReporting
+import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
+import com.obsidianmedia.learnwithalphonso.core.firstrun.FirstRun
+import com.obsidianmedia.learnwithalphonso.core.firstrun.LearnerAnswers
+import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CompleteProfileScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunFlowScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunHarness
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunHelloScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.Under13StopScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.signOutBlockedDevice
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonLightScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import com.obsidianmedia.learnwithalphonso.BuildConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -82,8 +102,19 @@ private val tabs = listOf(
 
 /** Port of RootView.swift: restore the session, then auth or the five-tab app. */
 @Composable
-fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}) {
+fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}, harness: String? = null) {
     val session = container.session
+    // This device answered Under 13: nothing but the stop screen, and nothing sent (FirstRunDevice).
+    var firstRunBlocked by remember { mutableStateOf(FirstRunDevice.isBlocked) }
+    // Signed out, the first run comes first; "I already have an account" and email open the sign-in screen.
+    var showSignIn by rememberSaveable { mutableStateOf(false) }
+    val themeIdForFirstRun by container.themeManager.theme.collectAsState()
+    val paletteIdForFirstRun by container.themeManager.palette.collectAsState()
+    val blockThisDevice: () -> Unit = {
+        // Reporting may already be running: close it now. Everything else checks FirstRunDevice.isBlocked.
+        CrashReporting.stop()
+        firstRunBlocked = true
+    }
     val isRestoring by session.isRestoring.collectAsState()
     val state by session.state.collectAsState()
     val palette = AlphonsoColor.palette
@@ -113,18 +144,37 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
 
     Box(Modifier.fillMaxSize().background(palette.surface)) {
         when {
+            // Before everything else: a blocked device shows only the stop screen, signed in or not.
+            firstRunBlocked -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { Under13StopScreen() }
+            // DEBUG only: one first-run screen with a made-up learner, for screenshots (FirstRunHarness).
+            harness != null && BuildConfig.DEBUG -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { FirstRunHarness(harness, container) }
             // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.
             gate != null -> UpdateRequiredScreen(gate)
             isRestoring -> Unit
-            state !is AuthState.SignedIn -> AuthScreen(container)
-            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed)
+            state !is AuthState.SignedIn && showSignIn -> Box(Modifier.fillMaxSize()) {
+                AuthScreen(container)
+                TextButton(onClick = { showSignIn = false; session.clearMessages() }, modifier = Modifier.align(Alignment.TopStart).statusBarsPadding().padding(4.dp)) {
+                    Text("Back to the questions", color = palette.moss)
+                }
+            }
+            state !is AuthState.SignedIn -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) {
+                FirstRunFlowScreen(
+                    mode = FirstRun.Mode.NEW, store = FirstRunDevice.store, container = container,
+                    onExit = { showSignIn = true }, onBlocked = blockThisDevice, onUnder13Ok = {},
+                    onEmail = { showSignIn = true }, onHaveAccount = { showSignIn = true },
+                )
+            }
+            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed, blockThisDevice)
         }
     }
 }
 
 @Composable
-private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit) {
+private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit, onBlocked: () -> Unit) {
     val nav = rememberNavController()
+    // The first run's cover: the answers from this device saved right after sign-in, or Complete your profile.
+    var firstRunCover by remember { mutableStateOf<FirstRunCover?>(null) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(pendingInviteCode) {
         if (pendingInviteCode != null) {
@@ -156,6 +206,13 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         if (!flow.tryBegin(id)) return@LaunchedEffect
         try {
             coroutineScope {
+                // The first run's answers (or Complete your profile) come first; the name prompt and placement follow
+                // when that cover closes.
+                val cover = checkFirstRun(container, id)
+                if (cover != null) {
+                    firstRunCover = cover
+                    snapshotFlow { firstRunCover }.first { it == null }
+                }
                 // The onboarding checks start first, in their own coroutine, so they never wait behind sync, sign-in
                 // to billing, reminders or push registration. A failed check skips its step this launch, never blocks.
                 launch {
@@ -247,6 +304,8 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.HECTOR) { HectorTab(container) }
             composable(Routes.PROFILE) {
                 ProfileHubScreen(
+                    container = container,
+                    onEditAnswers = { firstRunCover = FirstRunCover.Complete(edit = true) },
                     onOpenLeague = { nav.navigate(Routes.LEAGUE) },
                     onOpenFriends = { nav.navigate(Routes.FRIENDS) },
                     onOpenAchievements = { nav.navigate(Routes.ACHIEVEMENTS) },
@@ -278,6 +337,41 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         }
     }
 
+    firstRunCover?.let { cover ->
+        val courseCode = container.activeCourse.course.value.code
+        val placementTaken: suspend (String) -> Boolean = { c -> runCatching { container.progressClient.fetchPlacementTakenAt(c) }.getOrNull() != null }
+        val finish: (FirstRun.Destination?) -> Unit = { destination ->
+            firstRunCover = null
+            when (destination) {
+                FirstRun.Destination.PLACEMENT -> nav.navigate(Routes.placement(container.activeCourse.course.value.code))
+                FirstRun.Destination.HECTOR -> nav.navigate(Routes.HECTOR) { launchSingleTop = true }
+                else -> Unit
+            }
+        }
+        LessonLightScope(container.themeManager.theme.collectAsState().value, container.themeManager.palette.collectAsState().value) {
+            Box(Modifier.fillMaxSize()) {
+                when (cover) {
+                    is FirstRunCover.Hello -> FirstRunHelloScreen(
+                        container, cover.answers, FirstRunDevice.store,
+                        onFinish = { destination ->
+                            cover.answers.course?.let { c -> Course.entries.firstOrNull { it.code == c } }?.let(container.activeCourse::set)
+                            finish(destination)
+                        },
+                        placementTaken = { placementTaken(cover.answers.course ?: "en") },
+                    )
+                    is FirstRunCover.Complete -> CompleteProfileScreen(
+                        container, courseCode, cover.edit, FirstRunDevice.store,
+                        onFinish = finish,
+                        onBlocked = onBlocked,
+                        onUnder13Ok = { firstRunCover = null; signOutBlockedDevice(container) },
+                        placementTaken = { placementTaken(courseCode) },
+                    )
+                }
+            }
+        }
+        return
+    }
+
     // The one-time public-name prompt covers the app until the learner saves or skips; placement follows.
     // Only a prompt that belongs to the signed-in account is ever shown.
     namePresentation?.takeIf { it.userId == userId }?.let { presentation ->
@@ -286,4 +380,18 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             advanceOnboarding()
         }
     }
+}
+
+private sealed interface FirstRunCover {
+    data class Hello(val answers: LearnerAnswers) : FirstRunCover
+    data class Complete(val edit: Boolean) : FirstRunCover
+}
+
+/** Picks the first-run cover for this account, if any: this device's answers first, then Complete your profile once. */
+private suspend fun checkFirstRun(container: AppContainer, userId: String): FirstRunCover? {
+    FirstRun.answersToSend(FirstRunDevice.store)?.let { return FirstRunCover.Hello(it) }
+    if (CompleteProfileSkip.skippedThisLaunch) return null
+    val profile = runCatching { container.learnerProfileClient.fetch() }.getOrNull() ?: return null
+    if (container.session.userId != userId || !profile.needsCompleteProfile) return null
+    return FirstRunCover.Complete(edit = false)
 }

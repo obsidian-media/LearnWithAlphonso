@@ -87,6 +87,7 @@ final class FirstRunShotsTests: UICompatTestCase {
             ("complete-hello", "complete-your-profile-01-hello"),
             ("complete-about", "complete-your-profile-02-about-you"),
             ("profile", "profile-with-animal"),
+            ("avatar-profile", "avatar-picker-profile"),
         ]
         for (screen, name) in shots {
             launch(signedIn: false, arguments: ["-UITestFirstRunHarness", screen])

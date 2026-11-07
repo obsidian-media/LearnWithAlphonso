@@ -41,6 +41,9 @@ struct FirstRunHarnessView: View {
                 onExit: {}, onBlocked: {}, onUnder13Ok: {}, startIndex: screen == "complete-about" ? 1 : 0)
         case "profile":
             ProfileAvatarHarness()
+        case "avatar-profile":
+            // The picker Profile and Settings open; saving needs an account, so nothing is tapped here.
+            AvatarPickerSheet(session: session, name: "Sam", current: "animal:owl") { _ in }
         default:
             Text("Unknown harness screen \(screen)")
         }

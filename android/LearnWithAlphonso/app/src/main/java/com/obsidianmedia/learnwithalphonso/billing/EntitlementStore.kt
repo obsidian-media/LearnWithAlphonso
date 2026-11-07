@@ -20,7 +20,14 @@ import kotlinx.coroutines.flow.update
 
 const val PRO_ENTITLEMENT_ID = "pro"
 
-data class BillingPackage(val id: String, val priceString: String, val periodUnit: BillingPeriodUnit?, val periodValue: Int)
+/**
+ * [freeTrialPeriod]: the ISO 8601 length of the free trial Google Play offers THIS account on the package ("P7D"), or
+ * null. Play returns only the offers the account is eligible for, so a learner who already had a trial gets none.
+ */
+data class BillingPackage(
+    val id: String, val priceString: String, val periodUnit: BillingPeriodUnit?, val periodValue: Int,
+    val freeTrialPeriod: String? = null,
+)
 
 /** What EntitlementStore needs from a store SDK; RevenueCatBilling implements it, tests fake it. */
 interface BillingPort {
@@ -108,7 +115,8 @@ class RevenueCatBilling private constructor() : BillingPort {
             Period.Unit.YEAR -> BillingPeriodUnit.YEAR
             else -> null
         }
-        return BillingPackage(identifier, product.price.formatted, unit, period?.value ?: 1)
+        val trial = product.subscriptionOptions?.freeTrial?.freePhase?.billingPeriod?.iso8601
+        return BillingPackage(identifier, product.price.formatted, unit, period?.value ?: 1, trial)
     }
 
     companion object {
