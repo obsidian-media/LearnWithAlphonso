@@ -120,7 +120,7 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
           className="relative h-44 w-full overflow-hidden rounded-3xl border-2 border-ds-xp bg-cover bg-center text-left"
           style={{ backgroundImage: `url(${roomArt(cont.shelf.room)})` }}
         >
-          <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/30 to-ds-hero/10" />
+          <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/35 to-ds-hero/40" />
           <img src={alphonso} alt="" className="absolute -right-3 bottom-0 w-32" />
           <span className="absolute left-4 top-3.5 text-xs font-extrabold tracking-wider text-ds-on-hero-kick">
             CONTINUE LISTENING

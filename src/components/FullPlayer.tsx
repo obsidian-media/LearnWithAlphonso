@@ -56,9 +56,10 @@ export function FullPlayer({
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center opacity-40 blur-md"
+        className="absolute inset-0 bg-cover bg-center blur-md"
         style={{ backgroundImage: `url(${roomArt(room)})` }}
       />
+      <div aria-hidden="true" className="absolute inset-0 bg-ds-hero/80" />
       <div className="relative flex flex-1 flex-col gap-5 px-6 pb-8 pt-4">
         <div className="flex items-center justify-between">
           <button
