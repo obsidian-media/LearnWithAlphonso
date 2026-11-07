@@ -29,9 +29,12 @@ public struct PaywallProduct: Sendable, Equatable {
     public let price: Decimal
     public let period: BillingPeriod?
     public let eligibleFreeTrial: BillingPeriod?
+    /// ISO 4217 code from StoreKit, used only to write the per-month figure in the product's own currency.
+    public let currencyCode: String?
 
     public init(id: String, localizedTitle: String, localizedPriceString: String, price: Decimal,
-                period: BillingPeriod?, eligibleFreeTrial: BillingPeriod?) {
+                period: BillingPeriod?, eligibleFreeTrial: BillingPeriod?, currencyCode: String? = nil) {
+        self.currencyCode = currencyCode
         self.id = id
         self.localizedTitle = localizedTitle
         self.localizedPriceString = localizedPriceString
@@ -65,6 +68,8 @@ public struct PaywallPlanOption: Sendable, Equatable, Identifiable {
     public let priceLine: String
     /// "Save 33%" on the yearly plan when it costs less than twelve months of the monthly one.
     public let savingsLine: String?
+    /// The plan's price per month worked out from its price ("$5.00 a month"), else the period's own words.
+    public let perMonthLine: String
     /// "2-week free trial" when this plan has a free trial the learner is eligible for, so a trial on a plan
     /// that is not selected is never hidden.
     public let trialNote: String?
@@ -92,6 +97,8 @@ public struct PaywallTextStyle: Sendable, Equatable {
     public static let price = PaywallTextStyle(pointSize: 22, weight: 700)
     public static let trial = PaywallTextStyle(pointSize: 22, weight: 600)
     public static let disclosure = PaywallTextStyle(pointSize: 12, weight: 400)
+    /// The dashed "when do I pay" row: body size, smaller than the price.
+    public static let whenBody = PaywallTextStyle(pointSize: 16, weight: 600)
 
     /// The point size of every primary button label (AlphonsoPrimaryButtonStyle reads this),
     /// so the paywall's price can be tested against the real call-to-action size.
@@ -150,6 +157,8 @@ public struct PaywallPresentation: Sendable, Equatable {
     public let productID: String?
     /// Every plan, yearly first, when there is more than one; empty when there is one (no picker).
     public var options: [PaywallPlanOption] = []
+    /// The "when do I pay" row: the exact first-payment date and that cancelling before it costs nothing.
+    public var whenLine: PaywallWhenLine? = nil
     public let titleText: String
     public let priceLine: String?
     public let trialLine: String?
@@ -163,7 +172,10 @@ public struct PaywallPresentation: Sendable, Equatable {
     /// `selectedProductID` is the learner's pick; when it is nil or not offered, a yearly plan is
     /// chosen if there is one, otherwise the first product, which keeps a one-plan offering exactly
     /// as it was.
-    public static func make(_ load: PaywallLoadState, selectedProductID: String? = nil) -> PaywallPresentation {
+    public static func make(
+        _ load: PaywallLoadState, selectedProductID: String? = nil,
+        now: Date = Date(), calendar: Calendar = .current, locale: Locale = .current
+    ) -> PaywallPresentation {
         switch load {
         case .loading:
             return PaywallPresentation(
@@ -200,6 +212,8 @@ public struct PaywallPresentation: Sendable, Equatable {
                 ctaTitle: trialLine == nil ? PaywallCopy.subscribe : PaywallCopy.startFreeTrial,
                 renewalDisclosure: disclosure, retryTitle: nil
             )
+            let trial = product.eligibleFreeTrial.flatMap { $0.value >= 1 ? $0 : nil }
+            presentation.whenLine = PaywallDates.whenLine(trial: trial, now: now, calendar: calendar, locale: locale)
             if ordered.count > 1 {
                 let saving = yearlySaving(ordered)
                 presentation.options = ordered.map { option in
@@ -210,6 +224,7 @@ public struct PaywallPresentation: Sendable, Equatable {
                         title: planTitle(optionPeriod),
                         priceLine: priceLine(optionPrice, optionPeriod),
                         savingsLine: isYearly(optionPeriod) ? saving.map { "Save \($0)%" } : nil,
+                        perMonthLine: PaywallPricing.perMonthLine(option, locale: locale),
                         trialNote: option.eligibleFreeTrial.flatMap { $0.value >= 1 ? "\(trialLength($0)) free trial" : nil },
                         isSelected: option.id == product.id
                     )

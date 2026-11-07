@@ -42,6 +42,8 @@ struct RootView: View {
     @State private var onboarding: OnboardingPresentation?
     @State private var onboardingDone: Set<OnboardingStep> = []
     @State private var nameConfirmed: Bool?
+    /// The first name pinned on the Pro paywall's card; nil for a generated handle.
+    @State private var paywallName: String?
     @State private var placementTaken: Bool?
     /// True once checkOnboarding has finished for the current account (the Learn tab's placement banner waits for it).
     @State private var onboardingChecked = false
@@ -312,6 +314,7 @@ struct RootView: View {
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
         // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
         .alphonsoDesignSystem()
+        .environment(\.paywallLearner, PaywallLearner(course: activeCourse.course, name: paywallName))
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
             PaywallView(entitlementStore: entitlementStore, source: .hectorTab)
@@ -519,6 +522,7 @@ struct RootView: View {
         onboarding = nil
         onboardingDone = []
         nameConfirmed = nil
+        paywallName = nil
         placementTaken = nil
         nameOnboarding = nil
         guard let accessToken = session.accessToken else { return }
@@ -539,6 +543,7 @@ struct RootView: View {
                     nameOnboarding = DisplayNameOnboarding(prefill: prefill, currentName: status.displayName)
                 }
                 nameConfirmed = !status.needsPrompt
+                paywallName = status.nameConfirmed ? ProPaywallContent.cardFirstName(status.displayName) : nil
             }
         } catch {
             // Deliberately silent: no prompt this launch, never a blocked app.
