@@ -6,6 +6,7 @@ import type { LeagueTier } from "../data/achievements";
 import { isCourse, type Course } from "../data/courses";
 import { publicError } from "./public-error";
 import { SKILL_WINDOW_DAYS, isValidTimeZone } from "./profile-data";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "./learner-profile";
 import {
   addDays,
   streakToday,
@@ -233,6 +234,12 @@ export const getProfileOverview = createServerFn({ method: "GET" })
           }
         : null,
       timeZone: (zone.data as { time_zone: string } | null)?.time_zone ?? null,
+      dailyGoalMinutes:
+        parseLearnerProfile(
+          (context.claims as { user_metadata?: Record<string, unknown> }).user_metadata?.[
+            LEARNER_PROFILE_KEY
+          ],
+        ).dailyMinutes ?? null,
       skills: ((skills.data ?? []) as SkillRow[]).map((r) => ({
         day: r.day,
         skill: r.skill,

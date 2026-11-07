@@ -29,11 +29,21 @@ import {
   rollingWeekXp,
   weakSpots,
   weekRings,
+  goalRings,
+  type GoalRingDay,
   type HeatCell,
   type ProfileOverview,
   type RingDay,
   type WeakItem,
 } from "@/lib/profile-overview";
+import { isValidTimeZone, skillScores } from "@/lib/profile-data";
+import {
+  SKILL_LABEL,
+  MIN_SKILL_ANSWERS,
+  radarModel,
+  radarPoint,
+  radarPolygon,
+} from "@/lib/skills-radar";
 import {
   PROFILE_TABS,
   achievementsSummary,
@@ -278,8 +288,8 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         name="words"
         icon="words"
         iconClass="text-ds-choice"
-        value={n.wordsLearned}
-        label={plural(n.wordsLearned, "word learned", "words learned")}
+        value={n.masteredWords}
+        label={plural(n.masteredWords, "word mastered", "words mastered")}
         note={n.savedWords > 0 ? `${fmt(n.savedWords)} saved to review` : "Tap a word to save it"}
         noteTone={n.savedWords > 0 ? "right" : "soft"}
         className="border-ds-line bg-ds-card"
@@ -303,16 +313,24 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
 const WEEKDAY = (day: string, style: "narrow" | "long") =>
   new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", { weekday: style, timeZone: "UTC" });
 
-function Ring({ d, today }: { d: RingDay; today: string }) {
+function Ring({
+  d,
+  today,
+  doneText,
+}: {
+  d: { day: string; state: RingDay["state"] };
+  today: string;
+  doneText: string;
+}) {
   const done = d.state === "done";
   const label = `${WEEKDAY(d.day, "long")}: ${
     d.state === "future"
       ? "still to come"
       : done
-        ? `${fmt(d.xp)} XP`
+        ? doneText
         : d.state === "today"
           ? "not yet today"
-          : "no lesson"
+          : "goal not met"
   }`;
   return (
     <li
@@ -384,19 +402,34 @@ function Sparkline({ days }: { days: RingDay[] }) {
 
 export function ThisWeek({ o }: { o: ProfileOverview }) {
   const w = weekRings(o.today, o.activity, o.speech);
+  // The rings measure the learner's own daily goal in learning minutes. Without a chosen goal they keep the XP rule
+  // (the one the streak uses) and say how to set one.
+  const goal = o.dailyGoalMinutes ? goalRings(o.today, o.learning, o.dailyGoalMinutes) : null;
+  const ringDays: { day: string; state: RingDay["state"]; doneText: string }[] = goal
+    ? goal.days.map((d: GoalRingDay) => ({
+        day: d.day,
+        state: d.state,
+        doneText: `${fmt(d.minutes)} ${plural(d.minutes, "minute", "minutes")}, goal met`,
+      }))
+    : w.days.map((d) => ({ day: d.day, state: d.state, doneText: `${fmt(d.xp)} XP` }));
   return (
     <section aria-labelledby="week-heading" className="grid gap-2.5">
       <SectionHead
         id="week-heading"
         title="This week"
-        aside={`${w.activeDays} of ${w.days.length} days`}
+        aside={`${goal ? goal.metDays : w.activeDays} of ${w.days.length} days`}
       />
-      <div className={`${CARD} p-3`}>
+      <div className={`${CARD} p-3`} data-ring-measure={goal ? "minutes" : "xp"}>
         <ol className="grid grid-cols-7 gap-1 text-center">
-          {w.days.map((d) => (
-            <Ring key={d.day} d={d} today={o.today} />
+          {ringDays.map((d) => (
+            <Ring key={d.day} d={d} today={o.today} doneText={d.doneText} />
           ))}
         </ol>
+        <p className="mt-2 text-center ds-type-caption text-ds-ink-faint" data-goal-note="">
+          {goal
+            ? `Goal: ${fmt(o.dailyGoalMinutes as number)} learning minutes a day`
+            : "Pick a daily time in Edit your answers to measure your days in minutes."}
+        </p>
       </div>
       <div className={`${CARD} flex items-center gap-3 p-3`} data-minutes-spoken={w.minutesSpoken}>
         <div className="shrink-0">
@@ -765,6 +798,22 @@ const LEAGUE_FILL: Record<LeagueTier, string> = {
   diamond: "fill-[var(--c-league-summit)]",
 };
 
+/**
+ * When the league week closes, in the learner's own zone. Display only: the week itself (and every streak day) stays
+ * on the UTC calendar; this formats the instant that week ends, the last moment of its Sunday UTC.
+ */
+export function leagueWeekEnds(weekEnd: string, timeZone: string | null): string {
+  const end = new Date(`${weekEnd}T23:59:59Z`);
+  const zone = timeZone && isValidTimeZone(timeZone) ? timeZone : "UTC";
+  const when = end.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: zone,
+  });
+  return `ends ${when}`;
+}
+
 export function LeagueCard({ o }: { o: ProfileOverview }) {
   const c = o.courses.find((x) => x.course === o.course);
   const s = leagueStatus(c?.leagueTier ?? "bronze", c?.xp ?? 0);
@@ -799,6 +848,11 @@ export function LeagueCard({ o }: { o: ProfileOverview }) {
               ? `${fmt(s.xpToNext)} XP to ${LEAGUE_TIER_META[s.next].label}`
               : "The top league. Well done."}
           </small>
+          {o.league && (
+            <small className="block ds-type-caption font-bold text-ds-ink" data-league-standing="">
+              {`Rank ${fmt(o.league.rank)} of ${fmt(o.league.size)} · ${leagueWeekEnds(o.league.weekEnd, o.timeZone)}`}
+            </small>
+          )}
         </div>
         <div className="ml-auto text-right">
           <b className="block ds-type-question-small text-ds-ink tabular-nums">{fmt(c?.xp ?? 0)}</b>
@@ -1077,24 +1131,118 @@ export function ProgressFold({
   );
 }
 
+const RADAR_SIZE = 340;
+const RADAR_RADIUS = RADAR_SIZE / 2 - 46;
+const RADAR_RINGS = [0.25, 0.5, 0.75, 1];
+
 /**
- * Where the Skills radar goes. Its data (per-skill scores from answers) does not exist yet, so this is an
- * honest empty state and no number is invented; a later change replaces the body.
+ * The Skills radar (mock option 1): the right share of the learner's recent answers per skill, from skill_days. A skill
+ * with too few answers has no vertex and says how many more it needs; with too little data overall the card shows the
+ * designed empty state. No value is ever filled in.
  */
-export function SkillsSlot() {
+export function SkillsChart({ o }: { o: ProfileOverview }) {
+  const model = radarModel(skillScores(o.skills, o.today));
+  const n = model.skills.length;
+  const c = RADAR_SIZE / 2;
   return (
     <section
       aria-labelledby="skills-heading"
-      className={`${CARD} grid gap-1 p-3.5`}
-      data-skills-slot=""
+      className={`${CARD} grid gap-2 p-3.5`}
+      data-skills-chart={model.ready ? "radar" : "empty"}
     >
       <h2 id="skills-heading" className="ds-type-headline font-extrabold text-ds-ink">
         Skills
       </h2>
-      <p className="ds-type-footnote text-ds-ink-soft">
-        Your listening, speaking, vocabulary, grammar and reading shape will appear here once there
-        is enough practice to show it.
-      </p>
+      {model.ready ? (
+        <>
+          <svg
+            viewBox={`0 0 ${RADAR_SIZE} ${RADAR_SIZE}`}
+            role="img"
+            aria-label={`Skills: ${model.skills
+              .map((s) => `${s.label} ${s.pct === null ? "not scored yet" : s.pct}`)
+              .join(", ")}`}
+            className="w-full"
+          >
+            {RADAR_RINGS.map((k) => (
+              <polygon
+                key={k}
+                points={model.skills
+                  .map((_, i) => radarPoint(i, n, RADAR_RADIUS * k, c).join(","))
+                  .join(" ")}
+                className="fill-none stroke-ds-line"
+                strokeWidth="1.5"
+              />
+            ))}
+            {model.skills.map((s, i) => {
+              const [x, y] = radarPoint(i, n, RADAR_RADIUS, c);
+              return <line key={s.skill} x1={c} y1={c} x2={x} y2={y} className="stroke-ds-line" />;
+            })}
+            <polygon
+              data-radar-shape=""
+              points={radarPolygon(model.skills, RADAR_RADIUS, c)}
+              className="fill-ds-choice/25 stroke-ds-choice"
+              strokeWidth="3"
+              strokeLinejoin="round"
+            />
+            {model.skills.map((s, i) => {
+              const [lx, ly] = radarPoint(i, n, RADAR_RADIUS + 26, c);
+              const dot = s.pct === null ? null : radarPoint(i, n, (RADAR_RADIUS * s.pct) / 100, c);
+              return (
+                <g key={s.skill} data-skill={s.skill} data-score={s.pct ?? ""}>
+                  {dot && (
+                    <circle
+                      cx={dot[0]}
+                      cy={dot[1]}
+                      r="5"
+                      className="fill-ds-xp stroke-ds-card"
+                      strokeWidth="2"
+                    />
+                  )}
+                  <text
+                    x={lx}
+                    y={ly}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-ds-ink ds-type-caption font-extrabold"
+                  >
+                    {s.label}
+                  </text>
+                  <text
+                    x={lx}
+                    y={ly + 14}
+                    textAnchor="middle"
+                    className="fill-ds-ink-soft ds-type-caption font-extrabold"
+                  >
+                    {s.pct === null ? "not yet" : s.pct}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          <p
+            className="rounded-[14px] bg-ds-xp-tint px-3 py-2 ds-type-footnote font-bold text-ds-ink"
+            data-skills-lowest={model.lowest.skill}
+          >
+            {`Lowest: ${model.lowest.label} · ${model.lowest.pct}. Practise it to lift your shape.`}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="ds-type-footnote text-ds-ink-soft">
+            Your listening, speaking, vocabulary, grammar and reading shape will appear here once
+            there is enough practice to show it.
+          </p>
+          <ul className="grid gap-1 ds-type-caption text-ds-ink-soft" data-skills-needed="">
+            {model.skills.map((s) => (
+              <li key={s.skill}>
+                {s.pct === null
+                  ? `${SKILL_LABEL[s.skill]}: ${fmt(s.needed)} more ${plural(s.needed, "answer", "answers")} to score (${fmt(s.answered)} of ${fmt(MIN_SKILL_ANSWERS)} so far)`
+                  : `${SKILL_LABEL[s.skill]}: ${s.pct}`}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }
