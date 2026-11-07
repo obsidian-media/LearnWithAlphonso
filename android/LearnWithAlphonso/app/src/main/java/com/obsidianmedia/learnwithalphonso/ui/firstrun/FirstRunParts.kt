@@ -291,7 +291,13 @@ internal fun FirstRunHud(
                 Spacer(Modifier.width(AlphonsoTokens.Space.minTouch))
             }
         }
-        if (counted) Text("QUESTION $step OF $total", style = OverlineType, color = ds.card, modifier = Modifier.clearAndSetSemantics {})
+        if (counted) {
+            Text(
+                "QUESTION $step OF $total", style = OverlineType, color = ds.brand,
+                modifier = Modifier.shadow(2.dp, CircleShape).clip(CircleShape).background(ds.card)
+                    .padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s1).clearAndSetSemantics {},
+            )
+        }
     }
 }
 

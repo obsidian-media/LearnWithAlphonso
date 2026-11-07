@@ -1,8 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.auth
 
 import android.app.Activity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,13 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -30,23 +24,34 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.auth.GoogleSignIn
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.logic.PasswordPolicy
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonExpression
+import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunBubble
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunHud
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunRoom
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FirstRunScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.lessonFace
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import kotlinx.coroutines.launch
 
 private enum class PasswordMode { SIGN_IN, SIGN_UP, FORGOT }
@@ -59,7 +64,6 @@ fun AuthScreen(container: AppContainer) {
     val busy by session.isBusy.collectAsState()
     val error by session.errorMessage.collectAsState()
     val notice by session.notice.collectAsState()
-    val palette = AlphonsoColor.palette
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -73,44 +77,49 @@ fun AuthScreen(container: AppContainer) {
     // The bot check on the email forms (BotCheckWebView). Google sign-in never needs it.
     val botCheck = remember { BotCheckState() }
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        Text("Learn with Alphonso", style = MaterialTheme.typography.displayMedium, color = palette.ink, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 24.dp))
-        AlphonsoMascotBanner("Sign in to start learning")
+    val ds = LocalAlphonsoTokens.current
+    val awaitingCode = state is AuthState.AwaitingCode
+    val bubbleTitle = if (awaitingCode) "Check your email." else "Welcome back."
+    val bubbleSub = if (awaitingCode) "Type the 6-digit code." else "Sign in to start learning."
 
+    // imePadding lifts the content above the keyboard; FirstRunScreen scrolls, so the active controls stay reachable.
+    Box(Modifier.fillMaxSize().imePadding()) {
+    FirstRunScreen(
+        room = {
+            FirstRunRoom("room-light", lessonFace(LessonExpression.TALK), "Alphonso") { FirstRunHud(showCounter = false) }
+            FirstRunBubble(bubbleTitle, bubbleSub) { FirstRunDevice.speak(context, "$bubbleTitle $bubbleSub") }
+        },
+        footer = {},
+    ) {
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter).padding(top = AlphonsoTokens.Space.s1),
+        verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+    ) {
         Column(
-            Modifier
-                .widthIn(max = 400.dp)
-                .clip(RoundedCornerShape(AlphonsoRadius.xl))
-                .background(palette.parchment)
-                .border(1.dp, palette.hairline, RoundedCornerShape(AlphonsoRadius.xl))
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
         ) {
             val awaiting = state as? AuthState.AwaitingCode
             if (awaiting != null) {
-                Text("Enter the code sent to ${awaiting.email}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                Text("Enter the code sent to ${awaiting.email}", style = FootnoteType, color = ds.inkSoft)
                 AuthField(code, { code = it }, "6-digit code", KeyboardType.Number)
-                AlphonsoPrimaryButton("Verify", onClick = { scope.launch { session.verifyCode(code) } }, enabled = code.isNotBlank(), busy = busy)
-                TextButton(onClick = { session.backToEmail(); code = "" }) { Text("Use a different email", color = palette.inkSoft) }
+                LessonEdgeButton("Verify", EdgeVariant.PRIMARY, { scope.launch { session.verifyCode(code) } }, enabled = code.isNotBlank() && !busy)
+                TextButton(onClick = { session.backToEmail(); code = "" }) { Text("Use a different email", color = ds.inkSoft) }
             } else {
-                AlphonsoSecondaryButton("Continue with Google", busy = busy, onClick = {
+                LessonEdgeButton("Continue with Google", EdgeVariant.SECONDARY, enabled = !busy, onClick = {
                     val url = session.beginGoogleSignIn(BuildConfig.SUPABASE_URL, GoogleSignIn.REDIRECT_URI)
                     (context as? Activity)?.let { GoogleSignIn.launch(it, url) }
                 })
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HorizontalDivider(Modifier.weight(1f), color = palette.hairline)
-                    Text("or", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                    HorizontalDivider(Modifier.weight(1f), color = palette.hairline)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                    HorizontalDivider(Modifier.weight(1f), color = ds.line)
+                    Text("or", style = CaptionType, color = ds.inkSoft)
+                    HorizontalDivider(Modifier.weight(1f), color = ds.line)
                 }
                 AuthField(email, { email = it }, "Email", KeyboardType.Email)
                 BotCheckWebView(botCheck, "${BuildConfig.API_BASE_URL}/native-captcha")
                 if (!usePassword) {
-                    AlphonsoPrimaryButton("Send code", onClick = { scope.launch { session.requestCode(email, botCheck.spend()) } }, enabled = email.contains("@") && botCheck.canSend, busy = busy)
-                    TextButton(onClick = { usePassword = true; session.clearMessages() }) { Text("Use a password instead", color = palette.inkSoft) }
+                    LessonEdgeButton("Send code", EdgeVariant.PRIMARY, { scope.launch { session.requestCode(email, botCheck.spend()) } }, enabled = email.contains("@") && botCheck.canSend && !busy)
+                    TextButton(onClick = { usePassword = true; session.clearMessages() }) { Text("Use a password instead", color = ds.inkSoft) }
                 } else {
                     if (passwordMode == PasswordMode.SIGN_UP) AuthField(displayName, { displayName = it.take(40) }, "Display name", KeyboardType.Text)
                     if (passwordMode != PasswordMode.FORGOT) AuthField(password, { password = it }, "Password", KeyboardType.Password, secret = true)
@@ -120,7 +129,7 @@ fun AuthScreen(container: AppContainer) {
                         PasswordMode.SIGN_UP -> PasswordPolicy.longEnoughToCreate(password)
                         PasswordMode.SIGN_IN -> PasswordPolicy.longEnoughToSignIn(password)
                     }
-                    AlphonsoPrimaryButton(label, enabled = ready && botCheck.canSend, busy = busy, onClick = {
+                    LessonEdgeButton(label, EdgeVariant.PRIMARY, enabled = ready && botCheck.canSend && !busy, onClick = {
                         val token = botCheck.spend()
                         scope.launch {
                             when (passwordMode) {
@@ -132,44 +141,48 @@ fun AuthScreen(container: AppContainer) {
                     })
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                         TextButton(onClick = { passwordMode = if (passwordMode == PasswordMode.SIGN_UP) PasswordMode.SIGN_IN else PasswordMode.SIGN_UP; session.clearMessages() }) {
-                            Text(if (passwordMode == PasswordMode.SIGN_UP) "Have an account? Sign in" else "New here? Create account", color = palette.inkSoft)
+                            Text(if (passwordMode == PasswordMode.SIGN_UP) "Have an account? Sign in" else "New here? Create account", color = ds.inkSoft)
                         }
-                        if (passwordMode == PasswordMode.SIGN_IN) TextButton(onClick = { passwordMode = PasswordMode.FORGOT; session.clearMessages() }) { Text("Forgot?", color = palette.inkSoft) }
-                        else if (passwordMode == PasswordMode.FORGOT) TextButton(onClick = { passwordMode = PasswordMode.SIGN_IN }) { Text("Back", color = palette.inkSoft) }
+                        if (passwordMode == PasswordMode.SIGN_IN) TextButton(onClick = { passwordMode = PasswordMode.FORGOT; session.clearMessages() }) { Text("Forgot?", color = ds.inkSoft) }
+                        else if (passwordMode == PasswordMode.FORGOT) TextButton(onClick = { passwordMode = PasswordMode.SIGN_IN }) { Text("Back", color = ds.inkSoft) }
                     }
-                    TextButton(onClick = { usePassword = false; session.clearMessages() }) { Text("Use an email code instead", color = palette.inkSoft) }
+                    TextButton(onClick = { usePassword = false; session.clearMessages() }) { Text("Use an email code instead", color = ds.inkSoft) }
                 }
             }
-            error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
-            notice?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.ink, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+            error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+            notice?.let { Text(it, style = FootnoteType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         }
 
         Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-            Text("By continuing you agree to our ", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-            Text("Terms", style = MaterialTheme.typography.labelSmall, color = palette.moss, modifier = Modifier.clickable { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") })
-            Text(" and ", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-            Text("Privacy Policy", style = MaterialTheme.typography.labelSmall, color = palette.moss, modifier = Modifier.clickable { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") })
+            Text("By continuing you agree to our ", style = CaptionType, color = ds.inkSoft)
+            Text("Terms", style = CaptionType, color = ds.brand, modifier = Modifier.clickable { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") })
+            Text(" and ", style = CaptionType, color = ds.inkSoft)
+            Text("Privacy Policy", style = CaptionType, color = ds.brand, modifier = Modifier.clickable { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") })
         }
+    }
+    }
     }
 }
 
 @Composable
 private fun AuthField(value: String, onChange: (String) -> Unit, label: String, keyboard: KeyboardType, secret: Boolean = false) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
+    val focusManager = LocalFocusManager.current
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboard, autoCorrectEnabled = false),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboard, autoCorrectEnabled = false, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         visualTransformation = if (secret) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-        shape = RoundedCornerShape(AlphonsoRadius.md),
+        shape = RoundedCornerShape(AlphonsoTokens.Radius.control),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = palette.surface, unfocusedContainerColor = palette.surface,
-            focusedBorderColor = palette.moss, unfocusedBorderColor = palette.hairline,
-            focusedTextColor = palette.ink, unfocusedTextColor = palette.ink, cursorColor = palette.moss,
-            focusedLabelColor = palette.moss, unfocusedLabelColor = palette.inkSoft,
+            focusedContainerColor = ds.card, unfocusedContainerColor = ds.card,
+            focusedBorderColor = ds.brand, unfocusedBorderColor = ds.line,
+            focusedTextColor = ds.ink, unfocusedTextColor = ds.ink, cursorColor = ds.brand,
+            focusedLabelColor = ds.brand, unfocusedLabelColor = ds.inkSoft,
         ),
     )
 }
