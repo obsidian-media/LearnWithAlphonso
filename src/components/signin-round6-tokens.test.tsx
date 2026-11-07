@@ -41,7 +41,10 @@ describe("sign-in surfaces use round-6 tokens, not the mint theme", () => {
     const google = src.slice(src.indexOf("google-g.svg") - 400, src.indexOf("google-g.svg"));
     expect(google).not.toMatch(LEGACY);
     expect(google).toContain("bg-ds-card");
-    const divider = src.slice(src.indexOf('absolute inset-x-0 top-1/2'), src.indexOf('absolute inset-x-0 top-1/2') + 300);
+    const divider = src.slice(
+      src.indexOf("absolute inset-x-0 top-1/2"),
+      src.indexOf("absolute inset-x-0 top-1/2") + 300,
+    );
     expect(divider).not.toMatch(LEGACY);
     expect(divider).toContain("bg-ds-surface");
   });

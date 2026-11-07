@@ -41,7 +41,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className="inline-flex rounded-full border border-hairline bg-parchment p-1"
+      className="inline-flex rounded-full border border-ds-line bg-ds-sunk p-1"
     >
       {options.map((o, index) => {
         const active = o.value === value;
@@ -57,8 +57,8 @@ export function SegmentedControl<T extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(o.value)}
             onKeyDown={(e) => onKeyDown(e, index)}
-            className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium tracking-tight transition-colors ${
-              active ? "bg-surface text-ink shadow-sm" : "text-ink-soft/70 hover:text-ink"
+            className={`rounded-full px-3.5 py-1.5 ds-type-caption tracking-tight transition-colors ${
+              active ? "bg-ds-card text-ds-ink shadow-sm" : "text-ds-ink-faint hover:text-ds-ink"
             }`}
           >
             {o.label}

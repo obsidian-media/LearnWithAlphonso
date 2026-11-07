@@ -49,7 +49,7 @@ export function CookieConsent() {
             : "mx-auto max-w-[430px] rounded-2xl border border-ds-line bg-ds-card p-4 shadow-lg"
         }
       >
-        <p className="text-[13px] leading-relaxed text-ds-ink-soft">
+        <p className="ds-type-footnote leading-relaxed text-ds-ink-soft">
           We use essential storage to keep you signed in and remember your progress. Optional
           analytics storage helps us improve lessons. You choose.{" "}
           <Link to="/cookies" className="underline hover:text-ink">

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -333,7 +333,14 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
   );
 }
 
-function ListenPage() {
+/**
+ * `/listen` is the parent of the `/listen/$` folder route, so a folder URL such as
+ * `/listen/en` must render the child. Without the Outlet the parent kept showing
+ * the root folder list and no folder could be opened.
+ */
+export function ListenPage() {
+  const hasChild = useChildMatches().length > 0;
+  if (hasChild) return <Outlet />;
   return (
     <MobileFrame>
       <ListenBrowser segments={[]} />
