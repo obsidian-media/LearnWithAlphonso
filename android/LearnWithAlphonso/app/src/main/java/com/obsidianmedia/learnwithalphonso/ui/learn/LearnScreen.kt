@@ -46,7 +46,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
@@ -388,8 +389,8 @@ private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
                     .semantics { contentDescription = "$id $name${if (isSelected) ", selected" else ""}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(id, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isSelected) ds.onAction else ds.ink)
-                Text(name, fontSize = 9.sp, color = if (isSelected) ds.onAction else ds.ink)
+                Text(id, style = FootnoteType, fontWeight = FontWeight.SemiBold, color = if (isSelected) ds.onAction else ds.ink)
+                Text(name, style = CaptionType, color = if (isSelected) ds.onAction else ds.ink)
             }
         }
     }
@@ -408,8 +409,8 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
             Spacer(Modifier.weight(1f))
             Text(
                 progress.leagueTier.replaceFirstChar { it.uppercase() },
-                color = androidx.compose.ui.graphics.Color.White,
-                fontSize = 12.sp,
+                color = ds.onHero,
+                style = CaptionType,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clip(CircleShape).background(LeagueTierPalette.color(progress.leagueTier)).padding(horizontal = 10.dp, vertical = 6.dp),
             )
@@ -437,18 +438,7 @@ private fun StatPill(icon: String, value: String, label: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(icon, fontSize = 13.sp)
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = ds.ink)
-    }
-}
-
-object LeagueTierPalette {
-    fun color(tier: String): androidx.compose.ui.graphics.Color = when (tier) {
-        "bronze" -> androidx.compose.ui.graphics.Color(0xFFB07242)
-        "silver" -> androidx.compose.ui.graphics.Color(0xFF8A9099)
-        "sapphire" -> androidx.compose.ui.graphics.Color(0xFF4A6B8A)
-        "ruby" -> androidx.compose.ui.graphics.Color(0xFF9A4A4A)
-        "diamond" -> androidx.compose.ui.graphics.Color(0xFF4A7F7A)
-        else -> androidx.compose.ui.graphics.Color(0xFF878787)
+        Text(icon, style = FootnoteType)
+        Text(value, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
     }
 }

@@ -69,7 +69,7 @@ struct LessonBrowserView: View {
     @State private var expandedFolds: Set<String> = []
     @State private var showAllUnits = false
     @State private var currentUnitVisible = true
-    @Environment(.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
     /// A wrapper type, not a bare String: a String destination is already registered for the NavigationLinks.
     @State private var openedLesson: OpenedLesson?

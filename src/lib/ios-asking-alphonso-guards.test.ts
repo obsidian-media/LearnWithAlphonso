@@ -242,9 +242,7 @@ describe("Android: the streak-freeze row is a card", () => {
   );
 
   it("sits on parchment with a hairline border and rounded corners, like the other Learn rows (round-6 tokens)", () => {
-    expect(block).toMatch(
-      /\.clip\(RoundedCornerShape\([^)]*\)\)\s*\.background\(ds\.card\)/,
-    );
+    expect(block).toMatch(/\.clip\(RoundedCornerShape\([^)]*\)\)\s*\.background\(ds\.card\)/);
     expect(block).toContain(".border(1.dp, ds.line");
   });
 
