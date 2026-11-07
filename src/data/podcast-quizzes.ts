@@ -221,8 +221,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Why is the fight for your attention not a fair one?",
       [
-        "Notifications are switched off by default",
-        "Most apps are built to help you rest",
+        "Notifications on most phones are switched off by default",
+        "Most apps are designed to help you rest and switch off",
         "Every app competes for your attention, and teams work to keep you looking",
       ],
       2,
@@ -278,15 +278,19 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "Why do you remember a day of travel more clearly than an ordinary Tuesday?",
       [
         "Your brain pays attention to things that stand out",
-        "You slept more that night",
-        "Travel days are longer",
+        "You usually sleep less the night before a trip",
+        "Travel days actually last longer than other days",
       ],
       0,
       "your brain pays attention to things that stand out",
     ),
     q(
       "What benefit of routine does the host mention?",
-      ["It makes weekends feel longer", "It saves mental energy", "It makes decisions easier"],
+      [
+        "It makes weekends feel longer",
+        "It saves mental energy",
+        "It helps us remember each day more clearly",
+      ],
       1,
       "Routine saves mental energy",
     ),
@@ -323,9 +327,9 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is confirmation bias?",
       [
-        "Preferring facts that come from friends",
+        "Trusting information more when it comes from people we like",
         "Noticing and remembering information that supports what we already believe",
-        "Doubting every piece of information",
+        "Questioning information that supports what we already believe",
       ],
       1,
       "we notice and remember information that supports what we already believe.",
@@ -371,7 +375,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       [
         "Changing direction means admitting a mistake",
         "It always works in the end",
-        "They have too much time",
+        "They haven't noticed the evidence yet",
       ],
       0,
       "changing direction means admitting a mistake.",
@@ -445,8 +449,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is social comparison?",
       [
-        "Looking at photos of friends",
-        "Following celebrities",
+        "Looking at photos of friends to see what they are doing",
+        "Following celebrities because we want to be like them",
         "Using other people as the ruler for how well we are doing",
       ],
       2,
@@ -467,8 +471,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Which content tends to keep people looking longer?",
       [
-        "Calm, neutral posts",
-        "Content from close friends",
+        "Calm posts that avoid any strong feelings",
+        "Updates from your closest friends and family",
         "Content that triggers a small emotional reaction",
       ],
       2,
@@ -517,8 +521,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "What is the first question of the researchers' filter?",
       [
-        "Am I in a good mood?",
-        "Does everyone agree with me?",
+        "Would most people around me make the same choice here?",
+        "Do I feel completely sure and confident about this?",
         "Have I had real, repeated practice here with fast feedback?",
       ],
       2,
@@ -659,13 +663,13 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "je me suis réveillée à sept heures.",
     ),
     q(
-      "Comment va-t-elle au travail ?",
+      "Comment est-elle allée au travail hier ?",
       ["À pied", "En bus", "En voiture"],
       1,
       "je suis partie au travail en bus.",
     ),
     q(
-      "Combien de temps dure le trajet ?",
+      "Combien de temps a duré le trajet ?",
       ["Dix minutes", "Une heure", "Vingt minutes"],
       2,
       "Le trajet a duré vingt minutes.",
@@ -689,7 +693,7 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
       "je me suis endormie avant la fin.",
     ),
     q(
-      "Quel mot très utile pour raconter la narratrice présente-t-elle ?",
+      "Quel mot la narratrice présente-t-elle comme très utile pour raconter ?",
       ["« Ensuite »", "« Demain »", "« Toujours »"],
       0,
       "« Ensuite » est un mot très utile pour raconter.",
@@ -723,8 +727,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "Comment cherche-t-il maintenant ?",
       [
-        "Une fois par semaine",
-        "Seulement sur son téléphone",
+        "Il regarde les annonces le week-end et écrit un e-mail",
+        "Il passe dans les agences une fois par semaine et attend",
         "Il regarde les annonces chaque matin et téléphone tout de suite",
       ],
       2,
@@ -819,8 +823,8 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "¿Qué hizo el domingo?",
       [
-        "Fue al parque todo el día",
-        "Limpió la casa",
+        "Fue al parque todo el día y volvió a casa muy tarde",
+        "Limpió la casa y después preparó la comida de la semana",
         "Vio una película y se durmió antes del final",
       ],
       2,
@@ -855,9 +859,9 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     q(
       "¿Cómo busca ahora?",
       [
-        "Una vez por semana",
+        "Revisa los anuncios una vez por semana, normalmente el domingo",
         "Revisa los anuncios nuevos cada mañana y llama de inmediato",
-        "Solo por teléfono, de noche",
+        "Solo llama por teléfono por la noche, después del trabajo",
       ],
       1,
       "reviso los anuncios nuevos todas las mañanas y llamo de inmediato.",

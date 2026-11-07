@@ -3482,6 +3482,55 @@
   },
   "reason": "Meaning was missing."
  },
+ "fr:card:frb2p10l2/de sorte que": {
+  "patch": {
+   "meaning": "so that",
+   "example": "Parle plus fort de sorte que tout le monde t'entende."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"de sorte que\" with the subjunctive."
+ },
+ "fr:card:frb2p10l2/en raison de": {
+  "patch": {
+   "meaning": "due to, because of",
+   "example": "Le vol a été annulé en raison de la tempête."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"en raison de\"."
+ },
+ "fr:card:frb2p10l4/afin de": {
+  "patch": {
+   "meaning": "in order to",
+   "example": "Elle étudie tous les soirs afin de réussir son examen."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"afin de\" with an infinitive."
+ },
+ "fr:card:frb2p10l5/afin que": {
+  "patch": {
+   "meaning": "so that, in order that",
+   "example": "Je t'écris afin que tu comprennes la situation."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"afin que\" with the subjunctive."
+ },
+ "fr:card:frb2p11l2/le parlement": {
+  "patch": {
+   "meaning": "parliament",
+   "example": "Le parlement a adopté le budget hier soir."
+  },
+  "reason": "The gloss is empty and the example is an English meta-sentence, not a natural French sentence using \"le parlement\"."
+ },
+ "fr:card:frb2p11l3/la liberté": {
+  "patch": {
+   "meaning": "freedom, liberty",
+   "example": "La liberté d'expression est un droit fondamental."
+  },
+  "reason": "The gloss is empty and the example is an English meta-sentence, not a natural French sentence using \"la liberté\"."
+ },
+ "fr:card:frb2p11l4/l'inégalité": {
+  "patch": {
+   "meaning": "inequality",
+   "example": "L'inégalité entre les femmes et les hommes reste un problème important."
+  },
+  "reason": "The gloss is empty and the example is an English meta-sentence, not a natural French sentence using \"l'inégalité\"."
+ },
  "fr:card:frb2p17l1/c'est": {
   "patch": {
    "meaning": "it is (stresses the word that follows)"
@@ -4012,6 +4061,12 @@
   },
   "reason": "Gloss missing."
  },
+ "fr:card:frb2p1l5/finisses": {
+  "patch": {
+   "meaning": "(that) you finish (subjunctive of finir)"
+  },
+  "reason": "The card has an empty meaning, so learners get no English gloss."
+ },
  "fr:card:frb2p1l5/soyons": {
   "patch": {
    "meaning": "(that) we be (subjunctive of être)"
@@ -4397,6 +4452,12 @@
    "meaning": "was saying, said (imperfect of dire)"
   },
   "reason": "The gloss is missing; the example is natural reported speech and needs no change. / Gloss missing; example is fine as reported speech."
+ },
+ "fr:card:frb2p5l3/était": {
+  "patch": {
+   "meaning": "was (imperfect of être)"
+  },
+  "reason": "The meaning field is empty, so the card gives the learner no gloss."
  },
  "fr:card:frb2p5l4/appellerait": {
   "patch": {
@@ -4920,6 +4981,20 @@
    "meaning": "by taking part"
   },
   "reason": "Meaning missing; gloss tied to the example."
+ },
+ "fr:card:frb2p9l1/mais": {
+  "patch": {
+   "meaning": "but",
+   "example": "Il est fatigué, mais il continue de travailler."
+  },
+  "reason": "The gloss is empty and the example is an English sentence instead of a French sentence using the term."
+ },
+ "fr:card:frb2p9l5/à la différence de": {
+  "patch": {
+   "meaning": "unlike",
+   "example": "À la différence de son frère, elle déteste le sport."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"à la différence de\"."
  },
  "fr:card:frc1p10l1/jugement": {
   "patch": {
@@ -24751,6 +24826,18 @@
    "explanation": "The subject \"Elle\" is third person singular, so devoir takes \"doit\"; \"dois\", \"devons\" and \"doivent\" belong to other subjects."
   },
   "reason": "The pouvoir forms are replaced with present forms of devoir in the wrong person, which 'Elle' rules out. / Word bank has no 'peut' (reviewer misread); subject Elle rules out the others, only the explanation needed fixing."
+ },
+ "fr:question:frc1p17l3/frc1p17q13": {
+  "patch": {
+   "choices": [
+    "doit",
+    "dois",
+    "devons",
+    "devez"
+   ],
+   "explanation": "The subject \"Nous\" takes the nous form of devoir, \"devons\"; \"doit\" and \"dois\" are singular forms and \"dû\" is only a participle."
+  },
+  "reason": "The participle dû is not a finite form that can fill this slot; all wrong options are now present-tense persons of devoir that the subject nous rules out. / Generic explanation replaced with a specific one."
  },
  "fr:question:frc1p17l3/frc1p17q14": {
   "patch": {

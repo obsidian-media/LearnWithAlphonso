@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_SYSTEM_PROMPTS, scenarioPrompt } from "./scenarios";
+import { ALL_SYSTEM_PROMPTS, canonicalSystemPrompt, scenarioPrompt } from "./scenarios";
 import { campaignScenePrompt } from "./campaigns";
 import legacyPrompts from "./legacy-system-prompts.fixtures.json";
 
@@ -18,16 +18,23 @@ describe("legacy English system prompts", () => {
     expect(legacyPrompts).toHaveLength(15);
   });
 
-  it("are all still accepted by ALL_SYSTEM_PROMPTS", () => {
+  it("are all still accepted, as themselves or as the current prompt that replaced them", () => {
     for (const prompt of legacyPrompts) {
-      expect(ALL_SYSTEM_PROMPTS.has(prompt), prompt.slice(0, 60)).toBe(true);
+      const current = canonicalSystemPrompt(prompt);
+      expect(current, prompt.slice(0, 60)).toBeDefined();
+      expect(ALL_SYSTEM_PROMPTS.has(current as string)).toBe(true);
     }
   });
 
   it("are exactly what the en accessors return today", () => {
     expect(scenarioPrompt("coffee", "en")).toBe(legacyPrompts[0]);
     expect(scenarioPrompt("debate", "en")).toBe(legacyPrompts[11]);
-    expect(campaignScenePrompt("city-day", "coffee-stop", "en")).toBe(legacyPrompts[12]);
-    expect(campaignScenePrompt("city-day", "small-talk", "en")).toBe(legacyPrompts[14]);
+    // The city-day premise was reworded by the held-back review, so those three resolve through the alias map.
+    expect(canonicalSystemPrompt(legacyPrompts[12])).toBe(
+      campaignScenePrompt("city-day", "coffee-stop", "en"),
+    );
+    expect(canonicalSystemPrompt(legacyPrompts[14])).toBe(
+      campaignScenePrompt("city-day", "small-talk", "en"),
+    );
   });
 });

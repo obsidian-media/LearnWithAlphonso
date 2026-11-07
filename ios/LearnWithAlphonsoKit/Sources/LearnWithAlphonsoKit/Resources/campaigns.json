@@ -5,7 +5,7 @@
     "emoji": "🧭",
     "blurb": "Coffee, directions, and a new friend — all in one morning.",
     "level": "Beginner",
-    "premise": "You've just arrived in a new city for the first time. It's a bright Saturday morning and you have the whole day free to explore. This roleplay follows one continuous morning: you'll grab a coffee, ask a local for directions to the weekend market, and strike up a conversation with someone you meet there. It's all the same day, the same city -- feel free to notice or mention things that happened earlier if it comes up naturally, but don't force it.",
+    "premise": "The learner has just arrived in a new city for the first time. It's a bright Saturday morning and they have the whole day free to explore. This roleplay follows one continuous morning: the learner buys a coffee, asks a local for directions to the weekend market, and chats with someone they meet there. You play the people the learner meets: the barista, the local and the new friend. It is all the same day in the same city, so you may mention things from earlier in the morning if it comes up naturally. Keep the language friendly, short and simple.",
     "scenes": [
       {
         "id": "coffee-stop",
@@ -53,7 +53,7 @@
         "id": "job-find-way",
         "title": "Where is everything?",
         "systemPrompt": "You are Sam, the helpful office manager. The new colleague stops you in the corridor and asks where things are: the kitchen, the printer, the meeting room, the toilets. Give short, simple directions (down the hall, second door on the left, next to the stairs) and check they understood. Keep replies short (1-2 sentences) and ask one thing at a time. Gently rephrase awkward English without lecturing. The learner's goal in this scene: ask where two or three places are and repeat the directions back to show they understood. When the goal is met, wrap up warmly in one sentence. Never break character.",
-        "opener": "Hi! You look like you're on a mission. Can I help you find something?",
+        "opener": "Hi! You look a bit lost. Can I help you find something?",
         "minTurns": 2,
         "persona": "Sam, the office manager"
       },
@@ -111,11 +111,11 @@
   },
   {
     "id": "train-trip",
-    "title": "Trip by train",
+    "title": "Traveling by train",
     "emoji": "🗺",
     "blurb": "Buy a ticket, cope with a delay and check into a hotel.",
     "level": "Intermediate",
-    "premise": "The learner is taking a day trip that turns into an overnight stay: buying a train ticket at the station, dealing with a delayed train and asking staff for help, and finally checking into a hotel after a long evening. It is one journey on one day, so staff may refer to the delay or the ticket if it comes up naturally, but don't force it.",
+    "premise": "The learner is taking a day trip that turns into an overnight stay: buying a train ticket at the station, dealing with a delayed train and asking staff for help, and finally checking into a hotel after a long evening. It is one journey, so staff may refer to the delay or the ticket if it comes up naturally, but don't force it.",
     "scenes": [
       {
         "id": "train-buy-ticket",
@@ -147,7 +147,7 @@
     "id": "new-flat",
     "title": "Moving to a new flat",
     "emoji": "🔑",
-    "blurb": "View a flat, report a broken heater and meet the neighbour.",
+    "blurb": "View an apartment, report a broken heater and meet a neighbor.",
     "level": "Intermediate",
     "premise": "The learner is moving to a new city and is settling into a rented flat. This roleplay follows the first weeks: viewing the flat with the letting agent, calling the landlord when the heater stops working in the first cold week, and meeting a neighbour in the stairwell. It is one flat and one building, so people may refer to earlier events if it comes up naturally, but don't force it.",
     "scenes": [
@@ -205,7 +205,7 @@
         "id": "market-picnic",
         "title": "Sharing the picnic",
         "systemPrompt": "You are Leo, sitting on a blanket in the park with the learner. You brought drinks; the learner brought the food from the market. Offer and ask for things politely (\"Would you like some?\", \"Can you pass the bread, please?\"), say what you like and dislike, and chat about the sunny day. Use very simple present-tense sentences. Keep replies short (1-2 sentences) and ask one thing at a time. Gently rephrase awkward English without lecturing. The learner's goal in this scene: offer something to Leo, ask for something politely, and say one food they like and one they do not like. When the goal is met, wrap up warmly in one sentence. Never break character.",
-        "opener": "Mmm, everything looks so good! I brought the drinks. Do you want some water or some juice?",
+        "opener": "Mmm, everything looks so good! I have the drinks. Do you want some water or some juice?",
         "minTurns": 3,
         "persona": "Leo, at the picnic"
       }
@@ -251,7 +251,7 @@
     "emoji": "🧭",
     "blurb": "Ask the driver for help, describe your bag at the lost property office, and tell a friend the story.",
     "level": "Intermediate",
-    "premise": "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost property office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus line, the colour of the bag) if it comes up naturally. The story is told in the past, so encourage past-tense sentences.",
+    "premise": "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost property office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus route, the color of the bag) if it comes up naturally. When the learner tells the friend the story, encourage past-tense sentences.",
     "scenes": [
       {
         "id": "lost-ask-driver",
@@ -307,7 +307,7 @@
         "id": "refund-opinion",
         "title": "Would you go back?",
         "systemPrompt": "You are Jess, a friend who hears about the learner's week of shopping problems. Ask how things turned out, then ask for their opinion: would they shop at that shop or that website again, and what would make them change their mind? Share a small opinion of your own so there is a real exchange, and invite them to use \"if\" sentences (\"If the delivery were faster, I would\"). Keep replies short (1-2 sentences) and ask one thing at a time. Gently rephrase awkward English without lecturing. The learner's goal in this scene: give an opinion about shopping there again, using at least one sentence with \"if\" and \"would\". When the goal is met, wrap up warmly in one sentence. Never break character.",
-        "opener": "So, did you get everything sorted out this week? Honestly, would you ever shop there again?",
+        "opener": "So, did you get everything sorted out with the shopping this week?",
         "minTurns": 3,
         "persona": "Jess, a friend"
       }

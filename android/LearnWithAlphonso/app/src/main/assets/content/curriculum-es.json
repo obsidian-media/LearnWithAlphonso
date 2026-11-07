@@ -9323,7 +9323,9 @@
                 "lejos"
               ],
               "answer": "derecha",
-              "explanation": "\"derecha\" is the right-hand direction and is feminine, so it follows a la in Gire a la derecha; \"derecho\" means straight ahead."
+              "explanation": "\"derecha\" is the right-hand direction and is feminine, so it follows a la in Gire a la derecha; \"derecho\" means straight ahead.",
+              "meaning": "right (direction)",
+              "example": "Gire a la derecha en la esquina."
             },
             {
               "id": "esa2p3q13",
@@ -22197,15 +22199,15 @@
             {
               "id": "esb1p9q8",
               "type": "mc",
-              "prompt": "¡___ (hacer) tu tarea!",
+              "prompt": "¡___ (hacer, tú) tu tarea!",
               "choices": [
-                "Di",
-                "hagas",
+                "Hagas",
+                "Haga",
                 "Haz",
-                "comas"
+                "Haces"
               ],
               "answer": 2,
-              "explanation": "\"Haz\" is correct here. Informal (tú) imperative mood, affirmative and negative.",
+              "explanation": "Hacer has an irregular affirmative tú command, \"Haz\". \"Hagas\" is the negative form and would need \"no\" before it.",
               "meaning": "do! (informal command)"
             },
             {
@@ -31493,7 +31495,8 @@
                 "ningún"
               ],
               "answer": 2,
-              "explanation": "\"problema\" is masculine singular, so the shortened \"ningún\" is used before it; \"ninguno\" stands alone without a noun and \"ninguna\" is feminine."
+              "explanation": "\"problema\" is masculine singular, so the shortened \"ningún\" is used before it; \"ninguno\" stands alone without a noun and \"ninguna\" is feminine.",
+              "meaning": "no, not any (before a masculine singular noun)"
             },
             {
               "id": "esb2p12q6",

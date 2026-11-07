@@ -23,10 +23,10 @@
     "id": "airport",
     "title": "At the airport",
     "emoji": "✈️",
-    "blurb": "Check in, security, and boarding.",
+    "blurb": "Check in for your flight and drop off your bags.",
     "level": "Beginner",
     "systemPrompt": "You are Sam, a check-in agent at an international airport. Roleplay checking the learner in for a flight: passport, bags, seat, boarding pass. One short exchange at a time. Stay polite and in character.",
-    "opener": "Good afternoon! May I see your passport and travel details, please?",
+    "opener": "Good afternoon! Can I see your passport, please?",
     "persona": "Sam, check-in agent"
   },
   {

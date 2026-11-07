@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
-import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
+import { ALL_SYSTEM_PROMPTS, canonicalSystemPrompt } from "@/data/scenarios";
 import { COURSES, isCourse, type Course } from "@/data/courses";
 import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
@@ -100,9 +100,14 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   }
   // A known persona is required, not merely allowed. With no system prompt the model would answer anything, which
   // is exactly the general-purpose proxy VALID_SYSTEM_PROMPTS exists to prevent.
-  if (typeof body.systemPrompt !== "string" || !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
+  // A prompt an earlier build shipped is accepted too and replaced by its current text, so every lookup below
+  // (course, practice item, the model call) sees the current prompt.
+  const canonicalPrompt =
+    typeof body.systemPrompt === "string" ? canonicalSystemPrompt(body.systemPrompt) : undefined;
+  if (canonicalPrompt === undefined || !VALID_SYSTEM_PROMPTS.has(canonicalPrompt)) {
     return Response.json({ error: "unknown-system-prompt" }, { status: 400 });
   }
+  body.systemPrompt = canonicalPrompt;
   // Found alongside the same bug in Hector's own message builder
   // (2026-09-28 audit): a client-supplied entry here could claim
   // role: "system" and land in the array the actual system message
