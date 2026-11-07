@@ -45,6 +45,7 @@ struct LearnCurrentUnitCard: View {
                 }
                 LinearGradient(colors: [ds.hero.opacity(0), ds.hero.opacity(0.92)], startPoint: .top, endPoint: .bottom)
             }
+            .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
         .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))

@@ -19,6 +19,7 @@ struct ProfileTabPicker: View {
                 } label: {
                     Text(tab.label)
                         .dsText(.headline)
+                        .lineLimit(1).minimumScaleFactor(0.5)
                         .foregroundStyle(selected ? ds.onAction : ds.ink)
                         .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
                         .background(

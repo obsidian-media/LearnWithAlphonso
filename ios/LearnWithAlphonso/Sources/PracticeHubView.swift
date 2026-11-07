@@ -29,11 +29,11 @@ struct PracticeHubView: View {
                     PracticePortrait(room: "coffee", expression: .talk)
                         .overlay(alignment: .topLeading) {
                             HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                                Text("Practice").dsText(.display).foregroundStyle(ds.onHero)
+                                Text("Practice").dsText(.display).foregroundStyle(ds.onHero).lineLimit(1).minimumScaleFactor(0.5)
                                 Spacer(minLength: CGFloat.zero)
                                 if let data {
                                     let tally = PracticeHub.tally(data.stars, scenarios: scenarios, campaigns: campaigns)
-                                    Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption)
+                                    Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption).lineLimit(1).minimumScaleFactor(0.6)
                                         .foregroundStyle(ds.xpText).padding(AlphonsoDS.Space.s2).background(ds.card, in: Capsule())
                                         .accessibilityLabel("\(tally.earned) of \(tally.total) stars earned")
                                 }
@@ -258,7 +258,9 @@ struct PracticePictureCard<Footer: View>: View {
             }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading).background(ds.hero)
         }.frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(ds.onHero)
             .background {
-                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill() }
+                // The picture is taller than the card and spills over its neighbours: it must not take their taps
+                // (it covered Today's pick, so "Call Alphonso" did nothing).
+                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill().allowsHitTesting(false) }
             }.clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
     }
 }
