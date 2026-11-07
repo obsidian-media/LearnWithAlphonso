@@ -135,13 +135,15 @@ struct ListenShelfRoot: View {
 private struct RoomBackdrop: View {
     let room: String
     var body: some View {
-        ZStack {
-            AlphonsoColor.mossDeep
-            if let image = LessonArt.room(room) {
-                Image(uiImage: image).resizable().scaledToFill()
+        // The image is an overlay, not a ZStack child: a scaledToFill image sizes its parent to the picture's own
+        // aspect ratio, which blew the room tiles and the Continue card up to full-screen height (QA, build 61).
+        AlphonsoColor.mossDeep
+            .overlay {
+                if let image = LessonArt.room(room) {
+                    Image(uiImage: image).resizable().scaledToFill()
+                }
             }
-        }
-        .clipped()
+            .clipped()
         .accessibilityHidden(true)
     }
 }
@@ -168,7 +170,7 @@ private struct RoomTile: View {
             .padding(AlphonsoSpacing.sm + 2)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minHeight: 128)
+        .frame(minHeight: 150)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(AlphonsoColor.hairline, lineWidth: 2))
         .accessibilityElement(children: .combine)

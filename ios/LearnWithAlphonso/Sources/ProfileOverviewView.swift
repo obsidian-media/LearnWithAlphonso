@@ -144,7 +144,7 @@ struct ProfileHeroSection: View {
                     + (b.savedWords > 0 ? "\(b.savedWords) saved to review" : "tap a word to save it"))
             statTile(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
                  b.accuracyPct.map { "\($0)% accuracy" } ?? "No lessons yet",
-                 "\(b.lessonsDone) lessons done, " + (b.accuracyPct.map { "\($0) percent accuracy" } ?? "no lessons yet"))
+                 "\(b.lessonsDone) \(plural(b.lessonsDone, "lesson", "lessons")) done, " + (b.accuracyPct.map { "\($0) percent accuracy" } ?? "no lessons yet"))
         }
     }
 

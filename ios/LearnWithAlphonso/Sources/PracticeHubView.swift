@@ -258,7 +258,9 @@ struct PracticePictureCard<Footer: View>: View {
             }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading).background(ds.hero)
         }.frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(ds.onHero)
             .background {
-                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill() }
+                // The picture is taller than the card and spills over its neighbours: it must not take their taps
+                // (it covered Today's pick, so "Call Alphonso" did nothing).
+                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill().allowsHitTesting(false) }
             }.clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
     }
 }
