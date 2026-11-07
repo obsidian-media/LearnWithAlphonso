@@ -67,6 +67,45 @@ public struct ProfileAchievementRow: Sendable, Equatable {
     }
 }
 
+public struct ProfileLearningDay: Sendable, Equatable {
+    public let day: String
+    public let lessonSeconds: Int
+    public let practiceSeconds: Int
+    public init(day: String, lessonSeconds: Int, practiceSeconds: Int) {
+        self.day = day; self.lessonSeconds = lessonSeconds; self.practiceSeconds = practiceSeconds
+    }
+}
+
+public struct ProfileLeagueStanding: Sendable, Equatable {
+    public let leagueTier: String
+    public let rank: Int
+    public let size: Int
+    public let weekStart: String
+    public let weekEnd: String
+    public let weekXP: Int
+    public init(leagueTier: String, rank: Int, size: Int, weekStart: String, weekEnd: String, weekXP: Int) {
+        self.leagueTier = leagueTier; self.rank = rank; self.size = size
+        self.weekStart = weekStart; self.weekEnd = weekEnd; self.weekXP = weekXP
+    }
+}
+
+public struct ProfileSkillDay: Sendable, Equatable {
+    public let day: String
+    public let skill: String
+    public let right: Int
+    public let total: Int
+    public init(day: String, skill: String, right: Int, total: Int) {
+        self.day = day; self.skill = skill; self.right = right; self.total = total
+    }
+}
+
+public struct ProfileSkillScore: Sendable, Equatable {
+    public let skill: String
+    public let answered: Int
+    public let pct: Int?
+    public init(skill: String, answered: Int, pct: Int?) { self.skill = skill; self.answered = answered; self.pct = pct }
+}
+
 /// What the one batched read returns.
 public struct ProfileOverviewData: Sendable, Equatable {
     public var today: String
@@ -88,6 +127,11 @@ public struct ProfileOverviewData: Sendable, Equatable {
     public var weaknessEvents: [ProfileWeaknessEvent]
     public var achievements: [ProfileAchievementRow]
     public var friends: [FriendProgress]
+    public var learning: [ProfileLearningDay]
+    public var masteredWords: Int
+    public var league: ProfileLeagueStanding?
+    public var timeZone: String?
+    public var skills: [ProfileSkillDay]
 
     public init(
         today: String, course: String, displayName: String? = nil, avatarSeed: String? = nil, country: String? = nil,
@@ -95,8 +139,11 @@ public struct ProfileOverviewData: Sendable, Equatable {
         completions: [ProfileCompletion] = [], activity: [ProfileActivityDay] = [], bestDayXP: Int = 0,
         speech: [ProfileSpeechDay] = [], weakItems: [ProfileWeakItem] = [], savedWords: Int = 0,
         weaknessEvents: [ProfileWeaknessEvent] = [], achievements: [ProfileAchievementRow] = [],
-        friends: [FriendProgress] = []
+        friends: [FriendProgress] = [], learning: [ProfileLearningDay] = [], masteredWords: Int = 0,
+        league: ProfileLeagueStanding? = nil, timeZone: String? = nil, skills: [ProfileSkillDay] = []
     ) {
+        self.learning = learning; self.masteredWords = masteredWords; self.league = league
+        self.timeZone = timeZone; self.skills = skills
         self.today = today; self.course = course; self.displayName = displayName; self.avatarSeed = avatarSeed
         self.country = country; self.courses = courses; self.streak = streak; self.longestStreak = longestStreak
         self.streakFreezes = streakFreezes; self.completions = completions; self.activity = activity
@@ -155,6 +202,34 @@ public enum ProfileMath {
             year: utc.component(.year, from: first), month: utc.component(.month, from: first),
             day: min(c.day!, lastDay)))!
         return (addDays(string(back), 1), today)
+    }
+
+    // MARK: Skills and daily goal
+
+    public static let skillWindowDays = 28
+    public static let skills = ["listening", "speaking", "vocabulary", "grammar", "reading"]
+
+    /// Always the five skills in order; pct is nil until the skill has an answer in the window (today included).
+    public static func skillScores(rows: [ProfileSkillDay], today: String, windowDays: Int = skillWindowDays) -> [ProfileSkillScore] {
+        let from = addDays(today, -(windowDays - 1))
+        return skills.map { skill in
+            let mine = rows.filter { $0.skill == skill && $0.day >= from && $0.day <= today }
+            let right = mine.reduce(0) { $0 + $1.right }
+            let total = mine.reduce(0) { $0 + $1.total }
+            return ProfileSkillScore(
+                skill: skill, answered: total,
+                pct: total > 0 ? Int((100 * Double(right) / Double(total)).rounded(.toNearestOrAwayFromZero)) : nil)
+        }
+    }
+
+    public static func learningMinutes(rows: [ProfileLearningDay], day: String) -> Int {
+        let seconds = rows.filter { $0.day == day }.reduce(0) { $0 + $1.lessonSeconds + $1.practiceSeconds }
+        return max(0, seconds) / 60
+    }
+
+    public static func dailyGoalProgress(rows: [ProfileLearningDay], day: String, goalMinutes: Int) -> (minutes: Int, goalMinutes: Int, reached: Bool) {
+        let minutes = learningMinutes(rows: rows, day: day)
+        return (minutes, goalMinutes, goalMinutes > 0 && minutes >= goalMinutes)
     }
 
     // MARK: Heat map

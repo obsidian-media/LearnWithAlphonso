@@ -5,12 +5,25 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { LeagueTier } from "../data/achievements";
 import { isCourse, type Course } from "../data/courses";
 import { publicError } from "./public-error";
+import { SKILL_WINDOW_DAYS, isValidTimeZone } from "./profile-data";
 import {
+  addDays,
   streakToday,
   threeMonthsWindow,
   weekStart,
   type ProfileOverview,
 } from "./profile-overview";
+
+type LearningRow = { day: string; lesson_seconds: number; practice_seconds: number };
+type SkillRow = { day: string; skill: string; right_answers: number; total_answers: number };
+type StandingRow = {
+  league_tier: string;
+  rank: number;
+  size: number;
+  week_start: string;
+  week_end: string;
+  week_xp: number;
+};
 
 const input = z.object({ course: z.enum(["en", "fr", "es"]) });
 
@@ -46,6 +59,11 @@ export const getProfileOverview = createServerFn({ method: "GET" })
       events,
       achievements,
       friends,
+      learning,
+      mastered,
+      standing,
+      zone,
+      skills,
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -104,6 +122,25 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         .select("achievement_id,progress,unlocked_at")
         .eq("user_id", userId),
       supabase.rpc("get_friends_progress"),
+      // The Profile data tables and function are not in the generated types until they are regenerated against a
+      // database that has 20261107120000_profile_data.sql (regenerate-supabase-types.yml, after deploy).
+      untyped
+        .from("learning_days")
+        .select("day,lesson_seconds,practice_seconds")
+        .eq("user_id", userId)
+        .gte("day", weekStart(today)),
+      untyped
+        .from("mastered_words")
+        .select("item_key", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("language", course),
+      untyped.rpc("get_my_league_standing", { _course: course }),
+      untyped.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
+      untyped
+        .from("skill_days")
+        .select("day,skill,right_answers,total_answers")
+        .eq("user_id", userId)
+        .gte("day", addDays(today, -(SKILL_WINDOW_DAYS - 1))),
     ]);
 
     const core = {
@@ -118,12 +155,18 @@ export const getProfileOverview = createServerFn({ method: "GET" })
       saved,
       events,
       achievements,
+      learning,
+      mastered,
+      standing,
+      zone,
+      skills,
     };
     for (const result of Object.values(core)) {
       if (result.error) throw publicError("getProfileOverview", result.error);
     }
 
     const p = profile.data;
+    const st = (standing.data as StandingRow[] | null)?.[0];
     return {
       today,
       course,
@@ -173,6 +216,29 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         progress: a.progress ?? 0,
         unlockedAt: a.unlocked_at ?? null,
       })),
+      learning: ((learning.data ?? []) as LearningRow[]).map((l) => ({
+        day: l.day,
+        lessonSeconds: l.lesson_seconds,
+        practiceSeconds: l.practice_seconds,
+      })),
+      masteredWords: mastered.count ?? 0,
+      league: st
+        ? {
+            leagueTier: st.league_tier,
+            rank: st.rank,
+            size: st.size,
+            weekStart: st.week_start,
+            weekEnd: st.week_end,
+            weekXp: st.week_xp,
+          }
+        : null,
+      timeZone: (zone.data as { time_zone: string } | null)?.time_zone ?? null,
+      skills: ((skills.data ?? []) as SkillRow[]).map((r) => ({
+        day: r.day,
+        skill: r.skill,
+        right: r.right_answers,
+        total: r.total_answers,
+      })),
       friends: friends.error
         ? []
         : (friends.data ?? []).map((r) => ({
@@ -183,4 +249,29 @@ export const getProfileOverview = createServerFn({ method: "GET" })
             weekXp: Number(r.week_xp ?? 0),
           })),
     };
+  });
+
+/**
+ * Stores the device's IANA time zone (Intl.DateTimeFormat().resolvedOptions().timeZone). Stored and exposed only:
+ * streaks and days stay on UTC. The write is service-role only and validated again by the database against its own
+ * zone list; a client cannot write the table.
+ */
+export const setTimeZone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({ timeZone: z.string().min(1).max(64).refine(isValidTimeZone, "unknown time zone") })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ timeZone: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as unknown as SupabaseClient).rpc(
+      "set_learner_time_zone",
+      {
+        _user_id: context.userId,
+        _time_zone: data.timeZone,
+      },
+    );
+    if (error) throw publicError("setTimeZone", error);
+    return { timeZone: data.timeZone };
   });
