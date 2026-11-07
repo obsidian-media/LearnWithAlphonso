@@ -188,7 +188,7 @@ extension ProfileHubView {
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
         let course = activeCourse.course
         // The learner's chosen daily time (first run), if any; a failed read just means no goal.
-        let dailyMinutes = (try? await learnerProfileClient(session)?.fetch())?.dailyMinutes
+        let dailyMinutes = (try? await learnerProfileClient(session)?.fetch())?.answers.dailyMinutes
         do {
             let data = try await client.fetchProfileOverview(userID: userID, course: course.wireCode)
             overview = ProfileOverviewModel(data: data, contentStore: contentStore, course: course, isPro: entitlementStore.isPro, dailyGoalMinutes: dailyMinutes)

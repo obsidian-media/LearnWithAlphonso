@@ -40,6 +40,7 @@ public enum SkillsRadar {
     public struct Point: Sendable, Equatable {
         public let x: Double
         public let y: Double
+        public init(x: Double, y: Double) { self.x = x; self.y = y }
     }
 
     public static func radarModel(_ scores: [ProfileSkillScore]) -> Model {

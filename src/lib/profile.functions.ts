@@ -236,9 +236,8 @@ export const getProfileOverview = createServerFn({ method: "GET" })
       timeZone: (zone.data as { time_zone: string } | null)?.time_zone ?? null,
       dailyGoalMinutes:
         parseLearnerProfile(
-          (context.claims as { user_metadata?: Record<string, unknown> }).user_metadata?.[
-            LEARNER_PROFILE_KEY
-          ],
+          (context.claims as { user_metadata?: Record<string, unknown> } | undefined)
+            ?.user_metadata?.[LEARNER_PROFILE_KEY],
         ).dailyMinutes ?? null,
       skills: ((skills.data ?? []) as SkillRow[]).map((r) => ({
         day: r.day,
