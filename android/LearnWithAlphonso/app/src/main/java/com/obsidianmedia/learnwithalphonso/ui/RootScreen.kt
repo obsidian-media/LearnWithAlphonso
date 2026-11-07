@@ -338,7 +338,8 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     }
 
     firstRunCover?.let { cover ->
-        val courseCode = container.activeCourse.course.value.code
+        val activeCourse by container.activeCourse.course.collectAsState()
+        val courseCode = activeCourse.code
         val placementTaken: suspend (String) -> Boolean = { c -> runCatching { container.progressClient.fetchPlacementTakenAt(c) }.getOrNull() != null }
         val finish: (FirstRun.Destination?) -> Unit = { destination ->
             firstRunCover = null
