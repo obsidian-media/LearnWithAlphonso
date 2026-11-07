@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
+import com.obsidianmedia.learnwithalphonso.audio.SoundEffectsPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
@@ -18,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -133,6 +135,8 @@ abstract class BaseConversationViewModel(
                 _state.update { it.copy(phase = ConversationPhase.THINKING) }
                 val voice = alphonsoVoice(course.code)
                 val audio = openerCache.audio(text, voice, course.code) { ai.synthesizeSpeech(text, voice = voice, course = course.code) }
+                // The call-start sound finishes before his first words.
+                delay(SoundEffectsPlayer.callCueRemainingMs())
                 _state.update { it.copy(phase = ConversationPhase.SPEAKING) }
                 player.play(audio)
             } catch (e: CancellationException) {

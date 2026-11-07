@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.word
 
+import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -200,6 +201,7 @@ fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () 
             container.aiConsent,
             { container.session.currentAccessToken() != null },
             scope,
+            onSaved = { container.soundEffects.play(SoundEffect.TAP) },
         )
     }
     val phase by flow.phase.collectAsState()

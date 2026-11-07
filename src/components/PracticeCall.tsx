@@ -5,6 +5,7 @@ import { ALPHONSO_KIT, type CharacterKit } from "@/lib/avatar/layers";
 import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
+import { playSfx, registerVoiceProbe } from "@/lib/sfx";
 
 const GLASS = "rgba(18, 26, 21, 0.46)";
 const GLASS_STRONG = "rgba(18, 26, 21, 0.62)";
@@ -96,6 +97,23 @@ export function PracticeCall(props: Props) {
   const stateLabel = MODE_LABEL[mode];
   const art = sceneArt(scenarioId, undefined, kit.defaultRoom);
   const room = dark ? art.dark : art.light;
+
+  // The call-start sound, once per call (keyed, so a re-render or a development double effect cannot repeat it).
+  const [callKey] = useState(() => `call:${Date.now()}:${Math.random()}`);
+  useEffect(() => {
+    playSfx("callStart", callKey);
+  }, [callKey]);
+  // While he speaks, no effect plays over him: the effects ask this probe before playing.
+  const voiceNow = useRef({ speaking, getAudio: avatar.getAudio });
+  voiceNow.current = { speaking, getAudio: avatar.getAudio };
+  useEffect(
+    () =>
+      registerVoiceProbe(() => {
+        const audio = voiceNow.current.getAudio();
+        return voiceNow.current.speaking || (!!audio && !audio.paused && !audio.ended);
+      }),
+    [],
+  );
 
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
@@ -396,6 +414,7 @@ export function PracticeCall(props: Props) {
         </button>
         <Link
           to={endTo}
+          onClick={() => playSfx("callEnd")}
           aria-label="End the call"
           className="grid size-[54px] place-items-center rounded-full"
           style={{ background: "#e5483d", color: "#fff" }}
