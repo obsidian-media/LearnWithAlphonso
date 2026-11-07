@@ -15,6 +15,8 @@ const PAYWALL_FILES = [
   "src/lib/paywall-copy.ts",
   "src/lib/paywall-plans.ts",
   "src/routes/_authenticated/pro-return.tsx",
+  "src/components/HectorInvite.tsx",
+  "src/components/firstrun/AfterSignIn.tsx",
 ];
 
 const FORBIDDEN: { what: string; re: RegExp }[] = [

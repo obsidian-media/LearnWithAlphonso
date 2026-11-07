@@ -18,6 +18,7 @@ import {
 import { useProgress } from "@/lib/progress";
 import { useCardName } from "@/lib/use-card-name";
 import { edgeButtonClass } from "./lesson/LessonParts";
+import { FOCUSABLE } from "./Modal";
 import {
   CloseButton,
   ExampleCall,
@@ -144,9 +145,7 @@ function Plans({ plans }: { plans: PaywallPlan[] }) {
         saving={yearlySavingPercent(plans)}
       />
       <div className="grid gap-px text-center" aria-live="polite">
-        <p
-          className={`${PAYWALL_TEXT_ROLE.price} m-0 font-[family-name:var(--ds-font-display)] font-extrabold text-ds-ink`}
-        >
+        <p className={`${PAYWALL_TEXT_ROLE.price} m-0 font-extrabold! text-ds-ink`}>
           {planPriceLine(plan, trialLine !== null)}
         </p>
         {trialLine && (
@@ -188,7 +187,7 @@ function SmallPrint() {
   const link =
     "underline decoration-ds-line underline-offset-2 hover:text-ds-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice";
   return (
-    <div className="ds-type-caption grid gap-1 text-center text-ds-ink-soft">
+    <div className="ds-type-footnote grid gap-1.5 text-center text-ds-ink-soft">
       <p className="m-0">{PRO_PAYWALL_COPY.renewal}</p>
       <p className="m-0 flex flex-wrap items-center justify-center gap-x-1.5">
         <button type="button" onClick={() => void restore()} className={`min-h-6 ${link}`}>
@@ -214,7 +213,8 @@ function SmallPrint() {
 
 /**
  * The paywall over the page, for the entry points that open it from a card or a button (Practice's Hector card, the
- * end-of-Practice prompt, lesson complete): a modal with Close and Escape, focus moved in and given back on close.
+ * end-of-Practice prompt, lesson complete): a modal with Close and Escape, Tab kept inside, the page behind locked
+ * from scrolling, focus moved in and given back on close.
  */
 export function WebPaywallSheet({
   source,
@@ -230,7 +230,24 @@ export function WebPaywallSheet({
     const opener = document.activeElement as HTMLElement | null;
     ref.current?.querySelector<HTMLElement>("[data-paywall-close]")?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeRef.current();
+      if (e.key === "Escape") return closeRef.current();
+      const sheet = ref.current;
+      if (e.key !== "Tab" || !sheet) return;
+      // Tab stays in the sheet: only what Tab can reach (the unpicked plan is tabIndex -1, as a radio group).
+      const items = [...sheet.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => el.tabIndex >= 0,
+      );
+      if (!items.length) return;
+      const at = items.indexOf(document.activeElement as HTMLElement);
+      const next = e.shiftKey
+        ? at <= 0
+          ? items.length - 1
+          : at - 1
+        : at === -1 || at === items.length - 1
+          ? 0
+          : at + 1;
+      e.preventDefault();
+      items[next].focus();
     };
     document.addEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;

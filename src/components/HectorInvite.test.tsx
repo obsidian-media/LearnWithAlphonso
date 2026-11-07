@@ -68,6 +68,27 @@ describe("HectorInvite", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("the open paywall keeps Tab inside and locks the page from scrolling until it closes", async () => {
+    render(<HectorInvite source="practice_hector_card" />);
+    const card = await screen.findByRole("button", { name: /Practise speaking with Hector/ });
+    await userEvent.click(card);
+    const sheet = await screen.findByRole("dialog", { name: "Alphonso Pro" });
+    await within(sheet).findByText("$9.99 a month after the trial");
+    expect(document.body.style.overflow).toBe("hidden");
+    // Twice round the sheet forwards, then backwards: focus never reaches the page behind.
+    for (let i = 0; i < 30; i++) {
+      await userEvent.tab();
+      expect(sheet.contains(document.activeElement)).toBe(true);
+    }
+    for (let i = 0; i < 30; i++) {
+      await userEvent.tab({ shift: true });
+      expect(sheet.contains(document.activeElement)).toBe(true);
+    }
+    await userEvent.keyboard("{Escape}");
+    expect(document.body.style.overflow).toBe("");
+    expect(card).toHaveFocus();
+  });
+
   it("end-of-Practice prompt uses its own wording and source", async () => {
     render(<HectorInvite source="practice_end_prompt" />);
     await userEvent.click(await screen.findByRole("button", { name: /Continue with Hector/ }));

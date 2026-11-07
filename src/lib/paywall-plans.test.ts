@@ -42,6 +42,10 @@ describe("first payment date", () => {
 
   it("crosses a month and a year end", () => {
     expect(firstPaymentDate(new Date(2026, 11, 28), 7)).toEqual(new Date(2027, 0, 4));
+    // The 31st, a short February and a leap day: no day lost or gained at a month end.
+    expect(firstPaymentDate(new Date(2027, 0, 31), 7)).toEqual(new Date(2027, 1, 7));
+    expect(firstPaymentDate(new Date(2027, 1, 25), 7)).toEqual(new Date(2027, 2, 4));
+    expect(firstPaymentDate(new Date(2028, 1, 27), 3)).toEqual(new Date(2028, 2, 1));
   });
 
   it("is today without a trial", () => {

@@ -259,6 +259,19 @@ describe("GET /api/pro-offering", () => {
         "its no-trial link is missing",
         () => vi.stubEnv("REVENUECAT_WEB_YEARLY_PURCHASE_LINK_NO_TRIAL", ""),
       ],
+      ["its trial link is missing", () => vi.stubEnv("REVENUECAT_WEB_YEARLY_PURCHASE_LINK", "")],
+      [
+        "its trial link is not https",
+        () =>
+          vi.stubEnv("REVENUECAT_WEB_YEARLY_PURCHASE_LINK", "http://pay.rev.cat/year_trial_tok"),
+      ],
+      [
+        "its product is not a yearly one",
+        () =>
+          getWebOffering.mockImplementation(async (_c: unknown, id: string) =>
+            id === "prod_web_year" ? OFFER : OFFER,
+          ),
+      ],
       [
         "its offer cannot be read",
         () =>
@@ -273,5 +286,28 @@ describe("GET /api/pro-offering", () => {
       expect(res.status).toBe(200);
       expect(periods(await res.json())).toEqual(["month"]);
     });
+  });
+
+  it("a monthly product id that names a yearly product sells nothing rather than two yearly plans", async () => {
+    stubYearly();
+    getWebOffering.mockResolvedValue(YEARLY_OFFER);
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+  });
+
+  it("the answer carries no key, project id or product id, only what the paywall shows", async () => {
+    stubYearly();
+    revenueCatConfigFromEnv.mockReturnValue({
+      secretApiKey: "sk_v1_do_not_leak",
+      v2SecretKey: "sk_v2_do_not_leak",
+      projectId: "proj_do_not_leak",
+    });
+    const body = await (await handler({ request: req("hector_tab", "Bearer t", "US") })).json();
+    const text = JSON.stringify(body);
+    expect(text).not.toMatch(/do_not_leak|prod_web/);
+    for (const plan of body.plans)
+      expect(Object.keys(plan).sort()).toEqual(
+        ["amountMicros", "currency", "period", "price", "purchaseUrl", "trialDays"].sort(),
+      );
   });
 });

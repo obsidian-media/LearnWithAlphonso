@@ -64,7 +64,9 @@ async function handle(request: Request): Promise<Response> {
     yearly ? getWebOffering(config, yearly.productId) : Promise.resolve(null),
     getAccountSubscriberSummary(config, data.user.id),
   ]);
-  if (!monthOffer || summary.status === "unavailable" || !summary.loginId) return unavailable();
+  // A monthly setting that names a yearly product would sell two yearly plans: refuse it rather than guess.
+  if (!monthOffer || monthOffer.period !== "month") return unavailable();
+  if (summary.status === "unavailable" || !summary.loginId) return unavailable();
   // Already Pro (on any store): no checkout, so nobody can pay twice.
   if (summary.status === "active") return Response.json({ error: "already-pro" }, { status: 409 });
   const loginId = summary.loginId;
