@@ -75,6 +75,9 @@ object BuddyCopy {
     const val STOP_LOOKING = "Stop looking"
     const val MATCHED_LABEL = "Matched learner"
     const val AGE_CONFIRM = "I'm 13 or older"
+
+    /** Friends asks "I'm 13 or older" only without a recorded age band (every band the app offers is 13+). */
+    fun needsAgeConfirmation(ageRange: String?): Boolean = ageRange == null || ageRange !in com.obsidianmedia.learnwithalphonso.core.firstrun.LearnerProfileLists.ageRanges
     private val courseNames = mapOf("en" to "English", "fr" to "French", "es" to "Spanish")
 
     /** "French" for "fr"; an unknown code is shown as-is. */

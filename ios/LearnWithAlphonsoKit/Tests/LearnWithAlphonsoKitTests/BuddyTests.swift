@@ -6,6 +6,12 @@ import XCTest
 /// src/lib/buddy-native-fixtures.test.ts): the week rules, the server statuses' wording and the card wording must
 /// be word-for-word src/lib/buddy.ts. Change both together.
 final class BuddyTests: XCTestCase {
+    func testTheAgeQuestionIsSkippedOnlyWithARecordedBand() {
+        for band in ["13-17", "18-24", "25-34", "35-54", "55+"] { XCTAssertFalse(BuddyCopy.needsAgeConfirmation(ageRange: band)) }
+        XCTAssertTrue(BuddyCopy.needsAgeConfirmation(ageRange: nil))
+        XCTAssertTrue(BuddyCopy.needsAgeConfirmation(ageRange: "under-13"))
+    }
+
     private func fixtures() throws -> [String: Any] {
         let url = try XCTUnwrap(
             Bundle.module.url(forResource: "buddy.fixtures", withExtension: "json", subdirectory: "Fixtures"))

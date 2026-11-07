@@ -1,5 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import {
   BUDDY_COPY,
   BUDDY_PRESETS,
@@ -17,6 +19,7 @@ import {
   buddyStatusMessage,
   buddyStreakLine,
   buddyWeekLine,
+  needsAgeConfirmation,
 } from "../lib/buddy";
 import {
   cancelBuddyRequest,
@@ -132,6 +135,16 @@ export function BuddyCard() {
   };
   // Matching needs a declared-age confirmation (owner decision 2026-10-07: minimum age 13); the server refuses without it.
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  // Already answered in the first run: do not ask again (the gate stays for anyone without an age band).
+  const knownAge = useQuery({
+    queryKey: ["learner-profile-age"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return parseLearnerProfile(data.user?.user_metadata?.[LEARNER_PROFILE_KEY]).ageRange ?? null;
+    },
+    staleTime: 5 * 60_000,
+  });
+  const askAge = needsAgeConfirmation(knownAge.data);
 
   if (buddy.isLoading || requests.isLoading) {
     return (
@@ -353,24 +366,29 @@ export function BuddyCard() {
           pool.data.courses.length > 0 && (
             <div className="mt-3">
               <p className="text-xs text-ink-soft/80">{BUDDY_COPY.poolIntro}</p>
-              <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
-                <input
-                  type="checkbox"
-                  checked={ageConfirmed}
-                  onChange={(e) => setAgeConfirmed(e.target.checked)}
-                />
-                {BUDDY_COPY.ageConfirm}
-              </label>
+              {askAge && (
+                <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                  />
+                  {BUDDY_COPY.ageConfirm}
+                </label>
+              )}
               <div className="mt-1.5 flex flex-wrap gap-3">
                 {pool.data.courses.map((course) => (
                   <button
                     key={course}
                     type="button"
-                    disabled={busy || !ageConfirmed}
+                    disabled={busy || knownAge.isLoading || (askAge && !ageConfirmed)}
                     onClick={() =>
                       act(() =>
                         joinBuddyPool({
-                          data: { course: course as "en" | "fr" | "es", ageConfirmed },
+                          data: {
+                            course: course as "en" | "fr" | "es",
+                            ageConfirmed: askAge ? ageConfirmed : true,
+                          },
                         }),
                       )
                     }

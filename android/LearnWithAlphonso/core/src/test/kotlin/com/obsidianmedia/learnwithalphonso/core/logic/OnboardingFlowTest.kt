@@ -11,6 +11,19 @@ class OnboardingFlowTest {
     private fun start(prefill: String = "Ana") = DisplayNameOnboarding.start(prefill, "Learner-4F2A")
 
     @Test
+    fun `choosing Hector in the first run never opens placement`() {
+        val flow = OnboardingFlow()
+        flow.tryBegin("a")
+        flow.deferPlacementForHector("a")
+        flow.record("a", nameConfirmed = true, placementTaken = false)
+        assertNull(flow.next("a"))
+        val other = OnboardingFlow()
+        other.tryBegin("a")
+        other.record("a", nameConfirmed = true, placementTaken = false)
+        assertEquals(OnboardingStep.PLACEMENT, other.next("a"))
+    }
+
+    @Test
     fun `the launch work runs once per account, a rotation does not redo it`() {
         val flow = OnboardingFlow()
         assertTrue(flow.tryBegin("a"))

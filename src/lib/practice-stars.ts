@@ -32,6 +32,14 @@ export const STAR_RULE_LINES: readonly [number, string][] = [
   [3, `Every reply right, in full sentences of ${STAR_RULE.threeStarMinWords}+ words, no English`],
 ];
 
+/** The rule lines for a call or a chat: only the first line names the mode. */
+export function starRuleLines(mode: "call" | "chat"): readonly [number, string][] {
+  return STAR_RULE_LINES.map(([n, text]) => [
+    n,
+    n === 1 && mode === "chat" ? "Finish the chat" : text,
+  ]);
+}
+
 /** What the server has recorded about one call's replies. */
 export type CallTally = {
   replies: number;

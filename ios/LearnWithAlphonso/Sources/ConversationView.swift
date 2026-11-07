@@ -199,7 +199,7 @@ struct ConversationSessionView: View {
     private func bubble(for turn: ChatMessage, index: Int, confidence: Double?) -> some View {
         VStack(alignment: turn.role == "user" ? .trailing : .leading, spacing: AlphonsoDS.Space.s1) {
             HStack {
-                if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
+                if turn.role == "user" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
                 bubbleText(for: turn, index: index)
                     .dsText(.body)
                     .padding(.horizontal, AlphonsoDS.Space.s4)
@@ -208,7 +208,7 @@ struct ConversationSessionView: View {
                         turn.role == "user" ? AlphonsoDS.current.choice : AlphonsoDS.current.card,
                         in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
                     )
-                if turn.role == "user" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
+                if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
             }
             // V3 package 3a: pronunciation-clarity heuristic from Deepgram's
             // utterance-level confidence, not phoneme-level scoring.

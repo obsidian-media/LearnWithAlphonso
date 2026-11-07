@@ -14,6 +14,13 @@ import org.junit.jupiter.api.Test
 class PracticeHubTest {
     private fun scenario(id: String, level: String = "Beginner") = Scenario(id = id, title = "Test", emoji = "", blurb = "", level = level, systemPrompt = "p", opener = "Hi")
     private fun campaign(id: String) = Campaign(id, "Test", "", "", "Beginner", "p", listOf("a", "b", "c").map { CampaignScene(id = it, title = "Scene", systemPrompt = "p", opener = "Hi", minTurns = 3) })
+    @Test
+    fun `the star rule names the chat in chat mode`() {
+        assertEquals("Finish the chat", PracticeHub.starRules(chat = true)[0])
+        assertEquals("Finish the call", PracticeHub.starRules(chat = false)[0])
+        assertEquals(PracticeHub.starRules.drop(1), PracticeHub.starRules(chat = true).drop(1))
+    }
+
     @Test fun `today skips written-only even when spelling is worst`() {
         val events = listOf(PracticeWeaknessEvent("spelling", "detected", "3"), PracticeWeaknessEvent("spelling", "detected", "2"), PracticeWeaknessEvent("articles", "detected", "1"))
         val scenarios = listOf(scenario("airport"), scenario("coffee"))

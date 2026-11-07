@@ -16,6 +16,14 @@ public enum OnboardingSequence {
     }
 }
 
+extension OnboardingSequence {
+    /// Meet Hector's "See what Hector can do" opens Hector, never the placement test: when the first run ended on
+    /// Hector the placement step is treated as done for this session. Placement keeps its own entry point.
+    public static func done(_ done: Set<OnboardingStep>, hectorChosen: Bool) -> Set<OnboardingStep> {
+        hectorChosen ? done.union([.placement]) : done
+    }
+}
+
 /// What the onboarding cover shows. The name prompt carries its own state, so the presented item is the only
 /// thing the cover reads: a cover whose content reads separate view state captures a stale value when that state
 /// is set in the same update as the presentation, and renders empty.

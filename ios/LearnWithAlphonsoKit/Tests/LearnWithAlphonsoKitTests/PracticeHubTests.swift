@@ -12,6 +12,12 @@ final class PracticeHubTests: XCTestCase {
         let scenes = ["a", "b", "c"].map { "{\"id\":\"\($0)\",\"title\":\"Scene\",\"systemPrompt\":\"p\",\"opener\":\"Hi \($0)\",\"minTurns\":3}" }.joined(separator: ",")
         return try! JSONDecoder().decode(Campaign.self, from: Data("{\"id\":\"\(id)\",\"title\":\"Story\",\"emoji\":\"\",\"blurb\":\"\",\"level\":\"Beginner\",\"premise\":\"p\",\"scenes\":[\(scenes)]}".utf8))
     }
+    func testTheStarRuleNamesTheChatInChatMode() {
+        XCTAssertEqual(PracticeHub.starRules(chat: true)[0], "Finish the chat")
+        XCTAssertEqual(PracticeHub.starRules(chat: false)[0], "Finish the call")
+        XCTAssertEqual(Array(PracticeHub.starRules(chat: true).dropFirst()), Array(PracticeHub.starRules.dropFirst()))
+    }
+
     func testTodaySkipsWrittenOnlyEvenWhenSpellingIsWorst() {
         let events = [PracticeWeaknessEvent(category: "spelling", eventType: "detected", createdAt: "3"), .init(category: "spelling", eventType: "detected", createdAt: "2"), .init(category: "articles", eventType: "detected", createdAt: "1")]
         let scenarios = [scenario("airport"), scenario("coffee")]

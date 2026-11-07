@@ -392,6 +392,7 @@ private struct PodcastFolderListing: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .miniPlayerClearance(player)
         .screenScene(.listen, if: showsScene)
         .navigationTitle(folder?.title ?? "Listen")
         .task(id: folder?.id) { await loadEpisodes() }
@@ -492,6 +493,7 @@ private struct PodcastSearchResultsView: View {
                 .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
+            .miniPlayerClearance(player)
             .background(AlphonsoColor.surface)
         }
     }
@@ -642,6 +644,7 @@ private struct OfflineEpisodeList: View {
             .listRowBackground(Color.clear)
         }
         .scrollContentBackground(.hidden)
+        .miniPlayerClearance(player)
         .background(AlphonsoColor.surface)
     }
 }

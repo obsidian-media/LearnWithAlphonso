@@ -115,7 +115,10 @@ extension ProfileHubView {
                 switch tab {
                 case .overview:
                     ProfileWeekSection(model: m)
-                    ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
+                    // Only when there is a card to show: an empty section still takes a list row and leaves a gap.
+                    if m.hector != nil {
+                        ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
+                    }
                 case .progress:
                     ProfileSkillsSection(model: m)
                     ProfileFold(title: "Activity", summary: ProfileTabs.heatSummary(activeDays: m.heat.activeDays)) {
@@ -129,12 +132,6 @@ extension ProfileHubView {
                     }
                     ProfileFold(title: "Weak spots", summary: ProfileTabs.weakSummary(total: m.weak.total)) {
                         ProfileWeakAndHectorSection(model: m, showWeak: true, showHector: false, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
-                    }
-                    ProfileFold(
-                        title: "Achievements",
-                        summary: ProfileTabs.achievementsSummary(unlocked: m.unlockedCount, total: contentStore.achievements.count)
-                    ) {
-                        ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count, showAchievements: true, showSocial: false)
                     }
                 case .social:
                     ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count, showAchievements: false, showSocial: true)
@@ -169,7 +166,7 @@ extension ProfileHubView {
             .listRowBackground(Color.clear)
         case .progress:
             Section {
-                row(.achievements, title: "Achievements", subtitle: "Badges earned and weak spots to work on", emoji: "⭐️", tone: .lilac)
+                row(.achievements, title: "Achievements", subtitle: overview.map { ProfileTabs.achievementsSummary(unlocked: $0.unlockedCount, total: contentStore.achievements.count) } ?? "Badges you have earned", emoji: "⭐️", tone: .lilac)
             }
             .listRowBackground(Color.clear)
         case .social:

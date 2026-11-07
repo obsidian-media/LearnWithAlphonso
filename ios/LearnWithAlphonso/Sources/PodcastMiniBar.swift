@@ -406,6 +406,12 @@ extension View {
     /// so this was not run locally, and no automated check can see layout.
     /// Re-run device check #12 before trusting this comment any further
     /// than the last one.
+    /// Room under a Listen scroll view for the docked mini player: the inset alone did not reach these scroll views,
+    /// so the last row sat under the bar. Only while an episode is loaded (the bar shows only then).
+    func miniPlayerClearance(_ player: PodcastAudioPlayer) -> some View {
+        contentMargins(.bottom, player.episode == nil ? 0 : AlphonsoSpacing.xxl * 1.5, for: .scrollContent)
+    }
+
     func podcastMiniBar(
         player: PodcastAudioPlayer,
         session: Session,

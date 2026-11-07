@@ -8,7 +8,7 @@ import org.junit.Test
 class AlphonsoPalettesTest {
     @Test
     fun `palette catalog matches the iOS values and default is canopy`() {
-        assertEquals(Color(0xFF0C6944), AlphonsoPalettes.light.getValue(AlphonsoThemeId.CANOPY).moss)
+        assertEquals(Color(0xFF1D2B64), AlphonsoPalettes.light.getValue(AlphonsoThemeId.CANOPY).moss)
         assertEquals(Color(0xFF0B0D12), AlphonsoPalettes.light.getValue(AlphonsoThemeId.STUDIO_INK).surface)
         assertEquals(setOf(AlphonsoThemeId.MEADOW, AlphonsoThemeId.MANUSCRIPT, AlphonsoThemeId.CANOPY), AlphonsoPalettes.dark.keys)
         assertEquals(AlphonsoThemeId.CANOPY, AlphonsoThemeId.DEFAULT)
@@ -20,7 +20,7 @@ class AlphonsoPalettesTest {
         assertTrue(AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).isDark)
         assertTrue(!AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = false).isDark)
         assertTrue(AlphonsoPalettes.resolve(AlphonsoThemeId.STUDIO_INK, systemDark = false).isDark)
-        assertEquals(Color(0xFF0C1813), AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).surface)
+        assertEquals(Color(0xFF0E1330), AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).surface)
     }
 
     private fun luminance(c: Color): Double {
