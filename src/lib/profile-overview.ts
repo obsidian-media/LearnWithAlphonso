@@ -9,6 +9,7 @@ import type { Level } from "../data/levels";
 import { vocabForLesson } from "../data/vocab";
 import { LEVEL_ORDER } from "./learning-goal";
 import { LEAGUE_THRESHOLDS } from "./progress-math";
+import type { LearningDayRow, LeagueStanding, SkillDayRow } from "./profile-data";
 
 /**
  * The Profile (visual round 6, BACKLOG 0.0-bi): the rows the server function reads (profile.functions.ts), and the
@@ -61,6 +62,16 @@ export type ProfileOverview = {
   weaknessEvents: WeaknessEventRow[];
   achievements: { id: string; progress: number; unlockedAt: string | null }[];
   friends: FriendRow[];
+  /** lesson and practice seconds per day this week (learning_days). */
+  learning: LearningDayRow[];
+  /** This course's saved words that review retired and the learner mastered (kept in mastered_words). */
+  masteredWords: number;
+  /** This week's rank among the learner's league tier on this course; null when there is no progress row yet. */
+  league: LeagueStanding | null;
+  /** The learner's stored IANA time zone; null until a device reports one. Streaks and days stay UTC. */
+  timeZone: string | null;
+  /** Right and total answers per skill per day over SKILL_WINDOW_DAYS (skill_days); score them with skillScores. */
+  skills: SkillDayRow[];
 };
 
 const DAY_MS = 86_400_000;

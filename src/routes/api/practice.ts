@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isCourse } from "@/data/courses";
 import { finishMinReplies, isCallId, starsForRow, type CallRow } from "@/lib/practice-calls.server";
+import { practiceSeconds } from "@/lib/profile-data";
+import { recordLearningSeconds } from "@/lib/profile-data.server";
 import type { PracticeHubData } from "@/lib/practice-hub";
 
 /**
@@ -144,6 +146,10 @@ async function finish(admin: Admin, userId: string, callId: unknown): Promise<Re
     const out = (Array.isArray(data) ? data[0] : data) as
       { call_stars: number; best_before: number; best_after: number } | undefined;
     if (!out) continue;
+    // Profile data: the call's length from the server's own first and last reply times, once (a second finish is refused).
+    await recordLearningSeconds(admin, userId, {
+      practice: practiceSeconds(row.started_at, row.last_reply_at),
+    });
     return json(result(row, out.call_stars, out.best_before, out.best_after));
   }
   return json({ error: "Could not finish the call." }, 409);

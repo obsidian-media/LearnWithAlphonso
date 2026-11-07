@@ -64,6 +64,11 @@ function overview(over: Partial<ProfileOverview> = {}): ProfileOverview {
     weaknessEvents: [],
     achievements: [],
     friends: [],
+    learning: [],
+    masteredWords: 0,
+    league: null,
+    timeZone: null,
+    skills: [],
     ...over,
   };
 }

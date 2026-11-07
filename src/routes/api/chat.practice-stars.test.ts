@@ -83,6 +83,34 @@ describe("/api/chat records judged replies for Practice stars", () => {
     expect(recorded()[0]).toMatchObject({ _item_key: "doctor", _right: false });
   });
 
+  it("counts each judged reply toward the speaking skill: right, wrong, and nothing when the verdict is none", async () => {
+    const skills = () =>
+      rpc.mock.calls.filter(([fn]) => fn === "add_skill_results").map(([, a]) => a);
+    for (const [say, want] of [
+      ["Bien.\n[[verdict:correct]]", { right: 1, total: 1 }],
+      ["Ah.\n[[verdict:corrected]]", { right: 0, total: 1 }],
+    ] as const) {
+      rpc.mockClear();
+      modelSays(say);
+      await post({
+        systemPrompt: scenarioPrompt("coffee", "es"),
+        callId: CALL,
+        messages: [{ role: "user", content: "Quisiera un caf� con leche" }],
+      });
+      expect(skills()).toEqual([
+        { _user_id: "user-1", _results: [{ skill: "speaking", ...want }] },
+      ]);
+    }
+    rpc.mockClear();
+    modelSays("Hola.\n[[verdict:none]]");
+    await post({
+      systemPrompt: scenarioPrompt("coffee", "es"),
+      callId: CALL,
+      messages: [{ role: "user", content: "Hola" }],
+    });
+    expect(skills()).toEqual([]);
+  });
+
   it("a reply the safety filter replaced is never recorded as right", async () => {
     rpc.mockImplementationOnce(async (_fn, args) => ({
       data: (args._texts as string[]).map(() => true),
