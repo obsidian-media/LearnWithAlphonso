@@ -70,6 +70,7 @@ struct LessonBrowserView: View {
     @State private var showAllUnits = false
     @State private var currentUnitVisible = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
     /// A wrapper type, not a bare String: a String destination is already registered for the NavigationLinks.
     @State private var openedLesson: OpenedLesson?
@@ -208,7 +209,11 @@ struct LessonBrowserView: View {
 
     /// A glass banner over the scene: the unit's number small, its title large, and how many lessons are done.
     private func unitBanner(_ unit: LearnWithAlphonsoKit.Unit) -> some View {
-        HStack(alignment: .center, spacing: AlphonsoSpacing.sm) {
+        // At accessibility sizes the count drops under the title, so neither word is cut mid-letter.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AlphonsoSpacing.xs))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: AlphonsoSpacing.sm))
+        return layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(unit.eyebrow.uppercased())
                     .dsText(.caption)

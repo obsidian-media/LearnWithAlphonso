@@ -18,6 +18,7 @@ struct ListenShelfRoot: View {
     @State private var progress: [ListenProgress] = []
     @State private var course: String?
     @State private var level: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isLoading = true
     @State private var loadFailed = false
 
@@ -88,7 +89,7 @@ struct ListenShelfRoot: View {
                     .padding(AlphonsoSpacing.md)
                     .alphonsoGlass()
                 } else {
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: AlphonsoSpacing.sm), GridItem(.flexible())], spacing: AlphonsoSpacing.sm) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoSpacing.sm), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: AlphonsoSpacing.sm) {
                         ForEach(shown, id: \.folder.id) { shelf in
                             NavigationLink {
                                 ListenShelfDetail(

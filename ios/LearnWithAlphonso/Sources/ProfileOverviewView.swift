@@ -100,6 +100,7 @@ struct ProfileHeroSection: View {
     let onCourse: (Course) -> Void
     let onPicture: () -> Void
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
@@ -133,7 +134,7 @@ struct ProfileHeroSection: View {
 
     private var numbers: some View {
         let b = model.big
-        return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), alignment: .leading, spacing: AlphonsoDS.Space.s4) {
             statTile(String(b.streak), "day streak", "Longest \(b.longestStreak)",
                  "\(b.streak) day streak, longest \(b.longestStreak)")
             statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",

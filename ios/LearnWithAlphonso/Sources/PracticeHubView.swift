@@ -29,11 +29,11 @@ struct PracticeHubView: View {
                     PracticePortrait(room: "coffee", expression: .talk)
                         .overlay(alignment: .topLeading) {
                             HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                                Text("Practice").dsText(.display).foregroundStyle(ds.onHero)
+                                Text("Practice").dsText(.display).foregroundStyle(ds.onHero).lineLimit(1).minimumScaleFactor(0.5)
                                 Spacer(minLength: CGFloat.zero)
                                 if let data {
                                     let tally = PracticeHub.tally(data.stars, scenarios: scenarios, campaigns: campaigns)
-                                    Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption)
+                                    Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption).lineLimit(1).minimumScaleFactor(0.6)
                                         .foregroundStyle(ds.xpText).padding(AlphonsoDS.Space.s2).background(ds.card, in: Capsule())
                                         .accessibilityLabel("\(tally.earned) of \(tally.total) stars earned")
                                 }
