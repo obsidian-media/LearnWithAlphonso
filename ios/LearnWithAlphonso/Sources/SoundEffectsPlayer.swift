@@ -113,14 +113,9 @@ final class SoundEffectsPlayer {
 
     private static func useAmbientWhenFree() {
         let session = AVAudioSession.sharedInstance()
-        switch session.category {
-        case .soloAmbient:
-            break
-        case .playAndRecord where !VoiceSessionHold.isHeld:
-            break
-        default:
-            return
-        }
+        // Already ambient: nothing to do. Playback: the podcast (or a voice preview) may still be playing. Held: a voice
+        // turn is live. Otherwise it is the untouched default or the voice tutor's category, handed back.
+        if session.category == .ambient || session.category == .playback || VoiceSessionHold.isHeld { return }
         try? session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
     }
 }

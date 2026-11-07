@@ -490,7 +490,8 @@ class LessonViewModelTest {
     // core's SoundEffectGate, tested in SoundEffectsTest.
 
     private fun recordEffects(v: LessonViewModel): Pair<MutableList<SoundEffectRequest>, CoroutineScope> {
-        val got = mutableListOf<SoundEffectRequest>()
+        // Written by the collector while the test reads it: a copy-on-write list, so a read never races a write.
+        val got: MutableList<SoundEffectRequest> = java.util.concurrent.CopyOnWriteArrayList()
         val scope = CoroutineScope(Dispatchers.Unconfined + Job())
         scope.launch { v.soundEffects.collect { got += it } }
         return got to scope
