@@ -200,4 +200,42 @@ final class ProfileOverviewTests: XCTestCase {
         XCTAssertTrue(lines.contains("minute spoken"))
         XCTAssertFalse(lines.joined().lowercased().contains("http"))
     }
+
+    // MARK: Profile data
+
+    func testSkillScoresAlwaysFiveInOrderWithNilForUntrained() {
+        let rows = [ProfileSkillDay(day: "2026-11-07", skill: "grammar", right: 1, total: 3)]
+        let s = ProfileMath.skillScores(rows: rows, today: "2026-11-07")
+        XCTAssertEqual(s.map(\.skill), ["listening", "speaking", "vocabulary", "grammar", "reading"])
+        XCTAssertEqual(s.map(\.pct), [nil, nil, nil, 33, nil])
+        XCTAssertEqual(s[3].answered, 3)
+        XCTAssertEqual(s[0].answered, 0)
+    }
+
+    func testSkillScoreWindowEdgeAndRounding() {
+        let today = "2026-11-28"
+        let rows = [
+            ProfileSkillDay(day: "2026-11-01", skill: "reading", right: 1, total: 2), // 27 days back: in
+            ProfileSkillDay(day: "2026-10-31", skill: "reading", right: 0, total: 10), // 28 days back: out
+            ProfileSkillDay(day: "2026-11-02", skill: "listening", right: 1, total: 8), // 12.5 -> 13
+            ProfileSkillDay(day: "2026-11-29", skill: "listening", right: 0, total: 50), // future: out
+        ]
+        let s = ProfileMath.skillScores(rows: rows, today: today)
+        XCTAssertEqual(s[4].answered, 2)
+        XCTAssertEqual(s[4].pct, 50)
+        XCTAssertEqual(s[0].pct, 13)
+        XCTAssertNil(ProfileMath.skillScores(rows: rows, today: today, windowDays: 7)[4].pct)
+    }
+
+    func testLearningMinutesFloorAndGoalBoundary() {
+        let rows = [ProfileLearningDay(day: "d", lessonSeconds: 100, practiceSeconds: 79),
+                    ProfileLearningDay(day: "other", lessonSeconds: 6000, practiceSeconds: 0)]
+        XCTAssertEqual(ProfileMath.learningMinutes(rows: rows, day: "d"), 2)
+        XCTAssertEqual(ProfileMath.learningMinutes(rows: rows, day: "none"), 0)
+        XCTAssertFalse(ProfileMath.dailyGoalProgress(rows: rows, day: "d", goalMinutes: 3).reached)
+        let at = ProfileMath.dailyGoalProgress(rows: rows, day: "d", goalMinutes: 2)
+        XCTAssertTrue(at.reached)
+        XCTAssertEqual(at.minutes, 2)
+        XCTAssertFalse(ProfileMath.dailyGoalProgress(rows: rows, day: "other", goalMinutes: 0).reached)
+    }
 }

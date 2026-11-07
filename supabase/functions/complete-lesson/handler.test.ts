@@ -14,6 +14,7 @@ class FakeDb {
   tables: Record<string, Row[]> = {};
   failReads = new Set<string>();
   rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
+  profileCalls: { name: string; args: Record<string, unknown> }[] = [];
   recordCompletions = true;
   upserts: { table: string; rows: Row[] }[] = [];
   rpcResult: { data: unknown; error: unknown } = {
@@ -36,6 +37,11 @@ class FakeDb {
     if (name === "settle_lesson_hearts") {
       this.settleCalls.push(args);
       return Promise.resolve(this.settleResult);
+    }
+    // Profile data (20261107120000) is recorded on its own too, so rpcCalls stays exactly the save.
+    if (name === "add_learning_seconds" || name === "add_skill_results") {
+      this.profileCalls.push({ name, args });
+      return Promise.resolve({ data: null, error: null });
     }
     this.rpcCalls.push({ name, args });
     // Like the real apply_lesson_completion: an applied save writes the completion row the later reads see.
@@ -860,4 +866,31 @@ Deno.test("a failed settlement never fails the saved lesson", async () => {
   const res = await handler(post(body(["b", "c"])));
   assertEquals(res.status, 200);
   assertEquals((await res.json()).progress.hearts, 3);
+});
+
+Deno.test(
+  "a saved lesson records its time and each answer's result by the server's own grading",
+  async () => {
+    const { db, handler } = setup({ sessionAgeMs: 120_000 });
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 200);
+    const missed = (db.rpcCalls[0].args._missed_question_ids as string[]).length;
+    assertEquals(db.profileCalls, [
+      {
+        name: "add_learning_seconds",
+        args: { _user_id: USER, _lesson_seconds: 120, _practice_seconds: 0 },
+      },
+      {
+        name: "add_skill_results",
+        args: { _user_id: USER, _results: [{ skill: "vocabulary", right: 2 - missed, total: 2 }] },
+      },
+    ]);
+  },
+);
+
+Deno.test("a rejected completion records no profile data", async () => {
+  const { db, handler } = setup({ tokenOk: false });
+  const res = await handler(post(body(["a", "d"])));
+  assertEquals(res.status, 403);
+  assertEquals(db.profileCalls.length, 0);
 });

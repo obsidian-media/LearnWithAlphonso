@@ -99,6 +99,18 @@ export function richLearner(over: Partial<ProfileOverview> = {}): ProfileOvervie
       progress: progress as number,
       unlockedAt: `${day as string}T10:00:00Z`,
     })),
+    learning: [],
+    masteredWords: 3,
+    league: {
+      leagueTier: "silver",
+      rank: 4,
+      size: 12,
+      weekStart: "2026-11-02",
+      weekEnd: "2026-11-08",
+      weekXp: 80,
+    },
+    timeZone: "America/Toronto",
+    skills: [],
     friends: [
       { userId: "f1", displayName: "Mina", avatarSeed: "animal:owl", streak: 30, weekXp: 520 },
       { userId: "f2", displayName: "Jon", avatarSeed: "j", streak: 2, weekXp: 210 },
@@ -130,6 +142,11 @@ export function newLearner(over: Partial<ProfileOverview> = {}): ProfileOverview
     weaknessEvents: [],
     achievements: [],
     friends: [],
+    learning: [],
+    masteredWords: 0,
+    league: null,
+    timeZone: null,
+    skills: [],
     ...over,
   };
 }

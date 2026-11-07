@@ -309,6 +309,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
 
     const questionById = new Map(found.lesson.questions.map((q) => [q.id, q]));
     const missedQuestionIds: string[] = [];
+    const graded: { type: string; correct: boolean }[] = [];
     for (const { questionId, answer } of answers) {
       // Safe: validateLessonAnswerCoverage already proved questionId is a
       // real id in this lesson.
@@ -318,6 +319,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         checkQuota,
       });
       if (!isCorrect) missedQuestionIds.push(questionId);
+      graded.push({ type: question.type, correct: isCorrect });
     }
     const correct = answers.length - missedQuestionIds.length;
 
@@ -533,6 +535,14 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       }
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
+
+    // Profile data: the lesson's time and each answer's result by this server's own grading. Never fails the save.
+    const { recordLessonProfileData } = await import("./profile-data.server");
+    await recordLessonProfileData(supabaseAdmin, userId, {
+      sessionIssuedAtMs: sessionIssuedAt,
+      nowMs: Date.now(),
+      graded,
+    });
 
     // Hearts are settled on the server from this grading (same as the complete-lesson Edge Function).
     const { serverHeartsMode } = await import("./hearts-gate.server");

@@ -29,8 +29,12 @@ export const USER_ID_EXPORT_TABLES = [
   "friend_activity_events",
   "friendships",
   "language_progress",
+  // Profile data (20261107120000); own-row SELECT.
+  "learner_time_zones",
+  "learning_days",
   "learning_goals",
   "lesson_completions",
+  "mastered_words",
   "podcast_play_events",
   "podcast_playback",
   "podcast_quiz_awards",
@@ -42,6 +46,7 @@ export const USER_ID_EXPORT_TABLES = [
   "season_cohort_members",
   "season_placements",
   "signup_attribution",
+  "skill_days",
   "speech_days",
   "team_members",
   "team_mission_rewards",
@@ -181,7 +186,14 @@ export const exportMyData = createServerFn({ method: "POST" })
               .from(
                 table as Exclude<
                   typeof table,
-                  "podcast_quiz_awards" | "speech_days" | "practice_calls" | "practice_stars"
+                  | "podcast_quiz_awards"
+                  | "speech_days"
+                  | "practice_calls"
+                  | "practice_stars"
+                  | "learner_time_zones"
+                  | "learning_days"
+                  | "mastered_words"
+                  | "skill_days"
                 >,
               )
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {

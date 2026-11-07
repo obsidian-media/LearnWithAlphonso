@@ -23,6 +23,10 @@ data class ProfileWeakItem(val label: String, val display: String, val lapses: I
 data class ProfileWeaknessEvent(val category: String, val eventType: String, val createdAt: String)
 data class ProfileCourseProgress(val course: String, val xp: Int, val cefrLevel: String, val leagueTier: String)
 data class ProfileAchievementRow(val id: String, val progress: Int, val unlockedAt: String?)
+data class ProfileLearningDay(val day: String, val lessonSeconds: Int, val practiceSeconds: Int)
+data class ProfileLeagueStanding(val leagueTier: String, val rank: Int, val size: Int, val weekStart: String, val weekEnd: String, val weekXp: Int)
+data class ProfileSkillDay(val day: String, val skill: String, val right: Int, val total: Int)
+data class ProfileSkillScore(val skill: String, val answered: Int, val pct: Int?)
 
 data class ProfileOverviewData(
     val today: String,
@@ -44,6 +48,11 @@ data class ProfileOverviewData(
     val weaknessEvents: List<ProfileWeaknessEvent> = emptyList(),
     val achievements: List<ProfileAchievementRow> = emptyList(),
     val friends: List<FriendProgress> = emptyList(),
+    val learning: List<ProfileLearningDay> = emptyList(),
+    val masteredWords: Int = 0,
+    val league: ProfileLeagueStanding? = null,
+    val timeZone: String? = null,
+    val skills: List<ProfileSkillDay> = emptyList(),
 )
 
 object ProfileMath {
@@ -248,6 +257,33 @@ object ProfileMath {
         val code = country?.uppercase() ?: return null
         if (!showFlag || code.length != 2 || !code.all { it in 'A'..'Z' }) return null
         return code.map { String(Character.toChars(127397 + it.code)) }.joinToString("")
+    }
+
+    const val SKILL_WINDOW_DAYS = 28
+    val SKILLS = listOf("listening", "speaking", "vocabulary", "grammar", "reading")
+
+    /** Always the five skills, in order; pct is null until the skill has an answer in the window. */
+    fun skillScores(rows: List<ProfileSkillDay>, today: String, windowDays: Int = SKILL_WINDOW_DAYS): List<ProfileSkillScore> {
+        val from = addDays(today, -(windowDays - 1))
+        val inWindow = rows.filter { it.day >= from && it.day <= today }
+        return SKILLS.map { skill ->
+            val mine = inWindow.filter { it.skill == skill }
+            val answered = mine.sumOf { it.total }
+            val right = mine.sumOf { it.right }
+            // Half up, like JS Math.round.
+            ProfileSkillScore(skill, answered, if (answered > 0) Math.floor(100.0 * right / answered + 0.5).toInt() else null)
+        }
+    }
+
+    /** Whole minutes learned on [day] (lessons plus practice), floored. */
+    fun learningMinutes(rows: List<ProfileLearningDay>, day: String): Int =
+        rows.filter { it.day == day }.sumOf { it.lessonSeconds + it.practiceSeconds } / 60
+
+    data class DailyGoal(val minutes: Int, val goalMinutes: Int, val reached: Boolean)
+
+    fun dailyGoalProgress(rows: List<ProfileLearningDay>, day: String, goalMinutes: Int): DailyGoal {
+        val minutes = learningMinutes(rows, day)
+        return DailyGoal(minutes, goalMinutes, goalMinutes > 0 && minutes >= goalMinutes)
     }
 
     const val SHARE_APP_NAME = "Learn with Alphonso"

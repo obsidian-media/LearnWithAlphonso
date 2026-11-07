@@ -139,6 +139,27 @@ describe("POST /api/practice: finishing a call", () => {
     expect((await res.json()).finishMinReplies).toBe(2);
   });
 
+  it("records the call's length as practice time, once, from the server's own reply times", async () => {
+    reads.practice_calls = [
+      {
+        data: callRow({
+          started_at: "2026-11-07T10:00:00.000Z",
+          last_reply_at: "2026-11-07T10:04:00.000Z",
+        }),
+        error: null,
+      },
+    ];
+    rpc.mockResolvedValue({
+      data: [{ call_stars: 2, best_before: 0, best_after: 2 }],
+      error: null,
+    });
+    await post({ callId: CALL });
+    const learning = rpc.mock.calls.filter((c) => c[0] === "add_learning_seconds");
+    expect(learning).toEqual([
+      ["add_learning_seconds", { _user_id: "user-1", _lesson_seconds: 0, _practice_seconds: 240 }],
+    ]);
+  });
+
   it("re-reads once when a reply landed between the read and the finish", async () => {
     reads.practice_calls = [
       { data: callRow({ replies: 4, right_replies: 4 }), error: null },
@@ -149,7 +170,9 @@ describe("POST /api/practice: finishing a call", () => {
       error: null,
     });
     const res = await post({ callId: CALL });
-    expect(rpc.mock.calls.map((c) => c[1]._replies)).toEqual([4, 5]);
+    expect(
+      rpc.mock.calls.filter((c) => c[0] === "finish_practice_call").map((c) => c[1]._replies),
+    ).toEqual([4, 5]);
     expect((await res.json()).stars).toBe(2);
   });
 
