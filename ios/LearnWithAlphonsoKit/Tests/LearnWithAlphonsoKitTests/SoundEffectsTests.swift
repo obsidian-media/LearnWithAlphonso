@@ -105,4 +105,23 @@ final class SoundEffectsTests: XCTestCase {
             XCTAssertNil(effect.haptic, "\(effect)")
         }
     }
+
+    func testSwitchOffMeansNoHapticsEither() {
+        let off = gate(on: { false })
+        for effect in SoundEffect.allCases {
+            XCTAssertFalse(off.shouldVibrate(effect), "\(effect)")
+        }
+        let on = gate(on: { true })
+        XCTAssertTrue(on.shouldVibrate(.right))
+        XCTAssertTrue(on.shouldVibrate(.wrong))
+        XCTAssertFalse(on.shouldVibrate(.tap), "an effect with no haptic never vibrates")
+    }
+
+    func testStoredSwitchDefaultsOnAndReadsOff() {
+        let suite = UserDefaults(suiteName: "sfx-haptics-test")!
+        suite.removePersistentDomain(forName: "sfx-haptics-test")
+        XCTAssertTrue(SoundEffectsPreference.isOn(suite))
+        suite.set(false, forKey: SoundEffectsPreference.key)
+        XCTAssertFalse(SoundEffectsPreference.isOn(suite))
+    }
 }

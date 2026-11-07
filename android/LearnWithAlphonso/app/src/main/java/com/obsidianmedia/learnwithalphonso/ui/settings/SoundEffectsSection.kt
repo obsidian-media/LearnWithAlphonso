@@ -25,7 +25,7 @@ internal fun SoundEffectsSection(container: AppContainer) {
     var on by remember { mutableStateOf(container.prefs.getBoolean(SoundEffectsPreference.KEY, SoundEffectsPreference.DEFAULT)) }
     Section(
         "Sound effects",
-        footer = "Short sounds for a right or wrong answer, a finished lesson and a call. They never play over Alphonso or Hector, and silent mode silences them.",
+        footer = "Short sounds for a right or wrong answer, a finished lesson and a call. They never play over Alphonso or Hector, and silent mode silences them. Turn them off and the light vibrations stop too.",
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Sound effects", style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))

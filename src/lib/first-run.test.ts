@@ -92,6 +92,12 @@ describe("the under-13 block on this device", () => {
     ]);
     expect(AGE_CHOICES.every((c) => !("default" in c))).toBe(true);
   });
+
+  it("every age range has its own label, the same words as iPhone and Android", () => {
+    const labels = AGE_CHOICES.map((c) => c.small);
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(labels).toEqual(["Under 13", "Teen", "Young adult", "Adult", "Mid-life", "Mature"]);
+  });
 });
 
 describe("answersToSend", () => {

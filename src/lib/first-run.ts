@@ -25,7 +25,7 @@ export const AGE_CHOICES: readonly { id: AgeChoice; big: string; small: string }
   { id: "13-17", big: "13–17", small: "Teen" },
   { id: "18-24", big: "18–24", small: "Young adult" },
   { id: "25-34", big: "25–34", small: "Adult" },
-  { id: "35-54", big: "35–54", small: "Adult" },
+  { id: "35-54", big: "35–54", small: "Mid-life" },
   { id: "55+", big: "55+", small: "Mature" },
 ];
 

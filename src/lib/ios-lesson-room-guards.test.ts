@@ -190,7 +190,7 @@ describe("Lesson complete, in the unit's room, in code", () => {
   it("every existing mechanic is kept: haptic, Hector, the reminder card, generated practice, league up, the way on", () => {
     const finish = between(player, "private func completeScreen(", "\n    }\n");
     for (const kept of [
-      ".sensoryFeedback(.success, trigger: celebrated)",
+      ".sensoryFeedback(trigger: celebrated)",
       'Button("Practice with Hector", action: practiceWithHector)',
       "LessonReminderCard(",
       "GeneratedPracticeSection(lessonID: lesson.id, course: course, session: session)",

@@ -34,7 +34,7 @@ public enum SoundEffect: String, CaseIterable, Sendable {
         }
     }
 
-    /// The light haptic that goes with the moment on a phone (it follows the system haptics setting).
+    /// The light haptic that goes with the moment on a phone (it follows the system haptics setting and the Sound effects switch: off is no haptics too).
     public var haptic: SoundEffectHaptic? {
         switch self {
         case .right, .lessonComplete, .achievement: return .success
@@ -52,6 +52,11 @@ public enum SoundEffectHaptic: Equatable, Sendable {
 public enum SoundEffectsPreference {
     public static let key = "soundEffectsEnabled"
     public static let defaultValue = true
+
+    /// The switch as stored on this device. Haptics read this too: with sound effects off, nothing buzzes.
+    public static func isOn(_ defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: key) as? Bool ?? defaultValue
+    }
 }
 
 public struct SoundEffectCue: Equatable, Sendable {
@@ -86,14 +91,17 @@ public enum SoundEffectCues {
 /// per key (so a re-render cannot double it). Not thread-safe: the app uses it on the main actor.
 public final class SoundEffectGate {
     private let isEnabled: () -> Bool
+    private let isSwitchOn: () -> Bool
     private let isVoiceActive: () -> Bool
     private let now: () -> Date
     private var playedKeys = Set<String>()
     private var callCueEndsAt = Date.distantPast
 
+    /// `isSwitchOn` is the Settings switch alone (default: the same as `isEnabled`); haptics follow it.
     public init(isEnabled: @escaping () -> Bool, isVoiceActive: @escaping () -> Bool,
-                now: @escaping () -> Date = Date.init) {
+                now: @escaping () -> Date = Date.init, isSwitchOn: (() -> Bool)? = nil) {
         self.isEnabled = isEnabled
+        self.isSwitchOn = isSwitchOn ?? isEnabled
         self.isVoiceActive = isVoiceActive
         self.now = now
     }
@@ -105,6 +113,11 @@ public final class SoundEffectGate {
         if let key { playedKeys.insert(key) }
         if effect == .callStart { callCueEndsAt = now().addingTimeInterval(effect.duration) }
         return true
+    }
+
+    /// Whether an effect's haptic fires: only with the Sound effects switch on, and only for effects that have one.
+    public func shouldVibrate(_ effect: SoundEffect) -> Bool {
+        effect.haptic != nil && isSwitchOn()
     }
 
     /// How long the call-start sound still has to play: the opening line waits this long.

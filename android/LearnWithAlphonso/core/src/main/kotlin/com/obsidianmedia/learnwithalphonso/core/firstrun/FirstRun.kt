@@ -68,7 +68,7 @@ enum class AgeChoice(val id: String, val big: String, val small: String) {
     TEEN("13-17", "13–17", "Teen"),
     YOUNG_ADULT("18-24", "18–24", "Young adult"),
     ADULT("25-34", "25–34", "Adult"),
-    MID_ADULT("35-54", "35–54", "Adult"),
+    MID_ADULT("35-54", "35–54", "Mid-life"),
     MATURE("55+", "55+", "Mature");
 
     /** What TalkBack reads: plain words, no symbols. */

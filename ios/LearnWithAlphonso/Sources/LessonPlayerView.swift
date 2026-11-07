@@ -552,7 +552,7 @@ struct LessonPlayerView: View {
             }
             GeneratedPracticeSection(lessonID: lesson.id, course: course, session: session)
         }
-        .sensoryFeedback(.success, trigger: celebrated)
+        .sensoryFeedback(trigger: celebrated) { _, _ in SoundEffectsPreference.isOn() ? .success : nil }
         .onAppear {
             showPromotionOverlay = isLeaguePromotion
             celebrated = true
@@ -772,7 +772,7 @@ struct LessonPlayerView: View {
             result = completion
             syncQueueStore.updateLastKnownProgress(completion.progress)
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
-            if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
+            if (isLeaguePromotion || !completion.newlyUnlocked.isEmpty) && SoundEffectsPreference.isOn() {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
             // After the haptic and off the finish path: a slow network must not delay either.

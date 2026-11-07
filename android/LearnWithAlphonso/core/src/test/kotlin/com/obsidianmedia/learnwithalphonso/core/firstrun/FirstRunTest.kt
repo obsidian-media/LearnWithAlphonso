@@ -273,4 +273,11 @@ class ProfileAvatarsTest {
         assertEquals("a", ProfileAvatars.initialsSeed("animal:fox"))
         assertEquals("S", ProfileAvatars.initial(" sam"))
     }
+
+    @Test
+    fun everyAgeRangeHasItsOwnLabel() {
+        val labels = AgeChoice.values().map { it.small }
+        assertEquals(labels.size, labels.toSet().size)
+        assertEquals(listOf("Under 13", "Teen", "Young adult", "Adult", "Mid-life", "Mature"), labels)
+    }
 }
