@@ -63,6 +63,12 @@ class UICompatTestCase: XCTestCase {
         return true
     }
 
+    /// Signed out, the app opens on the first run's first question; Back there opens the sign-in screen.
+    func openSignIn() {
+        let back = app.buttons["Back to sign in"]
+        if back.waitForExistence(timeout: 10) { back.tap() }
+    }
+
     func button(containing text: String) -> XCUIElement {
         app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", text)).firstMatch
     }

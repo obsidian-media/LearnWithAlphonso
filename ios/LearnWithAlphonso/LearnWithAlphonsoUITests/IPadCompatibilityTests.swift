@@ -29,6 +29,7 @@ final class IPadCompatibilityTests: UICompatTestCase {
             XCTFail("signed in at launch: the simulator was not erased before this suite")
             return
         }
+        openSignIn()
         for (orientation, name) in orientations {
             XCUIDevice.shared.orientation = orientation
             requireRunning("auth \(name)")

@@ -26,7 +26,10 @@ describe("iOS Sentry start-up", () => {
 
   it("only starts in release builds", () => {
     const start = crash.indexOf("SentrySDK.start");
-    expect(crash.slice(0, start)).toMatch(/#if DEBUG\s*return\s*#else\s*$/);
+    // Release only; and an under-13 device (the first run's block) never starts it at all.
+    expect(crash.slice(0, start)).toMatch(
+      /#if DEBUG\s*return\s*#else\s*guard !FirstRunDevice\.isBlocked else \{ return \}\s*$/,
+    );
     expect(crash.slice(start)).toMatch(/#endif/);
   });
 

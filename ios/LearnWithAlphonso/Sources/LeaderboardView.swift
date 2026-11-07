@@ -236,14 +236,8 @@ private struct LeaderboardRowView: View {
                 .background(rankBadgeColor)
                 .clipShape(Circle())
 
-            Circle()
-                .fill(avatarColor)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Text(row.displayName.prefix(1).uppercased())
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .foregroundStyle(.white)
-                )
+            // Their animal, or their initial on their colour (ProfileAvatars, AvatarColor).
+            ProfileAvatarView(seed: row.avatarSeed, name: row.displayName, size: 36)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
@@ -288,35 +282,6 @@ private struct LeaderboardRowView: View {
         case 3: return .orange.opacity(0.6)
         default: return AlphonsoColor.surface
         }
-    }
-
-    /// Ports the web app's `hsl(seed.charCodeAt(0)*37 % 360, 40%, 45%)`
-    /// avatar color derivation exactly (league.tsx), so a given avatar_seed
-    /// produces the same color on both platforms. `Color(hue:saturation:
-    /// brightness:)` is HSB, not HSL -- a different color model that would
-    /// render visibly different colors here -- so this converts HSL to RGB
-    /// directly instead.
-    private var avatarColor: Color {
-        let firstCharCode = row.avatarSeed.unicodeScalars.first.map { Int($0.value) } ?? 0
-        let hue = Double((firstCharCode * 37) % 360) / 360.0
-        let (r, g, b) = Self.hslToRGB(hue: hue, saturation: 0.40, lightness: 0.45)
-        return Color(red: r, green: g, blue: b)
-    }
-
-    private static func hslToRGB(hue: Double, saturation: Double, lightness: Double) -> (Double, Double, Double) {
-        guard saturation > 0 else { return (lightness, lightness, lightness) }
-        let q = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation
-        let p = 2 * lightness - q
-        func component(_ t: Double) -> Double {
-            var t = t
-            if t < 0 { t += 1 }
-            if t > 1 { t -= 1 }
-            if t < 1.0 / 6 { return p + (q - p) * 6 * t }
-            if t < 1.0 / 2 { return q }
-            if t < 2.0 / 3 { return p + (q - p) * (2.0 / 3 - t) * 6 }
-            return p
-        }
-        return (component(hue + 1.0 / 3), component(hue), component(hue - 1.0 / 3))
     }
 }
 

@@ -66,6 +66,16 @@ targets:
       - path: HectorAvatar
         type: folder
         buildPhase: resources
+      # The first run (visual round 6, part 3): Hector's two cut-outs for the plan and Meet Hector, the web's
+      # public/firstrun art, read by name at run time (FirstRunViews).
+      - path: FirstRunArt
+        type: folder
+        buildPhase: resources
+      # The 16 preset animal profile pictures (ProfileAvatars in the Kit), 288 px WebP cut from the web's
+      # public/avatars/animals, read by id at run time (ProfileAvatarView).
+      - path: ProfileAvatars
+        type: folder
+        buildPhase: resources
       - path: Sources
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources

@@ -389,6 +389,21 @@ final class Session {
         endSession(.signedOut)
     }
 
+    /// An under-13 device at launch (FirstRunDevice): no restore, because a restore can refresh the session with the
+    /// auth server. Any stored session is dropped on the device only, and the app opens signed out on the stop screen.
+    func dropStoredSessionLocally() {
+        KeychainSessionStore.clear()
+        state = .signedOut
+        isRestoring = false
+    }
+
+    /// Complete your profile answered Under 13: the session ends here. The lifecycle runs as for a sign-out, and its
+    /// handlers that would call a server (the push token, the auth server's session, RevenueCat) check
+    /// FirstRunDevice.isBlocked first and stay silent (LearnWithAlphonsoApp).
+    func signOutBlockedDevice() {
+        endSession(.signedOut)
+    }
+
     /// Called only after the server has deleted the account (SettingsView.deleteAccount).
     /// Same local teardown as sign-out, but handlers see `.accountDeleted`, so they can also
     /// remove what only deletion should.

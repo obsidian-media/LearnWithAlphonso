@@ -28,7 +28,7 @@ struct SettingsView: View {
     @State private var displayName = ""
     @State private var avatarSeed = ""
     @State private var isSavingName = false
-    @State private var isShufflingAvatar = false
+    @State private var isPickingAvatar = false
     @State private var identityErrorMessage: String?
 
     @State private var isExportingData = false
@@ -83,24 +83,11 @@ struct SettingsView: View {
                         // decorative (no meaning a VoiceOver user needs),
                         // and the name it's paired with is already
                         // announced by the TextField right below it.
-                        Text(displayName.prefix(1).uppercased())
-                            .font(AlphonsoFont.sans(16, weight: .semiBold))
-                            .foregroundStyle(.white)
-                            .frame(minWidth: 40, minHeight: 40)
-                            .background(Circle().fill(AvatarColor.forSeed(avatarSeed.isEmpty ? "a" : avatarSeed)))
-                            .accessibilityHidden(true)
-                        Button {
-                            Task { await shuffleAvatar() }
-                        } label: {
-                            if isShufflingAvatar {
-                                ProgressView().tint(AlphonsoColor.moss)
-                            } else {
-                                Text("Shuffle")
-                            }
-                        }
-                        .font(AlphonsoFont.sans(14, weight: .medium))
-                        .disabled(isShufflingAvatar)
-                        .accessibilityLabel(isShufflingAvatar ? "Shuffling avatar color" : "Shuffle avatar color")
+                        // The learner's animal or initial (visual round 6, part 3); hidden from VoiceOver, the name
+                        // is announced by the field below.
+                        ProfileAvatarView(seed: avatarSeed.isEmpty ? "a" : avatarSeed, name: displayName, size: 44)
+                        Button("Change picture") { isPickingAvatar = true }
+                            .accessibilityHint("Choose an animal or your initial")
                     }
                     TextField("Display name", text: $displayName)
                         .font(AlphonsoFont.sans(15))
@@ -132,7 +119,7 @@ struct SettingsView: View {
                     // (see AvatarColor.swift's own doc comment) -- this is
                     // the same "shown to strangers" surface the report/block
                     // menu on those screens already exists for.
-                    Text("Your name and avatar color are visible to other learners on leaderboards, friends, and duels.")
+                    Text("Your name and picture are visible to other learners on leaderboards, friends, and duels.")
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)
                 }
@@ -340,6 +327,9 @@ struct SettingsView: View {
             }
         }
         .tint(AlphonsoColor.moss)
+        .sheet(isPresented: $isPickingAvatar) {
+            AvatarPickerSheet(session: session, name: displayName, current: avatarSeed) { avatarSeed = $0 }
+        }
     }
 
     /// Applies instantly (AlphonsoThemeManager.setTheme re-renders the
@@ -390,26 +380,6 @@ struct SettingsView: View {
             displayName = try await client.confirmDisplayName(trimmed)
         } catch {
             identityErrorMessage = SocialReasonCopy.nameSaveMessage(for: error)
-        }
-    }
-
-    /// A fresh 8-hex-character seed, same shape as the server default
-    /// (`substr(md5(random()::text), 1, 8)` in the profiles table) -- only
-    /// used as input to AvatarColor.forSeed's hash, so any string works,
-    /// but matching the existing shape keeps seeds looking consistent
-    /// regardless of which client generated them.
-    private func shuffleAvatar() async {
-        guard let accessToken = session.accessToken, let userID = session.userID else { return }
-        let next = String((0..<8).map { _ in "0123456789abcdef".randomElement()! })
-        identityErrorMessage = nil
-        isShufflingAvatar = true
-        defer { isShufflingAvatar = false }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        do {
-            try await client.updateProfileAvatarSeed(next, userID: userID)
-            avatarSeed = next
-        } catch {
-            identityErrorMessage = "Couldn't shuffle your avatar. Try again."
         }
     }
 

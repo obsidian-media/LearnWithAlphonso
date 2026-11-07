@@ -294,14 +294,8 @@ private struct FriendRowView: View {
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Circle()
-                .fill(AvatarColor.forSeed(friend.avatarSeed))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Text(friend.displayName.prefix(1).uppercased())
-                        .font(AlphonsoFont.sans(14, weight: .semiBold))
-                        .foregroundStyle(.white)
-                )
+            // Their animal, or their initial on their colour (ProfileAvatars).
+            ProfileAvatarView(seed: friend.avatarSeed, name: friend.displayName, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(friend.displayName)

@@ -21,6 +21,8 @@ struct ProfileHubView: View {
     let session: Session
     let contentStore: ContentStore
     let notificationScheduler: NotificationScheduler
+    /// Opens the first-run questions again ("Edit your answers"; RootView's cover).
+    var onEditAnswers: () -> Void = {}
 
     private enum Destination: String, Identifiable {
         case league, friends, achievements, settings
@@ -35,6 +37,11 @@ struct ProfileHubView: View {
                 ProfileHero()
                     .sceneScrollProbe()
                     .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
+                // The picture and "Edit your answers" (visual round 6, part 3).
+                ProfileAboutYouCard(session: session, onEditAnswers: onEditAnswers)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
