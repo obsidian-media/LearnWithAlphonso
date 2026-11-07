@@ -15,16 +15,47 @@ import {
 } from "./listen-library";
 import type { PodcastFolder } from "./podcast-tree";
 
-const f = (id: string, parentId: string | null, slug: string, course: PodcastFolder["course"] = null, sortOrder = 0): PodcastFolder => ({
-  id, parentId, slug, title: slug, description: null, sortOrder, course,
+const f = (
+  id: string,
+  parentId: string | null,
+  slug: string,
+  course: PodcastFolder["course"] = null,
+  sortOrder = 0,
+): PodcastFolder => ({
+  id,
+  parentId,
+  slug,
+  title: slug,
+  description: null,
+  sortOrder,
+  course,
 });
-const folders = [f("en", null, "en", "en"), f("a2", "en", "a2"), f("shop", "a2", "bookshop"), f("fr", null, "fr", "fr"), f("frq", "fr", "mystery")];
+const folders = [
+  f("en", null, "en", "en"),
+  f("a2", "en", "a2"),
+  f("shop", "a2", "bookshop"),
+  f("fr", null, "fr", "fr"),
+  f("frq", "fr", "mystery"),
+];
 const ep = (id: string, folderId: string, n: number, dur = 600): LibraryEpisode => ({
-  id, folderId, title: `Ep ${n}`, durationSeconds: dur, sortOrder: n, course: null,
+  id,
+  folderId,
+  title: `Ep ${n}`,
+  durationSeconds: dur,
+  sortOrder: n,
+  course: null,
 });
 const eps = [ep("e1", "shop", 1), ep("e2", "shop", 2), ep("e3", "shop", 3), ep("f1", "frq", 1)];
-const p = (episodeId: string, positionS: number, updatedAt: string, completedAt: string | null = null): ListenProgressRow => ({
-  episodeId, positionS, updatedAt, completedAt,
+const p = (
+  episodeId: string,
+  positionS: number,
+  updatedAt: string,
+  completedAt: string | null = null,
+): ListenProgressRow => ({
+  episodeId,
+  positionS,
+  updatedAt,
+  completedAt,
 });
 
 describe("episode state", () => {
@@ -63,7 +94,12 @@ describe("shelves", () => {
     const [s] = buildShelves(folders, eps, [p("e1", 0, "t", "t"), p("e2", 300, "t")], "en");
     expect(s!.doneCount).toBe(1);
     expect(s!.percent).toBe(50);
-    const [all] = buildShelves(folders, eps, [p("e1", 0, "t", "t"), p("e2", 0, "t", "t"), p("e3", 0, "t", "t")], "en");
+    const [all] = buildShelves(
+      folders,
+      eps,
+      [p("e1", 0, "t", "t"), p("e2", 0, "t", "t"), p("e3", 0, "t", "t")],
+      "en",
+    );
     expect(all!.percent).toBe(100);
   });
   it("a room is chosen by subject, else stably", () => {

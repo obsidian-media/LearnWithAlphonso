@@ -75,7 +75,8 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
     [library, course],
   );
   const levels = shelfLevels(shelves);
-  const shown = level && levels.includes(level) ? shelves.filter((s) => s.level === level) : shelves;
+  const shown =
+    level && levels.includes(level) ? shelves.filter((s) => s.level === level) : shelves;
   const cont = continueListening(shelves, library.progress);
   const contFull = cont ? library.episodes.find((e) => e.id === cont.episode.id) : undefined;
   const alphonso = mascotArt("learnGreeting").src;
@@ -170,7 +171,11 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
           data-surface
           className="flex flex-col items-center gap-3 rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
         >
-          <img src={mascotArt("emptyState").src} alt="Alphonso" className="size-28 object-contain" />
+          <img
+            src={mascotArt("emptyState").src}
+            alt="Alphonso"
+            className="size-28 object-contain"
+          />
           <p className="text-sm font-semibold text-ds-ink">
             {library.episodes.length === 0
               ? "Nothing here yet. New episodes appear as they are published."
@@ -245,7 +250,11 @@ export function ListenShelfView({
         >
           ‹
         </Link>
-        <img src={mascotArt("lessonComplete").src} alt="" className="absolute -right-2 bottom-0 w-40" />
+        <img
+          src={mascotArt("lessonComplete").src}
+          alt=""
+          className="absolute -right-2 bottom-0 w-40"
+        />
         <div className="absolute bottom-5 left-4 right-36">
           {shelf.level ? (
             <span className="rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">

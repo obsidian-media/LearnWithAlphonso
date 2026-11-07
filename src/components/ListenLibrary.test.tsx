@@ -8,7 +8,16 @@ import { ListenLibraryView, ListenShelfView } from "./ListenLibrary";
 import { buildShelves } from "../lib/listen-library";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, children, params: _p, ...rest }: { to: string; children: React.ReactNode; params?: unknown }) => (
+  Link: ({
+    to,
+    children,
+    params: _p,
+    ...rest
+  }: {
+    to: string;
+    children: React.ReactNode;
+    params?: unknown;
+  }) => (
     <a href={to} {...rest}>
       {children}
     </a>
@@ -19,15 +28,39 @@ vi.mock("./PodcastQuizLauncher", () => ({ PodcastQuizLauncher: () => null }));
 afterEach(cleanup);
 beforeEach(() => usePodcastPlayer.setState({ episode: null, isPlaying: false }));
 
-const folder = (id: string, parentId: string | null, slug: string, course: "en" | "fr" | "es" | null = null) => ({
-  id, parentId, slug, title: slug === "bookshop" ? "Bookshop" : slug, description: null, sortOrder: 0, course,
+const folder = (
+  id: string,
+  parentId: string | null,
+  slug: string,
+  course: "en" | "fr" | "es" | null = null,
+) => ({
+  id,
+  parentId,
+  slug,
+  title: slug === "bookshop" ? "Bookshop" : slug,
+  description: null,
+  sortOrder: 0,
+  course,
 });
 const ep = (id: string, n: number, dur: number, folderId = "shop") => ({
-  id, folderId, slug: id, title: `Episode title ${n}`, description: null, audioUrl: "https://x.test/a.mp3",
-  durationSeconds: dur, positionSeconds: 0, aiNarrated: false, sortOrder: n, course: null,
+  id,
+  folderId,
+  slug: id,
+  title: `Episode title ${n}`,
+  description: null,
+  audioUrl: "https://x.test/a.mp3",
+  durationSeconds: dur,
+  positionSeconds: 0,
+  aiNarrated: false,
+  sortOrder: n,
+  course: null,
 });
 const lib = (over: Partial<PodcastLibrary> = {}): PodcastLibrary => ({
-  folders: [folder("en", null, "en", "en"), folder("a2", "en", "a2"), folder("shop", "a2", "bookshop")],
+  folders: [
+    folder("en", null, "en", "en"),
+    folder("a2", "en", "a2"),
+    folder("shop", "a2", "bookshop"),
+  ],
   episodes: [ep("e1", 1, 240), ep("e2", 2, 600), ep("e3", 3, 300)],
   progress: [],
   monthSeconds: 0,
@@ -44,7 +77,9 @@ describe("Listen library", () => {
   it("draws one room per folder with its own count and percent from the data", () => {
     render(
       <ListenLibraryView
-        library={lib({ progress: [{ episodeId: "e1", positionS: 0, completedAt: "t", updatedAt: "2026-01-01" }] })}
+        library={lib({
+          progress: [{ episodeId: "e1", positionS: 0, completedAt: "t", updatedAt: "2026-01-01" }],
+        })}
       />,
     );
     const link = screen.getByRole("link", { name: /Bookshop/ });
@@ -55,10 +90,16 @@ describe("Listen library", () => {
   it("offers continue listening with the minutes left, and plays that episode", async () => {
     render(
       <ListenLibraryView
-        library={lib({ progress: [{ episodeId: "e2", positionS: 230, completedAt: null, updatedAt: "2026-01-01" }] })}
+        library={lib({
+          progress: [
+            { episodeId: "e2", positionS: 230, completedAt: null, updatedAt: "2026-01-01" },
+          ],
+        })}
       />,
     );
-    const card = screen.getByRole("button", { name: /Continue listening: Episode title 2, 6:10 left/ });
+    const card = screen.getByRole("button", {
+      name: /Continue listening: Episode title 2, 6:10 left/,
+    });
     await userEvent.click(card);
     expect(usePodcastPlayer.getState().episode?.id).toBe("e2");
   });
@@ -101,10 +142,17 @@ describe("Listen folder view", () => {
       ],
     });
     render(<ListenShelfView library={l} shelf={shelfOf(l)} />);
-    expect(screen.getByRole("button", { name: "Episode title 1, 4:00, finished" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Episode title 2, 10:00, 4:00 left" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Episode title 1, 4:00, finished" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Episode title 2, 10:00, 4:00 left" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Episode title 3, 5:00, new" })).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Episode title 2 progress" })).toHaveAttribute("aria-valuenow", "60");
+    expect(screen.getByRole("progressbar", { name: "Episode title 2 progress" })).toHaveAttribute(
+      "aria-valuenow",
+      "60",
+    );
     expect(screen.getByRole("button", { name: /Continue Episode 2/ })).toBeInTheDocument();
   });
 
@@ -114,10 +162,17 @@ describe("Listen folder view", () => {
     expect(screen.getByRole("button", { name: /Start Episode 1/ })).toBeInTheDocument();
     unmount();
     const done = lib({
-      progress: ["e1", "e2", "e3"].map((id) => ({ episodeId: id, positionS: 0, completedAt: "t", updatedAt: "2026-01-01" })),
+      progress: ["e1", "e2", "e3"].map((id) => ({
+        episodeId: id,
+        positionS: 0,
+        completedAt: "t",
+        updatedAt: "2026-01-01",
+      })),
     });
     render(<ListenShelfView library={done} shelf={shelfOf(done)} />);
-    expect(screen.queryByRole("button", { name: /Continue Episode|Start Episode/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Continue Episode|Start Episode/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("tapping a row plays that episode", async () => {

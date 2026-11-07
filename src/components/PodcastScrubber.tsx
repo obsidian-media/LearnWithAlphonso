@@ -73,7 +73,7 @@ export function Scrubber({
           else onSeek(next);
         }}
         onKeyDown={onKeyDown}
-        className="h-6 min-w-0 flex-1 cursor-pointer accent-moss focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-brand/60 rounded-full"
+        className="h-6 min-w-0 flex-1 cursor-pointer accent-ds-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-brand/60 rounded-full"
       />
       <span className="tnum w-10 shrink-0 text-right text-xs text-ds-ink-soft/70">
         -{formatDuration(remaining)}

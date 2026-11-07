@@ -63,7 +63,9 @@ describe("listen_progress (real Postgres, run as a seeded user)", () => {
 
   it("refuses unknown and unpublished episodes, and null input", async () => {
     await asUser(U1, async () => {
-      await expect(save("10000000-0000-4000-8000-0000000000ff", 5)).rejects.toThrow(/unknown episode/);
+      await expect(save("10000000-0000-4000-8000-0000000000ff", 5)).rejects.toThrow(
+        /unknown episode/,
+      );
       await expect(save(E_DRAFT, 5)).rejects.toThrow(/unknown episode/);
       await expect(save(E_PUB, null)).rejects.toThrow(/required/);
     });
@@ -79,16 +81,23 @@ describe("listen_progress (real Postgres, run as a seeded user)", () => {
     await asUser(U1, async () => {
       await save(E_PUB, 120);
       await expect(
-        db.query("INSERT INTO public.listen_progress (user_id, episode_id, position_s) VALUES ($1, $2, 9)", [U2, E_PUB]),
+        db.query(
+          "INSERT INTO public.listen_progress (user_id, episode_id, position_s) VALUES ($1, $2, 9)",
+          [U2, E_PUB],
+        ),
       ).rejects.toThrow(/permission denied/);
-      await expect(db.query("UPDATE public.listen_progress SET position_s = 1")).rejects.toThrow(/permission denied/);
+      await expect(db.query("UPDATE public.listen_progress SET position_s = 1")).rejects.toThrow(
+        /permission denied/,
+      );
     });
     await asUser(U2, async () => {
       expect((await db.query("SELECT * FROM public.listen_progress")).rows).toHaveLength(0);
       await save(E_PUB, 30);
     });
     await asUser(U1, async () => {
-      const r = await db.query<{ position_s: number }>("SELECT position_s FROM public.listen_progress");
+      const r = await db.query<{ position_s: number }>(
+        "SELECT position_s FROM public.listen_progress",
+      );
       expect(r.rows).toEqual([{ position_s: 120 }]);
       await db.query("DELETE FROM public.listen_progress");
     });
@@ -104,7 +113,9 @@ describe("listen_progress (real Postgres, run as a seeded user)", () => {
 
   it("anon has no privilege on the table or function", async () => {
     await db.exec("SET ROLE anon");
-    await expect(db.query("SELECT * FROM public.listen_progress")).rejects.toThrow(/permission denied/);
+    await expect(db.query("SELECT * FROM public.listen_progress")).rejects.toThrow(
+      /permission denied/,
+    );
     await expect(save(E_PUB, 1)).rejects.toThrow(/permission denied/);
     await db.exec("RESET ROLE");
   });

@@ -282,7 +282,12 @@ export type PodcastLibrary = {
   folders: PodcastFolder[];
   /** Every published episode, playable as-is, with sortOrder for folder order. */
   episodes: (PodcastEpisode & { sortOrder: number })[];
-  progress: { episodeId: string; positionS: number; completedAt: string | null; updatedAt: string }[];
+  progress: {
+    episodeId: string;
+    positionS: number;
+    completedAt: string | null;
+    updatedAt: string;
+  }[];
   /** Seconds this user listened since the start of the current UTC month (from play events). */
   monthSeconds: number;
 };
@@ -302,7 +307,10 @@ export const listLibrary = createServerFn({ method: "GET" })
           "id, folder_id, slug, title, description, audio_path, duration_seconds, source, course, sort_order",
         )
         .order("sort_order", { ascending: true }),
-      db.from("listen_progress").select("episode_id, position_s, completed_at, updated_at").eq("user_id", context.userId),
+      db
+        .from("listen_progress")
+        .select("episode_id, position_s, completed_at, updated_at")
+        .eq("user_id", context.userId),
       db
         .from("podcast_play_events")
         .select("seconds_listened")

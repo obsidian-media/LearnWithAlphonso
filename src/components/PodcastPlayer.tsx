@@ -244,7 +244,9 @@ export function PodcastPlayer() {
           <div className="absolute inset-x-0 bottom-0 h-0.5 bg-ds-on-hero/20" aria-hidden="true">
             <div
               className="h-full bg-ds-xp"
-              style={{ width: `${length > 0 ? Math.min(100, (elapsedSeconds / length) * 100) : 0}%` }}
+              style={{
+                width: `${length > 0 ? Math.min(100, (elapsedSeconds / length) * 100) : 0}%`,
+              }}
             />
           </div>
         </div>

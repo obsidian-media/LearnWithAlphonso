@@ -5,11 +5,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { AI_NARRATED_LABEL } from "../../lib/podcast-label";
 import { formatDuration, usePodcastPlayer } from "../../lib/podcast-player";
-import {
-  listLibrary,
-  searchEpisodes,
-  type PodcastEpisode,
-} from "../../lib/podcast.functions";
+import { listLibrary, searchEpisodes, type PodcastEpisode } from "../../lib/podcast.functions";
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { buildShelves } from "../../lib/listen-library";
@@ -268,7 +264,8 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
   const folders = library?.folders;
 
   const current = folders ? resolveFolderPath(folders, segments) : null;
-  const episodes = library && current ? library.episodes.filter((e) => e.folderId === current.id) : [];
+  const episodes =
+    library && current ? library.episodes.filter((e) => e.folderId === current.id) : [];
 
   // Which of these episodes have a quiz. A failed read just means no buttons.
   const episodeIds = episodes.map((episode) => episode.id);

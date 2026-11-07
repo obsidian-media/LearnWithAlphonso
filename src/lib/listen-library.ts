@@ -98,7 +98,8 @@ const ROOM_KEYWORDS: [RegExp, (typeof SHELF_ROOMS)[number]][] = [
 
 /** A folder's room: by what it is about when the name says, otherwise a stable pick from its slug. */
 export function roomForFolder(folder: Pick<PodcastFolder, "slug" | "title">): string {
-  for (const [re, room] of ROOM_KEYWORDS) if (re.test(folder.slug) || re.test(folder.title)) return room;
+  for (const [re, room] of ROOM_KEYWORDS)
+    if (re.test(folder.slug) || re.test(folder.title)) return room;
   let h = 0;
   for (const ch of folder.slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return SHELF_ROOMS[h % SHELF_ROOMS.length]!;
@@ -141,7 +142,10 @@ export function buildShelves(
       room: roomForFolder(folder),
       episodes: eps,
       doneCount,
-      percent: doneCount === eps.length ? 100 : Math.floor((fractions.reduce((a, b) => a + b, 0) / eps.length) * 100),
+      percent:
+        doneCount === eps.length
+          ? 100
+          : Math.floor((fractions.reduce((a, b) => a + b, 0) / eps.length) * 100),
       totalSeconds: eps.reduce((a, e) => a + e.durationSeconds, 0),
     });
   }
@@ -157,14 +161,21 @@ export function shelfLevels(shelves: Shelf[]): string[] {
   return [...new Set(shelves.map((s) => s.level).filter((l): l is string => l !== null))].sort();
 }
 
-export type ContinueTarget = { shelf: Shelf; episode: LibraryEpisode; progress: ListenProgressRow | undefined };
+export type ContinueTarget = {
+  shelf: Shelf;
+  episode: LibraryEpisode;
+  progress: ListenProgressRow | undefined;
+};
 
 /**
  * What "Continue listening" offers: the most recently touched episode that is part-way through; failing that, the
  * first unheard episode of the shelf the learner finished something in most recently. Null when they have never
  * listened (the card is then not drawn).
  */
-export function continueListening(shelves: Shelf[], progress: ListenProgressRow[]): ContinueTarget | null {
+export function continueListening(
+  shelves: Shelf[],
+  progress: ListenProgressRow[],
+): ContinueTarget | null {
   const prog = new Map(progress.map((p) => [p.episodeId, p]));
   const flat = shelves.flatMap((shelf) => shelf.episodes.map((episode) => ({ shelf, episode })));
   const touched = flat
