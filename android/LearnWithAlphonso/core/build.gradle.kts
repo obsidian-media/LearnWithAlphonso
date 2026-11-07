@@ -30,4 +30,8 @@ sourceSets {
     test { resources.srcDir("../app/src/main/assets") }
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+    useJUnitPlatform()
+    // The paywall guard test reads the paywall's Compose source, so a change there must re-run it.
+    inputs.files(fileTree("../app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/paywall"))
+}

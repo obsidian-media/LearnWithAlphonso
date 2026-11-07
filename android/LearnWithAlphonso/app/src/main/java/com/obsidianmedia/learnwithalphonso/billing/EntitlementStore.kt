@@ -27,6 +27,8 @@ const val PRO_ENTITLEMENT_ID = "pro"
 data class BillingPackage(
     val id: String, val priceString: String, val periodUnit: BillingPeriodUnit?, val periodValue: Int,
     val freeTrialPeriod: String? = null,
+    /** The price in the store's own currency, used only to work out the per-month figure and the saving. Never shown. */
+    val priceMicros: Long = 0, val currencyCode: String? = null,
 )
 
 /** What EntitlementStore needs from a store SDK; RevenueCatBilling implements it, tests fake it. */
@@ -116,7 +118,7 @@ class RevenueCatBilling private constructor() : BillingPort {
             else -> null
         }
         val trial = product.subscriptionOptions?.freeTrial?.freePhase?.billingPeriod?.iso8601
-        return BillingPackage(identifier, product.price.formatted, unit, period?.value ?: 1, trial)
+        return BillingPackage(identifier, product.price.formatted, unit, period?.value ?: 1, trial, product.price.amountMicros, product.price.currencyCode)
     }
 
     companion object {

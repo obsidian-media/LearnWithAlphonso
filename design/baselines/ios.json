@@ -1,6 +1,6 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 366,
+  "total": 354,
   "files": {
     "ios/LearnWithAlphonso/Sources/AIDisclosureSheet.swift": 5,
     "ios/LearnWithAlphonso/Sources/AchievementsView.swift": 16,
@@ -24,7 +24,6 @@
     "ios/LearnWithAlphonso/Sources/ListenView.swift": 8,
     "ios/LearnWithAlphonso/Sources/NameOnboardingView.swift": 4,
     "ios/LearnWithAlphonso/Sources/OutOfHeartsSheet.swift": 4,
-    "ios/LearnWithAlphonso/Sources/PaywallView.swift": 12,
     "ios/LearnWithAlphonso/Sources/PendingSyncSection.swift": 1,
     "ios/LearnWithAlphonso/Sources/PlacementView.swift": 19,
     "ios/LearnWithAlphonso/Sources/PodcastMiniBar.swift": 9,

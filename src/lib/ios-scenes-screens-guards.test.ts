@@ -57,25 +57,17 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     );
   });
 
-  it("on the Hector tab the paywall plays Hector's library clip and the offer starts below him", () => {
-    expect(paywall).toContain("source == .hectorTab");
-    expect(paywall).not.toContain("Figure-hector-waving");
-    // The room for Hector comes before the title and offer, above them.
-    expect(paywall.indexOf("containerRelativeFrame(.vertical)")).toBeLessThan(
-      paywall.indexOf("presentation.titleText"),
+  it("the paywall opens on Hector's room, above the headline and the offer", () => {
+    expect(paywall).toContain("PaywallRoomTop(");
+    expect(paywall.indexOf("PaywallRoomTop(")).toBeLessThan(paywall.indexOf("PaywallHeadline()"));
+    expect(paywall.indexOf("PaywallHeadline()")).toBeLessThan(
+      paywall.indexOf("offer(presentation"),
     );
-    // Everything the learner reads sits on glass when the library is behind it.
-    expect(paywall).toContain(".alphonsoGlass(if: onScene)");
-    // Other presentations (sheets from lesson complete or a refusal) keep the flat surface.
-    expect(paywall).toContain(".background(onScene ? Color.clear : AlphonsoColor.surface)");
+    expect(paywall).toContain(".background(ds.surface.ignoresSafeArea())");
   });
 
   it("paywall copy, legal text, buttons and purchase logic are untouched", () => {
     for (const keep of [
-      "presentation.titleText",
-      "PaywallCopy.mascotMessage",
-      "AlphonsoMascotBanner(mascot: .hector",
-      "PaywallCopy.featureBlurb",
       "presentation.renewalDisclosure",
       "presentation.priceLine",
       "presentation.trialLine",
@@ -90,7 +82,7 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
       "PaywallLinks.appleStandardEULA",
       "await entitlementStore.purchase()",
       "await entitlementStore.restorePurchases()",
-      "entitlementStore.select(productID: option.id)",
+      "entitlementStore.select(productID: $0)",
       "entitlementStore.presented(from: source)",
       "await entitlementStore.loadOffering()",
       ".buttonStyle(.alphonsoEmber)",

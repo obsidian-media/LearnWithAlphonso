@@ -139,12 +139,13 @@ describe("The Hector paywall plays the library clip, only on the Hector tab", ()
   const paywall = read("PaywallView.swift");
   const hector = read("HectorView.swift");
 
-  it("the hector clip backs the paywall only when source is .hectorTab", () => {
-    expect(paywall).toContain("source == .hectorTab");
-    expect(paywall).toMatch(/\.screenScene\(\s*\.hector,\s*clip: \.hector[^)]*if: onScene/);
-    // Hector's head is at 47% of the clip: the offer starts at his waist, so a spacer holds it down.
-    expect(paywall).toContain("containerRelativeFrame(.vertical)");
-    expect(paywall).toContain('"Hector, waving in his library"');
+  it("the redesigned paywall paints its own static Hector room, not a clip, and no longer branches on the source", () => {
+    const parts = read("ProPaywallParts.swift");
+    expect(paywall).toContain("PaywallRoomTop(");
+    expect(parts).toContain('Image("Scene-hector")');
+    expect(parts).toContain('Image("Hector-talking")');
+    expect(paywall).not.toContain("source == .hectorTab");
+    expect(paywall).not.toContain(".screenScene(");
   });
 
   it("the 220 pt cut-out is gone, and the Pro conversation keeps the still library", () => {

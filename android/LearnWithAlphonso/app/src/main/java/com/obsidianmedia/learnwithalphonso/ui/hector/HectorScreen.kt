@@ -30,6 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
+import com.obsidianmedia.learnwithalphonso.ui.paywall.ProPaywallScreen
+import com.obsidianmedia.learnwithalphonso.ui.paywall.ProWelcomeScreen
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.PracticeCallScreen
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.hectorKit
@@ -235,42 +237,12 @@ class HectorViewModel(
 @Composable
 fun HectorTab(container: AppContainer) {
     val entitlement by container.entitlements.state.collectAsState()
-    if (entitlement.isPro) HectorConversation(container) else PaywallScreen(container)
-}
-
-@Composable
-fun PaywallScreen(container: AppContainer) {
-    val palette = AlphonsoColor.palette
-    val store: EntitlementStore = container.entitlements
-    val state by store.state.collectAsState()
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
-    LaunchedEffect(Unit) { store.loadOffering() }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Alphonso Pro", style = MaterialTheme.typography.headlineLarge, color = palette.ink)
-        AlphonsoMascotBanner("Meet Hector, your AI tutor", mascot = AlphonsoMascot.HECTOR)
-        Text("Hector, your personal AI tutor for voice conversation practice, with memory of your level and weak spots between sessions.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-        when {
-            state.isLoading -> CircularProgressIndicator(color = palette.ember)
-            state.packages.isEmpty() -> Text("Subscriptions aren't available yet. Check back soon.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
-            else -> state.packages.forEach { pkg ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    AlphonsoPrimaryButton("Subscribe. ${pkg.priceString}", onClick = { (context as? Activity)?.let { a -> scope.launch { store.purchase(a, pkg) } } })
-                    pkg.periodUnit?.let { Text(billingPeriodDescription(it, pkg.periodValue), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
-                }
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TextButton(onClick = { scope.launch { store.restorePurchases() } }) { Text("Restore Purchases", color = palette.moss) }
-            TextButton(onClick = { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }) { Text("Manage Subscription", color = palette.moss) }
-        }
-        Text("Subscriptions renew automatically unless canceled at least 24 hours before the end of the current period.", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, textAlign = TextAlign.Center)
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TextButton(onClick = { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }) { Text("Terms of Use", color = palette.inkSoft) }
-            TextButton(onClick = { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }) { Text("Privacy Policy", color = palette.inkSoft) }
-        }
-        state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center) }
+    // A purchase or restore started from the paywall: when Pro lands, Hector's welcome shows before the conversation.
+    var acted by rememberSaveable { mutableStateOf(false) }
+    when {
+        !entitlement.isPro -> ProPaywallScreen(container, onPurchaseStarted = { acted = true })
+        acted -> ProWelcomeScreen(container, onCall = { acted = false })
+        else -> HectorConversation(container)
     }
 }
 
