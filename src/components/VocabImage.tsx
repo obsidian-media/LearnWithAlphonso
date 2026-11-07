@@ -34,7 +34,7 @@ export function VocabImage({
     <div
       data-testid="vocab-image"
       data-phase={phase}
-      className={`overflow-hidden ${phase === "loading" ? "bg-parchment" : ""} ${className}`.trim()}
+      className={`overflow-hidden ${phase === "loading" ? "bg-ds-sunk" : ""} ${className}`.trim()}
     >
       <img
         ref={imgRef}

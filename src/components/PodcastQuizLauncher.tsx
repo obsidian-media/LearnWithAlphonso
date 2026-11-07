@@ -49,7 +49,7 @@ export function PodcastQuizLauncher({
         onClick={() => void start()}
         disabled={loading}
         aria-label={`Take the quiz: ${episode.title}`}
-        className="rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-moss disabled:opacity-50"
+        className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-brand disabled:opacity-50"
       >
         {loading ? "Loading quiz…" : "Take the quiz"}
       </button>

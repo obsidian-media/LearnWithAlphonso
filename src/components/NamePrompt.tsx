@@ -144,12 +144,12 @@ export function NamePrompt() {
     <Modal
       labelledBy={titleId}
       describedBy={noteId}
-      className="relative w-full max-w-[400px] rounded-3xl border border-hairline bg-surface p-6 text-ink shadow-xl outline-none"
+      className="relative w-full max-w-[400px] rounded-3xl border border-ds-line bg-ds-card p-6 text-ds-ink shadow-xl outline-none"
     >
       <h2 id={titleId} className="font-display text-2xl font-semibold leading-tight">
         {COPY.title}
       </h2>
-      <p id={noteId} className="mt-2 text-sm text-ink-soft">
+      <p id={noteId} className="mt-2 text-sm text-ds-ink-soft">
         {COPY.publicNote}
       </p>
       <form onSubmit={save} className="mt-5 space-y-3">
@@ -173,7 +173,7 @@ export function NamePrompt() {
           <p
             id={messageId}
             role={isProblem ? "alert" : "status"}
-            className={isProblem ? "text-sm text-ember" : "text-sm text-ink-soft"}
+            className={isProblem ? "text-sm text-ember" : "text-sm text-ds-ink-soft"}
           >
             {message}
           </p>
@@ -189,11 +189,11 @@ export function NamePrompt() {
           type="button"
           onClick={skip}
           disabled={busy}
-          className="w-full rounded-full border border-hairline px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
+          className="w-full rounded-full border border-ds-line px-4 py-3 text-sm font-medium text-ds-ink transition hover:bg-ds-sunk disabled:opacity-50"
         >
           {COPY.skip}
         </button>
-        <p className="text-center text-xs text-ink-soft/80">{skipNote(status.displayName)}</p>
+        <p className="text-center text-xs text-ds-ink-soft/80">{skipNote(status.displayName)}</p>
       </form>
     </Modal>
   );

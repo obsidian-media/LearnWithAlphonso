@@ -51,7 +51,7 @@ describe("AnswerOption", () => {
         onClick={() => {}}
       />,
     );
-    expect(screen.getByRole("button")).toHaveClass("border-moss");
+    expect(screen.getByRole("button")).toHaveClass("border-ds-brand");
   });
 
   it("shows the incorrect styling once checked and this was the (wrong) pick", () => {
@@ -80,7 +80,7 @@ describe("AnswerOption", () => {
         onClick={() => {}}
       />,
     );
-    expect(screen.getByRole("button")).toHaveClass("border-l-moss");
+    expect(screen.getByRole("button")).toHaveClass("border-l-ds-brand");
   });
 
   it("is a chunky tile that presses down, at least 56 px tall", () => {
@@ -116,6 +116,6 @@ describe("AnswerOption", () => {
       />,
     );
     expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button")).toHaveClass("border-moss");
+    expect(screen.getByRole("button")).toHaveClass("border-ds-brand");
   });
 });

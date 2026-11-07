@@ -12,9 +12,9 @@ export function TeamMissionCard() {
   const showBar = mission.status !== "needs_members";
 
   return (
-    <div className="rounded-2xl border border-hairline bg-parchment p-4">
-      <p className="font-display text-sm font-semibold text-ink">Team mission</p>
-      <p className="mt-2 text-sm text-ink">{mission.headline}</p>
+    <div className="rounded-2xl border border-ds-line bg-ds-sunk p-4">
+      <p className="font-display text-sm font-semibold text-ds-ink">Team mission</p>
+      <p className="mt-2 text-sm text-ds-ink">{mission.headline}</p>
       {showBar && (
         <div
           role="progressbar"
@@ -22,16 +22,16 @@ export function TeamMissionCard() {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={mission.percent}
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-hairline"
+          className="mt-2 h-1.5 overflow-hidden rounded-full bg-ds-line"
         >
           <div
             data-testid="team-mission-fill"
-            className="h-full rounded-full bg-moss"
+            className="h-full rounded-full bg-ds-brand"
             style={{ width: `${mission.percent}%` }}
           />
         </div>
       )}
-      {mission.footer && <p className="mt-2 text-xs text-ink-soft">{mission.footer}</p>}
+      {mission.footer && <p className="mt-2 text-xs text-ds-ink-soft">{mission.footer}</p>}
     </div>
   );
 }

@@ -74,14 +74,14 @@ function FriendsPage() {
           <Link
             to="/profile"
             aria-label="Back to profile"
-            className="grid size-8 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
+            className="grid size-8 place-items-center rounded-full text-ds-ink-soft/70 hover:bg-ds-sunk"
           >
             ←
           </Link>
-          <h1 className="font-display text-[22px] font-semibold text-ink">Friends</h1>
+          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Friends</h1>
           <Link
             to="/duels"
-            className="ml-auto text-xs font-medium text-moss underline underline-offset-4"
+            className="ml-auto text-xs font-medium text-ds-brand underline underline-offset-4"
           >
             Duels →
           </Link>
@@ -90,12 +90,12 @@ function FriendsPage() {
         <div
           className={
             isStudioInk
-              ? "mt-6 border-b border-hairline pb-5"
-              : "mt-6 rounded-2xl border border-hairline bg-parchment p-4"
+              ? "mt-6 border-b border-ds-line pb-5"
+              : "mt-6 rounded-2xl border border-ds-line bg-ds-sunk p-4"
           }
         >
-          <p className="font-display text-base font-semibold text-ink">Invite a friend</p>
-          <p className="mt-1 text-xs text-ink-soft/80">
+          <p className="font-display text-base font-semibold text-ds-ink">Invite a friend</p>
+          <p className="mt-1 text-xs text-ds-ink-soft/80">
             Share your link — when they open it, you're automatically friends.
           </p>
           {isStudioInk ? (
@@ -103,7 +103,7 @@ function FriendsPage() {
               type="button"
               onClick={copyInvite}
               disabled={!inviteLink}
-              className="mt-3 text-sm font-semibold text-moss underline underline-offset-4 disabled:opacity-50"
+              className="mt-3 text-sm font-semibold text-ds-brand underline underline-offset-4 disabled:opacity-50"
             >
               {copied ? "Link copied!" : "Copy invite link →"}
             </button>
@@ -112,7 +112,7 @@ function FriendsPage() {
               type="button"
               onClick={copyInvite}
               disabled={!inviteLink}
-              className="mt-3 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
+              className="mt-3 w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50"
             >
               {copied ? "Link copied!" : "Copy invite link"}
             </button>
@@ -126,43 +126,43 @@ function FriendsPage() {
           <BuddyCard />
         </div>
 
-        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
+        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
           {friends && friends.length > 0
             ? `${friends.length} friend${friends.length === 1 ? "" : "s"}`
             : "Your friends"}
         </h2>
 
         {isLoading ? (
-          <p className="mt-3 text-sm text-ink-soft">Loading…</p>
+          <p className="mt-3 text-sm text-ds-ink-soft">Loading…</p>
         ) : !friends || friends.length === 0 ? (
           <div
             className={
               isStudioInk
-                ? "mt-3 border-y border-hairline py-4 text-center"
-                : "mt-3 rounded-2xl border border-hairline bg-surface p-4 text-center"
+                ? "mt-3 border-y border-ds-line py-4 text-center"
+                : "mt-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-center"
             }
           >
-            <p className="text-sm text-ink-soft">
+            <p className="text-sm text-ds-ink-soft">
               No friends yet. Share your invite link to get started.
             </p>
           </div>
         ) : (
-          <div className={isStudioInk ? "mt-3 divide-y divide-hairline" : "mt-3 space-y-2"}>
+          <div className={isStudioInk ? "mt-3 divide-y divide-ds-line" : "mt-3 space-y-2"}>
             {friends.map((f) => (
               <div
                 key={f.userId}
                 className={
                   isStudioInk
                     ? "flex items-center gap-3 py-3.5"
-                    : "flex items-center gap-3 rounded-2xl border border-hairline bg-surface p-3.5"
+                    : "flex items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-3.5"
                 }
               >
                 <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-10" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm font-semibold text-ink">
+                  <p className="truncate font-display text-sm font-semibold text-ds-ink">
                     {f.displayName}
                   </p>
-                  <p className="text-xs text-ink-soft/80">🔥 {f.streak}-day streak</p>
+                  <p className="text-xs text-ds-ink-soft/80">🔥 {f.streak}-day streak</p>
                   <AskBuddyButton friendId={f.userId} />
                 </div>
                 {confirmingId === f.userId ? (
@@ -171,7 +171,7 @@ function FriendsPage() {
                       type="button"
                       onClick={() => setConfirmingId(null)}
                       disabled={removingId === f.userId}
-                      className="text-xs font-medium text-ink-soft underline underline-offset-4 disabled:opacity-50"
+                      className="text-xs font-medium text-ds-ink-soft underline underline-offset-4 disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -187,14 +187,14 @@ function FriendsPage() {
                 ) : (
                   <>
                     <div className="shrink-0 text-right">
-                      <p className="tnum text-sm font-semibold text-ink">{f.weekXp}</p>
-                      <p className="text-[10px] text-ink-soft/70">XP this week</p>
+                      <p className="tnum text-sm font-semibold text-ds-ink">{f.weekXp}</p>
+                      <p className="ds-type-caption text-ds-ink-soft/70">XP this week</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setConfirmingId(f.userId)}
                       aria-label={`Remove ${f.displayName}`}
-                      className="shrink-0 text-ink-soft/50 hover:text-rose-500"
+                      className="shrink-0 text-ds-ink-soft/50 hover:text-rose-500"
                     >
                       ✕
                     </button>

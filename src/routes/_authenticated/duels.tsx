@@ -103,36 +103,36 @@ function DuelsPage() {
     <MobileFrame>
       <div className="px-6 pb-12 pt-6">
         <div className="flex items-center gap-3">
-          <Link to="/profile/friends" aria-label="Back to friends" className="text-ink-soft/70">
+          <Link to="/profile/friends" aria-label="Back to friends" className="text-ds-ink-soft/70">
             ←
           </Link>
-          <h1 className="font-display text-[22px] font-semibold text-ink">Duels</h1>
+          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Duels</h1>
         </div>
 
         {error && <p className="mt-3 text-xs text-rose-500">{error}</p>}
 
         {pending.length > 0 && (
           <div className="mt-6">
-            <h2 className="font-display text-[16px] font-semibold text-ink">Pending challenges</h2>
+            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Pending challenges</h2>
             <div className="mt-2 space-y-2">
               {pending.map((d) => (
                 <div
                   key={d.duelId}
-                  className="flex items-center justify-between rounded-2xl border border-hairline bg-surface p-3.5"
+                  className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5"
                 >
-                  <span className="text-sm text-ink">Challenge from a friend ({d.course})</span>
+                  <span className="text-sm text-ds-ink">Challenge from a friend ({d.course})</span>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => handleRespond(d.duelId, true)}
-                      className="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-surface"
+                      className="rounded-full bg-ds-ink px-3 py-1.5 text-xs font-semibold text-ds-card"
                     >
                       Accept
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRespond(d.duelId, false)}
-                      className="rounded-full border border-hairline px-3 py-1.5 text-xs font-semibold text-ink-soft"
+                      className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-semibold text-ds-ink-soft"
                     >
                       Decline
                     </button>
@@ -144,11 +144,11 @@ function DuelsPage() {
         )}
 
         <div className="mt-6">
-          <h2 className="font-display text-[16px] font-semibold text-ink">Active duels</h2>
+          <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Active duels</h2>
           {loadingDuels ? (
-            <p className="mt-2 text-sm text-ink-soft">Loading…</p>
+            <p className="mt-2 text-sm text-ds-ink-soft">Loading…</p>
           ) : active.length === 0 ? (
-            <p className="mt-2 text-sm text-ink-soft">No active duels right now.</p>
+            <p className="mt-2 text-sm text-ds-ink-soft">No active duels right now.</p>
           ) : (
             <div className="mt-2 space-y-2">
               {active.map((d) => {
@@ -160,17 +160,17 @@ function DuelsPage() {
                 return (
                   <div
                     key={d.duelId}
-                    className="rounded-2xl border border-hairline bg-surface p-3.5"
+                    className="rounded-2xl border border-ds-line bg-ds-card p-3.5"
                   >
-                    <p className="text-xs text-ink-soft">
+                    <p className="text-xs text-ds-ink-soft">
                       {d.course} · ends{" "}
                       {d.endsAt ? new Date(d.endsAt).toLocaleDateString() : "soon"}
                     </p>
                     <div className="mt-1 flex items-center justify-between">
-                      <span className="tnum text-sm font-semibold text-ink">
+                      <span className="tnum text-sm font-semibold text-ds-ink">
                         You: +{myXpNow - myXpStart}
                       </span>
-                      <span className="tnum text-sm text-ink-soft">
+                      <span className="tnum text-sm text-ds-ink-soft">
                         Them: +{oppXpNow - oppXpStart}
                       </span>
                     </div>
@@ -181,12 +181,12 @@ function DuelsPage() {
           )}
         </div>
 
-        <div className="mt-8 space-y-3 rounded-2xl border border-hairline bg-parchment p-4">
-          <p className="font-display text-sm font-semibold text-ink">Challenge a friend</p>
+        <div className="mt-8 space-y-3 rounded-2xl border border-ds-line bg-ds-sunk p-4">
+          <p className="font-display text-sm font-semibold text-ds-ink">Challenge a friend</p>
           <select
             value={challengeFriendId}
             onChange={(e) => setChallengeFriendId(e.target.value)}
-            className="w-full rounded-xl border border-hairline bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
           >
             <option value="">Choose a friend…</option>
             {(friends ?? []).map((f) => (
@@ -198,7 +198,7 @@ function DuelsPage() {
           <select
             value={challengeCourse}
             onChange={(e) => setChallengeCourse(e.target.value as "en" | "fr" | "es")}
-            className="w-full rounded-xl border border-hairline bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
           >
             {COURSE_OPTIONS.map((c) => (
               <option key={c.id} value={c.id}>
@@ -210,21 +210,21 @@ function DuelsPage() {
             type="button"
             onClick={handleChallengeFriend}
             disabled={!challengeFriendId}
-            className="w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface disabled:opacity-50"
+            className="w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card disabled:opacity-50"
           >
             Send challenge
           </button>
         </div>
 
-        <div className="mt-4 space-y-3 rounded-2xl border border-hairline bg-parchment p-4">
-          <p className="font-display text-sm font-semibold text-ink">Open duel</p>
-          <p className="text-xs text-ink-soft/80">
+        <div className="mt-4 space-y-3 rounded-2xl border border-ds-line bg-ds-sunk p-4">
+          <p className="font-display text-sm font-semibold text-ds-ink">Open duel</p>
+          <p className="text-xs text-ds-ink-soft/80">
             Get matched with another learner at your level.
           </p>
           <select
             value={openCourse}
             onChange={(e) => setOpenCourse(e.target.value as "en" | "fr" | "es")}
-            className="w-full rounded-xl border border-hairline bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
           >
             {COURSE_OPTIONS.map((c) => (
               <option key={c.id} value={c.id}>
@@ -232,7 +232,7 @@ function DuelsPage() {
               </option>
             ))}
           </select>
-          <label className="flex items-center gap-2 text-xs text-ink-soft">
+          <label className="flex items-center gap-2 text-xs text-ds-ink-soft">
             <input
               type="checkbox"
               checked={matchByLevel}
@@ -242,7 +242,7 @@ function DuelsPage() {
           </label>
           {waitingInQueue ? (
             <div className="flex items-center justify-between">
-              <span className="text-xs text-ink-soft">Waiting for an opponent…</span>
+              <span className="text-xs text-ds-ink-soft">Waiting for an opponent…</span>
               <button
                 type="button"
                 onClick={handleLeaveQueue}
@@ -256,7 +256,7 @@ function DuelsPage() {
               type="button"
               onClick={handleJoinOpenQueue}
               disabled={queueing}
-              className="w-full rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+              className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
             >
               {queueing ? "Finding a match…" : "Find an open duel"}
             </button>
@@ -265,12 +265,12 @@ function DuelsPage() {
 
         {finished.length > 0 && (
           <div className="mt-8">
-            <h2 className="font-display text-[16px] font-semibold text-ink">Past duels</h2>
+            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Past duels</h2>
             <div className="mt-2 space-y-2">
               {finished.map((d) => (
                 <div
                   key={d.duelId}
-                  className="flex items-center justify-between rounded-2xl border border-hairline bg-surface p-3.5 text-sm text-ink-soft"
+                  className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5 text-sm text-ds-ink-soft"
                 >
                   <span>{d.course}</span>
                   <span>

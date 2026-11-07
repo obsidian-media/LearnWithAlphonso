@@ -4,7 +4,7 @@ import { useProStatus } from "@/lib/use-pro-status";
 import { WebPaywallSheet } from "./WebPaywall";
 
 const BUTTON =
-  "inline-flex min-h-11 w-full items-center justify-center rounded-2xl border-2 border-moss bg-surface px-6 py-3 font-display text-base font-bold text-moss transition-transform duration-100 active:translate-y-0.5 motion-reduce:transition-none";
+  "inline-flex min-h-11 w-full items-center justify-center rounded-2xl border-2 border-ds-brand bg-ds-card px-6 py-3 font-display text-base font-bold text-ds-brand transition-transform duration-100 active:translate-y-0.5 motion-reduce:transition-none";
 
 /**
  * "Practise with Hector" on the lesson-complete screen, as on iPhone: Hector for a Pro learner, otherwise the paywall

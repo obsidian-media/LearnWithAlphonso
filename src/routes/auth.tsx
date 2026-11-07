@@ -257,7 +257,7 @@ function AuthPage() {
               </button>
 
               <div className="relative py-2 text-center">
-                <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
+                <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-ds-line" />
                 <span className="bg-ds-surface px-3 ds-type-overline text-ds-ink-soft">or</span>
               </div>
             </>
@@ -345,8 +345,8 @@ function AuthPage() {
               <p
                 className={
                   isStudioInk
-                    ? "border-l-[3px] border-l-hairline py-1 pl-3 text-xs leading-relaxed text-ink-soft"
-                    : "rounded-xl border border-hairline bg-parchment px-3 py-2 text-xs leading-relaxed text-ink"
+                    ? "border-l-[3px] border-l-hairline py-1 pl-3 text-xs leading-relaxed text-ds-ink-soft"
+                    : "rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 text-xs leading-relaxed text-ds-ink"
                 }
               >
                 {notice}
@@ -381,7 +381,7 @@ function AuthPage() {
               type="button"
               onClick={resendCode}
               disabled={busy}
-              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink disabled:opacity-50"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ds-ink disabled:opacity-50"
             >
               Send a new code
             </button>
@@ -395,7 +395,7 @@ function AuthPage() {
                 setError(null);
                 setNotice(null);
               }}
-              className="w-full text-center text-xs text-ds-ink-soft hover:text-ink"
+              className="w-full text-center text-xs text-ds-ink-soft hover:text-ds-ink"
             >
               Forgot your password?
             </button>
@@ -408,7 +408,7 @@ function AuthPage() {
               setError(null);
               setNotice(null);
             }}
-            className="w-full py-2 text-center text-xs text-ds-ink-soft hover:text-ink"
+            className="w-full py-2 text-center text-xs text-ds-ink-soft hover:text-ds-ink"
           >
             {mode === "verify"
               ? "Use a different email"
@@ -421,15 +421,15 @@ function AuthPage() {
 
           <p className="pt-2 text-center ds-type-caption text-ds-ink-soft">
             By continuing, you agree to the{" "}
-            <Link to="/terms" className="underline hover:text-ink">
+            <Link to="/terms" className="underline hover:text-ds-ink">
               Terms of Use
             </Link>{" "}
             and acknowledge the{" "}
-            <Link to="/privacy" className="underline hover:text-ink">
+            <Link to="/privacy" className="underline hover:text-ds-ink">
               Privacy Policy
             </Link>
             . See also our{" "}
-            <Link to="/cookies" className="underline hover:text-ink">
+            <Link to="/cookies" className="underline hover:text-ds-ink">
               Cookie Policy
             </Link>
             .

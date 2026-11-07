@@ -70,7 +70,7 @@ export function AiMessageReport({
         type="button"
         aria-label={AI_CONSENT_COPY.reportAction}
         onClick={() => setOpen(true)}
-        className="mt-1 rounded-full bg-surface/85 px-2 py-0.5 text-[11px] text-ink-soft underline backdrop-blur-md"
+        className="mt-1 rounded-full bg-ds-card/85 px-2 py-0.5 ds-type-caption text-ds-ink-soft underline backdrop-blur-md"
       >
         Report
       </button>
@@ -79,24 +79,24 @@ export function AiMessageReport({
           labelledBy="ai-report-title"
           describedBy="ai-report-note"
           onEscape={close}
-          className="relative w-full max-w-md rounded-t-3xl bg-surface p-6 outline-none sm:rounded-3xl"
+          className="relative w-full max-w-md rounded-t-3xl bg-ds-card p-6 outline-none sm:rounded-3xl"
         >
           <div>
-            <h2 id="ai-report-title" className="font-display text-[18px] font-semibold text-ink">
+            <h2 id="ai-report-title" className="font-display ds-type-headline font-semibold text-ds-ink">
               {AI_CONSENT_COPY.reportAction}
             </h2>
             {status === "sent" ? (
-              <p role="status" className="mt-3 text-sm text-ink">
+              <p role="status" className="mt-3 text-sm text-ds-ink">
                 {AI_CONSENT_COPY.reportThanks}
               </p>
             ) : (
               <>
-                <p id="ai-report-note" className="mt-2 text-xs text-ink-soft">
+                <p id="ai-report-note" className="mt-2 text-xs text-ds-ink-soft">
                   {AI_CONSENT_COPY.reportReviewNote}
                 </p>
                 <fieldset className="mt-3 space-y-2">
                   {AI_REPORT_REASONS.map((r) => (
-                    <label key={r.value} className="flex items-center gap-2 text-sm text-ink">
+                    <label key={r.value} className="flex items-center gap-2 text-sm text-ds-ink">
                       <input
                         type="radio"
                         name="ai-report-reason"
@@ -117,7 +117,7 @@ export function AiMessageReport({
                   type="button"
                   disabled={status === "sending"}
                   onClick={() => void submit()}
-                  className="mt-4 w-full rounded-2xl bg-moss px-4 py-3 font-semibold text-surface disabled:opacity-60"
+                  className="mt-4 w-full rounded-2xl bg-ds-brand px-4 py-3 font-semibold text-ds-card disabled:opacity-60"
                 >
                   Send report
                 </button>
@@ -126,7 +126,7 @@ export function AiMessageReport({
             <button
               type="button"
               onClick={close}
-              className="mt-2 w-full px-4 py-2 text-sm text-ink-soft"
+              className="mt-2 w-full px-4 py-2 text-sm text-ds-ink-soft"
             >
               {status === "sent" ? "Done" : "Cancel"}
             </button>

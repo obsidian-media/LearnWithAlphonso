@@ -23,7 +23,7 @@ export function WordChip({
         disabled={disabled}
         onClick={onClick}
         aria-pressed={picked}
-        className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
+        className="rounded-full border border-ds-line bg-ds-card px-3 py-1.5 text-sm text-ds-ink-soft hover:text-ds-ink"
       >
         {word}
       </button>
@@ -35,10 +35,10 @@ export function WordChip({
       disabled={disabled}
       onClick={onClick}
       aria-pressed={picked}
-      className={`min-h-11 rounded-[14px] border-2 px-4 py-2 text-base font-medium text-ink transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none disabled:opacity-60 motion-reduce:transition-none ${
+      className={`min-h-11 rounded-[14px] border-2 px-4 py-2 text-base font-medium text-ds-ink transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none disabled:opacity-60 motion-reduce:transition-none ${
         picked
-          ? "border-moss bg-moss/15 shadow-[0_4px_0_0_var(--color-edge-moss)]"
-          : "border-hairline bg-parchment shadow-[0_4px_0_0_var(--color-hairline)]"
+          ? "border-ds-brand bg-ds-brand/15 shadow-[0_4px_0_0_var(--color-edge-moss)]"
+          : "border-ds-line bg-ds-sunk shadow-[0_4px_0_0_var(--color-hairline)]"
       }`}
     >
       {word}

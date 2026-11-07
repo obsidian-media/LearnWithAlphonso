@@ -18,7 +18,7 @@ export function AnswerExplanation({
   explanation,
   saveCourse,
   question,
-  className = "mt-0.5 text-ink-soft",
+  className = "mt-0.5 text-ds-ink-soft",
 }: {
   explanation: string;
   saveCourse?: string;
@@ -83,7 +83,7 @@ export function AnswerFeedback({
       <div
         role="status"
         aria-live="polite"
-        className={`mt-5 flex items-start gap-3 border-l-[3px] py-2 pl-4 text-sm ${correct ? "border-l-moss" : "border-l-rose-400"}`}
+        className={`mt-5 flex items-start gap-3 border-l-[3px] py-2 pl-4 text-sm ${correct ? "border-l-ds-brand" : "border-l-rose-400"}`}
       >
         {!correct && (
           <img
@@ -96,7 +96,7 @@ export function AnswerFeedback({
           />
         )}
         <div>
-          <p className="font-semibold text-ink">{headline}</p>
+          <p className="font-semibold text-ds-ink">{headline}</p>
           {explanationBody}
         </div>
       </div>
@@ -108,7 +108,7 @@ export function AnswerFeedback({
       role="status"
       aria-live="polite"
       className={`mt-5 flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${
-        correct ? "border-moss/40 bg-moss/10 text-ink" : "border-rose-300 bg-rose-50 text-ink"
+        correct ? "border-ds-brand/40 bg-ds-brand/10 text-ds-ink" : "border-rose-300 bg-rose-50 text-ds-ink"
       }`}
     >
       {!correct && (

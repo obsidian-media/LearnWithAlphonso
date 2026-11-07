@@ -170,28 +170,28 @@ function SaveWordDialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-6 sm:items-center">
       {/* The backdrop is a sibling, not an ancestor, so the dialog needs no stopPropagation;
           Escape and the Cancel/Done buttons are the keyboard ways out. */}
-      <div role="presentation" className="absolute inset-0 bg-ink/40" onClick={onClose} />
+      <div role="presentation" className="absolute inset-0 bg-ds-ink/40" onClick={onClose} />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="save-word-title"
-        className="relative w-full max-w-[420px] rounded-3xl border border-hairline bg-surface p-6"
+        className="relative w-full max-w-[420px] rounded-3xl border border-ds-line bg-ds-card p-6"
       >
-        <h2 id="save-word-title" className="font-display text-lg font-semibold text-ink">
+        <h2 id="save-word-title" className="font-display text-lg font-semibold text-ds-ink">
           {phase.kind === "saved"
             ? phase.result.alreadySaved
               ? "Already saved"
               : "Saved"
             : "Save this word?"}
         </h2>
-        <p className="mt-3 text-2xl font-semibold text-ink">{request.word}</p>
-        <p className="mt-1 text-sm italic text-ink-soft">{request.sentence}</p>
+        <p className="mt-3 text-2xl font-semibold text-ds-ink">{request.word}</p>
+        <p className="mt-1 text-sm italic text-ds-ink-soft">{request.sentence}</p>
 
         {phase.kind === "saved" ? (
           <>
-            <p className="mt-4 text-sm text-ink">{phase.result.explanation}</p>
-            <p className="mt-2 text-xs text-ink-soft/80">
+            <p className="mt-4 text-sm text-ds-ink">{phase.result.explanation}</p>
+            <p className="mt-2 text-xs text-ds-ink-soft/80">
               {phase.result.alreadySaved
                 ? "It's already in your reviews."
                 : "It will come up in your reviews tomorrow."}
@@ -202,7 +202,7 @@ function SaveWordDialog({
           </>
         ) : (
           <>
-            <p className="mt-4 text-xs text-ink-soft/80">
+            <p className="mt-4 text-xs text-ds-ink-soft/80">
               Saving sends this word and its sentence to an AI service to write the meaning. The
               word then comes up in your reviews.
             </p>
@@ -232,7 +232,7 @@ function SaveWordDialog({
                 phase.kind === "error" && !RETRYABLE.includes(phase.error) ? "" : undefined
               }
               onClick={onClose}
-              className="mt-2 w-full rounded-full px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
+              className="mt-2 w-full rounded-full px-4 py-2.5 text-sm font-medium text-ds-ink-soft hover:text-ds-ink"
             >
               Cancel
             </button>
@@ -244,7 +244,7 @@ function SaveWordDialog({
 }
 
 const PRIMARY =
-  "mt-5 w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-60";
+  "mt-5 w-full rounded-full bg-ds-ink px-4 py-3 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-60";
 
 const HINT_KEY = "lingua.saved-word-hint-count.v1";
 const HINT_MAX_SHOWS = 3;
@@ -282,7 +282,7 @@ export function SaveWordHint({ always = false }: { always?: boolean }) {
   if (!available && !always) return null;
   if (!visible) return null;
   return (
-    <p className="mt-1 text-xs text-ink-soft/70">
+    <p className="mt-1 text-xs text-ds-ink-soft/70">
       {always ? "Tap any word to save it." : "Tap a word to save it."}
     </p>
   );
