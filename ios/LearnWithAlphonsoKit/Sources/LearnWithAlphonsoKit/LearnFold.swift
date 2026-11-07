@@ -59,7 +59,7 @@ public enum LearnFold {
     /// "Unit 3" / "Units 1-9" label for a done run.
     public static func runLabel(first: String, last: String) -> String {
         func num(_ s: String) -> String {
-            s.replacingOccurrences(of: "^Unit\s+", with: "", options: [.regularExpression, .caseInsensitive])
+            s.replacingOccurrences(of: "^Unit\\s+", with: "", options: [.regularExpression, .caseInsensitive])
         }
         return first == last ? first : "Units \(num(first))-\(num(last))"
     }
