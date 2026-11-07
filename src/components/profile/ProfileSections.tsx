@@ -252,11 +252,7 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         iconClass="text-ds-xp"
         value={n.totalXp}
         label="total XP"
-        note={
-          n.xpThisWeek > 0
-            ? `+${fmt(n.xpThisWeek)} this week`
-            : "None yet this week"
-        }
+        note={n.xpThisWeek > 0 ? `+${fmt(n.xpThisWeek)} this week` : "None yet this week"}
         noteTone={n.xpThisWeek > 0 ? "right" : "soft"}
         className="border-ds-line bg-ds-card"
       />

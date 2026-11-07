@@ -80,7 +80,9 @@ export function HectorInvite({
           ✨
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-base font-semibold text-ds-ink">{copy.title}</span>
+          <span className="block font-display text-base font-semibold text-ds-ink">
+            {copy.title}
+          </span>
           <span className="mt-0.5 block text-xs text-ds-ink-soft/80">{copy.subtitle}</span>
         </span>
       </button>

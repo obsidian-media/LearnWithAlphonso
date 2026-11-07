@@ -163,7 +163,9 @@ function TeamsPage() {
           {error && <p className="text-xs text-rose-500">{error}</p>}
         </div>
 
-        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">Create a team</h2>
+        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
+          Create a team
+        </h2>
         <div className="mt-3 space-y-3">
           <input
             value={teamName}

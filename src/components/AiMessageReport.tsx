@@ -82,7 +82,10 @@ export function AiMessageReport({
           className="relative w-full max-w-md rounded-t-3xl bg-ds-card p-6 outline-none sm:rounded-3xl"
         >
           <div>
-            <h2 id="ai-report-title" className="font-display ds-type-headline font-semibold text-ds-ink">
+            <h2
+              id="ai-report-title"
+              className="font-display ds-type-headline font-semibold text-ds-ink"
+            >
               {AI_CONSENT_COPY.reportAction}
             </h2>
             {status === "sent" ? (

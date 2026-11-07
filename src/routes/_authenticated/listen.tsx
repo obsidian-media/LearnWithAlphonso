@@ -155,7 +155,9 @@ export function ListenFolderView({
     <div className="px-5 py-6">
       <SceneBackdrop scene="listen" />
       <div className="relative z-10">
-        <h1 className="font-display text-3xl font-bold text-ds-ink">{current?.title ?? "Listen"}</h1>
+        <h1 className="font-display text-3xl font-bold text-ds-ink">
+          {current?.title ?? "Listen"}
+        </h1>
         {current?.description ? (
           <p className="mt-1 text-sm text-ds-ink-soft">{current.description}</p>
         ) : null}
@@ -193,7 +195,9 @@ export function ListenFolderView({
                     >
                       <Icon3D emoji="📁" size={36} />
                     </span>
-                    <span className="font-display text-lg font-bold text-ds-ink">{folder.title}</span>
+                    <span className="font-display text-lg font-bold text-ds-ink">
+                      {folder.title}
+                    </span>
                   </span>
                   <span aria-hidden="true" className="text-ds-ink-soft/50">
                     →

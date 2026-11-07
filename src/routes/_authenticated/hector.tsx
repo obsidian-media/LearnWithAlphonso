@@ -471,7 +471,9 @@ function HectorConversation({
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
         <div className="min-w-0 flex-1">
           <h1 className="font-display ds-type-headline font-semibold text-ds-ink">Hector</h1>
-          <p className="truncate ds-type-caption text-ds-ink-soft/70">{PAYWALL_COPY.mascotMessage}</p>
+          <p className="truncate ds-type-caption text-ds-ink-soft/70">
+            {PAYWALL_COPY.mascotMessage}
+          </p>
         </div>
         <ManageSubscription pro={pro} />
       </header>

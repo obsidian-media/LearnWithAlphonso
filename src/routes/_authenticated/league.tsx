@@ -63,17 +63,27 @@ function LeaguePage() {
           </div>
           {nextTier && (
             <div className="text-right">
-              <p className="ds-type-caption uppercase tracking-[0.14em] text-ds-ink-soft/60">Next</p>
-              <p className="text-xs font-semibold text-ds-ink">{LEAGUE_TIER_META[nextTier].label}</p>
+              <p className="ds-type-caption uppercase tracking-[0.14em] text-ds-ink-soft/60">
+                Next
+              </p>
+              <p className="text-xs font-semibold text-ds-ink">
+                {LEAGUE_TIER_META[nextTier].label}
+              </p>
             </div>
           )}
         </div>
 
         <div className="mt-3 flex items-center gap-4">
-          <Link to="/teams" className="text-xs font-medium text-ds-brand underline underline-offset-4">
+          <Link
+            to="/teams"
+            className="text-xs font-medium text-ds-brand underline underline-offset-4"
+          >
             Teams →
           </Link>
-          <Link to="/season" className="text-xs font-medium text-ds-brand underline underline-offset-4">
+          <Link
+            to="/season"
+            className="text-xs font-medium text-ds-brand underline underline-offset-4"
+          >
             Season →
           </Link>
         </div>

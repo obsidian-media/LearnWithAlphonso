@@ -16,7 +16,9 @@ export function WeeklyChallengesCard() {
         {challenges.map((c) => (
           <div key={c.templateId}>
             <div className="flex items-center justify-between text-xs">
-              <span className={c.completed ? "text-ds-brand line-through" : "text-ds-ink"}>{c.title}</span>
+              <span className={c.completed ? "text-ds-brand line-through" : "text-ds-ink"}>
+                {c.title}
+              </span>
               <span className="tnum text-ds-ink-soft">
                 {Math.min(c.progress, c.threshold)}/{c.threshold}
               </span>

@@ -113,7 +113,9 @@ function DuelsPage() {
 
         {pending.length > 0 && (
           <div className="mt-6">
-            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Pending challenges</h2>
+            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">
+              Pending challenges
+            </h2>
             <div className="mt-2 space-y-2">
               {pending.map((d) => (
                 <div

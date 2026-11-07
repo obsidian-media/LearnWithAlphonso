@@ -273,7 +273,9 @@ export function GoalCard({ course }: { course: GoalCourse }) {
               {saveError}
             </p>
           )}
-          <p className="mt-2 text-xs text-ds-ink-soft/80">An estimate of lessons, not of fluency.</p>
+          <p className="mt-2 text-xs text-ds-ink-soft/80">
+            An estimate of lessons, not of fluency.
+          </p>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
@@ -317,7 +319,9 @@ export function GoalCard({ course }: { course: GoalCourse }) {
               {actionError}
             </p>
           )}
-          <p className="mt-2 text-xs text-ds-ink-soft/80">An estimate of lessons, not of fluency.</p>
+          <p className="mt-2 text-xs text-ds-ink-soft/80">
+            An estimate of lessons, not of fluency.
+          </p>
           <div className="mt-3 flex gap-2">
             <button type="button" onClick={openSetup} disabled={offline} className={SECONDARY}>
               Change goal

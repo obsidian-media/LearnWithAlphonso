@@ -108,7 +108,9 @@ export function AnswerFeedback({
       role="status"
       aria-live="polite"
       className={`mt-5 flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${
-        correct ? "border-ds-brand/40 bg-ds-brand/10 text-ds-ink" : "border-rose-300 bg-rose-50 text-ds-ink"
+        correct
+          ? "border-ds-brand/40 bg-ds-brand/10 text-ds-ink"
+          : "border-rose-300 bg-rose-50 text-ds-ink"
       }`}
     >
       {!correct && (
