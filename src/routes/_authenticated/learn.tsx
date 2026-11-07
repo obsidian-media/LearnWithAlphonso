@@ -1,20 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { GoalCard } from "../../components/GoalCard";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
-import { StarIcon } from "../../components/icons";
-import { Icon3D } from "../../components/Icon3D";
-import { LearnMap, SpeechBubble } from "../../components/LearnMap";
-import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
-import { useTheme } from "../../lib/theme";
 import { useServerFn } from "@tanstack/react-start";
 import {
   setCefrLevel,
@@ -24,8 +19,15 @@ import {
 } from "../../lib/sync.functions";
 import { fetchDueReviews } from "../../lib/review.functions";
 import { XP_HEART_COST } from "../../lib/hearts";
-import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones";
-import { pathNodeDelay, unitPathNodes } from "../../lib/unit-path";
+import {
+  currentUnitOf,
+  foldLearn,
+  limitAhead,
+  roomArtFor,
+  roomName,
+  runLabel,
+  type FoldUnit,
+} from "../../lib/learn-fold";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -41,31 +43,56 @@ export const Route = createFileRoute("/_authenticated/learn")({
   }),
 });
 
-/** The one loud card for the next lesson. The unit's path is drawn on the scene below it (LearnMap). */
-function ContinueCard({
+/** Pinned "you are here" card: the learner's current unit on its painted room, with one Continue. */
+function YouAreHere({
+  index,
+  count,
   unitTitle,
+  level,
   lessonId,
   lessonTitle,
   blocked,
   onBlockedClick,
 }: {
+  index: number;
+  count: number;
   unitTitle: string;
+  level: string;
   lessonId: string;
   lessonTitle: string;
   blocked: boolean;
   onBlockedClick: () => void;
 }) {
+  const art = roomArtFor(index - 1);
   const body = (
-    <div className="card-lift flex flex-col gap-2.5 rounded-3xl bg-ember p-4 text-left text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)] transition-transform active:translate-y-1">
-      {/* Small text sits on surface chips: straight on ember it is below 4.5:1 in most themes. */}
-      <p className="self-start rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-ink">
-        Up next · {unitTitle}
-      </p>
-      <p className="font-display text-2xl font-bold leading-tight">{lessonTitle}</p>
-      <span className="self-start rounded-full bg-surface px-4 py-1.5 font-display text-sm font-bold text-ink">
-        Continue
+    <span className="relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
+      <img
+        src={`/avatar/scenes/${art}.webp`}
+        alt=""
+        className="absolute inset-0 size-full object-cover"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-ds-brand/85 via-ds-brand/20 to-transparent"
+      />
+      <img
+        src="/alphonso/lesson/happy.webp"
+        alt=""
+        className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
+      />
+      <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-ds-card">
+        You are here · Unit {index} of {count}
       </span>
-    </div>
+      <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-ds-card">
+        <span className="text-xs font-semibold">
+          {roomName(art)} · {level} · {unitTitle}
+        </span>
+        <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
+        <span className="mt-2 inline-flex min-h-11 items-center self-start rounded-full bg-ds-action px-4 font-display text-sm font-bold text-ds-on-action">
+          Continue →
+        </span>
+      </span>
+    </span>
   );
   if (blocked) {
     return (
@@ -83,7 +110,7 @@ function ContinueCard({
     <Link
       to="/lesson/$id"
       params={{ id: lessonId }}
-      aria-label={`Continue: ${lessonTitle}`}
+      aria-label={`Continue: ${lessonTitle}, unit ${index} of ${count}`}
       className="block"
     >
       {body}
@@ -91,89 +118,120 @@ function ContinueCard({
   );
 }
 
-function LessonNode({
+/** A slim folded row: name on the left, count and chevron on the right. Tap to open. */
+function FoldRowButton({
+  open,
+  onToggle,
+  label,
+  count,
+  done,
+  controls,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+  count: string;
+  done?: boolean;
+  controls: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-controls={controls}
+      onClick={onToggle}
+      className="flex min-h-11 w-full items-center gap-2 px-3.5 py-2.5 text-left"
+    >
+      {done && (
+        <span aria-hidden="true" className="text-ds-action">
+          ✓
+        </span>
+      )}
+      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ds-ink">{label}</span>
+      <span className="tnum shrink-0 text-xs text-ds-ink-soft">{count}</span>
+      <span aria-hidden="true" className="text-ds-ink-soft">
+        {open ? "▾" : "▸"}
+      </span>
+    </button>
+  );
+}
+
+function LessonRow({
   state,
-  index,
-  placeInUnit,
+  number,
   lessonId,
   title,
   blocked,
   onBlockedClick,
 }: {
   state: "done" | "active" | "locked";
-  index: number;
-  /** The lesson's place in its own unit, which sets the entrance stagger. */
-  placeInUnit: number;
+  number: number;
   lessonId: string;
   title: string;
   blocked: boolean;
   onBlockedClick: () => void;
 }) {
-  const offset = index % 4;
-  const translateX = offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
-  const inner =
+  const badge =
     state === "done" ? (
-      <Icon3D emoji="📚" size={36} />
+      <span
+        aria-hidden="true"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-action text-ds-on-action"
+      >
+        ✓
+      </span>
     ) : state === "locked" ? (
-      <Icon3D emoji="🔒" size={30} className="opacity-60 grayscale" />
+      <span
+        aria-hidden="true"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-sunk text-ds-ink-soft"
+      >
+        🔒
+      </span>
     ) : (
-      <Icon3D emoji="🎯" size={40} />
+      <span
+        aria-hidden="true"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-ds-action text-sm font-bold text-ds-on-action"
+      >
+        {number}
+      </span>
     );
-  const baseClasses =
-    "relative grid size-[72px] place-items-center rounded-full transition-transform";
-  const stateClasses =
-    state === "done"
-      ? `${TILE_TONE_CLASSES[tileTone(index)]} shadow-[0_4px_0_0_var(--color-hairline)]`
-      : state === "active"
-        ? "bg-ember text-ink-on-ember shadow-[0_5px_0_0_var(--color-edge-ember)]"
-        : "bg-parchment text-ink-soft/40 ring-1 ring-hairline";
-  const button = (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: pathNodeDelay(placeInUnit), duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{ transform: `translateX(${translateX})` }}
-      className="relative flex flex-col items-center"
-    >
+  const inner = (
+    <>
+      {badge}
+      <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ds-ink">{title}</span>
       {state === "active" && (
-        <span className="absolute -inset-2 -z-10 animate-ping rounded-full bg-ember/25" />
-      )}
-      <div className={`${baseClasses} ${stateClasses}`}>{inner}</div>
-      {state === "active" && (
-        <span className="mt-3 rounded-full bg-ink px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-surface">
-          Start
+        <span className="shrink-0 rounded-full bg-ds-brand px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-ds-card">
+          Now
         </span>
       )}
-      {state !== "active" && (
-        <span className="mt-2 max-w-[110px] text-center text-[11px] font-medium text-ink-soft/70">
-          {title}
-        </span>
-      )}
-    </motion.div>
+    </>
   );
+  const cls = "flex min-h-11 items-center gap-3 py-1";
   if (state === "locked")
     return (
-      <div role="note" aria-label={`${title} (locked)`}>
-        {button}
+      <div role="note" aria-label={`${title} (locked)`} className={`${cls} opacity-70`}>
+        {inner}
       </div>
     );
-  if (blocked) {
+  if (blocked)
     return (
-      <button type="button" onClick={onBlockedClick} aria-label={`Start ${title} (out of hearts)`}>
-        {button}
+      <button
+        type="button"
+        onClick={onBlockedClick}
+        aria-label={`Start ${title} (out of hearts)`}
+        className={`${cls} w-full text-left`}
+      >
+        {inner}
       </button>
     );
-  }
   return (
-    <Link to="/lesson/$id" params={{ id: lessonId }} aria-label={`Start ${title}`}>
-      {button}
+    <Link to="/lesson/$id" params={{ id: lessonId }} aria-label={`Start ${title}`} className={cls}>
+      {inner}
     </Link>
   );
 }
 
 function LearnPage() {
   const navigate = useNavigate();
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
   const level = useProgress((s) => s.cefrLevel) as Level;
@@ -281,32 +339,108 @@ function LearnPage() {
     return map;
   }, [curriculum, completedSet]);
 
-  const greeting =
-    hydrated && streak > 0
-      ? `Nice ${streak}-day streak! Ready for today's lesson?`
-      : "Ready for today's lesson?";
+  // The learner's place in the whole course (not just the level on screen).
+  const foldUnits = useMemo<FoldUnit[]>(
+    () =>
+      curriculum.map((u) => ({
+        id: u.id,
+        eyebrow: u.eyebrow,
+        title: u.title,
+        lessonIds: u.lessons.map((l) => l.id),
+      })),
+    [curriculum],
+  );
+  const here = useMemo(
+    () => (hydrated ? currentUnitOf(foldUnits, completedSet) : null),
+    [hydrated, foldUnits, completedSet],
+  );
+  const hereUnit = here ? curriculum.find((u) => u.id === here.unitId) : undefined;
+  const hereLesson = hereUnit?.lessons.find((l) => l.id === here?.lessonId);
+  const levelFoldUnits = useMemo(
+    () => foldUnits.filter((fu) => curriculum.find((u) => u.id === fu.id)?.level === level),
+    [foldUnits, curriculum, level],
+  );
+  const rows = useMemo(
+    () =>
+      foldLearn(
+        hydrated ? levelFoldUnits : levelFoldUnits.map((u) => ({ ...u, lessonIds: [] })),
+        completedSet,
+      ),
+    [hydrated, levelFoldUnits, completedSet],
+  );
+  const [showAllUnits, setShowAllUnits] = useState(false);
+  const shown = useMemo(() => limitAhead(rows, showAllUnits), [rows, showAllUnits]);
+  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+  const [hereVisible, setHereVisible] = useState(true);
+  const hereRef = useRef<HTMLElement | null>(null);
+  const pendingJump = useRef(false);
+  const toggle = (key: string) =>
+    setOpened((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  function scrollToHere() {
+    hereRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function jumpToCurrent() {
+    if (hereUnit && hereUnit.level !== level) {
+      pendingJump.current = true;
+      pick(hereUnit.level);
+    } else {
+      scrollToHere();
+    }
+  }
+  useEffect(() => {
+    if (pendingJump.current && hereRef.current) {
+      pendingJump.current = false;
+      scrollToHere();
+    }
+  });
+  const currentKey = rows.find((r) => r.kind === "unit" && r.state === "current")?.key;
+  useEffect(() => {
+    const el = hereRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setHereVisible(e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [currentKey, level]);
 
   return (
     <MobileFrame>
-      <SceneBackdrop
-        scene="learn"
-        clip="learn"
-        // Alphonso stands at 67% across and his head is at 54% down in the clip (scripts/import-clips.ts input).
-        pin={{ x: 66, y: 53, node: <SpeechBubble text={greeting} /> }}
-      />
-      <div className="relative z-10 px-6 pb-10 pt-6">
-        <h1 className="sr-only">Learn</h1>
-        <div className="mb-5 flex gap-2">
+      <div className="ds-light relative z-10 min-h-dvh bg-ds-surface px-6 pb-24 pt-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h1 className="font-display text-3xl font-extrabold text-ds-ink">Learn</h1>
+          {hydrated && (
+            <div className="flex gap-1.5 text-sm font-bold">
+              <span
+                className="rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-flame"
+                aria-label={`${streak}-day streak`}
+              >
+                🔥 {streak}
+              </span>
+              <span
+                className="tnum rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-ink"
+                aria-label={`${xp} XP`}
+              >
+                ★ {xp.toLocaleString("en-US")}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="mb-4 flex gap-2">
           {COURSES.map((c) => (
             <button
               key={c.id}
               type="button"
               aria-pressed={c.id === course}
               onClick={() => void switchCourse(c.id)}
-              className={`flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
+              className={`min-h-11 flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
                 c.id === course
-                  ? "border-ink bg-ink text-surface"
-                  : "border-hairline bg-surface/90 text-ink-soft backdrop-blur-md hover:bg-parchment"
+                  ? "border-ds-brand bg-ds-brand text-ds-card"
+                  : "border-ds-line bg-ds-card/90 text-ds-ink-soft hover:bg-ds-sunk"
               }`}
             >
               {c.flag} {c.label}
@@ -314,233 +448,224 @@ function LearnPage() {
           ))}
         </div>
 
-        {hydrated && firstUndone && nextUnit && (
-          <div className="mb-2">
-            <ContinueCard
-              unitTitle={nextUnit.title}
-              lessonId={firstUndone.id}
-              lessonTitle={firstUndone.title}
-              blocked={outOfHearts}
-              onBlockedClick={() => setShowHeartsModal(true)}
+        {here && hereUnit && hereLesson ? (
+          <YouAreHere
+            index={here.index}
+            count={here.count}
+            unitTitle={hereUnit.title}
+            level={hereUnit.level}
+            lessonId={hereLesson.id}
+            lessonTitle={hereLesson.title}
+            blocked={outOfHearts}
+            onBlockedClick={() => setShowHeartsModal(true)}
+          />
+        ) : hydrated ? (
+          <div
+            className="rounded-3xl border-2 border-ds-brand bg-ds-sunk p-5 text-center"
+            data-learn-finished=""
+          >
+            <p className="font-display text-xl font-bold text-ds-ink">Course complete</p>
+            <p className="mt-1 text-sm text-ds-ink-soft">
+              You have finished every unit. Review keeps it fresh.
+            </p>
+          </div>
+        ) : null}
+
+        <div className="-mx-6 my-4 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+          <SegmentedControl
+            ariaLabel="Select CEFR level"
+            value={level}
+            onChange={pick}
+            options={LEVELS.map((l) => {
+              const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
+              return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
+            })}
+          />
+        </div>
+
+        <div className="mb-4 rounded-2xl border border-ds-line bg-ds-sunk p-4">
+          <div className="flex items-baseline justify-between">
+            <p className="font-display text-lg font-semibold text-ds-ink">
+              {meta.id} · {meta.name}
+            </p>
+            <span className="tnum text-xs font-medium text-ds-ink-soft">{pct}%</span>
+          </div>
+          <p className="mt-1 text-xs text-ds-ink-soft/80">{meta.blurb}</p>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ds-line">
+            <motion.div
+              className="h-full rounded-full bg-ds-action"
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
+        </div>
+
+        {!placed && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-2xl border border-ds-action/30 bg-ds-action/10 p-4"
+          >
+            <p className="font-display text-base font-semibold text-ds-ink">
+              Not sure where to start?
+            </p>
+            <p className="mt-1 text-xs text-ds-ink-soft/80">
+              Take a quick placement test and we&apos;ll set your CEFR level for you.
+            </p>
+            <Link
+              to="/placement"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-brand px-4 text-xs font-semibold text-ds-card"
+            >
+              Take the placement test
+            </Link>
+          </motion.div>
         )}
 
-        <LearnMap
-          nodes={
-            nextUnit
-              ? unitPathNodes(
-                  nextUnit.lessons.map((l) => l.id),
-                  completedSet,
-                )
-              : []
-          }
-          greeting={greeting}
-        />
-
-        <div
-          data-sheet
-          className="-mx-6 mt-2 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-7 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
-        >
-          <div className="mb-6">
-            <TeamMissionCard />
-          </div>
-
-          <div className="mb-6">
-            <WeeklyChallengesCard />
-          </div>
-
-          <div className="mb-6">
-            <GoalCard course={course} />
-          </div>
-
-          {!placed &&
-            (isStudioInk ? (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 border-b border-hairline pb-5"
-              >
-                <p className="font-display text-base font-semibold text-ink">
-                  Not sure where to start?
-                </p>
-                <p className="mt-1 text-xs text-ink-soft/80">
-                  Take a quick placement test and we&apos;ll set your CEFR level for you.
-                </p>
-                <Link
-                  to="/placement"
-                  className="mt-3 inline-block text-[12px] font-semibold text-moss underline underline-offset-4"
-                >
-                  Take the placement test →
-                </Link>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
-              >
-                <p className="font-display text-base font-semibold text-ink">
-                  Not sure where to start?
-                </p>
-                <p className="mt-1 text-xs text-ink-soft/80">
-                  Take a quick placement test and we&apos;ll set your CEFR level for you.
-                </p>
-                <Link
-                  to="/placement"
-                  className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
-                >
-                  Take the placement test
-                </Link>
-              </motion.div>
-            ))}
-
-          <Link
-            to="/review"
-            className={
-              isStudioInk
-                ? "mb-6 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
-                : "mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
-            }
-          >
-            <span>
-              <span className="flex items-center gap-2">
-                <span className="block font-display text-base font-semibold text-ink">
-                  Review missed items
-                </span>
-                {dueCount > 0 && (
-                  <span
-                    className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-ink-on-ember"
-                    aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
-                  >
-                    {dueCount}
-                  </span>
-                )}
-              </span>
-              <span className="block text-xs text-ink-soft/80">
-                Spaced repetition brings back what you got wrong.
-              </span>
-            </span>
-            <span className="text-ink-soft">→</span>
-          </Link>
-
-          <div className="-mx-6 mb-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-            <SegmentedControl
-              ariaLabel="Select CEFR level"
-              value={level}
-              onChange={pick}
-              options={LEVELS.map((l) => {
-                const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
-                return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
-              })}
-            />
-          </div>
-
-          <div
-            className={
-              isStudioInk
-                ? "mb-8 border-b border-hairline pb-4"
-                : "mb-8 rounded-2xl border border-hairline bg-parchment p-4"
-            }
-          >
-            <div className="flex items-baseline justify-between">
-              <p className="font-display text-lg font-semibold text-ink">
-                {meta.id} · {meta.name}
-              </p>
-              <span className="tnum text-[11px] font-medium text-ink-soft">{pct}%</span>
-            </div>
-            <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
-              <motion.div
-                className="h-full rounded-full bg-moss"
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-          </div>
-
-          {units.map((unit, ui) => {
-            const allDone = hydrated && unit.lessons.every((l) => completedSet.has(l.id));
-            return (
-              <section key={unit.id} className="mb-14 last:mb-4">
-                <header className="mb-8 flex items-end justify-between">
-                  <div className="relative">
-                    {isStudioInk && (
-                      <span
-                        aria-hidden
-                        className="pointer-events-none absolute -left-1 -top-3 font-display text-[64px] font-semibold leading-none text-ink/5"
-                      >
-                        {String(ui + 1).padStart(2, "0")}
-                      </span>
-                    )}
-                    <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-                      {unit.eyebrow}
-                    </p>
-                    <h2 className="relative text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
-                      {unit.title}
-                    </h2>
-                    <p className="relative mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
-                      {unit.description}
-                    </p>
-                  </div>
-                  <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                    {hydrated ? unit.lessons.filter((l) => completedSet.has(l.id)).length : 0}/
-                    {unit.lessons.length}
-                  </div>
-                </header>
-                <div className="relative flex flex-col items-center gap-7">
-                  {unit.lessons.map((lesson, li) => {
-                    const isDone = hydrated && completedSet.has(lesson.id);
-                    const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
-                    const state = isDone
-                      ? "done"
-                      : isActive
-                        ? "active"
-                        : hydrated
-                          ? "locked"
-                          : "active";
-                    return (
-                      <LessonNode
-                        key={lesson.id}
-                        state={state}
-                        index={ui * 100 + li}
-                        placeInUnit={li}
-                        lessonId={lesson.id}
-                        title={lesson.title}
-                        blocked={outOfHearts}
-                        onBlockedClick={() => setShowHeartsModal(true)}
-                      />
-                    );
-                  })}
-                  {allDone &&
-                    (isStudioInk ? (
-                      <div className="mt-4 w-full border-t border-hairline pt-5 text-center">
-                        <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
-                          <StarIcon className="size-5" />
-                        </div>
-                        <p className="font-display text-base font-semibold">Unit complete</p>
-                        <p className="text-xs text-ink-soft">
-                          You mastered {unit.title.toLowerCase()}.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-4 w-full rounded-2xl border border-hairline bg-parchment p-5 text-center">
-                        <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
-                          <StarIcon className="size-5" />
-                        </div>
-                        <p className="font-display text-base font-semibold">Unit complete</p>
-                        <p className="text-xs text-ink-soft">
-                          You mastered {unit.title.toLowerCase()}.
-                        </p>
-                      </div>
-                    ))}
+        <div className="grid gap-2" data-learn-list="">
+          {shown.rows.map((row) => {
+            if (row.kind === "done-run") {
+              const id = `fold-${row.key}`;
+              const open = opened.has(row.key);
+              const first = curriculum.find((u) => u.id === row.unitIds[0])!;
+              return (
+                <div key={row.key} className="rounded-2xl border border-ds-line bg-ds-card">
+                  <FoldRowButton
+                    done
+                    open={open}
+                    controls={id}
+                    onToggle={() => toggle(row.key)}
+                    label={`${runLabel(row)} · ${first.level} done`}
+                    count={`${row.done} / ${row.total}`}
+                  />
+                  {open && (
+                    <div id={id} className="grid gap-1 px-3.5 pb-3">
+                      {row.unitIds.map((uid) => {
+                        const u = curriculum.find((x) => x.id === uid)!;
+                        return (
+                          <div key={uid}>
+                            <p className="pt-2 text-xs font-bold uppercase tracking-widest text-ds-ink-soft">
+                              {u.eyebrow} · {u.title}
+                            </p>
+                            {u.lessons.map((l, li) => (
+                              <LessonRow
+                                key={l.id}
+                                state="done"
+                                number={li + 1}
+                                lessonId={l.id}
+                                title={l.title}
+                                blocked={outOfHearts}
+                                onBlockedClick={() => setShowHeartsModal(true)}
+                              />
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
+              );
+            }
+            const unit = curriculum.find((u) => u.id === row.unitId)!;
+            const isCurrent = row.state === "current";
+            const open = isCurrent ? !opened.has(`closed-${row.key}`) : opened.has(row.key);
+            const id = `fold-${row.key}`;
+            return (
+              <section
+                key={row.key}
+                ref={isCurrent ? hereRef : undefined}
+                aria-label={`${unit.eyebrow}: ${unit.title}`}
+                className={`rounded-2xl border bg-ds-card ${isCurrent ? "border-ds-brand" : "border-ds-line"}`}
+              >
+                <FoldRowButton
+                  open={open}
+                  controls={id}
+                  onToggle={() => toggle(isCurrent ? `closed-${row.key}` : row.key)}
+                  label={`${unit.eyebrow} · ${unit.title}`}
+                  count={`${hydrated ? row.done : 0} / ${row.total}`}
+                />
+                {open && (
+                  <div id={id} className="grid px-3.5 pb-3">
+                    <p className="pb-1 text-xs text-ds-ink-soft/80">{unit.description}</p>
+                    {unit.lessons.map((lesson, li) => {
+                      const isDone = hydrated && completedSet.has(lesson.id);
+                      const isActive = hydrated && !isDone && here?.lessonId === lesson.id;
+                      const state = isDone
+                        ? "done"
+                        : isActive
+                          ? "active"
+                          : hydrated
+                            ? "locked"
+                            : "active";
+                      return (
+                        <LessonRow
+                          key={lesson.id}
+                          state={state}
+                          number={li + 1}
+                          lessonId={lesson.id}
+                          title={lesson.title}
+                          blocked={outOfHearts}
+                          onBlockedClick={() => setShowHeartsModal(true)}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </section>
             );
           })}
+          {shown.hidden > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAllUnits(true)}
+              className="min-h-11 rounded-2xl border border-ds-line bg-ds-card px-4 text-sm font-bold text-ds-ink"
+            >
+              Show all units in {level} ({shown.hidden} more)
+            </button>
+          )}
+        </div>
+
+        <Link
+          to="/review"
+          className="mt-6 flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card px-4 py-3.5 transition hover:border-ds-brand/30"
+        >
+          <span>
+            <span className="flex items-center gap-2">
+              <span className="block font-display text-base font-semibold text-ds-ink">
+                Review missed items
+              </span>
+              {dueCount > 0 && (
+                <span
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ds-action px-1.5 py-0.5 text-xs font-semibold text-ds-on-action"
+                  aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
+                >
+                  {dueCount}
+                </span>
+              )}
+            </span>
+            <span className="block text-xs text-ds-ink-soft/80">
+              Spaced repetition brings back what you got wrong.
+            </span>
+          </span>
+          <span className="text-ds-ink-soft">→</span>
+        </Link>
+
+        <div data-sheet className="mt-6 grid gap-6">
+          <TeamMissionCard />
+          <WeeklyChallengesCard />
+          <GoalCard course={course} />
         </div>
       </div>
+      {here && !hereVisible && (
+        <button
+          type="button"
+          onClick={jumpToCurrent}
+          aria-label={`Jump to where I am, unit ${here.index}`}
+          className="fixed bottom-24 left-1/2 z-20 min-h-11 -translate-x-1/2 rounded-full bg-ds-brand px-5 text-sm font-bold text-ds-card shadow-lg"
+        >
+          Jump to current ↓
+        </button>
+      )}
       <HeartsModal
         open={showHeartsModal}
         refillAt={heartsRefillAt}

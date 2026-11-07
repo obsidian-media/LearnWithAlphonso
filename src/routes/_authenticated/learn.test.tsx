@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -140,34 +141,23 @@ describe("Learn page", () => {
   it("hides the placement banner once a placement result exists", async () => {
     useProgress.setState({ placementTakenAt: "2026-09-19T00:00:00.000Z" });
     renderPage();
-    await screen.findByText(a1Units[0].title);
+    await screen.findByRole("button", { name: new RegExp(a1Units[0].title) });
     expect(screen.queryByText("Not sure where to start?")).not.toBeInTheDocument();
   });
 
   it("shows one Continue card for the first undone lesson", async () => {
     renderPage();
-    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
+    const link = await screen.findByRole("link", {
+      name: new RegExp(`^Continue: ${firstLesson.title}`),
+    });
     expect(link).toHaveAttribute("href", `/lesson/${firstLesson.id}`);
-  });
-
-  it("the Continue card's small text sits on surface chips, never faded or ember-on-surface", async () => {
-    // Small text straight on the ember card is below 4.5:1 in meadow, canopy and studio-ink.
-    renderPage();
-    const link = await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
-    for (const label of [/^Up next/, /^Continue$/]) {
-      const el = within(link).getByText(label);
-      expect(el.className).toContain("bg-surface");
-      // classList, not a substring: "text-ink-soft" contains "text-ink" and is the faded colour this forbids.
-      expect(el.classList.contains("text-ink")).toBe(true);
-      expect(el.className).not.toMatch(/opacity-|text-ember|text-ink-soft/);
-    }
   });
 
   it("moves the Continue card on once a lesson is done", async () => {
     useProgress.setState({ completedLessons: [firstLesson.id] });
     renderPage();
     expect(
-      await screen.findByRole("link", { name: `Continue: ${secondLesson.title}` }),
+      await screen.findByRole("link", { name: new RegExp(`^Continue: ${secondLesson.title}`) }),
     ).toBeInTheDocument();
   });
 
@@ -178,19 +168,6 @@ describe("Learn page", () => {
       name: `Continue: ${firstLesson.title} (out of hearts)`,
     });
     expect(button).toBeInTheDocument();
-  });
-
-  it("greets the learner with Alphonso", async () => {
-    renderPage();
-    expect(await screen.findByRole("img", { name: /alphonso/i })).toBeInTheDocument();
-  });
-
-  it("lesson nodes use 3D icons: a target for the next lesson, a lock for later ones", async () => {
-    renderPage();
-    const start = await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
-    expect(start.querySelector("img")?.getAttribute("src")).toBe("/icons3d/bullseye.png");
-    const locked = screen.getByRole("note", { name: `${secondLesson.title} (locked)` });
-    expect(locked.querySelector("img")?.getAttribute("src")).toBe("/icons3d/locked.png");
   });
 
   it("marks the first undone lesson active and later ones locked", async () => {
@@ -235,7 +212,7 @@ describe("Learn page", () => {
   it("switches CEFR level locally and persists it remotely", async () => {
     const user = userEvent.setup();
     renderPage();
-    await screen.findByText(a1Units[0].title);
+    await screen.findByRole("button", { name: new RegExp(a1Units[0].title) });
 
     const nextLevel = LEVELS[1].id;
     await user.click(screen.getByRole("tab", { name: new RegExp(`^${nextLevel}`) }));
@@ -267,7 +244,7 @@ describe("Learn page", () => {
     });
     const user = userEvent.setup();
     renderPage();
-    await screen.findByText(a1Units[0].title);
+    await screen.findByRole("button", { name: new RegExp(a1Units[0].title) });
 
     await user.click(screen.getByRole("button", { name: "🇫🇷 French" }));
 
@@ -311,40 +288,92 @@ describe("Learn page", () => {
   });
 });
 
-describe("Learn in the garden", () => {
-  it("shows the garden scene behind the page", async () => {
-    const { container } = renderPage();
-    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
-    const scene = container.querySelector('[data-scene="learn"]');
-    expect(scene?.querySelector("video")?.getAttribute("src")).toBe("/clips/learn.mp4");
-  });
+describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
+  const unitIds = (u: { lessons: { id: string }[] }) => u.lessons.map((l) => l.id);
 
-  it("Alphonso waves in the garden clip, his greeting in a bubble pinned above him and read out once", async () => {
-    useProgress.setState({ streak: 12 });
-    const { container } = renderPage();
-    await screen.findByRole("img", { name: /alphonso/i });
-    const greeting = "Nice 12-day streak! Ready for today's lesson?";
-    // The bubble is drawn on the clip (decorative), the words are in the page for screen readers.
-    expect(container.querySelector('[data-scene="learn"] [data-pin]')?.textContent).toBe(greeting);
-    const map = container.querySelector("[data-learn-map]") as HTMLElement;
-    expect(within(map).getByText(`Alphonso: ${greeting}`)).toBeInTheDocument();
-    // No separate cut-out on top of the clip.
-    expect(container.querySelector("[data-figure]")).toBeNull();
-  });
-
-  it("the map shows the current unit's lessons as big nodes, the next one marked current", async () => {
-    const { container } = renderPage();
-    await screen.findByRole("link", { name: `Continue: ${firstLesson.title}` });
-    const map = container.querySelector("[data-learn-map]")!;
-    const nodes = map.querySelectorAll("[data-node]");
-    expect(nodes.length).toBeGreaterThan(1);
-    expect(nodes[0].getAttribute("data-node")).toBe("next");
-    expect(nodes[1].getAttribute("data-node")).toBe("locked");
-  });
-
-  it("everything below the map sits on a solid sheet, never straight on the scene", async () => {
+  it("pins the current unit on its room art, with its place in the whole course", async () => {
     renderPage();
-    const team = await screen.findByTestId("team-mission-card");
-    expect(team.closest("[data-sheet]")).not.toBeNull();
+    const link = await screen.findByRole("link", { name: /^Continue:/ });
+    expect(link).toHaveTextContent(/You are here · Unit 1 of \d+/);
+    expect(link.querySelector("img")?.getAttribute("src")).toMatch(
+      /^\/avatar\/scenes\/[a-z]+\.webp$/,
+    );
+  });
+
+  it("the current unit is open and later units are folded until tapped", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
+    const later = a1Units[1];
+    const laterRow = screen.getByRole("button", { name: new RegExp(later.title) });
+    expect(laterRow).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("note", { name: `${later.lessons[0].title} (locked)` })).toBeNull();
+    await user.click(laterRow);
+    expect(laterRow).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("note", { name: `${later.lessons[0].title} (locked)` }),
+    ).toBeInTheDocument();
+  });
+
+  it("finished units fold into one row that opens on tap", async () => {
+    const user = userEvent.setup();
+    useProgress.setState({ completedLessons: unitIds(a1Units[0]) });
+    renderPage();
+    const run = await screen.findByRole("button", { name: /^Unit 1 · A1 done/ });
+    expect(run).toHaveAttribute("aria-expanded", "false");
+    const title = a1Units[0].lessons[0].title;
+    expect(screen.queryByRole("link", { name: `Start ${title}` })).toBeNull();
+    await user.click(run);
+    expect(screen.getByRole("link", { name: `Start ${title}` })).toBeInTheDocument();
+    // The pinned card moved on to unit 2.
+    expect(screen.getByRole("link", { name: /^Continue:/ })).toHaveTextContent(/Unit 2 of/);
+  });
+
+  it("folds future rooms: the next room is one row, the rest sit behind Show all units", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole("link", { name: `Start ${firstLesson.title}` });
+    expect(a1Units.length).toBeGreaterThan(2);
+    const third = a1Units[2];
+    expect(screen.getByRole("button", { name: new RegExp(a1Units[1].title) })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: new RegExp(`^${third.eyebrow} · `) })).toBeNull();
+    const more = screen.getByRole("button", { name: /^Show all units in A1/ });
+    await user.click(more);
+    expect(
+      screen.getByRole("button", { name: new RegExp(`^${third.eyebrow} · `) }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Show all units in/ })).toBeNull();
+  });
+
+  it("paints on the round-6 cream surface, not the old tokens", () => {
+    const src = readFileSync(`${import.meta.dirname}/learn.tsx`, "utf8");
+    expect(src).toContain("bg-ds-surface");
+    expect(src).not.toMatch(/\b(bg|text|border)-(ink|surface|parchment|hairline|moss|ember)\b/);
+  });
+
+  it("shows Jump to current only when the current unit is off screen, and scrolls to it", async () => {
+    const user = userEvent.setup();
+    let notify: (e: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: (e: { isIntersecting: boolean }[]) => void) {
+          notify = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    renderPage();
+    await screen.findByRole("link", { name: /^Continue:/ });
+    expect(screen.queryByRole("button", { name: /Jump to where I am/ })).toBeNull();
+    act(() => notify([{ isIntersecting: false }]));
+    await user.click(await screen.findByRole("button", { name: /Jump to where I am/ }));
+    expect(scroll).toHaveBeenCalled();
+    act(() => notify([{ isIntersecting: true }]));
+    expect(screen.queryByRole("button", { name: /Jump to where I am/ })).toBeNull();
+    vi.unstubAllGlobals();
   });
 });

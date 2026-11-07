@@ -23,7 +23,7 @@ describe("iOS scenes follow-ups", () => {
   });
 
   it("the Up next card no longer draws its own mini path, since the map shows the unit", () => {
-    const card = between(browser, "private struct LearnContinueCard", "\n}\n");
+    const card = between(read("LearnFoldViews.swift"), "struct LearnCurrentUnitCard", "\n}\n");
     expect(card).not.toContain("pathNode(");
     expect(card).not.toContain("let path:");
   });

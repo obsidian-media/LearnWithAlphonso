@@ -288,12 +288,15 @@ struct ProfileRecordsLevelSection: View {
 
 struct ProfileWeakAndHectorSection: View {
     let model: ProfileOverviewModel
+    var showWeak = true
+    var showHector = true
     let onPractice: () -> Void
     let onPaywall: () -> Void
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
+            if showWeak {
             ProfileCard(title: "Top weak spots") {
                 if model.weak.top.isEmpty {
                     Text("Nothing is slipping. Words you miss will show up here.")
@@ -316,7 +319,8 @@ struct ProfileWeakAndHectorSection: View {
                         .frame(minHeight: AlphonsoDS.Space.minTouch)
                 }
             }
-            if let hector = model.hector {
+            }
+            if showHector, let hector = model.hector {
                 ProfileCard(title: "Hector noticed") {
                     switch hector {
                     case .pro(let topics):
@@ -340,10 +344,13 @@ struct ProfileWeakAndHectorSection: View {
 struct ProfileProgressSection: View {
     let model: ProfileOverviewModel
     let catalogCount: Int
+    var showAchievements = true
+    var showSocial = true
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
+            if showAchievements {
             ProfileCard(title: "Achievements") {
                 Text("\(model.unlockedCount) of \(catalogCount) unlocked").dsText(.headline).foregroundStyle(ds.brand)
                 if let next = model.next {
@@ -355,6 +362,8 @@ struct ProfileProgressSection: View {
                     Text(next.achievement.description).dsText(.footnote).foregroundStyle(ds.inkSoft)
                 }
             }
+            }
+            if showSocial {
             ProfileCard(title: "League") {
                 Text(model.league.tier.capitalized).dsText(.title).foregroundStyle(ds.brand)
                 if let next = model.league.next {
@@ -378,6 +387,7 @@ struct ProfileProgressSection: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("\(i + 1). \(f.displayName)\(f.isYou ? ", you" : ""), \(f.weekXP) XP this week")
                 }
+            }
             }
         }
     }

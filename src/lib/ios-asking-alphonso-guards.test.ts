@@ -241,16 +241,14 @@ describe("Android: the streak-freeze row is a card", () => {
     learn.indexOf("private fun StatPill"),
   );
 
-  it("sits on parchment with a hairline border and rounded corners, like the other Learn rows", () => {
-    expect(block).toMatch(
-      /\.clip\(RoundedCornerShape\([^)]*\)\)\s*\.background\(palette\.parchment\)/,
-    );
-    expect(block).toContain(".border(1.dp, palette.hairline");
+  it("sits on parchment with a hairline border and rounded corners, like the other Learn rows (round-6 tokens)", () => {
+    expect(block).toMatch(/\.clip\(RoundedCornerShape\([^)]*\)\)\s*\.background\(ds\.card\)/);
+    expect(block).toContain(".border(1.dp, ds.line");
   });
 
   it("its words are ink, and the buy button is the secondary button, not moss text (3.8:1 on Studio Ink)", () => {
-    expect(block).toContain("color = palette.ink,");
+    expect(block).toContain("color = ds.ink,");
     expect(block).toContain("AlphonsoSecondaryButton(");
-    expect(block).not.toMatch(/Color\.White|onPrimary|palette\.moss/);
+    expect(block).not.toMatch(/Color\.White|onPrimary|onAction|palette\.moss|ds\.actionText/);
   });
 });

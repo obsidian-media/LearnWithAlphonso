@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,16 +62,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
     val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     var showSetup by remember { mutableStateOf(false) }
 
     Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp),
+        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         AlphonsoSectionHeader("Learning goal")
         when (state.phase) {
-            GoalPhase.LOADING -> Text("Loading your goal…", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+            GoalPhase.LOADING -> Text("Loading your goal…", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
             GoalPhase.FAILED -> {
                 Text(
                     GoalCopy.loadFailureMessage(state.loadError ?: LearningGoalError.Unavailable, hadCachedPlan = false),
@@ -82,31 +84,31 @@ fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
             GoalPhase.EMPTY -> {
                 Text(
                     "Set a target level and date and we'll work out how many lessons a week it takes.",
-                    style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft,
+                    style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft,
                 )
                 AlphonsoPrimaryButton("Set a learning goal", onClick = { showSetup = true }, fullWidth = false)
             }
             GoalPhase.GOAL -> state.goal?.let { goal ->
-                Text(GoalCopy.headline(goal), style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                Text(GoalCopy.headline(goal), style = MaterialTheme.typography.titleMedium, color = ds.ink)
                 val plan = state.plan
                 if (plan != null) {
                     AlphonsoProgressBar((plan.lessonsInScope - plan.lessonsRemaining).toFloat() / maxOf(plan.lessonsInScope, 1))
-                    Text(GoalCopy.progress(plan), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    Text(GoalCopy.progress(plan), style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
                     // Status is words, never colour alone.
-                    Text(GoalCopy.statusLine(plan.status), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
-                    GoalCopy.weeklyLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
-                    GoalCopy.suggestionLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
-                    GoalCopy.realismLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.ember) }
+                    Text(GoalCopy.statusLine(plan.status), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = ds.ink)
+                    GoalCopy.weeklyLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
+                    GoalCopy.suggestionLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
+                    GoalCopy.realismLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = ds.flame) }
                 } else {
                     // The learner's level has passed this target.
-                    Text("Your level has passed this target. Pick a new target.", style = MaterialTheme.typography.bodyMedium, color = palette.ink)
+                    Text("Your level has passed this target. Pick a new target.", style = MaterialTheme.typography.bodyMedium, color = ds.ink)
                 }
                 if (state.offline) {
                     val asOf = plan?.let { " As of ${GoalCopy.formatDate(it.asOf.take(10))}." }.orEmpty()
-                    Text(LearningGoalError.Offline.userMessage + asOf, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                    Text(LearningGoalError.Offline.userMessage + asOf, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
                 }
                 state.actionError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.destructive) }
-                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AlphonsoSecondaryButton("Change goal", onClick = { showSetup = true }, enabled = !state.offline, fullWidth = false)
                     AlphonsoSecondaryButton("Remove goal", onClick = vm::remove, enabled = !state.offline, fullWidth = false)
@@ -136,6 +138,7 @@ private sealed interface PreviewUi {
 @Composable
 private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDismiss: () -> Unit) {
     val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     var level by remember { mutableStateOf(existing?.targetLevel ?: "B1") }
     var day by remember { mutableStateOf(GoalCopy.atLeastTomorrow(existing?.targetDate ?: GoalCopy.monthsFromToday(6))) }
     var preview by remember { mutableStateOf<PreviewUi>(PreviewUi.Loading) }
@@ -157,7 +160,7 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
         title = { Text("Set a learning goal") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Finish level", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                Text("Finish level", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
                 // FlowRow, not Row: at a large font scale the chips wrap instead of being clipped out of reach.
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     // The five CEFR band ids, shared with the Learn screen's band picker (LearnViewModel.LEVELS).
@@ -165,7 +168,7 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
                         FilterChip(selected = level == l, onClick = { level = l }, label = { Text(l) })
                     }
                 }
-                Text("Target date", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                Text("Target date", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
                 AlphonsoSecondaryButton(GoalCopy.formatDate(day), onClick = { showPicker = true }, fullWidth = false)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(3, 6, 12).forEach { months ->
@@ -173,18 +176,18 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
                     }
                 }
                 when (val p = preview) {
-                    PreviewUi.Loading -> Text("Working it out…", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+                    PreviewUi.Loading -> Text("Working it out…", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
                     is PreviewUi.Failed -> Text(p.message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = palette.destructive)
                     is PreviewUi.Ok -> {
                         val lines = GoalCopy.previewLines(p.plan)
-                        Text(lines.perWeek, style = MaterialTheme.typography.titleSmall, color = palette.ink)
-                        Text(lines.left, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                        GoalCopy.suggestionLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
-                        GoalCopy.realismLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.ember) }
+                        Text(lines.perWeek, style = MaterialTheme.typography.titleSmall, color = ds.ink)
+                        Text(lines.left, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                        GoalCopy.suggestionLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
+                        GoalCopy.realismLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = ds.flame) }
                     }
                 }
                 saveError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
-                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
             }
         },
         confirmButton = {

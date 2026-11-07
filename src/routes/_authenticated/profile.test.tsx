@@ -365,6 +365,16 @@ async function find(selector: string): Promise<HTMLElement> {
   });
 }
 
+/** Profile is three tabs now: go to one, and (on Progress) open a fold by its title. */
+async function openTab(name: "Progress" | "Social") {
+  await userEvent.setup().click(await screen.findByRole("tab", { name }));
+}
+async function openFold(title: RegExp | string) {
+  await userEvent
+    .setup()
+    .click(await screen.findByRole("button", { name: title, expanded: false }));
+}
+
 describe("Profile, round 6", () => {
   it("the hero shows the learner's name and picture from their profile, and Learner without a name", async () => {
     const first = renderPage();
@@ -428,6 +438,8 @@ describe("Profile, round 6", () => {
 
   it("the heat map draws exactly the 3-month window, one square a day", async () => {
     renderPage();
+    await openTab("Progress");
+    await openFold(/^Activity heat map/);
     const grid = await find("[data-heat-start]");
     expect(grid.getAttribute("data-heat-start")).toBe("2026-08-07");
     expect(grid.getAttribute("data-heat-end")).toBe("2026-11-06");
@@ -473,6 +485,8 @@ describe("Profile, round 6", () => {
 
   it("weak spots list the most-missed first, each with Practice", async () => {
     renderPage();
+    await openTab("Progress");
+    await openFold(/^Weak spots/);
     await find("[data-weak-spot]");
     const rows = [...document.querySelectorAll("[data-weak-spot]")].map((e) =>
       e.getAttribute("data-weak-spot"),
@@ -487,6 +501,7 @@ describe("Profile, round 6", () => {
 
   it("friends this week puts me among my friends by XP", async () => {
     renderPage();
+    await openTab("Social");
     await find("[data-friend-row]");
     const rows = [...document.querySelectorAll("[data-friend-row]")].map((e) =>
       e.getAttribute("data-friend-row"),
@@ -500,6 +515,8 @@ describe("Profile, round 6", () => {
     const o = richLearner();
     renderPage();
     await find("[data-big-stat]");
+    await openTab("Progress");
+    await openFold(/^Achievements/);
     await user.click(
       screen.getByRole("button", { name: `${o.achievements.length} of ${ACHIEVEMENTS.length}` }),
     );
@@ -515,10 +532,18 @@ describe("Profile, round 6", () => {
     await screen.findByRole("heading", { level: 1, name: "Alex" });
     expect(screen.getByText("Finish a lesson to start one")).toBeInTheDocument();
     expect(screen.getByText("Your first one is waiting")).toBeInTheDocument();
+    expect(screen.getByText(/Talk in Practice or with Hector/)).toBeInTheDocument();
+    await openTab("Progress");
+    await openFold(/^Activity heat map/);
+    await openFold(/^Weak spots/);
     expect(screen.getByText("Your first lesson lights up a square.")).toBeInTheDocument();
     expect(screen.getByText(/No weak spots yet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your listening, speaking, vocabulary, grammar and reading/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/writing/i)).not.toBeInTheDocument();
+    await openTab("Social");
     expect(screen.getByText(/Learning sticks better with a friend/)).toBeInTheDocument();
-    expect(screen.getByText(/Talk in Practice or with Hector/)).toBeInTheDocument();
     expect(document.querySelector("[data-league]")).toHaveTextContent("300 XP to Sapling");
     expect(document.querySelector("[data-hector-card]")).toBeNull();
   });
