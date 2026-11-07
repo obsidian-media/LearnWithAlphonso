@@ -171,6 +171,7 @@ private fun Stat(value: String, label: String, sub: String, spoken: String, modi
 @Composable
 fun ProfileWeekSection(m: ProfileOverviewModel) {
     val ds = LocalAlphonsoTokens.current
+    val locale = LocalConfiguration.current.locales[0]
     ProfileCard("This week") {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             m.week.days.forEach { d ->
@@ -183,7 +184,7 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                 }
                 Column(
                     Modifier.weight(1f).clearAndSetSemantics {
-                        contentDescription = dow.getDisplayName(java.time.format.TextStyle.FULL, LocalConfiguration.current.locales[0]) + ": " + word
+                        contentDescription = dow.getDisplayName(java.time.format.TextStyle.FULL, locale) + ": " + word
                     },
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
                 ) {
@@ -193,7 +194,7 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                         ProfileMath.RingState.TODAY -> Box(Modifier.size(ringSize).border(3.dp, ds.flame, CircleShape))
                         else -> Box(Modifier.size(ringSize).border(3.dp, ds.line, CircleShape))
                     }
-                    Text(dow.getDisplayName(java.time.format.TextStyle.NARROW, LocalConfiguration.current.locales[0]), style = CaptionType, color = ds.inkSoft)
+                    Text(dow.getDisplayName(java.time.format.TextStyle.NARROW, locale), style = CaptionType, color = ds.inkSoft)
                 }
             }
         }
