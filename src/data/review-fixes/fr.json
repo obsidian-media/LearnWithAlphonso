@@ -7974,6 +7974,20 @@
   },
   "reason": "The explanation is generic and says nothing specific about the word."
  },
+ "fr:question:fra1p17l2/fra1p17q6": {
+  "patch": {
+   "prompt": "The French word for \"screen\" is…",
+   "choices": [
+    "la batterie",
+    "le courriel",
+    "l'écran",
+    "la télévision"
+   ],
+   "explanation": "A screen is \"l'écran\". The masculine \"le\" becomes \"l'\" because \"écran\" starts with a vowel."
+  },
+  "reason": "The key \"internet\" is identical to the English prompt, so the item tests no French; I swapped the target to a non-cognate at the same position, which changes the key.",
+  "keyChange": true
+ },
  "fr:question:fra1p17l2/fra1p17q7": {
   "patch": {
    "explanation": "\"le courriel\" is the official French word for an email. In everyday speech in France people also often say \"le mail\" or \"l'e-mail\"."
@@ -16291,6 +16305,21 @@
    "explanation": "\"fort\" means \"strong\"; it is the masculine form, and it becomes \"forte\" in the feminine."
   },
   "reason": "The feminine 'belle' stands out among masculine forms, and the explanation is generic."
+ },
+ "fr:question:frb1p2l3/frb1p2q10": {
+  "patch": {
+   "prompt": "The French word for \"lazy\" is…",
+   "choices": [
+    "paresseux",
+    "intelligent",
+    "ennuyeux",
+    "jeune"
+   ],
+   "answer": 0,
+   "explanation": "\"paresseux\" means \"lazy\" and describes someone who avoids effort; its feminine form is \"paresseuse\"."
+  },
+  "reason": "The English prompt word is identical to the French answer, so a non-cognate adjective is needed; the answer stays at position A. / English 'intelligent' is spelled the same as the French key, so learners can answer without knowing French; the non-cognate 'lazy' → \"paresseux\" replaces it at the same position, which changes the key.",
+  "keyChange": true
  },
  "fr:question:frb1p2l3/frb1p2q13": {
   "patch": {
