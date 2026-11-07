@@ -154,6 +154,8 @@ struct SettingsView: View {
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
+                SoundEffectsSettingsSection()
+
                 VoicesSettingsSection(session: session)
 
                 Section {

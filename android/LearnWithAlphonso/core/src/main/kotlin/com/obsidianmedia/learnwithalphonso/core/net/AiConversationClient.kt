@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
@@ -78,8 +79,15 @@ class AiConversationClient(private val http: ApiHttp) {
     }
 
     /** `voice` is Alphonso's chosen voice (Settings > Voices); the server uses it only when it is on `course`'s allow-list. */
-    suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null): ByteArray {
-        val response = http.post("api/tts", buildJsonObject { put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course) })
+    /**
+     * `character` is sent only for Hector (his greeting), so a voice the server refuses falls back to his default,
+     * never Alphonso's; the server treats a missing one as Alphonso.
+     */
+    suspend fun synthesizeSpeech(text: String, voice: String? = null, course: String? = null, character: VoiceCharacter? = null): ByteArray {
+        val response = http.post("api/tts", buildJsonObject {
+            put("text", text); if (voice != null) put("voice", voice); if (course != null) put("course", course)
+            if (character != null && character != VoiceCharacter.Alphonso) put("character", character.wire)
+        })
         requireSuccess(response)
         return response.readRawBytes()
     }

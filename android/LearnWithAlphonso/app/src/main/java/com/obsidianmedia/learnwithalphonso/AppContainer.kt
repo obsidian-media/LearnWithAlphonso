@@ -15,6 +15,7 @@ import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
 import com.obsidianmedia.learnwithalphonso.audio.MicPermission
 import com.obsidianmedia.learnwithalphonso.audio.RecordingState
+import com.obsidianmedia.learnwithalphonso.audio.SoundEffectsPlayer
 import com.obsidianmedia.learnwithalphonso.audio.TurnRecorder
 import com.obsidianmedia.learnwithalphonso.auth.EncryptedSessionStore
 import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
@@ -92,6 +93,8 @@ class AppContainer(context: Context) {
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
     val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
     val themeManager = ThemeManager(prefs)
+    /** The short sound effects; loaded on first use (a lesson, a call, Settings). */
+    val soundEffects by lazy { SoundEffectsPlayer(app, prefs) }
     val snapshotCache = LeaderboardSnapshotCache(prefs)
     val recapCache = WeeklyRecapCache(prefs)
     val nudgeCache = NudgeCooldownCache(prefs)

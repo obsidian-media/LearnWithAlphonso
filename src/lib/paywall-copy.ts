@@ -82,3 +82,136 @@ export function paywallDisclosure(
     ? `After the free trial, Alphonso Pro renews automatically at ${recurring} until you cancel. Your card is charged when the trial ends. ${cancel}`
     : `Alphonso Pro renews automatically at ${recurring} until you cancel. Your card is charged when you confirm the purchase. ${cancel}`;
 }
+
+/**
+ * The round-6 paywall (BACKLOG 0.0-bk, the approved "Mix" mock). Web first; iOS and Android take the same words
+ * after sign-off. No price, currency, trial length, saving or daily number lives here: the daily allowance is
+ * "a long conversation every day" (the server's cap stays), and everything priced comes from the offer.
+ */
+export const PRO_PAYWALL_COPY = {
+  kicker: "Alphonso Pro",
+  headlineLead: "A tutor who ",
+  headlineMark: "remembers you",
+  headlineEnd: ".",
+  exampleLabel: "Example call",
+  factsLabel: "What Pro gives you",
+  facts: [
+    { title: "Any topic", detail: "no script" },
+    { title: "Remembers", detail: "your weak spots" },
+    { title: "Every day", detail: "a long conversation" },
+  ],
+  freeLabel: "Free for everyone",
+  freeItems: ["Lessons", "Alphonso calls", "Audio", "Review"],
+  freeNote: "Everything else stays free, always.",
+  plansLabel: "Choose a plan",
+  renewal: "Renews automatically until cancelled. Cancel any time in Manage Subscription.",
+  restore: "Restore purchases",
+  restoreNone: "No Alphonso Pro found on this account.",
+  terms: "Terms",
+  privacy: "Privacy",
+  comingSoonTitle: "Coming soon",
+  comingSoonBody:
+    "Alphonso Pro isn't on sale on the web yet. Hector will be here soon, and everything else stays free in the meantime.",
+  close: "Close",
+  roomAlt: "Hector in his library",
+} as const;
+
+/** "Save 50%": the number is worked out from the two plans' prices (yearlySavingPercent), never typed in. */
+export function savingBadge(percent: number): string {
+  return `Save ${percent}%`;
+}
+
+export const PRO_WELCOME_COPY = {
+  eyebrow: "Welcome to Pro",
+  greeting: (name: string | null) => (name ? `Welcome, ${name}.` : "Welcome to Alphonso Pro."),
+  ready: "Hector's ready.",
+  body: "Start anywhere. He'll remember it next time.",
+  openersTitle: "Try one of these",
+  call: "Call Hector",
+} as const;
+
+type ExampleCall = {
+  recalled: string;
+  before: string;
+  after: string;
+  reply: string;
+  praise: string;
+};
+
+/**
+ * The labelled example call on the top of the paywall: Hector remembering last week's mistake, in the learner's
+ * course. Spanish is the approved mock's exact call.
+ */
+export const EXAMPLE_CALLS: Record<"en" | "fr" | "es", ExampleCall> = {
+  es: {
+    before: "Last week you said ",
+    recalled: "“soy cansado”",
+    after: ". How are you feeling today?",
+    reply: "Estoy cansado, pero feliz.",
+    praise: "¡Perfecto! Estar for feelings. Nailed it.",
+  },
+  fr: {
+    before: "Last week you said ",
+    recalled: "“je suis faim”",
+    after: ". Are you hungry today?",
+    reply: "Oui, j'ai faim !",
+    praise: "Parfait ! Avoir for hunger. Nailed it.",
+  },
+  en: {
+    before: "Last week you said ",
+    recalled: "“I am agree”",
+    after: ". What do you think of the plan?",
+    reply: "I agree, it's a great plan.",
+    praise: "Perfect! Just “I agree”. Nailed it.",
+  },
+};
+
+/** Three easy first lines for the welcome screen, in the learner's course. */
+export const WELCOME_OPENERS: Record<"en" | "fr" | "es", readonly string[]> = {
+  es: [
+    "“Tell me about your weekend”",
+    "“Help me practise ser and estar”",
+    "“Let's chat about a film I like”",
+  ],
+  fr: [
+    "“Tell me about your weekend”",
+    "“Help me practise tu and vous”",
+    "“Let's chat about a film I like”",
+  ],
+  en: [
+    "“Tell me about your weekend”",
+    "“Help me practise the present perfect”",
+    "“Let's chat about a film I like”",
+  ],
+};
+
+/** The example call for a course, by a typed switch rather than a computed key. */
+export function exampleCallFor(course: "en" | "fr" | "es"): ExampleCall {
+  switch (course) {
+    case "es":
+      return EXAMPLE_CALLS.es;
+    case "fr":
+      return EXAMPLE_CALLS.fr;
+    default:
+      return EXAMPLE_CALLS.en;
+  }
+}
+
+/** The welcome openers for a course, by a typed switch rather than a computed key. */
+export function welcomeOpenersFor(course: "en" | "fr" | "es"): readonly string[] {
+  switch (course) {
+    case "es":
+      return WELCOME_OPENERS.es;
+    case "fr":
+      return WELCOME_OPENERS.fr;
+    default:
+      return WELCOME_OPENERS.en;
+  }
+}
+
+/** The first name to pin on the Pro card, or null for a generated Learner-XXXX handle or no name. */
+export function cardFirstName(displayName: string | null | undefined): string | null {
+  const name = displayName?.trim() ?? "";
+  if (!name || /^Learner-[0-9A-F]{4}$/i.test(name)) return null;
+  return name.split(/\s+/)[0] ?? null;
+}

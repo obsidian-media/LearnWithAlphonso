@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
+import com.obsidianmedia.learnwithalphonso.audio.SoundEffectsPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
@@ -13,15 +14,12 @@ import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -69,12 +67,13 @@ abstract class BaseConversationViewModel(
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     private var analysed = false
-    // The opener being fetched or spoken; a press cancels it, which stops its playback. While it holds the phase
-    // (thinking or speaking), stopping it hands the phase back.
-    private var openerJob: Job? = null
-    private var openerActive = false
-    private var openerHoldsPhase = false
-    private var openerToken = 0
+    // The opener being fetched or spoken; a press cancels it, which stops its playback.
+    private val opener by lazy {
+        OpenerSpeaker(
+            viewModelScope, _state, { engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE },
+            player, openerCache, course.code,
+        ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
+    }
 
     protected abstract fun systemPrompt(): String
 
@@ -120,46 +119,10 @@ abstract class BaseConversationViewModel(
      * too. A reply still playing finishes first. Thinking while the voice loads, speaking while it plays; never over
      * a recording. Holding to talk cancels it, which stops its playback.
      */
-    fun speakOpener() {
-        if (pendingOpener == null || openerActive) return
-        openerActive = true
-        val token = ++openerToken
-        openerJob = viewModelScope.launch {
-            try {
-                _state.first { it.phase == ConversationPhase.IDLE }
-                val text = pendingOpener ?: return@launch
-                if (engine.phase.value != com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE) return@launch
-                openerHoldsPhase = true
-                _state.update { it.copy(phase = ConversationPhase.THINKING) }
-                val voice = alphonsoVoice(course.code)
-                val audio = openerCache.audio(text, voice, course.code) { ai.synthesizeSpeech(text, voice = voice, course = course.code) }
-                _state.update { it.copy(phase = ConversationPhase.SPEAKING) }
-                player.play(audio)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // The line is already on screen: a missing voice is not an error to show.
-            } finally {
-                // Only the current opener hands the phase back: one that was stopped (a press, leaving) may finish
-                // after a newer opener started, and must not clear that one's flags.
-                if (openerActive && openerToken == token) {
-                    openerActive = false
-                    if (openerHoldsPhase) _state.update { it.copy(phase = ConversationPhase.IDLE) }
-                    openerHoldsPhase = false
-                }
-            }
-        }
-    }
+    fun speakOpener() = opener.speak({ pendingOpener }, { alphonsoVoice(course.code) })
 
     /** The learner talked over the opener, or left: cancel it, which stops its playback. */
-    private fun stopOpener() {
-        if (!openerActive) return
-        openerActive = false
-        openerJob?.cancel()
-        openerJob = null
-        if (openerHoldsPhase) _state.update { it.copy(phase = ConversationPhase.IDLE) }
-        openerHoldsPhase = false
-    }
+    private fun stopOpener() = opener.stop()
 
     private suspend fun sendTurn(text: String, confidence: Double?) {
         _state.update { s ->
