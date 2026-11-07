@@ -45,6 +45,7 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // function grade-review already used to re-derive review-item correctness.
 import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
+import { recordLessonProfileData } from "../_shared/profile-data.ts";
 import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
 // Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
@@ -333,12 +334,14 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
 
   const questionById = new Map(lesson.questions.map((q) => [q.id, q]));
   const missedQuestionIds: string[] = [];
+  const graded: { type: string; correct: boolean }[] = [];
   for (const { questionId, answer } of answers) {
     // Safe: validateLessonAnswerCoverage already proved questionId is a
     // real id in this lesson.
     const question = questionById.get(questionId)!;
     const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);
     if (!isCorrect) missedQuestionIds.push(questionId);
+    graded.push({ type: question.type, correct: isCorrect });
   }
   if (consent && !(await consent)) {
     console.log(
@@ -532,6 +535,13 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
     return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
   }
+
+  // Profile data: the lesson's time and each answer's result by this server's own grading. Never fails the save.
+  await recordLessonProfileData(admin, userId, {
+    sessionIssuedAtMs: sessionIssuedAt,
+    nowMs: now.getTime(),
+    graded,
+  });
 
   const settled = await settleLessonHearts(
     deps,

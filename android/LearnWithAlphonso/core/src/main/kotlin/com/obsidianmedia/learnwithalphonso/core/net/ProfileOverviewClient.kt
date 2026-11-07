@@ -9,10 +9,15 @@ import com.obsidianmedia.learnwithalphonso.core.profile.ProfileOverviewData
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileSpeechDay
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileWeakItem
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileWeaknessEvent
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileLeagueStanding
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileLearningDay
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileSkillDay
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * The Profile's one batched read (visual round 6, part 4): the same tables and filters as the web's getProfileOverview
@@ -51,6 +56,48 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
     // The friends board is secondary: if it fails the rest of Profile still shows.
     val friends = async { try { fetchFriendsProgress() } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyList() } }
 
+    // Profile data reads are secondary too: a failure leaves that part empty, never the whole screen.
+    suspend fun <T> secondary(fallback: T, block: suspend () -> T): T =
+        try { block() } catch (e: CancellationException) { throw e } catch (e: Exception) { fallback }
+    val learning = async {
+        secondary(emptyList()) {
+            rows("learning_days", mapOf("select" to "day,lesson_seconds,practice_seconds", "day" to "gte.${ProfileMath.weekStart(today)}"))
+                .mapNotNull { r -> ProfileLearningDay(r.string("day") ?: return@mapNotNull null, r.int("lesson_seconds") ?: 0, r.int("practice_seconds") ?: 0) }
+        }
+    }
+    val mastered = async {
+        secondary(0) {
+            val response = http.rest(
+                HttpMethod.Get, "mastered_words",
+                mapOf("select" to "item_key", "user_id" to me, "language" to "eq.$course", "limit" to "1"),
+                headers = mapOf("Prefer" to "count=exact"),
+            )
+            http.requireSuccess(response)
+            response.headers["Content-Range"]?.substringAfter('/')?.toIntOrNull() ?: 0
+        }
+    }
+    val league = async {
+        secondary<ProfileLeagueStanding?>(null) {
+            val r = rowsOf(http.rpc("get_my_league_standing", buildJsonObject { put("_course", course) })).firstOrNull()
+            val tier = r?.string("league_tier")
+            val start = r?.string("week_start")
+            val end = r?.string("week_end")
+            if (r == null || tier == null || start == null || end == null) null
+            else ProfileLeagueStanding(tier, r.int("rank") ?: 0, r.int("size") ?: 0, start, end, r.int("week_xp") ?: 0)
+        }
+    }
+    val zone = async {
+        secondary<String?>(null) { rows("learner_time_zones", mapOf("select" to "time_zone")).firstOrNull()?.string("time_zone") }
+    }
+    val skills = async {
+        secondary(emptyList()) {
+            rows("skill_days", mapOf("select" to "day,skill,right_answers,total_answers", "day" to "gte.${ProfileMath.addDays(today, -(ProfileMath.SKILL_WINDOW_DAYS - 1))}"))
+                .mapNotNull { r ->
+                    ProfileSkillDay(r.string("day") ?: return@mapNotNull null, r.string("skill") ?: return@mapNotNull null, r.int("right_answers") ?: 0, r.int("total_answers") ?: 0)
+                }
+        }
+    }
+
     val p = profile.await().firstOrNull()
     val u = prog.await().firstOrNull()
     ProfileOverviewData(
@@ -84,5 +131,10 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
             ProfileAchievementRow(r.string("achievement_id") ?: return@mapNotNull null, r.int("progress") ?: 0, r.string("unlocked_at"))
         },
         friends = friends.await(),
+        learning = learning.await(),
+        masteredWords = mastered.await(),
+        league = league.await(),
+        timeZone = zone.await(),
+        skills = skills.await(),
     )
 }

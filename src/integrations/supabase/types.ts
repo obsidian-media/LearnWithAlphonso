@@ -859,6 +859,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      learner_time_zones: {
+        Row: {
+          time_zone: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          time_zone: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          time_zone?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      learning_days: {
+        Row: {
+          day: string;
+          lesson_seconds: number;
+          practice_seconds: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          day: string;
+          lesson_seconds?: number;
+          practice_seconds?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          day?: string;
+          lesson_seconds?: number;
+          practice_seconds?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       learning_goals: {
         Row: {
           created_at: string;
@@ -1023,6 +1065,27 @@ export type Database = {
           id?: string;
           name?: string;
           sort_order?: number;
+        };
+        Relationships: [];
+      };
+      mastered_words: {
+        Row: {
+          item_key: string;
+          language: string;
+          mastered_at: string;
+          user_id: string;
+        };
+        Insert: {
+          item_key: string;
+          language: string;
+          mastered_at?: string;
+          user_id: string;
+        };
+        Update: {
+          item_key?: string;
+          language?: string;
+          mastered_at?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -1830,6 +1893,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      skill_days: {
+        Row: {
+          day: string;
+          right_answers: number;
+          skill: string;
+          total_answers: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          day: string;
+          right_answers?: number;
+          skill: string;
+          total_answers?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          day?: string;
+          right_answers?: number;
+          skill?: string;
+          total_answers?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       speech_days: {
         Row: {
           day: string;
@@ -2353,6 +2443,18 @@ export type Database = {
           ok: boolean;
         }[];
       };
+      add_learning_seconds: {
+        Args: {
+          _lesson_seconds: number;
+          _practice_seconds: number;
+          _user_id: string;
+        };
+        Returns: string;
+      };
+      add_skill_results: {
+        Args: { _results: Json; _user_id: string };
+        Returns: number;
+      };
       add_speech_seconds: {
         Args: { _seconds: number; _user_id: string };
         Returns: string;
@@ -2616,6 +2718,17 @@ export type Database = {
           winner_id: string;
         }[];
       };
+      get_my_league_standing: {
+        Args: { _course: string };
+        Returns: {
+          league_tier: string;
+          rank: number;
+          size: number;
+          week_end: string;
+          week_start: string;
+          week_xp: number;
+        }[];
+      };
       get_my_name_status: {
         Args: never;
         Returns: {
@@ -2849,6 +2962,10 @@ export type Database = {
       set_cefr_level: {
         Args: { _language: string; _level: string };
         Returns: undefined;
+      };
+      set_learner_time_zone: {
+        Args: { _time_zone: string; _user_id: string };
+        Returns: string;
       };
       settle_lesson_hearts: {
         Args: {

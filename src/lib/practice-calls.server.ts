@@ -1,6 +1,7 @@
 import { CAMPAIGNS } from "../data/campaigns";
 import type { ReplyVerdict } from "./chat-verdict";
 import { practiceItemForPrompt } from "./practice-catalog";
+import { recordSkillResults } from "./profile-data.server";
 import { STAR_RULE, measureReply, starsForCall } from "./practice-stars";
 
 /**
@@ -50,7 +51,16 @@ export async function recordPracticeReply(
       _short: m.short,
       _english: m.english,
     });
-    if (!error) return true;
+    if (!error) {
+      // Practice replies are the speaking skill: right when the model judged it correct, wrong when it corrected
+      // it, nothing when it could not tell (greeting, question). Counted only for a reply recorded in a real call.
+      if (params.verdict !== "none") {
+        await recordSkillResults(client, params.userId, [
+          { skill: "speaking", right: params.verdict === "correct" ? 1 : 0, total: 1 },
+        ]);
+      }
+      return true;
+    }
   } catch {
     // fall through
   }

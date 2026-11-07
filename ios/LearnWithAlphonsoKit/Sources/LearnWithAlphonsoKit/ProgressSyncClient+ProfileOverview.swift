@@ -35,6 +35,42 @@ extension ProgressSyncClient {
         return range.flatMap { $0.split(separator: "/").last }.flatMap { Int($0) } ?? 0
     }
 
+    /// Mastered words (kept after review retires them), counted by the server.
+    private func masteredWordCount(userID: String, course: String) async throws -> Int {
+        var request = restRequest(path: "mastered_words", query: [
+            URLQueryItem(name: "select", value: "item_key"),
+            URLQueryItem(name: "user_id", value: "eq.\(userID)"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+            URLQueryItem(name: "limit", value: "1"),
+        ])
+        request.httpMethod = "GET"
+        request.setValue("count=exact", forHTTPHeaderField: "Prefer")
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        let range = (response as? HTTPURLResponse)?.allHeaderFields
+            .first { ($0.key as? String)?.lowercased() == "content-range" }?.value as? String
+        return range.flatMap { $0.split(separator: "/").last }.flatMap { Int($0) } ?? 0
+    }
+
+    private func leagueStanding(course: String) async throws -> ProfileLeagueStanding? {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_my_league_standing"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_course": course])
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        guard let r = rows.first, let tier = r["league_tier"] as? String, let rank = r["rank"] as? Int,
+              let size = r["size"] as? Int, let start = r["week_start"] as? String, let end = r["week_end"] as? String
+        else { return nil }
+        return ProfileLeagueStanding(leagueTier: tier, rank: rank, size: size, weekStart: start, weekEnd: end,
+                                     weekXP: r["week_xp"] as? Int ?? 0)
+    }
+
     public func fetchProfileOverview(userID: String, course: String, now: Date = Date()) async throws -> ProfileOverviewData {
         let today = ProfileMath.streakToday(now: now)
         let from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(today: today).start)
@@ -92,6 +128,24 @@ extension ProgressSyncClient {
         // The friends board is secondary: if it fails the rest of Profile still shows.
         async let friends = try? fetchFriendsProgress()
 
+        // The Profile-data reads are secondary like the friends board: a failure leaves them empty.
+        async let learning = try? profileRows("learning_days", [
+            URLQueryItem(name: "select", value: "day,lesson_seconds,practice_seconds"),
+            URLQueryItem(name: "user_id", value: me),
+            URLQueryItem(name: "day", value: "gte.\(ProfileMath.weekStart(today))"),
+        ])
+        async let mastered = try? masteredWordCount(userID: userID, course: course)
+        async let league = try? leagueStanding(course: course)
+        async let zone = try? profileRows("learner_time_zones", [
+            URLQueryItem(name: "select", value: "time_zone"),
+            URLQueryItem(name: "user_id", value: me),
+        ])
+        async let skillRows = try? profileRows("skill_days", [
+            URLQueryItem(name: "select", value: "day,skill,right_answers,total_answers"),
+            URLQueryItem(name: "user_id", value: me),
+            URLQueryItem(name: "day", value: "gte.\(ProfileMath.addDays(today, -(ProfileMath.skillWindowDays - 1)))"),
+        ])
+
         let p = try await profile.first
         let u = try await prog.first
         return ProfileOverviewData(
@@ -134,6 +188,18 @@ extension ProgressSyncClient {
                     ProfileAchievementRow(id: $0, progress: r["progress"] as? Int ?? 0, unlockedAt: r["unlocked_at"] as? String)
                 }
             },
-            friends: await friends ?? [])
+            friends: await friends ?? [],
+            learning: (await learning ?? []).compactMap { r in
+                (r["day"] as? String).map {
+                    ProfileLearningDay(day: $0, lessonSeconds: r["lesson_seconds"] as? Int ?? 0, practiceSeconds: r["practice_seconds"] as? Int ?? 0)
+                }
+            },
+            masteredWords: await mastered ?? 0,
+            league: (await league) ?? nil,
+            timeZone: (await zone)?.first?["time_zone"] as? String,
+            skills: (await skillRows ?? []).compactMap { r in
+                guard let d = r["day"] as? String, let s = r["skill"] as? String else { return nil }
+                return ProfileSkillDay(day: d, skill: s, right: r["right_answers"] as? Int ?? 0, total: r["total_answers"] as? Int ?? 0)
+            })
     }
 }
