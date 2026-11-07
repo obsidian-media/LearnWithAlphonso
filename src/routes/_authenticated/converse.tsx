@@ -1,29 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { MobileFrame } from "../../components/AppShell";
-import { SceneBackdrop } from "../../components/SceneBackdrop";
-import { useMemo } from "react";
-import { campaignsFor } from "../../data/campaigns";
-import { scenariosFor } from "../../data/scenarios";
+import { PracticeHub, type StartTarget } from "../../components/practice/PracticeHub";
 import { useProgress } from "../../lib/progress";
-import { tileTone } from "../../lib/tile-tones";
-import { Icon3D } from "../../components/Icon3D";
-import { TileCard } from "../../components/ui/TileCard";
-import { HectorInvite } from "../../components/HectorInvite";
+import { useAvatarPreference } from "../../lib/avatar/preference";
+import { fetchPracticeHub } from "../../lib/practice-api";
 
 export const Route = createFileRoute("/_authenticated/converse")({
   component: ConversePage,
   head: () => ({
     meta: [
-      { title: "Converse — Alphonso" },
+      { title: "Practice — Alphonso" },
       {
         name: "description",
-        content: "Voice roleplay with an AI English tutor: coffee shop, job interview, and more.",
+        content: "Voice roleplay with an AI tutor: scenes, campaigns and stars for every call.",
       },
-      { property: "og:title", content: "Converse — Alphonso" },
+      { property: "og:title", content: "Practice — Alphonso" },
       {
         property: "og:description",
-        content: "Practice real English conversations with an AI tutor.",
+        content: "Practice real conversations with an AI tutor.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -31,106 +27,43 @@ export const Route = createFileRoute("/_authenticated/converse")({
   }),
 });
 
+/** The Practice hub: the learner's stars, today's pick and their campaign, loaded per course from /api/practice. */
 function ConversePage() {
-  // Titles, blurbs and the linked conversation follow the active course.
   const course = useProgress((s) => s.course);
-  const scenarios = useMemo(() => scenariosFor(course), [course]);
-  const campaigns = useMemo(() => campaignsFor(course), [course]);
+  const callByDefault = useAvatarPreference((s) => s.enabled);
+  const hydrate = useAvatarPreference((s) => s.hydrate);
+  useEffect(() => hydrate(), [hydrate]);
+  const navigate = useNavigate();
+  // Always fresh on arrival: a call that just ended changes the stars and "Continue".
+  const hub = useQuery({
+    queryKey: ["practice-hub", course],
+    queryFn: () => fetchPracticeHub(course),
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+  const start = (t: StartTarget) => {
+    if (t.kind === "scenario") {
+      void navigate({
+        to: "/converse/$scenarioId",
+        params: { scenarioId: t.scenarioId },
+        search: { mode: t.mode },
+      });
+    } else {
+      void navigate({
+        to: "/campaign/$campaignId",
+        params: { campaignId: t.campaignId },
+        search: { scene: t.sceneIndex, mode: t.mode },
+      });
+    }
+  };
   return (
     <MobileFrame>
-      <SceneBackdrop scene="practice" focus="50% 80%" />
-      <div className="relative z-10 px-6 pb-10 pt-6">
-        <div
-          data-surface
-          className="rounded-3xl bg-surface/85 p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] backdrop-blur-md"
-        >
-          <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
-            Practice out loud
-          </h1>
-          <p className="mt-1.5 max-w-[320px] text-sm text-ink-soft">
-            Pick a scene and roleplay with an AI tutor. Type or hold to speak and get a natural
-            reply back.
-          </p>
-        </div>
-
-        {/* The cafe shows through here, then the scenes slide over it on a sheet. */}
-        <div aria-hidden="true" className="h-40" />
-
-        <div
-          data-sheet
-          className="-mx-6 rounded-t-[2rem] bg-surface/95 px-6 pb-2 pt-6 shadow-[0_-12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md"
-        >
-          {/* Pro's one feature is Hector: offered where a learner is already practising speaking. Hidden for Pro. */}
-          <div>
-            <HectorInvite source="practice_hector_card" />
-          </div>
-
-          {/* V4 candidate #4: connected multi-scene campaigns, additive
-            alongside the one-shot scenarios below -- see
-            docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md */}
-          {campaigns.length > 0 && (
-            <div className="mt-7 grid grid-cols-1 gap-3">
-              <h2 className="font-display text-xl font-bold text-ink">Campaigns</h2>
-              {campaigns.map((c, i) => (
-                <motion.div
-                  key={c.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <Link
-                    to="/campaign/$campaignId"
-                    params={{ campaignId: c.id }}
-                    data-campaign-hero=""
-                    className="card-lift flex items-center gap-4 rounded-3xl bg-gradient-to-br from-moss to-moss-deep p-4 text-primary-foreground transition-transform active:scale-[0.99]"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">
-                        Campaign · {c.level}
-                      </p>
-                      <h2 className="mt-0.5 font-display text-xl font-bold leading-tight">
-                        {c.title}
-                      </h2>
-                      <p className="mt-0.5 text-xs">{c.blurb}</p>
-                      <span className="mt-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">
-                        {c.scenes.length} scenes
-                      </span>
-                    </div>
-                    <Icon3D emoji={c.emoji} size={64} className="shrink-0" />
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          )}
-
-          <h2 className="mb-3 mt-8 font-display text-xl font-bold text-ink">Scenarios</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {scenarios.map((s, i) => (
-              <motion.div
-                key={s.id}
-                data-scenario-tile=""
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Link
-                  to="/converse/$scenarioId"
-                  params={{ scenarioId: s.id }}
-                  className="block h-full rounded-3xl transition-transform active:scale-[0.98]"
-                >
-                  <TileCard
-                    tone={tileTone(i)}
-                    icon={s.emoji}
-                    title={s.title}
-                    subtitle={s.blurb}
-                    badge={s.level}
-                  />
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PracticeHub
+        course={course}
+        data={hub.data ?? null}
+        initialMode={callByDefault ? "call" : "chat"}
+        onStart={start}
+      />
     </MobileFrame>
   );
 }
