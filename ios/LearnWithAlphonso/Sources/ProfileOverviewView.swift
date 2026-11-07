@@ -125,19 +125,19 @@ struct ProfileHeroSection: View {
     private var numbers: some View {
         let b = model.big
         return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-            stat(String(b.streak), "day streak", "Longest \(b.longestStreak)",
+            statTile(String(b.streak), "day streak", "Longest \(b.longestStreak)",
                  "\(b.streak) day streak, longest \(b.longestStreak)")
-            stat(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
+            statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
                  "\(b.courseXP) XP in \(course.label), \(b.xpThisWeek) this week")
-            stat(String(b.wordsLearned), "words learned", "\(b.savedWords) saved",
+            statTile(String(b.wordsLearned), "words learned", "\(b.savedWords) saved",
                  "\(b.wordsLearned) words learned, \(b.savedWords) saved")
-            stat(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
+            statTile(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
                  b.accuracyPct.map { "\($0)% accuracy" } ?? "No lessons yet",
                  "\(b.lessonsDone) lessons done, " + (b.accuracyPct.map { "\($0) percent accuracy" } ?? "no lessons yet"))
         }
     }
 
-    private func stat(_ value: String, _ label: String, _ sub: String, _ spoken: String) -> some View {
+    private func statTile(_ value: String, _ label: String, _ sub: String, _ spoken: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value).dsText(.numeralXL).foregroundStyle(ds.onHero)
             Text(label).dsText(.footnote).foregroundStyle(ds.onHero)

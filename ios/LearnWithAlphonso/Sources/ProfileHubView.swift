@@ -90,8 +90,8 @@ struct ProfileHubView: View {
             .refreshable { await load() }
         }
         .tint(AlphonsoColor.moss)
-        .sheet(item: $destination) { destination in
-            switch destination {
+        .sheet(item: $destination) { target in
+            switch target {
             case .league:
                 LeaderboardView(session: session)
             case .friends:
@@ -141,6 +141,7 @@ extension ProfileHubView {
             let course = activeCourse.course
             Group {
                 ProfileHeroSection(model: m, course: course, onCourse: { activeCourse.course = $0 }, onPicture: { destination = .picture })
+                    .sceneScrollProbe()
                 if !m.hasAnyActivity {
                     Text("Your first lesson starts your streak and fills in this page.")
                         .dsText(.body)

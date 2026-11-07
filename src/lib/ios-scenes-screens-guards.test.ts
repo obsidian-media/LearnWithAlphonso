@@ -162,27 +162,19 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
   const profile = read("ProfileHubView.swift");
   const components = read("DesignSystem/AlphonsoComponents.swift");
 
-  it("the hall of achievements is behind Profile, with a hero row at the top", () => {
+  it("the hall of achievements is behind Profile, with the overview hero at the top", () => {
     expect(profile).toContain(".screenScene(.profile)");
     expect(profile).not.toContain(".background(AlphonsoColor.surface)");
-    expect(profile).toContain("ProfileHero()");
+    expect(profile).toContain("ProfileHeroSection(");
     expect(profile).toContain(".sceneScrollProbe()");
-    const hero = from(profile, "private struct ProfileHero: View");
-    expect(hero).toContain("minHeight: 190");
-    expect(hero).toContain(".alphonsoGlass(");
+    expect(read("ProfileOverviewView.swift")).toContain("struct ProfileHeroSection: View");
   });
 
-  it("tracks nothing new: the hub still loads no progress, so the hero shows no numbers", () => {
-    for (const forbidden of [
-      "syncQueueStore",
-      "lastKnownProgress",
-      "ProgressSyncClient",
-      ".task",
-      "xp",
-      "streak",
-    ]) {
+  it("loads the overview only through the own-row Kit read, never the offline queue or cached progress", () => {
+    for (const forbidden of ["syncQueueStore.", "lastKnownProgress"]) {
       expect(profile, forbidden).not.toContain(forbidden);
     }
+    expect(profile).toContain("fetchProfileOverview");
   });
 
   it("the four menu cards are the same four, as glass cards that open the same destinations", () => {

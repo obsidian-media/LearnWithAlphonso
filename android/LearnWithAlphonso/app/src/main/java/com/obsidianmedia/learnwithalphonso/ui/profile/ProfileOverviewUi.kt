@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -182,7 +183,7 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                 }
                 Column(
                     Modifier.weight(1f).clearAndSetSemantics {
-                        contentDescription = dow.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) + ": " + word
+                        contentDescription = dow.getDisplayName(java.time.format.TextStyle.FULL, LocalConfiguration.current.locales[0]) + ": " + word
                     },
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
                 ) {
@@ -192,7 +193,7 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                         ProfileMath.RingState.TODAY -> Box(Modifier.size(ringSize).border(3.dp, ds.flame, CircleShape))
                         else -> Box(Modifier.size(ringSize).border(3.dp, ds.line, CircleShape))
                     }
-                    Text(dow.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.getDefault()), style = CaptionType, color = ds.inkSoft)
+                    Text(dow.getDisplayName(java.time.format.TextStyle.NARROW, LocalConfiguration.current.locales[0]), style = CaptionType, color = ds.inkSoft)
                 }
             }
         }

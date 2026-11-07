@@ -35,6 +35,8 @@ const EXPECTED_SITES: Record<string, number> = {
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Country.swift": 1,
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/SocialClient.kt": 4, // + the own-row country GET (Complete your profile)
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProgressSyncClient.kt": 2,
+  // Profile overview: display_name, avatar_seed, country, own row (id = me).
+  "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProfileOverviewClient.kt": 1,
 };
 
 function walk(dir: string, out: string[] = []): string[] {
