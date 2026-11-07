@@ -78,7 +78,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         opener: {
           en: "Hi! Great, you're here. It's sunny, so let's have a picnic in the park today. Are you free at one o'clock?",
           fr: "Salut ! Super, tu es là. Il fait beau, alors on fait un pique-nique au parc aujourd'hui ? Tu es libre à une heure ?",
-          es: "¡Hola! Qué bueno que viniste. Hace sol, así que hagamos un picnic en el parque hoy. ¿Estás libre a la una?",
+          es: "¡Hola! Qué bueno verte. Hace sol y quiero hacer un picnic en el parque hoy. ¿Estás libre a la una?",
         },
       },
       {
@@ -146,9 +146,9 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
           ),
         },
         opener: {
-          en: "Mmm, everything looks so good! I brought the drinks. Do you want some water or some juice?",
+          en: "Mmm, everything looks so good! I have the drinks. Do you want some water or some juice?",
           fr: "Mmm, tout a l'air délicieux ! J'ai apporté les boissons. Tu veux de l'eau ou du jus ?",
-          es: "¡Mmm, todo se ve delicioso! Yo traje las bebidas. ¿Quieres agua o jugo?",
+          es: "¡Mmm, todo se ve delicioso! Aquí están las bebidas. ¿Quieres agua o jugo?",
         },
       },
     ],
@@ -171,8 +171,8 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
     },
     premise: {
       en: "A friend has invited the learner to dinner at her home. This roleplay follows one evening: arriving at the door with a small gift, sitting down to eat, and saying goodbye at the end of the night. It is one host, one meal and one evening, so she may mention things from earlier in the evening if it comes up naturally. Keep the language polite, warm and simple.",
-      fr: "Contexte : une amie a invité l'apprenant à dîner chez elle, à Lille. Ce jeu de rôle suit une soirée : arriver à la porte avec un petit cadeau, se mettre à table, puis dire au revoir en fin de soirée. C'est la même hôtesse, le même repas et la même soirée : tu peux mentionner naturellement ce qui s'est passé plus tôt si l'occasion se présente. Reste poli, chaleureux et simple. Toute la conversation se déroule en français.",
-      es: "Contexto: una amiga invitó al estudiante a cenar en su casa, en Medellín. Este juego de rol sigue una noche: llegar a la puerta con un pequeño regalo, sentarse a comer y despedirse al final de la velada. Es la misma anfitriona, la misma comida y la misma noche: puedes mencionar con naturalidad lo que pasó antes si surge. Mantén un trato cortés, cálido y sencillo. Toda la conversación es en español.",
+      fr: "Contexte : une amie a invité l'apprenant à dîner chez elle, à Lille. Ce jeu de rôle suit une soirée : arriver à la porte avec un petit cadeau, se mettre à table, puis dire au revoir en fin de soirée. C'est la même hôtesse, le même repas et la même soirée : tu peux mentionner naturellement ce qui s'est passé plus tôt si l'occasion se présente. Reste polie, chaleureuse et simple, et tutoie l'apprenant, car vous êtes amis. Toute la conversation se déroule en français.",
+      es: "Contexto: una amiga invitó al estudiante a cenar en su casa, en Medellín. Este juego de rol sigue una noche: llegar a la puerta con un pequeño regalo, sentarse a comer y despedirse al final de la noche. Es la misma anfitriona, la misma comida y la misma noche: puedes mencionar con naturalidad lo que pasó antes si surge. La anfitriona es amiga del estudiante: trátalo siempre de tú (nunca de vos ni de usted), con un trato amable, cálido y sencillo. Usa palabras muy sencillas y cotidianas. Toda la conversación es en español.",
     },
     scenes: [
       {
@@ -299,9 +299,9 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
       es: "Ask the driver for help, describe your bag at the lost property office in Santiago, and tell a friend the story.",
     },
     premise: {
-      en: "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost property office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus line, the colour of the bag) if it comes up naturally. The story is told in the past, so encourage past-tense sentences.",
+      en: "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost property office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus route, the color of the bag) if it comes up naturally. When the learner tells the friend the story, encourage past-tense sentences.",
       fr: "Contexte : l'apprenant a oublié un sac dans un bus de Strasbourg cet après-midi. Ce jeu de rôle suit la suite : demander de l'aide à un conducteur au terminus, décrire le sac au bureau des objets trouvés, puis raconter toute l'histoire dans l'ordre à une amie. C'est le même après-midi et le même sac : tu peux reprendre naturellement les détails déjà donnés (la ligne de bus, la couleur du sac) si l'occasion se présente. L'histoire se raconte au passé : encourage les phrases au passé. Toute la conversation se déroule en français.",
-      es: "Contexto: el estudiante olvidó una mochila en un autobús de Santiago esta tarde. Este juego de rol sigue lo que pasa después: pedir ayuda a un conductor en la terminal, describir la mochila en la oficina de objetos extraviados y, más tarde, contarle toda la historia en orden a un amigo. Es la misma tarde y la misma mochila: puedes retomar con naturalidad los detalles ya dados (la línea del autobús, el color de la mochila) si surge. La historia se cuenta en pasado: anima a usar frases en pasado. Toda la conversación es en español.",
+      es: "Contexto: el estudiante olvidó una mochila en un autobús de Santiago esta tarde. Este juego de rol sigue lo que pasa después: pedir ayuda a un conductor en la terminal, describir la mochila en la oficina de objetos extraviados y, más tarde, contarle toda la historia en orden a un amigo. Es la misma tarde y la misma mochila: puedes retomar con naturalidad los detalles ya dados (la línea del autobús, el color de la mochila) si surge. La historia se cuenta en pasado: anima a usar frases en pasado. Usa usted con el conductor y con el empleado de objetos extraviados, y tú con el amigo; no cambies de trato dentro de una misma escena. Toda la conversación es en español.",
     },
     scenes: [
       {
@@ -429,8 +429,8 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
     },
     premise: {
       en: 'The learner has had two small problems with things they bought: a kettle that stopped working and an online parcel that never arrived. This roleplay follows the week: taking the kettle back to the shop, writing to online customer support about the parcel, and chatting with a friend about whether they would shop in those places again. Everything is polite and practical; the shops and services are invented. Use natural, B1-level language, including polite conditionals ("I\'d like", "Could you", "If you could").',
-      fr: "Contexte : l'apprenant a eu deux petits problèmes avec des achats : une bouilloire qui ne marche plus et un colis commandé en ligne qui n'est jamais arrivé. Ce jeu de rôle suit la semaine à Rennes : rapporter la bouilloire au magasin, écrire au service client en ligne à propos du colis, puis discuter avec un ami pour savoir si l'apprenant rachèterait dans ces endroits. Tout reste poli et pratique ; les magasins et les services sont inventés. Utilise un français naturel de niveau intermédiaire, avec des formules polies au conditionnel (« je voudrais », « pourriez-vous », « si vous pouviez »). Toute la conversation se déroule en français.",
-      es: "Contexto: el estudiante tuvo dos pequeños problemas con cosas que compró: una tetera eléctrica que dejó de funcionar y un paquete en línea que nunca llegó. Este juego de rol sigue la semana en Monterrey: devolver la tetera a la tienda, escribirle al servicio de atención en línea por el paquete y conversar con un amigo sobre si volvería a comprar en esos lugares. Todo es cortés y práctico; las tiendas y los servicios son inventados. Usa un español natural de nivel intermedio, con fórmulas corteses en condicional («quisiera», «podría», «si pudiera»). Toda la conversación es en español.",
+      fr: "Contexte : l'apprenant a eu deux petits problèmes avec des achats : une bouilloire qui ne marche plus et un colis commandé en ligne qui n'est jamais arrivé. Ce jeu de rôle suit une semaine à Rennes : rapporter la bouilloire au magasin, écrire au service client en ligne à propos du colis, puis discuter avec un ami pour savoir si l'apprenant rachèterait dans ces endroits. Tout reste poli et pratique ; les magasins et les services sont inventés. Utilise un français naturel de niveau intermédiaire, avec des formules polies au conditionnel (« je voudrais », « pourriez-vous », « si vous pouviez »). Utilise le vouvoiement avec le vendeur et le service client, et le tutoiement avec l'ami ; ne change pas de registre au sein d'une même scène. Toute la conversation se déroule en français.",
+      es: "Contexto: el estudiante tuvo dos pequeños problemas con cosas que compró: una tetera eléctrica que dejó de funcionar y un paquete de una compra en línea que nunca llegó. Este juego de rol sigue la semana en Monterrey: devolver la tetera a la tienda, escribirle al servicio de atención en línea por el paquete y conversar con un amigo sobre si volvería a comprar en esos lugares. Todo es cortés y práctico; las tiendas y los servicios son inventados. Usa un español natural de nivel intermedio, con fórmulas corteses como «quisiera», «podría» y «¿sería posible…?». Usa usted con el empleado de la tienda y con el servicio de atención, y tú con el amigo; no cambies de trato dentro de una misma escena. Toda la conversación es en español.",
     },
     scenes: [
       {
@@ -533,7 +533,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
           ),
         },
         opener: {
-          en: "So, did you get everything sorted out this week? Honestly, would you ever shop there again?",
+          en: "So, did you get everything sorted out with the shopping this week?",
           fr: "Alors, est-ce que tout s'est arrangé cette semaine ? Franchement, tu y retournerais, toi ?",
           es: "Entonces, ¿se arregló todo esta semana? La verdad, ¿tú volverías a comprar ahí?",
         },

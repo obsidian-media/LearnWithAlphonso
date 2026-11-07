@@ -267,6 +267,15 @@ describe("French and Spanish personas address the learner without assuming a gen
     "Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence.";
   const ES_RULE =
     "No supongas el género del estudiante: evita adjetivos, participios y tratamientos que lo marquen (bienvenido o bienvenida, listo o lista, señor o señora) y usa fórmulas neutras (por ejemplo, «le damos la bienvenida» o «¿Empezamos?» en lugar de «¿Está listo?»), salvo que el estudiante indique su género o su preferencia.";
+  /**
+   * A persona that addresses the learner as tu (fr) or tú (es) gets the same rule with a tu example and its own
+   * forms to avoid, so a tu persona is not pulled toward vous by a vous example. Every variant keeps the same
+   * opening and the same closing clause, which is what these tests pin.
+   */
+  const FR_RULE_ANY =
+    /Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent[^.]*?sauf si l'apprenant indique son genre ou sa préférence./;
+  const ES_RULE_ANY =
+    /No supongas el género del estudiante: evita adjetivos[^.]*?salvo que el estudiante indique su género o su preferencia./;
   /** Every line a persona speaks that we wrote: scenario and campaign-scene openers. */
   const openers = (c: Course) => [
     ...SCENARIOS.map((s) => ({ label: `${s.id}.opener`, text: s.opener[c] })),
@@ -285,13 +294,13 @@ describe("French and Spanish personas address the learner without assuming a gen
 
   it("tells every persona, in its own language, not to assume the learner's gender", () => {
     for (const s of SCENARIOS) {
-      expect(s.systemPrompt.fr, s.id).toContain(FR_RULE);
-      expect(s.systemPrompt.es, s.id).toContain(ES_RULE);
+      expect(s.systemPrompt.fr, s.id).toMatch(FR_RULE_ANY);
+      expect(s.systemPrompt.es, s.id).toMatch(ES_RULE_ANY);
     }
     for (const camp of CAMPAIGNS) {
       for (const sc of camp.scenes) {
-        expect(sc.systemPrompt.fr, sc.id).toContain(FR_RULE);
-        expect(sc.systemPrompt.es, sc.id).toContain(ES_RULE);
+        expect(sc.systemPrompt.fr, sc.id).toMatch(FR_RULE_ANY);
+        expect(sc.systemPrompt.es, sc.id).toMatch(ES_RULE_ANY);
       }
     }
   });
@@ -310,13 +319,15 @@ describe("French and Spanish personas address the learner without assuming a gen
   it("does not call the learner he or him in the instructions", () => {
     for (const { label, text } of prompts("fr")) {
       // Madame Girard and the like are the persona's own name, not a form of address to the learner.
-      const outside = text.replace(/Madame Girard/g, "").replace(FR_RULE, "");
+      const outside = text.replace(/Madame Girard/g, "").replace(FR_RULE_ANY, "");
       expect(outside, label).not.toMatch(/(?<!-)\b(qu'il|il)\b/i);
       expect(outside, label).not.toMatch(/\baide-le\b|\best perdu\b/i);
     }
     for (const { label, text } of prompts("es")) {
       // The rule sentence names the forms to avoid, so it is the one place they may appear.
-      expect(text.replace(ES_RULE, ""), label).not.toMatch(/\bayúdalo\b|\bperdido\b|\blisto\b/i);
+      expect(text.replace(ES_RULE_ANY, ""), label).not.toMatch(
+        /\bayúdalo\b|\bperdido\b|\blisto\b/i,
+      );
     }
   });
 
