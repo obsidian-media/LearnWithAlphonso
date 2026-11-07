@@ -327,8 +327,10 @@ function LessonPage() {
       setTranslationVerdict({ correct: true, reason: null, source: "local" });
     }
     setChecked(true);
-    // The verdict's sound (a lost heart follows the wrong-answer sound rather than over it).
-    const losesHeart = !isCorrect && !isReinforcing && proStatus.state !== "pro";
+    // The verdict's sound (a lost heart follows the wrong-answer sound rather than over it). The heart sound plays only
+    // when the header really shows one fewer: never for Pro, a reinforcement round, or with no hearts left to lose.
+    const losesHeart =
+      !isCorrect && !isReinforcing && proStatus.state !== "pro" && state.hearts > 0;
     if (isCorrect) playSfx("right");
     else
       playSfxCues(

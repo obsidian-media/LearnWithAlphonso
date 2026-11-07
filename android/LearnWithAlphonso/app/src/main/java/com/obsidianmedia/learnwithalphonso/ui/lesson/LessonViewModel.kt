@@ -127,13 +127,14 @@ class LessonViewModel(
     /** The lesson's sound-effect moments, each sent once (events, not state, so a recomposition cannot repeat one). */
     val soundEffects: SharedFlow<SoundEffectRequest> = _soundEffects.asSharedFlow()
 
-    /** The verdict's effects, once per checked answer; a lost heart follows the wrong-answer sound. */
+    /**
+     * The verdict's effect, once per checked answer. The heart sound is not decided here: spendHeart sends it once the
+     * cached count really went down (what the HUD shows), timed to follow the wrong-answer sound.
+     */
     private fun sendVerdictEffects() {
         val s = _state.value
-        val correct = isCurrentCorrect()
-        val losesHeart = !correct && !s.isReinforcing && HeartsEconomy.wrongAnswerCostsHeart(unlimited = isPro())
         _soundEffects.tryEmit(SoundEffectRequest(
-            SoundEffectCues.verdict(correct, losesHeart),
+            SoundEffectCues.verdict(isCurrentCorrect(), losesHeart = false),
             "verdict-$attemptSeed-${s.idx}-${if (s.isReinforcing) "r" else "q"}",
         ))
     }
@@ -328,11 +329,15 @@ class LessonViewModel(
 
     private fun spendHeart() {
         if (!HeartsEconomy.wrongAnswerCostsHeart(unlimited = isPro())) return
+        val heartKey = "heart-$attemptSeed-${_state.value.idx}"
         viewModelScope.launch {
             syncStore.lastKnownProgress()?.takeIf { it.hearts > 0 }?.let {
                 val after = HeartsEconomy.afterLosingHeart(it.hearts, it.heartsRefillAt?.toLong(), now())
                 syncStore.updateLastKnownProgress(it.copy(hearts = after.hearts, heartsRefillAt = after.heartsRefillAt?.toDouble()))
                 _state.update { s -> s.copy(heartsSpent = s.heartsSpent + 1) }
+                // The HUD now shows one fewer heart, so the heart sound plays, after the wrong-answer sound.
+                _soundEffects.tryEmit(SoundEffectRequest(
+                    listOf(SoundEffectCue(SoundEffect.HEART_LOST, SoundEffect.WRONG.durationMs)), heartKey))
             }
             runCatching { client.loseHeart() }
         }

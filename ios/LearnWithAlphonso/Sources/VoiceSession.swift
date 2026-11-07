@@ -193,6 +193,7 @@ final class VoiceSessionController {
     /// nonisolated: passed as VoiceRecorder.start's synchronous `configureSession`
     /// closure, which is not main-actor typed.
     nonisolated static func configureForVoice() throws {
+        VoiceSessionHold.set(true) // before the category: sound effects must never switch it away mid-turn
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: categoryOptions)
         try session.setActive(true)
@@ -234,6 +235,7 @@ final class VoiceSessionController {
 
     private func deactivateSession() {
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        VoiceSessionHold.set(false)
     }
 
     /// Feeds the recorder's level to hands-free ten times a second while it is on and recording.
@@ -290,6 +292,7 @@ final class VoiceSessionController {
             // Hands the session back; .notifyOthersOnDeactivation lets other
             // apps' audio resume. PodcastAudioPlayer is never auto-resumed.
             try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+            VoiceSessionHold.set(false)
         }
     }
 

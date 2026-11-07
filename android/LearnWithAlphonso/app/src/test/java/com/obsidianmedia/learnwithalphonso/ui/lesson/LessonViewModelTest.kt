@@ -509,22 +509,42 @@ class LessonViewModelTest {
         scope.cancel()
     }
 
+    private suspend fun storeWithHearts(hearts: Int) =
+        MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, hearts, null, 0, "bronze")) }
+
     @Test
-    fun `a wrong answer asks for the wrong effect, then the heart going`() = runBlocking {
-        val v = vm(okServer())
+    fun `a wrong answer asks for the wrong effect, then the heart going once the HUD shows it`() = runBlocking {
+        val v = vm(okServer(), storeWithHearts(5))
         val (got, scope) = recordEffects(v)
         v.begin(); v.startPractice()
         v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
-        assertEquals(listOf(listOf(SoundEffect.WRONG, SoundEffect.HEART_LOST)), got.effects())
+        awaitTrue("heart spent") { v.state.value.heartsSpent == 1 }
+        awaitTrue("heart sound") { got.size == 2 }
+        assertEquals(setOf(listOf(SoundEffect.WRONG), listOf(SoundEffect.HEART_LOST)), got.effects().toSet())
+        // It follows the wrong-answer sound rather than playing over it.
+        assertEquals(SoundEffect.WRONG.durationMs, got.single { r -> r.cues.any { it.effect == SoundEffect.HEART_LOST } }.cues.single().delayMs)
+        scope.cancel()
+    }
+
+    @Test
+    fun `with no hearts left to lose, the HUD shows no change, so no heart sound`() = runBlocking {
+        val v = vm(okServer(), storeWithHearts(0))
+        val (got, scope) = recordEffects(v)
+        v.begin(); v.startPractice()
+        v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        delay(200)
+        assertEquals(0, v.state.value.heartsSpent)
+        assertEquals(listOf(listOf(SoundEffect.WRONG)), got.effects())
         scope.cancel()
     }
 
     @Test
     fun `a Pro learner's wrong answer loses no heart, so no heart sound`() = runBlocking {
-        val v = vm(okServer(), pro = true)
+        val v = vm(okServer(), storeWithHearts(5), pro = true)
         val (got, scope) = recordEffects(v)
         v.begin(); v.startPractice()
         v.pick(wrongAnswer(lesson.questions[0])); v.check().join()
+        delay(200)
         assertEquals(listOf(listOf(SoundEffect.WRONG)), got.effects())
         scope.cancel()
     }

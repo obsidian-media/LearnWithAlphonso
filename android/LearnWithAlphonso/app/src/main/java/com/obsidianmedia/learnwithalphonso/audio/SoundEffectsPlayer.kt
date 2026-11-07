@@ -6,8 +6,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
+import kotlinx.coroutines.delay
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
@@ -42,7 +41,6 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
         )
         .build()
     private val sounds: Map<SoundEffect, Int> = SoundEffect.entries.associateWith { pool.load(context, rawId(it), 1) }
-    private val main = Handler(Looper.getMainLooper())
 
     /** Screens that play a voice register a probe; any true one means a voice is playing and the effect is skipped. */
     private val voiceProbes = ConcurrentHashMap<String, () -> Boolean>()
@@ -65,15 +63,20 @@ class SoundEffectsPlayer(context: Context, private val prefs: SharedPreferences)
         runCatching { pool.play(id, 1f, 1f, 1, 0, 1f) }
     }
 
-    /** Plays a moment's cues at their times, each under its own key; its haptics fire with them (not gated by the switch). */
-    fun play(request: SoundEffectRequest, haptic: (SoundEffectHaptic) -> Unit = {}) {
-        for (cue in request.cues) {
-            val key = request.key?.let { "$it-${cue.effect.name}" }
-            val fire = {
-                cue.effect.haptic?.let(haptic)
-                play(cue.effect, key)
+    /**
+     * Plays a moment's cues at their times, each under its own key; its haptics fire with them (not gated by the
+     * switch). Suspends until the last cue: the caller's scope is the screen's, so leaving the screen cancels the cues
+     * still to come (the complete screen's XP and achievement never play after the learner has left).
+     */
+    suspend fun play(request: SoundEffectRequest, haptic: (SoundEffectHaptic) -> Unit = {}) {
+        var elapsed = 0L
+        for (cue in request.cues.sortedBy { it.delayMs }) {
+            if (cue.delayMs > elapsed) {
+                delay(cue.delayMs - elapsed)
+                elapsed = cue.delayMs
             }
-            if (cue.delayMs <= 0) fire() else main.postDelayed(fire, cue.delayMs)
+            cue.effect.haptic?.let(haptic)
+            play(cue.effect, request.key?.let { "$it-${cue.effect.name}" })
         }
     }
 

@@ -1232,6 +1232,17 @@ describe("sound effects at the lesson's moments", () => {
     expect(cueEvents()).toEqual([["wrong"]]);
   });
 
+  it("with no hearts left to lose, a wrong answer plays no heart sound (the header shows no change)", async () => {
+    useProgress.setState({ hearts: 0 });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await screen.findByText("Not quite");
+    expect(cueEvents()).toEqual([["wrong"]]);
+  });
+
   it("Continue taps; the complete screen plays its jingle, XP and achievement once", async () => {
     completeLessonRemote.mockResolvedValue({
       xpGain: 60,

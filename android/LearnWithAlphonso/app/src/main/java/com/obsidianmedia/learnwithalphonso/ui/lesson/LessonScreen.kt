@@ -100,7 +100,8 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
     LaunchedEffect(vm) { vm.onScreenShown() }
     // The lesson's sound effects and haptics: each moment arrives once, as an event, so a recomposition cannot repeat it.
     val haptics = rememberHaptics()
-    LaunchedEffect(vm) { vm.soundEffects.collect { container.soundEffects.play(it, haptics) } }
+    // Each moment's cues run in this screen's scope: leaving the lesson cancels any still to come (XP, achievement).
+    LaunchedEffect(vm) { vm.soundEffects.collect { request -> launch { container.soundEffects.play(request, haptics) } } }
     // The lesson's time counts only while the app is in front.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, vm) {
