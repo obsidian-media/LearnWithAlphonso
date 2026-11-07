@@ -21,27 +21,29 @@ struct ProfileHubView: View {
     let session: Session
     let contentStore: ContentStore
     let notificationScheduler: NotificationScheduler
+    let entitlementStore: EntitlementStore
+    let activeCourse: ActiveCourseModel
+    let networkMonitor: NetworkMonitor
+    let syncQueueStore: SyncQueueStore
     /// Opens the first-run questions again ("Edit your answers"; RootView's cover).
     var onEditAnswers: () -> Void = {}
 
     private enum Destination: String, Identifiable {
-        case league, friends, achievements, settings
+        case league, friends, achievements, settings, review, paywall, picture
         var id: String { rawValue }
     }
 
     @State private var destination: Destination?
+    @State private var overview: ProfileOverviewModel?
+    @State private var loadFailed = false
+    @State private var loading = true
 
     var body: some View {
         NavigationStack {
             List {
-                ProfileHero()
-                    .sceneScrollProbe()
-                    .listRowInsets(EdgeInsets())
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                overviewRows
 
-                // The picture and "Edit your answers" (visual round 6, part 3).
-                ProfileAboutYouCard(session: session, onEditAnswers: onEditAnswers)
+                ProfileEditAnswersRow(onEditAnswers: onEditAnswers)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
@@ -84,6 +86,8 @@ struct ProfileHubView: View {
             .scrollContentBackground(.hidden)
             .screenScene(.profile)
             .navigationTitle("Profile")
+            .task(id: activeCourse.course.wireCode) { await load() }
+            .refreshable { await load() }
         }
         .tint(AlphonsoColor.moss)
         .sheet(item: $destination) { destination in
@@ -100,6 +104,15 @@ struct ProfileHubView: View {
                 )
             case .settings:
                 SettingsView(session: session)
+            case .review:
+                ReviewQueueView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler,
+                                networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+            case .paywall:
+                PaywallView(entitlementStore: entitlementStore, source: .hectorTab, onClose: { destination = nil })
+            case .picture:
+                AvatarPickerSheet(session: session, name: overview?.name ?? "", current: overview?.data.avatarSeed ?? "") { _ in
+                    Task { await load() }
+                }
             }
         }
     }
@@ -122,23 +135,51 @@ struct ProfileHubView: View {
     }
 }
 
-/// The hall of achievements across the top of Profile. It shows no numbers: this hub loads no progress of its own,
-/// and showing numbers here would mean tracking something new.
-private struct ProfileHero: View {
-    var body: some View {
-        VStack(spacing: 2) {
-            Text("Your hall of achievements")
-                .font(AlphonsoFont.display(22, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.isHeader)
-            Text("League, friends and badges")
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+extension ProfileHubView {
+    @ViewBuilder fileprivate var overviewRows: some View {
+        if let m = overview {
+            let course = activeCourse.course
+            Group {
+                ProfileHeroSection(model: m, course: course, onCourse: { activeCourse.course = $0 }, onPicture: { destination = .picture })
+                if !m.hasAnyActivity {
+                    Text("Your first lesson starts your streak and fills in this page.")
+                        .dsText(.body)
+                        .padding(.horizontal, AlphonsoDS.Space.s2)
+                }
+                ProfileWeekSection(model: m)
+                ProfileHeatMapSection(model: m)
+                ProfileRecordsLevelSection(model: m)
+                ProfileWeakAndHectorSection(model: m, onPractise: { destination = .review }, onPaywall: { destination = .paywall })
+                ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count)
+                ProfileShareSection(model: m, course: course, level: m.level.level)
+            }
+            .listRowInsets(EdgeInsets(top: AlphonsoDS.Space.s2, leading: AlphonsoDS.Space.s4, bottom: AlphonsoDS.Space.s2, trailing: AlphonsoDS.Space.s4))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        } else if loading {
+            ProgressView().frame(maxWidth: .infinity).listRowBackground(Color.clear)
+        } else if loadFailed {
+            VStack(spacing: AlphonsoDS.Space.s2) {
+                Text("Profile could not load.").dsText(.headline)
+                Button("Try again") { Task { await load() } }.frame(minHeight: AlphonsoDS.Space.minTouch)
+            }
+            .frame(maxWidth: .infinity).listRowBackground(Color.clear)
         }
-        .padding(AlphonsoSpacing.md)
-        .alphonsoGlass()
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .frame(maxWidth: .infinity, minHeight: 190, alignment: .bottom)
+    }
+
+    fileprivate func load() async {
+        loading = true
+        defer { loading = false }
+        guard let token = await session.freshAccessToken(), let userID = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
+        let course = activeCourse.course
+        do {
+            let data = try await client.fetchProfileOverview(userID: userID, course: course.wireCode)
+            overview = ProfileOverviewModel(data: data, contentStore: contentStore, course: course, isPro: entitlementStore.isPro)
+            loadFailed = false
+        } catch is CancellationError {
+        } catch {
+            loadFailed = overview == nil
+        }
     }
 }
