@@ -73,6 +73,14 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/streak_widget_info" />
         </receiver>
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/share_paths" />
+        </provider>
+
         <!-- Supabase redirects the Google PKCE flow back here; the redirect URI must be allow-listed in the Supabase dashboard. -->
         <activity
             android:name=".auth.OAuthCallbackActivity"
