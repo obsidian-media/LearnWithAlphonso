@@ -46,10 +46,8 @@ describe("the setting", () => {
 
   it("gates the call on the Practice speaking screen, so off leaves the screen as it was", () => {
     const conversation = code(`${APP}/Sources/ConversationView.swift`);
-    expect(conversation).toContain(
-      "@AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue",
-    );
-    expect(conversation).toMatch(/if showAlphonso \{ callScreen \} else \{ classicScreen \}/);
+    expect(code(`${APP}/Sources/PracticeHubView.swift`)).toContain("AvatarPreference.key");
+    expect(conversation).toMatch(/if !chatMode \{ callScreen \} else \{ classicScreen \}/);
     // The classic screen keeps its own navigation bar, mic button and New conversation toolbar item.
     const classic = conversation.slice(
       conversation.indexOf("private var classicScreen"),

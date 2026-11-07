@@ -31,6 +31,8 @@ public struct ConversationSnapshot: Equatable, Sendable {
     /// Deepgram's utterance confidence per user turn index (V3 3a clarity label).
     public var confidenceByTurnIndex: [Int: Double]
     /// Campaign only: the current scene, and the index of its opener.
+    /// The campaign scene where this transcript began (a hub resume can start mid-story).
+    public var sceneOffset: Int
     public var sceneIndex: Int
     public var sceneAnchor: Int
     public var finished: Bool
@@ -48,6 +50,7 @@ public struct ConversationSnapshot: Equatable, Sendable {
         self.turns = turns
         self.openerIndices = openerIndices
         confidenceByTurnIndex = [:]
+        sceneOffset = 0
         sceneIndex = 0
         sceneAnchor = 0
         finished = false
@@ -74,7 +77,7 @@ public struct ConversationSnapshot: Equatable, Sendable {
     /// The scene a turn was made in: scenes start at their opener, so it is the number of openers up to and including
     /// the turn, minus one. A report records this, not the scene the learner is on now.
     public func sceneIndex(ofTurnAt index: Int) -> Int {
-        max(0, openerIndices.filter { $0 <= index }.count - 1)
+        sceneOffset + max(0, openerIndices.filter { $0 <= index }.count - 1)
     }
 
     /// Restarts the current scene: back to its opening line.

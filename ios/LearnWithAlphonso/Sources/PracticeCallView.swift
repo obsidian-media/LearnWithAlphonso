@@ -130,7 +130,7 @@ struct PracticeCallView<Sheet: View>: View {
     // MARK: - Room
 
     private var room: some View {
-        let room = CallScenes.room(for: scenarioID, fallback: kit.defaultRoom)
+        let room = CallScenes.room(for: scenarioID, withArt: CallScenes.scenariosWithArt.union(PracticeHub.sceneRoomNames), fallback: kit.defaultRoom)
         let dark = colorScheme == .dark
         let name = dark ? room.dark : room.light
         return ZStack {

@@ -46,6 +46,7 @@ data class Scenario(
     val level: String,
     val systemPrompt: String,
     val opener: String,
+    val persona: String? = null,
 )
 
 @Serializable
@@ -55,6 +56,7 @@ data class CampaignScene(
     val systemPrompt: String,
     val opener: String,
     val minTurns: Int,
+    val persona: String? = null,
 )
 
 @Serializable

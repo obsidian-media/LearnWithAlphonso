@@ -1,6 +1,6 @@
 import { getCourse, type Course } from "@/data/courses";
-import { scenariosFor, type LocalizedScenario } from "@/data/scenarios";
-import { campaignsFor, type LocalizedCampaign } from "@/data/campaigns";
+import { SCENARIOS, scenariosFor, type LocalizedScenario } from "@/data/scenarios";
+import { CAMPAIGNS, campaignsFor, type LocalizedCampaign } from "@/data/campaigns";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
@@ -29,7 +29,7 @@ export function buildIOSContentBundle(course: Course): IOSContentBundle {
 }
 
 /** One course's flat scenario, exactly the shape the Kit's `Scenario` decodes. */
-export type IOSScenario = LocalizedScenario;
+export type IOSScenario = LocalizedScenario & { persona: string };
 
 /**
  * One course's scenarios, flat. Defaults to English because
@@ -37,11 +37,16 @@ export type IOSScenario = LocalizedScenario;
  * must keep decoding the unchanged English file.
  */
 export function buildIOSScenariosBundle(course: Course = "en"): IOSScenario[] {
-  return scenariosFor(course);
+  return scenariosFor(course).map((s) => ({
+    ...s,
+    persona: SCENARIOS.find((raw) => raw.id === s.id)!.persona[course],
+  }));
 }
 
 /** One course's flat campaign, exactly the shape the Kit's `Campaign` decodes. */
-export type IOSCampaign = LocalizedCampaign;
+export type IOSCampaign = Omit<LocalizedCampaign, "scenes"> & {
+  scenes: (LocalizedCampaign["scenes"][number] & { persona: string })[];
+};
 
 /**
  * V4 candidate #4, made per-course: same pass-through reasoning as
@@ -50,7 +55,14 @@ export type IOSCampaign = LocalizedCampaign;
  * file name (campaigns.json = en, campaigns-fr.json, campaigns-es.json).
  */
 export function buildIOSCampaignsBundle(course: Course = "en"): IOSCampaign[] {
-  return campaignsFor(course);
+  return campaignsFor(course).map((c) => ({
+    ...c,
+    scenes: c.scenes.map((s) => ({
+      ...s,
+      persona: CAMPAIGNS.find((raw) => raw.id === c.id)!.scenes.find((raw) => raw.id === s.id)!
+        .persona[course],
+    })),
+  }));
 }
 
 /** Same pass-through reasoning as buildIOSContentBundle, for ACHIEVEMENTS. */

@@ -113,9 +113,13 @@ describe("the setting", () => {
     const practice = code(
       "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/PracticeScreens.kt",
     );
-    expect(practice).toContain(
-      "container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)",
-    );
+    // The Practice hub reads the setting once to pick its initial call/chat mode and passes chatMode down.
+    expect(
+      code(
+        "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/PracticeHubScreen.kt",
+      ),
+    ).toContain("AvatarPreference.KEY");
+    expect(practice).toContain("val showCall = !chatMode");
     expect(practice).toMatch(
       /if \(showCall\) \{[\s\S]*?PracticeCallScreen\([\s\S]*?\} else \{\s*ConversationBody\(/,
     );
@@ -140,11 +144,9 @@ describe("campaign conversations", () => {
   );
   const campaign = practice.slice(practice.indexOf("fun CampaignConversationScreen("));
   it("use the call too, with the campaign id (no picture of its own, so the default room)", () => {
-    expect(campaign).toContain(
-      "container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)",
-    );
+    expect(campaign).toContain("val showCall = !chatMode");
     expect(campaign).toMatch(
-      /if \(showCall\) \{[\s\S]*?PracticeCallScreen\([\s\S]*?scenarioId = campaign\.id/,
+      /if \(showCall\) \{[\s\S]*?PracticeCallScreen\([\s\S]*?scenarioId = [\s\S]*?PracticeHub\.room\(campaign\.id/,
     );
     // ...and the classic screen is still there for the setting off.
     expect(campaign).toContain("ConversationBody(");
@@ -154,8 +156,9 @@ describe("campaign conversations", () => {
       campaign.indexOf("PracticeCallScreen("),
       campaign.indexOf("ConversationBody("),
     );
-    expect(call).toContain("vm::continueToNextScene");
-    expect(call).toContain("vm::restartScene");
+    expect(campaign).toContain("vm.continueToNextScene()");
+    expect(call).toContain("advanceCall");
+    expect(call).toContain("vm.restartScene()");
     expect(call).toContain("TranscriptList(");
   });
 });

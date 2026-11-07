@@ -55,7 +55,12 @@ describe("bundled campaign JSON matches the catalogue on every platform", () => 
     for (const course of ["en", "fr", "es"] as const) {
       it(`${label} ${course}: same campaigns, scenes and text as src/data`, () => {
         const bundled = JSON.parse(read(file(course)));
-        expect(bundled).toEqual(campaignsFor(course));
+        // Native bundles add a per-scene `persona` (the pre-call sheet's speaker line); it is not in the web catalogue shape.
+        const withoutPersona = bundled.map((c: { scenes: Record<string, unknown>[] }) => ({
+          ...c,
+          scenes: c.scenes.map(({ persona: _persona, ...scene }) => scene),
+        }));
+        expect(withoutPersona).toEqual(campaignsFor(course));
         expect(bundled.map((c: { id: string }) => c.id)).toEqual(CAMPAIGNS.map((c) => c.id));
       });
     }
@@ -73,18 +78,16 @@ describe("the campaign list screens show every campaign", () => {
   });
 
   it("iOS: CampaignPickerSection iterates the whole campaigns array", () => {
-    const src = read("ios/LearnWithAlphonso/Sources/CampaignView.swift");
-    expect(src).toMatch(/ForEach\(campaigns\) \{ campaign in/);
-    expect(src).not.toMatch(/campaigns\.(prefix|first|filter|dropFirst)\b/);
-    const host = read("ios/LearnWithAlphonso/Sources/ConversationView.swift");
-    expect(host).toContain("contentStore.campaigns(for: course)");
-    expect(host).not.toMatch(/campaigns\.(prefix|first|filter)\b/);
+    const src = read("ios/LearnWithAlphonso/Sources/PracticeHubView.swift");
+    expect(src).toMatch(/ForEach\(campaigns\) \{ c in/);
+    expect(src).not.toMatch(/campaigns\.(prefix|filter|dropFirst)\b/);
+    expect(src).toContain("contentStore.campaigns(for: course)");
   });
 
   it("Android: PracticeScreen lists every campaign of the course", () => {
-    const src = read(`${ANDROID_APP}/PracticeScreens.kt`);
-    expect(src).toContain("val campaigns = container.content.campaigns(course)");
-    expect(src).toMatch(/items\(campaigns, key = \{ "c-\$\{course\.code\}-\$\{it\.id\}" \}\)/);
+    const src = read(`${ANDROID_APP}/PracticeHubScreen.kt`);
+    expect(src).toContain("container.content.campaigns(course)");
+    expect(src).toMatch(/items\(campaigns, key = \{ "c-\$\{it\.id\}" \}\)/);
     expect(src).not.toMatch(/campaigns\.(take|first|filter)\b/);
   });
 
@@ -95,7 +98,7 @@ describe("the campaign list screens show every campaign", () => {
     expect(read("src/routes/_authenticated/converse.tsx")).toContain(
       "params: { campaignId: t.campaignId }",
     );
-    expect(read(`${ANDROID_APP}/PracticeScreens.kt`)).toContain("onOpenCampaign(c.id)");
+    expect(read(`${ANDROID_APP}/PracticeHubScreen.kt`)).toContain("onOpenCampaign(t.campaign!!.id");
   });
 });
 

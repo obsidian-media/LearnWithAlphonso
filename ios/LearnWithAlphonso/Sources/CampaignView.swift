@@ -1,80 +1,26 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// V4 candidate #4: connected multi-scene campaigns, additive alongside
-/// ConversationView's one-shot scenarios. See
-/// docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md.
-/// The active course's variant, stored per (campaign,
-/// course), on the shared VoiceSessionController.
-struct CampaignPickerSection: View {
-    let campaigns: [Campaign]
-    let course: Course
-    let session: Session
-    let conversationStore: ConversationStore
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            practiceSectionLabel("Campaigns")
-            ForEach(campaigns) { campaign in
-                NavigationLink {
-                    CampaignSessionView(campaign: campaign, course: course, session: session, conversationStore: conversationStore)
-                } label: {
-                    CampaignHeroCard(campaign: campaign)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-}
-
-/// A campaign as a big gradient card with its 3D icon and scene count.
-private struct CampaignHeroCard: View {
-    let campaign: Campaign
-
-    var body: some View {
-        HStack(spacing: AlphonsoSpacing.md) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Campaign · \(campaign.level)".uppercased())
-                    .font(AlphonsoFont.sans(11, weight: .semiBold))
-                    .tracking(0.6)
-                Text(campaign.title)
-                    .font(AlphonsoFont.display(21, weight: .bold))
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(campaign.blurb)
-                    .font(AlphonsoFont.sans(13))
-                    .fixedSize(horizontal: false, vertical: true)
-                Text("\(campaign.scenes.count) scenes")
-                    .font(AlphonsoFont.sans(11, weight: .bold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(.white.opacity(0.18), in: Capsule())
-                    .padding(.top, 4)
-            }
-            Spacer(minLength: 0)
-            Icon3DView(emoji: campaign.emoji, size: 64)
-        }
-        .foregroundStyle(AlphonsoColor.onMossGradient)
-        .multilineTextAlignment(.leading)
-        .padding(AlphonsoSpacing.md)
-        .background(
-            LinearGradient(colors: [AlphonsoColor.moss, AlphonsoColor.mossDeep], startPoint: .topLeading, endPoint: .bottomTrailing),
-            in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 6, style: .continuous)
-        )
-        .alphonsoLift()
-        .accessibilityElement(children: .combine)
-    }
-}
-
-private struct CampaignSessionView: View {
+struct CampaignSessionView: View {
     let campaign: Campaign
     let course: Course
     let session: Session
     let conversationStore: ConversationStore
 
+    var startScene: Int = 0
+    var chatMode: Bool = false
+    @State private var callId = UUID().uuidString
+    @State private var startedAt = Date()
+    @State private var result: PracticeResult?
+    @State private var slip: (said: String, reply: String)?
+    @State private var ending = false
+    @State private var pendingTurns = 0
+    @State private var input = ""
+    @State private var elapsed = 0
+    @State private var initialized = false
+    @State private var advancing = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
-    /// Settings: "Show Alphonso while practising" (default on).
-    @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
     @State private var replyVerdict = AvatarReplyVerdict()
 
@@ -106,19 +52,26 @@ private struct CampaignSessionView: View {
 
     var body: some View {
         Group {
-            if showAlphonso { callScreen } else { classicScreen }
+            if let result {
+                PracticeResultView(result: result, room: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), course: course.wireCode, seconds: elapsed, slip: slip,
+                    retry: { self.result = nil; restartScene() }, nextLabel: isLastScene || (result.stars == 0 && !advancing) ? "Done" : "Continue", done: { if isLastScene || (result.stars == 0 && !advancing) { dismiss() } else { self.result = nil; continueToNextScene() } })
+            } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
         // fetched before consent; keyed by openerCue, which onAppear and each new conversation or scene bump after
         // the conversation and the voice session are ready. Repeats come from OpenerSpeechCache.
         .task(id: openerCue) {
-            guard openerCue > 0 else { return }
+            guard openerCue > 0, !chatMode, result == nil else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
         }
+        .navigationBarBackButtonHidden(true)
         .aiDisclosureGate()
-        .tint(AlphonsoColor.moss)
+        .tint(AlphonsoDS.current.choice)
         .onAppear {
-            conversation = conversationStore.snapshot(for: key, seededWith: campaign.scenes[0].opener)
+            if !initialized {
+                initialized = true
+                conversation = conversationStore.update(key) { $0 = PracticeHub.start(campaign, sceneIndex: startScene) }
+            }
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
             openerCue += 1
@@ -133,17 +86,17 @@ private struct CampaignSessionView: View {
 
     /// The transcript with the scene's Continue button or completion card at its end.
     private var transcript: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: CGFloat.zero) {
             if !conversation.finished {
                 Text("Scene \(sceneIndex + 1) of \(campaign.scenes.count) — \(scene.title)")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .padding(.top, 8)
+                    .dsText(.caption)
+                    .foregroundStyle(AlphonsoDS.current.inkSoft)
+                    .padding(.top, AlphonsoDS.Space.s2)
             }
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
+                    LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn, index: index).id(index)
                         }
@@ -154,7 +107,7 @@ private struct CampaignSessionView: View {
                             completionCard
                         }
                     }
-                    .padding()
+                    .padding(AlphonsoDS.Space.gutter)
                 }
                 .onChange(of: turns.count) {
                     if reduceMotion {
@@ -171,32 +124,33 @@ private struct CampaignSessionView: View {
         Group {
             if turns.contains(where: { $0.role == "assistant" }) {
                 Text("Tap any word in a reply to save it.")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption)
+                    .foregroundStyle(AlphonsoDS.current.inkSoft)
             }
         }
     }
 
-    /// The setting off: the screen as it was before the call.
+    /// Chat mode: the same transcript, with a typed reply composer.
     private var classicScreen: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: CGFloat.zero) {
             transcript
 
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .dsText(.footnote)
+                    .foregroundStyle(AlphonsoDS.current.wrongInk)
                     .padding(.horizontal)
             }
 
             if !conversation.finished {
                 saveWordHint
-                micButton.padding()
+                if chatMode { typedControls } else { micButton.padding(AlphonsoDS.Space.gutter) }
             }
         }
-        .background(AlphonsoColor.surface)
+        .background(AlphonsoDS.current.surface)
         .navigationTitle(campaign.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("End") { Task { await finishCall() } }.disabled(ending) } }
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
@@ -206,7 +160,7 @@ private struct CampaignSessionView: View {
                     Button("Restart scene", systemImage: "arrow.counterclockwise") {
                         restartScene()
                     }
-                    .disabled(voice.isBusy)
+                    .disabled(ending || pendingTurns > 0 || voice.isBusy)
                 }
             }
         }
@@ -218,19 +172,19 @@ private struct CampaignSessionView: View {
         PracticeCallView(
             title: conversation.finished
                 ? campaign.title : "\(campaign.title): scene \(sceneIndex + 1) of \(campaign.scenes.count)",
-            scenarioID: campaign.id, voice: voice, course: course,
+            scenarioID: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), voice: voice, course: course,
             turns: turns, replyVerdict: replyVerdict,
             notice: notice,
-            onPress: { if conversation.finished { return }; if voice.pressBegan() { notice = nil } },
-            onEnd: { dismiss() },
+            onPress: { if conversation.finished || ending { return }; if voice.pressBegan() { notice = nil } },
+            onEnd: { Task { await finishCall() } },
             extra: callExtra,
             sheet: {
-            VStack(spacing: 0) {
+            VStack(spacing: CGFloat.zero) {
                 if !conversation.finished {
                     Button("Restart scene") { restartScene() }
-                        .font(AlphonsoFont.sans(14, weight: .bold))
-                        .disabled(voice.isBusy)
-                        .padding(.vertical, 6)
+                        .dsText(.footnote)
+                        .disabled(ending || pendingTurns > 0 || voice.isBusy)
+                        .padding(.vertical, AlphonsoDS.Space.s2)
                 }
                 transcript
                 saveWordHint
@@ -249,48 +203,48 @@ private struct CampaignSessionView: View {
         if conversation.finished {
             return AnyView(
                 Text("Nice work, campaign complete!")
-                    .font(AlphonsoFont.sans(13, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 6)
-                    .background(.black.opacity(0.45), in: Capsule()))
+                    .dsText(.footnote)
+                    .foregroundStyle(AlphonsoDS.current.onHero)
+                    .padding(.horizontal, AlphonsoDS.Space.s4).padding(.vertical, AlphonsoDS.Space.s2)
+                    .background(AlphonsoDS.current.hero, in: Capsule()))
         }
         if canContinue {
             return AnyView(
                 Button {
-                    continueToNextScene()
+                    Task { await finishCall(advance: true) }
                 } label: {
                     Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) \u{2192}")
-                        .font(AlphonsoFont.sans(13, weight: .bold))
-                        .foregroundStyle(Color(red: 0.09, green: 0.14, blue: 0.11))
-                        .padding(.horizontal, 20).padding(.vertical, 9)
-                        .background(.white, in: Capsule())
+                        .dsText(.footnote)
+                        .foregroundStyle(AlphonsoDS.current.ink)
+                        .padding(.horizontal, AlphonsoDS.Space.s5).padding(.vertical, AlphonsoDS.Space.s2)
+                        .background(AlphonsoDS.current.card, in: Capsule())
                 }
-                .disabled(voice.isBusy))
+                .disabled(ending || pendingTurns > 0 || voice.isBusy))
         }
         return nil
     }
 
     private var continueButton: some View {
         Button {
-            continueToNextScene()
+            Task { await finishCall(advance: true) }
         } label: {
             Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) →")
         }
         .buttonStyle(.alphonsoPrimary)
-        .disabled(voice.isBusy)
-        .padding(.top, 4)
+        .disabled(ending || pendingTurns > 0 || voice.isBusy)
+        .padding(.top, AlphonsoDS.Space.s1)
     }
 
     private var completionCard: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: AlphonsoDS.Space.s2) {
             AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work — campaign complete!")
             Text("You made it through all \(campaign.scenes.count) scenes of \(campaign.title).")
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(AlphonsoDS.current.inkSoft)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 8)
+        .padding(.top, AlphonsoDS.Space.s2)
     }
 
     @ViewBuilder
@@ -299,50 +253,50 @@ private struct CampaignSessionView: View {
             // A scene's fixed opening line is ours, not the model's. Tracked by position, not by its words.
             AssistantReply(
                 turn: turn, isOpener: conversation.openerIndices.contains(index),
-                course: course, color: AlphonsoColor.ink,
+                course: course, color: AlphonsoDS.current.ink,
                 surface: .campaign, campaignID: campaign.id, sceneIndex: conversation.sceneIndex(ofTurnAt: index), session: session,
                 savingWord: $savingWord)
         } else {
-            Text(turn.content).foregroundStyle(.white)
+            Text(turn.content).foregroundStyle(AlphonsoDS.current.onHero)
         }
     }
 
     private func bubble(for turn: ChatMessage, index: Int) -> some View {
         HStack {
-            if turn.role == "assistant" { Spacer(minLength: 40) }
+            if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
             bubbleText(for: turn, index: index)
-                .font(AlphonsoFont.sans(15))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .dsText(.body)
+                .padding(.horizontal, AlphonsoDS.Space.s4)
+                .padding(.vertical, AlphonsoDS.Space.s3)
                 .background(
-                    turn.role == "user" ? AlphonsoColor.moss : AlphonsoColor.parchment,
-                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+                    turn.role == "user" ? AlphonsoDS.current.choice : AlphonsoDS.current.card,
+                    in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
                 )
-            if turn.role == "user" { Spacer(minLength: 40) }
+            if turn.role == "user" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
     }
 
     private var micButton: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: AlphonsoDS.Space.s2) {
             if voice.isBusy {
-                ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
+                ProgressView().tint(AlphonsoDS.current.choice).frame(maxWidth: .infinity)
             } else {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
-                    idleColor: AlphonsoColor.moss,
-                    recordingColor: AlphonsoColor.destructive,
+                    idleColor: AlphonsoDS.current.choice,
+                    recordingColor: AlphonsoDS.current.wrongInk,
                     accessibilityLabel: "Hold to talk",
-                    onPress: { if voice.pressBegan() { notice = nil } },
+                    onPress: { if ending { return }; if voice.pressBegan() { notice = nil } },
                     onRelease: { voice.pressEnded() }
                 )
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption)
+                    .foregroundStyle(AlphonsoDS.current.inkSoft)
                 if voice.microphoneUnavailable || voice.recorderStartFailed {
                     Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.destructive)
+                        .dsText(.caption)
+                        .foregroundStyle(AlphonsoDS.current.wrongInk)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -360,6 +314,9 @@ private struct CampaignSessionView: View {
     }
 
     private func runTurn(audio: Data, generation: Int, debugTiming: String) async {
+        guard !ending else { return }
+        pendingTurns += 1
+        defer { pendingTurns -= 1 }
         let key = self.key
         let courseCode = course.wireCode
         let prompt = systemPrompt(for: scene)
@@ -379,34 +336,15 @@ private struct CampaignSessionView: View {
                 notice = "Didn't catch that — try again."
                 return
             }
-            var snapshot = conversationStore.append(ChatMessage(role: "user", content: result.text), to: key)
-            conversation = snapshot
-            voice.transcribed(generation)
+            await sendReply(result.text, confidence: result.confidence, generation: generation)
 
-            let chatReply = try await client.chatReply(
-                messages: snapshot.recentTurns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode)
-            let reply = chatReply.content
-            snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
-            conversation = snapshot
-            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
-
-            do {
-                // Alphonso's chosen voice for this course (Settings > Voices); the server re-checks it.
-                let speech = try await client.synthesizeSpeech(
-                    text: reply, voice: VoicePrefsCache().voice(.alphonso, course: courseCode), course: courseCode)
-                if !voice.play(speech, generation: generation) {
-                    notice = "Got a reply, but couldn't play it back."
-                }
-            } catch {
-                voice.replyWithoutAudio(generation)
-                notice = "Got a reply, but couldn't play it back."
-            }
         } catch {
             voice.fail(generation, TutorError.from(error))
         }
     }
 
     private func continueToNextScene() {
+        resetCall()
         notice = nil
         if isLastScene {
             conversation = conversationStore.update(key) { $0.finished = true }
@@ -422,6 +360,7 @@ private struct CampaignSessionView: View {
     }
 
     private func restartScene() {
+        resetCall()
         notice = nil
         conversation = conversationStore.update(key) { $0.restartScene() }
         openerCue += 1
@@ -444,4 +383,66 @@ private struct CampaignSessionView: View {
         let courseCode = course.wireCode
         Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
     }
+    private func sendReply(_ text: String, confidence: Double? = nil, generation: Int) async {
+        let key = self.key
+        let courseCode = course.wireCode
+        let prompt = systemPrompt(for: scene)
+        guard let accessToken = await session.freshAccessToken() else { return }
+        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken }, refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+        do {
+            var snapshot = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
+            conversation = snapshot
+            voice.transcribed(generation)
+
+            let chatReply = try await client.chatReply(
+                messages: snapshot.recentTurns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode, callId: callId)
+            let reply = chatReply.content
+            if slip == nil, chatReply.verdict == .corrected, let said = snapshot.turns.last(where: { $0.role == "user" })?.content {
+                slip = (said, reply)
+            }
+            snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
+            conversation = snapshot
+            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chatReply.verdict)
+
+            if chatMode { voice.replyWithoutAudio(generation); return }
+            do {
+                // Alphonso's chosen voice for this course (Settings > Voices); the server re-checks it.
+                let speech = try await client.synthesizeSpeech(
+                    text: reply, voice: VoicePrefsCache().voice(.alphonso, course: courseCode), course: courseCode)
+                if !voice.play(speech, generation: generation) {
+                    notice = "Got a reply, but couldn't play it back."
+                }
+            } catch {
+                voice.replyWithoutAudio(generation)
+                notice = "Got a reply, but couldn't play it back."
+            }
+        } catch { voice.fail(generation, TutorError.from(error)); notice = TutorError.from(error).userMessage() }
+    }
+    private var typedControls: some View {
+        VStack(spacing: AlphonsoDS.Space.s2) {
+            TextField("Your reply", text: $input, axis: .vertical).dsText(.body).textFieldStyle(.roundedBorder)
+            PracticeButton("Send") {
+                let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty, pendingTurns == 0, !ending else { return }
+                input = ""
+                pendingTurns += 1
+                Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
+            }.disabled(pendingTurns > 0 || ending)
+        }.padding(AlphonsoDS.Space.gutter)
+    }
+    private func resetCall() {
+        callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false
+        voice.appeared()
+    }
+    private func finishCall(advance: Bool = false) async {
+        guard !ending else { return }
+        advancing = advance
+        ending = true
+        voice.disappeared()
+        while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
+        elapsed = Int(Date().timeIntervalSince(startedAt))
+        do { result = try await practiceClient(session).finishPractice(callId: callId) }
+        catch { if advance { ending = false; continueToNextScene() } else { dismiss() } }
+    }
+
 }
