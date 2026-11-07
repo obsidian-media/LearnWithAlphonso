@@ -15,7 +15,7 @@ class LearnFoldTest {
     @Test
     fun `folds an unbroken done run into one row, opens the current unit, folds the rest`() {
         val rows = LearnFold.foldLearn(mk(6), all(1, 2, 3))
-        assertEquals(listOf("done-run", "unit:current", "unit:ahead", "unit:ahead", "unit:ahead"), shape(rows))
+        assertEquals(listOf("done-run", "unit:current", "unit:ahead", "unit:ahead"), shape(rows))
         val run = rows[0] as FoldRow.DoneRun
         assertEquals(listOf("u1", "u2", "u3"), run.unitIds)
         assertEquals("Units 1-3", LearnFold.runLabel(run))

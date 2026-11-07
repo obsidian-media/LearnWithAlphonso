@@ -59,6 +59,31 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionCard
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionViewModel
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.stateDescription
+import com.obsidianmedia.learnwithalphonso.core.logic.CurrentUnit
+import com.obsidianmedia.learnwithalphonso.core.logic.FoldRow
+import com.obsidianmedia.learnwithalphonso.core.logic.FoldUnit
+import com.obsidianmedia.learnwithalphonso.core.logic.LearnFold
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonStage
+import androidx.compose.foundation.layout.Box
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import kotlinx.coroutines.launch
 
 val Course.flag: String get() = when (this) { Course.ENGLISH -> "🇬🇧"; Course.FRENCH -> "🇫🇷"; Course.SPANISH -> "🇪🇸" }
 val Course.displayName: String get() = when (this) { Course.ENGLISH -> "English"; Course.FRENCH -> "French"; Course.SPANISH -> "Spanish" }
@@ -137,16 +162,23 @@ fun LearnScreen(
     val teamMission by missionVm.state.collectAsState()
     LaunchedEffect(missionVm) { missionVm.refresh() }
 
-    val continueId = state.continueLessonId(container.content)
+    // Round 6.1 Learn fold: finished units fold to one row per run, the current unit is open, later units show a name.
+    val courseUnits = remember(state.course, container.content) { container.content.bundle(state.course).units.map(::foldUnitOf) }
+    val completedSet = state.completedLessonIds
+    val currentUnit = LearnFold.currentUnitOf(courseUnits, completedSet)
+    val rows = LearnFold.foldLearn(units.map(::foldUnitOf), completedSet)
+    var expandedKeys by rememberSaveable { mutableStateOf("") }
+    fun isExpanded(key: String) = expandedKeys.split(",").contains(key)
+    fun toggle(key: String) { expandedKeys = (expandedKeys.split(",").filter { it.isNotEmpty() && it != key } + if (isExpanded(key)) emptyList() else listOf(key)).joinToString(",") }
+    val scope = rememberCoroutineScope()
+    // Items before the unit rows: header, goal, review, levels, jump button, plus the ones that come and go.
+    val fixedItems = 5 + (if (currentUnit != null) 1 else 0) + (if (teamMission != null) 1 else 0) + (if (state.challenges.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
+    val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     var scrolled by remember { mutableStateOf(false) }
-    LaunchedEffect(continueId) {
-        if (scrolled || continueId == null) return@LaunchedEffect
-        val flat = units.flatMap { u -> u.lessons.map { it.id } }
-        val idx = flat.indexOf(continueId)
-        if (idx >= 0) {
-            scrolled = true
-            listState.animateScrollToItem((idx + 4 + units.indexOfFirst { u -> u.lessons.any { it.id == continueId } }).coerceAtLeast(0))
-        }
+    LaunchedEffect(currentRowIndex) {
+        if (scrolled || currentRowIndex < 0) return@LaunchedEffect
+        scrolled = true
+        listState.animateScrollToItem(currentRowIndex)
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -162,6 +194,11 @@ fun LearnScreen(
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // Stable keys on every item: the header, challenges and placement card come and go as data loads,
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
+            currentUnit?.let { place ->
+                container.content.bundle(state.course).units.firstOrNull { it.id == place.unitId }?.let { u ->
+                    item(key = "current-unit") { CurrentUnitCard(u, place, onContinue = { onOpenLesson(state.course, place.lessonId) }) }
+                }
+            }
             item(key = "header") { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
             item(key = "goal") {
                 // One view-model per course: a request still running for a course the learner just left can only
@@ -208,19 +245,105 @@ fun LearnScreen(
                 }
             }
             item(key = "levels") { LevelBandPicker(state.selectedLevel, onSelect = vm::selectLevel) }
-            units.forEach { unit ->
-                item(key = "unit-${unit.id}") { AlphonsoSectionHeader("${unit.eyebrow} · ${unit.title}", Modifier.padding(top = 8.dp)) }
-                unit.lessons.forEachIndexed { index, lesson ->
-                    item(key = lesson.id) {
-                        val accent = when {
-                            lesson.id in state.completedLessonIds -> palette.hairline
-                            index == 0 -> palette.ember
-                            else -> palette.moss
+            item(key = "jump") {
+                if (currentRowIndex >= 0) {
+                    TextButton(
+                        onClick = { scope.launch { listState.animateScrollToItem(currentRowIndex) } },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) { Text("Jump to current", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+                }
+            }
+            rows.forEach { row ->
+                when (row) {
+                    is FoldRow.DoneRun -> {
+                        val open = isExpanded(row.key)
+                        item(key = row.key) {
+                            FoldHeaderRow("${LearnFold.runLabel(row)} \u00B7 ${row.done} / ${row.total}", open, "Finished", onClick = { toggle(row.key) })
                         }
-                        AlphonsoRowCard(lesson.title, lesson.subtitle, accent = accent, modifier = Modifier.clickable { onOpenLesson(state.course, lesson.id) })
+                        if (open) units.filter { it.id in row.unitIds }.forEach { unit -> unitItems(unit, state.completedLessonIds, state.course, onOpenLesson) }
+                    }
+                    is FoldRow.UnitRow -> {
+                        val unit = units.first { it.id == row.unitId }
+                        val open = row.current || isExpanded(row.key)
+                        if (row.current) {
+                            unitItems(unit, state.completedLessonIds, state.course, onOpenLesson)
+                        } else {
+                            item(key = row.key) { FoldHeaderRow("${unit.eyebrow} \u00B7 ${unit.title}", open, "Ahead", onClick = { toggle(row.key) }) }
+                            if (open) unit.lessons.forEachIndexed { i, l -> lessonItem(l, i, state.completedLessonIds, state.course, onOpenLesson) }
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+private fun foldUnitOf(u: com.obsidianmedia.learnwithalphonso.core.content.Unit) = FoldUnit(u.id, u.eyebrow, u.title, u.lessons.map { it.id })
+
+private fun androidx.compose.foundation.lazy.LazyListScope.unitItems(
+    unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, completed: Set<String>, course: Course, onOpenLesson: (Course, String) -> kotlin.Unit,
+) {
+    item(key = "unit-${unit.id}") { AlphonsoSectionHeader("${unit.eyebrow} \u00B7 ${unit.title}", Modifier.padding(top = 8.dp)) }
+    unit.lessons.forEachIndexed { index, lesson -> lessonItem(lesson, index, completed, course, onOpenLesson) }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.lessonItem(
+    lesson: com.obsidianmedia.learnwithalphonso.core.content.Lesson, index: Int, completed: Set<String>, course: Course, onOpenLesson: (Course, String) -> kotlin.Unit,
+) {
+    item(key = lesson.id) {
+        val palette = AlphonsoColor.palette
+        val accent = when {
+            lesson.id in completed -> palette.hairline
+            index == 0 -> palette.ember
+            else -> palette.moss
+        }
+        AlphonsoRowCard(lesson.title, lesson.subtitle, accent = accent, modifier = Modifier.clickable { onOpenLesson(course, lesson.id) })
+    }
+}
+
+/** A folded run or a later unit: one slim row; tap to open in place. 48dp minimum, wraps rather than clips at large font. */
+@Composable
+private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: () -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "$kind, $label"
+                stateDescription = if (open) "Expanded" else "Collapsed"
+            }
+            .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+    ) {
+        Text(label, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+        Text(if (open) "\u25BE" else "\u25B8", style = CaptionType, color = ds.inkSoft)
+    }
+}
+
+/** The current unit pinned on top as a room-art card: YOU ARE HERE, the unit's place, its title, and a gold Continue. */
+@Composable
+private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, onContinue: () -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val art = LearnFold.roomArtFor(place.index - 1)
+    val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero).semantics(mergeDescendants = true) {
+        contentDescription = "You are here, unit ${place.index} of ${place.count}, ${unit.title}, ${LearnFold.roomName(art)}"
+    }) {
+        room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
+        Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+            Spacer(Modifier.height(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s6))
+            Text("YOU ARE HERE \u00B7 UNIT ${place.index} OF ${place.count}", style = OverlineType, color = ds.onHeroKick)
+            Text(unit.title, style = TitleType, color = ds.onHero)
+            Box(
+                Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.xp)
+                    .clickable(role = Role.Button, onClickLabel = "Continue ${unit.title}", onClick = onContinue)
+                    .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
+                contentAlignment = Alignment.Center,
+            ) { Text("Continue", style = HeadlineType, color = ds.ink) }
         }
     }
 }

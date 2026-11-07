@@ -55,7 +55,7 @@ object LearnFold {
 
     /** "Unit 3" / "Units 1-9" label for a done run. */
     fun runLabel(row: FoldRow.DoneRun): String {
-        fun num(s: String) = s.replace(Regex("^Unit\s+", RegexOption.IGNORE_CASE), "")
+        fun num(s: String) = s.replace(Regex("""^Unit\s+""", RegexOption.IGNORE_CASE), "")
         return if (row.first == row.last) row.first else "Units ${num(row.first)}-${num(row.last)}"
     }
 
