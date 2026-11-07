@@ -133,7 +133,7 @@ final class VoiceSessionController {
             opener,
             begin: { beginOpener() },
             audio: { text in
-                try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
+                let speech = try await OpenerSpeechCache.shared.audio(text: text, voice: voiceID, course: courseCode) {
                     guard let accessToken = await session.freshAccessToken() else {
                         throw URLError(.userAuthenticationRequired)
                     }
@@ -144,6 +144,10 @@ final class VoiceSessionController {
                     return try await client.synthesizeSpeech(
                         text: text, voice: voiceID, course: courseCode, character: speaker)
                 }
+                // The call-start sound finishes before his first words.
+                let wait = await SoundEffectsPlayer.shared.callCueRemaining()
+                if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
+                return speech
             },
             play: { audio, generation in play(audio, generation: generation) },
             withoutAudio: { generation in replyWithoutAudio(generation) })
@@ -191,6 +195,7 @@ final class VoiceSessionController {
     /// nonisolated: passed as VoiceRecorder.start's synchronous `configureSession`
     /// closure, which is not main-actor typed.
     nonisolated static func configureForVoice() throws {
+        VoiceSessionHold.set(true) // before the category: sound effects must never switch it away mid-turn
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: categoryOptions)
         try session.setActive(true)
@@ -232,6 +237,7 @@ final class VoiceSessionController {
 
     private func deactivateSession() {
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        VoiceSessionHold.set(false)
     }
 
     /// Feeds the recorder's level to hands-free ten times a second while it is on and recording.
@@ -288,6 +294,7 @@ final class VoiceSessionController {
             // Hands the session back; .notifyOthersOnDeactivation lets other
             // apps' audio resume. PodcastAudioPlayer is never auto-resumed.
             try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+            VoiceSessionHold.set(false)
         }
     }
 

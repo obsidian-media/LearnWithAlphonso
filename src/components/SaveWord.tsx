@@ -17,6 +17,7 @@ import {
   type SavedWordErrorKind,
   type SavedWordResult,
 } from "../lib/saved-word-client";
+import { playSfx } from "../lib/sfx";
 
 /**
  * Tap-to-save for the web (docs/superpowers/specs/2026-10-05-save-any-word-design.md,
@@ -153,7 +154,10 @@ function SaveWordDialog({
     setPhase({ kind: "saving" });
     try {
       const result = await save(request);
-      if (mounted.current) setPhase({ kind: "saved", result });
+      if (mounted.current) {
+        setPhase({ kind: "saved", result });
+        playSfx("tap");
+      }
     } catch (error) {
       const kind = error instanceof SavedWordError ? error.kind : "unavailable";
       // Consent was withdrawn elsewhere: the next attempt asks again.

@@ -1,8 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
+import com.obsidianmedia.learnwithalphonso.audio.SoundEffectsPlayer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -45,6 +47,8 @@ class OpenerSpeaker(
                 state.update { it.copy(phase = ConversationPhase.THINKING) }
                 val chosen = voice()
                 val audio = cache.audio(text, chosen, course) { synthesize(text, chosen) }
+                // The call-start sound finishes before the first words.
+                delay(SoundEffectsPlayer.callCueRemainingMs())
                 state.update { it.copy(phase = ConversationPhase.SPEAKING) }
                 player.play(audio)
             } catch (e: CancellationException) {

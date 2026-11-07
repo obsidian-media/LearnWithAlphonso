@@ -26,6 +26,7 @@ import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
+import { waitForCallCue } from "@/lib/sfx";
 import { buildHectorGreeting, recentWeakSpot } from "@/lib/hector-greeting";
 import { getWeaknessTrend } from "@/lib/weakness-trend.functions";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
@@ -240,8 +241,11 @@ function HectorConversation({
           });
           return resp.ok ? await resp.blob() : null;
         });
+        if (!blob) return;
+        // The call-start sound finishes before his first words.
+        await waitForCallCue();
         // Never after the learner left, and never over a turn they already started.
-        if (!blob || leftRef.current || messagesRef.current.length > 1) return;
+        if (leftRef.current || messagesRef.current.length > 1) return;
         playBlob(blob);
       } catch {
         /* the greeting still shows */

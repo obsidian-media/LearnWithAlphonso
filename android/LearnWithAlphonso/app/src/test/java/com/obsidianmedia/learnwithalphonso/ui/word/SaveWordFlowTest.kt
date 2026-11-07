@@ -158,4 +158,16 @@ class SaveWordFlowTest {
         assertEquals("the quota is charged once", 1, calls.seen.size)
         assertEquals(SaveWordPhase.Saved(saved), v.phase.value)
     }
+
+    @Test
+    fun `a saved word plays the save sound once, a failed save none`() = runBlocking {
+        var sounds = 0
+        val store = AiConsentStore(Backend(granted = true), Cache())
+        val v = SaveWordFlow(request, { _, _, _ -> saved }, store, { true }, CoroutineScope(SupervisorJob() + Dispatchers.Main), onSaved = { sounds++ })
+        v.save().join()
+        assertEquals(1, sounds)
+        val failing = SaveWordFlow(request, { _, _, _ -> saved }, store, { false }, CoroutineScope(SupervisorJob() + Dispatchers.Main), onSaved = { sounds++ })
+        failing.save().join()
+        assertEquals(1, sounds)
+    }
 }

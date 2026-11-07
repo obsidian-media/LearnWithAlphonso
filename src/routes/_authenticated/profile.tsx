@@ -18,6 +18,7 @@ import {
 } from "../../lib/social-reason-copy";
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { AvatarSetting } from "../../components/AvatarSetting";
+import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
 import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/ProfileAboutYou";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
@@ -231,6 +232,8 @@ function ProfilePage() {
           <AiFeaturesSetting />
 
           <AvatarSetting />
+
+          <SoundEffectsSetting />
 
           <VoicesSetting />
 
