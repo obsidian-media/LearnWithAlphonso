@@ -9,6 +9,7 @@ import type { Level } from "../data/levels";
 import { vocabForLesson } from "../data/vocab";
 import { LEVEL_ORDER } from "./learning-goal";
 import { LEAGUE_THRESHOLDS } from "./progress-math";
+import { dailyGoalProgress } from "./profile-data";
 import type { LearningDayRow, LeagueStanding, SkillDayRow } from "./profile-data";
 
 /**
@@ -72,6 +73,8 @@ export type ProfileOverview = {
   timeZone: string | null;
   /** Right and total answers per skill per day over SKILL_WINDOW_DAYS (skill_days); score them with skillScores. */
   skills: SkillDayRow[];
+  /** The daily minutes the learner chose in first run (learner_profile.dailyMinutes: 5, 10, 15 or 20); null if never chosen. */
+  dailyGoalMinutes: number | null;
 };
 
 const DAY_MS = 86_400_000;
@@ -164,6 +167,31 @@ export function weekRings(
   };
 }
 
+/**
+ * This week's rings against the learner's own daily goal in learning minutes (lesson + practice time, learning_days).
+ * A day is done when its minutes reach the goal. The streak is NOT computed here: it keeps its XP rule.
+ */
+export function goalRings(
+  today: string,
+  learning: LearningDayRow[],
+  goalMinutes: number,
+): { days: GoalRingDay[]; metDays: number } {
+  const monday = weekStart(today);
+  const days = Array.from({ length: 7 }, (_, i): GoalRingDay => {
+    const day = addDays(monday, i);
+    const p = dailyGoalProgress(learning, day, goalMinutes);
+    const state = day > today ? "future" : p.reached ? "done" : day === today ? "today" : "missed";
+    return { day, minutes: day > today ? 0 : p.minutes, goalMinutes, state };
+  });
+  return { days, metDays: days.filter((d) => d.state === "done").length };
+}
+export type GoalRingDay = {
+  day: string;
+  minutes: number;
+  goalMinutes: number;
+  state: "done" | "missed" | "today" | "future";
+};
+
 export type BigNumbers = {
   streak: number;
   longestStreak: number;
@@ -172,6 +200,8 @@ export type BigNumbers = {
   totalXp: number;
   xpThisWeek: number;
   wordsLearned: number;
+  /** Saved words that review retired and the learner mastered (mastered_words). */
+  masteredWords: number;
   savedWords: number;
   lessonsDone: number;
   accuracyPct: number | null;
@@ -194,6 +224,7 @@ export function bigNumbers(o: ProfileOverview): BigNumbers {
       .filter((r) => r.day >= monday && r.day <= o.today)
       .reduce((s, r) => s + r.xp, 0),
     wordsLearned: words.size,
+    masteredWords: o.masteredWords,
     savedWords: o.savedWords,
     lessonsDone: mine.length,
     accuracyPct: total > 0 ? Math.round((100 * correct) / total) : null,

@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,7 +31,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.Role
@@ -50,6 +55,7 @@ import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTab
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTabs
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileOverviewData
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileWeakItem
+import com.obsidianmedia.learnwithalphonso.core.profile.SkillsRadar
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
@@ -66,11 +72,17 @@ import java.io.File
  * The Profile redesign (visual round 6, part 4; the web's ProfileSections.tsx and ProfileOverviewView.swift). Every
  * number comes from [ProfileOverviewData] (one batched read) through [ProfileMath]; no figure is typed into a view.
  */
-class ProfileOverviewModel(val data: ProfileOverviewData, content: ContentStore, val course: Course, isPro: Boolean) {
+class ProfileOverviewModel(
+    val data: ProfileOverviewData, content: ContentStore, val course: Course, isPro: Boolean,
+    /** The learner's chosen daily time (LearnerProfile.dailyMinutes), or null when they never picked one. */
+    val dailyGoalMinutes: Int? = null,
+) {
     val big = ProfileMath.bigNumbers(data) { id ->
         content.findLesson(id, course)?.let { (_, lesson) -> deriveVocab(lesson, emptyMap()).map { it.term } } ?: emptyList()
     }
     val week = ProfileMath.weekRings(data.today, data.activity, data.speech)
+    val goal = dailyGoalMinutes?.takeIf { it > 0 }?.let { ProfileMath.goalRings(data.today, data.learning, it) }
+    val radar = SkillsRadar.radarModel(ProfileMath.skillScores(data.skills, data.today))
     val heat = ProfileMath.heatMap(data.today, data.activity)
     val records = ProfileMath.personalRecords(data)
     private val mine = data.courses.firstOrNull { it.course == data.course }
@@ -159,7 +171,12 @@ fun ProfileHero(m: ProfileOverviewModel, onCourse: (Course) -> Unit, onPicture: 
                 Stat(b.courseXp.toString(), "XP in ${m.course.label}", "${b.xpThisWeek} this week", "${b.courseXp} XP in ${m.course.label}, ${b.xpThisWeek} this week", Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
-                Stat(b.wordsLearned.toString(), "words learned", "${b.savedWords} saved", "${b.wordsLearned} words learned, ${b.savedWords} saved", Modifier.weight(1f))
+                val mastered = m.data.masteredWords
+                Stat(
+                    mastered.toString(), plural(mastered, "word mastered", "words mastered"),
+                    if (b.savedWords > 0) "${b.savedWords} saved to review" else "Tap a word to save it",
+                    "$mastered ${plural(mastered, "word", "words")} mastered, ${b.savedWords} saved to review", Modifier.weight(1f),
+                )
                 Stat(
                     b.lessonsDone.toString(), plural(b.lessonsDone, "lesson done", "lessons done"),
                     b.accuracyPct?.let { "$it% accuracy" } ?: "No lessons yet",
@@ -186,13 +203,17 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
     val ds = LocalAlphonsoTokens.current
     val locale = LocalConfiguration.current.locales[0]
     ProfileCard("This week") {
+        // Rings measure the learner's own daily goal in learning minutes; without one they keep the XP rule.
+        val goal = m.goal
+        val rings = goal?.days?.map { Triple(it.day, it.state, "${it.minutes} ${plural(it.minutes, "minute", "minutes")}, goal met") }
+            ?: m.week.days.map { Triple(it.day, it.state, "${it.xp} XP") }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            m.week.days.forEach { d ->
-                val dow = java.time.LocalDate.parse(d.day).dayOfWeek
-                val word = when (d.state) {
-                    ProfileMath.RingState.DONE -> "done"
+            rings.forEach { (day, state, doneText) ->
+                val dow = java.time.LocalDate.parse(day).dayOfWeek
+                val word = when (state) {
+                    ProfileMath.RingState.DONE -> doneText
                     ProfileMath.RingState.TODAY -> "today, not yet"
-                    ProfileMath.RingState.MISSED -> "not done"
+                    ProfileMath.RingState.MISSED -> if (goal != null) "goal not met" else "not done"
                     ProfileMath.RingState.FUTURE -> "to come"
                 }
                 Column(
@@ -202,7 +223,7 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
                 ) {
                     val ringSize = AlphonsoTokens.Space.s8
-                    when (d.state) {
+                    when (state) {
                         ProfileMath.RingState.DONE -> Box(Modifier.size(ringSize).clip(CircleShape).background(ds.flame))
                         ProfileMath.RingState.TODAY -> Box(Modifier.size(ringSize).border(3.dp, ds.flame, CircleShape))
                         else -> Box(Modifier.size(ringSize).border(3.dp, ds.line, CircleShape))
@@ -211,7 +232,12 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
                 }
             }
         }
-        Text("${m.week.activeDays} of 7 days active", style = FootnoteType, color = ds.inkSoft)
+        Text("${goal?.metDays ?: m.week.activeDays} of 7 days ${if (goal != null) "goal met" else "active"}", style = FootnoteType, color = ds.inkSoft)
+        Text(
+            if (goal != null) "Goal: ${goal.days.first().goalMinutes} learning minutes a day"
+            else "Pick a daily time in Edit your answers to measure your days in minutes.",
+            style = CaptionType, color = ds.inkSoft,
+        )
     }
     Spacer3()
     ProfileCard("Minutes spoken this week") {
@@ -288,14 +314,63 @@ fun ProfileFold(title: String, summary: String, content: @Composable () -> Unit)
     }
 }
 
-/** Where the Skills radar goes. Its data (per-skill scores) does not exist yet, so this is an honest empty state. */
+/**
+ * The Skills radar (web SkillsChart): the right share of recent answers per skill. A skill with too few answers has no
+ * vertex and says how many more it needs; with too little data overall the card shows the empty state.
+ */
 @Composable
-fun ProfileSkillsSlot() {
+fun ProfileSkills(m: ProfileOverviewModel) {
+    val ds = LocalAlphonsoTokens.current
+    val radar = m.radar
     ProfileCard("Skills") {
-        Text(
-            "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.",
-            style = FootnoteType, color = LocalAlphonsoTokens.current.inkSoft,
-        )
+        if (radar.ready) {
+            val n = radar.skills.size
+            val spoken = "Skills: " + radar.skills.joinToString(", ") { "${it.label} ${it.pct?.toString() ?: "not scored yet"}" }
+            val gridColor = ds.line
+            val shapeColor = ds.choice
+            val dotColor = ds.xp
+            Canvas(Modifier.fillMaxWidth().aspectRatio(1f).clearAndSetSemantics { contentDescription = spoken }) {
+                val c = size.width / 2
+                val r = c - AlphonsoTokens.Space.s4.toPx()
+                val hair = AlphonsoTokens.Space.s1.toPx() / 2
+                fun pt(i: Int, rad: Double) = SkillsRadar.radarPoint(i, n, rad, c.toDouble()).let { Offset(it.first.toFloat(), it.second.toFloat()) }
+                for (k in 1..4) {
+                    val path = Path()
+                    for (i in 0 until n) pt(i, r * k / 4.0).let { if (i == 0) path.moveTo(it.x, it.y) else path.lineTo(it.x, it.y) }
+                    path.close()
+                    drawPath(path, gridColor, style = Stroke(hair))
+                }
+                for (i in 0 until n) drawLine(gridColor, Offset(c, c), pt(i, r.toDouble()), hair)
+                val verts = SkillsRadar.radarPolygon(radar.skills, r.toDouble(), c.toDouble()).map { Offset(it.first.toFloat(), it.second.toFloat()) }
+                val shape = Path()
+                verts.forEachIndexed { i, o -> if (i == 0) shape.moveTo(o.x, o.y) else shape.lineTo(o.x, o.y) }
+                shape.close()
+                drawPath(shape, shapeColor, alpha = shapeColor.alpha / 4f)
+                drawPath(shape, shapeColor, style = Stroke(AlphonsoTokens.Space.s1.toPx(), join = StrokeJoin.Round))
+                verts.forEach { drawCircle(dotColor, AlphonsoTokens.Space.s1.toPx(), it) }
+            }
+            radar.skills.forEach { s ->
+                Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(s.label, style = FootnoteType, color = ds.ink)
+                    Text(s.pct?.toString() ?: "not yet", style = FootnoteType, color = ds.inkSoft)
+                }
+            }
+            radar.lowest?.let {
+                Text("Lowest: ${it.label} \u00B7 ${it.pct}. Practise it to lift your shape.", style = FootnoteType, color = ds.ink)
+            }
+        } else {
+            Text(
+                "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.",
+                style = FootnoteType, color = ds.inkSoft,
+            )
+            radar.skills.forEach { s ->
+                Text(
+                    if (s.pct == null) "${s.label}: ${s.needed} more ${plural(s.needed, "answer", "answers")} to score (${s.answered} of ${SkillsRadar.MIN_SKILL_ANSWERS} so far)"
+                    else "${s.label}: ${s.pct}",
+                    style = CaptionType, color = ds.inkSoft,
+                )
+            }
+        }
     }
 }
 
@@ -436,6 +511,12 @@ fun ProfileLeague(m: ProfileOverviewModel) {
             m.league.next?.let { "${m.league.xpToNext} XP to ${it.replaceFirstChar { c -> c.uppercase() }}" } ?: "Top league reached",
             style = FootnoteType, color = ds.inkSoft,
         )
+        m.data.league?.let {
+            Text(
+                "Rank ${it.rank} of ${it.size} \u00B7 ${ProfileMath.leagueWeekEnds(it.weekEnd, m.data.timeZone)}",
+                style = FootnoteType, color = ds.ink,
+            )
+        }
     }
 }
 

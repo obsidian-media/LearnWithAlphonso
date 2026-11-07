@@ -18,9 +18,18 @@ struct ProfileOverviewModel {
     let friends: [ProfileMath.FriendWeekRow]
     let flag: String?
     let name: String
+    /// The daily minutes the learner chose in first run (LearnerProfile.dailyMinutes); nil if never chosen.
+    let dailyGoalMinutes: Int?
+    /// This week's rings in learning minutes against that goal; nil without a goal (the XP rings stay).
+    let goal: (days: [ProfileMath.GoalRingDay], metDays: Int)?
+    let radar: SkillsRadar.Model
 
-    init(data: ProfileOverviewData, contentStore: ContentStore, course: Course, isPro: Bool) {
+    init(data: ProfileOverviewData, contentStore: ContentStore, course: Course, isPro: Bool, dailyGoalMinutes: Int? = nil) {
         self.data = data
+        let goalMinutes: Int? = (dailyGoalMinutes ?? 0) > 0 ? dailyGoalMinutes : nil
+        self.dailyGoalMinutes = goalMinutes
+        goal = goalMinutes.map { ProfileMath.goalRings(today: data.today, learning: data.learning, goalMinutes: $0) }
+        radar = SkillsRadar.radarModel(ProfileMath.skillScores(rows: data.skills, today: data.today))
         big = ProfileMath.bigNumbers(data) { id in
             contentStore.findLesson(id: id, course: course)
                 .map { deriveVocab(lesson: $0.lesson, images: [:]).map(\.term) } ?? []
@@ -129,8 +138,10 @@ struct ProfileHeroSection: View {
                  "\(b.streak) day streak, longest \(b.longestStreak)")
             statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
                  "\(b.courseXP) XP in \(course.label), \(b.xpThisWeek) this week")
-            statTile(String(b.wordsLearned), "words learned", "\(b.savedWords) saved",
-                 "\(b.wordsLearned) words learned, \(b.savedWords) saved")
+            statTile(String(model.data.masteredWords), plural(model.data.masteredWords, "word mastered", "words mastered"),
+                 b.savedWords > 0 ? "\(b.savedWords) saved to review" : "Tap a word to save it",
+                 "\(model.data.masteredWords) \(plural(model.data.masteredWords, "word", "words")) mastered, "
+                    + (b.savedWords > 0 ? "\(b.savedWords) saved to review" : "tap a word to save it"))
             statTile(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
                  b.accuracyPct.map { "\($0)% accuracy" } ?? "No lessons yet",
                  "\(b.lessonsDone) lessons done, " + (b.accuracyPct.map { "\($0) percent accuracy" } ?? "no lessons yet"))
@@ -152,26 +163,48 @@ struct ProfileHeroSection: View {
 
 // MARK: Week, speech, heat map
 
+private struct WeekRing {
+    let day: String
+    let state: ProfileMath.RingState
+    let spoken: String
+}
+
 struct ProfileWeekSection: View {
     let model: ProfileOverviewModel
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         let week = model.week
+        // Rings in learning minutes when the learner chose a daily time; otherwise the XP rule the streak uses.
+        let rings: [WeekRing] = model.goal.map { g in
+            g.days.map { d in
+                WeekRing(day: d.day, state: d.state,
+                         spoken: d.state == .done ? "\(d.minutes) \(plural(d.minutes, "minute", "minutes")), goal met" : stateWord(d.state))
+            }
+        } ?? week.days.map { d in
+            WeekRing(day: d.day, state: d.state, spoken: d.state == .done ? "\(d.xp) XP" : stateWord(d.state))
+        }
         VStack(spacing: AlphonsoDS.Space.s3) {
             ProfileCard(title: "This week") {
                 HStack {
-                    ForEach(week.days, id: \.day) { d in
+                    ForEach(rings, id: \.day) { d in
                         VStack(spacing: AlphonsoDS.Space.s1) {
                             ring(d.state)
                             Text(weekday(d.day)).dsText(.caption).foregroundStyle(ds.inkSoft)
                         }
                         .frame(maxWidth: .infinity)
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(weekday(d.day, long: true)): \(stateWord(d.state))")
+                        .accessibilityLabel("\(weekday(d.day, long: true)): \(d.spoken)")
                     }
                 }
-                Text("\(week.activeDays) of 7 days active").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                Text("\(model.goal?.metDays ?? week.activeDays) of 7 days \(model.goal == nil ? "active" : "done")")
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                if let minutes = model.dailyGoalMinutes {
+                    Text("Goal: \(minutes) learning minutes a day").dsText(.caption).foregroundStyle(ds.inkSoft)
+                } else {
+                    Text("Pick a daily time in Edit your answers to measure your days in minutes.")
+                        .dsText(.caption).foregroundStyle(ds.inkSoft)
+                }
             }
             ProfileCard(title: "Minutes spoken this week") {
                 Text("\(week.minutesSpoken)").dsText(.numeral).foregroundStyle(ds.brand)
@@ -247,6 +280,105 @@ struct ProfileHeatMapSection: View {
         if !c.inRange { return .clear }
         if c.level == 0 { return ds.sunk }
         return ds.action.opacity(Double(c.level) / 4)
+    }
+}
+
+// MARK: Skills radar
+
+/// The Skills radar (web SkillsChart): the share of recent answers right per skill. A skill with too few answers has
+/// no vertex and says how many more it needs; with too little data overall the designed empty state shows.
+struct ProfileSkillsSection: View {
+    let model: ProfileOverviewModel
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        let radar = model.radar
+        ProfileCard(title: "Skills") {
+            if radar.ready, let lowest = radar.lowest {
+                RadarChart(skills: radar.skills)
+                    .aspectRatio(1, contentMode: .fit)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(spoken(radar))
+                Text("Lowest: \(lowest.label) · \(lowest.pct ?? 0). Practise it to lift your shape.")
+                    .dsText(.footnote).foregroundStyle(ds.ink)
+                    .padding(AlphonsoDS.Space.s2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.sunk))
+            } else {
+                Text("Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.")
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
+                ForEach(radar.skills, id: \.skill) { s in
+                    Text(needLine(s)).dsText(.caption).foregroundStyle(ds.inkSoft)
+                }
+            }
+        }
+    }
+
+    private func needLine(_ s: SkillsRadar.Skill) -> String {
+        guard s.pct == nil else { return "\(s.label): \(s.pct ?? 0)" }
+        return "\(s.label): \(s.needed) more \(plural(s.needed, "answer", "answers")) to score (\(s.answered) of \(SkillsRadar.minSkillAnswers) so far)"
+    }
+
+    private func spoken(_ radar: SkillsRadar.Model) -> String {
+        "Skills: " + radar.skills.map { "\($0.label) " + ($0.pct.map { String($0) } ?? "not scored yet") }.joined(separator: ", ")
+    }
+}
+
+private struct RadarPolygon: Shape {
+    let points: [SkillsRadar.Point]
+    var close = true
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard let first = points.first else { return path }
+        path.move(to: CGPoint(x: first.x, y: first.y))
+        for p in points.dropFirst() { path.addLine(to: CGPoint(x: p.x, y: p.y)) }
+        if close { path.closeSubpath() }
+        return path
+    }
+}
+
+private struct RadarChart: View {
+    let skills: [SkillsRadar.Skill]
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        GeometryReader { geo in
+            let side = Double(min(geo.size.width, geo.size.height))
+            let c = side / 2
+            let n = skills.count
+            let radius = c - Double(AlphonsoDS.Space.s12)
+            let labelRadius = radius + Double(AlphonsoDS.Space.s4)
+            let shape = SkillsRadar.radarPolygon(skills, radius: radius, c: c)
+            ZStack {
+                ForEach([0.25, 0.5, 0.75, 1.0], id: \.self) { (k: Double) in
+                    RadarPolygon(points: (0..<n).map { SkillsRadar.radarPoint($0, n, radius * k, c) })
+                        .stroke(ds.line, lineWidth: 1)
+                }
+                ForEach(0..<n, id: \.self) { (i: Int) in
+                    RadarPolygon(points: [SkillsRadar.Point(x: c, y: c), SkillsRadar.radarPoint(i, n, radius, c)], close: false)
+                        .stroke(ds.line, lineWidth: 1)
+                }
+                RadarPolygon(points: shape).fill(ds.choice.opacity(0.25))
+                RadarPolygon(points: shape).stroke(ds.choice, style: StrokeStyle(lineWidth: 2, lineJoin: .round))
+                ForEach(Array(skills.enumerated()), id: \.offset) { i, s in
+                    if let pct = s.pct {
+                        let dot = SkillsRadar.radarPoint(i, n, radius * Double(pct) / 100, c)
+                        Circle().fill(ds.xp)
+                            .frame(width: AlphonsoDS.Space.s2, height: AlphonsoDS.Space.s2)
+                            .position(x: CGFloat(dot.x), y: CGFloat(dot.y))
+                    }
+                    let at = SkillsRadar.radarPoint(i, n, labelRadius, c)
+                    VStack(spacing: 0) {
+                        Text(s.label).dsText(.caption).foregroundStyle(ds.ink)
+                        Text(s.pct.map { String($0) } ?? "not yet").dsText(.caption).foregroundStyle(ds.inkSoft)
+                    }
+                    .position(x: CGFloat(at.x), y: CGFloat(at.y))
+                }
+            }
+            .frame(width: CGFloat(side), height: CGFloat(side))
+        }
     }
 }
 
@@ -370,6 +502,10 @@ struct ProfileProgressSection: View {
                     Text("\(model.league.xpToNext) XP to \(next.capitalized)").dsText(.footnote).foregroundStyle(ds.inkSoft)
                 } else {
                     Text("Top league reached").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                }
+                if let standing = model.data.league {
+                    Text("Rank \(standing.rank) of \(standing.size) · \(ProfileMath.leagueWeekEnds(weekEnd: standing.weekEnd, timeZone: model.data.timeZone))")
+                        .dsText(.footnote).foregroundStyle(ds.ink)
                 }
             }
             ProfileCard(title: "Friends this week") {

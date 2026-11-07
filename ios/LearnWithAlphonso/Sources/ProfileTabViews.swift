@@ -37,24 +37,6 @@ struct ProfileTabPicker: View {
     }
 }
 
-/// The Skills slot at the top of Progress. There is no skills data yet, so this says so honestly.
-struct ProfileSkillsSlot: View {
-    @Environment(\.alphonsoDS) private var ds
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
-            Text("Skills").dsText(.headline).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
-            Text("Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.")
-                .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AlphonsoDS.Space.s4)
-        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card.opacity(0.92)))
-        .accessibilityElement(children: .combine)
-    }
-}
-
 /// A collapsed Progress card: title and a one-line summary; opening shows the full section.
 struct ProfileFold<Content: View>: View {
     let title: String

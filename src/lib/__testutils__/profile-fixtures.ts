@@ -111,6 +111,7 @@ export function richLearner(over: Partial<ProfileOverview> = {}): ProfileOvervie
     },
     timeZone: "America/Toronto",
     skills: [],
+    dailyGoalMinutes: 10,
     friends: [
       { userId: "f1", displayName: "Mina", avatarSeed: "animal:owl", streak: 30, weekXp: 520 },
       { userId: "f2", displayName: "Jon", avatarSeed: "j", streak: 2, weekXp: 210 },
@@ -147,6 +148,7 @@ export function newLearner(over: Partial<ProfileOverview> = {}): ProfileOverview
     league: null,
     timeZone: null,
     skills: [],
+    dailyGoalMinutes: null,
     ...over,
   };
 }
