@@ -40,27 +40,27 @@ export function ProWelcome({
         <Confetti reduce={reduceMotion} seed={11} />
       </div>
       <div className="relative z-[3] mt-5 flex flex-1 flex-col gap-2.5 px-[18px] pb-[max(env(safe-area-inset-bottom),20px)] text-center">
-        <p className="ds-type-overline m-0 tracking-[0.14em] text-ds-action-text">
+        <p className="ds-type-footnote m-0 font-extrabold! uppercase tracking-[0.14em] text-ds-action-text">
           {PRO_WELCOME_COPY.eyebrow}
         </p>
-        <h1 className="ds-type-question m-0 text-ds-ink">
+        <h1 className="ds-type-display-x-l m-0 text-balance text-ds-ink">
           {PRO_WELCOME_COPY.greeting(name)}
           <br />
           {PRO_WELCOME_COPY.ready}
         </h1>
-        <p className="ds-type-footnote m-0 text-ds-ink-soft">{PRO_WELCOME_COPY.body}</p>
-        <div className="grid gap-1.5 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-2.5 text-left">
+        <p className="ds-type-body m-0 font-semibold! text-ds-ink-soft">{PRO_WELCOME_COPY.body}</p>
+        <div className="grid gap-2 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-3 text-left">
           <h2
             id="pro-welcome-openers"
-            className="ds-type-overline m-0 tracking-[0.06em] text-ds-brand"
+            className="ds-type-footnote m-0 font-extrabold! uppercase tracking-[0.06em] text-ds-brand"
           >
             {PRO_WELCOME_COPY.openersTitle}
           </h2>
-          <ul aria-labelledby="pro-welcome-openers" className="m-0 grid list-none gap-1.5 p-0">
+          <ul aria-labelledby="pro-welcome-openers" className="m-0 grid list-none gap-2 p-0">
             {welcomeOpenersFor(course).map((line) => (
               <li
                 key={line}
-                className="ds-type-footnote rounded-[10px] bg-ds-choice-tint px-2.5 py-1.5 font-bold text-ds-ink"
+                className="ds-type-body rounded-[10px] bg-ds-choice-tint px-3 py-2 font-bold! text-ds-ink"
               >
                 {line}
               </li>

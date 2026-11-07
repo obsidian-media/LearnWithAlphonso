@@ -127,7 +127,7 @@ export function ProCardBanner({ name }: { name: string | null }) {
 
 export function PaywallHeadline() {
   return (
-    <h1 className="ds-type-question m-0 text-ds-ink">
+    <h1 className="ds-type-display-x-l m-0 text-balance text-ds-ink">
       {PRO_PAYWALL_COPY.headlineLead}
       <span className="bg-[linear-gradient(transparent_62%,color-mix(in_srgb,var(--c-action)_42%,var(--c-card))_62%)]">
         {PRO_PAYWALL_COPY.headlineMark}
@@ -141,7 +141,7 @@ function HectorDot() {
   return (
     <span
       aria-hidden="true"
-      className="size-[22px] shrink-0 rounded-full bg-ds-sunk bg-[length:175%] bg-[position:center_16%] bg-no-repeat"
+      className="size-7 shrink-0 rounded-full bg-ds-sunk bg-[length:175%] bg-[position:center_16%] bg-no-repeat"
       style={{ backgroundImage: `url(${HECTOR_HAPPY_SRC})` }}
     />
   );
@@ -150,16 +150,16 @@ function HectorDot() {
 /** One real-looking moment: Hector remembering last week's mistake. Labelled as an example, honestly. */
 export function ExampleCall({ course }: { course: Course }) {
   const call = exampleCallFor(course);
-  const bubble = "ds-type-caption max-w-[86%] rounded-[14px] px-2.5 py-[7px]";
+  const bubble = "ds-type-body max-w-[86%] rounded-[14px] px-3 py-2 font-semibold!";
   return (
     <figure
       aria-label={PRO_PAYWALL_COPY.exampleLabel}
-      className={`relative m-0 grid gap-[7px] rounded-[20px] p-2.5 ${TILE}`}
+      className={`relative m-0 grid gap-2 rounded-[20px] p-3 ${TILE}`}
     >
-      <figcaption className="ds-type-overline absolute -top-2 left-3 bg-ds-surface px-1.5 tracking-[0.08em] text-ds-ink-soft">
+      <figcaption className="ds-type-caption absolute -top-2.5 left-3 bg-ds-surface px-1.5 font-extrabold! uppercase tracking-[0.08em] text-ds-ink-soft">
         {PRO_PAYWALL_COPY.exampleLabel}
       </figcaption>
-      <p className={`${bubble} m-0 flex gap-[7px] rounded-bl-[4px] bg-ds-choice-tint text-ds-ink`}>
+      <p className={`${bubble} m-0 flex gap-2 rounded-bl-[4px] bg-ds-choice-tint text-ds-ink`}>
         <HectorDot />
         <span>
           {call.before}
@@ -175,7 +175,7 @@ export function ExampleCall({ course }: { course: Course }) {
       >
         {call.reply}
       </p>
-      <p className={`${bubble} m-0 flex gap-[7px] rounded-bl-[4px] bg-ds-choice-tint text-ds-ink`}>
+      <p className={`${bubble} m-0 flex gap-2 rounded-bl-[4px] bg-ds-choice-tint text-ds-ink`}>
         <HectorDot />
         <span>{call.praise}</span>
       </p>
@@ -205,7 +205,7 @@ export function PaywallFacts() {
       {PRO_PAYWALL_COPY.facts.map((f, i) => (
         <li
           key={f.title}
-          className={`ds-type-caption grid justify-items-center gap-1 rounded-[14px] px-1.5 py-2 text-center text-ds-ink-soft ${TILE}`}
+          className={`ds-type-footnote grid content-start justify-items-center gap-1 rounded-[14px] px-1 py-2.5 text-center font-bold! text-ds-ink-soft ${TILE}`}
         >
           <svg
             viewBox="0 0 24 24"
@@ -217,11 +217,11 @@ export function PaywallFacts() {
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
-            className="size-5 text-ds-choice"
+            className="size-6 text-ds-choice"
           >
             {FACT_ICONS[i]}
           </svg>
-          <b className="font-extrabold text-ds-ink">{f.title}</b>
+          <b className="ds-type-body font-extrabold! text-ds-ink">{f.title}</b>
           {f.detail}
         </li>
       ))}
@@ -241,14 +241,14 @@ export function FreeRow() {
         {PRO_PAYWALL_COPY.freeItems.map((item) => (
           <li
             key={item}
-            className="ds-type-caption inline-flex items-center gap-1 rounded-full bg-ds-right-tint px-2.5 py-[3px] text-ds-right-ink"
+            className="ds-type-footnote inline-flex items-center gap-1 rounded-full bg-ds-right-tint px-3 py-1 font-bold! text-ds-right-ink"
           >
-            <DsIcon name="check" className="size-3" />
+            <DsIcon name="check" className="size-3.5" />
             {item}
           </li>
         ))}
       </ul>
-      <p className="ds-type-caption m-0 text-center text-ds-ink-soft">
+      <p className="ds-type-footnote m-0 text-center text-ds-ink-soft">
         {PRO_PAYWALL_COPY.freeNote}
       </p>
     </div>
@@ -299,7 +299,7 @@ export function PlanPicker({
               (e.currentTarget.parentElement?.children[next] as HTMLElement | undefined)?.focus();
             }}
             tabIndex={on ? 0 : -1}
-            className={`relative grid min-h-[84px] gap-px rounded-[18px] border-2 border-b-4 px-2.5 pb-2.5 pt-3.5 text-center transition-[background-color,border-color,box-shadow] duration-[var(--ds-duration-select)] ease-[var(--ds-ease-out)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
+            className={`relative grid min-h-[96px] gap-px rounded-[18px] border-2 border-b-4 px-2.5 pb-2.5 pt-3.5 text-center transition-[background-color,border-color,box-shadow] duration-[var(--ds-duration-select)] ease-[var(--ds-ease-out)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
               on
                 ? "border-ds-brand bg-ds-choice-tint shadow-[0_8px_18px_color-mix(in_srgb,var(--c-brand)_14%,transparent)]"
                 : "border-ds-line bg-ds-card"
@@ -318,11 +318,15 @@ export function PlanPicker({
                 <DsIcon name="check" className="size-[11px]" />
               </span>
             )}
-            <small className="ds-type-caption text-ds-ink-soft">{PLAN_LABEL[plan.period]}</small>
+            <small className="ds-type-footnote font-bold! text-ds-ink-soft">
+              {PLAN_LABEL[plan.period]}
+            </small>
             {plan.price !== null && (
-              <b className="ds-type-title font-extrabold tabular-nums text-ds-ink">{plan.price}</b>
+              <b className="ds-type-display tabular-nums text-ds-ink">{plan.price}</b>
             )}
-            <em className="ds-type-caption not-italic text-ds-ink-soft">{perMonthLine(plan)}</em>
+            <em className="ds-type-footnote font-bold! not-italic text-ds-ink-soft">
+              {perMonthLine(plan)}
+            </em>
           </button>
         );
       })}
@@ -334,7 +338,7 @@ export function PlanPicker({
 export function WhenRow({ lead, rest }: { lead: string; rest: string }) {
   return (
     <div
-      className="ds-type-caption flex items-center gap-2 rounded-[14px] border-2 border-dashed border-ds-line bg-ds-card px-2.5 py-2 text-ds-ink-soft"
+      className="ds-type-body flex items-center gap-2.5 rounded-[14px] border-2 border-dashed border-ds-line bg-ds-card px-3 py-2.5 font-semibold! text-ds-ink-soft"
       data-when=""
     >
       <svg
@@ -346,7 +350,7 @@ export function WhenRow({ lead, rest }: { lead: string; rest: string }) {
         strokeWidth="2"
         strokeLinejoin="round"
         aria-hidden="true"
-        className="size-[18px] shrink-0 text-ds-action-text"
+        className="size-6 shrink-0 text-ds-action-text"
       >
         <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
         <path d="M3.5 10h17M8 3v4M16 3v4" />

@@ -27,8 +27,8 @@ const PLAN_NAME: Record<BillingPeriod, string> = { month: "Monthly", year: "Year
  * roles and nothing else, and paywall-plans.test.ts pins that the price role is at least the trial role.
  */
 export const PAYWALL_TEXT_ROLE = {
-  price: "ds-type-headline",
-  trial: "ds-type-footnote",
+  price: "ds-type-title",
+  trial: "ds-type-headline",
 } as const;
 
 /** The generated CSS class for a type role: displayXL → ds-type-display-x-l. */

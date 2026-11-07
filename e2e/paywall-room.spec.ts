@@ -174,6 +174,58 @@ test("no offer on sale: Coming soon, no price", async ({ page }) => {
   await shot(page, "4b-whole-page-no-offering", { full: true });
 });
 
+/** Every box whose text could outgrow it at the larger, mock-matched type: a word wider than its tile shows here. */
+async function nothingClips(page: Page) {
+  const clipped = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        "[data-paywall] h1, [data-paywall] figure p, [data-paywall] li, [role=radio], [data-when], [data-paywall-plans] p, [data-pro-welcome] h1, [data-pro-welcome] li",
+      ),
+    ]
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .map((el) => el.textContent?.trim().slice(0, 40)),
+  );
+  expect(clipped).toEqual([]);
+}
+
+for (const width of [360, 390]) {
+  test(`at ${width} px nothing clips or scrolls sideways, and the headline sits over the room`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await signInAsFakeUser(page);
+    await fakeServer(page, {
+      pro: false,
+      offering: { status: 200, json: { plans: [FIXTURE_YEARLY, FIXTURE_MONTHLY] } },
+    });
+    await page.goto("/hector");
+    const headline = page.getByRole("heading", { level: 1, name: /A tutor who remembers you/ });
+    await expect(headline).toBeVisible();
+    await expect(page.getByText("Free for 7 days")).toBeAttached();
+    // The headline starts inside the room's picture (over Hector's fade), as the mock.
+    const [h, room] = await Promise.all([
+      headline.boundingBox(),
+      page.locator("[data-paywall-room]").boundingBox(),
+    ]);
+    expect(h!.y).toBeLessThan(room!.y + room!.height);
+    await noSideScroll(page);
+    await nothingClips(page);
+  });
+
+  test(`welcome at ${width} px: nothing clips or scrolls sideways`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await signInAsFakeUser(page);
+    await fakeServer(page, {
+      pro: true,
+      offering: { status: 409, json: { error: "already-pro" } },
+    });
+    await page.goto("/pro-return");
+    await expect(page.getByRole("button", { name: "Call Hector" })).toBeVisible();
+    await noSideScroll(page);
+    await nothingClips(page);
+  });
+}
+
 test("welcome after buying: Hector in his room, three openers, Call Hector", async ({ page }) => {
   await page.setViewportSize(PHONE);
   await signInAsFakeUser(page);
