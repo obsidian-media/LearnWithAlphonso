@@ -56,10 +56,9 @@ describe("pathNodeDelay", () => {
     expect(pathNodeDelay(40)).toBeLessThanOrEqual(0.5);
   });
 
-  it("the Learn page passes the lesson's place in its unit, not the global index", async () => {
+  it("the Learn page never staggers entrances by a page-wide index (round 6.1 draws no path nodes)", async () => {
     const fs = await import("node:fs");
     const src = fs.readFileSync("src/routes/_authenticated/learn.tsx", "utf8");
     expect(src).not.toMatch(/delay:\s*index\s*\*/);
-    expect(src).toMatch(/delay:\s*pathNodeDelay\(/);
   });
 });

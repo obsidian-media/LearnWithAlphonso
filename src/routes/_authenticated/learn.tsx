@@ -64,7 +64,7 @@ function YouAreHere({
 }) {
   const art = roomArtFor(index - 1);
   const body = (
-    <span className="relative block h-[196px] overflow-hidden rounded-3xl border-2 border-ink bg-ink text-left">
+    <span className="relative block h-48 overflow-hidden rounded-3xl border-2 border-ink bg-ink text-left">
       <img
         src={`/avatar/scenes/${art}.webp`}
         alt=""
@@ -79,14 +79,14 @@ function YouAreHere({
         alt=""
         className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
       />
-      <span className="absolute left-4 top-3.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-surface">
+      <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-surface">
         You are here · Unit {index} of {count}
       </span>
       <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-surface">
-        <span className="text-[12.5px] font-semibold">
+        <span className="text-xs font-semibold">
           {roomName(art)} · {level} · {unitTitle}
         </span>
-        <span className="font-display text-[22px] font-bold leading-[1.05]">{lessonTitle}</span>
+        <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
         <span className="mt-2 inline-flex min-h-11 items-center self-start rounded-full bg-ember px-4 font-display text-sm font-bold text-ink-on-ember">
           Continue →
         </span>
@@ -198,7 +198,7 @@ function LessonRow({
       {badge}
       <span className="min-w-0 flex-1 break-words text-sm font-semibold text-ink">{title}</span>
       {state === "active" && (
-        <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-surface">
+        <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-surface">
           Now
         </span>
       )}
@@ -485,7 +485,7 @@ function LearnPage() {
             <p className="font-display text-lg font-semibold text-ink">
               {meta.id} · {meta.name}
             </p>
-            <span className="tnum text-[11px] font-medium text-ink-soft">{pct}%</span>
+            <span className="tnum text-xs font-medium text-ink-soft">{pct}%</span>
           </div>
           <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
@@ -512,7 +512,7 @@ function LearnPage() {
             </p>
             <Link
               to="/placement"
-              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-[12px] font-semibold text-surface"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-xs font-semibold text-surface"
             >
               Take the placement test
             </Link>
@@ -541,7 +541,7 @@ function LearnPage() {
                         const u = curriculum.find((x) => x.id === uid)!;
                         return (
                           <div key={uid}>
-                            <p className="pt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+                            <p className="pt-2 text-xs font-bold uppercase tracking-widest text-ink-soft">
                               {u.eyebrow} · {u.title}
                             </p>
                             {u.lessons.map((l, li) => (
@@ -624,7 +624,7 @@ function LearnPage() {
               </span>
               {dueCount > 0 && (
                 <span
-                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-ink-on-ember"
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-xs font-semibold text-ink-on-ember"
                   aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
                 >
                   {dueCount}
