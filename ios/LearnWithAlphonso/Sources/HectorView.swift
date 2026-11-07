@@ -77,7 +77,7 @@ private struct HectorConversationView: View {
     /// The word the learner tapped in one of Hector's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var showPaywall = false
-    /// Settings: "Show Alphonso while practising" (default on) covers Hector's call too: one switch decides.
+    /// Settings: "Show Alphonso while practicing" (default on) covers Hector's call too: one switch decides.
     @AppStorage(AvatarPreference.key) private var showCall = AvatarPreference.defaultValue
     /// Hector's endpoint returns no verdict on the learner's turn, so this never changes and he does not react to
     /// right or wrong answers.

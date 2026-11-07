@@ -11,7 +11,7 @@ export function LeagueTierBadge({
   const px = size === "sm" ? 24 : size === "lg" ? 44 : 32;
   return (
     <span
-      className="inline-flex items-center justify-center rounded-full ring-1 ring-hairline"
+      className="inline-flex items-center justify-center rounded-full ring-1 ring-ds-line"
       style={{ width: px, height: px, backgroundColor: `${meta.hex}18` }}
       aria-label={`${meta.label} league`}
     >

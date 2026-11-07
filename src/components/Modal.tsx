@@ -94,7 +94,7 @@ export function Modal({
       ref={portalRef}
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
     >
-      <div role="presentation" className="absolute inset-0 bg-ink/40" />
+      <div role="presentation" className="absolute inset-0 bg-ds-ink/40" />
       <div
         ref={dialogRef}
         role="dialog"

@@ -42,7 +42,7 @@ object AiErrorCopy {
             "quota-exceeded" -> quotaExceededMessage(resetsAt, now, zone)
             "not-entitled" -> "Hector is part of Alphonso Pro."
             "entitlement-unavailable" -> "We can't check your Pro access right now. Please try again shortly."
-            "ai-consent-required" -> "Turn on AI features to practise speaking with a tutor."
+            "ai-consent-required" -> "Turn on AI features to practice speaking with a tutor."
             else -> if (status == 401) "You've been signed out. Please sign in again." else GENERIC
         }
     }

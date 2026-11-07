@@ -11,19 +11,21 @@ export function WeeklyChallengesCard() {
 
   return (
     <div className="card-lift rounded-3xl bg-tile-sky-bg p-4">
-      <p className="font-display text-sm font-semibold text-ink">This week's challenges</p>
+      <p className="font-display text-sm font-semibold text-ds-ink">This week's challenges</p>
       <div className="mt-3 space-y-2.5">
         {challenges.map((c) => (
           <div key={c.templateId}>
             <div className="flex items-center justify-between text-xs">
-              <span className={c.completed ? "text-moss line-through" : "text-ink"}>{c.title}</span>
-              <span className="tnum text-ink-soft">
+              <span className={c.completed ? "text-ds-brand line-through" : "text-ds-ink"}>
+                {c.title}
+              </span>
+              <span className="tnum text-ds-ink-soft">
                 {Math.min(c.progress, c.threshold)}/{c.threshold}
               </span>
             </div>
-            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-hairline">
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ds-line">
               <div
-                className="h-full rounded-full bg-moss"
+                className="h-full rounded-full bg-ds-brand"
                 style={{ width: `${Math.min(100, (c.progress / c.threshold) * 100)}%` }}
               />
             </div>

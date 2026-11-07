@@ -93,7 +93,7 @@ data class LessonUiState(
     val lastCheckedCorrect: Boolean? get() = if (!checked) null else translationVerdict?.correct
 }
 
-/** One missed question on the complete screen, to practise again. */
+/** One missed question on the complete screen, to practice again. */
 data class MissedQuestion(val prompt: String, val yours: String, val answer: String)
 
 /**

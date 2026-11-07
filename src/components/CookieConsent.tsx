@@ -45,27 +45,27 @@ export function CookieConsent() {
       <div
         className={
           isStudioInk
-            ? "mx-auto max-w-[430px] border-t border-hairline bg-surface p-4"
-            : "mx-auto max-w-[430px] rounded-2xl border border-hairline bg-surface p-4 shadow-lg"
+            ? "mx-auto max-w-[430px] border-t border-ds-line bg-ds-card p-4"
+            : "mx-auto max-w-[430px] rounded-2xl border border-ds-line bg-ds-card p-4 shadow-lg"
         }
       >
-        <p className="text-[13px] leading-relaxed text-ink-soft">
+        <p className="ds-type-footnote leading-relaxed text-ds-ink-soft">
           We use essential storage to keep you signed in and remember your progress. Optional
           analytics storage helps us improve lessons. You choose.{" "}
-          <Link to="/cookies" className="underline hover:text-ink">
+          <Link to="/cookies" className="underline hover:text-ds-ink">
             Cookie Policy
           </Link>
         </p>
         <div className="mt-3 flex gap-2">
           <button
             onClick={() => choose("essential")}
-            className="flex-1 rounded-full border border-hairline bg-parchment px-3 py-2.5 text-sm font-medium text-ink"
+            className="flex-1 rounded-full border border-ds-line bg-ds-sunk px-3 py-2.5 text-sm font-medium text-ds-ink"
           >
             Essential only
           </button>
           <button
             onClick={() => choose("all")}
-            className="flex-1 rounded-full bg-ink px-3 py-2.5 text-sm font-semibold text-surface"
+            className="flex-1 rounded-full bg-ds-ink px-3 py-2.5 text-sm font-semibold text-ds-card"
           >
             Accept all
           </button>

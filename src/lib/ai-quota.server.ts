@@ -26,7 +26,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // budget so saving words never eats the conversation turns a learner pays
   // for, and so a runaway tap loop has a known cost ceiling.
   define: 40,
-  // Pro learners' Hector turns (20261102120000). Separate from `chat`, which free Practice spends, so practising
+  // Pro learners' Hector turns (20261102120000). Separate from `chat`, which free Practice spends, so practicing
   // never blocks the feature a learner pays for; still capped to bound AI cost.
   hector: 150,
 };

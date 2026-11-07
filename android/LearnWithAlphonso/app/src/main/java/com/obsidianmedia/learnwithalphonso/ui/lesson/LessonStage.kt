@@ -847,7 +847,7 @@ fun LessonComplete(
                 achievements.forEachIndexed { i, (title, detail) -> LessonAchievementToast(title, detail, i, reduce) }
                 extras()
                 if (missed.isNotEmpty()) {
-                    Overline("Review · ${missed.size} to practise again", ds.inkSoft)
+                    Overline("Review · ${missed.size} to practice again", ds.inkSoft)
                     missed.forEach { m ->
                         LessonCard {
                             Text(m.prompt, style = FootnoteType, color = ds.ink)

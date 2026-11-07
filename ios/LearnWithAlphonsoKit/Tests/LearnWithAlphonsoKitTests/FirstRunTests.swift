@@ -236,4 +236,10 @@ final class FirstRunTests: XCTestCase {
         XCTAssertEqual(FirstRun.formatDay(plan.goalDate), "10 November")
         XCTAssertEqual(plan.nodes.first?.room, LessonStage.fallbackRoom)
     }
+
+    func testEveryAgeRangeHasItsOwnLabel() {
+        let labels = AgeChoice.allCases.map(\.small)
+        XCTAssertEqual(Set(labels).count, labels.count)
+        XCTAssertEqual(labels, ["Under 13", "Teen", "Young adult", "Adult", "Mid-life", "Mature"])
+    }
 }

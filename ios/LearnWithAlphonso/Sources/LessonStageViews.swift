@@ -1036,7 +1036,7 @@ struct LessonAchievementToast: View {
     }
 }
 
-/// One missed question on the complete screen, to practise again.
+/// One missed question on the complete screen, to practice again.
 struct LessonMissedItem: Identifiable {
     let id: String
     let prompt: String
@@ -1047,7 +1047,7 @@ struct LessonMissedItem: Identifiable {
 /// Lesson complete, celebrated in the unit's room in code: confetti in the robe's colours, Alphonso going "wow"
 /// then smiling, his line in the bubble, reward tiles that count up (XP, streak, accuracy, time), the XP lines that
 /// add up to the award, the hearts bonus, achievement toasts and the review list. `extras` carries the rest of the
-/// existing mechanics (Practise with Hector, the reminder card, generated practice). Reduce Motion: a still scatter,
+/// existing mechanics (Practice with Hector, the reminder card, generated practice). Reduce Motion: a still scatter,
 /// final numbers, fades only.
 struct LessonCompleteView<Extras: View>: View {
     let roomID: String
@@ -1150,7 +1150,7 @@ struct LessonCompleteView<Extras: View>: View {
                     extras()
                     if !missed.isEmpty {
                         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                            Text("Review \u{00B7} \(missed.count) to practise again")
+                            Text("Review \u{00B7} \(missed.count) to practice again")
                                 .dsText(.overline)
                                 .foregroundStyle(ds.inkSoft)
                             ForEach(missed) { item in

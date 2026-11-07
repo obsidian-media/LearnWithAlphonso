@@ -28,7 +28,7 @@ struct LessonPlayerView: View {
     let contentStore: ContentStore
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
-    /// What "Practise with Hector" on the finish screen needs. Nil hides the button.
+    /// What "Practice with Hector" on the finish screen needs. Nil hides the button.
     let hectorAccess: HectorAccess?
     @EnvironmentObject private var aiConsent: AIConsentStore
 
@@ -200,7 +200,7 @@ struct LessonPlayerView: View {
         celebrated = false
     }
 
-    private func practiseWithHector() {
+    private func practiceWithHector() {
         guard let hectorAccess else { return }
         if hectorAccess.entitlementStore.isPro { showingHector = true } else { showingHectorPaywall = true }
     }
@@ -274,7 +274,7 @@ struct LessonPlayerView: View {
             let now = Date().timeIntervalSince1970
             if newPhase == .active { lessonTimer?.resume(now: now) } else { lessonTimer?.pause(now: now) }
         }
-        // "Practise with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
+        // "Practice with Hector": Hector for Pro, otherwise the same paywall the Practice card opens.
         .sheet(isPresented: $showingHector) {
             if let hectorAccess {
                 HectorView(
@@ -340,7 +340,7 @@ struct LessonPlayerView: View {
             OfflineFinishView(
                 pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
                 onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
-                onPractiseWithHector: hectorAccess == nil ? nil : practiseWithHector)
+                onPracticeWithHector: hectorAccess == nil ? nil : practiceWithHector)
         } else if let completionFailure {
             LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
         } else if total == 0 {
@@ -547,12 +547,12 @@ struct LessonPlayerView: View {
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
             if hectorAccess != nil {
-                Button("Practise with Hector", action: practiseWithHector)
+                Button("Practice with Hector", action: practiceWithHector)
                     .buttonStyle(LessonEdgeButtonStyle(variant: .secondary))
             }
             GeneratedPracticeSection(lessonID: lesson.id, course: course, session: session)
         }
-        .sensoryFeedback(.success, trigger: celebrated)
+        .sensoryFeedback(trigger: celebrated) { _, _ in SoundEffectsPreference.isOn() ? .success : nil }
         .onAppear {
             showPromotionOverlay = isLeaguePromotion
             celebrated = true
@@ -772,7 +772,7 @@ struct LessonPlayerView: View {
             result = completion
             syncQueueStore.updateLastKnownProgress(completion.progress)
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
-            if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
+            if (isLeaguePromotion || !completion.newlyUnlocked.isEmpty) && SoundEffectsPreference.isOn() {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
             // After the haptic and off the finish path: a slow network must not delay either.
@@ -1257,7 +1257,7 @@ private struct OfflineFinishView: View {
     let total: Int
     let reason: LessonCompletionError
     let onContinue: () -> Void
-    let onPractiseWithHector: (() -> Void)?
+    let onPracticeWithHector: (() -> Void)?
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.md) {
@@ -1285,8 +1285,8 @@ private struct OfflineFinishView: View {
             Button("Continue", action: onContinue)
                 .buttonStyle(.alphonsoPrimary)
                 .padding(.top, AlphonsoSpacing.sm)
-            if let onPractiseWithHector {
-                Button("Practise with Hector", action: onPractiseWithHector)
+            if let onPracticeWithHector {
+                Button("Practice with Hector", action: onPracticeWithHector)
                     .buttonStyle(.alphonsoSecondary)
             }
         }
@@ -1350,7 +1350,7 @@ enum LeagueTierPalette {
     }
 }
 
-/// What the finish screen's "Practise with Hector" button needs to open Hector or the paywall.
+/// What the finish screen's "Practice with Hector" button needs to open Hector or the paywall.
 struct HectorAccess {
     let entitlementStore: EntitlementStore
     let activeCourse: ActiveCourseModel

@@ -97,7 +97,7 @@ export function PreCallSheet({
           </ul>
         </div>
 
-        <div role="radiogroup" aria-label="How to practise" className="grid grid-cols-2 gap-2">
+        <div role="radiogroup" aria-label="How to practice" className="grid grid-cols-2 gap-2">
           {(
             [
               ["call", "Call (speak)"],

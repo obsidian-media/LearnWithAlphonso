@@ -154,7 +154,7 @@ object ProfileMath {
         )
     }
 
-    /** The weak spots to fix first: the most-missed, then the least-practised. */
+    /** The weak spots to fix first: the most-missed, then the least-practiced. */
     fun weakSpots(items: List<ProfileWeakItem>, n: Int = 3): Pair<List<ProfileWeakItem>, Int> =
         Pair(items.sortedWith(compareByDescending<ProfileWeakItem> { it.lapses }.thenBy { it.repetitions }).take(n), items.size)
 

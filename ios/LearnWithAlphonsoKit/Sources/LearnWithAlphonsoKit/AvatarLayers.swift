@@ -81,7 +81,7 @@ public struct CharacterKit: Equatable, Sendable {
         defaultRoom: CallScenes.defaultRoom)
 }
 
-/// The "Show Alphonso while practising" setting. The @AppStorage key and its default live here so the settings
+/// The "Show Alphonso while practicing" setting. The @AppStorage key and its default live here so the settings
 /// toggle and the Practice screen cannot drift apart.
 public enum AvatarPreference {
     public static let key = "showAlphonsoWhilePractising"

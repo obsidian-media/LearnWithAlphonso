@@ -1,6 +1,6 @@
 import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
-import { PractiseWithHector } from "../../components/PractiseWithHector";
+import { PracticeWithHector } from "../../components/PracticeWithHector";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
 import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -1202,12 +1202,12 @@ export function FinishScreen({
           )}
         </AnimatePresence>
 
-        <PractiseWithHector />
+        <PracticeWithHector />
 
         {missedQs.length > 0 && (
           <div className="grid gap-2 text-left">
             <p className="ds-type-overline text-ds-ink-soft">
-              Review · {missedQs.length} to practise again
+              Review · {missedQs.length} to practice again
             </p>
             {missedQs.map(({ q, yours }, i) => (
               <div

@@ -16,7 +16,7 @@ describe("VocabImage", () => {
     render(<VocabImage url={OK} alt="A red apple" className="h-32 w-full" />);
     const slot = screen.getByTestId("vocab-image");
     expect(slot).toHaveAttribute("data-phase", "loading");
-    expect(slot).toHaveClass("bg-parchment", "h-32", "w-full");
+    expect(slot).toHaveClass("bg-ds-sunk", "h-32", "w-full");
   });
 
   it("reveals the image once it loads", () => {
@@ -24,7 +24,7 @@ describe("VocabImage", () => {
     fireEvent.load(screen.getByRole("img", { name: "A red apple" }));
     const slot = screen.getByTestId("vocab-image");
     expect(slot).toHaveAttribute("data-phase", "loaded");
-    expect(slot).not.toHaveClass("bg-parchment");
+    expect(slot).not.toHaveClass("bg-ds-sunk");
   });
 
   it("collapses the whole slot when the image fails", () => {

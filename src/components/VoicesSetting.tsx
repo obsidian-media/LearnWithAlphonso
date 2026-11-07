@@ -36,13 +36,10 @@ export function VoicesSetting() {
 
   return (
     <section aria-labelledby="voices-setting-heading">
-      <h2
-        id="voices-setting-heading"
-        className="mt-8 font-display text-[18px] font-semibold text-ink"
-      >
+      <h2 id="voices-setting-heading" className="mt-8 font-display ds-type-headline text-ds-ink">
         Voices
       </h2>
-      <div className="mt-3 rounded-2xl border border-hairline bg-parchment p-3">
+      <div className="mt-3 rounded-2xl border border-ds-line bg-ds-sunk p-3">
         <SegmentedControl
           ariaLabel="Course for voices"
           value={course}
@@ -58,10 +55,10 @@ export function VoicesSetting() {
                   type="button"
                   onClick={() => setPicking(character)}
                   aria-label={`${CHARACTER_LABEL[character]} in ${courseLabel(course)}: ${voice?.name ?? ""}. Change`}
-                  className="flex w-full items-center justify-between rounded-xl bg-surface px-4 py-3 text-left"
+                  className="flex w-full items-center justify-between rounded-xl bg-ds-card px-4 py-3 text-left"
                 >
-                  <span className="text-sm text-ink">{CHARACTER_LABEL[character]}</span>
-                  <span className="text-sm text-ink-soft">
+                  <span className="text-sm text-ds-ink">{CHARACTER_LABEL[character]}</span>
+                  <span className="text-sm text-ds-ink-soft">
                     {voice?.name} <span aria-hidden="true">→</span>
                   </span>
                 </button>
@@ -70,7 +67,7 @@ export function VoicesSetting() {
           })}
         </ul>
       </div>
-      <p className="mt-2 text-xs text-ink-soft">
+      <p className="mt-2 text-xs text-ds-ink-soft">
         Choose how Alphonso and Hector sound in each course. Your choice is saved to your account.
       </p>
       {error && !picking && (
@@ -141,16 +138,16 @@ export function VoicePicker({
     <Modal
       labelledBy={titleId}
       onEscape={onClose}
-      className="relative flex max-h-[85vh] w-full max-w-md flex-col rounded-t-3xl bg-surface p-6 outline-none sm:rounded-3xl"
+      className="relative flex max-h-[85vh] w-full max-w-md flex-col rounded-t-3xl bg-ds-card p-6 outline-none sm:rounded-3xl"
     >
       <div className="flex items-center justify-between">
-        <h2 id={titleId} className="font-display text-[20px] font-semibold text-ink">
+        <h2 id={titleId} className="font-display ds-type-headline text-ds-ink">
           {CHARACTER_LABEL[character]} · {courseLabel(course)}
         </h2>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border border-hairline px-3 py-1.5 text-xs font-semibold text-ink"
+          className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-semibold text-ds-ink"
         >
           Done
         </button>
@@ -166,7 +163,7 @@ export function VoicePicker({
           if (group.length === 0) return null;
           return (
             <div key={gender} role="radiogroup" aria-label={`${label} voices`} className="mb-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ds-ink-soft">
                 {label}
               </h3>
               <ul className="space-y-2">
@@ -176,7 +173,7 @@ export function VoicePicker({
                   return (
                     <li
                       key={v.id}
-                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${isSelected ? "border-moss bg-parchment" : "border-hairline"}`}
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${isSelected ? "border-ds-brand bg-ds-sunk" : "border-ds-line"}`}
                     >
                       <button
                         type="button"
@@ -184,7 +181,7 @@ export function VoicePicker({
                         aria-label={
                           playing === v.id ? `Stop ${v.name} preview` : `Play ${v.name} preview`
                         }
-                        className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-ink"
+                        className="grid size-9 shrink-0 place-items-center rounded-full bg-ds-card text-ds-ink"
                       >
                         <span aria-hidden="true">{playing === v.id ? "■" : "▶"}</span>
                       </button>
@@ -196,20 +193,20 @@ export function VoicePicker({
                         className="flex min-w-0 flex-1 items-center justify-between text-left"
                       >
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-ink">
+                          <span className="block text-sm font-semibold text-ds-ink">
                             {v.name}
                             {isDefault && (
-                              <span className="ml-2 rounded-full bg-hairline px-2 py-0.5 text-[11px] font-medium text-ink-soft">
+                              <span className="ml-2 rounded-full bg-ds-line px-2 py-0.5 ds-type-caption text-ds-ink-soft">
                                 Default
                               </span>
                             )}
                           </span>
-                          <span className="block text-xs text-ink-soft">
+                          <span className="block text-xs text-ds-ink-soft">
                             {v.accent} · {v.descriptor}
                           </span>
                         </span>
                         {isSelected && (
-                          <span aria-hidden="true" className="text-moss">
+                          <span aria-hidden="true" className="text-ds-brand">
                             ✓
                           </span>
                         )}

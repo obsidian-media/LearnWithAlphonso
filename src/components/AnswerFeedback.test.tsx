@@ -18,7 +18,7 @@ describe("AnswerFeedback", () => {
 
   it("uses a moss accent when correct", () => {
     render(<AnswerFeedback correct headline="Nice!" explanation="e" />);
-    expect(screen.getByRole("status")).toHaveClass("border-moss/40");
+    expect(screen.getByRole("status")).toHaveClass("border-ds-brand/40");
   });
 
   it("uses a rose accent when incorrect", () => {
@@ -29,7 +29,7 @@ describe("AnswerFeedback", () => {
   it("uses a left-bar accent in the Studio Ink theme", () => {
     useTheme.setState({ theme: "studio-ink" });
     render(<AnswerFeedback correct headline="Nice!" explanation="e" />);
-    expect(screen.getByRole("status")).toHaveClass("border-l-moss");
+    expect(screen.getByRole("status")).toHaveClass("border-l-ds-brand");
   });
 
   it("shows Alphonso when the answer is incorrect", () => {

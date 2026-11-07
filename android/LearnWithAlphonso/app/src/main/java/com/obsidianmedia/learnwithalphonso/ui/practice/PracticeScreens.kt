@@ -167,7 +167,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     }
     val palette = LocalAlphonsoTokens.current
     val context = LocalContext.current
-    // "Show Alphonso while practising" (Settings, on by default): a full-screen call. Off keeps the classic screen.
+    // "Show Alphonso while practicing" (Settings, on by default): a full-screen call. Off keeps the classic screen.
     val showCall = !chatMode
     val reporting = ReplyReporting(container.aiReports) { message, _, reason ->
         AiReplyReports.scenario(message, course.code, scenario.id, reason)
@@ -215,7 +215,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val progress by vm.campaignState.collectAsState()
     val state by vm.state.collectAsState()
     val context = LocalContext.current
-    // "Show Alphonso while practising" (Settings, on by default): a full-screen call in the default study room.
+    // "Show Alphonso while practicing" (Settings, on by default): a full-screen call in the default study room.
     val showCall = !chatMode
     val reporting = ReplyReporting(container.aiReports) { message, sceneIndex, reason ->
         AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)

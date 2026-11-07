@@ -23,7 +23,7 @@ describe("WordChip", () => {
   it("the picked word is highlighted", () => {
     render(<WordChip word="water" picked disabled={false} onClick={() => {}} />);
     expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button")).toHaveClass("border-moss");
+    expect(screen.getByRole("button")).toHaveClass("border-ds-brand");
   });
 
   it("Studio Ink keeps the quiet pill", () => {

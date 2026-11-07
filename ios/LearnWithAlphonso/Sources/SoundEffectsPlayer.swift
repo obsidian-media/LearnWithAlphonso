@@ -50,7 +50,7 @@ final class SoundEffectsPlayer {
         voiceProbes[id] = nil
     }
 
-    /// Plays one effect now (and its haptic, which follows the system haptics setting, not this switch).
+    /// Plays one effect now (and its haptic, which needs this switch on as well as the system haptics setting).
     func play(_ effect: SoundEffect, key: String? = nil) {
         guard gate.shouldPlay(effect, key: key) else { return }
         Self.useAmbientWhenFree()
@@ -95,6 +95,7 @@ final class SoundEffectsPlayer {
 
     /// The light haptic for a moment, when it has one.
     func haptic(_ effect: SoundEffect) {
+        guard gate.shouldVibrate(effect) else { return }
         switch effect.haptic {
         case .success: UINotificationFeedbackGenerator().notificationOccurred(.success)
         case .warning: UINotificationFeedbackGenerator().notificationOccurred(.warning)

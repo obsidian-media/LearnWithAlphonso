@@ -17,8 +17,8 @@ public enum HectorGreeting {
         let simple = level.isEmpty || level == "A1" || level == "A2"
         if let topic = topicLabel(course: course, category: weakSpot) {
             switch (course, simple) {
-            case (.english, true): return "\(hi) Last time you had trouble with \(topic). Let's practise together. Ready?"
-            case (.english, false): return "\(hi) Last time \(topic) tripped you up. Want to practise that in conversation?"
+            case (.english, true): return "\(hi) Last time you had trouble with \(topic). Let's practice together. Ready?"
+            case (.english, false): return "\(hi) Last time \(topic) tripped you up. Want to practice that in conversation?"
             case (.french, true):
                 return "\(hi) La dernière fois, tu as eu du mal avec \(topic). On s'entraîne ensemble\(nb)?"
             case (.french, false):

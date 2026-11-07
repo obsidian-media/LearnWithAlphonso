@@ -41,7 +41,7 @@ afterEach(() => {
 describe("HectorInvite", () => {
   it("Practice card: shown to a learner without Pro, and opens the paywall with its source", async () => {
     render(<HectorInvite source="practice_hector_card" />);
-    const card = await screen.findByRole("button", { name: /Practise speaking with Hector/ });
+    const card = await screen.findByRole("button", { name: /Practice speaking with Hector/ });
     expect(
       screen.getByText(
         "A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.",
@@ -55,7 +55,7 @@ describe("HectorInvite", () => {
 
   it("the paywall opens over the page, takes focus, and Close or Escape gives the page back", async () => {
     render(<HectorInvite source="practice_hector_card" />);
-    const card = await screen.findByRole("button", { name: /Practise speaking with Hector/ });
+    const card = await screen.findByRole("button", { name: /Practice speaking with Hector/ });
     await userEvent.click(card);
     const close = await screen.findByRole("button", { name: "Close" });
     expect(close).toHaveFocus();
@@ -70,7 +70,7 @@ describe("HectorInvite", () => {
 
   it("the open paywall keeps Tab inside and locks the page from scrolling until it closes", async () => {
     render(<HectorInvite source="practice_hector_card" />);
-    const card = await screen.findByRole("button", { name: /Practise speaking with Hector/ });
+    const card = await screen.findByRole("button", { name: /Practice speaking with Hector/ });
     await userEvent.click(card);
     const sheet = await screen.findByRole("dialog", { name: "Alphonso Pro" });
     await within(sheet).findByText("$9.99 a month after the trial");

@@ -50,7 +50,7 @@ export function SocialSafetyMenu({
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
-        className="grid size-7 shrink-0 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
+        className="grid size-7 shrink-0 place-items-center rounded-full text-ds-ink-soft/70 hover:bg-ds-sunk"
       >
         <svg viewBox="0 0 20 20" fill="currentColor" className="size-4">
           <circle cx="4" cy="10" r="1.6" />
@@ -72,7 +72,7 @@ export function SocialSafetyMenu({
           />
           <div
             role="menu"
-            className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-xl border border-hairline bg-surface shadow-lg"
+            className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-xl border border-ds-line bg-ds-card shadow-lg"
           >
             <button
               type="button"
@@ -81,7 +81,7 @@ export function SocialSafetyMenu({
                 setMenuOpen(false);
                 setDialog("block");
               }}
-              className="block w-full px-3 py-2 text-left text-sm font-medium text-destructive hover:bg-parchment"
+              className="block w-full px-3 py-2 text-left text-sm font-medium text-destructive hover:bg-ds-sunk"
             >
               Block user
             </button>
@@ -92,7 +92,7 @@ export function SocialSafetyMenu({
                 setMenuOpen(false);
                 setDialog("report");
               }}
-              className="block w-full px-3 py-2 text-left text-sm font-medium text-ink hover:bg-parchment"
+              className="block w-full px-3 py-2 text-left text-sm font-medium text-ds-ink hover:bg-ds-sunk"
             >
               Report user
             </button>
@@ -138,14 +138,14 @@ function DialogFrame({
 }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6">
-      <div className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl">
+      <div className="w-full max-w-sm rounded-2xl bg-ds-card p-5 shadow-xl">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-base font-semibold text-ink">{title}</h2>
+          <h2 className="font-display text-base font-semibold text-ds-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-ink-soft/70 hover:text-ink"
+            className="text-ds-ink-soft/70 hover:text-ds-ink"
           >
             ✕
           </button>
@@ -172,7 +172,7 @@ function BlockConfirmDialog({
   const [error, setError] = useState<string | null>(null);
   return (
     <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
-      <p className="mb-4 text-sm text-ink-soft">
+      <p className="mb-4 text-sm text-ds-ink-soft">
         {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
         see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you
         need help with this.
@@ -186,7 +186,7 @@ function BlockConfirmDialog({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-full px-4 py-2 text-sm font-medium text-ink-soft"
+          className="rounded-full px-4 py-2 text-sm font-medium text-ds-ink-soft"
         >
           Cancel
         </button>
@@ -227,7 +227,7 @@ function ReportDialog({
   if (didSubmit) {
     return (
       <DialogFrame title="Report submitted" onClose={onClose}>
-        <p className="text-sm text-ink-soft">
+        <p className="text-sm text-ds-ink-soft">
           Thanks for letting us know. Our team reviews every report. If you need to follow up,
           contact support@alphonsoecosystem.app.
         </p>
@@ -235,7 +235,7 @@ function ReportDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white"
+            className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white"
           >
             Done
           </button>
@@ -251,7 +251,7 @@ function ReportDialog({
         {REPORT_REASONS.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-parchment"
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ds-ink hover:bg-ds-sunk"
           >
             <input
               type="radio"
@@ -269,7 +269,7 @@ function ReportDialog({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full px-4 py-2 text-sm font-medium text-ink-soft"
+          className="rounded-full px-4 py-2 text-sm font-medium text-ds-ink-soft"
         >
           Cancel
         </button>
@@ -282,7 +282,7 @@ function ReportDialog({
             setIsSubmitting(false);
             setDidSubmit(true);
           }}
-          className="rounded-full bg-moss px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
           {isSubmitting ? "Submitting…" : "Submit report"}
         </button>

@@ -81,9 +81,9 @@ internal fun PracticeHubContent(
     LazyColumn(Modifier.testTag("practice-hub").fillMaxSize().background(ds.surface), contentPadding = PaddingValues(Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s4)) {
         item {
             val greeting = when (course) {
-                Course.FRENCH -> "On pratique un peu aujourd'hui ?\nShall we practise a bit today?"
-                Course.SPANISH -> "¿Practicamos un poco hoy?\nShall we practise a bit today?"
-                else -> "Shall we practise a bit today?"
+                Course.FRENCH -> "On pratique un peu aujourd'hui ?\nShall we practice a bit today?"
+                Course.SPANISH -> "¿Practicamos un poco hoy?\nShall we practice a bit today?"
+                else -> "Shall we practice a bit today?"
             }
             LessonRoom("coffee", LessonExpression.TALK, Space.s12 * 6, Space.s12 * 5, titleScrim = true, overlay = {
                 Box(Modifier.fillMaxSize()) {
@@ -139,7 +139,7 @@ internal fun PracticeHubContent(
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.hero).clickable(onClick = onHector).padding(Space.s4), horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
                 face?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.size(Space.s12)) }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-                    Text("Practise speaking with Hector · Pro", style = Type.headline.toTextStyle(), color = ds.onHero)
+                    Text("Practice speaking with Hector · Pro", style = Type.headline.toTextStyle(), color = ds.onHero)
                     Text("A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.", style = Type.caption.toTextStyle(), color = ds.onHeroSoft)
                 }
             }

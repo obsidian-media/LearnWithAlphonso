@@ -54,7 +54,10 @@ class SoundEffectGate(
     private val isEnabled: () -> Boolean,
     private val isVoiceActive: () -> Boolean,
     private val nowMs: () -> Long = System::currentTimeMillis,
+    /** The Settings switch alone (default: same as [isEnabled]); haptics follow it, so off is no haptics either. */
+    isSwitchOn: (() -> Boolean)? = null,
 ) {
+    private val switchOn: () -> Boolean = isSwitchOn ?: isEnabled
     private val playedKeys = mutableSetOf<String>()
     private var callCueEndsAt = 0L
 
@@ -66,6 +69,9 @@ class SoundEffectGate(
         if (effect == SoundEffect.CALL_START) callCueEndsAt = nowMs() + effect.durationMs
         return true
     }
+
+    /** Whether an effect's haptic fires: only with the Sound effects switch on, and only for effects that have one. */
+    fun shouldVibrate(effect: SoundEffect): Boolean = effect.haptic != null && switchOn()
 
     /** How long the call-start sound still has to play: the opening line waits this long. */
     fun callCueRemainingMs(): Long = maxOf(0L, callCueEndsAt - nowMs())

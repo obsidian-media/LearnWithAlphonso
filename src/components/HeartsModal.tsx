@@ -117,7 +117,7 @@ export function HeartsModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 px-4 pb-6 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ds-ink/40 px-4 pb-6 sm:items-center"
           onClick={onClose}
         >
           <motion.div
@@ -126,18 +126,18 @@ export function HeartsModal({
             exit={{ opacity: 0, y: 16 }}
             className={
               isStudioInk
-                ? "w-full max-w-[380px] border-t border-hairline bg-surface p-6 pt-7 text-center"
-                : "w-full max-w-[380px] rounded-3xl border border-hairline bg-surface p-6 text-center"
+                ? "w-full max-w-[380px] border-t border-ds-line bg-ds-card p-6 pt-7 text-center"
+                : "w-full max-w-[380px] rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
             }
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-rose-50 text-rose-500">
               <HeartIcon className="size-7" />
             </div>
-            <h2 id="hearts-modal-title" className="font-display text-lg font-semibold text-ink">
+            <h2 id="hearts-modal-title" className="font-display text-lg font-semibold text-ds-ink">
               Out of hearts
             </h2>
-            <p className="mt-1.5 text-sm text-ink-soft/80">
+            <p className="mt-1.5 text-sm text-ds-ink-soft/80">
               You've used all your hearts for now.{" "}
               {countdown
                 ? `They refill automatically in ${countdown}.`
@@ -149,7 +149,7 @@ export function HeartsModal({
                 ref={buyButtonRef}
                 onClick={handleBuy}
                 disabled={buying}
-                className="mt-5 w-full rounded-full border border-moss bg-moss/10 px-4 py-3 text-sm font-semibold text-moss transition hover:bg-moss/15 disabled:opacity-60"
+                className="mt-5 w-full rounded-full border border-ds-brand bg-ds-brand/10 px-4 py-3 text-sm font-semibold text-ds-brand transition hover:bg-ds-brand/15 disabled:opacity-60"
               >
                 Use {XP_HEART_COST} XP for a heart
               </button>
@@ -164,7 +164,7 @@ export function HeartsModal({
                 type="button"
                 ref={practiceButtonRef}
                 onClick={onPracticeInstead}
-                className="mt-2.5 w-full rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:border-ink/30"
+                className="mt-2.5 w-full rounded-full border border-ds-line bg-ds-card px-4 py-3 text-sm font-semibold text-ds-ink transition hover:border-ds-ink/30"
               >
                 Review instead
               </button>
@@ -173,7 +173,7 @@ export function HeartsModal({
               type="button"
               ref={closeButtonRef}
               onClick={onClose}
-              className={`w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 ${canBuyWithXp || onPracticeInstead ? "mt-2.5" : "mt-5"}`}
+              className={`w-full rounded-full bg-ds-ink px-4 py-3 text-sm font-semibold text-ds-card transition hover:opacity-90 ${canBuyWithXp || onPracticeInstead ? "mt-2.5" : "mt-5"}`}
             >
               Got it
             </button>

@@ -8,7 +8,7 @@ export function Card({
 }: HTMLAttributes<HTMLDivElement> & { elevated?: boolean }) {
   return (
     <div
-      className={`rounded-3xl bg-card p-4 ${elevated ? "card-lift" : "border border-hairline"} ${className}`}
+      className={`rounded-3xl bg-card p-4 ${elevated ? "card-lift" : "border border-ds-line"} ${className}`}
       {...props}
     />
   );

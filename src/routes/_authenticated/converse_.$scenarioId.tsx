@@ -372,7 +372,7 @@ function ConverseChatPage({
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" ? (
               <div className="flex max-w-[85%] flex-col items-start">
-                <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                <div className="rounded-2xl rounded-bl-md bg-ds-sunk px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-ink">
                   <TappableText text={m.content} course={course} />
                 </div>
                 {!m.opener && (
@@ -386,14 +386,14 @@ function ConverseChatPage({
               </div>
             ) : (
               <div className="flex max-w-[85%] flex-col items-end gap-1">
-                <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                <div className="rounded-2xl rounded-br-md bg-ds-ink px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-card">
                   {m.content}
                 </div>
                 {typeof m.confidence === "number" &&
                   (() => {
                     const clarity = clarityLabel(m.confidence);
                     return (
-                      <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
+                      <span className="flex items-center gap-1 pr-1 ds-type-caption text-ds-ink-soft/60">
                         <span
                           aria-hidden="true"
                           className={`size-1.5 rounded-full ${clarity.dotClassName}`}
@@ -408,10 +408,10 @@ function ConverseChatPage({
         ))}
         {(sending || transcribing) && (
           <div className="flex justify-start" role="status">
-            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
-              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
-              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
-              <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-ds-sunk px-4 py-3">
+              <span className="size-1.5 animate-bounce rounded-full bg-ds-ink-soft/60 [animation-delay:-0.2s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ds-ink-soft/60 [animation-delay:-0.1s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-ds-ink-soft/60" />
             </div>
             <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
           </div>
@@ -424,7 +424,7 @@ function ConverseChatPage({
         {(error ?? captureError) && (
           <div
             role="alert"
-            className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 ds-type-caption font-medium text-rose-700"
           >
             {error ?? captureError}
           </div>
@@ -433,7 +433,7 @@ function ConverseChatPage({
     </div>
   );
   const composer = (
-    <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+    <div className="sticky bottom-0 border-t border-ds-line bg-ds-card/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -456,7 +456,7 @@ function ConverseChatPage({
           className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
             recording
               ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
-              : "bg-moss text-surface hard-shadow"
+              : "bg-ds-brand text-ds-card hard-shadow"
           } disabled:opacity-50`}
         >
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
@@ -477,7 +477,7 @@ function ConverseChatPage({
             />
           </svg>
         </button>
-        <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+        <div className="flex flex-1 items-end rounded-2xl border border-ds-line bg-ds-card px-3 py-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -490,14 +490,14 @@ function ConverseChatPage({
             rows={1}
             placeholder={recording ? "Listening…" : "Type or tap the mic"}
             disabled={sending || transcribing || recording}
-            className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+            className="max-h-32 min-h-[24px] w-full resize-none bg-transparent ds-type-footnote text-ds-ink outline-none placeholder:text-ds-ink-soft/50"
           />
         </div>
         <button
           type="submit"
           disabled={sending || transcribing || !input.trim()}
           aria-label="Send"
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-ink text-ds-card transition-opacity disabled:opacity-30"
         >
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
@@ -512,11 +512,11 @@ function ConverseChatPage({
     </div>
   );
   const classicHeader = (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
       <Link
         to="/converse"
         aria-label="Back"
-        className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+        className="grid size-9 place-items-center rounded-full border border-ds-line bg-ds-card text-ds-ink-soft transition-colors hover:text-ds-ink"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
           <path
@@ -531,18 +531,18 @@ function ConverseChatPage({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-xl leading-none">{scenario.emoji}</span>
-          <h1 className="truncate font-display text-[17px] font-semibold text-ink">
+          <h1 className="truncate font-display ds-type-headline font-semibold text-ds-ink">
             {scenario.title}
           </h1>
         </div>
-        <p className="truncate text-[11px] text-ink-soft/70">{scenario.blurb}</p>
+        <p className="truncate ds-type-caption text-ds-ink-soft/70">{scenario.blurb}</p>
       </div>
       {learnerReplies > 0 && (
         <button
           type="button"
           onClick={() => void endCall()}
           disabled={ending || sending}
-          className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-50"
+          className="rounded-full border border-ds-line bg-ds-card px-3 py-1.5 text-xs font-semibold text-ds-ink disabled:opacity-50"
         >
           Finish
         </button>
@@ -553,8 +553,8 @@ function ConverseChatPage({
         aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
         className={`grid size-9 place-items-center rounded-full border transition-colors ${
           ttsOn
-            ? "border-moss/30 bg-moss/10 text-moss"
-            : "border-hairline bg-surface text-ink-soft/60"
+            ? "border-ds-brand/30 bg-ds-brand/10 text-ds-brand"
+            : "border-ds-line bg-ds-card text-ds-ink-soft/60"
         }`}
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">

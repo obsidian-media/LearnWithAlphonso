@@ -46,34 +46,44 @@ function LeaguePage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+        <p className="mb-1 ds-type-caption font-semibold uppercase tracking-[0.18em] text-ember">
           Your league
         </p>
         <div
           className={
             isStudioInk
-              ? "flex items-center gap-4 border-b border-hairline pb-4"
-              : "flex items-center gap-4 rounded-3xl border border-hairline bg-parchment p-4"
+              ? "flex items-center gap-4 border-b border-ds-line pb-4"
+              : "flex items-center gap-4 rounded-3xl border border-ds-line bg-ds-sunk p-4"
           }
         >
           <LeagueTierBadge tier={tier} size="lg" />
           <div className="flex-1">
-            <h1 className="font-display text-[22px] font-semibold text-ink">{meta.label}</h1>
-            <p className="text-xs text-ink-soft/80">{meta.sub}</p>
+            <h1 className="font-display ds-type-title font-semibold text-ds-ink">{meta.label}</h1>
+            <p className="text-xs text-ds-ink-soft/80">{meta.sub}</p>
           </div>
           {nextTier && (
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-ink-soft/60">Next</p>
-              <p className="text-xs font-semibold text-ink">{LEAGUE_TIER_META[nextTier].label}</p>
+              <p className="ds-type-caption uppercase tracking-[0.14em] text-ds-ink-soft/60">
+                Next
+              </p>
+              <p className="text-xs font-semibold text-ds-ink">
+                {LEAGUE_TIER_META[nextTier].label}
+              </p>
             </div>
           )}
         </div>
 
         <div className="mt-3 flex items-center gap-4">
-          <Link to="/teams" className="text-xs font-medium text-moss underline underline-offset-4">
+          <Link
+            to="/teams"
+            className="text-xs font-medium text-ds-brand underline underline-offset-4"
+          >
             Teams →
           </Link>
-          <Link to="/season" className="text-xs font-medium text-moss underline underline-offset-4">
+          <Link
+            to="/season"
+            className="text-xs font-medium text-ds-brand underline underline-offset-4"
+          >
             Season →
           </Link>
         </div>
@@ -101,13 +111,13 @@ function LeaguePage() {
         </div>
 
         <div className="mt-5">
-          {isLoading && <p className="py-8 text-center text-xs text-ink-soft">Loading…</p>}
+          {isLoading && <p className="py-8 text-center text-xs text-ds-ink-soft">Loading…</p>}
           {!isLoading &&
             (data?.length ?? 0) === 0 &&
             (isStudioInk ? (
-              <div className="border-y border-hairline py-6 text-center">
-                <p className="text-sm font-semibold text-ink">Nothing here yet</p>
-                <p className="mt-1 text-xs text-ink-soft">
+              <div className="border-y border-ds-line py-6 text-center">
+                <p className="text-sm font-semibold text-ds-ink">Nothing here yet</p>
+                <p className="mt-1 text-xs text-ds-ink-soft">
                   {scope === "friends"
                     ? "Add friends to compete side by side."
                     : scope === "country"
@@ -116,9 +126,9 @@ function LeaguePage() {
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-hairline bg-parchment p-6 text-center">
-                <p className="text-sm font-semibold text-ink">Nothing here yet</p>
-                <p className="mt-1 text-xs text-ink-soft">
+              <div className="rounded-2xl border border-ds-line bg-ds-sunk p-6 text-center">
+                <p className="text-sm font-semibold text-ds-ink">Nothing here yet</p>
+                <p className="mt-1 text-xs text-ds-ink-soft">
                   {scope === "friends"
                     ? "Add friends to compete side by side."
                     : scope === "country"
@@ -130,8 +140,8 @@ function LeaguePage() {
           <ol
             className={
               isStudioInk
-                ? "divide-y divide-hairline"
-                : "divide-y divide-hairline overflow-hidden rounded-2xl border border-hairline bg-surface"
+                ? "divide-y divide-ds-line"
+                : "divide-y divide-ds-line overflow-hidden rounded-2xl border border-ds-line bg-ds-card"
             }
           >
             {(data ?? []).map((row, i) => (
@@ -140,35 +150,35 @@ function LeaguePage() {
                 className={`flex items-center gap-3 px-4 py-3 ${row.isYou ? "bg-ember/10" : ""}`}
               >
                 <span
-                  className={`tnum grid size-7 place-items-center rounded-full text-[11px] font-semibold ${
+                  className={`tnum grid size-7 place-items-center rounded-full ds-type-caption font-semibold ${
                     i === 0
-                      ? "bg-amber-300 text-ink"
+                      ? "bg-amber-300 text-ds-ink"
                       : i === 1
-                        ? "bg-neutral-300 text-ink"
+                        ? "bg-neutral-300 text-ds-ink"
                         : i === 2
-                          ? "bg-orange-300 text-ink"
-                          : "bg-parchment text-ink-soft"
+                          ? "bg-orange-300 text-ds-ink"
+                          : "bg-ds-sunk text-ds-ink-soft"
                   }`}
                 >
                   {i + 1}
                 </span>
                 <ProfileAvatar seed={row.avatar_seed} name={row.display_name} className="size-9" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink">
+                  <p className="truncate text-sm font-medium text-ds-ink">
                     {row.display_name}
                     {row.isYou && (
-                      <span className="ml-1.5 rounded-full bg-ember px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-on-ember">
+                      <span className="ml-1.5 rounded-full bg-ember px-1.5 py-0.5 ds-type-caption font-semibold uppercase tracking-wider text-ink-on-ember">
                         You
                       </span>
                     )}
                   </p>
                   {row.country && (
-                    <p className="text-[10px] uppercase tracking-wider text-ink-soft/60">
+                    <p className="ds-type-caption uppercase tracking-wider text-ds-ink-soft/60">
                       {row.country}
                     </p>
                   )}
                 </div>
-                <span className="tnum text-sm font-semibold text-ink">{row.xp} XP</span>
+                <span className="tnum text-sm font-semibold text-ds-ink">{row.xp} XP</span>
                 {!row.isYou && (
                   <SocialSafetyMenu
                     userId={row.user_id}

@@ -23,8 +23,8 @@ object HectorGreeting {
         val simple = level.isEmpty() || level == "A1" || level == "A2"
         val topic = topicLabel(course, weakSpot)
         if (topic != null) return when (course) {
-            Course.ENGLISH -> if (simple) "$hi Last time you had trouble with $topic. Let's practise together. Ready?"
-            else "$hi Last time $topic tripped you up. Want to practise that in conversation?"
+            Course.ENGLISH -> if (simple) "$hi Last time you had trouble with $topic. Let's practice together. Ready?"
+            else "$hi Last time $topic tripped you up. Want to practice that in conversation?"
             Course.FRENCH -> if (simple) "$hi La dernière fois, tu as eu du mal avec $topic. On s'entraîne ensemble$NB?"
             else "$hi La dernière fois, tu as eu du mal avec $topic. Tu veux t'entraîner en conversation$NB?"
             Course.SPANISH -> if (simple) "$hi La última vez tuviste problemas con $topic. ¿Practicamos juntos?"
