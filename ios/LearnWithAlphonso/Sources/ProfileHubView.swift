@@ -117,7 +117,7 @@ extension ProfileHubView {
                     ProfileWeekSection(model: m)
                     ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                 case .progress:
-                    ProfileSkillsSlot()
+                    ProfileSkillsSection(model: m)
                     ProfileFold(title: "Activity", summary: ProfileTabs.heatSummary(activeDays: m.heat.activeDays)) {
                         ProfileHeatMapSection(model: m)
                     }
@@ -187,9 +187,11 @@ extension ProfileHubView {
         guard let token = await session.freshAccessToken(), let userID = session.userID else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
         let course = activeCourse.course
+        // The learner's chosen daily time (first run), if any; a failed read just means no goal.
+        let dailyMinutes = (try? await learnerProfileClient(session)?.fetch())?.dailyMinutes
         do {
             let data = try await client.fetchProfileOverview(userID: userID, course: course.wireCode)
-            overview = ProfileOverviewModel(data: data, contentStore: contentStore, course: course, isPro: entitlementStore.isPro)
+            overview = ProfileOverviewModel(data: data, contentStore: contentStore, course: course, isPro: entitlementStore.isPro, dailyGoalMinutes: dailyMinutes)
             loadFailed = false
         } catch is CancellationError {
         } catch {
