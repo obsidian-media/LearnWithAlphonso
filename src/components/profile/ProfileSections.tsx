@@ -110,7 +110,7 @@ export function ProfileHero({ o, onSettings }: { o: ProfileOverview; onSettings:
           className="size-[58px] shadow-[0_0_0_3px_var(--c-card),var(--ds-shadow-floating)]"
           textClass="ds-type-title"
         />
-        <h1 className="ds-type-display break-words text-ds-ink">{name}</h1>
+        <h1 className="ds-type-display-x-l break-words text-ds-ink">{name}</h1>
         <p className="flex flex-wrap items-center gap-1.5 ds-type-caption text-ds-ink-soft">
           {o.profile.country && (
             <span data-profile-flag={o.profile.country} className="flex items-center gap-1.5">
@@ -217,7 +217,7 @@ function Stat({
           className={`absolute right-2.5 top-2.5 size-[26px] ${iconClass}`}
         />
       )}
-      <b className="ds-type-numeral-x-l text-ds-ink" data-value="">
+      <b className="ds-type-display-x-l text-ds-ink tabular-nums" data-value="">
         {fmt(value)}
       </b>
       <span className="ds-type-caption text-ds-ink-soft">{label}</span>
