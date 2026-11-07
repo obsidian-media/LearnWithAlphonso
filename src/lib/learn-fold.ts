@@ -9,8 +9,23 @@
 export type FoldUnit = { id: string; eyebrow: string; title: string; lessonIds: readonly string[] };
 
 export type FoldRow =
-  | { kind: "done-run"; key: string; unitIds: string[]; first: string; last: string; done: number; total: number }
-  | { kind: "unit"; key: string; unitId: string; state: "current" | "ahead"; done: number; total: number };
+  | {
+      kind: "done-run";
+      key: string;
+      unitIds: string[];
+      first: string;
+      last: string;
+      done: number;
+      total: number;
+    }
+  | {
+      kind: "unit";
+      key: string;
+      unitId: string;
+      state: "current" | "ahead";
+      done: number;
+      total: number;
+    };
 
 export function foldLearn(units: readonly FoldUnit[], completed: ReadonlySet<string>): FoldRow[] {
   const rows: FoldRow[] = [];
@@ -27,7 +42,15 @@ export function foldLearn(units: readonly FoldUnit[], completed: ReadonlySet<str
         prev.done += done;
         prev.total += total;
       } else {
-        rows.push({ kind: "done-run", key: `run-${u.id}`, unitIds: [u.id], first: u.eyebrow, last: u.eyebrow, done, total });
+        rows.push({
+          kind: "done-run",
+          key: `run-${u.id}`,
+          unitIds: [u.id],
+          first: u.eyebrow,
+          last: u.eyebrow,
+          done,
+          total,
+        });
       }
       continue;
     }
@@ -60,8 +83,27 @@ export function currentUnitOf(
 
 /** Painted rooms, in a fixed order; a unit's room is its place in the course modulo the list. */
 export const ROOM_ART = [
-  "classroom", "market", "garden", "station", "kitchen", "seaside", "library", "radio", "office", "farm",
-  "gallery", "gym", "lab", "newsroom", "theatre", "bank", "bedroom", "dining", "techshop", "courtroom", "chamber",
+  "classroom",
+  "market",
+  "garden",
+  "station",
+  "kitchen",
+  "seaside",
+  "library",
+  "radio",
+  "office",
+  "farm",
+  "gallery",
+  "gym",
+  "lab",
+  "newsroom",
+  "theatre",
+  "bank",
+  "bedroom",
+  "dining",
+  "techshop",
+  "courtroom",
+  "chamber",
 ] as const;
 
 export function roomArtFor(unitIndex0: number): (typeof ROOM_ART)[number] {

@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { currentUnitOf, foldLearn, roomArtFor, ROOM_ART, runLabel, type FoldUnit } from "./learn-fold";
+import {
+  currentUnitOf,
+  foldLearn,
+  roomArtFor,
+  ROOM_ART,
+  runLabel,
+  type FoldUnit,
+} from "./learn-fold";
 
 const mk = (n: number): FoldUnit[] =>
   Array.from({ length: n }, (_, i) => ({
-    id: `u${i + 1}`, eyebrow: `Unit ${i + 1}`, title: `T${i + 1}`, lessonIds: [`u${i + 1}l1`, `u${i + 1}l2`],
+    id: `u${i + 1}`,
+    eyebrow: `Unit ${i + 1}`,
+    title: `T${i + 1}`,
+    lessonIds: [`u${i + 1}l1`, `u${i + 1}l2`],
   }));
 const all = (...us: number[]) => new Set(us.flatMap((u) => [`u${u}l1`, `u${u}l2`]));
 
@@ -11,7 +21,10 @@ describe("foldLearn", () => {
   it("folds an unbroken done run into one row, opens the current unit, folds the rest", () => {
     const rows = foldLearn(mk(6), all(1, 2, 3));
     expect(rows.map((r) => r.kind + (r.kind === "unit" ? ":" + r.state : ""))).toEqual([
-      "done-run", "unit:current", "unit:ahead", "unit:ahead",
+      "done-run",
+      "unit:current",
+      "unit:ahead",
+      "unit:ahead",
     ]);
     const run = rows[0];
     if (run.kind !== "done-run") throw new Error();
@@ -46,7 +59,12 @@ describe("foldLearn", () => {
 
 describe("currentUnitOf", () => {
   it("is the first undone lesson, 1-based within the whole course", () => {
-    expect(currentUnitOf(mk(5), all(1, 2))).toEqual({ index: 3, count: 5, unitId: "u3", lessonId: "u3l1" });
+    expect(currentUnitOf(mk(5), all(1, 2))).toEqual({
+      index: 3,
+      count: 5,
+      unitId: "u3",
+      lessonId: "u3l1",
+    });
   });
   it("is null when the course is finished", () => {
     expect(currentUnitOf(mk(2), all(1, 2))).toBeNull();

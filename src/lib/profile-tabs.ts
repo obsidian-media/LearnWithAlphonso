@@ -12,9 +12,19 @@ export const PROFILE_TABS: readonly { id: ProfileTab; label: string }[] = [
 ];
 
 export type ProfileSectionId =
-  | "bigNumbers" | "thisWeek" | "hector" | "settings"
-  | "skills" | "heatMap" | "records" | "level" | "weakSpots" | "achievements"
-  | "league" | "friends" | "share";
+  | "bigNumbers"
+  | "thisWeek"
+  | "hector"
+  | "settings"
+  | "skills"
+  | "heatMap"
+  | "records"
+  | "level"
+  | "weakSpots"
+  | "achievements"
+  | "league"
+  | "friends"
+  | "share";
 
 export const TAB_SECTIONS: Record<ProfileTab, readonly ProfileSectionId[]> = {
   overview: ["bigNumbers", "thisWeek", "hector", "settings"],
@@ -24,8 +34,19 @@ export const TAB_SECTIONS: Record<ProfileTab, readonly ProfileSectionId[]> = {
 
 /** Every section Profile had before the split (plus the skills slot), in the order the old single column showed them. */
 export const ALL_SECTIONS: readonly ProfileSectionId[] = [
-  "bigNumbers", "thisWeek", "heatMap", "records", "level", "weakSpots", "hector", "achievements",
-  "league", "friends", "share", "settings", "skills",
+  "bigNumbers",
+  "thisWeek",
+  "heatMap",
+  "records",
+  "level",
+  "weakSpots",
+  "hector",
+  "achievements",
+  "league",
+  "friends",
+  "share",
+  "settings",
+  "skills",
 ];
 
 /** Arrow-key / swipe step between tabs; clamps at the ends. */

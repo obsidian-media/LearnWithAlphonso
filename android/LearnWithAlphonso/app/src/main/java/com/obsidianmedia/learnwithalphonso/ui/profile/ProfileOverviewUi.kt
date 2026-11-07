@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
@@ -34,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -42,6 +44,8 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.logic.deriveVocab
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTab
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTabs
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileOverviewData
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileWeakItem
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
@@ -94,9 +98,16 @@ private val DisplayXLType by lazy { AlphonsoTokens.Type.displayXL.toTextStyle() 
 private val NumeralXLType by lazy { AlphonsoTokens.Type.numeralXL.toTextStyle() }
 private val NumeralMType by lazy { AlphonsoTokens.Type.numeral.toTextStyle() }
 
+private val LocalFolded = androidx.compose.runtime.compositionLocalOf { false }
+
 @Composable
 private fun ProfileCard(title: String?, content: @Composable () -> Unit) {
     val ds = LocalAlphonsoTokens.current
+    if (LocalFolded.current) {
+        // Inside a Progress fold the fold is the card: no second border, and the fold's header is the title.
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) { content() }
+        return
+    }
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
     Column(
         Modifier.fillMaxWidth().clip(shape).background(ds.card).border(2.dp, ds.line, shape).padding(AlphonsoTokens.Space.s4),
@@ -214,6 +225,78 @@ fun ProfileWeekSection(m: ProfileOverviewModel) {
 @Composable
 private fun Spacer3() = Box(Modifier.size(AlphonsoTokens.Space.s3))
 
+/** The three tabs (round 6.1): selected pill is the card colour on a line-coloured track, like the web's ProfileTabBar. */
+@Composable
+fun ProfileTabBar(tab: ProfileTab, onChange: (ProfileTab) -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val track = RoundedCornerShape(AlphonsoTokens.Radius.pill)
+    Row(
+        Modifier.fillMaxWidth().clip(track).background(ds.line).padding(AlphonsoTokens.Space.s1)
+            .semantics { contentDescription = "Profile sections" },
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+    ) {
+        ProfileTabs.tabs.forEach { t ->
+            val on = t == tab
+            Box(
+                Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.s12).clip(track)
+                    .background(if (on) ds.card else Color.Transparent)
+                    .selectable(selected = on, role = Role.Tab, onClick = { onChange(t) }),
+                contentAlignment = Alignment.Center,
+            ) { Text(t.label, style = FootnoteType, color = if (on) ds.ink else ds.inkSoft, maxLines = 1) }
+        }
+    }
+}
+
+/** Avatar and name on Progress and Social, where the full hero would push the content off screen. */
+@Composable
+fun ProfileCompactHeader(m: ProfileOverviewModel) {
+    val ds = LocalAlphonsoTokens.current
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+        ProfileAvatar(m.data.avatarSeed, m.name, AlphonsoTokens.Space.s8)
+        Text(m.name, style = TitleType, color = ds.ink, modifier = Modifier.weight(1f).semantics { heading() })
+    }
+}
+
+/** A Progress card that shows a one-line summary and opens in place. Closed by default. */
+@Composable
+fun ProfileFold(title: String, summary: String, content: @Composable () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    var open by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    Column(Modifier.fillMaxWidth().clip(shape).background(ds.card).border(2.dp, ds.line, shape)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.s12)
+                .clickable(role = Role.Button, onClick = { open = !open })
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "$title, $summary"
+                    stateDescription = if (open) "Expanded" else "Collapsed"
+                }
+                .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+        ) {
+            Text(title, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+            Text(summary, style = CaptionType, color = ds.inkSoft)
+            Text(if (open) "▾" else "▸", style = CaptionType, color = ds.inkSoft)
+        }
+        if (open) {
+            Column(Modifier.fillMaxWidth().padding(start = AlphonsoTokens.Space.s4, end = AlphonsoTokens.Space.s4, bottom = AlphonsoTokens.Space.s4)) {
+                androidx.compose.runtime.CompositionLocalProvider(LocalFolded provides true) { content() }
+            }
+        }
+    }
+}
+
+/** Where the Skills radar goes. Its data (per-skill scores) does not exist yet, so this is an honest empty state. */
+@Composable
+fun ProfileSkillsSlot() {
+    ProfileCard("Skills") {
+        Text(
+            "Your speaking, listening, reading, writing and vocabulary shape will appear here once there is enough practice to show it.",
+            style = FootnoteType, color = LocalAlphonsoTokens.current.inkSoft,
+        )
+    }
+}
+
 @Composable
 fun ProfileHeatMap(m: ProfileOverviewModel) {
     val ds = LocalAlphonsoTokens.current
@@ -247,14 +330,17 @@ fun ProfileHeatMap(m: ProfileOverviewModel) {
 }
 
 @Composable
-fun ProfileRecordsAndLevel(m: ProfileOverviewModel) {
-    val ds = LocalAlphonsoTokens.current
+fun ProfileRecords(m: ProfileOverviewModel) {
     ProfileCard("Personal records") {
         Record("Best day", "${m.records.bestDayXp} XP")
         Record("Longest streak", "${m.records.bestStreak} ${plural(m.records.bestStreak, "day", "days")}")
         Record("Perfect lessons", m.records.perfectLessons.toString())
     }
-    Spacer3()
+}
+
+@Composable
+fun ProfileLevel(m: ProfileOverviewModel) {
+    val ds = LocalAlphonsoTokens.current
     val lv = m.level
     ProfileCard("Level ${lv.level}") {
         LinearProgressIndicator(
@@ -279,7 +365,7 @@ private fun Record(label: String, value: String) {
 }
 
 @Composable
-fun ProfileWeakAndHector(m: ProfileOverviewModel, onPractice: () -> Unit, onPaywall: () -> Unit) {
+fun ProfileWeak(m: ProfileOverviewModel, onPractice: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     ProfileCard("Top weak spots") {
         val (top, total) = m.weak
@@ -296,8 +382,12 @@ fun ProfileWeakAndHector(m: ProfileOverviewModel, onPractice: () -> Unit, onPayw
             LinkButton("Practice", onPractice)
         }
     }
+}
+
+@Composable
+fun ProfileHector(m: ProfileOverviewModel, onPaywall: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
     m.hector?.let { card ->
-        Spacer3()
         ProfileCard("Hector noticed") {
             when (card) {
                 is ProfileMath.HectorCard.Pro ->
@@ -320,7 +410,7 @@ private fun LinkButton(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun ProfileProgressCards(m: ProfileOverviewModel) {
+fun ProfileAchievements(m: ProfileOverviewModel) {
     val ds = LocalAlphonsoTokens.current
     ProfileCard("Achievements") {
         Text("${m.unlockedCount} of ${m.catalogCount} unlocked", style = HeadlineType, color = ds.brand)
@@ -333,7 +423,11 @@ fun ProfileProgressCards(m: ProfileOverviewModel) {
             Text(a.description, style = FootnoteType, color = ds.inkSoft)
         }
     }
-    Spacer3()
+}
+
+@Composable
+fun ProfileLeague(m: ProfileOverviewModel) {
+    val ds = LocalAlphonsoTokens.current
     ProfileCard("League") {
         Text(m.league.tier.replaceFirstChar { it.uppercase() }, style = TitleType, color = ds.brand)
         Text(
@@ -341,7 +435,11 @@ fun ProfileProgressCards(m: ProfileOverviewModel) {
             style = FootnoteType, color = ds.inkSoft,
         )
     }
-    Spacer3()
+}
+
+@Composable
+fun ProfileFriends(m: ProfileOverviewModel) {
+    val ds = LocalAlphonsoTokens.current
     ProfileCard("Friends this week") {
         if (m.friends.size <= 1) Text("Add friends to see who is learning with you.", style = FootnoteType, color = ds.inkSoft)
         m.friends.forEachIndexed { i, f ->

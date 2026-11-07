@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
-  ALL_SECTIONS, PROFILE_TABS, TAB_SECTIONS, achievementsSummary, heatSummary, stepTab, weakSummary,
+  ALL_SECTIONS,
+  PROFILE_TABS,
+  TAB_SECTIONS,
+  achievementsSummary,
+  heatSummary,
+  stepTab,
+  weakSummary,
 } from "./profile-tabs";
 
 describe("profile tab assignment", () => {
   const placed = Object.values(TAB_SECTIONS).flat();
   it("every pre-split section lands on exactly one tab", () => {
-    for (const s of ALL_SECTIONS) expect(placed.filter((p) => p === s), s).toHaveLength(1);
+    for (const s of ALL_SECTIONS)
+      expect(
+        placed.filter((p) => p === s),
+        s,
+      ).toHaveLength(1);
     expect(placed).toHaveLength(ALL_SECTIONS.length);
   });
   it("matches the approved mock: overview / progress / social", () => {

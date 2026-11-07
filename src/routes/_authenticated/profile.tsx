@@ -79,7 +79,11 @@ function ProgressTab({ o }: { o: ProfileOverview }) {
       <ProgressFold headingId="records-heading" title="Personal records" summary={sum.records}>
         <Records o={o} />
       </ProgressFold>
-      <ProgressFold headingId="level-heading" title={`Your ${course.label} level`} summary={sum.level}>
+      <ProgressFold
+        headingId="level-heading"
+        title={`Your ${course.label} level`}
+        summary={sum.level}
+      >
         <LevelCard o={o} />
       </ProgressFold>
       <ProgressFold headingId="weak-heading" title="Weak spots" summary={sum.weak}>

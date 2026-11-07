@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.fetchProfileOverview
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTab
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTabs
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.AvatarPickerDialog
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
@@ -44,6 +46,7 @@ fun ProfileHubScreen(
     val isPro = container.entitlements.state.collectAsState().value.isPro
     var overview by remember { mutableStateOf<ProfileOverviewModel?>(null) }
     var failed by remember { mutableStateOf(false) }
+    var tab by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(ProfileTab.OVERVIEW) }
     var picking by remember { mutableStateOf(false) }
     var reload by remember { mutableStateOf(0) }
     val userId = container.session.userId
@@ -70,14 +73,30 @@ fun ProfileHubScreen(
             val m = overview
             when {
                 m != null -> {
-                    ProfileHero(m, onCourse = { container.activeCourse.set(it) }, onPicture = { picking = true })
-                    if (!m.hasAnyActivity) Text("Your first lesson starts your streak and fills in this page.", color = ds.ink)
-                    ProfileWeekSection(m)
-                    ProfileHeatMap(m)
-                    ProfileRecordsAndLevel(m)
-                    ProfileWeakAndHector(m, onPractice = { onOpenReview(course) }, onPaywall = onOpenPaywall)
-                    ProfileProgressCards(m)
-                    ProfileShare(m, onShare = { shareProfileCard(context, m, ds) })
+                    ProfileTabBar(tab, onChange = { tab = it })
+                    when (tab) {
+                        ProfileTab.OVERVIEW -> {
+                            ProfileHero(m, onCourse = { container.activeCourse.set(it) }, onPicture = { picking = true })
+                            if (!m.hasAnyActivity) Text("Your first lesson starts your streak and fills in this page.", color = ds.ink)
+                            ProfileWeekSection(m)
+                            ProfileHector(m, onPaywall = onOpenPaywall)
+                        }
+                        ProfileTab.PROGRESS -> {
+                            ProfileCompactHeader(m)
+                            ProfileSkillsSlot()
+                            ProfileFold("Last 3 months", ProfileTabs.heatSummary(m.heat.activeDays)) { ProfileHeatMap(m) }
+                            ProfileFold("Personal records", ProfileTabs.recordsSummary(m.records.bestStreak)) { ProfileRecords(m) }
+                            ProfileFold("Level ${m.level.level}", "${m.level.level} · ${m.level.pct}%") { ProfileLevel(m) }
+                            ProfileFold("Top weak spots", ProfileTabs.weakSummary(m.weak.second)) { ProfileWeak(m, onPractice = { onOpenReview(course) }) }
+                            ProfileFold("Achievements", ProfileTabs.achievementsSummary(m.unlockedCount, m.catalogCount)) { ProfileAchievements(m) }
+                        }
+                        ProfileTab.SOCIAL -> {
+                            ProfileCompactHeader(m)
+                            ProfileLeague(m)
+                            ProfileFriends(m)
+                            ProfileShare(m, onShare = { shareProfileCard(context, m, ds) })
+                        }
+                    }
                     if (picking) {
                         AvatarPickerDialog(container, m.name, m.data.avatarSeed ?: "a", onClose = { picking = false }) { reload++ }
                     }
@@ -87,11 +106,19 @@ fun ProfileHubScreen(
                     LessonEdgeButton("Try again", EdgeVariant.SECONDARY, { failed = false; reload++ })
                 }
             }
-            LessonEdgeButton("Edit your answers", EdgeVariant.SECONDARY, onEditAnswers)
-            AlphonsoRowCard("League", "Leaderboards, teams, and the season ladder", leadingEmoji = "🏆", modifier = Modifier.clickable(onClick = onOpenLeague))
-            AlphonsoRowCard("Friends", "Your friends, their activity, and duels", leadingEmoji = "👥", modifier = Modifier.clickable(onClick = onOpenFriends))
-            AlphonsoRowCard("Achievements", "Badges earned and weak spots to work on", leadingEmoji = "⭐", modifier = Modifier.clickable(onClick = onOpenAchievements))
-            AlphonsoRowCard("Settings", "Theme and account", leadingEmoji = "⚙️", modifier = Modifier.clickable(onClick = onOpenSettings).padding(top = 8.dp))
+            // The old hub rows keep their place, each on the tab it belongs to; Settings and Edit answers stay on Overview.
+            when (tab) {
+                ProfileTab.OVERVIEW -> {
+                    LessonEdgeButton("Edit your answers", EdgeVariant.SECONDARY, onEditAnswers)
+                    AlphonsoRowCard("Settings", "Theme and account", leadingEmoji = "⚙️", modifier = Modifier.clickable(onClick = onOpenSettings).padding(top = 8.dp))
+                }
+                ProfileTab.PROGRESS ->
+                    AlphonsoRowCard("Achievements", "Badges earned and weak spots to work on", leadingEmoji = "⭐", modifier = Modifier.clickable(onClick = onOpenAchievements))
+                ProfileTab.SOCIAL -> {
+                    AlphonsoRowCard("League", "Leaderboards, teams, and the season ladder", leadingEmoji = "🏆", modifier = Modifier.clickable(onClick = onOpenLeague))
+                    AlphonsoRowCard("Friends", "Your friends, their activity, and duels", leadingEmoji = "👥", modifier = Modifier.clickable(onClick = onOpenFriends))
+                }
+            }
         }
     }
 }

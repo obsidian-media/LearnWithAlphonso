@@ -68,7 +68,9 @@ const FoldedContext = createContext(false);
 function SectionHead({ id, title, aside }: { id: string; title: string; aside?: ReactNode }) {
   const folded = useContext(FoldedContext);
   if (folded) {
-    return aside ? <div className="flex justify-end ds-type-caption text-ds-choice">{aside}</div> : null;
+    return aside ? (
+      <div className="flex justify-end ds-type-caption text-ds-choice">{aside}</div>
+    ) : null;
   }
   return (
     <div className="mt-2 flex items-baseline justify-between gap-3">
@@ -991,10 +993,6 @@ export function ProfileTabBar({
       role="tablist"
       aria-label="Profile sections"
       className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-full bg-ds-line p-1"
-      onKeyDown={(e) => {
-        if (e.key === "ArrowRight") onChange(stepTab(tab, 1));
-        if (e.key === "ArrowLeft") onChange(stepTab(tab, -1));
-      }}
     >
       {PROFILE_TABS.map((t) => (
         <button
@@ -1006,8 +1004,14 @@ export function ProfileTabBar({
           aria-controls="profile-tabpanel"
           tabIndex={t.id === tab ? 0 : -1}
           onClick={() => onChange(t.id)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") onChange(stepTab(tab, 1));
+            if (e.key === "ArrowLeft") onChange(stepTab(tab, -1));
+          }}
           className={`min-h-11 rounded-full px-2 ds-type-footnote font-extrabold ${
-            t.id === tab ? "bg-ds-card text-ds-ink shadow-[var(--ds-shadow-resting)]" : "text-ds-ink-soft"
+            t.id === tab
+              ? "bg-ds-card text-ds-ink shadow-[var(--ds-shadow-resting)]"
+              : "text-ds-ink-soft"
           }`}
         >
           {t.label}
@@ -1079,13 +1083,17 @@ export function ProgressFold({
  */
 export function SkillsSlot() {
   return (
-    <section aria-labelledby="skills-heading" className={`${CARD} grid gap-1 p-3.5`} data-skills-slot="">
+    <section
+      aria-labelledby="skills-heading"
+      className={`${CARD} grid gap-1 p-3.5`}
+      data-skills-slot=""
+    >
       <h2 id="skills-heading" className="ds-type-headline font-extrabold text-ds-ink">
         Skills
       </h2>
       <p className="ds-type-footnote text-ds-ink-soft">
-        Your speaking, listening, reading, writing and vocabulary shape will appear here once there is enough
-        practice to show it.
+        Your speaking, listening, reading, writing and vocabulary shape will appear here once there
+        is enough practice to show it.
       </p>
     </section>
   );
