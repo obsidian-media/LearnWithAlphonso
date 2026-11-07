@@ -250,11 +250,11 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         name="xp"
         icon="bolt"
         iconClass="text-ds-xp"
-        value={n.courseXp}
+        value={n.totalXp}
         label="total XP"
         note={
           n.xpThisWeek > 0
-            ? `+${fmt(n.xpThisWeek)} this week${o.courses.length > 1 ? ", all courses" : ""}`
+            ? `+${fmt(n.xpThisWeek)} this week`
             : "None yet this week"
         }
         noteTone={n.xpThisWeek > 0 ? "right" : "soft"}

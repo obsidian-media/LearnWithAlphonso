@@ -411,7 +411,7 @@ describe("Profile, round 6", () => {
     const value = (name: string) =>
       document.querySelector(`[data-big-stat="${name}"] [data-value]`)?.textContent;
     expect(value("streak")).toBe(String(o.progress.streak));
-    expect(value("xp")).toBe(o.courses.find((c) => c.course === "es")!.xp.toLocaleString("en-US"));
+    expect(value("xp")).toBe(n.totalXp.toLocaleString("en-US"));
     expect(value("words")).toBe(n.wordsLearned.toLocaleString("en-US"));
     expect(value("lessons")).toBe(String(o.completions.length));
     expect(document.querySelector('[data-big-stat="streak"]')).toHaveTextContent(
@@ -420,9 +420,9 @@ describe("Profile, round 6", () => {
     expect(document.querySelector('[data-big-stat="words"]')).toHaveTextContent(
       `${o.savedWords} saved to review`,
     );
-    // This week's XP is account-wide (activity_days), so with several courses it says so next to a course total.
+    // Total and this week's XP are both account-wide, so the two numbers agree.
     expect(document.querySelector('[data-big-stat="xp"]')).toHaveTextContent(
-      `+${n.xpThisWeek.toLocaleString("en-US")} this week, all courses`,
+      `+${n.xpThisWeek.toLocaleString("en-US")} this week`,
     );
   });
 

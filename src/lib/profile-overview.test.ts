@@ -152,6 +152,17 @@ describe("the four big numbers match their sources", () => {
     expect(n.courseXp).toBe(4820);
     expect(n.xpThisWeek).toBe(60 + 120 + 40);
   });
+  it("total XP and this week's XP share one scope (all courses), so a course with 0 XP never shows less than the week", () => {
+    const fr = overview({
+      course: "fr",
+      courses: [{ course: "en", xp: 300, cefrLevel: "A1", leagueTier: "bronze" }],
+    });
+    const b = bigNumbers(fr);
+    expect(b.xpThisWeek).toBeGreaterThan(0);
+    expect(b.totalXp).toBe(300);
+    expect(b.totalXp).toBeGreaterThanOrEqual(b.xpThisWeek);
+    expect(bigNumbers(o).totalXp).toBe(4820 + 300);
+  });
   it("lessons and accuracy count this course's completions only", () => {
     expect(n.lessonsDone).toBe(2);
     expect(n.accuracyPct).toBe(Math.round((100 * 14) / 16));
@@ -178,6 +189,7 @@ describe("the four big numbers match their sources", () => {
       streak: 0,
       longestStreak: 0,
       courseXp: 0,
+      totalXp: 0,
       xpThisWeek: 0,
       wordsLearned: 0,
       savedWords: 0,
