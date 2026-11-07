@@ -315,7 +315,7 @@ export function ListenShelfView({
                             <span className="font-bold text-ds-xp-text">New</span>
                           </>
                         ) : null}
-                        {ep?.aiNarrated ? ` · ${AI_NARRATED_LABEL}` : ""} · Transcript
+                        {ep?.aiNarrated ? ` · ${AI_NARRATED_LABEL}` : ""}
                       </span>
                     )}
                   </span>

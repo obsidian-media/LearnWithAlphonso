@@ -328,7 +328,6 @@ struct ListenShelfDetail: View {
         if state == .inProgress { parts.append("\(ListenShelf.clock(left)) left") }
         if state == .new { parts.append("New") }
         if episode.aiNarrated { parts.append(PodcastLabel.aiNarrated) }
-        parts.append("Transcript")
         return parts.joined(separator: " \u{00B7} ")
     }
 
