@@ -122,7 +122,7 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
         >
           <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/30 to-ds-hero/10" />
           <img src={alphonso} alt="" className="absolute -right-3 bottom-0 w-32" />
-          <span className="absolute left-4 top-3.5 text-[11px] font-extrabold tracking-wider text-ds-on-hero-kick">
+          <span className="absolute left-4 top-3.5 text-xs font-extrabold tracking-wider text-ds-on-hero-kick">
             CONTINUE LISTENING
           </span>
           <span className="absolute bottom-3.5 left-4 right-32 text-ds-on-hero">
@@ -189,7 +189,7 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
               >
                 <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/85 via-ds-hero/20 to-transparent" />
                 {shelf.level ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-[11px] font-extrabold text-ds-ink">
+                  <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
                     {shelf.level}
                   </span>
                 ) : null}
@@ -197,7 +197,7 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
                   <span className="block truncate font-display text-base font-extrabold">
                     {shelf.folder.title}
                   </span>
-                  <span className="block text-[11px] font-bold text-ds-on-hero-soft">
+                  <span className="block text-xs font-bold text-ds-on-hero-soft">
                     {plural(shelf.episodes.length)} ·{" "}
                     {shelf.percent === 100 ? "finished ✓" : `${shelf.percent}%`}
                   </span>
@@ -225,9 +225,11 @@ export function ListenShelfView({
   const prog = new Map(library.progress.map((p) => [p.episodeId, p]));
   const full = new Map(library.episodes.map((e) => [e.id, e]));
   const cont = continueListening([shelf], library.progress);
-  const contFull = cont ? full.get(cont.episode.id) : undefined;
+  const firstNew = shelf.episodes.find((e) => episodeState(prog.get(e.id)) === "new");
+  const target = cont?.episode ?? firstNew;
+  const contFull = target ? full.get(target.id) : undefined;
   const totalMin = Math.max(1, Math.round(shelf.totalSeconds / 60));
-  const contNo = cont ? shelf.episodes.findIndex((e) => e.id === cont.episode.id) + 1 : 0;
+  const contNo = target ? shelf.episodes.findIndex((e) => e.id === target.id) + 1 : 0;
 
   return (
     <div data-testid="listen-shelf">
@@ -246,7 +248,7 @@ export function ListenShelfView({
         <img src={mascotArt("lessonComplete").src} alt="" className="absolute -right-2 bottom-0 w-40" />
         <div className="absolute bottom-5 left-4 right-36">
           {shelf.level ? (
-            <span className="rounded-full bg-ds-card px-2 py-0.5 text-[11px] font-extrabold text-ds-ink">
+            <span className="rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
               {shelf.level}
             </span>
           ) : null}
@@ -260,13 +262,13 @@ export function ListenShelfView({
       </div>
 
       <div className="grid gap-1 px-5 pb-6">
-        {cont && contFull ? (
+        {contFull ? (
           <button
             type="button"
             onClick={() => play(contFull)}
             className="mb-1.5 min-h-12 rounded-2xl bg-ds-action px-4 text-base font-extrabold text-ds-on-action"
           >
-            ▶ {cont.progress ? "Continue" : "Start"} Episode {contNo}
+            ▶ {cont?.progress ? "Continue" : "Start"} Episode {contNo}
           </button>
         ) : null}
         <ul className="grid gap-1">
@@ -289,7 +291,7 @@ export function ListenShelfView({
                     {state === "done" ? "✓" : i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-display text-[15px] font-bold leading-tight text-ds-ink">
+                    <span className="block font-display text-base font-bold leading-tight text-ds-ink">
                       {episode.title}
                     </span>
                     {state === "inProgress" ? (

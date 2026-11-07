@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PodcastFolder } from "./podcast-tree";
 import { buildIlikeOrFilter } from "./podcast-search";
 import { isAiNarrated } from "./podcast-label";
+import { roomForFolder } from "./listen-library";
 
 /**
  * Read/write server functions for the podcast library (Phase 1a, see
@@ -32,6 +33,8 @@ export type PodcastEpisode = {
   aiNarrated: boolean;
   /** The episode's own course (`en`, `fr`, `es`), or null/absent when unset. */
   course?: "en" | "fr" | "es" | null;
+  /** The painted room of the episode's folder (Listen shelf and players); absent on search results. */
+  room?: string;
 };
 
 /**
@@ -310,6 +313,7 @@ export const listLibrary = createServerFn({ method: "GET" })
     // Progress and the month total are garnish: a failed read shows an unlistened shelf, not an error page.
     const prog = progress.error ? [] : (progress.data ?? []);
     const pos = new Map(prog.map((r) => [r.episode_id, r.position_s]));
+    const roomOf = new Map(folders.map((f) => [f.id, roomForFolder(f)]));
     return {
       folders,
       episodes: (episodes.data ?? []).map((row) => ({
@@ -319,6 +323,7 @@ export const listLibrary = createServerFn({ method: "GET" })
           clampPosition(pos.get(row.id) ?? 0, row.duration_seconds),
         ),
         sortOrder: row.sort_order,
+        room: roomOf.get(row.folder_id),
       })),
       progress: prog.map((r) => ({
         episodeId: r.episode_id,
