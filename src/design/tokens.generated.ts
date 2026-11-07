@@ -490,6 +490,46 @@ export const DS_TOKENS = {
     stroke: 2,
     solid: ["heart", "bolt", "flame", "star"],
   },
+  marketing: {
+    $comment:
+      "The marketing site's larger type and spacing (discover.alphonsoecosystem.app), on top of the tokens above. Not used by the apps. Fluid values are clamp(min px, fluid cqi, max px) against the page container; the site's scripts/sync-app.ts reads this block.",
+    type: {
+      display1: {
+        min: 42,
+        fluid: 5.6,
+        max: 80,
+      },
+      display2: {
+        min: 34,
+        fluid: 4.4,
+        max: 64,
+      },
+      display3: {
+        min: 26,
+        fluid: 2.6,
+        max: 36,
+      },
+      lede: {
+        min: 17,
+        fluid: 1.45,
+        max: 21,
+      },
+    },
+    layout: {
+      max: 1240,
+      pad: {
+        min: 16,
+        fluid: 4.5,
+        max: 48,
+      },
+      section: {
+        min: 72,
+        fluid: 9,
+        max: 140,
+      },
+      radiusFrame: 40,
+    },
+  },
 } as const;
 
 export type DsColorName = keyof typeof DS_TOKENS.palettes.royal.light;
