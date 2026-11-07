@@ -15,6 +15,7 @@ public struct Acknowledgement: Sendable, Equatable, Identifiable {
 public enum Acknowledgements {
     public static let mit = "MIT License"
     public static let ofl = "SIL Open Font License 1.1"
+    public static let cc0 = "CC0 1.0 (public domain)"
 
     public static let all: [Acknowledgement] = [
         Acknowledgement(name: "RevenueCat (purchases-ios)", licenseName: mit, licenseResource: "RevenueCat-LICENSE", url: "https://github.com/RevenueCat/purchases-ios"),
@@ -27,5 +28,6 @@ public enum Acknowledgements {
         Acknowledgement(name: "Instrument Serif", licenseName: ofl, licenseResource: "InstrumentSerif-OFL", url: "https://github.com/Instrument/instrument-serif"),
         Acknowledgement(name: "Newsreader", licenseName: ofl, licenseResource: "Newsreader-OFL", url: "https://github.com/productiontype/Newsreader"),
         Acknowledgement(name: "Source Sans 3", licenseName: ofl, licenseResource: "SourceSans3-OFL", url: "https://github.com/adobe-fonts/source-sans"),
+        Acknowledgement(name: "Sound effects by Kenney (kenney.nl)", licenseName: cc0, licenseResource: "Kenney-CC0", url: "https://kenney.nl"),
     ]
 }

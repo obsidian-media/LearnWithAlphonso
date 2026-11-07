@@ -3,11 +3,18 @@ import XCTest
 
 final class AcknowledgementsTests: XCTestCase {
     func testRevenueCatAndTheNineFontsAreCredited() {
-        XCTAssertEqual(Acknowledgements.all.count, 10)
+        XCTAssertEqual(Acknowledgements.all.count, 11)
         XCTAssertEqual(Acknowledgements.all.filter { $0.licenseName == Acknowledgements.mit }.map(\.name), ["RevenueCat (purchases-ios)"])
         XCTAssertEqual(Acknowledgements.all.filter { $0.licenseName == Acknowledgements.ofl }.count, 9)
         XCTAssertTrue(Acknowledgements.all.contains { $0.licenseResource == "BricolageGrotesque-OFL" })
         XCTAssertTrue(Acknowledgements.all.contains { $0.licenseResource == "Figtree-OFL" })
+    }
+
+    func testTheSoundEffectsAreCreditedToKenneyUnderCC0() {
+        let sfx = Acknowledgements.all.filter { $0.licenseName == Acknowledgements.cc0 }
+        XCTAssertEqual(sfx.map(\.name), ["Sound effects by Kenney (kenney.nl)"])
+        XCTAssertEqual(sfx.first?.licenseResource, "Kenney-CC0")
+        XCTAssertEqual(sfx.first?.url, "https://kenney.nl")
     }
 
     func testEachEntryPointsAtItsOwnLicenceText() {

@@ -23,6 +23,7 @@ import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "../../lib/sync.functions";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
+import { waitForCallCue } from "@/lib/sfx";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   component: ConverseChatPageWithSave,
@@ -157,6 +158,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           setVoice("idle");
           return;
         }
+        // The call-start sound finishes before his first words.
+        if (opts?.opener) await waitForCallCue();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
         const url = URL.createObjectURL(blob);

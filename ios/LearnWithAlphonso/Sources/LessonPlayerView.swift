@@ -263,6 +263,12 @@ struct LessonPlayerView: View {
         .toolbar(onStage ? .hidden : .visible, for: .navigationBar)
         .toolbar(onStage ? .hidden : .visible, for: .tabBar)
         .task(id: lesson.id) { await openLessonSession() }
+        // Sound effects: loaded before the first answer, and never played over the question cards' spoken lines.
+        .onAppear {
+            SoundEffectsPlayer.shared.preload()
+            SoundEffectsPlayer.shared.registerVoiceProbe("lessonSpeech") { questionCardSpeechSynthesizer.isSpeaking }
+        }
+        .onDisappear { SoundEffectsPlayer.shared.cancelPendingCues() }
         // The lesson's time counts only while the app is in front.
         .onChange(of: scenePhase) { _, newPhase in
             let now = Date().timeIntervalSince1970
@@ -454,11 +460,11 @@ struct LessonPlayerView: View {
                         await settleTranslationVerdict()
                         isCheckingTranslation = false
                         checked = true
-                        recordAnswer()
+                        playVerdictEffects(heartLost: recordAnswer())
                     }
                 } else {
                     checked = true
-                    recordAnswer()
+                    playVerdictEffects(heartLost: recordAnswer())
                 }
             }
             .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
@@ -490,6 +496,7 @@ struct LessonPlayerView: View {
     /// Continue, Got it or Finish. Finish completes the lesson once: a second tap while the completion is in flight
     /// would be a zero-XP replay (FinishGate).
     private func advance() {
+        SoundEffectsPlayer.shared.play(.tap)
         if let pendingReinforcement {
             activeReinforcement = pendingReinforcement
             self.pendingReinforcement = nil
@@ -549,7 +556,13 @@ struct LessonPlayerView: View {
         .onAppear {
             showPromotionOverlay = isLeaguePromotion
             celebrated = true
+            // The jingle with the confetti, then XP and any achievement as their tiles land; keyed per attempt, so a
+            // re-appearance never plays them again. Sound plays under Reduce Motion too (it only calms visuals).
+            SoundEffectsPlayer.shared.play(
+                SoundEffectCues.finish(xp: result.xpGain, unlocked: achievements.count), key: "finish-\(attemptSeed)")
         }
+        // Leaving the complete screen drops the XP and achievement sounds still to come.
+        .onDisappear { SoundEffectsPlayer.shared.cancelPendingCues() }
         .fullScreenCover(isPresented: $showPromotionOverlay) {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
                 showPromotionOverlay = false
@@ -580,10 +593,23 @@ struct LessonPlayerView: View {
             submission: picked)
     }
 
-    private func recordAnswer() {
+    /// The verdict's sound and haptic, once per checked answer. A lost heart follows the wrong-answer sound, and only
+    /// when the header really shows one fewer (`heartLost`, from recordAnswer): never for Pro, a reinforcement round,
+    /// or with no hearts left to lose.
+    private func playVerdictEffects(heartLost: Bool) {
+        let correct = lastAnswerCorrect
+        SoundEffectsPlayer.shared.play(
+            SoundEffectCues.verdict(correct: correct, losesHeart: !correct && heartLost),
+            key: "verdict-\(attemptSeed)-\(idx)-\(isReinforcing ? "r" : "q")")
+        SoundEffectsPlayer.shared.haptic(correct ? .right : .wrong)
+    }
+
+    /// Returns whether a heart was taken off the header (the heart sound plays only then).
+    @discardableResult
+    private func recordAnswer() -> Bool {
         // Reinforcement rounds are supplementary practice only -- they
         // never touch correctCount/answers/hearts/XP.
-        guard !isReinforcing else { return }
+        guard !isReinforcing else { return false }
         let question = lesson.questions[idx]
         answers.append(LessonAnswer(questionId: questionID(question), answer: picked ?? ""))
         // For a translation the settled verdict outranks the local match: it is
@@ -595,6 +621,7 @@ struct LessonPlayerView: View {
         } else {
             correct = isAnswerCorrect(question, picked: picked, course: course)
         }
+        var heartLost = false
         if correct {
             correctCount += 1
         } else {
@@ -618,7 +645,7 @@ struct LessonPlayerView: View {
             // blocking the learner's flow over, and the next full sync
             // (or restoreHeartsIfDue's regen check) will reconcile
             // either way if this particular call fails.
-            spendHeartForWrongAnswer()
+            heartLost = spendHeartForWrongAnswer()
             // "Doing well" skews the reinforcement pool wider (see
             // pickReinforcementQuestion's doc comment) -- based on
             // accuracy over prior questions this attempt, not counting
@@ -632,6 +659,7 @@ struct LessonPlayerView: View {
                 seed: "\(attemptSeed)-reinforce-\(idx)"
             )
         }
+        return heartLost
     }
 
     /// Optimistically decrements the cached hearts count (so the tab-bar
@@ -640,9 +668,13 @@ struct LessonPlayerView: View {
     /// background. Best-effort both ways: a missing access token or a
     /// failed request just means the next real sync corrects the count,
     /// same posture as this file's other fire-and-forget calls.
-    private func spendHeartForWrongAnswer() {
+    /// Returns whether the cached count went down, which is what the header shows.
+    private func spendHeartForWrongAnswer() -> Bool {
         // Alphonso Pro has unlimited hearts (the server skips Pro too).
-        guard HeartsEconomy.wrongAnswerCostsHeart(unlimited: hectorAccess?.entitlementStore.isPro ?? false) else { return }
+        guard HeartsEconomy.wrongAnswerCostsHeart(unlimited: hectorAccess?.entitlementStore.isPro ?? false) else {
+            return false
+        }
+        var heartLost = false
         if let cached = syncQueueStore.lastKnownProgress(), cached.hearts > 0 {
             // The last heart also starts the refill timer, so the offline gate can show a countdown.
             let after = HeartsEconomy.afterLosingHeart(
@@ -655,10 +687,12 @@ struct LessonPlayerView: View {
                 heartsRefillAt: after.heartsRefillAt.map { $0.timeIntervalSince1970 * 1000 },
                 streakFreezes: cached.streakFreezes, leagueTier: cached.leagueTier
             ))
+            heartLost = true
         }
-        guard let accessToken = session.accessToken else { return }
+        guard let accessToken = session.accessToken else { return heartLost }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         Task { _ = try? await client.loseHeart() }
+        return heartLost
     }
 
     /// The lesson session starts when the lesson opens, which is where the server's hearts gate applies
