@@ -73,10 +73,10 @@ object AlphonsoPalettes {
             isDark = false, displayFont = AlphonsoFontFace.NEWSREADER, sansFont = AlphonsoFontFace.SOURCE_SANS3,
         ),
         AlphonsoThemeId.CANOPY to AlphonsoPalette(
-            surface = rgb(0xEFFAF4), parchment = rgb(0xDCF3E8), ink = rgb(0x05261A), inkSoft = rgb(0x406052),
-            moss = rgb(0x0C6944), mossDeep = rgb(0x133F2B), ember = rgb(0xE4573F), emberSoft = rgb(0xFDD3CA),
-            destructive = rgb(0xE7000B), hairline = rgba(0x05261A, 0.1f),
-            onPrimary = rgb(0xEFFAF4), onAccent = rgb(0x05261A), onMossGradient = rgb(0xEFFAF4),
+            surface = rgb(0xFBF6EC), parchment = rgb(0xFFFFFF), ink = rgb(0x141B3D), inkSoft = rgb(0x5A5873),
+            moss = rgb(0x1D2B64), mossDeep = rgb(0x141B3D), ember = rgb(0xE4573F), emberSoft = rgb(0xFDD3CA),
+            destructive = rgb(0xE7000B), hairline = rgba(0x141B3D, 0.1f),
+            onPrimary = rgb(0xFBF6EC), onAccent = rgb(0x141B3D), onMossGradient = rgb(0xFBF6EC),
             isDark = false, displayFont = AlphonsoFontFace.BALOO2, sansFont = AlphonsoFontFace.GEIST,
         ),
     )
@@ -98,10 +98,10 @@ object AlphonsoPalettes {
             isDark = true, displayFont = AlphonsoFontFace.NEWSREADER, sansFont = AlphonsoFontFace.SOURCE_SANS3,
         ),
         AlphonsoThemeId.CANOPY to AlphonsoPalette(
-            surface = rgb(0x0C1813), parchment = rgb(0x15261F), ink = rgb(0xECF4EF), inkSoft = rgb(0xA2B9AC),
-            moss = rgb(0x0C6944), mossDeep = rgb(0x133F2B), ember = rgb(0xE4573F), emberSoft = rgb(0x4F2117),
+            surface = rgb(0x0E1330), parchment = rgb(0x161C40), ink = rgb(0xECE7F5), inkSoft = rgb(0xA9AEC9),
+            moss = rgb(0xC9D2F7), mossDeep = rgb(0x9AA8E8), ember = rgb(0xE4573F), emberSoft = rgb(0x4F2117),
             destructive = rgb(0xFF0B16), hairline = rgba(0xFFFFFF, 0.1f),
-            onPrimary = rgb(0xECF4EF), onAccent = rgb(0x0C1813), onMossGradient = rgb(0xECF4EF),
+            onPrimary = rgb(0x0E1330), onAccent = rgb(0x0E1330), onMossGradient = rgb(0x0E1330),
             isDark = true, displayFont = AlphonsoFontFace.BALOO2, sansFont = AlphonsoFontFace.GEIST,
         ),
     )

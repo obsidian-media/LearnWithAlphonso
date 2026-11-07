@@ -41,6 +41,8 @@ struct RootView: View {
     /// (a separate @State read only inside the cover's content closure was captured stale and rendered empty).
     @State private var onboarding: OnboardingPresentation?
     @State private var onboardingDone: Set<OnboardingStep> = []
+    /// The first run ended on Meet Hector: the placement onboarding cover must not open over Hector.
+    @State private var hectorChosenInFirstRun = false
     @State private var nameConfirmed: Bool?
     /// The first name pinned on the Pro paywall's card; nil for a generated handle.
     @State private var paywallName: String?
@@ -476,6 +478,7 @@ struct RootView: View {
             firstRunCover = .placement(activeCourse.course)
             return
         case .hector?:
+            hectorChosenInFirstRun = true
             selectedTab = .hector
         default:
             break
@@ -568,7 +571,8 @@ struct RootView: View {
         #endif
         // A step without what its screen needs is skipped inside advance (marked done), never shown empty.
         let result = OnboardingSequence.advance(
-            nameConfirmed: nameConfirmed, placementTaken: placementTaken, done: onboardingDone, nameOnboarding: nameOnboarding)
+            nameConfirmed: nameConfirmed, placementTaken: placementTaken,
+            done: OnboardingSequence.done(onboardingDone, hectorChosen: hectorChosenInFirstRun), nameOnboarding: nameOnboarding)
         onboardingDone = result.done
         onboarding = result.presentation
     }

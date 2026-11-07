@@ -23,6 +23,9 @@ struct BuddySection: View {
     @State private var blockTarget: SocialTarget?
     /// Declared-age confirmation for matching (owner decision: minimum age 13); the server refuses without it.
     @State private var ageConfirmed = false
+    /// The age band the first run recorded; Friends asks "I'm 13 or older" only when there is none.
+    @State private var knownAgeRange: String?
+    private var asksAge: Bool { BuddyCopy.needsAgeConfirmation(ageRange: knownAgeRange) }
     @State private var reportTarget: SocialTarget?
     @State private var isLoading = true
     /// The spinner shows only before the first result; later reloads keep the section on screen.
@@ -235,15 +238,17 @@ struct BuddySection: View {
             Text(BuddyCopy.poolIntro)
                 .font(AlphonsoFont.sans(12))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-            Toggle(BuddyCopy.ageConfirm, isOn: $ageConfirmed)
-                .font(AlphonsoFont.sans(13))
-                .tint(AlphonsoColor.moss)
+            if asksAge {
+                Toggle(BuddyCopy.ageConfirm, isOn: $ageConfirmed)
+                    .font(AlphonsoFont.sans(13))
+                    .tint(AlphonsoColor.moss)
+            }
             ForEach(pool.courses, id: \.self) { course in
                 Button(BuddyCopy.findButton(course)) {
-                    Task { await run { try await $0.joinBuddyPool(course: course, ageConfirmed: ageConfirmed) } }
+                    Task { await run { try await $0.joinBuddyPool(course: course, ageConfirmed: asksAge ? ageConfirmed : true) } }
                 }
                 .tint(AlphonsoColor.moss)
-                .disabled(busy || !ageConfirmed)
+                .disabled(busy || (asksAge && !ageConfirmed))
             }
         }
     }
@@ -284,6 +289,13 @@ struct BuddySection: View {
             // freshAccessToken() also answers nil when the refresh was cancelled; a cancelled load is not a failure.
             if generation == loadGeneration, !Task.isCancelled { isLoading = false; loadFailed = true }
             return false
+        }
+        if knownAgeRange == nil {
+            do {
+                knownAgeRange = try await learnerProfileClient(session)?.fetch().answers.ageRange
+            } catch {
+                // Deliberately silent: without a band the 13+ question is simply asked.
+            }
         }
         do {
             let newBuddy = try await client.getMyBuddy()

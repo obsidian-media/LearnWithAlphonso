@@ -74,6 +74,7 @@ object PracticeHub {
 
     val levels = listOf("All", "Beginner", "Intermediate", "Advanced")
 
+    fun starRules(chat: Boolean): List<String> = if (chat) listOf("Finish the chat") + starRules.drop(1) else starRules
     val starRules = listOf("Finish the call", "80% of your replies right", "Every reply right, in full sentences of 4+ words, no English")
 
     fun stars(rows: List<PracticeStarRow>, kind: String, key: String): Int = rows.lastOrNull { it.kind == kind && it.itemKey == key }?.bestStars ?: 0

@@ -20,6 +20,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,6 +54,8 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
     val vm: FriendsViewModel = viewModel { FriendsViewModel(container.progressClient, container.nudgeCache, container.session.userId, BuildConfig.API_BASE_URL) }
     val state by vm.state.collectAsState()
     val buddyVm: BuddyViewModel = viewModel { BuddyViewModel(container.progressClient) }
+    var knownAgeRange by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) { knownAgeRange = runCatching { container.learnerProfileClient.fetch().answers.ageRange }.getOrNull() }
     var removeTarget by remember { mutableStateOf<FriendProgress?>(null) }
     var blockTarget by remember { mutableStateOf<FriendProgress?>(null) }
     var reportTarget by remember { mutableStateOf<SocialTarget?>(null) }
@@ -78,7 +81,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
                     AlphonsoSecondaryButton("Add", onClick = { onEnterCode(manualCode.trim()); manualCode = "" }, enabled = manualCode.isNotBlank(), fullWidth = false)
                 }
             }
-            BuddySection(buddyVm, state.friends, onReport = { reportTarget = it })
+            BuddySection(buddyVm, state.friends, knownAgeRange, onReport = { reportTarget = it })
             SectionCard(if (state.friends.isEmpty()) "Your friends" else "${state.friends.size} friend${if (state.friends.size == 1) "" else "s"}") {
                 when {
                     state.isLoading -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }

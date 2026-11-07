@@ -174,7 +174,7 @@ internal fun PracticeHubContent(
                     Text(t.opener, style = Type.body.toTextStyle(), color = ds.ink, modifier = Modifier.fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.bubble)).padding(Space.s3))
                 }
                 item { HubHeading("How to earn stars") }
-                items(PracticeHub.starRules.withIndex().toList()) { (i, line) ->
+                items(PracticeHub.starRules(chat = mode == "chat").withIndex().toList()) { (i, line) ->
                     Row(horizontalArrangement = Arrangement.spacedBy(Space.s3)) { PracticeStars(i + 1); Text(line, style = Type.caption.toTextStyle(), color = ds.ink, modifier = Modifier.weight(1f)) }
                 }
                 item {

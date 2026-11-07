@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import fixtures from "./buddy.fixtures.json";
 import {
   BUDDY_COPY,
+  needsAgeConfirmation,
   buddyCourseName,
   buddyFindButton,
   buddyWaitingLine,
@@ -114,5 +115,19 @@ describe("buddy block wording", () => {
     expect(buddyBlockConfirm(c.blockConfirm.name)).toBe(c.blockConfirm.expected);
     expect(buddyBlockedLine(c.blockedLine.name)).toBe(c.blockedLine.expected);
     expect(buddySafetyMenuLabel(c.safetyMenuLabel.name)).toBe(c.safetyMenuLabel.expected);
+  });
+});
+
+describe("needsAgeConfirmation", () => {
+  it("skips the 13+ question once the first run recorded an age band", () => {
+    for (const band of ["13-17", "18-24", "25-34", "35-54", "55+"]) {
+      expect(needsAgeConfirmation(band)).toBe(false);
+    }
+  });
+  it("keeps the gate without a band", () => {
+    expect(needsAgeConfirmation(undefined)).toBe(true);
+    expect(needsAgeConfirmation(null)).toBe(true);
+    expect(needsAgeConfirmation("")).toBe(true);
+    expect(needsAgeConfirmation("under-13")).toBe(true);
   });
 });

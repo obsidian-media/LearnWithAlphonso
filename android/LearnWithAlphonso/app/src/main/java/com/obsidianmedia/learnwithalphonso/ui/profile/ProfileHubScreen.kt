@@ -91,7 +91,6 @@ fun ProfileHubScreen(
                             ProfileFold("Personal records", ProfileTabs.recordsSummary(m.records.bestStreak)) { ProfileRecords(m) }
                             ProfileFold("Level ${m.level.level}", "${m.level.level} · ${m.level.pct}%") { ProfileLevel(m) }
                             ProfileFold("Top weak spots", ProfileTabs.weakSummary(m.weak.second)) { ProfileWeak(m, onPractice = { onOpenReview(course) }) }
-                            ProfileFold("Achievements", ProfileTabs.achievementsSummary(m.unlockedCount, m.catalogCount)) { ProfileAchievements(m) }
                         }
                         ProfileTab.SOCIAL -> {
                             ProfileCompactHeader(m)
@@ -116,7 +115,7 @@ fun ProfileHubScreen(
                     AlphonsoRowCard("Settings", "Theme and account", leadingEmoji = "⚙️", modifier = Modifier.clickable(onClick = onOpenSettings).padding(top = 8.dp))
                 }
                 ProfileTab.PROGRESS ->
-                    AlphonsoRowCard("Achievements", "Badges earned and weak spots to work on", leadingEmoji = "⭐", modifier = Modifier.clickable(onClick = onOpenAchievements))
+                    AlphonsoRowCard("Achievements", overview?.let { ProfileTabs.achievementsSummary(it.unlockedCount, it.catalogCount) } ?: "Badges you have earned", leadingEmoji = "⭐", modifier = Modifier.clickable(onClick = onOpenAchievements))
                 ProfileTab.SOCIAL -> {
                     AlphonsoRowCard("League", "Leaderboards, teams, and the season ladder", leadingEmoji = "🏆", modifier = Modifier.clickable(onClick = onOpenLeague))
                     AlphonsoRowCard("Friends", "Your friends, their activity, and duels", leadingEmoji = "👥", modifier = Modifier.clickable(onClick = onOpenFriends))

@@ -42,6 +42,13 @@ class BuddyTest {
     private fun client(fake: FakeSupabase) = ProgressSyncClient(fake.http) { 0L }
 
     @Test
+    fun `the age question is skipped only with a recorded band`() {
+        listOf("13-17", "18-24", "25-34", "35-54", "55+").forEach { org.junit.jupiter.api.Assertions.assertFalse(BuddyCopy.needsAgeConfirmation(it)) }
+        org.junit.jupiter.api.Assertions.assertTrue(BuddyCopy.needsAgeConfirmation(null))
+        org.junit.jupiter.api.Assertions.assertTrue(BuddyCopy.needsAgeConfirmation("under-13"))
+    }
+
+    @Test
     fun `week rules match every fixture case`() {
         val cases = root["resolve"]!!.jsonArray
         assertTrue(cases.size >= 6)

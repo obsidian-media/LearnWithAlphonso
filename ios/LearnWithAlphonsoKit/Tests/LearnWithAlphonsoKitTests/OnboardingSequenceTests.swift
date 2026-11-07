@@ -8,6 +8,13 @@ final class OnboardingSequenceTests: XCTestCase {
         XCTAssertNil(OnboardingSequence.next(nameConfirmed: false, placementTaken: false, done: [.displayName, .placement]))
     }
 
+    func testChoosingHectorInTheFirstRunNeverOpensPlacement() {
+        let done = OnboardingSequence.done([], hectorChosen: true)
+        XCTAssertNil(OnboardingSequence.advance(nameConfirmed: true, placementTaken: false, done: done, nameOnboarding: nil).presentation)
+        let notChosen = OnboardingSequence.done([], hectorChosen: false)
+        XCTAssertEqual(OnboardingSequence.advance(nameConfirmed: true, placementTaken: false, done: notChosen, nameOnboarding: nil).presentation, .placement)
+    }
+
     func testAFailedCheckSkipsThatStepAndNeverBlocks() {
         XCTAssertEqual(OnboardingSequence.next(nameConfirmed: nil, placementTaken: false, done: []), .placement)
         XCTAssertNil(OnboardingSequence.next(nameConfirmed: nil, placementTaken: nil, done: []))

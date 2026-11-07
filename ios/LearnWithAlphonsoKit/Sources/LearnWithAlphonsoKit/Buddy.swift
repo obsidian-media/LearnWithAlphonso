@@ -97,6 +97,13 @@ public enum BuddyCopy {
     public static let matchedLabel = "Matched learner"
     public static let ageConfirm = "I'm 13 or older"
 
+    /// Whether Friends must still ask "I'm 13 or older": not when the first run already recorded an age band
+    /// (every band the app offers is 13+). Without a band the gate stays.
+    public static func needsAgeConfirmation(ageRange: String?) -> Bool {
+        guard let ageRange else { return true }
+        return !LearnerProfileLists.ageRanges.contains(ageRange)
+    }
+
     private static let courseNames = ["en": "English", "fr": "French", "es": "Spanish"]
 
     /// "French" for "fr"; an unknown code is shown as-is.

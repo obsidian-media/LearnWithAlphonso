@@ -106,6 +106,7 @@ struct ListenShelfRoot: View {
             }
             .padding(AlphonsoSpacing.md)
         }
+        .miniPlayerClearance(player)
         .navigationTitle("Listen")
         .task { await load() }
         // Back from a folder, or after an episode played, the shelf reflects what was just heard.
@@ -318,6 +319,7 @@ struct ListenShelfDetail: View {
                 }
             }
         }
+        .miniPlayerClearance(player)
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
         .task {

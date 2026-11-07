@@ -263,7 +263,7 @@ struct CampaignSessionView: View {
 
     private func bubble(for turn: ChatMessage, index: Int) -> some View {
         HStack {
-            if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
+            if turn.role == "user" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
             bubbleText(for: turn, index: index)
                 .dsText(.body)
                 .padding(.horizontal, AlphonsoDS.Space.s4)
@@ -272,7 +272,7 @@ struct CampaignSessionView: View {
                     turn.role == "user" ? AlphonsoDS.current.choice : AlphonsoDS.current.card,
                     in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
                 )
-            if turn.role == "user" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
+            if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
     }

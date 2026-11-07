@@ -30,15 +30,16 @@
 @theme {
   --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
-  --color-surface: oklch(0.958 0.012 80);
-  --color-parchment: oklch(0.923 0.019 75);
-  --color-ink: oklch(0.24 0.035 155);
-  --color-ink-soft: oklch(0.42 0.025 155);
-  --color-moss: oklch(0.45 0.075 155);
-  --color-moss-deep: oklch(0.32 0.06 155);
+  /* The legacy names read the round-6 tokens, so older screens carry no mint or moss green of their own. */
+  --color-surface: var(--c-surface);
+  --color-parchment: var(--c-sunk);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-moss: var(--c-brand);
+  --color-moss-deep: var(--c-ink);
   --color-ember: oklch(0.62 0.17 40);
   --color-ember-soft: oklch(0.88 0.06 60);
-  --color-hairline: oklch(0.24 0.035 155 / 0.1);
+  --color-hairline: var(--c-line);
   --color-ink-on-ember: var(--color-surface);
 }
 
@@ -244,21 +245,22 @@
   --font-display: "Baloo 2 Variable", "Baloo 2", ui-rounded, "Segoe UI", sans-serif;
   --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
 
-  --color-surface: oklch(0.975 0.014 165);
-  --color-parchment: oklch(0.945 0.028 165);
-  --color-ink: oklch(0.24 0.045 165);
-  --color-ink-soft: oklch(0.46 0.045 165);
-  --color-moss: oklch(0.46 0.1 160);
-  --color-moss-deep: oklch(0.33 0.06 160);
+  /* Round-6 tokens: the old mint surface and moss green are gone from the default theme. */
+  --color-surface: var(--c-surface);
+  --color-parchment: var(--c-sunk);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-moss: var(--c-brand);
+  --color-moss-deep: var(--c-ink);
   --color-ember: oklch(0.64 0.18 32);
   --color-ember-soft: oklch(0.9 0.05 32);
-  --color-hairline: oklch(0.24 0.045 165 / 0.1);
+  --color-hairline: var(--c-line);
   --color-ink-on-ember: var(--color-ink);
 
   --background: var(--color-surface);
   --foreground: var(--color-ink);
   --primary: var(--color-moss);
-  --primary-foreground: oklch(0.975 0.014 165);
+  --primary-foreground: var(--c-surface);
   --muted-foreground: var(--color-ink-soft);
   --input: var(--color-hairline);
 }

@@ -166,7 +166,8 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
 }
 
 @Composable
-fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (SocialTarget) -> Unit) {
+fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRange: String?, onReport: (SocialTarget) -> Unit) {
+    val asksAge = BuddyCopy.needsAgeConfirmation(knownAgeRange)
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     var confirmingEnd by remember { mutableStateOf(false) }
@@ -268,12 +269,12 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
                     }
                 } else if (pool != null && pool.matchingEnabled && pool.courses.isNotEmpty()) {
                     Text(BuddyCopy.POOL_INTRO, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (asksAge) Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = ageConfirmed, onCheckedChange = { ageConfirmed = it })
                         Text(BuddyCopy.AGE_CONFIRM, color = palette.ink)
                     }
                     pool.courses.forEach { course ->
-                        TextButton(onClick = { vm.join(course, ageConfirmed) }, enabled = !state.busy && ageConfirmed) {
+                        TextButton(onClick = { vm.join(course, !asksAge || ageConfirmed) }, enabled = !state.busy && (!asksAge || ageConfirmed)) {
                             Text(BuddyCopy.findButton(course), color = palette.moss)
                         }
                     }

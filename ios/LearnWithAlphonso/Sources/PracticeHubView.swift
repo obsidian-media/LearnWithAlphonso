@@ -185,7 +185,7 @@ struct PracticePreCall: View {
                 Text(target.opener).dsText(.body).padding(AlphonsoDS.Space.s3)
                     .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
                 Text("How to earn stars").dsText(.overline)
-                ForEach(Array(PracticeHub.starRules.enumerated()), id: \.offset) { i, line in
+                ForEach(Array(PracticeHub.starRules(chat: chat).enumerated()), id: \.offset) { i, line in
                     HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
                         PracticeStarsView(n: i + 1)
                         Text(line).dsText(.caption).fixedSize(horizontal: false, vertical: true)
@@ -194,7 +194,7 @@ struct PracticePreCall: View {
                 Picker("How to practice", selection: $chat) {
                     Text("Call (speak)").tag(false)
                     Text("Chat (type)").tag(true)
-                }.pickerStyle(.inline)
+                }.pickerStyle(.segmented)
                 PracticeButton(chat ? "Start the chat" : "Start the call", action: start)
             }.padding(AlphonsoDS.Space.gutter)
         }.background(ds.surface).foregroundStyle(ds.ink)

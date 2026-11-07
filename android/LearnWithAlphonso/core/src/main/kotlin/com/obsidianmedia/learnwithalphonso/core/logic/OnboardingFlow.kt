@@ -67,6 +67,9 @@ class OnboardingFlow {
     /** The prompt currently on screen for this account; one that belongs to another account is never returned. */
     fun nameFor(userId: String?): NamePresentation? = _name.value?.takeIf { it.userId == userId }
 
+    /** The first run ended on Hector: its "See what Hector can do" opens Hector, never the placement test. */
+    fun deferPlacementForHector(userId: String) = finish(userId, OnboardingStep.PLACEMENT)
+
     fun finish(userId: String, step: OnboardingStep) {
         if (this.userId != userId) return
         done.add(step)

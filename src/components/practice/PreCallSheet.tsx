@@ -3,7 +3,7 @@ import { Modal } from "../Modal";
 import { DsIcon } from "../ds/DsIcon";
 import { edgeButtonClass } from "../lesson/LessonParts";
 import { PracticeStars } from "./PracticeStars";
-import { STAR_RULE_LINES } from "@/lib/practice-stars";
+import { starRuleLines } from "@/lib/practice-stars";
 
 export type CallMode = "call" | "chat";
 
@@ -88,7 +88,7 @@ export function PreCallSheet({
         <div className="grid gap-1.5 rounded-[14px] bg-ds-choice-tint px-3 py-2.5">
           <h3 className="ds-type-overline text-ds-brand">How to earn stars</h3>
           <ul className="grid gap-1.5">
-            {STAR_RULE_LINES.map(([n, text]) => (
+            {starRuleLines(mode).map(([n, text]) => (
               <li key={n} className="flex items-center gap-2.5 ds-type-caption text-ds-ink">
                 <PracticeStars n={n} className="w-12 shrink-0" />
                 <span>{text}</span>

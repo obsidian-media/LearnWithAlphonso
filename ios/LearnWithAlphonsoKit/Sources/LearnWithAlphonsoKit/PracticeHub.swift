@@ -76,6 +76,12 @@ public enum PracticeHub {
     }
     public static let levels = ["All", "Beginner", "Intermediate", "Advanced"]
     public static let starRules = ["Finish the call", "80% of your replies right", "Every reply right, in full sentences of 4+ words, no English"]
+    /// The rule lines for a call or a chat: only the first line names the mode.
+    public static func starRules(chat: Bool) -> [String] {
+        var rules = starRules
+        if chat { rules[0] = "Finish the chat" }
+        return rules
+    }
     public static func stars(_ rows: [PracticeStarRow], kind: String, key: String) -> Int {
         rows.last(where: { $0.kind == kind && $0.itemKey == key })?.bestStars ?? 0
     }

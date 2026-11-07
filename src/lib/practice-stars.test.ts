@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   STAR_RULE,
+  STAR_RULE_LINES,
+  starRuleLines,
   measureReply,
   starsForCall,
   type CallTally,
@@ -107,5 +109,13 @@ describe("measureReply: falling back to English", () => {
   });
   it("an empty reply is short and not English", () => {
     expect(es("   ")).toEqual({ courseWords: 0, short: true, english: false });
+  });
+});
+
+describe("starRuleLines: the copy follows the mode", () => {
+  it("a chat finishes a chat, a call finishes a call; the other lines are the same", () => {
+    expect(starRuleLines("chat")[0][1]).toBe("Finish the chat");
+    expect(starRuleLines("call")[0][1]).toBe("Finish the call");
+    expect(starRuleLines("chat").slice(1)).toEqual(STAR_RULE_LINES.slice(1));
   });
 });

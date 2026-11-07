@@ -1,3 +1,4 @@
+import { AGE_RANGES } from "./learner-profile";
 /**
  * Study buddies (study together, Phase 3a). The server is the source of truth for the week rules
  * (`_resolve_buddy_pair` in 20261006180000_buddy_pairing.sql); this mirrors them for the clients, and the wording
@@ -187,4 +188,9 @@ export function buddyMessageLine(
 ): string | null {
   const text = buddyPresetText(presetId);
   return text === null ? null : `${isMine ? "You" : buddyName}: ${text}`;
+}
+
+/** Friends asks "I'm 13 or older" only without a recorded age band (every band the app offers is 13+). */
+export function needsAgeConfirmation(ageRange: string | undefined | null): boolean {
+  return !ageRange || !(AGE_RANGES as readonly string[]).includes(ageRange);
 }

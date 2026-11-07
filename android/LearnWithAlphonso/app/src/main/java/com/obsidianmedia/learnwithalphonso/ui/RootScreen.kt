@@ -344,6 +344,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         val courseCode = activeCourse.code
         val placementTaken: suspend (String) -> Boolean = { c -> runCatching { container.progressClient.fetchPlacementTakenAt(c) }.getOrNull() != null }
         val finish: (FirstRun.Destination?) -> Unit = { destination ->
+            if (destination == FirstRun.Destination.HECTOR) userId?.let { container.onboarding.deferPlacementForHector(it) }
             firstRunCover = null
             when (destination) {
                 FirstRun.Destination.PLACEMENT -> nav.navigate(Routes.placement(container.activeCourse.course.value.code))
