@@ -16,6 +16,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 });
 
 vi.mock("../../lib/auth-headers", () => ({ authHeaders: vi.fn().mockResolvedValue({}) }));
+vi.mock("@/lib/leaderboard.functions", () => ({ getMyProfile: async () => null }));
 
 const { FinishScreen } = await import("./lesson.$id");
 
@@ -167,11 +168,18 @@ describe("FinishScreen Practise with Hector", () => {
         });
       }
       if (String(input).startsWith("/api/pro-offering")) {
+        // Test fixture: a made-up offer.
         return Response.json({
-          price: "$9.99",
-          period: "month",
-          trialDays: 7,
-          purchaseUrl: "https://pay.rev.cat/t/u",
+          plans: [
+            {
+              price: "$9.99",
+              amountMicros: 9_990_000,
+              currency: "USD",
+              period: "month",
+              trialDays: 7,
+              purchaseUrl: "https://pay.rev.cat/t/u",
+            },
+          ],
         });
       }
       return new Response("{}", { status: 404 });
@@ -191,7 +199,7 @@ describe("FinishScreen Practise with Hector", () => {
     const urls = serveStatus(false);
     renderFinish();
     await userEvent.click(await screen.findByRole("button", { name: "Practise with Hector" }));
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(urls).toContain("/api/pro-offering?source=lesson_complete");
   });
 });

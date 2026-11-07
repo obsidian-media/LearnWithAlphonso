@@ -23,6 +23,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
+vi.mock("@/lib/leaderboard.functions", () => ({ getMyProfile: async () => null }));
 
 const { Route } = await import("./hector");
 const { useProgress } = await import("../../lib/progress");
@@ -44,11 +45,18 @@ const PRO_WEB = {
   manageUrl: "https://billing.example/portal",
 };
 const FREE = { pro: false, store: null, trialEligible: true, manageUrl: null };
+// Test fixture: a made-up offer.
 const OFFER = {
-  price: "$9.99",
-  period: "month",
-  trialDays: 7,
-  purchaseUrl: "https://pay.rev.cat/t/u",
+  plans: [
+    {
+      price: "$9.99",
+      amountMicros: 9_990_000,
+      currency: "USD",
+      period: "month",
+      trialDays: 7,
+      purchaseUrl: "https://pay.rev.cat/t/u",
+    },
+  ],
 };
 
 class FakeAudio {
@@ -97,7 +105,7 @@ describe("web Hector", () => {
   it("a learner without Pro sees the paywall, opened from the Hector tab", async () => {
     routes["/api/pro-status"] = status(FREE);
     await renderPage();
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(sent.some((s) => s.url === "/api/pro-offering?source=hector_tab")).toBe(true);
     expect(screen.queryByRole("log")).toBeNull();
   });
@@ -121,7 +129,7 @@ describe("web Hector", () => {
     );
     routes["/api/pro-status"] = status(FREE);
     await renderPage();
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(screen.queryByText("Payment received, activating…")).toBeNull();
     sessionStorage.removeItem("alphonso.pro.justPaidAt");
   });
@@ -133,7 +141,7 @@ describe("web Hector", () => {
     );
     routes["/api/pro-status"] = status(FREE);
     await renderPage();
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     sessionStorage.removeItem("alphonso.pro.justPaidAt");
   });
 
@@ -224,7 +232,7 @@ describe("web Hector", () => {
       await screen.findByRole("textbox", { name: "Message Hector" }),
       "hola{Enter}",
     );
-    expect(await screen.findByText("$9.99 / month")).toBeInTheDocument();
+    expect(await screen.findByText("$9.99 a month after the trial")).toBeInTheDocument();
     expect(sent.some((s) => s.url === "/api/pro-offering?source=hector_not_entitled")).toBe(true);
   });
 
@@ -305,18 +313,13 @@ describe("web Hector in his library", () => {
   it("a free learner meets Hector standing in his library above the offer", async () => {
     routes["/api/pro-status"] = status(FREE);
     const { container } = await renderPage();
-    // Hector waves in the library clip; the space above the offer is where he stands, named for screen readers.
-    await screen.findByRole("img", { name: /Hector/ });
-    expect(container.querySelector('[data-scene="hector"] video')?.getAttribute("src")).toBe(
-      "/clips/hector.mp4",
-    );
-    expect(container.querySelector("[data-figure]")).toBeNull();
-    // The offer starts at Hector's waist: in the clip he stands from 47% (head) to 80% (feet) of a frame about
-    // 160 px taller than the screen, so his waist is near 74% of the screen. Small viewport units: the offer does
-    // not jump when Safari's toolbar collapses mid-scroll.
-    expect(screen.getByRole("img", { name: /Hector/ }).className).toContain(
-      "h-[calc(74svh-4.5rem)]",
-    );
+    // Round 6 (BACKLOG 0.0-bk): the paywall paints Hector in his library itself, in light cream, with no clip.
+    const hector = await screen.findByRole("img", { name: "Hector in his library" });
+    expect(hector.getAttribute("src")).toBe("/paywall/hector-talk.webp");
+    const room = container.querySelector("[data-paywall-room] img");
+    expect(room?.getAttribute("src")).toBe("/avatar/scenes/library.webp");
+    expect(container.querySelector('[data-scene="hector"] video')).toBeNull();
+    expect(container.querySelector("[data-pro-tag]")).not.toBeNull();
   });
 
   it("a Pro learner talks to Hector in front of the library", async () => {

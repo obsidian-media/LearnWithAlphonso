@@ -198,7 +198,12 @@ test("Meet Hector shows the store's trial length when the offer has one", async 
   await fakeServerFns(page, { getNameStatus: null, saveLearnerProfile: { showFlag: false } });
   await page.route("**/api/pro-offering**", (r) =>
     r.fulfill({
-      json: { price: null, period: "month", trialDays: 7, purchaseUrl: "https://example.test" },
+      // Test fixture: /api/pro-offering's { plans } answer.
+      json: {
+        plans: [
+          { price: null, period: "month", trialDays: 7, purchaseUrl: "https://example.test" },
+        ],
+      },
     }),
   );
   await page.addInitScript(() =>
