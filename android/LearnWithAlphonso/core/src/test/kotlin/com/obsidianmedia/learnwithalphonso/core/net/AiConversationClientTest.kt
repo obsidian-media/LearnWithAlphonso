@@ -104,6 +104,10 @@ class AiConversationClientTest {
         ai.synthesizeSpeech("hola", voice = "aura-2-diana-es", course = "es")
         val tts = seen[2].body.decodeToString()
         assertTrue(tts.contains(""""voice":"aura-2-diana-es"""") && tts.contains(""""course":"es""""), tts)
+        assertTrue(!tts.contains("character"), tts)
+        // Hector's greeting names him, so a refused voice falls back to his default and never Alphonso's.
+        ai.synthesizeSpeech("Hola", voice = "aura-2-alvaro-es", course = "es", character = com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter.Hector)
+        assertTrue(seen[3].body.decodeToString().contains(""""character":"hector""""), seen[3].body.decodeToString())
     }
 
     @Test

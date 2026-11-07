@@ -54,7 +54,9 @@ describe("iOS: Practice and Campaigns say the opener", () => {
     const fn = voice.slice(voice.indexOf("func speakOpener"));
     expect(fn).toContain("OpenerSpeechCache.shared.audio");
     expect(fn).toContain("play(audio, generation: generation)");
-    expect(fn).toContain("VoicePrefsCache().voice(.alphonso, course: courseCode)");
+    // Alphonso's voice unless a caller names Hector (his greeting, hector-greeting-guards.test.ts).
+    expect(fn).toContain("speaker: VoiceCharacter = .alphonso");
+    expect(fn).toContain("VoicePrefsCache().voice(speaker, course: courseCode)");
   });
 });
 

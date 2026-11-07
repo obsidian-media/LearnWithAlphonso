@@ -614,6 +614,19 @@ final class AIConversationClientTests: XCTestCase {
         _ = try await client.synthesizeSpeech(text: "Hola", course: "es")
         XCTAssertEqual(try payload(captured)["course"] as? String, "es")
         XCTAssertNil(try payload(captured)["voice"])
+        XCTAssertNil(try payload(captured)["character"], "Alphonso's lines name no character")
+    }
+
+    /// Hector's greeting: the server falls back to Hector's default voice, never Alphonso's.
+    func testSynthesizeSpeechForHectorNamesHim() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return (Data([0x49, 0x44, 0x33]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        _ = try await client.synthesizeSpeech(text: "Hi!", voice: "aura-2-hermes-en", course: "en", character: .hector)
+        XCTAssertEqual(try payload(captured)["character"] as? String, "hector")
+        XCTAssertEqual(try payload(captured)["voice"] as? String, "aura-2-hermes-en")
     }
 
     func testAnalyzeWeaknessesSendsTheCourse() async throws {

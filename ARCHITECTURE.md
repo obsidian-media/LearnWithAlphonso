@@ -1933,7 +1933,11 @@ RevenueCat's hosted Web Purchase Link.
   `REVENUECAT_PROJECT_ID`, `REVENUECAT_WEB_PRODUCT_ID`) and builds the
   learner's checkout link (the link plus `/<user id>` and
   `metadata[paywall_source]`). One trial per person: a learner who ever had a
-  subscription gets `REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL`. Already Pro is 409
+  subscription gets `REVENUECAT_WEB_PURCHASE_LINK_NO_TRIAL`. The answer is
+  `{ plans }`: an optional yearly plan first (`REVENUECAT_WEB_YEARLY_PRODUCT_ID`,
+  `REVENUECAT_WEB_YEARLY_PURCHASE_LINK`, `..._NO_TRIAL`; all three or it is left
+  out), then monthly. No monthly settings is 503 `reason: "not-configured"`
+  (the paywall says Coming soon). Already Pro is 409
   (no double purchase). RevenueCat's indicative price is for one country
   (`indicative_price.country`, US); checkout bills everyone else in their own
   currency, so the number is shown only when Vercel's `x-vercel-ip-country`

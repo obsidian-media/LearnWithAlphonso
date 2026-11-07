@@ -68,6 +68,11 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreeting
+import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
+import com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeaker
+import com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeechCache
+import kotlinx.coroutines.CompletableDeferred
 import com.obsidianmedia.learnwithalphonso.core.logic.billingPeriodDescription
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
@@ -117,6 +122,8 @@ class HectorViewModel(
     val course: Course = Course.ENGLISH,
     /** Hector's own chosen voice for a course (Settings > Voices), never Alphonso's; null lets the server decide. */
     private val hectorVoice: (String) -> String? = { null },
+    /** Spoken lines already fetched (shared with Alphonso's openers); tests pass their own. */
+    private val openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
 ) : ViewModel(), CallConversation {
     // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
@@ -125,13 +132,25 @@ class HectorViewModel(
     private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
     private var analysed = false
+    /** Hector speaks first (BACKLOG 0.0-bp): his greeting, built locally once the learner context has loaded. */
+    private val greeting = CompletableDeferred<String>()
+    // Hector's greeting goes through the same player as Alphonso's openers, in Hector's own voice.
+    private val opener by lazy {
+        OpenerSpeaker(viewModelScope, _state, { engine.phase.value == TurnPhase.IDLE }, player, openerCache, course.code) { text, voice ->
+            ai.synthesizeSpeech(text, voice = voice, course = course.code, character = VoiceCharacter.Hector)
+        }
+    }
 
     init {
         viewModelScope.launch {
             val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
-            val open = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList()).filter { it.openCount > 0 }.map { it.category }
+            val trend = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList())
+            val open = trend.filter { it.openCount > 0 }.map { it.category }
+            // A name the learner chose; an unconfirmed one is a generated handle.
+            val name = runCatching { progress.fetchNameStatus() }.getOrNull()?.takeIf { it.nameConfirmed }?.displayName
             cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
+            greeting.complete(HectorGreeting.build(course, level, name, HectorGreeting.recentWeakSpot(trend)))
         }
         viewModelScope.launch {
             engine.events.collect { event ->
@@ -147,7 +166,30 @@ class HectorViewModel(
 
     override fun micLevelDBFS(): Double? = recorder.levelDBFS()
 
-    override fun pressBegan() { _state.update { it.copy(error = null) }; engine.pressBegan() }
+    override fun pressBegan() { opener.stop(); _state.update { it.copy(error = null) }; engine.pressBegan() }
+
+    /** The greeting Hector still has to say: the latest turn when it is his greeting (the learner has not answered). */
+    val pendingGreeting: String?
+        get() {
+            val s = _state.value
+            val last = s.turns.lastIndex
+            if (last < 0 || last !in s.openerIndices) return null
+            return s.turns[last].content.trim().ifEmpty { null }
+        }
+
+    /**
+     * Hector speaks first. The screen calls this once the AI consent gate is passed (and on "Call again"): a
+     * conversation with no turns yet opens with his greeting, which is shown as his first turn, so it is also in the
+     * history the tutor gets with the learner's first turn. It is said in Hector's chosen voice, and said again from
+     * the cache while the learner has not answered. The mic waits while it loads; holding to talk cuts it off.
+     */
+    fun greet() {
+        viewModelScope.launch {
+            val text = greeting.await()
+            _state.update { if (it.turns.isEmpty()) it.copy(turns = listOf(ChatMessage("assistant", text)), openerIndices = setOf(0)) else it }
+            opener.speak({ pendingGreeting }, { hectorVoice(course.code) })
+        }
+    }
     override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
 
     /** Exposed for tests: the history the tutor receives for the next turn. */
@@ -169,7 +211,7 @@ class HectorViewModel(
     }
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
-    fun onLeave() = engine.cancel()
+    fun onLeave() { opener.stop(); engine.cancel() }
 
     /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
     @Volatile private var callGeneration = 0
@@ -177,6 +219,7 @@ class HectorViewModel(
     /** The red button: cancel any recording, and silence a reply that is still on its way. */
     fun hangUp() {
         callGeneration++
+        opener.stop()
         engine.cancel()
     }
 
@@ -243,15 +286,15 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
         // Words are plain-looking links, so say they are tappable.
             SaveWordHintLine(container, SavedWordCopy.HECTOR_HINT, limited = false)
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                itemsIndexed(state.turns) { _, turn ->
+                itemsIndexed(state.turns) { index, turn ->
                     val isUser = turn.role == "user"
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start, verticalAlignment = Alignment.Bottom) {
                         if (!isUser) Image(painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop, modifier = Modifier.size(26.dp).clip(CircleShape))
                         else Spacer(Modifier.width(40.dp))
                         Spacer(Modifier.width(6.dp))
-                        // Every Hector reply is the model's (there is no fixed opening line), so every one is reportable.
+                        // Every Hector reply is the model's, so reportable; his greeting is our own fixed text.
                         ReportableAiMessage(
-                            enabled = !isUser, sender = container.aiReports,
+                            enabled = !isUser && index !in state.openerIndices, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier, reportActions ->
                             val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
@@ -287,12 +330,15 @@ private fun HectorConversation(container: AppContainer) {
     DisposableEffect(Unit) { onDispose { vm.onLeave() } }
 
     AiConsentGate(container) {
+      // Hector speaks first: his greeting, inside the gate so nothing is fetched before consent; again on each
+      // return, from the cache, while the learner has not answered it.
+      LaunchedEffect(Unit) { vm.greet() }
       SaveWordHost(container) {
         if (showCall) {
             if (callEnded) {
                 Column(Modifier.fillMaxSize().background(palette.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("Call ended", style = MaterialTheme.typography.headlineMedium, color = palette.ink)
-                    AlphonsoPrimaryButton("Call again", onClick = { callEnded = false })
+                    AlphonsoPrimaryButton("Call again", onClick = { callEnded = false; vm.greet() })
                 }
             } else {
                 PracticeCallScreen(

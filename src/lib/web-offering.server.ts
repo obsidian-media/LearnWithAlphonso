@@ -18,6 +18,9 @@ const CACHE_MS = 10 * 60 * 1000;
 export type WebOffering = {
   price: string;
   priceCountry: string | null;
+  /** The same price as a number, so the paywall can work out a per-month line and the yearly saving. */
+  amountMicros: number;
+  currency: string;
   period: BillingPeriod;
   trialDays: number | null;
 };
@@ -48,11 +51,12 @@ function daysOf(d: Duration | null): number | null {
   return null; // a month-long trial has no exact day count; show none rather than a wrong one
 }
 
-let cache: { key: string; at: number; value: WebOffering } | null = null;
+/** One entry per product, so the yearly and monthly plans do not evict each other. */
+const cache = new Map<string, { at: number; value: WebOffering }>();
 
 /** Tests only. */
 export function clearWebOfferingCache(): void {
-  cache = null;
+  cache.clear();
 }
 
 /** The offer for `productId` (a RevenueCat product id), or null when it cannot be read: then no price is shown. */
@@ -63,7 +67,8 @@ export async function getWebOffering(
 ): Promise<WebOffering | null> {
   if (!config.v2SecretKey || !config.projectId) return null;
   const key = `${config.projectId}/${productId}`;
-  if (cache && cache.key === key && Date.now() - cache.at < CACHE_MS) return cache.value;
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.value;
   try {
     const res = await fetchImpl(
       `${API}/projects/${encodeURIComponent(config.projectId)}/products?expand=items.indicative_price`,
@@ -98,10 +103,12 @@ export async function getWebOffering(
         amount_micros / 1_000_000,
       ),
       priceCountry: typeof country === "string" && country ? country.toUpperCase() : null,
+      amountMicros: amount_micros,
+      currency,
       period,
       trialDays: daysOf(parseIsoDuration(product.subscription?.trial_duration)),
     };
-    cache = { key, at: Date.now(), value };
+    cache.set(key, { at: Date.now(), value });
     return value;
   } catch {
     return null;

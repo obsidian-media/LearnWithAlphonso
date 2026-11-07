@@ -4,6 +4,10 @@ import { LessonFrame } from "../../components/AppShell";
 import { PAYWALL_COPY, WEB_PAYWALL_COPY } from "../../lib/paywall-copy";
 import { authHeaders, currentUserId } from "../../lib/auth-headers";
 import { markJustPaid } from "../../lib/use-pro-status";
+import { useProgress } from "../../lib/progress";
+import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
+import { ProWelcome } from "../../components/paywall/ProWelcome";
+import { useCardName } from "../../lib/use-card-name";
 
 export const Route = createFileRoute("/_authenticated/pro-return")({
   component: ProReturnPage,
@@ -25,13 +29,17 @@ async function isPro(): Promise<boolean> {
 
 /**
  * Where RevenueCat's checkout sends the learner after paying. RevenueCat can take a moment to activate Pro, so this
- * re-checks every 2 s for up to 30 s and then opens Hector. If Pro is still not active it says the payment was
+ * re-checks every 2 s for up to 30 s and then shows the welcome (Hector in his room, three openers, Call Hector). If Pro is still not active it says the payment was
  * received and offers a retry: never "failed", and never the paywall again (they have just paid).
  */
 function ProReturnPage() {
   const navigate = useNavigate();
   const [waiting, setWaiting] = useState(true);
+  const [active, setActive] = useState(false);
   const runRef = useRef(0);
+  const course = useProgress((s) => s.course);
+  const name = useCardName();
+  const reduceMotion = usePrefersReducedMotion();
 
   const poll = useCallback(async () => {
     const run = ++runRef.current;
@@ -39,14 +47,14 @@ function ProReturnPage() {
     const started = Date.now();
     while (runRef.current === run) {
       if (await isPro()) {
-        void navigate({ to: "/hector" });
+        setActive(true);
         return;
       }
       if (Date.now() - started >= GIVE_UP_MS) break;
       await new Promise((r) => setTimeout(r, POLL_MS));
     }
     if (runRef.current === run) setWaiting(false);
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     void currentUserId().then(markJustPaid);
@@ -56,10 +64,23 @@ function ProReturnPage() {
     };
   }, [poll]);
 
+  if (active) {
+    return (
+      <LessonFrame>
+        <ProWelcome
+          name={name}
+          course={course}
+          reduceMotion={reduceMotion}
+          onCall={() => void navigate({ to: "/hector" })}
+        />
+      </LessonFrame>
+    );
+  }
+
   return (
     <LessonFrame>
       <div className="space-y-4 px-6 pt-12">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+        <p className="ds-type-overline tracking-[0.18em] text-ds-action-text">
           {PAYWALL_COPY.fallbackTitle}
         </p>
         <p role="status" className="font-display text-2xl font-semibold text-ink">
