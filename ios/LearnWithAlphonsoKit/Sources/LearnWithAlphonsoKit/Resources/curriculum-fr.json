@@ -28629,7 +28629,8 @@
                 "finissiez"
               ],
               "answer": "finisses",
-              "explanation": "\"Il faut que\" takes the subjunctive, and with the subject \"tu\" the form is \"finisses\", ending in -es."
+              "explanation": "\"Il faut que\" takes the subjunctive, and with the subject \"tu\" the form is \"finisses\", ending in -es.",
+              "meaning": "(that) you finish (subjunctive of finir)"
             },
             {
               "id": "frb2p1q21",
@@ -30069,7 +30070,8 @@
                 "avait"
               ],
               "answer": "était",
-              "explanation": "After the past verb \"a dit\", her present \"je suis\" shifts to the imperfect \"était\" in reported speech; \"très\" is already in the sentence."
+              "explanation": "After the past verb \"a dit\", her present \"je suis\" shifts to the imperfect \"était\" in reported speech; \"très\" is already in the sentence.",
+              "meaning": "was (imperfect of être)"
             },
             {
               "id": "frb2p5q14",
@@ -31460,7 +31462,9 @@
                 "mais"
               ],
               "answer": "mais",
-              "explanation": "\"mais\" (but) joins two contrasting qualities: kind, but a bit stubborn. \"Malgré\" needs a noun and \"quand même\" cannot link the two ideas here."
+              "explanation": "\"mais\" (but) joins two contrasting qualities: kind, but a bit stubborn. \"Malgré\" needs a noun and \"quand même\" cannot link the two ideas here.",
+              "meaning": "but",
+              "example": "Il est fatigué, mais il continue de travailler."
             },
             {
               "id": "frb2p9q1",
@@ -31800,7 +31804,9 @@
                 "à la différence de"
               ],
               "answer": "à la différence de",
-              "explanation": "\"à la différence de\" means \"unlike\" and is followed by a noun to contrast two things. \"Pourtant\" and \"cependant\" mean \"however\", and \"inversement\" means \"conversely\"."
+              "explanation": "\"à la différence de\" means \"unlike\" and is followed by a noun to contrast two things. \"Pourtant\" and \"cependant\" mean \"however\", and \"inversement\" means \"conversely\".",
+              "meaning": "unlike",
+              "example": "À la différence de son frère, elle déteste le sport."
             }
           ]
         }
@@ -31914,7 +31920,9 @@
                 "en conséquence"
               ],
               "answer": "de sorte que",
-              "explanation": "\"de sorte que\" means \"so that\" and introduces the result or aim of an action; it takes the subjunctive when it expresses an aim. \"De ce fait\" and \"en conséquence\" mean \"as a result\", and \"en raison de\" means \"due to\"."
+              "explanation": "\"de sorte que\" means \"so that\" and introduces the result or aim of an action; it takes the subjunctive when it expresses an aim. \"De ce fait\" and \"en conséquence\" mean \"as a result\", and \"en raison de\" means \"due to\".",
+              "meaning": "so that",
+              "example": "Parle plus fort de sorte que tout le monde t'entende."
             },
             {
               "id": "frb2p10q7",
@@ -31940,7 +31948,9 @@
                 "c'est pourquoi"
               ],
               "answer": "en raison de",
-              "explanation": "\"en raison de\" means \"due to\" and is a formal way to give a cause before a noun. The other options, such as \"par conséquent\" and \"c'est pourquoi\", introduce a result."
+              "explanation": "\"en raison de\" means \"due to\" and is a formal way to give a cause before a noun. The other options, such as \"par conséquent\" and \"c'est pourquoi\", introduce a result.",
+              "meaning": "due to, because of",
+              "example": "Le vol a été annulé en raison de la tempête."
             },
             {
               "id": "frb2p10q9",
@@ -32097,7 +32107,9 @@
                 "c'est pourquoi"
               ],
               "answer": "afin de",
-              "explanation": "\"afin de\" means \"in order to\" and expresses purpose; it is followed by an infinitive, e.g. \"afin de réussir\"."
+              "explanation": "\"afin de\" means \"in order to\" and expresses purpose; it is followed by an infinitive, e.g. \"afin de réussir\".",
+              "meaning": "in order to",
+              "example": "Elle étudie tous les soirs afin de réussir son examen."
             }
           ]
         },
@@ -32117,7 +32129,9 @@
                 "pour cette raison"
               ],
               "answer": "afin que",
-              "explanation": "\"afin que\" means \"in order that\" and expresses purpose; it is followed by the subjunctive, e.g. \"afin qu'il comprenne\"."
+              "explanation": "\"afin que\" means \"in order that\" and expresses purpose; it is followed by the subjunctive, e.g. \"afin qu'il comprenne\".",
+              "meaning": "so that, in order that",
+              "example": "Je t'écris afin que tu comprennes la situation."
             },
             {
               "id": "frb2p10q21",
@@ -32296,7 +32310,9 @@
                 "la justice"
               ],
               "answer": "le parlement",
-              "explanation": "\"le parlement\" is masculine and is spelled -lement, with no i as in English 'parliament'."
+              "explanation": "\"le parlement\" is masculine and is spelled -lement, with no i as in English 'parliament'.",
+              "meaning": "parliament",
+              "example": "Le parlement a adopté le budget hier soir."
             },
             {
               "id": "frb2p11q8",
@@ -32394,7 +32410,9 @@
                 "le citoyen"
               ],
               "answer": "la liberté",
-              "explanation": "\"la liberté\" is feminine, like most nouns ending in -té. It translates both 'freedom' and 'liberty'."
+              "explanation": "\"la liberté\" is feminine, like most nouns ending in -té. It translates both 'freedom' and 'liberty'.",
+              "meaning": "freedom, liberty",
+              "example": "La liberté d'expression est un droit fondamental."
             }
           ]
         },
@@ -32453,7 +32471,9 @@
                 "l'immigration"
               ],
               "answer": "l'inégalité",
-              "explanation": "\"l'inégalité\" is égalité with the prefix in-. It is feminine (une inégalité), and the article elides before the vowel."
+              "explanation": "\"l'inégalité\" is égalité with the prefix in-. It is feminine (une inégalité), and the article elides before the vowel.",
+              "meaning": "inequality",
+              "example": "L'inégalité entre les femmes et les hommes reste un problème important."
             },
             {
               "id": "frb2p11q19",
@@ -43071,10 +43091,10 @@
                 "doit",
                 "dois",
                 "devons",
-                "dû"
+                "devez"
               ],
               "answer": 2,
-              "explanation": "\"devons\" is correct here. Nuances of devoir, pouvoir, and other modal verbs.",
+              "explanation": "The subject \"Nous\" takes the nous form of devoir, \"devons\"; \"doit\" and \"dois\" are singular forms and \"dû\" is only a participle.",
               "meaning": "we must, we have to"
             },
             {
