@@ -45,6 +45,7 @@ import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-p
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
+import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
@@ -241,6 +242,11 @@ const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   path: '/api/learning-goal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPracticeRoute = ApiPracticeRouteImport.update({
+  id: '/api/practice',
+  path: '/api/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
   id: '/api/pro-offering',
   path: '/api/pro-offering',
@@ -358,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
@@ -518,6 +527,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -570,6 +580,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -623,6 +634,7 @@ export interface FileRouteTypes {
     | '/api/grade-translation'
     | '/api/hector-respond'
     | '/api/learning-goal'
+    | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/review-demo-code'
@@ -663,6 +675,7 @@ export interface RootRouteChildren {
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
+  ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
@@ -927,6 +940,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLearningGoalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/practice': {
+      id: '/api/practice'
+      path: '/api/practice'
+      fullPath: '/api/practice'
+      preLoaderRoute: typeof ApiPracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pro-offering': {
       id: '/api/pro-offering'
       path: '/api/pro-offering'
@@ -1118,6 +1138,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
+  ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
