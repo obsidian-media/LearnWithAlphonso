@@ -545,6 +545,7 @@ describe("Profile, round 6", () => {
       expect(screen.getByRole("button", { name })).toBeInTheDocument();
     }
     expect(screen.getByRole("link", { name: "Edit your answers" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Sound effects" })).toBeInTheDocument();
   });
 
   it("an overview that fails to load says so and offers a retry, instead of showing zeros", async () => {
