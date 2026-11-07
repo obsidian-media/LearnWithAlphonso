@@ -98,7 +98,7 @@ describe("the catalog the server scores against", () => {
       for (const c of list) expect(WEAKNESS_TAXONOMY as readonly string[]).toContain(c);
     }
   });
-  it("every weak spot is practised by a Beginner and an Intermediate scenario", () => {
+  it("every weak spot is practiced by a Beginner and an Intermediate scenario", () => {
     for (const level of ["Beginner", "Intermediate"] as const) {
       for (const c of WEAKNESS_TAXONOMY) {
         const any = SCENARIOS.some((s) => s.level === level && SCENARIO_FOCUS[s.id].includes(c));
@@ -191,7 +191,7 @@ describe("todaysPick: a scenario at the learner's level that uses their top weak
     expect(s.level).toBe("Intermediate");
     expect(SCENARIO_FOCUS[s.id]).toContain("past-tense");
   });
-  it("follows the weak spot: a different top weak spot gives a scenario that practises it", () => {
+  it("follows the weak spot: a different top weak spot gives a scenario that practices it", () => {
     const a = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: [detected("articles")] })!;
     const b = todaysPick({ stars: [], cefrLevel: "A2", weaknessEvents: [detected("past-tense")] })!;
     expect(SCENARIO_FOCUS[a.scenarioId]).toContain("articles");
@@ -219,8 +219,8 @@ describe("todaysPick: a scenario at the learner's level that uses their top weak
     })!;
     expect(pick.scenarioId).toBe(fitting[1].id);
   });
-  it("skips to the next weak spot when no scenario at the level practises the top one", () => {
-    // No Advanced scenario practises spelling; negation is the second weak spot and debate practises it.
+  it("skips to the next weak spot when no scenario at the level practices the top one", () => {
+    // No Advanced scenario practices spelling; negation is the second weak spot and debate practices it.
     const events = [detected("spelling"), detected("spelling"), detected("negation")];
     const pick = todaysPick({ stars: [], cefrLevel: "C1", weaknessEvents: events })!;
     expect(pick).toEqual({ scenarioId: "debate", level: "Advanced", weakSpot: "negation" });

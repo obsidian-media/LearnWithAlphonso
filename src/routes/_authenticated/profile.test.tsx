@@ -471,14 +471,14 @@ describe("Profile, round 6", () => {
     expect(card).toHaveTextContent("ser estar and reflexive verbs");
   });
 
-  it("weak spots list the most-missed first, each with Practise", async () => {
+  it("weak spots list the most-missed first, each with Practice", async () => {
     renderPage();
     await find("[data-weak-spot]");
     const rows = [...document.querySelectorAll("[data-weak-spot]")].map((e) =>
       e.getAttribute("data-weak-spot"),
     );
     expect(rows).toEqual(["ser-estar", "preterite-endings", "article-gender"]);
-    expect(screen.getByRole("link", { name: "Practise Ser or estar" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Practice Ser or estar" })).toHaveAttribute(
       "href",
       "/review",
     );

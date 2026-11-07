@@ -68,7 +68,7 @@ export function topWeakSpots(events: readonly WeaknessEventRow[]): string[] {
 }
 
 /**
- * Weak spots that only exist on the page: a spoken call cannot practise them, so Today's pick skips them. The
+ * Weak spots that only exist on the page: a spoken call cannot practice them, so Today's pick skips them. The
  * taxonomy (WEAKNESS_TAXONOMY) has one such key today; the test pins every key against this list, so a new
  * written-only key must be classified here or that test fails.
  */
@@ -77,7 +77,7 @@ export const WRITTEN_ONLY_WEAK_SPOTS: ReadonlySet<string> = new Set(["spelling"]
 export type TodaysPick = {
   scenarioId: string;
   level: ScenarioLevel;
-  /** The weak spot it exercises, or null when the learner has none that a scenario at their level practises. */
+  /** The weak spot it exercises, or null when the learner has none that a scenario at their level practices. */
   weakSpot: string | null;
 };
 

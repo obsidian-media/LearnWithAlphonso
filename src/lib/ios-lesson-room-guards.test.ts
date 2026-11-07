@@ -44,7 +44,7 @@ describe("XP the learner is shown is XP the server pays", () => {
     expect(open).toMatch(/\} catch \{\s*previousBest = \.unknown/);
     // A new lesson in the same player starts from unknown again.
     expect(
-      between(player, "private func continueToNextLesson()", "private func practiseWithHector"),
+      between(player, "private func continueToNextLesson()", "private func practiceWithHector"),
     ).toContain("previousBest = .unknown");
   });
 
@@ -82,7 +82,7 @@ describe("Finish runs once", () => {
     expect(advance).toMatch(/\} else if finishGate\.begin\(\) \{\s*Task \{ await finish\(\) \}/);
     expect(player.match(/await finish\(\)/g)?.length).toBe(1);
     expect(
-      between(player, "private func continueToNextLesson()", "private func practiseWithHector"),
+      between(player, "private func continueToNextLesson()", "private func practiceWithHector"),
     ).toContain("finishGate.reset()");
   });
 });
@@ -191,7 +191,7 @@ describe("Lesson complete, in the unit's room, in code", () => {
     const finish = between(player, "private func completeScreen(", "\n    }\n");
     for (const kept of [
       ".sensoryFeedback(.success, trigger: celebrated)",
-      'Button("Practise with Hector", action: practiseWithHector)',
+      'Button("Practice with Hector", action: practiceWithHector)',
       "LessonReminderCard(",
       "GeneratedPracticeSection(lessonID: lesson.id, course: course, session: session)",
       "LeaguePromotionOverlay(",

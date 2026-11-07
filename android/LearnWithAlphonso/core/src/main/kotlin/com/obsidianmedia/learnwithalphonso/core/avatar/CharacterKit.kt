@@ -75,7 +75,7 @@ object AvatarLayerFiles {
     fun ear(side: EarSide, twitching: Boolean) = "ear-${if (side == EarSide.LEFT) "left" else "right"}-${if (twitching) "twitch" else "neutral"}.webp"
 }
 
-/** "Show Alphonso while practising": the same key and default as the iOS and web settings. */
+/** "Show Alphonso while practicing": the same key and default as the iOS and web settings. */
 object AvatarPreference {
     const val KEY = "showAlphonsoWhilePractising"
     const val DEFAULT = true

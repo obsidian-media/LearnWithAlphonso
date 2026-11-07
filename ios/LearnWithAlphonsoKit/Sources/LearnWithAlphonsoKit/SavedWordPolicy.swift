@@ -13,7 +13,7 @@ import Foundation
 /// src/lib/saved-word-client.ts.
 ///
 /// (Hector, Practice and Campaign are different: their replies are wholly in
-/// the language being practised, so they are not gated by this.)
+/// the language being practiced, so they are not gated by this.)
 public enum SavedWordPolicy {
     /// What a lesson explanation offers for saving.
     public enum Scope: Equatable, Sendable {

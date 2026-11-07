@@ -210,9 +210,9 @@ object ProPaywallCopy {
 
     fun openers(course: Course): List<String> {
         val middle = when (course) {
-            Course.SPANISH -> "“Help me practise ser and estar”"
-            Course.FRENCH -> "“Help me practise tu and vous”"
-            Course.ENGLISH -> "“Help me practise the present perfect”"
+            Course.SPANISH -> "“Help me practice ser and estar”"
+            Course.FRENCH -> "“Help me practice tu and vous”"
+            Course.ENGLISH -> "“Help me practice the present perfect”"
         }
         return listOf("“Tell me about your weekend”", middle, "“Let's chat about a film I like”")
     }

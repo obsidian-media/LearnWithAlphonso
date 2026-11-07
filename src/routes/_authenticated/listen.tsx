@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/listen")({
       { title: "Listen — Alphonso" },
       {
         name: "description",
-        content: "Short audio episodes to practise listening, organised by course and level.",
+        content: "Short audio episodes to practice listening, organised by course and level.",
       },
       { property: "og:title", content: "Listen — Alphonso" },
       { property: "og:description", content: "Short audio episodes for listening practice." },

@@ -49,7 +49,7 @@ class SavedWordException(val error: SavedWordError) : Exception(error.name)
  * screen is a word of the course ([savesWholeText]). In the French and Spanish courses most of it is not, so only the
  * course-language text the question itself proves is offered ([CourseLanguageSpans]); everything else, including the
  * English words around it, stays plain. Hector, Practice and Campaign replies are different: they are wholly in the
- * language being practised, so they are not gated by this.
+ * language being practiced, so they are not gated by this.
  */
 object SavedWordPolicy {
     fun allowsSaving(courseCode: String): Boolean = courseCode == "en" || courseCode == "fr" || courseCode == "es"

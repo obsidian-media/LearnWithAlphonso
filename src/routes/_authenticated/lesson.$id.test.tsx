@@ -756,7 +756,7 @@ describe("Lesson page", () => {
     expect(screen.getByText("7/8 correct")).toBeInTheDocument();
     expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
     expect(screen.getByText("First strides")).toBeInTheDocument();
-    expect(screen.getByText("Review · 1 to practise again")).toBeInTheDocument();
+    expect(screen.getByText("Review · 1 to practice again")).toBeInTheDocument();
 
     const state = useProgress.getState();
     expect(state.xp).toBe(160);

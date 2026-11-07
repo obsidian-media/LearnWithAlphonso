@@ -288,7 +288,7 @@ struct ProfileRecordsLevelSection: View {
 
 struct ProfileWeakAndHectorSection: View {
     let model: ProfileOverviewModel
-    let onPractise: () -> Void
+    let onPractice: () -> Void
     let onPaywall: () -> Void
     @Environment(\.alphonsoDS) private var ds
 
@@ -311,7 +311,7 @@ struct ProfileWeakAndHectorSection: View {
                         Text("\(model.weak.total - model.weak.top.count) more in Review")
                             .dsText(.footnote).foregroundStyle(ds.inkSoft)
                     }
-                    Button("Practise", action: onPractise)
+                    Button("Practice", action: onPractice)
                         .dsText(.headline).foregroundStyle(ds.choice)
                         .frame(minHeight: AlphonsoDS.Space.minTouch)
                 }

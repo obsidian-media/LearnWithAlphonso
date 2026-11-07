@@ -145,9 +145,9 @@ public enum ProPaywallContent {
     public static func openers(for course: Course) -> [String] {
         let middle: String
         switch course {
-        case .spanish: middle = "“Help me practise ser and estar”"
-        case .french: middle = "“Help me practise tu and vous”"
-        case .english: middle = "“Help me practise the present perfect”"
+        case .spanish: middle = "“Help me practice ser and estar”"
+        case .french: middle = "“Help me practice tu and vous”"
+        case .english: middle = "“Help me practice the present perfect”"
         }
         return ["“Tell me about your weekend”", middle, "“Let's chat about a film I like”"]
     }

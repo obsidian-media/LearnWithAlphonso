@@ -150,7 +150,7 @@ extension ProfileHubView {
                 ProfileWeekSection(model: m)
                 ProfileHeatMapSection(model: m)
                 ProfileRecordsLevelSection(model: m)
-                ProfileWeakAndHectorSection(model: m, onPractise: { destination = .review }, onPaywall: { destination = .paywall })
+                ProfileWeakAndHectorSection(model: m, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                 ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count)
                 ProfileShareSection(model: m, course: course, level: m.level.level)
             }

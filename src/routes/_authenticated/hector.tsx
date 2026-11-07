@@ -162,7 +162,7 @@ function HectorConversation({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const leftRef = useRef(false);
-  // The call screen ("Show Alphonso while practising" covers Hector too, so one switch decides).
+  // The call screen ("Show Alphonso while practicing" covers Hector too, so one switch decides).
   const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
   // Read before the first render (this screen mounts only after the client-side Pro check), so with the setting off
   // the call never flashes up for a frame.

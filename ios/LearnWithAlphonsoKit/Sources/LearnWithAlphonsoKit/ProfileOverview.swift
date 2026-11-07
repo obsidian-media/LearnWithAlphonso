@@ -301,7 +301,7 @@ public enum ProfileMath {
 
     // MARK: Weak spots and Hector
 
-    /// The weak spots to fix first: the most-missed, then the least-practised.
+    /// The weak spots to fix first: the most-missed, then the least-practiced.
     public static func weakSpots(_ items: [ProfileWeakItem], n: Int = 3) -> (top: [ProfileWeakItem], total: Int) {
         let sorted = items.sorted { a, b in
             a.lapses != b.lapses ? a.lapses > b.lapses : a.repetitions < b.repetitions

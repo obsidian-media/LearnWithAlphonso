@@ -146,9 +146,9 @@ struct PracticeHubView: View {
     }
     private var greeting: String {
         switch course.wireCode {
-        case "fr": return "On pratique un peu aujourd'hui ?\nShall we practise a bit today?"
-        case "es": return "¿Practicamos un poco hoy?\nShall we practise a bit today?"
-        default: return "Shall we practise a bit today?"
+        case "fr": return "On pratique un peu aujourd'hui ?\nShall we practice a bit today?"
+        case "es": return "¿Practicamos un poco hoy?\nShall we practice a bit today?"
+        default: return "Shall we practice a bit today?"
         }
     }
     private func load() async {
@@ -191,7 +191,7 @@ struct PracticePreCall: View {
                         Text(line).dsText(.caption).fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                Picker("How to practise", selection: $chat) {
+                Picker("How to practice", selection: $chat) {
                     Text("Call (speak)").tag(false)
                     Text("Chat (type)").tag(true)
                 }.pickerStyle(.inline)

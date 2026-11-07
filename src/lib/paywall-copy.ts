@@ -13,7 +13,7 @@ export const PAYWALL_COPY = {
   startFreeTrial: "Start free trial",
   subscribe: "Subscribe",
   manage: "Manage Subscription",
-  practiceCardTitle: "Practise speaking with Hector",
+  practiceCardTitle: "Practice speaking with Hector",
   practiceCardSubtitle:
     "A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.",
 } as const;
@@ -170,17 +170,17 @@ export const EXAMPLE_CALLS: Record<"en" | "fr" | "es", ExampleCall> = {
 export const WELCOME_OPENERS: Record<"en" | "fr" | "es", readonly string[]> = {
   es: [
     "“Tell me about your weekend”",
-    "“Help me practise ser and estar”",
+    "“Help me practice ser and estar”",
     "“Let's chat about a film I like”",
   ],
   fr: [
     "“Tell me about your weekend”",
-    "“Help me practise tu and vous”",
+    "“Help me practice tu and vous”",
     "“Let's chat about a film I like”",
   ],
   en: [
     "“Tell me about your weekend”",
-    "“Help me practise the present perfect”",
+    "“Help me practice the present perfect”",
     "“Let's chat about a film I like”",
   ],
 };

@@ -223,7 +223,7 @@ export function levelProgress(course: Course, cefr: string, completedIds: string
   };
 }
 
-/** The weak spots to fix first: the most-missed, then the least-practised. */
+/** The weak spots to fix first: the most-missed, then the least-practiced. */
 export function weakSpots(items: WeakItem[], n = 3): { top: WeakItem[]; total: number } {
   const sorted = [...items].sort((a, b) => b.lapses - a.lapses || a.repetitions - b.repetitions);
   return { top: sorted.slice(0, n), total: items.length };

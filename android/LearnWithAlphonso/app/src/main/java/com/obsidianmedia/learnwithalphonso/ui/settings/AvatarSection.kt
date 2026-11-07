@@ -16,17 +16,17 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
-/** "Show Alphonso while practising": on by default, kept on this device, same key as the iOS and web settings. */
+/** "Show Alphonso while practicing": on by default, kept on this device, same key as the iOS and web settings. */
 @Composable
 internal fun AvatarSection(container: AppContainer) {
     val palette = AlphonsoColor.palette
     var on by remember { mutableStateOf(container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT)) }
     Section(
-        "Show Alphonso while practising",
+        "Show Alphonso while practicing",
         footer = "Alphonso (and Hector, on the Hector tab) fill the screen in a speaking conversation and move their mouths as they talk. It is only a picture: the conversation text is the same either way.",
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Show Alphonso while practising", style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
+            Text("Show Alphonso while practicing", style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
             Switch(checked = on, onCheckedChange = { on = it; container.prefs.edit().putBoolean(AvatarPreference.KEY, it).apply() })
         }
     }

@@ -279,7 +279,7 @@ private fun Record(label: String, value: String) {
 }
 
 @Composable
-fun ProfileWeakAndHector(m: ProfileOverviewModel, onPractise: () -> Unit, onPaywall: () -> Unit) {
+fun ProfileWeakAndHector(m: ProfileOverviewModel, onPractice: () -> Unit, onPaywall: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     ProfileCard("Top weak spots") {
         val (top, total) = m.weak
@@ -293,7 +293,7 @@ fun ProfileWeakAndHector(m: ProfileOverviewModel, onPractise: () -> Unit, onPayw
                 }
             }
             if (total > top.size) Text("${total - top.size} more in Review", style = FootnoteType, color = ds.inkSoft)
-            LinkButton("Practise", onPractise)
+            LinkButton("Practice", onPractice)
         }
     }
     m.hector?.let { card ->

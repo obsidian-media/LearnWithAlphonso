@@ -27,9 +27,9 @@ const LINES: Record<Course, Lines> = {
     simple: (hi) => `${hi} I'm Hector. What do you want to talk about today?`,
     warm: (hi) => `${hi} Good to see you. What's been happening lately? Tell me about it.`,
     simpleTopic: (hi, t) =>
-      `${hi} Last time you had trouble with ${t}. Let's practise together. Ready?`,
+      `${hi} Last time you had trouble with ${t}. Let's practice together. Ready?`,
     warmTopic: (hi, t) =>
-      `${hi} Last time ${t} tripped you up. Want to practise that in conversation?`,
+      `${hi} Last time ${t} tripped you up. Want to practice that in conversation?`,
   },
   fr: {
     hi: (name) => (name ? `Salut ${name}${NB}!` : `Salut${NB}!`),

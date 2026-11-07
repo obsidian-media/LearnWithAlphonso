@@ -202,7 +202,7 @@ struct VocabScreen: View {
                 .dsText(.display)
                 .foregroundStyle(ds.brand)
                 .accessibilityAddTraits(.isHeader)
-            Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practise.")
+            Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practice.")
                 .dsText(.footnote)
                 .foregroundStyle(ds.inkSoft)
             wordList

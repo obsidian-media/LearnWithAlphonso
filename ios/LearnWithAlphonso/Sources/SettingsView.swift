@@ -137,7 +137,7 @@ struct SettingsView: View {
 
                 Section {
                     Toggle(isOn: $showAlphonso) {
-                        Text("Show Alphonso while practising")
+                        Text("Show Alphonso while practicing")
                             .font(AlphonsoFont.sans(15, weight: .medium))
                     }
                     .tint(AlphonsoColor.moss)

@@ -107,7 +107,7 @@ final class TutorErrorTests: XCTestCase {
 
     // MARK: - userMessage
 
-    func testALessonCardNeverTalksAboutPractisingWithATutor() {
+    func testALessonCardNeverTalksAboutPracticingWithATutor() {
         let message = TutorError.aiConsentRequired.cardMessage()
         XCTAssertFalse(message.lowercased().contains("tutor"))
         XCTAssertTrue(message.hasSuffix("."))

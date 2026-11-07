@@ -50,7 +50,7 @@ class FakeAudio {
 const PRO = { pro: true, store: "app_store", trialEligible: false, manageUrl: null };
 const recent = new Date(Date.now() - 2 * 86_400_000).toISOString();
 const GREETING_EN =
-  "Hi Sam! Last time the past tense tripped you up. Want to practise that in conversation?";
+  "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?";
 const GENERIC_EN = "Hi Sam! Good to see you. What's been happening lately? Tell me about it.";
 const tts = () => sent.filter((s) => s.url === "/api/tts");
 

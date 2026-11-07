@@ -33,7 +33,7 @@ class HectorGreetingViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
     private val recent = Instant.now().minusSeconds(2 * 86_400).toString()
-    private val withWeakSpot = "Hi Sam! Last time the past tense tripped you up. Want to practise that in conversation?"
+    private val withWeakSpot = "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?"
     private val generic = "Hi Sam! Good to see you. What's been happening lately? Tell me about it."
 
     private fun server(weakSpot: Boolean = true, ttsFails: Boolean = false) = FakeServer { req ->

@@ -327,7 +327,7 @@ private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         AlphonsoSectionHeader("Vocabulary · ${lesson.subtitle}")
         Text(lesson.title, style = MaterialTheme.typography.headlineMedium, color = palette.ink)
-        Text("${items.size} word${if (items.size == 1) "" else "s"} to learn before you practise.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+        Text("${items.size} word${if (items.size == 1) "" else "s"} to learn before you practice.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items.forEach { item ->
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
