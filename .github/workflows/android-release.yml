@@ -114,6 +114,8 @@ jobs:
           ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
           ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
           REVENUECAT_ANDROID_PUBLIC_KEY: ${{ secrets.REVENUECAT_ANDROID_PUBLIC_KEY }}
+          # Optional usage analytics key (public repo, so never committed). Unset builds with analytics off.
+          POSTHOG_PROJECT_KEY: ${{ secrets.POSTHOG_PROJECT_KEY }}
           ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew :core:test :app:testReleaseUnitTest :app:bundleRelease
 

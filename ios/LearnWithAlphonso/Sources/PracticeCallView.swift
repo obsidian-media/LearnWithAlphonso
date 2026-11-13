@@ -111,6 +111,7 @@ struct PracticeCallView<Sheet: View>: View {
         // The call-start sound, once per call (keyed, so a re-appearance cannot repeat it); while he speaks, no effect
         // plays over him.
         .onAppear {
+            Analytics.track(.practiceCallStarted, ["scenario_id": scenarioID])
             SoundEffectsPlayer.shared.registerVoiceProbe("call") { [voice] in
                 if case .speaking = voice.phase { return true }
                 return false

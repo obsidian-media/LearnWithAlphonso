@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { track } from "../../lib/analytics";
 import { DsIcon } from "../../components/ds/DsIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
@@ -52,6 +53,9 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 function HectorPage() {
   const course = useProgress((s) => s.course);
+  useEffect(() => {
+    void track("hector_opened");
+  }, []);
   return (
     <SaveWordProvider>
       <AiConsentGate backTo="/learn">

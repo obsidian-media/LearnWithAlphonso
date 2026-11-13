@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.hector
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import android.app.Activity
 import androidx.compose.foundation.Image
@@ -320,6 +322,7 @@ private fun HectorConversation(container: AppContainer) {
       // Hector speaks first: his greeting, inside the gate so nothing is fetched before consent; again on each
       // return, from the cache, while the learner has not answered it.
       LaunchedEffect(Unit) { vm.greet() }
+      LaunchedEffect(Unit) { Analytics.track(AnalyticsEvent.HECTOR_OPENED) }
       SaveWordHost(container) {
         if (showCall) {
             if (callEnded) {

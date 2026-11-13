@@ -1,3 +1,4 @@
+import { POSTHOG_ORIGIN } from "./analytics-config";
 import { SENTRY_INGEST_ORIGIN } from "./sentry-config";
 import { TURNSTILE_ORIGIN } from "./turnstile";
 
@@ -43,7 +44,7 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Invalid/missing configuration must not broaden the policy.
   }
   const realtimeOrigin = supabaseOrigin?.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
-  const connect = ["'self'", supabaseOrigin, realtimeOrigin, SENTRY_INGEST_ORIGIN]
+  const connect = ["'self'", supabaseOrigin, realtimeOrigin, SENTRY_INGEST_ORIGIN, POSTHOG_ORIGIN]
     .filter(Boolean)
     .join(" ");
   const images = ["'self'", "data:", "blob:", supabaseOrigin].filter(Boolean).join(" ");

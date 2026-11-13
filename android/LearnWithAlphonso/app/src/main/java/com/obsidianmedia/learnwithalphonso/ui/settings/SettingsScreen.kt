@@ -98,6 +98,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             }
             AiFeaturesSection(container)
             ExplainSection(container)
+            AnalyticsSection()
             AvatarSection(container)
             SoundEffectsSection(container)
             VoicesSection(container)

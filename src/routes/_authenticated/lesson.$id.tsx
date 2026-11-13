@@ -1,4 +1,6 @@
 import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
+import { track } from "../../lib/analytics";
+import { scoreBucket } from "../../lib/analytics-events";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
 import { PracticeWithHector } from "../../components/PracticeWithHector";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
@@ -227,12 +229,13 @@ function LessonPage() {
         }
         setHeartsBlock(null);
         setSessionToken(res.token);
+        void track("lesson_started", { lesson_id: maybeLesson.id, level: lessonLevel, course });
       })
       .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [maybeLesson, course, sessionAttempt]);
+  }, [maybeLesson, course, sessionAttempt, lessonLevel]);
 
   if (!maybeLesson) {
     return (
@@ -419,6 +422,12 @@ function LessonPage() {
           course,
           sessionToken: sessionToken ?? "",
         },
+      });
+      void track("lesson_completed", {
+        lesson_id: lesson.id,
+        level: lessonLevel,
+        course,
+        score_bucket: scoreBucket(total > 0 ? (res.correct / total) * 100 : 0),
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons

@@ -251,6 +251,7 @@ struct LessonPlayerView: View {
     private func startLesson() {
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
         phase = vocab.isEmpty ? .quiz : .vocab
+        Analytics.track(.lessonStarted, ["lesson_id": lesson.id, "level": "\(unit?.level ?? "")", "course": course.wireCode])
     }
 
     var body: some View {
@@ -776,6 +777,10 @@ struct LessonPlayerView: View {
         let request = LessonCompletionRequest(lessonID: lesson.id, total: total, answers: answers, course: course.wireCode, sessionToken: sessionToken)
         switch await service.complete(request) {
         case let .success(completion):
+            Analytics.track(.lessonCompleted, [
+                "lesson_id": lesson.id, "level": "\(unit?.level ?? "")", "course": course.wireCode,
+                "score_bucket": AnalyticsProperties.scoreBucket(percent: Double(completion.correct ?? 0) / Double(max(total, 1)) * 100),
+            ])
             // nil previousTier means this is the first completion this
             // cache has ever seen (fresh install, or cleared) -- there's no
             // real "before" to compare against, so that case is never

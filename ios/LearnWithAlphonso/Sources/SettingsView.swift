@@ -160,6 +160,8 @@ struct SettingsView: View {
 
                 VoicesSettingsSection(session: session)
 
+                AnalyticsSettingsSection()
+
                 Section {
                     if aiConsent.status == .unavailable {
                         // The setting could not be read: say so and offer a retry, never a switch that reads "off".

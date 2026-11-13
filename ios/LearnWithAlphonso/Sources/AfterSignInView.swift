@@ -4,7 +4,19 @@ import LearnWithAlphonsoKit
 /// After sign-in, never before (the web's AfterSignIn.tsx): the profile picture, "how did you hear about me"
 /// (skippable), then Meet Hector with a trial line read from the store's introductory offer and a clear Not now.
 struct AfterSignInView: View {
-    enum Step { case avatar, heard, hector }
+    enum Step {
+        case usage, avatar, heard, hector
+
+        /// The step name sent as the onboarding_step analytics property (never an answer).
+        var analyticsName: String {
+            switch self {
+            case .usage: return "usage_choice"
+            case .avatar: return "avatar"
+            case .heard: return "heard"
+            case .hector: return "meet_hector"
+            }
+        }
+    }
 
     let session: Session
     let entitlementStore: EntitlementStore
@@ -15,12 +27,16 @@ struct AfterSignInView: View {
     let avatarSeed: String
     let onFinish: (FirstRun.FinishTarget) -> Void
 
-    @State private var step: Step = .avatar
+    /// The optional-analytics choice comes first, and only in a build that has a PostHog key and only for a learner who
+    /// has not answered yet. Everything else is unchanged.
+    @State private var step: Step = Analytics.isAvailable && !Analytics.tracker.hasAnswered ? .usage : .avatar
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
             switch step {
+            case .usage:
+                FirstRunUsageStep(course: course) { step = .avatar }
             case .avatar:
                 FirstRunAvatarStep(session: session, name: name, seed: avatarSeed) { step = .heard }
             case .heard:
@@ -32,6 +48,40 @@ struct AfterSignInView: View {
         }
         .transition(.opacity)
         .animation(reduceMotion ? nil : .easeOut(duration: AlphonsoDS.Motion.select), value: step)
+        .onAppear { if step != .usage { Analytics.track(.onboardingStep, ["step": step.analyticsName]) } }
+        .onChange(of: step) { _, newStep in Analytics.track(.onboardingStep, ["step": newStep.analyticsName]) }
+    }
+}
+
+// MARK: - Optional usage data
+
+/// A neutral, two-button choice (no pre-selected answer, no streak or reward attached): share anonymous usage data or
+/// not. Settings > Share anonymous usage data changes it any time. Nothing is sent before an answer.
+struct FirstRunUsageStep: View {
+    let course: String
+    let onDone: () -> Void
+
+    private let title = "Help improve Alphonso?"
+    private let note = "Share anonymous usage data: which lessons and screens are used. Never what you type or say, and never your name or email. Change it any time in Settings."
+
+    var body: some View {
+        FirstRunScreen {
+            FirstRunRoom(roomID: FirstRun.room(course: course, goal: nil), figure: LessonArt.expression(.neutral),
+                         figureLabel: "Alphonso, asking") { EmptyView() }
+            FirstRunBubble(title: title, sub: note) { FirstRunVoice.speak(title) }
+        } content: {
+            EmptyView()
+        } footer: {
+            FirstRunFooter(label: "Share anonymous usage data",
+                           secondary: (label: "No thanks", action: { choose(false) })) {
+                choose(true)
+            }
+        }
+    }
+
+    private func choose(_ share: Bool) {
+        Analytics.setConsent(share)
+        onDone()
     }
 }
 

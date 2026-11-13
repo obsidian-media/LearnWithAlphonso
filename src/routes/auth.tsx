@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { track } from "../lib/analytics";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { captchaOptions, turnstileSiteKey } from "@/lib/turnstile";
 import {
@@ -102,6 +103,7 @@ function AuthPage() {
         }
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
         if (error) throw error;
+        void track("sign_in_completed", { method: "email" });
         afterAuth("/placement");
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -135,6 +137,7 @@ function AuthPage() {
         });
         if (error) throw error;
         if (data.session) {
+          void track("sign_in_completed", { method: "email" });
           afterAuth("/placement");
         } else {
           setCode("");
@@ -147,6 +150,7 @@ function AuthPage() {
           ...(captchaToken ? { options: captchaOptions(captchaToken) } : {}),
         });
         if (error) throw error;
+        void track("sign_in_completed", { method: "email" });
         afterAuth();
       }
     } catch (err) {

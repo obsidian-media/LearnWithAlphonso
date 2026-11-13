@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { track } from "../../lib/analytics";
 import { LessonAnswer, VerdictSheet, edgeButtonClass } from "../lesson/LessonParts";
 import { canSpeak, speak } from "../../lib/speech";
 import { expressionSrc, type LessonExpression } from "../../lib/lesson-stage";
@@ -157,6 +158,10 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
   ];
   const [index, setIndex] = useState(0);
   const stage = stages[index];
+  // Only the step name leaves the device, never an answer.
+  useEffect(() => {
+    void track("onboarding_step", { step: stage });
+  }, [stage]);
 
   function update(patch: FirstRunDraft) {
     setDraft((d) => {

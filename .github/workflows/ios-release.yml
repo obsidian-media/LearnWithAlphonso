@@ -120,6 +120,7 @@ jobs:
           PROFILE_UUID: ${{ secrets.IOS_PROVISIONING_PROFILE_UUID }}
           WIDGET_PROFILE_UUID: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_UUID }}
           REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+          POSTHOG_PROJECT_KEY: ${{ secrets.POSTHOG_PROJECT_KEY }}
         run: |
           sed -i '' "s/PLACEHOLDER_PROVISIONING_PROFILE_UUID/$PROFILE_UUID/" project.yml
           sed -i '' "s/PLACEHOLDER_WIDGET_PROVISIONING_PROFILE_UUID/$WIDGET_PROFILE_UUID/" project.yml
@@ -136,6 +137,12 @@ jobs:
           # doesn't touch Info.plist) rather than before, purely to keep
           # this step grouped with the project-generation step logically.
           sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
+          # Optional usage analytics: the key is injected only when the secret is set (public repo, so never committed).
+          # Unset leaves the empty default, which turns analytics off in the app.
+          POSTHOG_PROJECT_KEY=$(printf '%s' "$POSTHOG_PROJECT_KEY" | tr -cd 'A-Za-z0-9_')
+          if [ -n "$POSTHOG_PROJECT_KEY" ]; then
+            /usr/libexec/PlistBuddy -c "Set :PostHogKey $POSTHOG_PROJECT_KEY" Info.plist
+          fi
 
       - name: RevenueCat resolves to the project.yml pin
         run: bash scripts/check-revenuecat-resolution.sh

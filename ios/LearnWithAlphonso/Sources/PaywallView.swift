@@ -46,6 +46,7 @@ struct PaywallView: View {
         }
         .task {
             entitlementStore.presented(from: source)
+            Analytics.track(.paywallViewed, ["source": source.rawValue])
             await entitlementStore.loadOffering()
         }
         .onChange(of: state.notice) { _, notice in
@@ -174,6 +175,7 @@ struct PaywallView: View {
                 }
                 if let ctaTitle = presentation.ctaTitle {
                     Button {
+                        Analytics.track(.purchaseStarted, ["source": source.rawValue])
                         Task { await entitlementStore.purchase() }
                     } label: {
                         if state.isPurchasing {

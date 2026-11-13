@@ -41,6 +41,11 @@ packages:
     # Exact pin, like RevenueCat: crash reporting. A bump is a deliberate PR that also updates
     # src/lib/ios-crash-reporting-guards.test.ts. Source of truth for what is sent: CrashReporting.swift.
     exactVersion: 9.30.2
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios.git
+    # Exact pin, like Sentry: optional usage analytics, opt-in only. A bump is a deliberate PR that also updates
+    # src/lib/analytics-parity.test.ts. Source of truth for what is sent: Analytics.swift and the Kit's AnalyticsEvents.
+    exactVersion: 3.92.2
 targets:
   LearnWithAlphonso:
     type: application
@@ -130,6 +135,7 @@ targets:
       - package: LearnWithAlphonsoKit
       - package: RevenueCat
       - package: Sentry
+      - package: PostHog
       - target: LearnWithAlphonsoWidget
         embed: true
     settings:

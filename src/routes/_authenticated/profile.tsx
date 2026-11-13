@@ -14,6 +14,7 @@ import {
   socialReasonMessage,
 } from "../../lib/social-reason-copy";
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
+import { AnalyticsSetting } from "../../components/AnalyticsSetting";
 import { AvatarSetting } from "../../components/AvatarSetting";
 import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
@@ -298,6 +299,8 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
       </div>
 
       <AiFeaturesSetting />
+
+      <AnalyticsSetting />
 
       <AvatarSetting />
 
