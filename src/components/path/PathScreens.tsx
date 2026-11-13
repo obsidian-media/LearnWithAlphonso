@@ -22,7 +22,17 @@ import { BackLink, ItemLink, ItemRow, MixBar, TYPE_STYLE, TypeBadge, shortDate }
  */
 const CARD = "rounded-[18px] border-2 border-ds-line bg-ds-card";
 
-function Frame({ title, sub, back, children }: { title: string; sub?: string; back: "/learn" | "/path"; children: React.ReactNode }) {
+function Frame({
+  title,
+  sub,
+  back,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  back: "/learn" | "/path";
+  children: React.ReactNode;
+}) {
   return (
     <MobileFrame>
       <div className="ds-light relative z-10 min-h-dvh bg-ds-surface px-4 pb-24 pt-2">
@@ -44,7 +54,17 @@ function usePathScreen() {
   return { course, ...usePath(course) };
 }
 
-function Gate({ s, back, title, children }: { s: ReturnType<typeof usePathScreen>; back: "/learn" | "/path"; title: string; children: (p: LearningPath) => React.ReactNode }) {
+function Gate({
+  s,
+  back,
+  title,
+  children,
+}: {
+  s: ReturnType<typeof usePathScreen>;
+  back: "/learn" | "/path";
+  title: string;
+  children: (p: LearningPath) => React.ReactNode;
+}) {
   const { state, reload } = s;
   if (state.kind === "ready") return <>{children(state.path)}</>;
   return (
@@ -53,9 +73,15 @@ function Gate({ s, back, title, children }: { s: ReturnType<typeof usePathScreen
       {state.kind === "error" && (
         <div>
           <p role="alert" className="text-sm font-medium text-ds-wrong-ink">
-            {state.offline ? "You are offline. Connect to load your path." : "Couldn't load your path."}
+            {state.offline
+              ? "You are offline. Connect to load your path."
+              : "Couldn't load your path."}
           </p>
-          <button type="button" onClick={() => void reload()} className="mt-2 min-h-11 rounded-full border border-ds-line px-4 text-xs font-medium text-ds-ink">
+          <button
+            type="button"
+            onClick={() => void reload()}
+            className="mt-2 min-h-11 rounded-full border border-ds-line px-4 text-xs font-medium text-ds-ink"
+          >
             Try again
           </button>
         </div>
@@ -63,7 +89,10 @@ function Gate({ s, back, title, children }: { s: ReturnType<typeof usePathScreen
       {state.kind === "none" && (
         <div className={`${CARD} p-4`}>
           <p className="text-sm text-ds-ink-soft">You have no path yet.</p>
-          <Link to="/path/build" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-ink px-5 text-sm font-semibold text-ds-card">
+          <Link
+            to="/path/build"
+            className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-ink px-5 text-sm font-semibold text-ds-card"
+          >
             Build my path
           </Link>
         </div>
@@ -72,7 +101,8 @@ function Gate({ s, back, title, children }: { s: ReturnType<typeof usePathScreen
   );
 }
 
-const subtitle = (p: LearningPath) => `${p.dailyMinutes} min a day · by ${shortDate(p.progress.targetDate)}`;
+const subtitle = (p: LearningPath) =>
+  `${p.dailyMinutes} min a day · by ${shortDate(p.progress.targetDate)}`;
 
 // ---------------------------------------------------------------- the road (A2) + behind (A4)
 
@@ -103,12 +133,27 @@ function RecoveryCard({ path, s }: { path: LearningPath; s: ReturnType<typeof us
         {options.map((o) => {
           const on = o.id === chosen?.id;
           return (
-            <label key={o.id} className={`flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border-2 p-3 ${on ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card"}`}>
-              <input type="radio" name="recovery" className="mt-1 size-4" checked={on} onChange={() => setPicked(o.id)} />
+            // The label's text (title and detail) is nested two elements deep, beyond the rule's default depth.
+            // eslint-disable-next-line jsx-a11y/label-has-associated-control
+            <label
+              key={o.id}
+              className={`flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border-2 p-3 ${on ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card"}`}
+            >
+              <input
+                type="radio"
+                name="recovery"
+                className="mt-1 size-4"
+                checked={on}
+                onChange={() => setPicked(o.id)}
+              />
               <span>
                 <b className="block text-sm font-extrabold text-ds-ink">
                   {o.title}
-                  {o.suggested ? <span className="ml-2 rounded-md bg-ds-right-tint px-1.5 py-0.5 ds-type-overline text-ds-right-ink">Suggested</span> : null}
+                  {o.suggested ? (
+                    <span className="ml-2 rounded-md bg-ds-right-tint px-1.5 py-0.5 ds-type-overline text-ds-right-ink">
+                      Suggested
+                    </span>
+                  ) : null}
                 </b>
                 <small className="text-xs text-ds-ink-soft">{o.detail}</small>
               </span>
@@ -122,8 +167,17 @@ function RecoveryCard({ path, s }: { path: LearningPath; s: ReturnType<typeof us
           <MixBar mix={chosen.mix} label="Your new week" />
         </div>
       ) : null}
-      {s.failed ? <p role="alert" className="text-sm font-medium text-ds-wrong-ink">{s.failed}</p> : null}
-      <button type="button" disabled={s.busy} onClick={() => void apply()} className="min-h-12 w-full rounded-full bg-ds-ink text-sm font-extrabold text-ds-card disabled:opacity-50">
+      {s.failed ? (
+        <p role="alert" className="text-sm font-medium text-ds-wrong-ink">
+          {s.failed}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        disabled={s.busy}
+        onClick={() => void apply()}
+        className="min-h-12 w-full rounded-full bg-ds-ink text-sm font-extrabold text-ds-card disabled:opacity-50"
+      >
         Update my path
       </button>
     </section>
@@ -135,7 +189,9 @@ function Stop({ stop }: { stop: RoadStop }) {
   const cur = stop.state === "current";
   const isGoal = stop.kind === "goal";
   const body = (
-    <div className={`rounded-2xl border-2 px-3 py-2 ${isGoal ? "border-ds-brand bg-ds-brand text-ds-card" : done ? "border-ds-right-edge bg-ds-right-tint" : cur ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card"}`}>
+    <div
+      className={`rounded-2xl border-2 px-3 py-2 ${isGoal ? "border-ds-brand bg-ds-brand text-ds-card" : done ? "border-ds-right-edge bg-ds-right-tint" : cur ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card"}`}
+    >
       {stop.type && !isGoal ? (
         <span className={`block ds-type-overline ${TYPE_STYLE[stop.type].text}`}>
           {PATH_TYPE_INFO[stop.type].noun}
@@ -153,15 +209,25 @@ function Stop({ stop }: { stop: RoadStop }) {
     <li className="relative mb-2.5 pl-12" aria-current={cur ? "step" : undefined}>
       <span aria-hidden="true" className="absolute left-0 top-0.5">
         {done ? (
-          <span className="grid size-10 place-items-center rounded-full bg-ds-right text-base font-extrabold text-ds-on-right">✓</span>
+          <span className="grid size-10 place-items-center rounded-full bg-ds-right text-base font-extrabold text-ds-on-right">
+            ✓
+          </span>
         ) : isGoal ? (
-          <span className="grid size-10 place-items-center rounded-full bg-ds-brand text-base text-ds-card">⚑</span>
+          <span className="grid size-10 place-items-center rounded-full bg-ds-brand text-base text-ds-card">
+            ⚑
+          </span>
         ) : stop.type ? (
-          <span className={cur ? "rounded-full ring-4 ring-ds-xp-tint" : ""}><TypeBadge type={stop.type} /></span>
+          <span className={cur ? "rounded-full ring-4 ring-ds-xp-tint" : ""}>
+            <TypeBadge type={stop.type} />
+          </span>
         ) : null}
       </span>
       <span className="sr-only">{done ? "Done. " : cur ? "Next up. " : ""}</span>
-      {stop.ref && !done ? <ItemLink item={{ ref: stop.ref, type: stop.type ?? "lesson" }}>{body}</ItemLink> : body}
+      {stop.ref && !done ? (
+        <ItemLink item={{ ref: stop.ref, type: stop.type ?? "lesson" }}>{body}</ItemLink>
+      ) : (
+        body
+      )}
     </li>
   );
 }
@@ -174,27 +240,46 @@ export function RoadScreen() {
         <Frame title={`My path to ${p.progress.targetLevel}`} sub={subtitle(p)} back="/learn">
           {p.trimmed ? (
             <div className="mb-3 flex items-center gap-3 rounded-2xl border-2 border-ds-xp-edge bg-ds-xp-tint p-3">
-              <p className="flex-1 text-sm text-ds-ink">Lessons first until {p.trimUntil ? shortDate(p.trimUntil) : "you resume"}.</p>
-              <button type="button" disabled={s.busy} onClick={() => void s.change({ action: "resume" })} className="min-h-11 rounded-full border border-ds-line bg-ds-card px-4 text-xs font-bold text-ds-ink">
+              <p className="flex-1 text-sm text-ds-ink">
+                Lessons first until {p.trimUntil ? shortDate(p.trimUntil) : "you resume"}.
+              </p>
+              <button
+                type="button"
+                disabled={s.busy}
+                onClick={() => void s.change({ action: "resume" })}
+                className="min-h-11 rounded-full border border-ds-line bg-ds-card px-4 text-xs font-bold text-ds-ink"
+              >
                 Resume my mix
               </button>
             </div>
           ) : null}
           {p.status === "behind" ? <RecoveryCard path={p} s={s} /> : null}
           <ol aria-label="Your road" className="relative mt-1">
-            <span aria-hidden="true" className="absolute bottom-6 left-5 top-4 w-1 -translate-x-1/2 rounded bg-ds-line" />
+            <span
+              aria-hidden="true"
+              className="absolute bottom-6 left-5 top-4 w-1 -translate-x-1/2 rounded bg-ds-line"
+            />
             {p.road.map((stop, i) => (
               <Stop key={`${stop.kind}-${stop.title}-${i}`} stop={stop} />
             ))}
           </ol>
           <nav aria-label="More about my path" className="mt-4 grid gap-2">
-            <Link to="/path/week" className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}>
+            <Link
+              to="/path/week"
+              className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}
+            >
               This week <span aria-hidden="true">›</span>
             </Link>
-            <Link to="/path/why" className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}>
+            <Link
+              to="/path/why"
+              className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}
+            >
               Why this mix? <span aria-hidden="true">›</span>
             </Link>
-            <Link to="/path/build" className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}>
+            <Link
+              to="/path/build"
+              className={`${CARD} flex min-h-12 items-center justify-between px-4 text-sm font-extrabold text-ds-ink`}
+            >
               Change my path <span aria-hidden="true">›</span>
             </Link>
           </nav>
@@ -211,29 +296,58 @@ export function WeekScreen() {
   return (
     <Gate s={s} back="/path" title="My week">
       {(p) => (
-        <Frame title="My week" sub={`${p.dailyMinutes} min a day · ${p.week.filter((d) => d.state !== "rest").length} days · ${p.weekMinutes} min`} back="/path">
+        <Frame
+          title="My week"
+          sub={`${p.dailyMinutes} min a day · ${p.week.filter((d) => d.state !== "rest").length} days · ${p.weekMinutes} min`}
+          back="/path"
+        >
           <div className={`${CARD} mb-3 p-3`}>
             <p className="mb-2 ds-type-overline text-ds-ink-soft">This week&apos;s mix</p>
             <MixBar mix={p.mix} label="This week's mix" />
-            <p className="mt-2 text-xs text-ds-ink-soft">{p.weekDoneMinutes} of {p.weekMinutes} minutes done so far.</p>
+            <p className="mt-2 text-xs text-ds-ink-soft">
+              {p.weekDoneMinutes} of {p.weekMinutes} minutes done so far.
+            </p>
           </div>
           <ul className="grid gap-2">
             {p.week.map((d) => {
-              const tone = d.state === "done" ? "border-ds-right-edge bg-ds-right-tint" : d.state === "today" ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card";
-              const word = d.state === "rest" ? "Rest day" : d.state === "missed" ? "Missed" : `${d.minutes} min`;
+              const tone =
+                d.state === "done"
+                  ? "border-ds-right-edge bg-ds-right-tint"
+                  : d.state === "today"
+                    ? "border-ds-brand bg-ds-choice-tint"
+                    : "border-ds-line bg-ds-card";
+              const word =
+                d.state === "rest"
+                  ? "Rest day"
+                  : d.state === "missed"
+                    ? "Missed"
+                    : `${d.minutes} min`;
               return (
-                <li key={d.day} className={`flex min-h-12 items-center gap-3 rounded-2xl border-2 px-3 py-1.5 ${tone}`} aria-current={d.state === "today" ? "date" : undefined}>
+                <li
+                  key={d.day}
+                  className={`flex min-h-12 items-center gap-3 rounded-2xl border-2 px-3 py-1.5 ${tone}`}
+                  aria-current={d.state === "today" ? "date" : undefined}
+                >
                   <b className="w-10 font-display text-sm font-extrabold text-ds-ink">{d.label}</b>
                   <span className="flex flex-1 flex-wrap gap-1">
-                    {d.items.map((i, k) => <TypeBadge key={`${i.type}-${i.id}-${k}`} type={i.type} small />)}
-                    <span className="sr-only">{d.items.map((i) => PATH_TYPE_INFO[i.type].noun).join(", ")}</span>
+                    {d.items.map((i, k) => (
+                      <TypeBadge key={`${i.type}-${i.id}-${k}`} type={i.type} small />
+                    ))}
+                    <span className="sr-only">
+                      {d.items.map((i) => PATH_TYPE_INFO[i.type].noun).join(", ")}
+                    </span>
                   </span>
                   <span className="text-xs font-extrabold text-ds-ink-soft">{word}</span>
                 </li>
               );
             })}
           </ul>
-          <Link to="/path/why" className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-ds-choice">Why this mix? ›</Link>
+          <Link
+            to="/path/why"
+            className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-ds-choice"
+          >
+            Why this mix? ›
+          </Link>
         </Frame>
       )}
     </Gate>
@@ -249,11 +363,15 @@ export function WhyScreen() {
       {(p) => (
         <Frame title="Why this mix?" back="/path">
           <p className={`${CARD} mb-3 bg-ds-choice-tint p-3 text-sm text-ds-ink`}>
-            Lessons are the backbone because you want to finish {p.goalLabel}. The rest follows what you told me and how you are doing.
+            Lessons are the backbone because you want to finish {p.goalLabel}. The rest follows what
+            you told me and how you are doing.
           </p>
           <ul className="grid gap-2">
             {p.why.map((w, i) => (
-              <li key={`${w.headline}-${i}`} className="flex items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2">
+              <li
+                key={`${w.headline}-${i}`}
+                className="flex items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2"
+              >
                 <TypeBadge type={w.type} small />
                 <span className="min-w-0">
                   <b className="block text-sm font-extrabold text-ds-ink">{w.headline}</b>
@@ -263,7 +381,8 @@ export function WhyScreen() {
             ))}
           </ul>
           <p className="mt-3 rounded-2xl border-2 border-dashed border-ds-line p-3 text-xs text-ds-ink-soft">
-            Change the minutes or turn a type off in Build my path. Your skill scores update the plan as you practise.
+            Change the minutes or turn a type off in Build my path. Your skill scores update the
+            plan as you practise.
           </p>
         </Frame>
       )}
@@ -296,37 +415,71 @@ export function BuildScreen() {
         <section aria-label="How I like to learn" className="mt-4 grid gap-2">
           <div className={`${CARD} p-3`}>
             <p className="ds-type-overline text-ds-ink-soft">Your plan</p>
-            <p className="font-display text-xl font-extrabold text-ds-ink">{path.progress.requiredPerWeek} lessons a week</p>
-            <p className="text-xs text-ds-ink-soft">{path.dailyMinutes} minutes a day, 6 days. The rest of each day is filled with the mix below.</p>
-            <div className="mt-2"><MixBar mix={path.mix} label="Your weekly mix" /></div>
+            <p className="font-display text-xl font-extrabold text-ds-ink">
+              {path.progress.requiredPerWeek} lessons a week
+            </p>
+            <p className="text-xs text-ds-ink-soft">
+              {path.dailyMinutes} minutes a day, 6 days. The rest of each day is filled with the mix
+              below.
+            </p>
+            <div className="mt-2">
+              <MixBar mix={path.mix} label="Your weekly mix" />
+            </div>
           </div>
           <h2 className="mt-1 ds-type-overline text-ds-ink-soft">How I like to learn</h2>
           <div className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2 opacity-70">
             <TypeBadge type="lesson" />
-            <span className="flex-1"><b className="block text-sm font-extrabold text-ds-ink">Lessons</b><small className="text-xs text-ds-ink-soft">Always on, the backbone</small></span>
+            <span className="flex-1">
+              <b className="block text-sm font-extrabold text-ds-ink">Lessons</b>
+              <small className="text-xs text-ds-ink-soft">Always on, the backbone</small>
+            </span>
             <span className="text-xs font-bold text-ds-ink-soft">Always on</span>
           </div>
           {OPTIONAL_TYPES.map((t) => {
             const on = !off.includes(t);
             const why = path.why.find((w) => w.type === t && w.source !== "planner");
             return (
-              <label key={t} className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2">
+              <label
+                key={t}
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2"
+              >
                 <TypeBadge type={t} />
                 <span className="flex-1">
-                  <b className="block text-sm font-extrabold text-ds-ink">{PATH_TYPE_INFO[t].label}</b>
-                  <small className="text-xs text-ds-ink-soft">{on && why ? why.detail : HOW[t as Exclude<PathType, "lesson">]}</small>
+                  <b className="block text-sm font-extrabold text-ds-ink">
+                    {PATH_TYPE_INFO[t].label}
+                  </b>
+                  <small className="text-xs text-ds-ink-soft">
+                    {on && why ? why.detail : HOW[t as Exclude<PathType, "lesson">]}
+                  </small>
                 </span>
-                <input type="checkbox" role="switch" aria-label={`${PATH_TYPE_INFO[t].label} in my path`} checked={on} disabled={s.busy} onChange={() => toggle(t as Exclude<PathType, "lesson">)} className="size-6" />
+                <input
+                  type="checkbox"
+                  role="switch"
+                  aria-label={`${PATH_TYPE_INFO[t].label} in my path`}
+                  checked={on}
+                  disabled={s.busy}
+                  onChange={() => toggle(t as Exclude<PathType, "lesson">)}
+                  className="size-6"
+                />
               </label>
             );
           })}
-          {s.failed ? <p role="alert" className="text-sm font-medium text-ds-wrong-ink">{s.failed}</p> : null}
-          <Link to="/path" className="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ds-ink text-sm font-extrabold text-ds-card">
+          {s.failed ? (
+            <p role="alert" className="text-sm font-medium text-ds-wrong-ink">
+              {s.failed}
+            </p>
+          ) : null}
+          <Link
+            to="/path"
+            className="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ds-ink text-sm font-extrabold text-ds-card"
+          >
             Open my path
           </Link>
         </section>
       ) : s.state.kind === "none" ? (
-        <p className="mt-3 text-sm text-ds-ink-soft">Save a goal above and your plan appears here.</p>
+        <p className="mt-3 text-sm text-ds-ink-soft">
+          Save a goal above and your plan appears here.
+        </p>
       ) : null}
     </Frame>
   );

@@ -10,6 +10,10 @@ works now_.
 
 ## Unreleased
 
+### Your learning path (2026-11-13)
+
+- **Personalised learning path on web, iOS and Android.** One pure engine (`src/lib/path-plan.ts`, run on the server by `/api/learning-path`) turns the goal planner's plan, the first-run answers, the Skills radar and the activity tables into a weekly mix, today's list, a seven-day week, the road, recovery choices when behind, per-type streaks and the reasons. Four types (lessons, podcasts with quiz, talk to Alphonso, story campaigns); a video type is a registry entry away. No migration: it derives from `lesson_completions`, `learning_days`, `listen_progress`, `practice_calls`, `practice_stars` and `skill_days`; the learner's switches live in `user_metadata.learner_profile`. Reviewed tags: `src/data/path-tags.ts`; every tunable number: `src/data/path-config.ts` (talk, campaign and quiz minutes are estimates to calibrate from production). Spec: `docs/superpowers/specs/2026-11-12-learning-path-design.md`.
+
 ### Build 61 batch (2026-11-07, #452 to #477; the iOS build is cut after this docs pass)
 
 - **Design tokens for the marketing site (#452).** A `marketing` block in `design/tokens.json` (heading sizes, section spacing, frame radius); the apps and the exporter ignore it. The marketing site (separate repo) went live reading it.

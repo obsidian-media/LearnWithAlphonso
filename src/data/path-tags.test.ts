@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { CAMPAIGNS } from "./campaigns";
 import { SCENARIOS } from "./scenarios";
 import { PODCAST_QUIZZES } from "./podcast-quizzes";
-import { CAMPAIGN_TAGS, PODCAST_TAGS, SCENARIO_TAGS, podcastTagKey, type PathTag } from "./path-tags";
+import {
+  CAMPAIGN_TAGS,
+  PODCAST_TAGS,
+  SCENARIO_TAGS,
+  podcastTagKey,
+  type PathTag,
+} from "./path-tags";
 import { GOALS, INTERESTS } from "../lib/learner-profile";
 import { SKILLS } from "../lib/profile-data";
 import { LEVEL_ORDER } from "../lib/learning-goal";

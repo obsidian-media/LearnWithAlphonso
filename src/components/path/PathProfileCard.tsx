@@ -14,7 +14,10 @@ export function PathProfileCard({ course }: { course: Course }) {
   if (state.kind === "loading" || state.kind === "error") return null;
   if (state.kind === "none") {
     return (
-      <section aria-label="My path" className="rounded-[18px] border-2 border-ds-line bg-ds-card p-3.5">
+      <section
+        aria-label="My path"
+        className="rounded-[18px] border-2 border-ds-line bg-ds-card p-3.5"
+      >
         <h2 className="ds-type-headline font-extrabold text-ds-ink">My path</h2>
         <p className="mt-1 ds-type-footnote text-ds-ink-soft">
           Build a daily plan from your goal: lessons, podcasts, talks and story campaigns.
@@ -29,7 +32,9 @@ export function PathProfileCard({ course }: { course: Course }) {
     );
   }
   const p = state.path;
-  const pct = p.weekMinutes ? Math.min(100, Math.round((100 * p.weekDoneMinutes) / p.weekMinutes)) : 0;
+  const pct = p.weekMinutes
+    ? Math.min(100, Math.round((100 * p.weekDoneMinutes) / p.weekMinutes))
+    : 0;
   return (
     <section aria-label="My path" className="grid gap-2.5">
       <div className="rounded-[18px] bg-ds-hero p-3.5 text-ds-on-hero">
@@ -69,13 +74,19 @@ export function PathProfileCard({ course }: { course: Course }) {
             >
               <TypeBadge type={s.type} small />
               <b className="mt-1 font-display text-base font-extrabold text-ds-ink">{s.days}d</b>
-              <small className="ds-type-caption font-bold text-ds-ink-soft">{s.weekMinutes} min</small>
-              <small className="ds-type-caption font-bold text-ds-ink-soft">{PATH_TYPE_INFO[s.type].label}</small>
+              <small className="ds-type-caption font-bold text-ds-ink-soft">
+                {s.weekMinutes} min
+              </small>
+              <small className="ds-type-caption font-bold text-ds-ink-soft">
+                {PATH_TYPE_INFO[s.type].label}
+              </small>
             </Link>
           </li>
         ))}
       </ul>
-      <p className="ds-type-caption text-ds-ink-soft">Days in a row and minutes this week, per activity.</p>
+      <p className="ds-type-caption text-ds-ink-soft">
+        Days in a row and minutes this week, per activity.
+      </p>
     </section>
   );
 }

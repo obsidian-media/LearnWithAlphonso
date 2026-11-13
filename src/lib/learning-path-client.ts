@@ -77,11 +77,8 @@ async function request(
 export const fetchPath = (course: Course, fetchImpl: typeof fetch = fetch) =>
   request(course, undefined, fetchImpl);
 
-export const changePath = (
-  course: Course,
-  change: PathAction,
-  fetchImpl: typeof fetch = fetch,
-) => request(course, { method: "PUT", body: JSON.stringify({ course, ...change }) }, fetchImpl);
+export const changePath = (course: Course, change: PathAction, fetchImpl: typeof fetch = fetch) =>
+  request(course, { method: "PUT", body: JSON.stringify({ course, ...change }) }, fetchImpl);
 
 /** The path for one course, with a way to apply a choice and a way to reload (after the goal changes). */
 export function usePath(course: Course) {
@@ -90,26 +87,28 @@ export function usePath(course: Course) {
   const [failed, setFailed] = useState<string | null>(null);
   const latest = useRef(0);
 
-  const apply = useCallback(
-    async (run: () => Promise<LearningPath | null>, isAction: boolean) => {
-      const id = ++latest.current;
-      if (isAction) setBusy(true);
-      try {
-        const path = await run();
-        if (id !== latest.current) return;
-        setFailed(null);
-        setState(path ? { kind: "ready", path } : { kind: "none" });
-      } catch (error) {
-        if (id !== latest.current) return;
-        const offline = error instanceof PathFetchError && error.offline;
-        if (isAction) setFailed(offline ? "You are offline. Try again when connected." : "That could not be saved. Try again.");
-        else setState({ kind: "error", offline });
-      } finally {
-        if (isAction && id === latest.current) setBusy(false);
-      }
-    },
-    [],
-  );
+  const apply = useCallback(async (run: () => Promise<LearningPath | null>, isAction: boolean) => {
+    const id = ++latest.current;
+    if (isAction) setBusy(true);
+    try {
+      const path = await run();
+      if (id !== latest.current) return;
+      setFailed(null);
+      setState(path ? { kind: "ready", path } : { kind: "none" });
+    } catch (error) {
+      if (id !== latest.current) return;
+      const offline = error instanceof PathFetchError && error.offline;
+      if (isAction)
+        setFailed(
+          offline
+            ? "You are offline. Try again when connected."
+            : "That could not be saved. Try again.",
+        );
+      else setState({ kind: "error", offline });
+    } finally {
+      if (isAction && id === latest.current) setBusy(false);
+    }
+  }, []);
 
   const reload = useCallback(() => {
     setState({ kind: "loading" });

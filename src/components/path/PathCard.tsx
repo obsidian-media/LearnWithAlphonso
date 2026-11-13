@@ -21,7 +21,9 @@ export function PathCard({ course }: { course: Course }) {
     return (
       <section aria-label="My path" className="rounded-3xl bg-ds-sunk p-4">
         <p role="alert" className="text-sm font-medium text-ds-wrong-ink">
-          {state.offline ? "You are offline. Connect to load your path." : "Couldn't load your path."}
+          {state.offline
+            ? "You are offline. Connect to load your path."
+            : "Couldn't load your path."}
         </p>
         <button
           type="button"

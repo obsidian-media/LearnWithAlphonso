@@ -27,11 +27,7 @@ const goalPlan = (over: Partial<GoalPlan> = {}): GoalPlan => ({
   ...over,
 });
 
-const cand = (
-  type: PathType,
-  id: string,
-  over: Partial<Candidate> = {},
-): Candidate => ({
+const cand = (type: PathType, id: string, over: Partial<Candidate> = {}): Candidate => ({
   id,
   type,
   title: `${type} ${id}`,
@@ -144,7 +140,9 @@ describe("planPath: the weekly mix", () => {
 describe("planPath: today and the week", () => {
   it("today's planned minutes respect the daily minutes (to one item's overflow)", () => {
     const p = planPath(input());
-    const planned = p.today.items.filter((i) => i.state !== "done").reduce((s, i) => s + i.minutes, 0);
+    const planned = p.today.items
+      .filter((i) => i.state !== "done")
+      .reduce((s, i) => s + i.minutes, 0);
     expect(planned).toBeLessThanOrEqual(10 + DAY_OVERFLOW_MINUTES);
     expect(p.today.items.length).toBeGreaterThan(0);
   });

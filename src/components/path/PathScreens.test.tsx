@@ -4,13 +4,28 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import fixtures from "../../lib/learning-path.fixtures.json";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, children, className, ...rest }: { to: string; children: React.ReactNode; className?: string }) => (
-    <a href={to} className={className} aria-label={(rest as { "aria-label"?: string })["aria-label"]}>
+  Link: ({
+    to,
+    children,
+    className,
+    ...rest
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a
+      href={to}
+      className={className}
+      aria-label={(rest as { "aria-label"?: string })["aria-label"]}
+    >
       {children}
     </a>
   ),
 }));
-vi.mock("@/components/AppShell", () => ({ MobileFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock("@/components/AppShell", () => ({
+  MobileFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 vi.mock("@/components/GoalCard", () => ({ GoalCard: () => <div data-testid="goal-card" /> }));
 vi.mock("@/lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
 vi.mock("../../lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
@@ -55,9 +70,15 @@ describe("Learn path card", () => {
     expect(link.getAttribute("href")).toBe("/path/build");
   });
   it("says so when the path cannot load, with a retry", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 500 })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}", { status: 500 })),
+    );
     render(<PathCard course="en" />);
-    expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Couldn't load your path.");
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "Couldn't load your path.",
+    );
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 });
@@ -106,7 +127,8 @@ describe("the week and why", () => {
   it("lists every reason the server gave", async () => {
     serve("onTrack");
     render(<WhyScreen />);
-    for (const w of fixtures.onTrack.why) expect((await screen.findAllByText(w.headline)).length).toBeGreaterThan(0);
+    for (const w of fixtures.onTrack.why)
+      expect((await screen.findAllByText(w.headline)).length).toBeGreaterThan(0);
   });
 });
 
@@ -117,7 +139,11 @@ describe("build my path", () => {
     fireEvent.click(await screen.findByRole("switch", { name: "Podcasts in my path" }));
     await waitFor(() => expect(calls.some((c) => c.init?.method === "PUT")).toBe(true));
     const put = calls.find((c) => c.init?.method === "PUT")!;
-    expect(JSON.parse(String(put.init?.body))).toEqual({ course: "en", action: "set_off", off: ["podcast"] });
+    expect(JSON.parse(String(put.init?.body))).toEqual({
+      course: "en",
+      action: "set_off",
+      off: ["podcast"],
+    });
   });
   it("lessons cannot be switched off", async () => {
     serve("onTrack");
@@ -133,7 +159,9 @@ describe("Profile my path", () => {
     render(<PathProfileCard course="en" />);
     await screen.findByText(/This week:/);
     for (const s of fixtures.onTrack.streaks) {
-      const label = { lesson: "Lessons", podcast: "Podcasts", talk: "Talk", campaign: "Campaigns" }[s.type];
+      const label = { lesson: "Lessons", podcast: "Podcasts", talk: "Talk", campaign: "Campaigns" }[
+        s.type
+      ];
       const text = `${label}: ${s.days} ${s.days === 1 ? "day" : "days"} in a row, ${s.weekMinutes} minutes this week`;
       expect(screen.getByLabelText(text)).toBeTruthy();
     }

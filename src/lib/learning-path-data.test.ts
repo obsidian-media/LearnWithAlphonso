@@ -16,8 +16,22 @@ const data = (over: Partial<PathData> = {}): PathData => ({
   learningDays: [],
   skillDays: [],
   episodes: [
-    { id: "ep-coffee", folder: "a1", slug: "ordering-coffee-v2", title: "Ordering coffee", durationSeconds: 173, levelId: "A1" },
-    { id: "ep-hard", folder: "c1", slug: "why-cant-we-focus-v2", title: "Focus", durationSeconds: 233, levelId: "C1" },
+    {
+      id: "ep-coffee",
+      folder: "a1",
+      slug: "ordering-coffee-v2",
+      title: "Ordering coffee",
+      durationSeconds: 173,
+      levelId: "A1",
+    },
+    {
+      id: "ep-hard",
+      folder: "c1",
+      slug: "why-cant-we-focus-v2",
+      title: "Focus",
+      durationSeconds: 233,
+      levelId: "C1",
+    },
   ],
   listen: [],
   calls: [],
@@ -44,7 +58,9 @@ describe("buildLearningPath", () => {
       }),
     )!;
     expect(path.today.items[0]).toMatchObject({ state: "done", type: "lesson", minutes: 7 });
-    expect(path.today.items.some((i) => i.id === firstLessons[0].id && i.state !== "done")).toBe(false);
+    expect(path.today.items.some((i) => i.id === firstLessons[0].id && i.state !== "done")).toBe(
+      false,
+    );
   });
 
   it("does not offer a podcast the learner finished, and uses the episode's real duration plus its quiz", () => {
@@ -55,7 +71,9 @@ describe("buildLearningPath", () => {
     const done = buildLearningPath(
       data({ listen: [{ episodeId: "ep-coffee", completedAt: "2026-11-10T09:00:00.000Z" }] }),
     )!;
-    expect(done.week.flatMap((d) => d.items).some((i) => i.type === "podcast" && i.state !== "done")).toBe(false);
+    expect(
+      done.week.flatMap((d) => d.items).some((i) => i.type === "podcast" && i.state !== "done"),
+    ).toBe(false);
     expect(done.streaks.find((s) => s.type === "podcast")?.days).toBe(1);
   });
 
@@ -69,7 +87,9 @@ describe("buildLearningPath", () => {
         lastPlayedAt: "2026-11-01T00:00:00.000Z",
       }));
     const half = buildLearningPath(data({ stars: stars(1) }))!;
-    const item = half.week.flatMap((d) => d.items).find((i) => i.type === "campaign" && i.ref?.id === "city-day");
+    const item = half.week
+      .flatMap((d) => d.items)
+      .find((i) => i.type === "campaign" && i.ref?.id === "city-day");
     expect(item?.ref?.sceneIndex).toBe(1);
     const all = buildLearningPath(data({ stars: stars(c.scenes.length) }))!;
     expect(all.week.flatMap((d) => d.items).some((i) => i.ref?.id === "city-day")).toBe(false);
@@ -89,12 +109,23 @@ describe("buildLearningPath", () => {
         ],
       }),
     )!;
-    expect(path.today.items.find((i) => i.type === "talk")).toMatchObject({ state: "done", minutes: 5 });
+    expect(path.today.items.find((i) => i.type === "talk")).toMatchObject({
+      state: "done",
+      minutes: 5,
+    });
   });
 
   it("reads the learner's switches and trim date from their profile", () => {
     const path = buildLearningPath(
-      data({ profile: { showFlag: false, goal: "travel", interests: [], dailyMinutes: 10, pathOff: ["podcast"] } }),
+      data({
+        profile: {
+          showFlag: false,
+          goal: "travel",
+          interests: [],
+          dailyMinutes: 10,
+          pathOff: ["podcast"],
+        },
+      }),
     )!;
     expect(path.off).toEqual(["podcast"]);
     expect(path.mix.find((m) => m.type === "podcast")?.minutes).toBe(0);

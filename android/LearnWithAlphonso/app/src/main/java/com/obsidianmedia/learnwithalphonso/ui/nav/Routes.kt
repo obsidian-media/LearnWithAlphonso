@@ -19,6 +19,12 @@ object Routes {
     const val PLACEMENT = "placement/{course}"
     fun placement(course: String) = "placement/$course"
 
+    /** The learning path: the road, the week, why this mix, and Build my path. */
+    const val PATH = "path"
+    const val PATH_WEEK = "path/week"
+    const val PATH_WHY = "path/why"
+    const val PATH_BUILD = "path/build"
+
     const val SETTINGS = "settings"
     const val LEAGUE = "league"
     const val TEAMS = "teams"

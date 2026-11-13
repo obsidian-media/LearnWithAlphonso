@@ -55,14 +55,30 @@ export type PathData = {
   }[];
   listen: { episodeId: string; completedAt: string | null }[];
   /** Finished practice calls. */
-  calls: { kind: "scenario" | "scene"; itemKey: string; startedAt: string; lastReplyAt: string; finishedAt: string }[];
+  calls: {
+    kind: "scenario" | "scene";
+    itemKey: string;
+    startedAt: string;
+    lastReplyAt: string;
+    finishedAt: string;
+  }[];
   stars: StarRow[];
   profile: LearnerProfile;
 };
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 export function goalLabel(level: string, targetDate: string): string {
   const [, m, d] = targetDate.split("-").map(Number);
@@ -93,8 +109,12 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   if (!plan) return null;
 
   const units = getCourse(course).curriculum;
-  const lessonInfo = new Map<string, { title: string; questions: (typeof units)[number]["lessons"][number]["questions"] }>();
-  for (const u of units) for (const l of u.lessons) lessonInfo.set(l.id, { title: l.title, questions: l.questions });
+  const lessonInfo = new Map<
+    string,
+    { title: string; questions: (typeof units)[number]["lessons"][number]["questions"] }
+  >();
+  for (const u of units)
+    for (const l of u.lessons) lessonInfo.set(l.id, { title: l.title, questions: l.questions });
 
   // ---- events (what the learner did, from the tables that already record it)
   const events: ActivityEvent[] = [];
@@ -131,7 +151,8 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   }
   const campaigns = CAMPAIGNS.map((c) => localizeCampaign(c, course));
   const sceneTitle = new Map<string, string>();
-  for (const c of campaigns) for (const s of c.scenes) sceneTitle.set(sceneKey(c.id, s.id), c.title);
+  for (const c of campaigns)
+    for (const s of c.scenes) sceneTitle.set(sceneKey(c.id, s.id), c.title);
   for (const call of data.calls) {
     const minutes = Math.min(
       MAX_CALL_MINUTES,
@@ -164,8 +185,16 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   for (const u of units) {
     const left = u.lessons.filter((l) => !(l.id in completedAt));
     levelLessonsLeft[u.level] = (levelLessonsLeft[u.level] ?? 0) + left.length;
-    if (!unit && left.length > 0 && LEVEL_ORDER.indexOf(u.level) >= LEVEL_ORDER.indexOf(data.currentLevel)) {
-      unit = { title: `${u.eyebrow}: ${u.title}`, subtitle: `Lessons · ${u.level}`, lessonsLeft: left.length };
+    if (
+      !unit &&
+      left.length > 0 &&
+      LEVEL_ORDER.indexOf(u.level) >= LEVEL_ORDER.indexOf(data.currentLevel)
+    ) {
+      unit = {
+        title: `${u.eyebrow}: ${u.title}`,
+        subtitle: `Lessons · ${u.level}`,
+        lessonsLeft: left.length,
+      };
     }
     for (const l of left) {
       if (lessons.length >= LESSON_CANDIDATES) break;
@@ -184,14 +213,17 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     }
   }
 
-  const finishedEpisodes = new Set(data.listen.filter((p) => p.completedAt).map((p) => p.episodeId));
+  const finishedEpisodes = new Set(
+    data.listen.filter((p) => p.completedAt).map((p) => p.episodeId),
+  );
   const quizKeys = new Set(PODCAST_QUIZZES.map((q) => podcastTagKey(q.course, q.folder, q.slug)));
   const podcasts: Candidate[] = [];
   for (const ep of data.episodes) {
     if (finishedEpisodes.has(ep.id)) continue;
     const key = podcastTagKey(course, ep.folder, ep.slug);
     const tag = PODCAST_TAGS[key] ?? noTag;
-    const level = tag?.level ?? (LEVEL_ORDER.includes(ep.levelId as Level) ? (ep.levelId as Level) : null);
+    const level =
+      tag?.level ?? (LEVEL_ORDER.includes(ep.levelId as Level) ? (ep.levelId as Level) : null);
     if (!level) continue;
     const hasQuiz = quizKeys.has(key);
     podcasts.push({
@@ -248,7 +280,9 @@ export function buildLearningPath(data: PathData): LearningPath | null {
 
   const today = now.toISOString().slice(0, 10);
   const scores = skillScores(data.skillDays, today);
-  const skillPct = Object.fromEntries(scores.map((s) => [s.skill, s.answered >= MIN_SKILL_ANSWERS ? s.pct : null]));
+  const skillPct = Object.fromEntries(
+    scores.map((s) => [s.skill, s.answered >= MIN_SKILL_ANSWERS ? s.pct : null]),
+  );
 
   const candidates: Record<PathType, Candidate[]> = {
     lesson: lessons,
@@ -266,7 +300,10 @@ export function buildLearningPath(data: PathData): LearningPath | null {
       interests: data.profile.interests ?? [],
       dailyMinutes: data.profile.dailyMinutes ?? DEFAULT_DAILY_MINUTES,
     },
-    prefs: { off: [...(data.profile.pathOff ?? [])], trimUntil: data.profile.pathTrimUntil ?? null },
+    prefs: {
+      off: [...(data.profile.pathOff ?? [])],
+      trimUntil: data.profile.pathTrimUntil ?? null,
+    },
     skillPct,
     candidates,
     events,

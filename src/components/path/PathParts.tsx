@@ -20,11 +20,29 @@ const TYPE_ICON: Record<PathType, DsIconName> = {
   campaign: "star",
 };
 /** Token classes per type: the badge fill, the text on it, the legend swatch and the label colour. */
-export const TYPE_STYLE: Record<PathType, { fill: string; on: string; swatch: string; text: string }> = {
-  lesson: { fill: "bg-ds-choice", on: "text-ds-card", swatch: "bg-ds-choice", text: "text-ds-choice" },
-  podcast: { fill: "bg-ds-brand", on: "text-ds-card", swatch: "bg-ds-brand", text: "text-ds-brand" },
+export const TYPE_STYLE: Record<
+  PathType,
+  { fill: string; on: string; swatch: string; text: string }
+> = {
+  lesson: {
+    fill: "bg-ds-choice",
+    on: "text-ds-card",
+    swatch: "bg-ds-choice",
+    text: "text-ds-choice",
+  },
+  podcast: {
+    fill: "bg-ds-brand",
+    on: "text-ds-card",
+    swatch: "bg-ds-brand",
+    text: "text-ds-brand",
+  },
   talk: { fill: "bg-ds-xp", on: "text-ds-ink", swatch: "bg-ds-xp", text: "text-ds-xp-text" },
-  campaign: { fill: "bg-ds-right", on: "text-ds-on-right", swatch: "bg-ds-right", text: "text-ds-right-ink" },
+  campaign: {
+    fill: "bg-ds-right",
+    on: "text-ds-on-right",
+    swatch: "bg-ds-right",
+    text: "text-ds-right-ink",
+  },
 };
 
 export function TypeBadge({ type, small = false }: { type: PathType; small?: boolean }) {
@@ -38,7 +56,10 @@ export function TypeBadge({ type, small = false }: { type: PathType; small?: boo
       {type === "campaign" ? (
         <DsIcon name="star" solid className={small ? "size-4" : "size-5"} />
       ) : (
-        <DsIcon name={TYPE_ICON[type] as "book" | "speaker" | "mic"} className={small ? "size-4" : "size-5"} />
+        <DsIcon
+          name={TYPE_ICON[type] as "book" | "speaker" | "mic"}
+          className={small ? "size-4" : "size-5"}
+        />
       )}
     </span>
   );

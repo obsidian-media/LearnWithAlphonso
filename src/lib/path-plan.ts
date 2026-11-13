@@ -34,7 +34,10 @@ export type PathType = (typeof PATH_TYPES)[number];
 /** Types a learner may switch off: everything except the backbone. */
 export const OPTIONAL_TYPES: readonly PathType[] = ["podcast", "talk", "campaign"];
 
-export const PATH_TYPE_INFO: Record<PathType, { label: string; noun: string; trainedSkills: Skill[] }> = {
+export const PATH_TYPE_INFO: Record<
+  PathType,
+  { label: string; noun: string; trainedSkills: Skill[] }
+> = {
   lesson: { label: "Lessons", noun: "Lesson", trainedSkills: ["vocabulary", "grammar", "reading"] },
   podcast: { label: "Podcasts", noun: "Podcast", trainedSkills: ["listening"] },
   talk: { label: "Talk", noun: "Talk to Alphonso", trainedSkills: ["speaking"] },
@@ -257,7 +260,10 @@ function computeMix(input: PathInput, trimmed: boolean): MixEntry[] {
     type,
     minutes: minutes[type],
     share: Math.round((minutes[type] / weekMin) * 100),
-    count: minutes[type] === 0 ? 0 : Math.max(1, Math.round(minutes[type] / Math.max(1, avgMinutes(input, type)))),
+    count:
+      minutes[type] === 0
+        ? 0
+        : Math.max(1, Math.round(minutes[type] / Math.max(1, avgMinutes(input, type)))),
   }));
 }
 
@@ -299,7 +305,12 @@ const eventItem = (e: ActivityEvent): PlannedItem => ({
   ref: null,
 });
 
-function streakOf(events: ActivityEvent[], type: PathType, today: string, weekStart: string): StreakEntry {
+function streakOf(
+  events: ActivityEvent[],
+  type: PathType,
+  today: string,
+  weekStart: string,
+): StreakEntry {
   const days = new Set(events.filter((e) => e.type === type).map((e) => e.day));
   let cursor = days.has(today) ? today : addDays(today, -1);
   let n = 0;
@@ -323,7 +334,9 @@ export function planPath(input: PathInput): LearningPath {
   const daily = input.profile.dailyMinutes;
   const weekMin = daily * STUDY_DAYS_PER_WEEK;
 
-  const weekEvents = input.events.filter((e) => e.day >= weekStart && e.day <= addDays(weekStart, 6));
+  const weekEvents = input.events.filter(
+    (e) => e.day >= weekStart && e.day <= addDays(weekStart, 6),
+  );
   const doneCount: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
   for (const e of weekEvents) doneCount[e.type]++;
   const usedIds = new Set(weekEvents.filter((e) => e.refId).map((e) => `${e.type}:${e.refId}`));
@@ -371,7 +384,8 @@ export function planPath(input: PathInput): LearningPath {
   // Token-bucket spread: each day every type earns its share of what is left; an item is placed once its type has
   // earned half an item, and every day starts with a lesson while lessons remain.
   const credit: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
-  const perDay = (t: PathType) => (plannable.length === 0 ? 0 : (remaining[t] * avg(t)) / plannable.length);
+  const perDay = (t: PathType) =>
+    plannable.length === 0 ? 0 : (remaining[t] * avg(t)) / plannable.length;
   for (const slot of plannable) {
     for (const t of PATH_TYPES) credit[t] += perDay(t);
     let load = 0;
@@ -487,6 +501,26 @@ function statusDetail(plan: GoalPlan): string {
   }
 }
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+/** "27 October 2027" from an ISO day (a fixed English table, the same on every platform). */
+function longDate(day: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return `${d} ${MONTH_NAMES[m - 1]} ${y}`;
+}
+
 // ---------------------------------------------------------------- recovery
 
 function buildRecovery(input: PathInput, trimmed: boolean): RecoveryOption[] {
@@ -504,7 +538,7 @@ function buildRecovery(input: PathInput, trimmed: boolean): RecoveryOption[] {
   if (plan.suggestedDate) {
     out.push({
       id: "move_date",
-      title: `Move the date to ${plan.suggestedDate}`,
+      title: `Move the date to ${longDate(plan.suggestedDate)}`,
       detail: `Keeps the full mix at the pace you really do (${plan.lessonsDoneLast7Days} lessons a week).`,
       suggested: out.length === 0,
       date: plan.suggestedDate,
@@ -512,7 +546,9 @@ function buildRecovery(input: PathInput, trimmed: boolean): RecoveryOption[] {
   }
   const next = DAILY_MINUTES.find((m) => m > input.profile.dailyMinutes);
   if (next !== undefined) {
-    const lessonsPerWeek = Math.floor((next * STUDY_DAYS_PER_WEEK) / Math.max(1, avgMinutes(input, "lesson")));
+    const lessonsPerWeek = Math.floor(
+      (next * STUDY_DAYS_PER_WEEK) / Math.max(1, avgMinutes(input, "lesson")),
+    );
     out.push({
       id: "add_minutes",
       title: `Add ${next - input.profile.dailyMinutes} minutes a day`,
@@ -548,14 +584,19 @@ function buildWhy(
   const target = input.goalLabel;
   out.push({
     type: "lesson",
-    headline: plan.status === "done" ? "Lessons keep you sharp" : `${plan.requiredPerWeek} lessons a week`,
+    headline:
+      plan.status === "done" ? "Lessons keep you sharp" : `${plan.requiredPerWeek} lessons a week`,
     detail:
       plan.status === "done"
         ? "You have finished your goal; lessons stay the backbone."
         : `Needed to finish ${target} (the goal planner). They are ${lessons.share}% of your week.`,
     source: "planner",
   });
-  if (!trimmed && lessons.minutes >= input.profile.dailyMinutes * STUDY_DAYS_PER_WEEK && enabledOptional(input).length > 0) {
+  if (
+    !trimmed &&
+    lessons.minutes >= input.profile.dailyMinutes * STUDY_DAYS_PER_WEEK &&
+    enabledOptional(input).length > 0
+  ) {
     out.push({
       type: "lesson",
       headline: "Your goal needs every minute",

@@ -810,7 +810,7 @@
       },
       {
         "id": "move_date",
-        "title": "Move the date to 2027-10-27",
+        "title": "Move the date to 27 October 2027",
         "detail": "Keeps the full mix at the pace you really do (5 lessons a week).",
         "suggested": false,
         "date": "2027-10-27"

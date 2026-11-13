@@ -29,7 +29,14 @@ const base: PathData = {
     { day: "2026-11-09", skill: "speaking", right: 5, total: 6 },
   ],
   episodes: [
-    { id: "ep-coffee", folder: "a1", slug: "ordering-coffee-v2", title: "Ordering coffee", durationSeconds: 173, levelId: "A1" },
+    {
+      id: "ep-coffee",
+      folder: "a1",
+      slug: "ordering-coffee-v2",
+      title: "Ordering coffee",
+      durationSeconds: 173,
+      levelId: "A1",
+    },
   ],
   listen: [],
   calls: [],
@@ -56,13 +63,18 @@ describe("learning path contract fixtures", () => {
     for (const p of Object.values(built)) expect(isPath(p)).toBe(true);
   });
   it("matches the checked-in fixture file", () => {
-    if (process.env.UPDATE_PATH_FIXTURES) writeFileSync(FILE, `${JSON.stringify(built, null, 2)}\n`);
+    if (process.env.UPDATE_PATH_FIXTURES)
+      writeFileSync(FILE, `${JSON.stringify(built, null, 2)}\n`);
     expect(JSON.parse(readFileSync(FILE, "utf8"))).toEqual(JSON.parse(JSON.stringify(built)));
   });
   it("the on-track scenario really is on track, the behind one has all three choices", () => {
     expect(["on_track", "ahead"]).toContain(built.onTrack?.status);
     expect(built.behind?.status).toBe("behind");
-    expect(built.behind?.recovery.map((r) => r.id)).toEqual(["lessons_first", "move_date", "add_minutes"]);
+    expect(built.behind?.recovery.map((r) => r.id)).toEqual([
+      "lessons_first",
+      "move_date",
+      "add_minutes",
+    ]);
   });
   it("the behind-and-trimmed scenario really is behind and trimmed", () => {
     expect(built.behindTrimmed?.status).toBe("behind");

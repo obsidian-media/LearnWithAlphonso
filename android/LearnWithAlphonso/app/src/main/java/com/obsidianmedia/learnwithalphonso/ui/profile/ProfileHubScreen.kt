@@ -87,6 +87,7 @@ fun ProfileHubScreen(
                         ProfileTab.PROGRESS -> {
                             ProfileCompactHeader(m)
                             ProfileSkills(m)
+                            com.obsidianmedia.learnwithalphonso.ui.path.PathProfileCard(container)
                             ProfileFold("Last 3 months", ProfileTabs.heatSummary(m.heat.activeDays)) { ProfileHeatMap(m) }
                             ProfileFold("Personal records", ProfileTabs.recordsSummary(m.records.bestStreak)) { ProfileRecords(m) }
                             ProfileFold("Level ${m.level.level}", "${m.level.level} · ${m.level.pct}%") { ProfileLevel(m) }

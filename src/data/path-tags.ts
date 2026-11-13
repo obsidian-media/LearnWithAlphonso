@@ -29,22 +29,62 @@ const t = (
 
 /** Podcast episodes, keyed `course/folder/slug` (episode ids are random per database). */
 export const PODCAST_TAGS: Readonly<Record<string, PathTag>> = {
-  "en/a1/ordering-coffee-v2": t("A1", ["travel", "fun", "family"], ["food"], ["listening", "vocabulary"]),
+  "en/a1/ordering-coffee-v2": t(
+    "A1",
+    ["travel", "fun", "family"],
+    ["food"],
+    ["listening", "vocabulary"],
+  ),
   "en/b1/why-phones-are-addictive-v2": t("B1", ["school", "work", "fun"], ["tech"], ["listening"]),
-  "en/c1/does-money-buy-happiness-v2": t("C1", ["work", "exam", "fun"], ["business"], ["listening"]),
+  "en/c1/does-money-buy-happiness-v2": t(
+    "C1",
+    ["work", "exam", "fun"],
+    ["business"],
+    ["listening"],
+  ),
   "en/c1/why-cant-we-focus-v2": t("C1", ["school", "work", "exam"], ["tech"], ["listening"]),
   "en/c1/why-time-feels-faster-v2": t("C1", ["exam", "fun"], ["nature"], ["listening"]),
   "en/c1/why-changing-minds-is-hard-v2": t("C1", ["work", "exam"], ["business"], ["listening"]),
   "en/c1/why-we-procrastinate-v2": t("C1", ["school", "work", "exam"], [], ["listening"]),
-  "en/c1/why-everyone-looks-better-online-v2": t("C1", ["fun", "exam"], ["tech", "art"], ["listening"]),
+  "en/c1/why-everyone-looks-better-online-v2": t(
+    "C1",
+    ["fun", "exam"],
+    ["tech", "art"],
+    ["listening"],
+  ),
   "en/mind-fools-you/why-we-trust-our-gut-v2": t("C1", ["exam", "fun"], [], ["listening"]),
-  "en/why-we-love/why-we-fall-for-the-same-type-v2": t("C1", ["family", "fun"], ["family"], ["listening"]),
+  "en/why-we-love/why-we-fall-for-the-same-type-v2": t(
+    "C1",
+    ["family", "fun"],
+    ["family"],
+    ["listening"],
+  ),
   "fr/a1/au-cafe": t("A1", ["travel", "fun", "family"], ["food"], ["listening", "vocabulary"]),
   "fr/a2/ma-journee": t("A2", ["family", "school", "fun"], [], ["listening", "grammar"]),
-  "fr/b1/chercher-un-appartement": t("B1", ["work", "family", "travel"], [], ["listening", "vocabulary"]),
-  "es/a1/en-la-cafeteria": t("A1", ["travel", "fun", "family"], ["food"], ["listening", "vocabulary"]),
-  "es/a2/mi-fin-de-semana": t("A2", ["family", "fun", "school"], ["sport", "music"], ["listening", "grammar"]),
-  "es/b1/buscar-departamento": t("B1", ["work", "family", "travel"], [], ["listening", "vocabulary"]),
+  "fr/b1/chercher-un-appartement": t(
+    "B1",
+    ["work", "family", "travel"],
+    [],
+    ["listening", "vocabulary"],
+  ),
+  "es/a1/en-la-cafeteria": t(
+    "A1",
+    ["travel", "fun", "family"],
+    ["food"],
+    ["listening", "vocabulary"],
+  ),
+  "es/a2/mi-fin-de-semana": t(
+    "A2",
+    ["family", "fun", "school"],
+    ["sport", "music"],
+    ["listening", "grammar"],
+  ),
+  "es/b1/buscar-departamento": t(
+    "B1",
+    ["work", "family", "travel"],
+    [],
+    ["listening", "vocabulary"],
+  ),
 };
 
 /** Talk to Alphonso scenarios (src/data/scenarios.ts ids). */

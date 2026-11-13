@@ -46,7 +46,8 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
     }
   }
   const course = method === "PUT" ? body?.course : new URL(request.url).searchParams.get("course");
-  if (typeof course !== "string" || !isCourse(course)) return json({ error: "Unknown course" }, 400);
+  if (typeof course !== "string" || !isCourse(course))
+    return json({ error: "Unknown course" }, 400);
 
   try {
     if (method === "PUT") {
