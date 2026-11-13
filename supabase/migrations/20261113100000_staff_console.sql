@@ -245,3 +245,122 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.staff_revoke_sessions(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.staff_revoke_sessions(uuid) TO service_role;
+
+-- ---- finding a learner ----
+-- Exact email or id, or a case-insensitive display-name prefix, at most 25 rows, at least 2 characters. Emails live in
+-- auth.users, which PostgREST cannot filter, so the console searches through this function (service_role only). LIKE
+-- wildcards in the query are escaped, so '%' finds a name starting with a percent sign and nothing else.
+CREATE FUNCTION public.staff_search_users(p_q text)
+RETURNS TABLE (id uuid, email text, display_name text, created_at timestamptz)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  q text := btrim(coalesce(p_q, ''));
+  as_uuid uuid;
+BEGIN
+  IF char_length(q) < 2 THEN
+    RAISE EXCEPTION 'staff_search_users: a search needs at least 2 characters' USING ERRCODE = '22023';
+  END IF;
+  BEGIN
+    as_uuid := q::uuid;
+  EXCEPTION WHEN invalid_text_representation THEN
+    as_uuid := NULL;
+  END;
+  RETURN QUERY
+  SELECT u.id, u.email::text, p.display_name::text, u.created_at
+    FROM auth.users u
+    LEFT JOIN public.profiles p ON p.id = u.id
+   WHERE (as_uuid IS NOT NULL AND u.id = as_uuid)
+      OR lower(u.email) = lower(q)
+      OR (p.display_name IS NOT NULL
+          AND lower(p.display_name) LIKE lower(replace(replace(replace(q, '\', '\'), '%', '\%'), '_', '\_')) || '%')
+   ORDER BY u.created_at DESC
+   LIMIT 25;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_search_users(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_search_users(text) TO service_role;
+
+-- ---- notes and gifts ----
+-- A note and its record row commit together. The note text stays out of the record (it is in staff_notes).
+CREATE FUNCTION public.staff_add_note(p_actor uuid, p_role text, p_target uuid, p_body text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  new_id uuid;
+BEGIN
+  IF p_actor IS NOT NULL AND p_actor = p_target THEN
+    RAISE EXCEPTION 'staff_add_note: staff cannot act on their own account' USING ERRCODE = '42501';
+  END IF;
+  INSERT INTO public.staff_notes (user_id, author_id, body) VALUES (p_target, p_actor, p_body)
+  RETURNING id INTO new_id;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'note.add', p_target, NULL, NULL, jsonb_build_object('note_id', new_id, 'length', char_length(p_body)), NULL);
+  RETURN new_id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_add_note(uuid, text, uuid, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_add_note(uuid, text, uuid, text) TO service_role;
+
+-- The gift itself lives in RevenueCat (promotional entitlement); the console calls RevenueCat first and then records
+-- it here, so a gift that RevenueCat refused never leaves a grant row behind.
+CREATE FUNCTION public.staff_record_pro_grant(
+  p_actor uuid, p_role text, p_target uuid, p_ends_at timestamptz, p_reason text, p_before jsonb
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  new_id uuid;
+BEGIN
+  IF p_actor IS NOT NULL AND p_actor = p_target THEN
+    RAISE EXCEPTION 'staff_record_pro_grant: staff cannot act on their own account' USING ERRCODE = '42501';
+  END IF;
+  IF p_ends_at IS NULL OR p_ends_at <= now() THEN
+    RAISE EXCEPTION 'staff_record_pro_grant: the gift must end in the future' USING ERRCODE = '22023';
+  END IF;
+  IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
+    RAISE EXCEPTION 'staff_record_pro_grant: a reason is required' USING ERRCODE = '22023';
+  END IF;
+  INSERT INTO public.pro_grants (user_id, granted_by, ends_at, reason)
+  VALUES (p_target, p_actor, p_ends_at, btrim(p_reason))
+  RETURNING id INTO new_id;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'pro.grant', p_target, btrim(p_reason), p_before,
+    jsonb_build_object('grant_id', new_id, 'ends_at', p_ends_at), NULL);
+  RETURN new_id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_record_pro_grant(uuid, text, uuid, timestamptz, text, jsonb)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_record_pro_grant(uuid, text, uuid, timestamptz, text, jsonb) TO service_role;
+
+CREATE FUNCTION public.staff_record_pro_revoke(
+  p_actor uuid, p_role text, p_target uuid, p_reason text, p_before jsonb
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF p_actor IS NOT NULL AND p_actor = p_target THEN
+    RAISE EXCEPTION 'staff_record_pro_revoke: staff cannot act on their own account' USING ERRCODE = '42501';
+  END IF;
+  IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
+    RAISE EXCEPTION 'staff_record_pro_revoke: a reason is required' USING ERRCODE = '22023';
+  END IF;
+  UPDATE public.pro_grants
+     SET revoked_at = now(), revoked_by = p_actor
+   WHERE user_id = p_target AND revoked_at IS NULL;
+  PERFORM public.staff_record(p_actor, p_role, 'pro.revoke', p_target, btrim(p_reason), p_before, NULL, NULL);
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_record_pro_revoke(uuid, text, uuid, text, jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_record_pro_revoke(uuid, text, uuid, text, jsonb) TO service_role;

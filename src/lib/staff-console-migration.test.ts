@@ -36,7 +36,12 @@ beforeAll(async () => {
     GRANT USAGE ON SCHEMA auth TO authenticated, anon, service_role;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
       AS $$ SELECT NULLIF(current_setting('app.uid', true), '')::uuid $$;
-    INSERT INTO auth.users VALUES ('${ACTOR}'), ('${T1}'), ('${T2}'), ('${T3}'), ('${S1}'), ('${S2}');
+    ALTER TABLE auth.users ADD COLUMN email text, ADD COLUMN created_at timestamptz DEFAULT now();
+    CREATE TABLE public.profiles(id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, display_name text);
+    INSERT INTO auth.users(id) VALUES ('${ACTOR}'), ('${T1}'), ('${T2}'), ('${T3}'), ('${S1}'), ('${S2}');
+    UPDATE auth.users SET email = 'learner1@example.com' WHERE id = '${T1}';
+    UPDATE auth.users SET email = 'Other.Person@example.com' WHERE id = '${T2}';
+    INSERT INTO public.profiles VALUES ('${T1}', 'Maria Lopez'), ('${T2}', '100%_Real'), ('${S2}', 'Marcus');
     GRANT USAGE ON SCHEMA public TO authenticated, anon, service_role;
   `);
   await db.exec(sqlText);
@@ -259,5 +264,98 @@ describe("staff console migration", () => {
         `INSERT INTO public.staff_notes(user_id, author_id, body) VALUES ('${T1}','${S2}','')`,
       ),
     ).rejects.toThrow();
+  });
+
+  it("staff_search_users finds by exact email, id and name prefix, and is bounded", async () => {
+    const search = (q: string) =>
+      asServer(async () =>
+        (
+          await db.query<{ id: string }>("SELECT id FROM public.staff_search_users($1)", [q])
+        ).rows.map((r) => r.id),
+      );
+    expect(await search("LEARNER1@example.com")).toEqual([T1]);
+    expect(await search("learner1@example")).toEqual([]); // email is exact, never a prefix
+    expect(await search(T2)).toEqual([T2]);
+    expect(await search("mar")).toEqual(expect.arrayContaining([T1, S2]));
+    expect(await search("mar")).toHaveLength(2);
+    expect(await search("100%")).toEqual([T2]); // wildcards are literal
+    expect(await search("%%")).toEqual([]);
+    await asServer(() =>
+      expect(db.query("SELECT * FROM public.staff_search_users('m')")).rejects.toMatchObject({
+        code: "22023",
+      }),
+    );
+    await asRole(
+      "authenticated",
+      () =>
+        expect(db.query("SELECT * FROM public.staff_search_users('mar')")).rejects.toMatchObject({
+          code: "42501",
+        }),
+      ACTOR,
+    );
+  });
+
+  it("staff_add_note writes the note and one audit row together, and refuses bad input", async () => {
+    const before = await count("staff_audit_log");
+    await asServer(() =>
+      db.query("SELECT public.staff_add_note($1,'support',$2,'asked about billing')", [ACTOR, T1]),
+    );
+    expect(await count("staff_notes", `user_id='${T1}' AND author_id='${ACTOR}'`)).toBe(1);
+    expect(await count("staff_audit_log")).toBe(before + 1);
+    expect(await count("staff_audit_log", `action='note.add' AND target_user_id='${T1}'`)).toBe(1);
+    // the note text is not copied into the record's before/after
+    expect(
+      await count("staff_audit_log", `action='note.add' AND after::text LIKE '%billing%'`),
+    ).toBe(0);
+    for (const args of [
+      [ACTOR, T1, ""],
+      [ACTOR, T1, "x".repeat(2001)],
+      [ACTOR, ACTOR, "self"],
+    ]) {
+      await asServer(() =>
+        expect(
+          db.query("SELECT public.staff_add_note($1,'support',$2,$3)", args),
+        ).rejects.toThrow(),
+      );
+    }
+    expect(await count("staff_notes", `user_id='${T1}'`)).toBe(1);
+    expect(await count("staff_audit_log")).toBe(before + 1);
+  });
+
+  it("staff_record_pro_grant and staff_record_pro_revoke record the gift and its end", async () => {
+    await asServer(() =>
+      db.query(
+        "SELECT public.staff_record_pro_grant($1,'owner',$2,now() + interval '30 days','support goodwill','{\"pro\":false}'::jsonb)",
+        [ACTOR, T1],
+      ),
+    );
+    expect(await count("pro_grants", `user_id='${T1}' AND revoked_at IS NULL`)).toBe(1);
+    expect(await count("staff_audit_log", `action='pro.grant' AND target_user_id='${T1}'`)).toBe(1);
+    await asServer(() =>
+      expect(
+        db.query(
+          "SELECT public.staff_record_pro_grant($1,'owner',$2,now() - interval '1 day','r',null)",
+          [ACTOR, T1],
+        ),
+      ).rejects.toThrow(),
+    );
+    await asServer(() =>
+      expect(
+        db.query(
+          "SELECT public.staff_record_pro_grant($1,'owner',$1,now() + interval '1 day','r',null)",
+          [ACTOR],
+        ),
+      ).rejects.toThrow(/own account/),
+    );
+    await asServer(() =>
+      db.query("SELECT public.staff_record_pro_revoke($1,'owner',$2,'given by mistake',null)", [
+        ACTOR,
+        T1,
+      ]),
+    );
+    expect(await count("pro_grants", `user_id='${T1}' AND revoked_at IS NOT NULL`)).toBe(1);
+    expect(await count("staff_audit_log", `action='pro.revoke' AND target_user_id='${T1}'`)).toBe(
+      1,
+    );
   });
 });

@@ -3186,6 +3186,10 @@ export type Database = {
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: never; Returns: string };
+      staff_add_note: {
+        Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
+        Returns: string;
+      };
       staff_lift_restriction: {
         Args: {
           p_actor: string;
@@ -3209,9 +3213,39 @@ export type Database = {
         };
         Returns: number;
       };
+      staff_record_pro_grant: {
+        Args: {
+          p_actor: string;
+          p_before: Json;
+          p_ends_at: string;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: string;
+      };
+      staff_record_pro_revoke: {
+        Args: {
+          p_actor: string;
+          p_before: Json;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: undefined;
+      };
       staff_revoke_sessions: {
         Args: { p_target: string };
         Returns: undefined;
+      };
+      staff_search_users: {
+        Args: { p_q: string };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          email: string;
+          id: string;
+        }[];
       };
       staff_set_restriction: {
         Args: {
