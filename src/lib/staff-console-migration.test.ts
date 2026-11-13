@@ -506,7 +506,10 @@ describe("staff console migration", () => {
       const owner = await rowCounts(OWNR);
       await asServer(() =>
         expect(
-          db.query("SELECT public.staff_set_restriction($1,'owner',$2,'ban','coup')", [ACTOR, OWNR]),
+          db.query("SELECT public.staff_set_restriction($1,'owner',$2,'ban','coup')", [
+            ACTOR,
+            OWNR,
+          ]),
         ).rejects.toMatchObject({ code: "42501" }),
       );
       expect(await rowCounts(OWNR)).toEqual(owner);

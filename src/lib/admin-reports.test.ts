@@ -366,7 +366,13 @@ describe("moderation actions", () => {
     const supabaseAdmin = createSupabaseMock();
     supabaseAdmin.from.mockReturnValueOnce(
       chainable({
-        data: { id: REPORT, kind: "team_name", reported: "u2", reason: "x", context: { team_id: TEAM } },
+        data: {
+          id: REPORT,
+          kind: "team_name",
+          reported: "u2",
+          reason: "x",
+          context: { team_id: TEAM },
+        },
         error: null,
       }),
     );
@@ -391,11 +397,19 @@ describe("moderation actions", () => {
       const supabaseAdmin = createSupabaseMock();
       supabaseAdmin.from.mockReturnValueOnce(
         chainable({
-          data: { id: REPORT, kind: "team_name", reported: "u2", reason: "x", context: { team_id: TEAM } },
+          data: {
+            id: REPORT,
+            kind: "team_name",
+            reported: "u2",
+            reason: "x",
+            context: { team_id: TEAM },
+          },
           error: null,
         }),
       );
-      supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: null, error: { message: "audit down" } }));
+      supabaseAdmin.rpc.mockReturnValueOnce(
+        chainable({ data: null, error: { message: "audit down" } }),
+      );
       await expect(run(supabaseAdmin)).rejects.toThrow("audit down");
       expect(supabaseAdmin.from).toHaveBeenCalledTimes(1); // only the report lookup: nothing was resolved
     }

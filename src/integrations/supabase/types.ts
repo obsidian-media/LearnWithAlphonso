@@ -3210,7 +3210,13 @@ export type Database = {
         Returns: undefined;
       };
       staff_disband_team: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string; p_team: string };
+        Args: {
+          p_actor: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+          p_team: string;
+        };
         Returns: boolean;
       };
       staff_dismiss_report: {
