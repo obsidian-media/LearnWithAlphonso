@@ -3,6 +3,7 @@ import { AI_NARRATED_LABEL } from "../lib/podcast-label";
 import { usePodcastPlayer } from "../lib/podcast-player";
 import { mascotArt } from "../lib/mascot-poses";
 import { roomArt } from "./ListenLibrary";
+import { DsIcon } from "./ds/DsIcon";
 import { Scrubber } from "./PodcastScrubber";
 import { TimedTranscript } from "./TimedTranscript";
 import { shouldDismissSwipe } from "../lib/swipe-dismiss";
@@ -125,9 +126,9 @@ export function FullPlayer({
               type="button"
               onClick={onCollapse}
               aria-label="Minimise player"
-              className="grid size-11 place-items-center rounded-full bg-ds-on-hero/15 text-xl font-extrabold"
+              className="grid size-11 place-items-center rounded-full bg-ds-on-hero/15"
             >
-              ⌄
+              <DsIcon name="chevron" className="size-6 rotate-90" />
             </button>
             <button
               type="button"

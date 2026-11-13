@@ -64,6 +64,8 @@ struct RootView: View {
     @State private var firstRunNext: FirstRun.Destination?
     @State private var firstRunName: String?
     @State private var selectedTab = RootTab.learn
+    /// Path stops that live in another tab (podcast, talk, campaign scene) travel through this.
+    @State private var pathDeepLink = PathDeepLink()
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -144,6 +146,12 @@ struct RootView: View {
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                             .tag(RootTab.profile)
+                    }
+                    .environment(pathDeepLink)
+                    .onChange(of: pathDeepLink.pending) { _, destination in
+                        if let destination, let tab = PathDeepLink.tab(for: destination) { selectedTab = tab }
+                        // A podcast stop has nothing more to do once the Listen tab is showing.
+                        if destination == .podcastLibrary { pathDeepLink.pending = nil }
                     }
                     // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
                     // for selected tab items, parchment tab-bar background instead

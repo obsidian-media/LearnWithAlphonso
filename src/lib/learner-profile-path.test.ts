@@ -38,4 +38,24 @@ describe("learner profile: path preferences", () => {
     expect(b.pathTrimUntil).toBeUndefined();
     expect(b.pathOff).toEqual(["talk"]);
   });
+
+  it("accepts a rest day 0..6 or none, and refuses anything else", () => {
+    for (const d of [0, 1, 3, 6, "none"])
+      expect(learnerProfilePatchSchema.safeParse({ pathRestDay: d }).success).toBe(true);
+    for (const d of [-1, 7, 1.5, "monday", null, true])
+      expect(learnerProfilePatchSchema.safeParse({ pathRestDay: d }).success).toBe(false);
+  });
+  it("parses a rest day, drops a bad one without losing the rest, and merges it", () => {
+    expect(parseLearnerProfile({ pathRestDay: 3, goal: "travel" })).toMatchObject({
+      pathRestDay: 3,
+      goal: "travel",
+    });
+    expect(parseLearnerProfile({ pathRestDay: "none" }).pathRestDay).toBe("none");
+    const bad = parseLearnerProfile({ pathRestDay: 9, goal: "work" });
+    expect(bad.pathRestDay).toBeUndefined();
+    expect(bad.goal).toBe("work");
+    const merged = mergeLearnerProfile(parseLearnerProfile({ goal: "work" }), { pathRestDay: 0 });
+    expect(merged.pathRestDay).toBe(0);
+    expect(merged.goal).toBe("work");
+  });
 });

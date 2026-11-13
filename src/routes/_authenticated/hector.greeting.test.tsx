@@ -101,6 +101,8 @@ beforeEach(() => {
   players.length = 0;
   routes = {
     "/api/pro-status": () => Response.json(PRO),
+    // The daily limit is the server's to say; the page holds no copy.
+    "/api/app-config": () => Response.json({ limits: { hectorDaily: 150 } }),
     "/api/tts": () => new Response(new Blob(["mp3"]), { status: 200 }),
     "/api/hector-respond": () =>
       Response.json({ reply: "Sure! What did you do yesterday?", audioBase64: btoa("mp3") }),
@@ -216,6 +218,22 @@ describe("Hector speaks first", () => {
 
   it("one turn short of the allowance he still greets", async () => {
     usageRows.current = [{ count: 149 }];
+    renderPage();
+    await shows(GREETING_EN);
+    expect(tts()).toHaveLength(1);
+  });
+
+  it("the server's limit decides, not a number in the page", async () => {
+    routes["/api/app-config"] = () => Response.json({ limits: { hectorDaily: 200 } });
+    usageRows.current = [{ count: 150 }];
+    renderPage();
+    await shows(GREETING_EN);
+    expect(tts()).toHaveLength(1);
+  });
+
+  it("when the server does not say the limit he still greets, however much is used", async () => {
+    routes["/api/app-config"] = () => new Response("", { status: 500 });
+    usageRows.current = [{ count: 9999 }];
     renderPage();
     await shows(GREETING_EN);
     expect(tts()).toHaveLength(1);

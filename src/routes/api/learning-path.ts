@@ -18,6 +18,7 @@ import { loadPathData } from "@/lib/learning-path.server";
  *   PUT { course, action: "lessons_first" }               trim the optional types for TRIM_DAYS days
  *   PUT { course, action: "resume" }                      back to the full mix
  *   PUT { course, action: "set_daily_minutes", dailyMinutes: 15 }   one of 5, 10, 15, 20
+ *   PUT { course, action: "set_rest_day", restDay: 3 }    0 (Sunday) to 6, or "none" for no rest day
  * Everything is scoped to the user id of the verified token.
  */
 type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
@@ -59,6 +60,7 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
         };
       else if (body?.action === "resume") patch = { pathTrimUntil: null };
       else if (body?.action === "set_daily_minutes") patch = { dailyMinutes: body.dailyMinutes };
+      else if (body?.action === "set_rest_day") patch = { pathRestDay: body.restDay };
       else return json({ error: "Unknown action" }, 400);
       const checked = learnerProfilePatchSchema.safeParse(patch);
       if (!checked.success) return json({ error: "That choice cannot be saved." }, 400);

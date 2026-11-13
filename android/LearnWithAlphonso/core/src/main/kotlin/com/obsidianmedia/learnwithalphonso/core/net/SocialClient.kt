@@ -53,7 +53,7 @@ suspend fun ProgressSyncClient.fetchActivityXp(userId: String, from: String, to:
  * and kind hector (RLS lets them read it). Any failure answers false, so Hector still greets and the server stays the
  * real guard. Port of ProgressSyncClient.fetchHectorAllowanceUsedUp in Swift.
  */
-suspend fun ProgressSyncClient.fetchHectorAllowanceUsedUp(): Boolean = try {
+suspend fun ProgressSyncClient.fetchHectorAllowanceUsedUp(limit: Int?): Boolean = if (limit == null) false else try {
     HectorAllowance.isUsedUp(
         rowsOf(
             http.rest(
@@ -61,6 +61,7 @@ suspend fun ProgressSyncClient.fetchHectorAllowanceUsedUp(): Boolean = try {
                 mapOf("select" to "count", "day" to "eq.${HectorAllowance.utcDay(nowMillis())}", "kind" to "eq.hector"),
             ),
         ).mapNotNull { it.int("count") },
+        limit,
     )
 } catch (e: kotlinx.coroutines.CancellationException) {
     throw e

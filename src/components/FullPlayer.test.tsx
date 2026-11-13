@@ -93,6 +93,15 @@ describe("FullPlayer sleep timer", () => {
   });
 });
 
+describe("FullPlayer minimise button", () => {
+  it("draws a design-system chevron, not a text glyph", () => {
+    setup({ episodeId: null });
+    const button = screen.getByRole("button", { name: "Minimise player" });
+    expect(button.querySelector("svg")).not.toBeNull();
+    expect(button.textContent).toBe("");
+  });
+});
+
 describe("FullPlayer minimise gestures", () => {
   it("minimises on a long swipe down on the top of the sheet", () => {
     const p = setup({ episodeId: null });

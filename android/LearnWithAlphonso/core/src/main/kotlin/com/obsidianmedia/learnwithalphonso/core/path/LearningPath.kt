@@ -126,6 +126,8 @@ data class LearningPath(
     val statusDetail: String,
     val progress: PathProgress,
     val dailyMinutes: Int,
+    /** The rest day as planned: 0 (Sunday) to 6, or [PathRestDay.NONE] (-1) for seven study days. An older server omits it: Sunday. */
+    val restDay: Int = PathRestDay.SUNDAY,
     val weekMinutes: Int,
     val weekDoneMinutes: Int,
     val trimmed: Boolean,
@@ -176,6 +178,22 @@ sealed interface LearningPathChange {
     object LessonsFirst : LearningPathChange
     object Resume : LearningPathChange
     data class SetDailyMinutes(val minutes: Int) : LearningPathChange
+
+    /** 0 (Sunday) to 6, or [PathRestDay.NONE] for no rest day. */
+    data class SetRestDay(val day: Int) : LearningPathChange
+}
+
+/** The rest-day choices in "Build my path", shared by the three platforms (weekday 0 = Sunday, -1 = none). */
+object PathRestDay {
+    const val SUNDAY = 0
+    const val NONE = -1
+    val WEEKDAY_LABELS = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+    /** Every choice in the order they are shown: the seven weekdays, then "No rest day". */
+    val CHOICES: List<Pair<Int, String>> = WEEKDAY_LABELS.mapIndexed { i, label -> i to label } + (NONE to "No rest day")
+
+    /** Study days a week with this rest day: six, or seven with none. */
+    fun studyDays(restDay: Int): Int = if (restDay == NONE) 7 else 6
 }
 
 /** What the screens need from the server; [com.obsidianmedia.learnwithalphonso.core.net.LearningPathClient] implements it. */

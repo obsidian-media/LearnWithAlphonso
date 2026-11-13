@@ -145,6 +145,42 @@ describe("build my path", () => {
       off: ["podcast"],
     });
   });
+  it("offers the seven weekdays and no rest day, with the current rest day selected", async () => {
+    serve("restDayChosen");
+    render(<BuildScreen />);
+    const group = await screen.findByRole("radiogroup", { name: "Rest day" });
+    const labels = Array.from(group.querySelectorAll('[role="radio"]')).map((r) => r.textContent);
+    expect(labels).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "No rest day"]);
+    expect(screen.getByRole("radio", { name: "Wed" }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByRole("radio", { name: "Sun" }).getAttribute("aria-checked")).toBe("false");
+  });
+  it("selects No rest day when the path has none", async () => {
+    serve("noRestDay");
+    render(<BuildScreen />);
+    expect(
+      (await screen.findByRole("radio", { name: "No rest day" })).getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(screen.getByText(/7 days/)).toBeTruthy();
+  });
+  it("choosing a rest day sends it, and choosing none sends none", async () => {
+    serve("onTrack");
+    render(<BuildScreen />);
+    fireEvent.click(await screen.findByRole("radio", { name: "Fri" }));
+    await waitFor(() => expect(calls.some((c) => c.init?.method === "PUT")).toBe(true));
+    expect(JSON.parse(String(calls.find((c) => c.init?.method === "PUT")!.init?.body))).toEqual({
+      course: "en",
+      action: "set_rest_day",
+      restDay: 5,
+    });
+    calls.length = 0;
+    fireEvent.click(screen.getByRole("radio", { name: "No rest day" }));
+    await waitFor(() => expect(calls.some((c) => c.init?.method === "PUT")).toBe(true));
+    expect(JSON.parse(String(calls.find((c) => c.init?.method === "PUT")!.init?.body))).toEqual({
+      course: "en",
+      action: "set_rest_day",
+      restDay: "none",
+    });
+  });
   it("lessons cannot be switched off", async () => {
     serve("onTrack");
     render(<BuildScreen />);

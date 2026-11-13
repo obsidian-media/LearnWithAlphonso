@@ -132,6 +132,8 @@ class HectorViewModel(
     private val hectorVoice: (String) -> String? = { null },
     /** Spoken lines already fetched (shared with Alphonso's openers); tests pass their own. */
     private val openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
+    /** The daily Hector limit as the server tells it (GET /api/app-config); null (unknown) fails open. */
+    private val hectorLimit: suspend () -> Int? = { null },
 ) : ViewModel(), CallConversation {
     // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
@@ -160,7 +162,7 @@ class HectorViewModel(
             val name = runCatching { progress.fetchNameStatus() }.getOrNull()?.takeIf { it.nameConfirmed }?.displayName
             cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
-            allowanceUsedUp = progress.fetchHectorAllowanceUsedUp()
+            allowanceUsedUp = progress.fetchHectorAllowanceUsedUp(hectorLimit())
             greeting.complete(HectorGreeting.build(course, level, name, HectorGreeting.recentWeakSpot(trend)))
         }
         viewModelScope.launch {
@@ -307,7 +309,7 @@ private fun HectorConversation(container: AppContainer) {
     // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
     val course by container.activeCourse.course.collectAsState()
     val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course, hectorVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Hector, c) })
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course, hectorVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Hector, c) }, hectorLimit = { container.hectorDailyLimit() })
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()

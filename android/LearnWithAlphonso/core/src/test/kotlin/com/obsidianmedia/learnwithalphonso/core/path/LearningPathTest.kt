@@ -29,7 +29,7 @@ class LearningPathTest {
     }
 
     @Test fun `every checked-in scenario decodes`() {
-        for (key in listOf("onTrack", "behind", "behindTrimmed")) path(key)
+        for (key in listOf("onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay")) path(key)
     }
 
     @Test fun `the behind path carries the three ways forward`() {
@@ -60,6 +60,29 @@ class LearningPathTest {
         val p = path("onTrack")
         assertEquals(7, p.week.size)
         assertEquals(1, p.week.count { it.state == "rest" })
+    }
+
+    @Test fun `the rest day comes from the server three ways`() {
+        assertEquals(0, path("onTrack").restDay)
+        assertEquals(3, path("restDayChosen").restDay)
+        assertEquals(1, path("restDayChosen").week.count { it.state == "rest" })
+        val none = path("noRestDay")
+        assertEquals(PathRestDay.NONE, none.restDay)
+        assertEquals(0, none.week.count { it.state == "rest" })
+        assertEquals(70, none.weekMinutes)
+    }
+
+    @Test fun `an older server without a rest day means Sunday`() {
+        val withoutKey = buildJsonObject { fixtures.getValue("onTrack").jsonObject.forEach { (k, v) -> if (k != "restDay") put(k, v) } }
+        val decoded = LearningPathDecoding.path(buildJsonObject { put("path", withoutKey) }.toString())
+        assertEquals(PathRestDay.SUNDAY, decoded!!.restDay)
+    }
+
+    @Test fun `the rest day choices are the seven weekdays then none`() {
+        assertEquals(listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "No rest day"), PathRestDay.CHOICES.map { it.second })
+        assertEquals(listOf(0, 1, 2, 3, 4, 5, 6, -1), PathRestDay.CHOICES.map { it.first })
+        assertEquals(6, PathRestDay.studyDays(2))
+        assertEquals(7, PathRestDay.studyDays(PathRestDay.NONE))
     }
 
     @Test fun `the mix adds up to the weeks minutes`() {

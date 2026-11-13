@@ -1,6 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.ui.path
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -69,6 +73,7 @@ import com.obsidianmedia.learnwithalphonso.core.path.PathItem
 import com.obsidianmedia.learnwithalphonso.core.path.PathItemRef
 import com.obsidianmedia.learnwithalphonso.core.path.PathKind
 import com.obsidianmedia.learnwithalphonso.core.path.PathMixEntry
+import com.obsidianmedia.learnwithalphonso.core.path.PathRestDay
 import com.obsidianmedia.learnwithalphonso.core.path.PathStop
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
@@ -542,8 +547,22 @@ fun PathBuildScreen(container: AppContainer, onBack: () -> Unit) {
                     Card {
                         AlphonsoSectionHeader("Your plan")
                         Text("${path.progress.requiredPerWeek} lessons a week", style = MaterialTheme.typography.titleMedium, color = ds.ink)
-                        Text("${path.dailyMinutes} minutes a day, 6 days. The rest of each day is filled with the mix below.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                        Text("${path.dailyMinutes} minutes a day, ${PathRestDay.studyDays(path.restDay)} days. The rest of each day is filled with the mix below.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
                         PathMixBar(path.mix)
+                    }
+                }
+                item(key = "rest-head") { AlphonsoSectionHeader("Rest day") }
+                item(key = "rest-day") {
+                    Row(Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()).selectableGroup().semantics { contentDescription = "Rest day" }, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        PathRestDay.CHOICES.forEach { (value, label) ->
+                            val on = path.restDay == value
+                            Box(
+                                Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(24.dp)).background(if (on) ds.action else ds.card)
+                                    .selectable(selected = on, enabled = !busy, role = Role.RadioButton) { vm.apply(LearningPathChange.SetRestDay(value)) }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { Text(label, color = if (on) ds.onAction else ds.ink, style = MaterialTheme.typography.labelLarge) }
+                        }
                     }
                 }
                 item(key = "switch-head") { AlphonsoSectionHeader("How I like to learn") }
