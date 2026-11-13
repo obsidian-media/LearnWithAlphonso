@@ -147,7 +147,28 @@ describe("B1 to C1 conjugation drills (not fixed yet: the count may only go down
     // 2026-11-06: 490 of the 507 drill questions this detector finds (477 before the form check
     // compared vowels: it had read "estoy" as a form of ser). Lower this number when you fix some;
     // never raise it. 2026-11-06 content review: French 143 -> 3 and Spanish 347 -> 0, so 490 -> 3.
-    expect(bad).toBeLessThanOrEqual(3);
+    // Round 7: irregular stems added to the gate, which then saw 5 more; all fixed, so 0.
+    expect(bad).toBe(0);
+  });
+});
+
+describe("a drill never gives its answer away by being the only form of the verb (every level)", () => {
+  // The defect: "Je ___ (parler)" offered mange / fais / dors, so the one option that looked like
+  // "parler" was the answer. A drill needs the answer and at least two other forms of the verb.
+  const every = [BANK_FR, BANK_ES].flatMap((b) => [...b.A1, ...b.A2, ...b.B1, ...b.B2, ...b.C1]);
+  const found = drills(every);
+  const forms = (d: Drill) => d.wrong.length - nonForms(d).length;
+
+  it("finds the drills of every level", () => {
+    expect(found.length).toBeGreaterThanOrEqual(500);
+    for (const lvl of ["fr", "es"]) expect(found.some((d) => d.pack.startsWith(lvl + "b2"))).toBe(true);
+  });
+
+  it("at least two wrong options are forms of the bracketed verb (one, when the question has two options)", () => {
+    const bad = found
+      .filter((d) => forms(d) < Math.min(2, d.wrong.length))
+      .map((d) => `${d.q.id} ${d.q.prompt} => ${d.answer} | ${d.wrong.join(" / ")}`);
+    expect(bad).toEqual([]);
   });
 });
 

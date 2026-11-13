@@ -64,6 +64,49 @@ const SUPPLETIVE: Record<string, string[]> = {
   saber: ["se"],
 };
 
+/** Endings of the future, conditional and imperfect, for the stems that change (ser-, ir-, saur-). */
+const FR_FUTURE = "ai,as,a,ons,ez,ont".split(",");
+const FR_CONDITIONAL = "ais,ait,ions,iez,aient".split(",");
+const withEndings = (stem: string, endings: string[]) => endings.map((e) => `${stem}${e}`);
+
+// Irregular French stems that share nothing with their infinitive (gate-local). Without them the
+// gate cannot tell that "sois", "irons" or "pourrait" are forms of être, aller or pouvoir, and skips
+// the drill instead of checking it.
+Object.assign(SUPPLETIVE, {
+  être: [
+    ...(SUPPLETIVE.être ?? []),
+    "sois", "soit", "soyons", "soyez", "soient", "ete", "etais", "etait", "etions", "etiez", "etaient",
+    ...withEndings("ser", [...FR_FUTURE, ...FR_CONDITIONAL]),
+  ],
+  avoir: [
+    ...(SUPPLETIVE.avoir ?? []),
+    "aie", "aies", "ait", "ayons", "ayez", "aient", "eu",
+    ...withEndings("aur", [...FR_FUTURE, ...FR_CONDITIONAL]),
+  ],
+  aller: [
+    ...(SUPPLETIVE.aller ?? []),
+    "aille", "ailles", "aillent",
+    ...withEndings("ir", [...FR_FUTURE, ...FR_CONDITIONAL]),
+  ],
+  devoir: ["dois", "doit", "doivent", "doive", "doives", "doivent", "du"],
+  pouvoir: [
+    ...(SUPPLETIVE.pouvoir ?? []),
+    "pu", "puisse", "puisses", "puissions", "puissiez", "puissent",
+    ...withEndings("pourr", [...FR_FUTURE, ...FR_CONDITIONAL]),
+  ],
+  savoir: [
+    ...(SUPPLETIVE.savoir ?? []),
+    "sache", "saches", "sachions", "sachiez", "sachent",
+    ...withEndings("saur", [...FR_FUTURE, ...FR_CONDITIONAL]),
+  ],
+  vouloir: [...(SUPPLETIVE.vouloir ?? []), ...withEndings("voudr", [...FR_FUTURE, ...FR_CONDITIONAL])],
+  falloir: ["faut", "faille", ...withEndings("faudr", [...FR_FUTURE, ...FR_CONDITIONAL])],
+  faire: [...(SUPPLETIVE.faire ?? []), "fasse", "fasses", "fassions", "fassiez", "fassent"],
+  voir: [...(SUPPLETIVE.voir ?? []), ...withEndings("verr", [...FR_FUTURE, ...FR_CONDITIONAL])],
+  // Spanish stems that change in the future, conditional and subjunctive.
+  decir: [...(SUPPLETIVE.decir ?? []), ...withEndings("dir", ["é", "ás", "á", "emos", "án", "ía", "ías", "ían", "íamos"]).map((x) => x.normalize("NFD").replace(/[̀-ͯ]/g, ""))],
+});
+
 const CLITIC = /^(me|te|se|nous|vous|nos|os)\s+|^[mts]'/;
 
 /** The infinitive without its reflexive pronoun and its ending: "se lever" -> "lev". */

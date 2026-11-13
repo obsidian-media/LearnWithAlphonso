@@ -22446,15 +22446,15 @@
  "fr:question:frb2p5l3/frb2p5q13": {
   "patch": {
    "bank": [
-    "habitais",
+    "étais",
     "était",
-    "commençait",
-    "avait"
+    "étions",
+    "étaient"
    ],
    "answer": "était",
    "explanation": "After the past verb \"a dit\", her present \"je suis\" shifts to the imperfect \"était\" in reported speech; \"très\" is already in the sentence."
   },
-  "reason": "The key \"était très\" doubles the \"très\" already in the prompt; the answer must be \"était\", and the distractors become forms of \"être\". / The key \"était très\" produces \"était très très contente\", so the key becomes plain \"était\" in the same bank position.",
+  "reason": "The key \"était très\" doubles the \"très\" already in the prompt; the answer must be \"était\", and the distractors become forms of \"être\". / The key \"était très\" produces \"était très très contente\", so the key becomes plain \"était\" in the same bank position. Round 7: the wrong options were other verbs (habitais, commençait, avait); they are now other forms of être in the imperfect.",
   "keyChange": true
  },
  "fr:question:frb2p5l3/frb2p5q14": {
@@ -25179,9 +25179,15 @@
  },
  "fr:question:frc1p17l3/frc1p17q10": {
   "patch": {
-   "explanation": "\"devez\" is the \"vous\" form of \"devoir\"; used for probability, \"vous devez avoir des questions\" means you must have some questions."
+   "explanation": "\"devez\" is the \"vous\" form of \"devoir\"; used for probability, \"vous devez avoir des questions\" means you must have some questions.",
+   "bank": [
+    "doit",
+    "dois",
+    "devons",
+    "devez"
+   ]
   },
-  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7). Round 7: \"peut\" and \"pouvons\" are forms of pouvoir, so the answer was the only form of devoir; the wrong options are now other forms of devoir."
  },
  "fr:question:frc1p17l3/frc1p17q11": {
   "patch": {
@@ -25305,15 +25311,27 @@
  },
  "fr:question:frc1p17l5/frc1p17q21": {
   "patch": {
-   "explanation": "After \"n'aurait pas\" a past participle is needed, and the meaning 'should not have happened' calls for devoir's participle \"dû\" (with circumflex), not \"pu\"."
+   "explanation": "After \"n'aurait pas\" a past participle is needed, and the meaning 'should not have happened' calls for devoir's participle \"dû\" (with circumflex), not the infinitive or \"du\".",
+   "bank": [
+    "devoir",
+    "dois",
+    "dû",
+    "du"
+   ]
   },
-  "reason": "The key is right; the explanation must cover the participle and the sense of reproach."
+  "reason": "The key is right; the explanation must cover the participle and the sense of reproach. Round 7: \"peut\" and \"pu\" are forms of pouvoir; the wrong options are now forms of devoir (and the infinitive and \"du\", the usual slips)."
  },
  "fr:question:frc1p17l5/frc1p17q22": {
   "patch": {
-   "explanation": "A conjugated verb is needed for the subject \"Il\", so devoir takes the form \"doit\", meaning 'must be' as a supposition: 'he must be tired after this trip'."
+   "explanation": "A conjugated verb is needed for the subject \"Il\", so devoir takes the form \"doit\", meaning 'must be' as a supposition: 'he must be tired after this trip'.",
+   "choices": [
+    "doivent",
+    "dû",
+    "doit",
+    "dois"
+   ]
   },
-  "reason": "The key is right; the explanation must give the conjugation clue and the supposition sense."
+  "reason": "The key is right; the explanation must give the conjugation clue and the supposition sense. Round 7: \"peut\" also made a correct sentence and is another verb; replaced by \"doivent\", another form of devoir."
  },
  "fr:question:frc1p17l5/frc1p17q23": {
   "patch": {
@@ -25329,9 +25347,14 @@
  },
  "fr:question:frc1p17l5/frc1p17q24": {
   "patch": {
-   "explanation": "The conditional perfect \"n'auriez pas ...\" needs a past participle, and 'you should not have left without warning' uses devoir's participle \"dû\"."
+   "explanation": "The conditional perfect \"n'auriez pas ...\" needs a past participle, and 'you should not have left without warning' uses devoir's participle \"dû\".",
+   "choices": [
+    "doit",
+    "dû",
+    "devoir"
+   ]
   },
-  "reason": "The key is right; the explanation must cover the conditional perfect and reproach."
+  "reason": "The key is right; the explanation must cover the conditional perfect and reproach. Round 7: \"peut\" is a form of pouvoir; replaced by the infinitive \"devoir\", a usual slip after the auxiliary."
  },
  "fr:question:frc1p18l1/frc1p18q0": {
   "patch": {
