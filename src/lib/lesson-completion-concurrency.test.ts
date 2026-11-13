@@ -24,6 +24,10 @@ type Rpc = (
   args: Record<string, unknown>,
 ) => Promise<{ data: { status?: string } | null; error: { message: string } | null }>;
 
+const makeAdmin = () =>
+  createClient(url!, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false } });
+type Admin = ReturnType<typeof makeAdmin>;
+
 const XP = 10;
 const TODAY = "2026-11-12";
 
@@ -32,12 +36,8 @@ describe("lesson completion under parallel calls (local Supabase stack)", () => 
     expect(url && serviceKey).toBeTruthy();
   });
 
-  async function withUser(
-    run: (admin: ReturnType<typeof createClient>, userId: string) => Promise<void>,
-  ) {
-    const admin = createClient(url!, serviceKey!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  async function withUser(run: (admin: Admin, userId: string) => Promise<void>) {
+    const admin = makeAdmin();
     const { data: created, error } = await admin.auth.admin.createUser({
       email: `completion-race-${crypto.randomUUID()}@example.com`,
       password: `pw-${crypto.randomUUID()}`,
@@ -53,11 +53,7 @@ describe("lesson completion under parallel calls (local Supabase stack)", () => 
   }
 
   /** What the handler reads before it computes: the four values apply_lesson_completion checks. */
-  async function snapshot(
-    admin: ReturnType<typeof createClient>,
-    userId: string,
-    lessonId: string,
-  ) {
+  async function snapshot(admin: Admin, userId: string, lessonId: string) {
     const one = async (table: string, cols: string, match: Record<string, string>) => {
       let q = admin.from(table).select(cols).eq("user_id", userId);
       for (const [k, v] of Object.entries(match)) q = q.eq(k, v);
