@@ -198,7 +198,7 @@
     "id": "p4c",
     "level": "A2",
     "type": "mc",
-    "prompt": "He plays football ___ Sundays.",
+    "prompt": "He plays soccer ___ Sundays.",
     "choices": [
       "in",
       "at",

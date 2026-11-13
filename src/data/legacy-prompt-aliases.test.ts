@@ -8,8 +8,8 @@ import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
  * text, so /api/chat maps it to the current text. This fixture is frozen: never regenerate it from current data.
  */
 describe("legacy prompt aliases", () => {
-  it("holds the 45 prompts the held-back review changed", () => {
-    expect(aliases).toHaveLength(45);
+  it("holds the 45 prompts the held-back review changed, plus the English prompts (12 current ones plus the older ones they replace) the American English pass changed", () => {
+    expect(aliases).toHaveLength(45 + 12);
   });
 
   it("every old prompt is distinct, no longer a current prompt, and maps to a current one", () => {

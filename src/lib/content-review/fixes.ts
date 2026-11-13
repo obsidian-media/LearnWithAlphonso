@@ -31,6 +31,11 @@ export type ProposedFix = {
   patch: Patch;
   /** True only when the judge decided the key itself is wrong (category wrong-key). */
   keyChange?: boolean;
+  /**
+   * The patch only respells an English item in American English (src/lib/american-english.ts). It
+   * may then restate a prompt or wrong options that an earlier reviewed fix owns.
+   */
+  americanEnglish?: boolean;
   reason: string;
 };
 
@@ -255,7 +260,7 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   }
   // An earlier reviewed English fix (question-fixes.ts, pinned by question-fixes.test.ts) owns its
   // prompt and wrong options: the review overlay must not undo it.
-  if (item.course === "en" && item.kind === "question") {
+  if (item.course === "en" && item.kind === "question" && !fix.americanEnglish) {
     const earlier = QUESTION_FIXES[item.id.slice(item.id.indexOf(":question:") + 10)];
     if (earlier?.prompt && "prompt" in fix.patch)
       why.push("the prompt is owned by an earlier reviewed fix (question-fixes.ts)");
