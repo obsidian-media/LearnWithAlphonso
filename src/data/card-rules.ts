@@ -10,14 +10,15 @@ const MAX_MEANING_WORDS = 8;
 const maxExampleWords = (level: Level) => (level === "B2" || level === "C1" ? 12 : 10);
 
 export const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
-const tokens = (s: string) => s.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g) ?? [];
+const tokens = (s: string) => s.toLowerCase().match(/[\p{L}]+(?:'[\p{L}]+)?/gu) ?? [];
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const norm = (s: string) => s.toLowerCase().replace(/[’]/g, "'");
 /** Endings a short word may take and still count as the same word ("run" / "runs" / "running"). */
 const SHORT_ENDINGS = "(?:s|es|d|ed|ing|'s|'d|'ll|n't)?";
 /** A whole-word match for a short word, so "on" is not found in "London" or "at" in "cat". */
-const shortWord = (w: string) => new RegExp(`(?<![a-z'])${esc(w)}${SHORT_ENDINGS}(?![a-z])`);
+const shortWord = (w: string) =>
+  new RegExp(`(?<![\\p{L}'])${esc(w)}${SHORT_ENDINGS}(?![\\p{L}])`, "u");
 const isShort = (w: string) => w.length <= 3;
 const stemOf = (w: string) => w.slice(0, Math.max(3, w.length - 2));
 /** Does this sentence word belong to the term word (whole word if short, shared stem otherwise)? */
@@ -27,12 +28,15 @@ const sameWord = (sentenceWord: string, termWord: string) =>
     : sentenceWord.startsWith(stemOf(termWord));
 
 /** Is the term, or an inflected form of it, in the sentence? */
-function mentionsTerm(sentence: string, term: string): boolean {
+export function mentionsTerm(sentence: string, term: string): boolean {
   const lower = norm(sentence);
   const t = norm(term).trim();
-  const phrase = new RegExp(`(?<![a-z'])${esc(t)}(?![a-z])`);
+  const phrase = new RegExp(`(?<![\\p{L}'])${esc(t)}(?![\\p{L}])`, "u");
   if (phrase.test(lower)) return true;
-  const sentenceTokens = tokens(lower);
+  // An elided form counts as its word too: "j'écoute" holds "écoute" (French and Spanish clitics).
+  const sentenceTokens = tokens(lower).flatMap((w) =>
+    w.includes("'") ? [w, ...w.split("'")] : [w],
+  );
   return tokens(t).every((tt) => sentenceTokens.some((s) => sameWord(s, tt)));
 }
 
@@ -71,14 +75,18 @@ const LABEL = /\b(?:talks? about|is an? (?:indirect|polite|formal|informal)|refe
 export function cardProblems(
   card: { term: string; meaning: string; example: string },
   level: Level = "A1",
+  /** The course language: for French and Spanish the term is foreign, so the English circularity checks are off. */
+  lang: "en" | "fr" | "es" = "en",
 ): string[] {
   const out: string[] = [];
   const { term, meaning, example } = card;
   if (!meaning.trim()) out.push("empty meaning");
   else {
     if (words(meaning).length > MAX_MEANING_WORDS) out.push("meaning over 8 words");
-    if (repeatsTerm(meaning, term)) out.push("meaning repeats the word");
-    else if (containsTerm(meaning, term)) out.push("meaning contains the word");
+    if (lang === "en") {
+      if (repeatsTerm(meaning, term)) out.push("meaning repeats the word");
+      else if (containsTerm(meaning, term)) out.push("meaning contains the word");
+    }
   }
   if (!example.trim()) out.push("empty example");
   else {
