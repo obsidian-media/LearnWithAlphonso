@@ -1,3 +1,5 @@
+import { americanize } from "../lib/american-english";
+import { REVIEW_FIXES } from "./review-fixes";
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import type { Unit } from "./curriculum";
@@ -93,10 +95,19 @@ describe("the shipped fixes", () => {
       expect(fix.why.length, key).toBeGreaterThan(8);
       const q = ref!.question;
       if (q.type !== "mc" && q.type !== "fill") throw new Error(key);
-      if (fix.prompt) expect(q.prompt, key).toBe(fix.prompt);
+      // The American English overlay (review-fixes/en.json, americanEnglish) may respell what a fix
+      // here owns; it is the only thing allowed to.
+      const overlay = REVIEW_FIXES.en[`en:question:${key}`];
+      const respelled = overlay?.americanEnglish ? overlay.patch : {};
+      if (fix.prompt)
+        expect([fix.prompt, americanize(fix.prompt), respelled.prompt], key).toContain(q.prompt);
       if (fix.wrong) {
         const options = q.type === "mc" ? q.choices : q.bank;
-        for (const w of fix.wrong) expect(options, key).toContain(w);
+        for (const w of fix.wrong)
+          expect(
+            options.some((o) => o === w || o === americanize(w)),
+            `${key} ${w}`,
+          ).toBe(true);
       }
     }
   });

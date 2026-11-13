@@ -2,7 +2,7 @@
 
 /** Real, correctly spelled English words the course text does not already contain (wrong listening choices only). */
 export const REVIEWED_WORDS: string[] =
-  "nurses sadder colder darker dirtier coldest august widest longest west train button zip softly gradually thirteen november buys vending".split(
+  "eraser nurses sadder colder darker dirtier coldest august widest longest west train button zip softly gradually thirteen november buys vending".split(
     " ",
   );
 

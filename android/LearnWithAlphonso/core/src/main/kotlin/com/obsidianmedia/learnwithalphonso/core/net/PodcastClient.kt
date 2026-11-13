@@ -178,6 +178,13 @@ class PodcastClient(
             )
         }
 
+    /** Seconds this user listened since the start of the current UTC month (`podcast_play_events`, own rows by RLS). */
+    suspend fun fetchMonthListenedSeconds(): Int =
+        ListenShelf.monthSeconds(
+            rows(http.rest(HttpMethod.Get, "podcast_play_events", mapOf("select" to "seconds_listened", "started_at" to "gte.${ListenShelf.monthStartIso(nowMillis())}")))
+                .map { it.int("seconds_listened") ?: 0 },
+        )
+
     /**
      * Through `save_listen_progress`, which takes the user from auth.uid(), requires a published episode and clamps the
      * position into the episode. The table has no client write grant.

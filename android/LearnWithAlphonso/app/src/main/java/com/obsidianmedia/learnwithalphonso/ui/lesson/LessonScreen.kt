@@ -53,7 +53,9 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Lesson
+import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
 import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
+import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonFinishCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonStage
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonTiming
@@ -189,13 +191,14 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                         // At the largest text sizes a fixed card would clip its words, so the words stay one scrolling list.
                         Column {
                             Box(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) { LessonHud(0f, hearts, onExit, onLight = true) }
-                            VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
+                            VocabScreen(container, state.lesson, vm.vocab, course, onStart = vm::startPractice)
                         }
                     } else {
                         LessonWordDeck(
                             overline = "Vocabulary \u00B7 ${state.lesson.subtitle}", title = state.lesson.title, items = vm.vocab,
                             hearts = hearts, onClose = onExit, onSpeak = { Speech.get(context).speak(it, course) },
                             image = { VocabImage(it, height = 160.dp) }, onStart = vm::startPractice,
+                            extra = { item -> ExplainInMyLanguage(container, ExplainRules.word(item.term, item.example, course.code)) },
                         )
                     }
                     LessonPhase.Quiz -> QuizStage(vm, state, course, container, roomId, hearts, onExit)
@@ -302,10 +305,20 @@ private fun QuizStage(vm: LessonViewModel, state: LessonUiState, course: Course,
                     onHearAnswer = { Speech.get(context).speak(question.correctAnswerText, course) },
                     continueLabel = if (more) (if (correct) "Continue" else "Got it") else "Finish",
                     onContinue = vm::continueOrFinish,
-                ) {
-                    // The sheet already says right or wrong with Alphonso's face: only the one-line why here.
-                    Explanation(container, correct, question.explanation, course, question, inSheet = true)
-                }
+                    explanation = {
+                        // The sheet already says right or wrong with Alphonso's face: only the one-line why here.
+                        Explanation(container, correct, question.explanation, course, question, inSheet = true)
+                    },
+                    // A wrong answer can be explained in the learner's own language; a right one has nothing to explain.
+                    extra = {
+                        if (!correct) {
+                            val request = remember(question.id, state.picked, course.code) {
+                                ExplainRules.wrongAnswer(question.promptText, state.picked.orEmpty(), question.correctAnswerText, course.code)
+                            }
+                            ExplainInMyLanguage(container, request)
+                        }
+                    },
+                )
             }
         }
     }
@@ -321,7 +334,7 @@ private fun LeagueUpCard(tier: String) {
 }
 
 @Composable
-private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, onStart: () -> Unit) {
+private fun VocabScreen(container: AppContainer, lesson: Lesson, items: List<VocabItem>, course: Course, onStart: () -> Unit) {
     val palette = AlphonsoColor.palette
     val context = LocalContext.current
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -342,6 +355,7 @@ private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, 
                     if (item.example.isNotEmpty()) {
                         Text(item.example, style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic), color = palette.inkSoft)
                     }
+                    ExplainInMyLanguage(container, ExplainRules.word(item.term, item.example, course.code))
                 }
             }
         }

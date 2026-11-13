@@ -4,7 +4,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-enum class AiResponseSurface(val wire: String) { HECTOR("hector"), CONVERSATION("conversation"), CAMPAIGN("campaign") }
+enum class AiResponseSurface(val wire: String) { HECTOR("hector"), CONVERSATION("conversation"), CAMPAIGN("campaign"), EXPLAIN("explain") }
 
 /** The codes and labels are the web's AI_REPORT_REASONS, in the same order. */
 enum class AiResponseReportReason(val code: String, val label: String) {
@@ -119,6 +119,10 @@ object AiReplyReports {
 
     fun scenario(message: String, course: String, scenarioId: String, reason: AiResponseReportReason) =
         AiResponseReport(message, AiResponseSurface.CONVERSATION, course, reason, scenarioId = scenarioId)
+
+    /** An "Explain in my language" text (BACKLOG 0.0-bc), reported from the "Not clear?" link. */
+    fun explain(message: String, course: String, reason: AiResponseReportReason) =
+        AiResponseReport(message, AiResponseSurface.EXPLAIN, course, reason)
 
     fun campaign(message: String, course: String, campaignId: String, sceneIndex: Int, reason: AiResponseReportReason) =
         AiResponseReport(message, AiResponseSurface.CAMPAIGN, course, reason, campaignId = campaignId, sceneIndex = sceneIndex)

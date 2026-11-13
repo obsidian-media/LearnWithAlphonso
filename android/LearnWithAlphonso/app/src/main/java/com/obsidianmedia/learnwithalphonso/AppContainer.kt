@@ -150,6 +150,13 @@ class AppContainer(context: Context) {
     val pathClient = com.obsidianmedia.learnwithalphonso.core.net.LearningPathClient(apiHttp)
     /** The first-run answers on the account (/api/learner-profile), the same checked save as the web. */
     val learnerProfileClient = LearnerProfileClient(apiHttp)
+    /** "Explain in my language" (BACKLOG 0.0-bc): the explain call, and the account's native language and mode. */
+    val explainClient = com.obsidianmedia.learnwithalphonso.core.net.ExplainClient(apiHttp)
+    val explainSettings = com.obsidianmedia.learnwithalphonso.ui.explain.ExplainSettingsStore(
+        fetch = { learnerProfileClient.fetch() },
+        save = { learnerProfileClient.save(it) },
+        userId = { session.userId },
+    )
     /** The last learning goal and plan per user and course, shown only when the network is down. */
     val goalCache = GoalCache(GoalPrefsStore(prefs))
     val tutorClient = TutorConversationClient(apiHttp, deviceId())

@@ -42,6 +42,8 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.toTextStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
+import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
@@ -76,7 +78,7 @@ import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 private class ReplyReporting(val sender: AiReportSender, val makeReport: (message: String, sceneIndex: Int, reason: AiResponseReportReason) -> AiResponseReport)
 
 @Composable
-private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport, course: String) {
+private fun Bubble(container: AppContainer, turn: ChatMessage, confidence: Double?, userTint: Color, userText: Color, reportable: Boolean, sender: AiReportSender, makeReport: (AiResponseReportReason) -> AiResponseReport, course: String) {
     val palette = LocalAlphonsoTokens.current
     val isUser = turn.role == "user"
     val saveWord = LocalSaveWordHandler.current
@@ -94,6 +96,8 @@ private fun Bubble(turn: ChatMessage, confidence: Double?, userTint: Color, user
             }
             if (!isUser) Spacer(Modifier.width(AlphonsoTokens.Space.minTouch))
         }
+        // "Say that in <language>": the partner's reply, translated under its bubble on request.
+        if (!isUser) ExplainInMyLanguage(container, remember(turn.content, course) { ExplainRules.message(turn.content, course) }, Modifier.padding(top = AlphonsoTokens.Space.s1))
         confidence?.let { Text(BaseConversationViewModel.clarityLabel(it), style = AlphonsoTokens.Type.caption.toTextStyle(), color = palette.inkSoft, modifier = Modifier.padding(end = AlphonsoTokens.Space.s2)) }
     }
 }
@@ -110,7 +114,7 @@ private fun TranscriptList(container: AppContainer, vm: BaseConversationViewMode
         LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
             itemsIndexed(state.turns) { index, turn ->
                 Bubble(
-                    turn, state.confidenceByTurn[index], tint, userText,
+                    container, turn, state.confidenceByTurn[index], tint, userText,
                     reportable = AiReplyReporting.isReportable(turn.role, index, state.openerIndices),
                     sender = reporting.sender,
                     makeReport = { reason -> reporting.makeReport(turn.content, state.sceneOffset + AiReplyReporting.sceneIndexOfTurn(index, state.openerIndices), reason) },

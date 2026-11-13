@@ -70,6 +70,7 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlaybackCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTimings
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTranscript
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTree
 import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRefusal
@@ -293,6 +294,21 @@ fun PodcastMiniBar(container: AppContainer) {
     var transcriptCourse by remember(episode.id) { mutableStateOf<String?>(null) }
 
     var expanded by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    // The bundled timing file (episode id to timed lines), read once.
+    val timings = remember {
+        runCatching { PodcastTimings.decode(context.assets.open("podcast-timings.json").bufferedReader().use { it.readText() }) }.getOrDefault(emptyMap())
+    }
+    val sleep by container.podcastPlayer.sleep.collectAsState()
+    // The follow-along needs the transcript text; read it once when the full player opens (the panel shares it).
+    LaunchedEffect(expanded, episode.id) {
+        if (expanded && transcript == null && !loadingTranscript) {
+            loadingTranscript = true
+            transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
+            transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
+            loadingTranscript = false
+        }
+    }
     Column(Modifier.fillMaxWidth().background(palette.mossDeep)) {
         // The quiz is offered once the episode has played to its end (and only if it has one the learner can see).
         PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)
@@ -343,6 +359,10 @@ fun PodcastMiniBar(container: AppContainer) {
             FullPlayerContent(
                 title = episode.title, aiNarrated = episode.aiNarrated, elapsed = state.elapsedSeconds, duration = episode.durationSeconds,
                 control = state.control, onToggle = { container.podcastPlayer.toggle() },
+                lines = PodcastTimings.linesMatching(timings[episode.id], transcript),
+                sleep = sleep,
+                onSleep = { container.podcastPlayer.setSleep(it) },
+                onSeek = { container.podcastPlayer.seek(it) },
                 onSkip = { container.podcastPlayer.skip(it) },
                 onTranscript = {
                     expanded = false

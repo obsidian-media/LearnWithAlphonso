@@ -56,6 +56,13 @@ export function makeFakeSupabase(state: FakeSupabaseState) {
     auth: {
       getUser: async () => ({ data: { user: { id: state.userId } }, error: null }),
       getClaims: async () => ({ data: { claims: { sub: state.userId } }, error: null }),
+      // /api/explain reads the learner's language from the account (a Persian speaker learning English).
+      admin: {
+        getUserById: async () => ({
+          data: { user: { user_metadata: { learner_profile: { nativeLanguage: "fa" } } } },
+          error: null,
+        }),
+      },
     },
     rpc: async (name: string, args?: { _texts?: string[] }) => {
       state.rpcCalls.push(name);

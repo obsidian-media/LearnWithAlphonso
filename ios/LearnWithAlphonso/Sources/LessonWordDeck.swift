@@ -7,6 +7,9 @@ import LearnWithAlphonsoKit
 struct VocabScreen: View {
     let lesson: Lesson
     let items: [VocabItem]
+    /// For "Explain in <language>" on each word card.
+    let session: Session
+    let courseCode: String
     let onSpeak: (String) -> Void
     let onStart: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -160,9 +163,18 @@ struct VocabScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(ds.sunk, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
             }
+            wordExplain(item)
         }
         .padding(AlphonsoDS.Space.s3)
         .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    /// "Explain in <language>" for the word, with its example sentence when the card has one.
+    private func wordExplain(_ item: VocabItem) -> some View {
+        ExplainInMyLanguage(
+            request: ExplainRequest.makeWord(
+                word: item.term, sentence: item.example.isEmpty ? nil : item.example, course: courseCode),
+            session: session)
     }
 
     /// One card, as tall as its words (no stretched empty box). It scrolls inside only when the words do not fit
@@ -246,6 +258,7 @@ struct VocabScreen: View {
                             .dsText(.body)
                             .foregroundStyle(ds.brand)
                             .padding(.top, AlphonsoDS.Space.s1)
+                        wordExplain(item)
                     }
                     .padding(AlphonsoDS.Space.s4)
                     .frame(maxWidth: .infinity, alignment: .leading)

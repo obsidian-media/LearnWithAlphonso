@@ -1,6 +1,25 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
+/// "Say that in <language>" under one tutor bubble (Practice, Campaigns and Hector). Hector's calls spend his own Pro
+/// allowance (surface "hector"); the rest spend the free explain budget. The fixed opening line is ours and has none.
+struct AssistantExplainRow: View {
+    let turn: ChatMessage
+    let isOpener: Bool
+    let course: Course
+    let surface: AIResponseSurface
+    let session: Session
+
+    var body: some View {
+        if turn.role == "assistant", !isOpener {
+            ExplainInMyLanguage(
+                request: ExplainRequest.makeMessage(text: turn.content, course: course.wireCode),
+                session: session,
+                surface: surface == .hector ? .hector : .app)
+        }
+    }
+}
+
 /// One AI reply's text, with tappable words. Every conversation surface (Hector,
 /// Practice, Campaigns) draws the partner's replies through this one view, so
 /// anything that belongs on an AI reply attaches here, in one place.

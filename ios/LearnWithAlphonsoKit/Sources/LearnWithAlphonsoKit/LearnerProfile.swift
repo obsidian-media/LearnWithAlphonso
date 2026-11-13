@@ -64,11 +64,14 @@ public struct LearnerAnswers: Codable, Equatable, Sendable {
     public var ageRange: String?
     public var interests: [String]?
     public var heardFrom: String?
+    /// "Explain in my language" (Settings): nil means never chosen, which behaves as tap to explain.
+    public var explainMode: ExplainMode?
 
     public init(
         name: String? = nil, course: String? = nil, nativeLanguage: String? = nil, country: String? = nil,
         showFlag: Bool? = nil, goal: String? = nil, level: String? = nil, dailyMinutes: Int? = nil,
-        ageRange: String? = nil, interests: [String]? = nil, heardFrom: String? = nil
+        ageRange: String? = nil, interests: [String]? = nil, heardFrom: String? = nil,
+        explainMode: ExplainMode? = nil
     ) {
         self.name = name
         self.course = course
@@ -81,6 +84,7 @@ public struct LearnerAnswers: Codable, Equatable, Sendable {
         self.ageRange = ageRange
         self.interests = interests
         self.heardFrom = heardFrom
+        self.explainMode = explainMode
     }
 
     /// Field by field against the server's lists: a value off a list is dropped, the rest kept (parseLearnerProfile).
@@ -107,6 +111,8 @@ public struct LearnerAnswers: Codable, Equatable, Sendable {
             out.interests = list.compactMap { $0 as? String }.filter { LearnerProfileLists.interests.contains($0) }
         }
         out.heardFrom = pick("heardFrom", LearnerProfileLists.heardFrom)
+        // An unknown value is dropped (nil), exactly like the web's explainModeOf falling back to tap.
+        if let raw = v["explainMode"] as? String { out.explainMode = ExplainMode(rawValue: raw) }
         return out
     }
 
@@ -131,8 +137,12 @@ public struct LearnerAnswers: Codable, Equatable, Sendable {
         if let ageRange { out["ageRange"] = ageRange }
         if let interests { out["interests"] = interests }
         if let heardFrom { out["heardFrom"] = heardFrom }
+        if let explainMode { out["explainMode"] = explainMode.rawValue }
         return out
     }
+
+    /// What the screens use: the saved choice, or tap to explain when nothing is saved.
+    public var effectiveExplainMode: ExplainMode { explainMode ?? .default }
 
     public var isEmpty: Bool { jsonPatch.isEmpty }
 }

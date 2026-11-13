@@ -42,6 +42,9 @@ export function PodcastPlayer() {
   const [quizOpen, setQuizOpen] = useState(false);
 
   const episodeId = episode?.id ?? null;
+  // The transcript is read when either surface that shows it is open: the panel, or the full player's follow-along.
+  const needsTranscript = showTranscript || expanded;
+  const loadedFor = useRef<string | null>(null);
   const folderId = episode?.folderId ?? null;
   const ownCourse = episode?.course ?? null;
 
@@ -54,8 +57,11 @@ export function PodcastPlayer() {
   // Fetched only when the panel opens: a transcript is kilobytes of text
   // nobody needs while they are simply listening.
   useEffect(() => {
-    if (!showTranscript || !episodeId) return;
+    if (!needsTranscript || !episodeId) return;
+    // Already read for this episode (the full player and the panel share it): no second fetch, no flash of "loading".
+    if (loadedFor.current === episodeId) return;
     let cancelled = false;
+    setTranscript(null);
     setIsLoadingTranscript(true);
     void (async () => {
       try {
@@ -70,6 +76,7 @@ export function PodcastPlayer() {
             transcriptSaveCourse(folders ?? [], folderId ?? "", activeCourse, ownCourse),
           );
           setTranscript(text);
+          loadedFor.current = episodeId;
         }
       } catch {
         // The panel shows "no transcript" either way. Distinguishing a
@@ -83,7 +90,7 @@ export function PodcastPlayer() {
     return () => {
       cancelled = true;
     };
-  }, [showTranscript, episodeId, folderId, ownCourse, activeCourse]);
+  }, [needsTranscript, episodeId, folderId, ownCourse, activeCourse]);
 
   // The quiz is offered when an episode has played to its end, and only if it has one (and the learner can see it).
   // Plain state and a dynamic import for the same reason as the transcript above.
@@ -120,6 +127,8 @@ export function PodcastPlayer() {
           room={room}
           title={episode.title}
           aiNarrated={episode.aiNarrated}
+          episodeId={episodeId}
+          transcript={transcript}
           elapsed={elapsedSeconds}
           duration={mediaDuration ?? episode.durationSeconds}
           isPlaying={isPlaying}

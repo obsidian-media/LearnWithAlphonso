@@ -189,15 +189,18 @@ struct PodcastMiniBar: View {
                     .fill(AlphonsoColor.hairline)
                     .frame(height: 1)
             }
-            .fullScreenCover(isPresented: $showFull) {
+            // A sheet, not a full-screen cover: swiping down dismisses it to the mini bar, the standard gesture.
+            .sheet(isPresented: $showFull) {
                 PodcastFullPlayer(
                     player: player,
                     episode: episode,
+                    transcript: transcript,
                     onTranscript: {
                         showFull = false
                         showTranscript = true
                     }
                 )
+                .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showTranscript) {
                 PodcastTranscriptSheet(
@@ -227,7 +230,7 @@ struct PodcastMiniBar: View {
             // Fetched when the sheet opens, keyed on the episode so switching
             // episodes while the sheet is open reloads rather than showing
             // the previous one's text.
-            .task(id: TranscriptRequest(episodeID: episode.id, isOpen: showTranscript)) {
+            .task(id: TranscriptRequest(episodeID: episode.id, isOpen: showTranscript || showFull)) {
                 await loadTranscript(episode: episode)
             }
         }
@@ -281,7 +284,7 @@ struct PodcastMiniBar: View {
     }
 
     private func loadTranscript(episode: PodcastEpisode) async {
-        guard showTranscript, let client = makePodcastClient(session: session) else { return }
+        guard showTranscript || showFull, let client = makePodcastClient(session: session) else { return }
         isLoadingTranscript = true
         // Both reads start together; the folder read is skipped when the episode carries its own course.
         async let fetchedTranscript = try? await client.fetchTranscript(episodeID: episode.id)

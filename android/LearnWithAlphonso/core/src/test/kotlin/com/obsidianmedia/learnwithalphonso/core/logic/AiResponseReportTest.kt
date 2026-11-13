@@ -52,7 +52,7 @@ class AiResponseReportTest {
         assertEquals(8192, AiResponseReport.CONTEXT_BYTE_LIMIT)
         assertEquals(400, AiResponseReport.CONTEXT_STRUCTURE_BYTES)
         assertEquals(listOf("ai_inappropriate", "ai_harmful", "ai_incorrect", "ai_other"), AiResponseReportReason.entries.map { it.code })
-        assertEquals(listOf("hector", "conversation", "campaign"), AiResponseSurface.entries.map { it.wire })
+        assertEquals(listOf("hector", "conversation", "campaign", "explain"), AiResponseSurface.entries.map { it.wire })
     }
 
     @Test

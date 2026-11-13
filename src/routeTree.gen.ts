@@ -42,6 +42,7 @@ import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
+import { Route as ApiExplainRouteImport } from './routes/api/explain'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
@@ -233,6 +234,11 @@ const ApiDefineWordRoute = ApiDefineWordRouteImport.update({
   path: '/api/define-word',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExplainRoute = ApiExplainRouteImport.update({
+  id: '/api/explain',
+  path: '/api/explain',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGeneratePracticeRoute = ApiGeneratePracticeRouteImport.update({
   id: '/api/generate-practice',
   path: '/api/generate-practice',
@@ -397,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
+  '/api/explain': typeof ApiExplainRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -456,6 +463,7 @@ export interface FileRoutesByTo {
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
+  '/api/explain': typeof ApiExplainRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -517,6 +525,7 @@ export interface FileRoutesById {
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
+  '/api/explain': typeof ApiExplainRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -578,6 +587,7 @@ export interface FileRouteTypes {
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
+    | '/api/explain'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
+    | '/api/explain'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -697,6 +708,7 @@ export interface FileRouteTypes {
     | '/api/apple-link'
     | '/api/chat'
     | '/api/define-word'
+    | '/api/explain'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -743,6 +755,7 @@ export interface RootRouteChildren {
   ApiAppleLinkRoute: typeof ApiAppleLinkRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDefineWordRoute: typeof ApiDefineWordRoute
+  ApiExplainRoute: typeof ApiExplainRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
@@ -991,6 +1004,13 @@ declare module '@tanstack/react-router' {
       path: '/api/define-word'
       fullPath: '/api/define-word'
       preLoaderRoute: typeof ApiDefineWordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/explain': {
+      id: '/api/explain'
+      path: '/api/explain'
+      fullPath: '/api/explain'
+      preLoaderRoute: typeof ApiExplainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/generate-practice': {
@@ -1258,6 +1278,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAppleLinkRoute: ApiAppleLinkRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDefineWordRoute: ApiDefineWordRoute,
+  ApiExplainRoute: ApiExplainRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,

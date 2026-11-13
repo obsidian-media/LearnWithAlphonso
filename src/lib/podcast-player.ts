@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { PodcastEpisode } from "./podcast.functions";
+import { SLEEP_OFF, type SleepState } from "./sleep-timer";
 
 /**
  * Playback state for the podcast player (Phase 1a, see
@@ -44,6 +45,9 @@ type PodcastPlayerState = {
   /** Playback speed; the audio element applies it. */
   rate: number;
   setRate: (rate: number) => void;
+  /** The sleep timer; PodcastAudio pauses playback when it fires. */
+  sleep: SleepState;
+  setSleep: (sleep: SleepState) => void;
   close: () => void;
 };
 
@@ -93,8 +97,11 @@ export const usePodcastPlayer = create<PodcastPlayerState>((set) => ({
         seekRequest: { seconds: clamped, token: (state.seekRequest?.token ?? 0) + 1 },
       };
     }),
+  sleep: SLEEP_OFF,
+  setSleep: (sleep) => set({ sleep }),
   close: () =>
     set({
+      sleep: SLEEP_OFF,
       episode: null,
       isPlaying: false,
       elapsedSeconds: 0,

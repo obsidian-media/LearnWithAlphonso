@@ -1,3 +1,4 @@
+import { americanize } from "../lib/american-english";
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 import { rawCurriculum } from "./curriculum";
@@ -368,6 +369,9 @@ describe("the A1/A2 English bank", () => {
   for (const [p, set] of packAnswers)
     for (const w of set) (rawVocab.get(p) ?? rawVocab.set(p, new Set()).get(p)!).add(w);
   const packVocab = buildPackVocab(rawVocab);
+  // The overlay respells wrong options in American English (en.json, americanEnglish), so a pack's
+  // pool holds both forms of every word it uses.
+  for (const set of packVocab.values()) for (const w of [...set]) set.add(americanize(w));
   const contextUses = new Map<string, number>();
   for (const it of items)
     if (it.shape.context)

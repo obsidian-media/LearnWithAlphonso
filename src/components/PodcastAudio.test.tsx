@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PodcastAudio } from "./PodcastAudio";
 import { usePodcastPlayer } from "../lib/podcast-player";
+import { SLEEP_OFF, startSleep } from "../lib/sleep-timer";
 
 vi.mock("../lib/podcast.functions", () => ({
   savePlaybackPosition: vi.fn(async () => ({ positionSeconds: 0 })),
@@ -182,5 +183,45 @@ describe("PodcastAudio", () => {
     fireEvent.loadedMetadata(audio);
 
     expect(audio.currentTime).toBe(0);
+  });
+
+  describe("sleep timer", () => {
+    it("pauses at the deadline and switches itself off", () => {
+      vi.useFakeTimers();
+      try {
+        usePodcastPlayer.getState().play(episode);
+        render(<PodcastAudio />);
+        act(() => usePodcastPlayer.getState().setSleep(startSleep("15", Date.now())));
+        act(() => {
+          vi.advanceTimersByTime(15 * 60_000 - 2_000);
+        });
+        expect(usePodcastPlayer.getState().isPlaying).toBe(true);
+        act(() => {
+          vi.advanceTimersByTime(3_000);
+        });
+        expect(usePodcastPlayer.getState().isPlaying).toBe(false);
+        expect(usePodcastPlayer.getState().sleep).toEqual(SLEEP_OFF);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("end of episode never pauses on the clock, and clears when the episode ends", () => {
+      vi.useFakeTimers();
+      try {
+        usePodcastPlayer.getState().play(episode);
+        render(<PodcastAudio />);
+        act(() => usePodcastPlayer.getState().setSleep(startSleep("end", Date.now())));
+        act(() => {
+          vi.advanceTimersByTime(3 * 3_600_000);
+        });
+        expect(usePodcastPlayer.getState().isPlaying).toBe(true);
+        fireEvent.ended(screen.getByTestId("podcast-audio"));
+        expect(usePodcastPlayer.getState().isPlaying).toBe(false);
+        expect(usePodcastPlayer.getState().sleep).toEqual(SLEEP_OFF);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });
