@@ -398,6 +398,8 @@ const HOW: Record<Exclude<PathType, "lesson">, string> = {
   campaign: "Story scenes that run over several days",
 };
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export function BuildScreen() {
   const s = usePathScreen();
   const course = s.course;
@@ -419,12 +421,45 @@ export function BuildScreen() {
               {path.progress.requiredPerWeek} lessons a week
             </p>
             <p className="text-xs text-ds-ink-soft">
-              {path.dailyMinutes} minutes a day, 6 days. The rest of each day is filled with the mix
-              below.
+              {path.dailyMinutes} minutes a day, {path.restDay < 0 ? 7 : 6} days. The rest of each
+              day is filled with the mix below.
             </p>
             <div className="mt-2">
               <MixBar mix={path.mix} label="Your weekly mix" />
             </div>
+          </div>
+          <h2 className="mt-1 ds-type-overline text-ds-ink-soft">Rest day</h2>
+          <div
+            role="radiogroup"
+            aria-label="Rest day"
+            className={`${CARD} flex flex-wrap gap-2 p-3`}
+          >
+            {[
+              ...WEEKDAYS.map((d, i) => ({ label: d, value: i })),
+              { label: "No rest day", value: -1 },
+            ].map((o) => {
+              const on = (path.restDay ?? 0) === o.value;
+              return (
+                <button
+                  key={o.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  disabled={s.busy}
+                  onClick={() =>
+                    void s.change({
+                      action: "set_rest_day",
+                      restDay: o.value < 0 ? "none" : o.value,
+                    })
+                  }
+                  className={`min-h-11 rounded-full px-4 text-sm font-bold ${
+                    on ? "bg-ds-action text-ds-on-action" : "bg-ds-sunk text-ds-ink"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
           </div>
           <h2 className="mt-1 ds-type-overline text-ds-ink-soft">How I like to learn</h2>
           <div className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2 opacity-70">

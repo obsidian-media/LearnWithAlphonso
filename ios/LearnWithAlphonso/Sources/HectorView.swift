@@ -362,7 +362,9 @@ private struct HectorConversationView: View {
         cefrLevel = level
         memoryContext = TutorMemoryContext.buildPrimingMessage(cefrLevel: level, openWeaknessCategories: openCategories)
         // Today's allowance is used up (BACKLOG 0.0-bq #5): the "out for today" message and no greeting, so no speech.
-        if await client.fetchHectorAllowanceUsedUp() {
+        // The limit is the server's to say (GET /api/app-config); with none known Hector greets and the server still guards.
+        let limit = await HectorAllowance.fetchLimit(baseURL: AppConfig.apiBaseURL)
+        if await client.fetchHectorAllowanceUsedUp(limit: limit) {
             notice = HectorAllowance.outForToday
             return
         }

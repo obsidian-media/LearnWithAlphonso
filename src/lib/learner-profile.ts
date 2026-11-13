@@ -377,6 +377,8 @@ const isoTime = z
   .refine((s) => !Number.isNaN(Date.parse(s)));
 
 /** Every field the client may send. Strict: an unknown key (a birth date, say) fails the whole save. */
+const pathRestDaySchema = z.union([z.literal("none"), z.number().int().min(0).max(6)]);
+
 export const learnerProfilePatchSchema = z
   .object({
     name: nameSchema.optional(),
@@ -403,6 +405,8 @@ export const learnerProfilePatchSchema = z
     /** Learning path: the optional types switched off, and the day "lessons first" ends (null clears it). */
     pathOff: z.array(z.enum(PATH_OPTIONAL_TYPES)).max(PATH_OPTIONAL_TYPES.length).optional(),
     pathTrimUntil: isoDate.nullable().optional(),
+    /** The learner's rest day on the path: a weekday 0 (Sunday) to 6 (Saturday), or "none" for seven study days. */
+    pathRestDay: pathRestDaySchema.optional(),
   })
   .strict();
 
@@ -455,6 +459,8 @@ export function parseLearnerProfile(raw: unknown): LearnerProfile {
       (PATH_OPTIONAL_TYPES as readonly unknown[]).includes(t),
     );
   }
+  const pathRestDay = pick(pathRestDaySchema, v.pathRestDay);
+  if (pathRestDay !== undefined) out.pathRestDay = pathRestDay;
   const pathTrimUntil = pick(isoDate, v.pathTrimUntil);
   if (pathTrimUntil) out.pathTrimUntil = pathTrimUntil;
   const completedAt = pick(isoTime, v.completedAt);

@@ -18,6 +18,8 @@ struct PracticeHubView: View {
     @State private var chat = false
     @State private var modeInitialized = false
     @State private var paywall = false
+    /// A talk or campaign stop tapped on the learning path: opened here once Practice is showing.
+    @Environment(PathDeepLink.self) private var deepLink
     private var scenarios: [Scenario] { contentStore.scenarios(for: course) }
     private var campaigns: [Campaign] { contentStore.campaigns(for: course) }
     private var rows: [PracticeStarRow] { data?.stars ?? [] }
@@ -129,6 +131,22 @@ struct PracticeHubView: View {
                     }
                 }
         }.onChange(of: playing == nil) { if playing == nil { Task { await load() } } }
+            .task(id: deepLink.pending) { openPathStop() }
+    }
+
+    /// Opens the pre-call sheet for the path stop that sent the learner here, if it is in this course's content.
+    private func openPathStop() {
+        guard let destination = deepLink.pending else { return }
+        deepLink.pending = nil
+        let counts = Dictionary(campaigns.map { ($0.id, $0.scenes.count) }, uniquingKeysWith: { a, _ in a })
+        switch PathStopRouting.practiceChoice(for: destination, scenarioIDs: scenarios.map(\.id), campaignSceneCounts: counts) {
+        case let .scenario(id)?:
+            if let s = scenarios.first(where: { $0.id == id }) { target = .scenario(s) }
+        case let .campaign(id, scene)?:
+            if let c = campaigns.first(where: { $0.id == id }) { target = .campaign(c, scene) }
+        case nil:
+            break
+        }
     }
     @ViewBuilder private func sceneStars(_ c: Campaign) -> some View {
         if data != nil {

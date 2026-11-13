@@ -28,7 +28,11 @@ export const DEFAULT_DAILY_MINUTES = 10;
 
 /** Study days a week: the daily-minutes answer times this is the week's minutes. The remaining day is a rest day. */
 export const STUDY_DAYS_PER_WEEK = 6;
-/** The rest day (0 = Sunday ... 6 = Saturday, UTC). */
+/** Study days a week when the learner chooses no rest day. */
+export const STUDY_DAYS_NO_REST = 7;
+/** How a path says "no rest day" (restDay is a weekday 0..6 otherwise). */
+export const NO_REST_DAY = -1;
+/** The default rest day (0 = Sunday ... 6 = Saturday, UTC), used until the learner chooses one or none. */
 export const REST_DAY = 0;
 /** A day may overshoot its minutes by this much to fit a whole item. */
 export const DAY_OVERFLOW_MINUTES = 2;

@@ -5,6 +5,7 @@ import com.obsidianmedia.learnwithalphonso.core.path.LearningPathChange
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathDecoding
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathError
 import com.obsidianmedia.learnwithalphonso.core.path.PathApi
+import com.obsidianmedia.learnwithalphonso.core.path.PathRestDay
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CancellationException
@@ -41,6 +42,10 @@ class LearningPathClient(private val http: ApiHttp) : PathApi {
                             is LearningPathChange.SetDailyMinutes -> {
                                 put("action", "set_daily_minutes")
                                 put("dailyMinutes", change.minutes)
+                            }
+                            is LearningPathChange.SetRestDay -> {
+                                put("action", "set_rest_day")
+                                if (change.day == PathRestDay.NONE) put("restDay", "none") else put("restDay", change.day)
                             }
                         }
                     },

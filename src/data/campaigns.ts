@@ -1,6 +1,7 @@
 import type { Course } from "./courses";
 import type { Localized, ScenarioLevel } from "./scenarios";
 import { BATCH2_CAMPAIGNS } from "./campaigns-batch2";
+import { BATCH3_CAMPAIGNS } from "./campaigns-batch3";
 import { MORE_CAMPAIGNS } from "./campaigns-more";
 import SCENE_PROMPT_FIXES from "./campaign-scene-prompt-fixes.json" with { type: "json" };
 
@@ -152,7 +153,12 @@ const CITY_DAY: Campaign = {
 };
 
 /** Every campaign in catalog order: the original city-day first, then the story campaigns. */
-export const CAMPAIGNS: Campaign[] = [CITY_DAY, ...MORE_CAMPAIGNS, ...BATCH2_CAMPAIGNS];
+export const CAMPAIGNS: Campaign[] = [
+  CITY_DAY,
+  ...MORE_CAMPAIGNS,
+  ...BATCH2_CAMPAIGNS,
+  ...BATCH3_CAMPAIGNS,
+];
 
 /**
  * Held-back content-review fixes to scene prompts that are composed from shared constants (the safety, register and

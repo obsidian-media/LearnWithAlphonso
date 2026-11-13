@@ -12,8 +12,31 @@
  * in step.
  */
 
-/** Pro learners' Hector turns per day; the real cap is in consume_ai_quota (20261102120000). */
-export const HECTOR_DAILY_LIMIT = 150;
+/**
+ * The limit is NOT a constant here. The server says it (GET /api/app-config, limits.hectorDaily, from DAILY_LIMITS in
+ * ai-quota.server.ts, which must agree with consume_ai_quota); every client reads it from there, so a change is made
+ * in one place. With no limit known the allowance is never "used up".
+ */
+
+/** The limit from an /api/app-config answer: a positive whole number, or null. */
+export function hectorDailyLimitFrom(config: unknown): number | null {
+  const limits = (config as { limits?: { hectorDaily?: unknown } } | null)?.limits;
+  const n = limits?.hectorDaily;
+  return typeof n === "number" && Number.isInteger(n) && n > 0 ? n : null;
+}
+
+/** Asks the server for the limit; any failure answers null (fail open). */
+export async function fetchHectorDailyLimit(
+  fetchImpl: typeof fetch = fetch,
+): Promise<number | null> {
+  try {
+    const response = await fetchImpl("/api/app-config");
+    if (!response.ok) return null;
+    return hectorDailyLimitFrom(await response.json());
+  } catch {
+    return null;
+  }
+}
 
 /** The words the server's own quota refusal shows (TutorError / AiErrorCopy carry the same). */
 export const HECTOR_OUT_FOR_TODAY = "You've reached today's AI practice limit. Try again tomorrow.";
@@ -26,8 +49,9 @@ export function utcDay(now: Date): string {
 /** True when today's rows show the allowance used up; a missing or malformed row never locks the learner out. */
 export function hectorAllowanceUsedUp(
   rows: ReadonlyArray<{ count: number }> | null | undefined,
-  limit: number = HECTOR_DAILY_LIMIT,
+  limit: number | null | undefined,
 ): boolean {
+  if (limit === null || limit === undefined) return false;
   return (rows ?? []).some((r) => typeof r.count === "number" && r.count >= limit);
 }
 
@@ -46,14 +70,18 @@ type UsageReader = {
 export async function isHectorAllowanceUsedUp(
   client: unknown,
   now: Date = new Date(),
+  limit?: number | null,
 ): Promise<boolean> {
   try {
+    // No limit from the server: nothing to compare against, so do not even read the usage row.
+    if (limit === null || limit === undefined) limit = await fetchHectorDailyLimit();
+    if (limit === null) return false;
     const { data } = await (client as UsageReader)
       .from("ai_usage")
       .select("count")
       .eq("day", utcDay(now))
       .eq("kind", "hector");
-    return hectorAllowanceUsedUp(Array.isArray(data) ? (data as { count: number }[]) : null);
+    return hectorAllowanceUsedUp(Array.isArray(data) ? (data as { count: number }[]) : null, limit);
   } catch {
     return false;
   }

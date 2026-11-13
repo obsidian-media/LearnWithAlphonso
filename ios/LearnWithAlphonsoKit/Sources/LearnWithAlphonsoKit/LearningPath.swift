@@ -164,6 +164,9 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let statusDetail: String
     public let progress: PathProgress
     public let dailyMinutes: Int
+    /// The rest day as planned: 0 (Sunday) to 6, or `PathRestDay.none` (-1) for seven study days. Missing from an
+    /// older server, where it is the default Sunday.
+    public let restDay: Int?
     public let weekMinutes: Int
     public let weekDoneMinutes: Int
     public let trimmed: Bool
@@ -177,6 +180,9 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let why: [PathWhy]
     public let streaks: [PathStreak]
 
+    /// The rest day to show as selected: the server's, or Sunday for an older server that does not say.
+    public var restDayValue: Int { restDay ?? PathRestDay.sunday }
+
     /// Share of the lessons in scope that are done, 0...1, for the progress bar.
     public var lessonFraction: Double {
         Double(progress.lessonsDone) / Double(max(progress.lessonsInScope, 1))
@@ -186,6 +192,20 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public var weekFraction: Double {
         min(1, Double(weekDoneMinutes) / Double(max(weekMinutes, 1)))
     }
+}
+
+/// The rest-day choices in "Build my path", shared by the three platforms (weekday 0 = Sunday, -1 = none).
+public enum PathRestDay {
+    public static let sunday = 0
+    public static let none = -1
+    public static let weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+    /// Every choice in the order they are shown: the seven weekdays, then "No rest day".
+    public static let choices: [(value: Int, label: String)] =
+        weekdayLabels.enumerated().map { (value: $0.offset, label: $0.element) } + [(value: none, label: "No rest day")]
+
+    /// Study days a week with this rest day: six, or seven with none.
+    public static func studyDays(_ restDay: Int) -> Int { restDay == none ? 7 : 6 }
 }
 
 public enum LearningPathError: Error, Equatable {
@@ -223,6 +243,8 @@ public enum LearningPathChange: Equatable, Sendable {
     case lessonsFirst
     case resume
     case setDailyMinutes(Int)
+    /// 0 (Sunday) to 6, or `PathRestDay.none` for no rest day.
+    case setRestDay(Int)
 
     var body: [String: Any] {
         switch self {
@@ -230,6 +252,8 @@ public enum LearningPathChange: Equatable, Sendable {
         case .lessonsFirst: return ["action": "lessons_first"]
         case .resume: return ["action": "resume"]
         case .setDailyMinutes(let minutes): return ["action": "set_daily_minutes", "dailyMinutes": minutes]
+        case .setRestDay(let day):
+            return ["action": "set_rest_day", "restDay": day == PathRestDay.none ? "none" : day]
         }
     }
 }

@@ -112,10 +112,13 @@ Deno.test("heartsGateEnforced defaults on and only the literal 'false' turns it 
   assertEquals(heartsGateEnforced(() => "false"), false);
 });
 
-Deno.test("serverHeartsMode defaults to shadow; only 'on' charges and 'off' skips (same as the web copy)", () => {
+Deno.test("serverHeartsMode is enforced by default; only 'shadow' records alone and 'off' skips (same as the web copy)", () => {
   const mode = (v: string | undefined) => serverHeartsMode(() => v);
-  assertEquals(mode(undefined), "shadow");
-  assertEquals(mode("yes"), "shadow");
+  assertEquals(mode(undefined), "on");
+  assertEquals(mode(""), "on");
+  assertEquals(mode("yes"), "on");
   assertEquals(mode(" ON "), "on");
+  assertEquals(mode(" Shadow "), "shadow");
   assertEquals(mode("off"), "off");
+  assertEquals(mode("OFF"), "off");
 });

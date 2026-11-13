@@ -11,14 +11,16 @@ describe("heartsGateEnforced", () => {
 });
 
 describe("serverHeartsMode", () => {
-  it("defaults to shadow, so a first deploy charges nothing", () => {
-    expect(serverHeartsMode({})).toBe("shadow");
-    expect(serverHeartsMode({ SERVER_HEARTS: "" })).toBe("shadow");
-    expect(serverHeartsMode({ SERVER_HEARTS: "yes" })).toBe("shadow");
-  });
-  it("charges only on the literal 'on', and 'off' skips the settlement", () => {
-    expect(serverHeartsMode({ SERVER_HEARTS: "on" })).toBe("on");
+  it("is enforced by default: nothing set, empty or unrecognised all charge", () => {
+    expect(serverHeartsMode({})).toBe("on");
+    expect(serverHeartsMode({ SERVER_HEARTS: "" })).toBe("on");
+    expect(serverHeartsMode({ SERVER_HEARTS: "yes" })).toBe("on");
     expect(serverHeartsMode({ SERVER_HEARTS: " ON " })).toBe("on");
+  });
+  it("only the literal 'shadow' records without charging, and 'off' skips the settlement", () => {
+    expect(serverHeartsMode({ SERVER_HEARTS: "shadow" })).toBe("shadow");
+    expect(serverHeartsMode({ SERVER_HEARTS: " Shadow " })).toBe("shadow");
     expect(serverHeartsMode({ SERVER_HEARTS: "off" })).toBe("off");
+    expect(serverHeartsMode({ SERVER_HEARTS: "OFF" })).toBe("off");
   });
 });
