@@ -16,6 +16,8 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizOffer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizQuestion
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizResult
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
+import com.obsidianmedia.learnwithalphonso.core.video.LibraryVideo
+import com.obsidianmedia.learnwithalphonso.core.video.VideoShelf
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
@@ -191,6 +193,34 @@ class PodcastClient(
      */
     suspend fun saveListenProgress(episodeId: String, positionSeconds: Int) {
         requireSuccess(http.rpc("save_listen_progress", buildJsonObject { put("p_episode_id", episodeId); put("p_position_s", ListenShelf.wirePosition(positionSeconds)) }))
+    }
+
+    /**
+     * Every published video with this learner's progress (the `videos` and `video_watches` tables; RLS limits both). A failed
+     * progress read must not fail the shelf: the videos still play, they just show as new.
+     */
+    suspend fun fetchVideos(): List<LibraryVideo> {
+        val videoRows = rows(
+            http.rest(
+                HttpMethod.Get, "videos",
+                mapOf(
+                    "select" to "id,slug,course,title,description,level_id,duration_seconds,video_path,poster_path,captions_path,tags,practice_kind,practice_id,sort_order",
+                    "order" to "sort_order.asc",
+                ),
+            ),
+        )
+        val watchRows = if (videoRows.isEmpty()) emptyList() else runCatching {
+            rows(http.rest(HttpMethod.Get, "video_watches", mapOf("select" to "video_id,progress_seconds,completed_at")))
+        }.getOrDefault(emptyList())
+        return VideoShelf.videos(videoRows, watchRows, http.baseUrl)
+    }
+
+    /**
+     * Through `save_video_progress`, which takes the user from auth.uid(), requires a published video and clamps the position
+     * into the video. The end of the video completes it. The table has no client write grant.
+     */
+    suspend fun saveVideoProgress(videoId: String, progressSeconds: Int) {
+        requireSuccess(http.rpc("save_video_progress", buildJsonObject { put("p_video_id", videoId); put("p_progress_s", progressSeconds.coerceIn(0, 2_000_000_000)) }))
     }
 
     /** Through the SECURITY DEFINER RPC only; authenticated has no INSERT grant on the table. */

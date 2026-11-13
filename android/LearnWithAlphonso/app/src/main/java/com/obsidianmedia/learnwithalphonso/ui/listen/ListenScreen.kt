@@ -73,6 +73,7 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSearch
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTimings
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTranscript
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTree
+import com.obsidianmedia.learnwithalphonso.core.video.VideoPracticeTarget
 import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRefusal
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
@@ -87,7 +88,7 @@ private fun length(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
 
 /** Port of ListenView.swift: the root of the folder tree with search and the offline listing. */
 @Composable
-fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit) {
+fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     val isConnected by container.connectivity.isConnected.collectAsState()
@@ -96,7 +97,7 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
     LaunchedEffect(course) { vm.courseChanged(course.code) }
 
     Column(Modifier.fillMaxSize().background(palette.surface)) {
-        Text("Listen", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp))
+        Text("Library", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp))
         OutlinedTextField(
             value = state.query, onValueChange = vm::setQuery, singleLine = true,
             placeholder = { Text("Search episodes") },
@@ -139,7 +140,7 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                 AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
             }
             // The Listen home is the rooms shelf (ListenShelfUi.kt); a folder opens its own episode list.
-            else -> ListenShelfRoot(container, vm, onOpenFolder)
+            else -> ListenShelfRoot(container, vm, onOpenFolder, onOpenPractice)
         }
     }
 }
@@ -162,7 +163,7 @@ fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: S
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
-            Text(folder?.title ?: "Listen", style = MaterialTheme.typography.titleMedium, color = palette.ink)
+            Text(folder?.title ?: "Library", style = MaterialTheme.typography.titleMedium, color = palette.ink)
         }
         FolderListing(container, vm, folderId, onOpenFolder)
     }

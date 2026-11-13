@@ -75,6 +75,10 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.SleepChoice
 import com.obsidianmedia.learnwithalphonso.core.podcast.SleepTimerState
 import com.obsidianmedia.learnwithalphonso.core.podcast.TimedLine
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLibrary
+import com.obsidianmedia.learnwithalphonso.core.video.LibraryVideo
+import com.obsidianmedia.learnwithalphonso.core.video.VideoPracticeTarget
+import com.obsidianmedia.learnwithalphonso.core.video.VideoShelf
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.loadAsset
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.Dispatchers
@@ -98,12 +102,23 @@ private fun RoomImage(room: String, modifier: Modifier = Modifier) {
 
 /** The Listen home (round 6.1, option A): continue card, course switch, level chips, a painted room per folder. All logic is [ListenShelf]. */
 @Composable
-fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit) {
+fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
     val playerEpisode by container.podcastPlayer.state.collectAsState()
     val scope = rememberCoroutineScope()
+    val watchVm: WatchViewModel = viewModel { WatchViewModel(container.podcastClient) }
+    val watch by watchVm.state.collectAsState()
+    var watching by remember { mutableStateOf<LibraryVideo?>(null) }
+    // A path stop for a video lands here: open its player as soon as the videos are known.
+    val pendingVideo by container.pendingVideoId.collectAsState()
+    LaunchedEffect(pendingVideo, watch.loaded) {
+        val id = pendingVideo ?: return@LaunchedEffect
+        if (!watch.loaded) return@LaunchedEffect
+        container.pendingVideoId.value = null
+        watch.videos.firstOrNull { it.id == id }?.let { watching = it }
+    }
     var course by rememberSaveable(state.courseCode) { mutableStateOf(state.courseCode) }
     var level by rememberSaveable(course) { mutableStateOf<String?>(null) }
     // Back from a folder, or after an episode played, the shelf reflects what was just heard.
@@ -115,6 +130,15 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val levels = ListenShelf.levels(shelves)
     val shown = level?.takeIf { it in levels }?.let { l -> shelves.filter { it.level == l } } ?: shelves
     val target = remember(shelves, state.progress) { ListenShelf.continueListening(shelves, state.progress) }
+
+    watching?.let { video ->
+        VideoPlayerSheet(
+            video = video,
+            onSaveProgress = { watchVm.saveProgress(video.id, it) },
+            onPractice = { target -> watching = null; onOpenPractice(target) },
+            onDismiss = { watching = null; watchVm.load() },
+        )
+    }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
@@ -162,6 +186,10 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
                     }
                 }
             }
+        }
+        val watchVideos = VideoShelf.shelf(watch.videos, course)
+        if (watch.failed || watchVideos.isNotEmpty()) {
+            item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = { watching = it }) }
         }
         if (levels.isNotEmpty()) {
             item {

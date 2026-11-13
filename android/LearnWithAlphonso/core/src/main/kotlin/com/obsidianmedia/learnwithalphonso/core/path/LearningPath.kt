@@ -12,7 +12,7 @@ import kotlinx.serialization.json.jsonObject
  * so web, iOS and Android always show the same plan. The shared contract is src/lib/learning-path.fixtures.json,
  * copied into this module's test resources (guarded by src/lib/learning-path-native-fixtures.test.ts).
  *
- * Types and states stay plain strings on the wire: a type a newer server adds (videos, later) decodes fine and is
+ * Types and states stay plain strings on the wire: a type a newer server adds decodes fine and is
  * drawn generically by [PathKind.UNKNOWN], never an error.
  */
 enum class PathKind(val wire: String, val label: String, val noun: String) {
@@ -20,13 +20,23 @@ enum class PathKind(val wire: String, val label: String, val noun: String) {
     PODCAST("podcast", "Podcasts", "Podcast"),
     TALK("talk", "Talk", "Talk to Alphonso"),
     CAMPAIGN("campaign", "Campaigns", "Story campaign"),
+    VIDEO("video", "Videos", "Video"),
     UNKNOWN("unknown", "Activity", "Activity");
 
     companion object {
         fun fromWire(raw: String?): PathKind = entries.firstOrNull { it.wire == raw && it != UNKNOWN } ?: UNKNOWN
 
         /** The types a learner may switch off (lessons are the backbone). */
-        val optional: List<PathKind> = listOf(PODCAST, TALK, CAMPAIGN)
+        val optional: List<PathKind> = listOf(PODCAST, TALK, CAMPAIGN, VIDEO)
+
+        /**
+         * The switches the learner is offered. Podcasts, Talk and campaigns always; Videos only once there is something to
+         * watch (the mix gives them minutes) or the learner already switched them off. The web (switchableTypes) and iOS
+         * apply the same rule.
+         */
+        fun switchable(mix: List<PathMixEntry>, off: List<String>): List<PathKind> = optional.filter { kind ->
+            kind != VIDEO || off.contains(kind.wire) || (mix.firstOrNull { it.kind == VIDEO }?.minutes ?: 0) > 0
+        }
     }
 }
 
@@ -147,6 +157,10 @@ data class LearningPath(
     /** Share of this week's minutes that are done, 0..1. */
     val weekFraction: Float get() = minOf(1f, weekDoneMinutes.toFloat() / maxOf(weekMinutes, 1))
 }
+
+/** The profile tiles: one per activity, except Videos before the learner has any video activity (no empty tile). */
+fun visibleStreaks(streaks: List<PathStreak>): List<PathStreak> =
+    streaks.filter { it.kind != PathKind.VIDEO || it.days > 0 || it.weekMinutes > 0 }
 
 sealed class LearningPathError(message: String) : Exception(message) {
     object NotSignedIn : LearningPathError("Sign in again to see your path.")
