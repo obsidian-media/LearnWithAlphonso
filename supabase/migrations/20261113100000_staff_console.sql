@@ -364,3 +364,97 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.staff_record_pro_revoke(uuid, text, uuid, text, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.staff_record_pro_revoke(uuid, text, uuid, text, jsonb) TO service_role;
+
+-- ---- staff management ----
+-- Adding or changing staff is one database call each, so the allowlist row, the role row and the record row commit
+-- together. Rules enforced here as well as in the console: never your own row, support_ai is not a login, and
+-- staff.manage only ever belongs to an owner.
+CREATE FUNCTION public.staff_add_member(
+  p_actor uuid, p_actor_role text, p_user uuid, p_role text, p_scopes text[], p_reason text
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF p_actor IS NOT NULL AND p_actor = p_user THEN
+    RAISE EXCEPTION 'staff_add_member: staff cannot act on their own account' USING ERRCODE = '42501';
+  END IF;
+  IF p_role = 'support_ai' THEN
+    RAISE EXCEPTION 'support_ai is not a login role' USING ERRCODE = '22023';
+  END IF;
+  IF p_role IS NULL OR p_role NOT IN ('owner', 'support') THEN
+    RAISE EXCEPTION 'staff_add_member: role must be owner or support' USING ERRCODE = '22023';
+  END IF;
+  IF p_role <> 'owner' AND 'staff.manage' = ANY (coalesce(p_scopes, '{}')) THEN
+    RAISE EXCEPTION 'staff.manage can only be granted to an owner' USING ERRCODE = '42501';
+  END IF;
+  IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
+    RAISE EXCEPTION 'staff_add_member: a reason is required' USING ERRCODE = '22023';
+  END IF;
+  INSERT INTO public.admin_users (user_id, added_by) VALUES (p_user, p_actor);
+  INSERT INTO public.staff_roles (user_id, role, scopes, added_by)
+  VALUES (p_user, p_role, coalesce(p_scopes, '{}'), p_actor);
+  PERFORM public.staff_record(
+    p_actor, p_actor_role, 'staff.add', p_user, btrim(p_reason), NULL,
+    jsonb_build_object('role', p_role, 'scopes', coalesce(p_scopes, '{}'), 'disabled', false), NULL);
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_add_member(uuid, text, uuid, text, text[], text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_add_member(uuid, text, uuid, text, text[], text) TO service_role;
+
+-- NULL role, scopes or disabled mean "leave as is". A member of admin_users with no staff_roles row is the implicit
+-- owner (src/lib/admin-auth.ts getStaffRole), so a change first gives them an explicit owner row.
+CREATE FUNCTION public.staff_update_member(
+  p_actor uuid, p_actor_role text, p_user uuid, p_role text, p_scopes text[], p_disabled boolean, p_reason text
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  cur public.staff_roles;
+  new_role text;
+  new_scopes text[];
+BEGIN
+  IF p_actor IS NOT NULL AND p_actor = p_user THEN
+    RAISE EXCEPTION 'staff_update_member: staff cannot act on their own account' USING ERRCODE = '42501';
+  END IF;
+  IF p_role = 'support_ai' THEN
+    RAISE EXCEPTION 'support_ai is not a login role' USING ERRCODE = '22023';
+  END IF;
+  IF p_role IS NOT NULL AND p_role NOT IN ('owner', 'support') THEN
+    RAISE EXCEPTION 'staff_update_member: role must be owner or support' USING ERRCODE = '22023';
+  END IF;
+  IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
+    RAISE EXCEPTION 'staff_update_member: a reason is required' USING ERRCODE = '22023';
+  END IF;
+  SELECT * INTO cur FROM public.staff_roles WHERE user_id = p_user FOR UPDATE;
+  IF NOT FOUND THEN
+    IF EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = p_user) THEN
+      INSERT INTO public.staff_roles (user_id, role, scopes, added_by) VALUES (p_user, 'owner', '{}', p_actor)
+      RETURNING * INTO cur;
+    ELSE
+      RAISE EXCEPTION 'staff_update_member: not a staff member' USING ERRCODE = 'P0002';
+    END IF;
+  END IF;
+  new_role := coalesce(p_role, cur.role);
+  new_scopes := coalesce(p_scopes, cur.scopes);
+  IF new_role <> 'owner' AND 'staff.manage' = ANY (new_scopes) THEN
+    RAISE EXCEPTION 'staff.manage can only be granted to an owner' USING ERRCODE = '42501';
+  END IF;
+  UPDATE public.staff_roles
+     SET role = new_role,
+         scopes = new_scopes,
+         disabled_at = CASE WHEN p_disabled IS TRUE THEN coalesce(cur.disabled_at, now())
+                            WHEN p_disabled IS FALSE THEN NULL ELSE cur.disabled_at END
+   WHERE user_id = p_user;
+  PERFORM public.staff_record(
+    p_actor, p_actor_role, 'staff.update', p_user, btrim(p_reason),
+    jsonb_build_object('role', cur.role, 'scopes', cur.scopes, 'disabled', cur.disabled_at IS NOT NULL),
+    jsonb_build_object('role', new_role, 'scopes', new_scopes,
+      'disabled', (SELECT disabled_at IS NOT NULL FROM public.staff_roles WHERE user_id = p_user)), NULL);
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_update_member(uuid, text, uuid, text, text[], boolean, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_update_member(uuid, text, uuid, text, text[], boolean, text) TO service_role;

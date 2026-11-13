@@ -37,6 +37,7 @@ beforeAll(async () => {
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
       AS $$ SELECT NULLIF(current_setting('app.uid', true), '')::uuid $$;
     ALTER TABLE auth.users ADD COLUMN email text, ADD COLUMN created_at timestamptz DEFAULT now();
+    CREATE TABLE public.admin_users (user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, added_at timestamptz NOT NULL DEFAULT now(), added_by uuid, note text);
     CREATE TABLE public.profiles(id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, display_name text);
     INSERT INTO auth.users(id) VALUES ('${ACTOR}'), ('${T1}'), ('${T2}'), ('${T3}'), ('${S1}'), ('${S2}');
     UPDATE auth.users SET email = 'learner1@example.com' WHERE id = '${T1}';
@@ -358,4 +359,72 @@ describe("staff console migration", () => {
       1,
     );
   });
+
+  it("staff_add_member writes admin_users, staff_roles and one audit row together", async () => {
+    const before = await count("staff_audit_log");
+    await asServer(() =>
+      db.query(
+        "SELECT public.staff_add_member($1,'owner',$2,'support','{users.read,users.notes}','new support hire')",
+        [ACTOR, T1],
+      ),
+    );
+    expect(await count("admin_users", `user_id='${T1}'`)).toBe(1);
+    expect(await count("staff_roles", `user_id='${T1}' AND role='support' AND added_by='${ACTOR}'`)).toBe(1);
+    expect(await count("staff_audit_log")).toBe(before + 1);
+    expect(await count("staff_audit_log", `action='staff.add' AND target_user_id='${T1}'`)).toBe(1);
+  });
+
+  it("staff_add_member refuses support_ai, yourself, an existing member and a support with staff.manage", async () => {
+    const before = await count("staff_audit_log");
+    const add = (args: unknown[]) =>
+      asServer(() =>
+        db.query("SELECT public.staff_add_member($1,'owner',$2,$3,$4::text[],'reason here')", args),
+      );
+    await expect(add([ACTOR, T2, "support_ai", "{}"])).rejects.toThrow(/not a login role/);
+    await expect(add([ACTOR, ACTOR, "support", "{}"])).rejects.toThrow(/own account/);
+    await expect(add([ACTOR, T1, "support", "{}"])).rejects.toMatchObject({ code: "23505" });
+    await expect(add([ACTOR, T2, "support", "{staff.manage}"])).rejects.toThrow(/staff\.manage/);
+    expect(await count("admin_users", `user_id='${T2}'`)).toBe(0);
+    expect(await count("staff_audit_log")).toBe(before);
+  });
+
+  it("staff_update_member changes role, scopes and disabled with before and after, and refuses the bad cases", async () => {
+    await asServer(() =>
+      db.query(
+        "SELECT public.staff_update_member($1,'owner',$2,NULL,'{users.read}',true,'left the team')",
+        [ACTOR, T1],
+      ),
+    );
+    const row = (
+      await db.query<{ scopes: string[]; disabled: boolean }>(
+        `SELECT scopes, disabled_at IS NOT NULL AS disabled FROM public.staff_roles WHERE user_id='${T1}'`,
+      )
+    ).rows[0]!;
+    expect(row).toEqual({ scopes: ["users.read"], disabled: true });
+    const audit = (
+      await db.query<{ before: { disabled: boolean }; after: { disabled: boolean } }>(
+        `SELECT before, after FROM public.staff_audit_log WHERE action='staff.update' AND target_user_id='${T1}'`,
+      )
+    ).rows[0]!;
+    expect(audit.before.disabled).toBe(false);
+    expect(audit.after.disabled).toBe(true);
+    const upd = (args: unknown[]) =>
+      asServer(() =>
+        db.query("SELECT public.staff_update_member($1,'owner',$2,$3,$4::text[],$5,'reason here')", args),
+      );
+    await expect(upd([ACTOR, ACTOR, null, null, true])).rejects.toThrow(/own account/);
+    await expect(upd([ACTOR, T1, null, "{staff.manage}", null])).rejects.toThrow(/staff\.manage/);
+    await expect(upd([ACTOR, T1, "support_ai", null, null])).rejects.toThrow(/not a login role/);
+    await expect(upd([ACTOR, T3, "support", null, null])).rejects.toMatchObject({ code: "P0002" });
+  });
+
+  it("staff_add_member and staff_update_member are not callable by clients", async () => {
+    for (const q of [
+      `SELECT public.staff_add_member('${ACTOR}','owner','${T2}','support','{}','reason here')`,
+      `SELECT public.staff_update_member('${ACTOR}','owner','${T1}',NULL,NULL,true,'reason here')`,
+    ]) {
+      await asRole("authenticated", () => expect(db.query(q)).rejects.toMatchObject({ code: "42501" }), ACTOR);
+    }
+  });
 });
+

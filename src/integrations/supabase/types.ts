@@ -3190,6 +3190,17 @@ export type Database = {
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: never; Returns: string };
+      staff_add_member: {
+        Args: {
+          p_actor: string;
+          p_actor_role: string;
+          p_reason: string;
+          p_role: string;
+          p_scopes: string[];
+          p_user: string;
+        };
+        Returns: undefined;
+      };
       staff_add_note: {
         Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
         Returns: string;
@@ -3260,6 +3271,18 @@ export type Database = {
           p_target: string;
         };
         Returns: string;
+      };
+      staff_update_member: {
+        Args: {
+          p_actor: string;
+          p_actor_role: string;
+          p_disabled: boolean;
+          p_reason: string;
+          p_role: string;
+          p_scopes: string[];
+          p_user: string;
+        };
+        Returns: undefined;
       };
       submit_podcast_quiz: {
         Args: {
