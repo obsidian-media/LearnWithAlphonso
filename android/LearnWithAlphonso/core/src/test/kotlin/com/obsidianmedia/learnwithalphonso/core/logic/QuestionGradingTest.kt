@@ -70,6 +70,10 @@ class QuestionGradingTest {
         assertEquals("w1", saved.id)
         assertEquals(1, saved.answer)
         assertTrue(row.copy(source = "saved_word").isSelfContained)
+        // A missed podcast-quiz question is the same shape too.
+        val quiz = questionFromWeaknessItem(row.copy(source = "podcast_quiz")) as Question.MultipleChoice
+        assertEquals(1, quiz.answer)
+        assertTrue(row.copy(source = "podcast_quiz").isSelfContained)
         assertTrue(row.isSelfContained)
         assertFalse(row.copy(source = "lesson").isSelfContained)
     }

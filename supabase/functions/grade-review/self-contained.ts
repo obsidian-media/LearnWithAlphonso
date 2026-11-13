@@ -1,9 +1,10 @@
 // Rows whose answer key is stored on the row itself ('weakness' from the
-// Hector weakness feature, 'saved_word' from save-any-word) rather than looked
+// Hector weakness feature, 'saved_word' from save-any-word, 'podcast_quiz' from a
+// missed podcast quiz question) rather than looked
 // up from a lesson question. Extracted from index.ts because index.ts calls
 // Deno.serve at module scope, so a test cannot import it.
 export function isSelfContainedSource(source: string | null | undefined): boolean {
-  return source === "weakness" || source === "saved_word";
+  return source === "weakness" || source === "saved_word" || source === "podcast_quiz";
 }
 
 export function gradeSelfContained(

@@ -61,7 +61,7 @@ data class ReviewItem(
      * Carries its own question instead of pointing at a bundled lesson question: Hector weakness items and saved words.
      * The review screen builds the card from the row itself.
      */
-    val isSelfContained: Boolean get() = source == "weakness" || source == "saved_word"
+    val isSelfContained: Boolean get() = source == "weakness" || source == "saved_word" || source == "podcast_quiz"
 
     /** The freshness snapshot to grade against, or null (send none) when it is unknown. */
     fun snapshotDueOn(): String? = if (hasReviewSnapshot) dueOn else null

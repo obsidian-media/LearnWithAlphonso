@@ -135,6 +135,35 @@ describe("Review page", () => {
     expect(screen.getByRole("button", { name: "accident" })).toBeInTheDocument();
   });
 
+  // A missed podcast-quiz question is a self-contained row too (submit_podcast_quiz writes it), and the page must build
+  // its card from the row rather than drop it while still counting it in the queue total.
+  it("renders and grades a missed podcast-quiz question from the row itself", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [
+        {
+          itemKey: "podcast:0123456789abcdefq2",
+          source: "podcast_quiz",
+          prompt: "What did the speaker order?",
+          choices: ["Tea", "A small coffee", "Juice"],
+          answerIndex: 1,
+          explanation: "Correct answer: A small coffee",
+        },
+      ],
+      total: 1,
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("What did the speaker order?")).toBeInTheDocument();
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "A small coffee" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "podcast:0123456789abcdefq2", answer: "A small coffee", course: "en" },
+    });
+  });
+
   it("renders and grades a listening question rather than a blank card", async () => {
     // review.tsx is a SECOND renderer with its own render and grading sites.
     // A question type wired only into the lesson player renders as an empty

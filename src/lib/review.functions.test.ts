@@ -470,6 +470,30 @@ describe("gradeReview", () => {
     );
   });
 
+  it("grades a podcast_quiz item from its stored choices, right and wrong", async () => {
+    const row = {
+      ...rowBase,
+      repetitions: 3,
+      source: "podcast_quiz",
+      choices: ["Monday", "Tuesday", "Friday"],
+      answer_index: 2,
+    };
+    const right = createSupabaseMock();
+    right.from.mockReturnValueOnce(chainable({ data: row }));
+    const ok = await gradeReview({
+      context: ctx(right),
+      data: { itemKey: "podcast:0123456789abcdefq2", answer: "Friday", course: "en" },
+    });
+    expect(ok.retired).toBe(true);
+    const wrong = createSupabaseMock();
+    wrong.from.mockReturnValueOnce(chainable({ data: row })).mockReturnValue(chainable({}));
+    const bad = await gradeReview({
+      context: ctx(wrong),
+      data: { itemKey: "podcast:0123456789abcdefq2", answer: "Monday", course: "en" },
+    });
+    expect(bad.retired).toBe(false);
+  });
+
   it("marks a wrong saved_word answer incorrect (it lapses, it does not retire)", async () => {
     const supabase = createSupabaseMock();
     supabase.from
