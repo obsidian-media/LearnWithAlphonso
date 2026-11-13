@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { z } from "zod";
-import { requireAdmin } from "./admin-middleware";
+import { requireStaff } from "./staff-middleware";
+import type { Scope, StaffRole } from "./staff-scopes";
 import { findCycle, isValidSlug, slugPathFor, type PodcastFolder } from "./podcast-tree";
 import { validateEpisodeDraft, storagePathFor, type EpisodeDraft } from "./podcast-authoring";
 import {
@@ -125,7 +126,7 @@ export function affectedOrThrow(
 
 /** The whole folder tree, including branches with nothing published. */
 export const adminListFolders = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .handler(async ({ context }): Promise<PodcastFolder[]> => {
     const { data, error } = await context.supabaseAdmin
       .from("podcast_folders")
@@ -150,13 +151,13 @@ export const adminListFolders = createServerFn({ method: "GET" })
  * unreadable in the first place.
  */
 export const adminWhoAmI = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
-  .handler(async ({ context }): Promise<{ userId: string }> => {
-    return { userId: context.userId };
+  .middleware([requireStaff()])
+  .handler(async ({ context }): Promise<{ userId: string; role: StaffRole; scopes: Scope[] }> => {
+    return { userId: context.userId, role: context.staffRole, scopes: context.staffScopes };
   });
 
 export const adminCreateFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -197,7 +198,7 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
   });
 
 export const adminRenameFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -220,7 +221,7 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
   });
 
 export const adminMoveFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ id: z.string().uuid(), parentId: z.string().uuid().nullable() }).parse(d),
   )
@@ -259,7 +260,7 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const client = context.supabaseAdmin;
@@ -302,7 +303,7 @@ export type AdminEpisode = {
 
 /** Every episode in a folder, published or not. */
 export const adminListEpisodes = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ folderId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<AdminEpisode[]> => {
     const { data: rows, error } = await context.supabaseAdmin
@@ -324,7 +325,7 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
   });
 
 export const adminUpdateEpisode = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -349,7 +350,7 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
   });
 
 export const adminSetPublished = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d),
   )
@@ -538,7 +539,7 @@ async function verifyStagedAudio(
  * disagree about where the bytes belong.
  */
 export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -583,7 +584,7 @@ export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
  * insert step, not a new one introduced here.
  */
 export const adminCreateEpisode = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -652,7 +653,7 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
  * backup, while the row stayed published and pointing at nothing.
  */
 export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -690,7 +691,7 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
  * our own domain, so the write must land somewhere nothing points at.
  */
 export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
     const client = context.supabaseAdmin;
@@ -721,7 +722,7 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   });
 
 export const adminGetTranscript = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ text: string | null }> => {
     const { data: row, error } = await context.supabaseAdmin
@@ -734,7 +735,7 @@ export const adminGetTranscript = createServerFn({ method: "GET" })
   });
 
 export const adminSaveTranscript = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ episodeId: z.string().uuid(), text: z.string().max(200_000) }).parse(d),
   )
@@ -822,7 +823,7 @@ export function teamIdForReport(report: { reason: string; context: unknown }): s
  * account_deleted_at is set, so that side shows as "(deleted account)" and no lookup is made for it.
  */
 export const adminListReports = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .handler(async ({ context }): Promise<AdminReport[]> => {
     const { data: reports, error } = await context.supabaseAdmin
       .from("content_reports")
@@ -908,7 +909,7 @@ export const adminListReports = createServerFn({ method: "GET" })
  * pre-deleted for auth.admin.deleteUser to clean it all up.
  */
 export const adminDeleteReportedUser = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => z.object({ reportId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const { data: report, error } = await context.supabaseAdmin
@@ -990,7 +991,7 @@ async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string):
 }
 
 export const adminDismissReport = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await resolveReport(context.supabaseAdmin, data.reportId);
@@ -1000,7 +1001,7 @@ export const adminDismissReport = createServerFn({ method: "POST" })
 
 /** A fresh Learner-XXXX handle for the reported account; they are asked to choose a name again. */
 export const adminResetDisplayName = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; newName: string }> => {
     const report = await loadReport(context.supabaseAdmin, data.reportId);
@@ -1016,7 +1017,7 @@ export const adminResetDisplayName = createServerFn({ method: "POST" })
   });
 
 export const adminRenameTeam = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) =>
     reportIdSchema.extend({ name: z.string().min(1).max(80) }).parse(d),
   )
@@ -1037,7 +1038,7 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
 
 /** Deletes the team the report names; members, missions, rewards and kicks cascade. */
 export const adminDisbandTeam = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const report = await loadReport(context.supabaseAdmin, data.reportId);

@@ -11,7 +11,7 @@ import { normalizeTranscript } from "./podcast-transcript";
 
 // The failure mode of this entire design is ONE admin server function
 // added later without the gate. A reviewer will not notice a missing
-// `.middleware([requireAdmin])` line in a file of similar-looking
+// `.middleware([requireStaff(...)])` line in a file of similar-looking
 // exports; this test will.
 //
 // It reads the source rather than introspecting the exported objects
@@ -38,8 +38,8 @@ describe("every admin server function is gated", () => {
     expect(declared).toBe(ADMIN_FUNCTION_NAMES.length);
   });
 
-  it("carries requireAdmin on every createServerFn", () => {
-    const gated = source.match(/\.middleware\(\[requireAdmin\]\)/g)?.length ?? 0;
+  it("carries requireStaff on every createServerFn", () => {
+    const gated = source.match(/\.middleware\(\[requireStaff\(/g)?.length ?? 0;
     expect(gated).toBe(ADMIN_FUNCTION_NAMES.length);
   });
 

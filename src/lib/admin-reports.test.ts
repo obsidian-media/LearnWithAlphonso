@@ -6,12 +6,12 @@ import {
   type ChainCall,
 } from "./__testutils__/supabase-mock";
 
-// requireAdmin's own gating is covered by admin.functions.test.ts's
+// requireStaff's own gating is covered by admin.functions.test.ts's
 // source-scan suite (every createServerFn in this file must carry
-// `.middleware([requireAdmin])`). Mocked here purely so importing
+// `.middleware([requireStaff(...)])`). Mocked here purely so importing
 // admin.functions.ts doesn't pull in the real middleware chain (which
 // dynamically imports client.server.ts) just to test these two handlers.
-vi.mock("./admin-middleware", () => ({ requireAdmin: {} }));
+vi.mock("./staff-middleware", () => ({ requireStaff: () => ({}) }));
 // eraseSubscriberRecord (called after an admin deletes an account) queues a failed RevenueCat erase through the
 // module-level service client; stubbed so no test reaches a real database.
 vi.mock("@/integrations/supabase/client.server", () => ({
