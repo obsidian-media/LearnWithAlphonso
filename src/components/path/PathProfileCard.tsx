@@ -35,7 +35,7 @@ export function PathProfileCard({ course }: { course: Course }) {
       <div className="rounded-[18px] bg-ds-hero p-3.5 text-ds-on-hero">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <small className="text-[11px] font-extrabold uppercase tracking-wider text-ds-on-hero-kick">My path</small>
+            <small className="ds-type-overline text-ds-on-hero-kick">My path</small>
             <p className="font-display text-lg font-extrabold">Finish {p.goalLabel}</p>
           </div>
           <Link
@@ -69,8 +69,8 @@ export function PathProfileCard({ course }: { course: Course }) {
             >
               <TypeBadge type={s.type} small />
               <b className="mt-1 font-display text-base font-extrabold text-ds-ink">{s.days}d</b>
-              <small className="text-[10px] font-bold text-ds-ink-soft">{s.weekMinutes} min</small>
-              <small className="text-[10px] font-bold text-ds-ink-soft">{PATH_TYPE_INFO[s.type].label}</small>
+              <small className="ds-type-caption font-bold text-ds-ink-soft">{s.weekMinutes} min</small>
+              <small className="ds-type-caption font-bold text-ds-ink-soft">{PATH_TYPE_INFO[s.type].label}</small>
             </Link>
           </li>
         ))}

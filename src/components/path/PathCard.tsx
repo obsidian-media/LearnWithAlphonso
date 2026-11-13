@@ -60,7 +60,7 @@ export function PathCard({ course }: { course: Course }) {
       <div className="rounded-3xl bg-ds-hero p-4 text-ds-on-hero">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <small className="text-[11px] font-extrabold uppercase tracking-wider text-ds-on-hero-kick">
+            <small className="ds-type-overline text-ds-on-hero-kick">
               My path · Finish {p.goalLabel}
             </small>
             <p className="font-display text-xl font-extrabold">{p.statusLine}</p>

@@ -121,6 +121,8 @@ extension ProfileHubView {
                     }
                 case .progress:
                     ProfileSkillsSection(model: m)
+                    PathProfileCard(session: session, course: activeCourse.course)
+                        .id(activeCourse.course.translationCourseCode)
                     ProfileFold(title: "Activity", summary: ProfileTabs.heatSummary(activeDays: m.heat.activeDays)) {
                         ProfileHeatMapSection(model: m)
                     }

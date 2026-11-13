@@ -10,6 +10,8 @@ import LearnWithAlphonsoKit
 struct GoalCardView: View {
     let session: Session
     let course: Course
+    /// Called after the goal was saved or removed, so a screen built on it (Build my path) can reload.
+    var onChanged: () -> Void = {}
 
     private enum Phase { case loading, empty, goal, failed }
 
@@ -48,6 +50,7 @@ struct GoalCardView: View {
                 loadError = nil
                 actionError = nil
                 phase = saved.goal == nil ? .empty : .goal
+                onChanged()
             }
         }
     }
@@ -205,6 +208,7 @@ struct GoalCardView: View {
             state = LearningGoalState(goal: nil, plan: nil)
             actionError = nil
             phase = .empty
+            onChanged()
         } catch {
             guard mine == generation else { return }
             // A failed remove is an action error, not "offline": the goal is still there and editable.

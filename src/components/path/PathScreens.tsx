@@ -108,7 +108,7 @@ function RecoveryCard({ path, s }: { path: LearningPath; s: ReturnType<typeof us
               <span>
                 <b className="block text-sm font-extrabold text-ds-ink">
                   {o.title}
-                  {o.suggested ? <span className="ml-2 rounded-md bg-ds-right-tint px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-ds-right-ink">Suggested</span> : null}
+                  {o.suggested ? <span className="ml-2 rounded-md bg-ds-right-tint px-1.5 py-0.5 ds-type-overline text-ds-right-ink">Suggested</span> : null}
                 </b>
                 <small className="text-xs text-ds-ink-soft">{o.detail}</small>
               </span>
@@ -118,7 +118,7 @@ function RecoveryCard({ path, s }: { path: LearningPath; s: ReturnType<typeof us
       </fieldset>
       {chosen?.mix ? (
         <div className={`${CARD} p-3`}>
-          <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-ds-ink-soft">The new week under this option</p>
+          <p className="mb-2 ds-type-overline text-ds-ink-soft">The new week under this option</p>
           <MixBar mix={chosen.mix} label="Your new week" />
         </div>
       ) : null}
@@ -137,7 +137,7 @@ function Stop({ stop }: { stop: RoadStop }) {
   const body = (
     <div className={`rounded-2xl border-2 px-3 py-2 ${isGoal ? "border-ds-brand bg-ds-brand text-ds-card" : done ? "border-ds-right-edge bg-ds-right-tint" : cur ? "border-ds-brand bg-ds-choice-tint" : "border-ds-line bg-ds-card"}`}>
       {stop.type && !isGoal ? (
-        <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${TYPE_STYLE[stop.type].text}`}>
+        <span className={`block ds-type-overline ${TYPE_STYLE[stop.type].text}`}>
           {PATH_TYPE_INFO[stop.type].noun}
           {stop.note ? ` · ${stop.note}` : ""}
         </span>
@@ -213,7 +213,7 @@ export function WeekScreen() {
       {(p) => (
         <Frame title="My week" sub={`${p.dailyMinutes} min a day · ${p.week.filter((d) => d.state !== "rest").length} days · ${p.weekMinutes} min`} back="/path">
           <div className={`${CARD} mb-3 p-3`}>
-            <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-ds-ink-soft">This week&apos;s mix</p>
+            <p className="mb-2 ds-type-overline text-ds-ink-soft">This week&apos;s mix</p>
             <MixBar mix={p.mix} label="This week's mix" />
             <p className="mt-2 text-xs text-ds-ink-soft">{p.weekDoneMinutes} of {p.weekMinutes} minutes done so far.</p>
           </div>
@@ -295,12 +295,12 @@ export function BuildScreen() {
       {path ? (
         <section aria-label="How I like to learn" className="mt-4 grid gap-2">
           <div className={`${CARD} p-3`}>
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-ds-ink-soft">Your plan</p>
+            <p className="ds-type-overline text-ds-ink-soft">Your plan</p>
             <p className="font-display text-xl font-extrabold text-ds-ink">{path.progress.requiredPerWeek} lessons a week</p>
             <p className="text-xs text-ds-ink-soft">{path.dailyMinutes} minutes a day, 6 days. The rest of each day is filled with the mix below.</p>
             <div className="mt-2"><MixBar mix={path.mix} label="Your weekly mix" /></div>
           </div>
-          <h2 className="mt-1 text-[11px] font-extrabold uppercase tracking-wider text-ds-ink-soft">How I like to learn</h2>
+          <h2 className="mt-1 ds-type-overline text-ds-ink-soft">How I like to learn</h2>
           <div className="flex min-h-14 items-center gap-3 rounded-2xl border-2 border-ds-line bg-ds-card px-3 py-2 opacity-70">
             <TypeBadge type="lesson" />
             <span className="flex-1"><b className="block text-sm font-extrabold text-ds-ink">Lessons</b><small className="text-xs text-ds-ink-soft">Always on, the backbone</small></span>
