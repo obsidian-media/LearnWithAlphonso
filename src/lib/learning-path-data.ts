@@ -299,6 +299,10 @@ export function buildLearningPath(data: PathData): LearningPath | null {
       goal: data.profile.goal,
       interests: data.profile.interests ?? [],
       dailyMinutes: data.profile.dailyMinutes ?? DEFAULT_DAILY_MINUTES,
+      // Never chosen: left out, so the engine's default rest day applies. "none" is no rest day.
+      ...(data.profile.pathRestDay === undefined
+        ? {}
+        : { restDay: data.profile.pathRestDay === "none" ? null : data.profile.pathRestDay }),
     },
     prefs: {
       off: [...(data.profile.pathOff ?? [])],

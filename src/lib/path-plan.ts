@@ -12,6 +12,8 @@ import {
   ROAD_UPCOMING_STOPS,
   SCORE,
   STUDY_DAYS_PER_WEEK,
+  STUDY_DAYS_NO_REST,
+  NO_REST_DAY,
   WEAK_BELOW_PCT,
   WEAK_SKILL_BOOST,
 } from "../data/path-config";
@@ -76,7 +78,8 @@ export type PathInput = {
   goalPlan: GoalPlan;
   /** "B1 by 1 March" style label the screens show. */
   goalLabel: string;
-  profile: { goal?: Goal; interests: Interest[]; dailyMinutes: number };
+  /** `restDay`: 0 (Sunday) to 6, or null for no rest day; left out it is the default rest day (REST_DAY). */
+  profile: { goal?: Goal; interests: Interest[]; dailyMinutes: number; restDay?: number | null };
   prefs: PathPrefs;
   /** pct per skill from the Skills radar; null or missing = too few answers to score. */
   skillPct: Partial<Record<Skill, number | null>>;
@@ -154,6 +157,9 @@ export type LearningPath = {
     suggestedDate: string | null;
   };
   dailyMinutes: number;
+  /** The rest day as planned: 0 (Sunday) to 6, or NO_REST_DAY (-1) when the learner studies all seven days. A plain
+   *  number so the Swift and Kotlin decoders need no nullable-versus-missing rule. */
+  restDay: number;
   weekMinutes: number;
   weekDoneMinutes: number;
   trimmed: boolean;
@@ -210,13 +216,24 @@ function enabledOptional(input: PathInput): PathType[] {
   );
 }
 
+/** The rest day the plan uses: the learner's choice, the default when they never chose, null for none. */
+function restDayOf(input: PathInput): number | null {
+  const chosen = input.profile.restDay;
+  return chosen === undefined ? REST_DAY : chosen;
+}
+
+/** Days a week the learner studies: six with a rest day, seven without. */
+function studyDaysOf(input: PathInput): number {
+  return restDayOf(input) === null ? STUDY_DAYS_NO_REST : STUDY_DAYS_PER_WEEK;
+}
+
 function isTrimmed(input: PathInput): boolean {
   const until = input.prefs.trimUntil;
   return until !== null && until >= input.now.toISOString().slice(0, 10);
 }
 
 function computeMix(input: PathInput, trimmed: boolean): MixEntry[] {
-  const weekMin = input.profile.dailyMinutes * STUDY_DAYS_PER_WEEK;
+  const weekMin = input.profile.dailyMinutes * studyDaysOf(input);
   const enabled = enabledOptional(input);
   const weak = weakSkills(input.skillPct);
   const lessonAvg = avgMinutes(input, "lesson");
@@ -332,7 +349,8 @@ export function planPath(input: PathInput): LearningPath {
   const trimmed = isTrimmed(input);
   const mix = computeMix(input, trimmed);
   const daily = input.profile.dailyMinutes;
-  const weekMin = daily * STUDY_DAYS_PER_WEEK;
+  const weekMin = daily * studyDaysOf(input);
+  const restDay = restDayOf(input);
 
   const weekEvents = input.events.filter(
     (e) => e.day >= weekStart && e.day <= addDays(weekStart, 6),
@@ -357,7 +375,7 @@ export function planPath(input: PathInput): LearningPath {
   const plannable: { day: string; budget: number; index: number }[] = [];
   for (let i = 0; i < 7; i++) {
     const day = addDays(weekStart, i);
-    const rest = weekdayOf(day) === REST_DAY;
+    const rest = restDay !== null && weekdayOf(day) === restDay;
     const past = day < today;
     const base: DayPlan = {
       day,
@@ -455,6 +473,7 @@ export function planPath(input: PathInput): LearningPath {
       suggestedDate: input.goalPlan.suggestedDate,
     },
     dailyMinutes: daily,
+    restDay: restDay ?? NO_REST_DAY,
     weekMinutes: weekMin,
     weekDoneMinutes: weekEvents.reduce((s, e) => s + e.minutes, 0),
     trimmed,
@@ -547,7 +566,7 @@ function buildRecovery(input: PathInput, trimmed: boolean): RecoveryOption[] {
   const next = DAILY_MINUTES.find((m) => m > input.profile.dailyMinutes);
   if (next !== undefined) {
     const lessonsPerWeek = Math.floor(
-      (next * STUDY_DAYS_PER_WEEK) / Math.max(1, avgMinutes(input, "lesson")),
+      (next * studyDaysOf(input)) / Math.max(1, avgMinutes(input, "lesson")),
     );
     out.push({
       id: "add_minutes",
@@ -594,13 +613,13 @@ function buildWhy(
   });
   if (
     !trimmed &&
-    lessons.minutes >= input.profile.dailyMinutes * STUDY_DAYS_PER_WEEK &&
+    lessons.minutes >= input.profile.dailyMinutes * studyDaysOf(input) &&
     enabledOptional(input).length > 0
   ) {
     out.push({
       type: "lesson",
       headline: "Your goal needs every minute",
-      detail: `${plan.requiredPerWeek} lessons a week fill all ${input.profile.dailyMinutes * STUDY_DAYS_PER_WEEK} minutes, so the extras wait. Add minutes or move the date to make room.`,
+      detail: `${plan.requiredPerWeek} lessons a week fill all ${input.profile.dailyMinutes * studyDaysOf(input)} minutes, so the extras wait. Add minutes or move the date to make room.`,
       source: "planner",
     });
   }

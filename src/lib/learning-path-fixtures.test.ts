@@ -47,6 +47,8 @@ const base: PathData = {
 const scenarios: Record<string, PathData> = {
   onTrack: { ...base, goal: { ...base.goal, targetDate: "2028-06-01" } },
   behind: base,
+  restDayChosen: { ...base, profile: { ...base.profile, pathRestDay: 3 } },
+  noRestDay: { ...base, profile: { ...base.profile, pathRestDay: "none" } },
   behindTrimmed: {
     ...base,
     goal: { ...base.goal, targetDate: "2026-12-15" },
@@ -75,6 +77,16 @@ describe("learning path contract fixtures", () => {
       "move_date",
       "add_minutes",
     ]);
+  });
+  it("the rest-day scenarios carry the learner's choice: default Sunday, Wednesday, or none", () => {
+    expect(built.behind?.restDay).toBe(0);
+    expect(built.restDayChosen?.restDay).toBe(3);
+    expect(built.restDayChosen?.week.filter((d) => d.state === "rest").map((d) => d.label)).toEqual(
+      ["Wed"],
+    );
+    expect(built.noRestDay?.restDay).toBe(-1);
+    expect(built.noRestDay?.week.some((d) => d.state === "rest")).toBe(false);
+    expect(built.noRestDay?.weekMinutes).toBe(70);
   });
   it("the behind-and-trimmed scenario really is behind and trimmed", () => {
     expect(built.behindTrimmed?.status).toBe("behind");

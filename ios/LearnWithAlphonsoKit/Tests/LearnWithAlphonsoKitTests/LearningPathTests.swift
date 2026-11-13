@@ -20,7 +20,7 @@ final class LearningPathTests: XCTestCase {
     }
 
     func testEveryCheckedInScenarioDecodes() throws {
-        for key in ["onTrack", "behind", "behindTrimmed"] {
+        for key in ["onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay"] {
             XCTAssertNoThrow(try LearningPathDecoding.path(from: try scenario(key)), key)
         }
     }
@@ -53,6 +53,30 @@ final class LearningPathTests: XCTestCase {
         let p = try path("onTrack")
         XCTAssertEqual(p.week.count, 7)
         XCTAssertEqual(p.week.filter { $0.state == "rest" }.count, 1)
+    }
+
+    func testTheRestDayComesFromTheServerThreeWays() throws {
+        XCTAssertEqual(try path("onTrack").restDayValue, 0)
+        XCTAssertEqual(try path("restDayChosen").restDayValue, 3)
+        XCTAssertEqual(try path("restDayChosen").week.filter { $0.state == "rest" }.count, 1)
+        let none = try path("noRestDay")
+        XCTAssertEqual(none.restDayValue, PathRestDay.none)
+        XCTAssertEqual(none.week.filter { $0.state == "rest" }.count, 0)
+        XCTAssertEqual(none.weekMinutes, 70)
+    }
+
+    func testAnOlderServerWithoutARestDayMeansSunday() throws {
+        var object = try JSONSerialization.jsonObject(with: try scenario("onTrack")) as! [String: Any]
+        object.removeValue(forKey: "restDay")
+        let data = try JSONSerialization.data(withJSONObject: ["path": object])
+        XCTAssertEqual(try LearningPathDecoding.path(from: data)?.restDayValue, PathRestDay.sunday)
+    }
+
+    func testTheRestDayChoicesAreTheSevenWeekdaysThenNone() {
+        XCTAssertEqual(PathRestDay.choices.map(\.label), ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "No rest day"])
+        XCTAssertEqual(PathRestDay.choices.map(\.value), [0, 1, 2, 3, 4, 5, 6, -1])
+        XCTAssertEqual(PathRestDay.studyDays(2), 6)
+        XCTAssertEqual(PathRestDay.studyDays(PathRestDay.none), 7)
     }
 
     func testTheMixAddsUpToTheWeeksMinutes() throws {
@@ -102,5 +126,10 @@ final class LearningPathTests: XCTestCase {
         XCTAssertEqual(box.body["course"] as? String, "en")
         _ = try await client.change(course: "en", .setDailyMinutes(15))
         XCTAssertEqual(box.body["dailyMinutes"] as? Int, 15)
+        _ = try await client.change(course: "en", .setRestDay(5))
+        XCTAssertEqual(box.body["action"] as? String, "set_rest_day")
+        XCTAssertEqual(box.body["restDay"] as? Int, 5)
+        _ = try await client.change(course: "en", .setRestDay(PathRestDay.none))
+        XCTAssertEqual(box.body["restDay"] as? String, "none")
     }
 }

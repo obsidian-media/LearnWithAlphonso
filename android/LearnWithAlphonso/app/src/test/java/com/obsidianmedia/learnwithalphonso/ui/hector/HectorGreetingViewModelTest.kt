@@ -53,10 +53,11 @@ class HectorGreetingViewModelTest {
     private fun tutor(s: FakeServer) = TutorConversationClient(ApiHttp("https://api.example", { "tok" }, s.engine), "dev-1")
     private fun tts(s: FakeServer) = s.seen.filter { it.path.endsWith("/api/tts") }.map { Json.parseToJsonElement(it.body).jsonObject }
 
-    private fun vm(s: FakeServer, player: ReplyPlayer = ReplyPlayer { true }, cache: OpenerSpeechCache = OpenerSpeechCache()) =
+    // The limit is the server's to say; these tests hand the screen what /api/app-config would.
+    private fun vm(s: FakeServer, player: ReplyPlayer = ReplyPlayer { true }, cache: OpenerSpeechCache = OpenerSpeechCache(), limit: Int? = 150) =
         HectorViewModel(
             InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, player, course = Course.ENGLISH,
-            hectorVoice = { "aura-2-atlas-en" }, openerCache = cache,
+            hectorVoice = { "aura-2-atlas-en" }, openerCache = cache, hectorLimit = { limit },
         )
 
     @Test
@@ -148,6 +149,24 @@ class HectorGreetingViewModelTest {
         assertEquals("You've reached today's AI practice limit. Try again tomorrow.", v.state.value.error)
         assertTrue(v.state.value.turns.isEmpty())
         assertTrue("no speech is fetched", tts(s).isEmpty())
+    }
+
+    @Test
+    fun `with no limit from the server he still greets however much is used`() = runBlocking {
+        val s = server(usedToday = 9_999)
+        val v = vm(s, limit = null)
+        v.greet()
+        awaitTrue("greeting played") { tts(s).size == 1 }
+        assertNull(v.state.value.error)
+    }
+
+    @Test
+    fun `the server's limit decides, not a number in the app`() = runBlocking {
+        val s = server(usedToday = 150)
+        val v = vm(s, limit = 200)
+        v.greet()
+        awaitTrue("greeting played") { tts(s).size == 1 }
+        assertNull(v.state.value.error)
     }
 
     @Test

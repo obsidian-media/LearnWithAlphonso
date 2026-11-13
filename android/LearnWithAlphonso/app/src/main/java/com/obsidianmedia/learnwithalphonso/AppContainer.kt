@@ -78,6 +78,9 @@ class AppContainer(context: Context) {
     private val app = context.applicationContext
     private val okHttp = OkHttpClient()
     private val engine = OkHttp.create { preconfigured = okHttp }
+
+    /** The daily Hector limit as the server tells it (GET /api/app-config); null when unknown (fail open). */
+    suspend fun hectorDailyLimit(): Int? = com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance.fetchLimit(BuildConfig.API_BASE_URL, engine)
     /** App-lifetime work that outlives any screen: podcast saves, push registration. */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     /** The same app-lifetime scope, for work that must outlive the screen that started it (a podcast quiz submit). */

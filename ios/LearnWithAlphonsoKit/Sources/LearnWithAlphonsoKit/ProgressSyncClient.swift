@@ -1210,7 +1210,9 @@ public final class ProgressSyncClient: Sendable {
     /// Whether today's Hector allowance is used up (BACKLOG 0.0-bq #5): the learner's own `ai_usage` row for today's
     /// UTC day and kind `hector` (RLS lets them read it). Any failure answers false, so Hector still greets and the
     /// server stays the real guard.
-    public func fetchHectorAllowanceUsedUp(now: Date = Date()) async -> Bool {
+    public func fetchHectorAllowanceUsedUp(limit: Int?, now: Date = Date()) async -> Bool {
+        // No limit from the server: nothing to compare against, so do not even read the usage row.
+        guard limit != nil else { return false }
         var request = restRequest(path: "ai_usage", query: [
             URLQueryItem(name: "select", value: "count"),
             URLQueryItem(name: "day", value: "eq.\(HectorAllowance.utcDay(now))"),
@@ -1220,7 +1222,7 @@ public final class ProgressSyncClient: Sendable {
         guard let (data, response) = try? await requester(request),
               (try? Self.requireSuccess(data: data, response: response)) != nil,
               let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return false }
-        return HectorAllowance.isUsedUp(counts: rows.compactMap { $0["count"] as? Int })
+        return HectorAllowance.isUsedUp(counts: rows.compactMap { $0["count"] as? Int }, limit: limit)
     }
 
     /// Whether -- and when -- this course's placement test has been taken.

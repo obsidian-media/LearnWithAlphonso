@@ -284,6 +284,8 @@ struct PathScreen: View {
     let session: Session
     let course: Course
     var onOpenLesson: (String) -> Void = { _ in }
+    /// Talks, campaign scenes and podcasts live in other tabs; the app-wide link carries the tap to them.
+    @Environment(PathDeepLink.self) private var deepLink
     @State private var model: PathModel?
     @State private var picked: String?
     @Environment(\.alphonsoDS) private var ds
@@ -349,7 +351,7 @@ struct PathScreen: View {
             NavigationLink(value: PathRoute.why) { Text("Why this mix?").dsText(.headline).foregroundStyle(ds.ink) }
         }
         Section {
-            Text("Podcasts are in the Listen tab, talks and story campaigns in Practice.")
+            Text("Tap a stop to open it: lessons here, podcasts in Listen, talks and story campaigns in Practice.")
                 .dsText(.caption).foregroundStyle(ds.inkSoft)
         }
     }
@@ -381,7 +383,11 @@ struct PathScreen: View {
         .frame(minHeight: AlphonsoDS.Space.minTouch)
         .contentShape(Rectangle())
         .onTapGesture {
-            if let ref = stop.ref, ref.kind == "lesson", !done { onOpenLesson(ref.id) }
+            switch PathStopRouting.destination(for: stop.ref, done: done) {
+            case let .lesson(id): onOpenLesson(id)
+            case let other?: deepLink.open(other)
+            case nil: break
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(done ? "Done. " : stop.state == "current" ? "Next up. " : "")\(stop.title). \(stop.subtitle)")
@@ -535,11 +541,26 @@ struct PathBuildView: View {
     private func switches(_ path: LearningPath) -> some View {
         Section {
             Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.headline).foregroundStyle(ds.ink)
-            Text("\(path.dailyMinutes) minutes a day, 6 days. The rest of each day is filled with the mix below.")
+            Text("\(path.dailyMinutes) minutes a day, \(PathRestDay.studyDays(path.restDayValue)) days. The rest of each day is filled with the mix below.")
                 .dsText(.caption).foregroundStyle(ds.inkSoft)
             PathMixBar(mix: path.mix)
         } header: {
             Text("Your plan").dsText(.overline).foregroundStyle(ds.actionText)
+        }
+        Section {
+            Picker("Rest day", selection: Binding(
+                get: { path.restDayValue },
+                set: { day in Task { await model?.apply(.setRestDay(day)) } })
+            ) {
+                ForEach(PathRestDay.choices, id: \.value) { Text($0.label).tag($0.value) }
+            }
+            .pickerStyle(.menu)
+            .tint(ds.choice)
+            .disabled(model?.busy ?? false)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .accessibilityLabel("Rest day")
+        } header: {
+            Text("Rest day").dsText(.overline).foregroundStyle(ds.actionText)
         }
         Section {
             HStack(spacing: AlphonsoDS.Space.s3) {

@@ -295,4 +295,45 @@ describe("planPath: when the goal needs every minute", () => {
     const p = planPath(input({ goalPlan: goalPlan({ requiredPerWeek: 7 }) }));
     for (const m of p.mix) expect(Number.isInteger(m.minutes)).toBe(true);
   });
+
+  describe("the learner's rest day", () => {
+    const rests = (p: ReturnType<typeof planPath>) =>
+      p.week.filter((d) => d.state === "rest").map((d) => d.label);
+    it("is Sunday when the learner never chose one (as before)", () => {
+      const p = planPath(input());
+      expect(rests(p)).toEqual(["Sun"]);
+      expect(p.restDay).toBe(0);
+    });
+    it("moves the rest day to the one the learner chose", () => {
+      const p = planPath(
+        input({ profile: { goal: "travel", interests: [], dailyMinutes: 10, restDay: 5 } }),
+      );
+      expect(rests(p)).toEqual(["Fri"]);
+      expect(p.week.find((d) => d.label === "Sun")!.state).not.toBe("rest");
+      expect(p.week.find((d) => d.label === "Fri")!.items).toHaveLength(0);
+      expect(p.restDay).toBe(5);
+    });
+    it("plans seven study days, and a week's minutes to match, when there is no rest day", () => {
+      const p = planPath(
+        input({ profile: { goal: "travel", interests: [], dailyMinutes: 10, restDay: null } }),
+      );
+      expect(rests(p)).toEqual([]);
+      expect(p.weekMinutes).toBe(10 * (STUDY_DAYS_PER_WEEK + 1));
+      expect(p.restDay).toBe(-1);
+    });
+    it("keeps six study days when a rest day is chosen", () => {
+      const p = planPath(
+        input({ profile: { goal: "travel", interests: [], dailyMinutes: 10, restDay: 2 } }),
+      );
+      expect(p.weekMinutes).toBe(10 * STUDY_DAYS_PER_WEEK);
+    });
+    it("a rest day that is today is a rest today", () => {
+      // NOW is Wednesday (3).
+      const p = planPath(
+        input({ profile: { goal: "travel", interests: [], dailyMinutes: 10, restDay: 3 } }),
+      );
+      expect(p.week.find((d) => d.state === "rest")!.label).toBe("Wed");
+      expect(p.today.items).toHaveLength(0);
+    });
+  });
 });

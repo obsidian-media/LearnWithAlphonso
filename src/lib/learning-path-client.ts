@@ -13,7 +13,8 @@ export type PathAction =
   | { action: "set_off"; off: Exclude<PathType, "lesson">[] }
   | { action: "lessons_first" }
   | { action: "resume" }
-  | { action: "set_daily_minutes"; dailyMinutes: number };
+  | { action: "set_daily_minutes"; dailyMinutes: number }
+  | { action: "set_rest_day"; restDay: number | "none" };
 
 export type PathLoad =
   | { kind: "loading" }
