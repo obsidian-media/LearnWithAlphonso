@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { DsIcon } from "../../components/ds/DsIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -58,14 +59,37 @@ function HectorPage() {
   );
 }
 
+/**
+ * The Hector tab is full screen (no tab bar), so every state of it needs its own way out.
+ * Without one a free learner was left on the paywall with no exit but the browser's back button.
+ */
+function HectorExit({ className = "" }: { className?: string }) {
+  return (
+    <Link
+      to="/learn"
+      aria-label={HECTOR_EXIT_LABEL}
+      data-hector-exit=""
+      className={`grid size-11 shrink-0 place-items-center rounded-full bg-ds-card/90 text-ds-brand shadow-[var(--ds-shadow-resting)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${className}`}
+    >
+      <DsIcon name="close" className="size-4" />
+    </Link>
+  );
+}
+
+const HECTOR_EXIT_LABEL = "Back to Learn";
+
 function HectorGate({ course }: { course: Course }) {
   const pro = useProStatus();
+  const navigate = useNavigate();
   // A 403 mid-conversation (lapsed, refunded) swaps in the paywall with its own source.
   const [refusedSource, setRefusedSource] = useState<PaywallSource | null>(null);
 
   if (pro.state === "loading") {
     return (
       <LessonFrame>
+        <div className="px-4 pt-4">
+          <HectorExit />
+        </div>
         <p role="status" className="px-6 pt-10 text-sm text-ds-ink-soft/70">
           …
         </p>
@@ -75,7 +99,10 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "error") {
     return (
       <LessonFrame>
-        <div className="space-y-3 px-6 pt-10">
+        <div className="px-4 pt-4">
+          <HectorExit />
+        </div>
+        <div className="space-y-3 px-6 pt-6">
           <p role="alert" className="text-sm text-ds-ink-soft">
             {WEB_PAYWALL_COPY.checkFailed}
           </p>
@@ -93,7 +120,10 @@ function HectorGate({ course }: { course: Course }) {
   if (pro.state === "free" && !refusedSource && pro.justPaid) {
     return (
       <LessonFrame>
-        <div className="space-y-3 px-6 pt-10">
+        <div className="px-4 pt-4">
+          <HectorExit />
+        </div>
+        <div className="space-y-3 px-6 pt-6">
           <p role="status" className="font-display text-xl font-semibold text-ds-ink">
             {WEB_PAYWALL_COPY.activating}
           </p>
@@ -112,7 +142,10 @@ function HectorGate({ course }: { course: Course }) {
     return (
       <LessonFrame>
         {/* The round-6 paywall paints Hector in his library itself. */}
-        <WebPaywall source={refusedSource ?? "hector_tab"} />
+        <WebPaywall
+          source={refusedSource ?? "hector_tab"}
+          onClose={() => void navigate({ to: "/learn" })}
+        />
       </LessonFrame>
     );
   }
@@ -469,6 +502,7 @@ function HectorConversation({
     <>
       <SceneBackdrop scene="hector" focus="50% 30%" />
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
+        <HectorExit />
         <div className="min-w-0 flex-1">
           <h1 className="font-display ds-type-headline font-semibold text-ds-ink">Hector</h1>
           <p className="truncate ds-type-caption text-ds-ink-soft/70">

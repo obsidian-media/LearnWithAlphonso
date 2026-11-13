@@ -4,10 +4,12 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "../../lib/__testutils__/ai-consent";
 
+const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
     ...actual,
+    useNavigate: () => navigate,
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
       <a href={to} {...rest}>
         {children}
@@ -100,6 +102,37 @@ async function renderPage() {
   const Page = Route.options.component!;
   return render(withAiConsent(<Page />, fakeConsentApi()));
 }
+
+describe("web Hector always has a way back (it is full screen, with no tab bar)", () => {
+  it("a free learner can close the paywall and land on Learn", async () => {
+    navigate.mockReset();
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    await screen.findByText("$9.99 a month after the trial");
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
+
+  it("the paywall still has its close button when the offer cannot load", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    routes["/api/pro-offering"] = status({ error: "unavailable" }, 503);
+    await renderPage();
+    expect(await screen.findByRole("button", { name: "Close" })).toBeInTheDocument();
+  });
+
+  it("when Pro cannot be checked there is a link back to Learn", async () => {
+    routes["/api/pro-status"] = status({ error: "entitlement-unavailable" }, 503);
+    await renderPage();
+    await screen.findByText("Couldn't check your subscription. Try again.");
+    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+  });
+
+  it("the Pro text chat has a link back to Learn", async () => {
+    await renderPage();
+    await screen.findByRole("log");
+    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+  });
+});
 
 describe("web Hector", () => {
   it("a learner without Pro sees the paywall, opened from the Hector tab", async () => {
