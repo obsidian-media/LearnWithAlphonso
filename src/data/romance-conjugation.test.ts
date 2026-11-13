@@ -161,7 +161,8 @@ describe("a drill never gives its answer away by being the only form of the verb
 
   it("finds the drills of every level", () => {
     expect(found.length).toBeGreaterThanOrEqual(500);
-    for (const lvl of ["fr", "es"]) expect(found.some((d) => d.pack.startsWith(lvl + "b2"))).toBe(true);
+    for (const lvl of ["fr", "es"])
+      expect(found.some((d) => d.pack.startsWith(lvl + "b2"))).toBe(true);
   });
 
   it("at least two wrong options are forms of the bracketed verb (one, when the question has two options)", () => {

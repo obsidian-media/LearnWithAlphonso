@@ -39,7 +39,9 @@ describe("French and Spanish explanations", () => {
   });
 
   it("the pattern does catch the generated line (the gate can fail)", () => {
-    expect(GENERIC.test('"droite" is correct here. Everyday vocabulary for directions.')).toBe(true);
+    expect(GENERIC.test('"droite" is correct here. Everyday vocabulary for directions.')).toBe(
+      true,
+    );
     expect(GENERIC.test('"droite" means right; "gauche" is left.')).toBe(false);
   });
 });
