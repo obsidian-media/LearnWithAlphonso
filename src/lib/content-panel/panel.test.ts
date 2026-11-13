@@ -35,7 +35,7 @@ describe("the sample", () => {
     const items = samplePanelItems(lang, "20261106");
     it(`${lang}: about 150 items from lessons, campaigns and placement, no key twice`, () => {
       expect(items.length).toBeGreaterThanOrEqual(140);
-      expect(items.length).toBeLessThanOrEqual(160);
+      expect(items.length).toBeLessThanOrEqual(175);
       expect(new Set(items.map((i) => i.key)).size).toBe(items.length);
       for (const s of ["lesson", "campaign", "placement"])
         expect(items.filter((i) => i.source === s).length, s).toBeGreaterThan(10);

@@ -219,7 +219,7 @@ describe("campaign structure has no dead ends", () => {
 describe("form-filling scenes ask for a first name only (ai-safety rule)", () => {
   // The scenes where a persona writes the learner's details down: the lost property form and
   // the support chat. Each must forbid the personal details and allow only a first name.
-  const FORM_SCENES = ["lost-property-office", "refund-parcel"];
+  const FORM_SCENES = ["lost-property-office", "refund-parcel", "study-register", "gym-sign-up"];
   const RULES = {
     en: {
       never: /never ask for a surname, a phone number, an address/i,

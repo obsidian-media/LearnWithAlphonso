@@ -49,10 +49,11 @@ class ConversationContentTest {
     }
 
     @Test
-    fun `every course ships the same nine campaigns, each with 3 or 4 scenes and unique ids`() {
+    fun `every course ships the same thirteen campaigns, each with 3 or 4 scenes and unique ids`() {
         val expected = listOf(
             "city-day", "first-week-job", "doctors-visit", "train-trip", "new-flat",
             "market-day", "dinner-guest", "lost-bag", "refund-return",
+            "study-abroad", "gym-join", "project-week", "family-weekend",
         )
         for (course in listOf(Course.ENGLISH, Course.FRENCH, Course.SPANISH)) {
             val camps = store.campaigns(course)

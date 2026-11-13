@@ -45,6 +45,10 @@ describe("story campaigns", () => {
     "dinner-guest": ["dinner-arrive", "dinner-table", "dinner-goodbye"],
     "lost-bag": ["lost-ask-driver", "lost-property-office", "lost-tell-friend"],
     "refund-return": ["refund-shop", "refund-parcel", "refund-opinion"],
+    "study-abroad": ["study-register", "study-office-hours", "study-group"],
+    "gym-join": ["gym-sign-up", "gym-class", "gym-after-class"],
+    "project-week": ["project-pitch", "project-deadline", "project-update"],
+    "family-weekend": ["family-station", "family-birthday-plan", "family-call"],
   };
 
   it("ships exactly these campaigns with these scene ids, in this order (ids are stable)", () => {
