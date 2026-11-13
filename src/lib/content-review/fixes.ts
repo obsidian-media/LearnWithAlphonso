@@ -18,7 +18,7 @@ import type { ItemKind, ReviewItem } from "./inventory";
 import { FLAG, GENERIC_EXPLANATION, INFINITIVE } from "./gates";
 import { isFormOf } from "../../data/conjugation-form-check";
 import { bracketedVerb } from "../../data/romance-conjugation";
-import { cardProblems, mentionsTerm } from "../../data/card-rules";
+import { cardProblems, mentionsTerm, withoutArticle } from "../../data/card-rules";
 import type { Question } from "../../data/curriculum";
 import type { Level } from "../../data/levels";
 import { deriveVocab } from "../../data/vocab";
@@ -120,7 +120,7 @@ export function cardRules(term: string, patch: Patch, course: string = "en"): st
     // word-card gate's own test (a shared stem, elisions split); English keeps the literal match.
     (course === "en"
       ? !patch.example.toLowerCase().includes(term.toLowerCase())
-      : !mentionsTerm(patch.example, term))
+      : !mentionsTerm(patch.example, withoutArticle(term)))
   )
     why.push("the card example does not use the term");
   return why;
