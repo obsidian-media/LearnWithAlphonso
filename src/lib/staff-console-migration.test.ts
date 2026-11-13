@@ -1,0 +1,263 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { PGlite } from "@electric-sql/pglite";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+/**
+ * Staff console tables and functions (20261113100000), EXECUTED in a real Postgres (PGlite) as seeded users.
+ */
+const FILE = "20261113100000_staff_console.sql";
+const sqlText = readFileSync(path.join(process.cwd(), "supabase/migrations", FILE), "utf8");
+const ACTOR = "00000000-0000-4000-8000-0000000000a1";
+const T1 = "00000000-0000-4000-8000-000000000001";
+const T2 = "00000000-0000-4000-8000-000000000002";
+const T3 = "00000000-0000-4000-8000-000000000003";
+const S1 = "00000000-0000-4000-8000-0000000000b1";
+const S2 = "00000000-0000-4000-8000-0000000000b2";
+
+const TABLES = [
+  "staff_roles",
+  "staff_audit_log",
+  "user_restrictions",
+  "pro_grants",
+  "staff_notes",
+] as const;
+
+let db: PGlite;
+beforeAll(async () => {
+  db = new PGlite();
+  await db.exec(`
+    CREATE ROLE service_role BYPASSRLS; CREATE ROLE authenticated; CREATE ROLE anon;
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated;
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+    CREATE SCHEMA auth; CREATE TABLE auth.users (id uuid PRIMARY KEY);
+    CREATE TABLE auth.sessions (id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE);
+    CREATE TABLE auth.refresh_tokens (id bigserial PRIMARY KEY, user_id varchar(255), session_id uuid);
+    GRANT USAGE ON SCHEMA auth TO authenticated, anon, service_role;
+    CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
+      AS $$ SELECT NULLIF(current_setting('app.uid', true), '')::uuid $$;
+    INSERT INTO auth.users VALUES ('${ACTOR}'), ('${T1}'), ('${T2}'), ('${T3}'), ('${S1}'), ('${S2}');
+    GRANT USAGE ON SCHEMA public TO authenticated, anon, service_role;
+  `);
+  await db.exec(sqlText);
+}, 120_000);
+afterAll(async () => {
+  await db.close();
+});
+
+const asRole = async <T>(role: string, fn: () => Promise<T>, uid = "") => {
+  await db.exec(`SELECT set_config('app.uid', '${uid}', false); SET ROLE ${role}`);
+  try {
+    return await fn();
+  } finally {
+    await db.exec("RESET ROLE; SELECT set_config('app.uid', '', false)");
+  }
+};
+const asServer = <T>(fn: () => Promise<T>) => asRole("service_role", fn);
+const count = async (table: string, where = "true") =>
+  Number(
+    (await db.query<{ n: string }>(`SELECT count(*)::text n FROM public.${table} WHERE ${where}`))
+      .rows[0]!.n,
+  );
+
+describe("staff console migration", () => {
+  it("applies cleanly after all migrations (all five tables exist)", async () => {
+    for (const t of TABLES) expect(await count(t)).toBe(0);
+  });
+
+  it("audit log refuses UPDATE and DELETE even for service_role", async () => {
+    await asServer(() =>
+      db.query(
+        "SELECT public.staff_record($1,'owner','test.seed',$2,'seed reason',null,null,null)",
+        [ACTOR, T1],
+      ),
+    );
+    // The trigger itself, reached as the table owner (privileges alone would stop service_role first).
+    await expect(db.query("UPDATE public.staff_audit_log SET reason = 'x'")).rejects.toThrow(
+      /append-only/,
+    );
+    await expect(db.query("DELETE FROM public.staff_audit_log")).rejects.toThrow(/append-only/);
+    await expect(db.query("TRUNCATE public.staff_audit_log")).rejects.toThrow(/append-only/);
+    // And the grants: service_role cannot even attempt it.
+    await asServer(() =>
+      expect(db.query("UPDATE public.staff_audit_log SET reason = 'x'")).rejects.toMatchObject({
+        code: "42501",
+      }),
+    );
+    await asServer(() =>
+      expect(db.query("DELETE FROM public.staff_audit_log")).rejects.toMatchObject({
+        code: "42501",
+      }),
+    );
+    expect(await count("staff_audit_log", "action = 'test.seed'")).toBe(1);
+  });
+
+  it("anon and authenticated cannot select any of the five tables", async () => {
+    for (const role of ["anon", "authenticated"]) {
+      for (const t of TABLES) {
+        await asRole(
+          role,
+          () =>
+            expect(db.query(`SELECT * FROM public.${t}`)).rejects.toMatchObject({ code: "42501" }),
+          ACTOR,
+        );
+      }
+    }
+  });
+
+  it("staff_set_restriction writes the restriction and exactly one audit row", async () => {
+    const before = await count("staff_audit_log");
+    const { rows } = await asServer(() =>
+      db.query<{ id: string }>(
+        "SELECT public.staff_set_restriction($1,'support',$2,'block','harassing others') AS id",
+        [ACTOR, T2],
+      ),
+    );
+    expect(rows[0]!.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(await count("user_restrictions", `user_id='${T2}' AND kind='block'`)).toBe(1);
+    expect(await count("staff_audit_log")).toBe(before + 1);
+    const audit = (
+      await db.query<{ action: string; reason: string; actor_role: string }>(
+        `SELECT action, reason, actor_role FROM public.staff_audit_log WHERE target_user_id='${T2}'`,
+      )
+    ).rows;
+    expect(audit).toEqual([
+      { action: "user.block", reason: "harassing others", actor_role: "support" },
+    ]);
+  });
+
+  it("if staff_record raises (p_action null) no restriction row exists", async () => {
+    // staff_record rejects a null action; the restriction function passes whatever kind maps to, so test the pair
+    // directly: the writer inside one transaction with a failing audit leaves nothing behind.
+    await expect(
+      asServer(() =>
+        db.query(
+          `DO $$ BEGIN
+             INSERT INTO public.user_restrictions(user_id, kind, reason) VALUES ('${T3}','ban','x');
+             PERFORM public.staff_record('${ACTOR}','owner',NULL,'${T3}','r',NULL,NULL,NULL);
+           END $$`,
+        ),
+      ),
+    ).rejects.toThrow();
+    expect(await count("user_restrictions", `user_id='${T3}'`)).toBe(0);
+    // And through the real function: a bad kind is refused with no row and no audit row.
+    const audits = await count("staff_audit_log");
+    await asServer(() =>
+      expect(
+        db.query("SELECT public.staff_set_restriction($1,'owner',$2,'nonsense','r')", [ACTOR, T3]),
+      ).rejects.toThrow(),
+    );
+    expect(await count("user_restrictions", `user_id='${T3}'`)).toBe(0);
+    expect(await count("staff_audit_log")).toBe(audits);
+  });
+
+  it("staff_set_restriction refuses acting on yourself and a double restriction", async () => {
+    await asServer(() =>
+      expect(
+        db.query("SELECT public.staff_set_restriction($1,'owner',$1,'block','r')", [ACTOR]),
+      ).rejects.toThrow(/own account/),
+    );
+    await asServer(() =>
+      expect(
+        db.query("SELECT public.staff_set_restriction($1,'owner',$2,'block','again')", [ACTOR, T2]),
+      ).rejects.toMatchObject({ code: "23505" }),
+    );
+  });
+
+  it("is_restricted is true only for an active (not lifted) row of that kind", async () => {
+    const check = (u: string, k: string) =>
+      asServer(
+        async () =>
+          (await db.query<{ r: boolean }>("SELECT public.is_restricted($1,$2) AS r", [u, k]))
+            .rows[0]!.r,
+      );
+    expect(await check(T2, "block")).toBe(true);
+    expect(await check(T2, "ban")).toBe(false);
+    expect(await check(T1, "block")).toBe(false);
+    await asServer(() =>
+      db.query("SELECT public.staff_lift_restriction($1,'owner',$2,'block','resolved')", [
+        ACTOR,
+        T2,
+      ]),
+    );
+    expect(await check(T2, "block")).toBe(false);
+    // A lifted row stays on record, and the lift is audited.
+    expect(await count("user_restrictions", `user_id='${T2}' AND lifted_at IS NOT NULL`)).toBe(1);
+    expect(await count("staff_audit_log", `action='user.unblock' AND target_user_id='${T2}'`)).toBe(
+      1,
+    );
+    // Authenticated may call it (RLS and RPCs use it); anon may not.
+    await asRole("authenticated", async () => {
+      const r = await db.query<{ r: boolean }>("SELECT public.is_restricted($1,'block') AS r", [
+        T2,
+      ]);
+      expect(r.rows[0]!.r).toBe(false);
+    });
+    await asRole("anon", () =>
+      expect(db.query("SELECT public.is_restricted($1,'block')", [T2])).rejects.toMatchObject({
+        code: "42501",
+      }),
+    );
+  });
+
+  it("clients cannot call the write functions", async () => {
+    for (const q of [
+      `SELECT public.staff_record('${ACTOR}','owner','a','${T1}','r',null,null,null)`,
+      `SELECT public.staff_set_restriction('${ACTOR}','owner','${T1}','block','r')`,
+      `SELECT public.staff_lift_restriction('${ACTOR}','owner','${T1}','block','r')`,
+      `SELECT public.staff_revoke_sessions('${T1}')`,
+    ]) {
+      await asRole(
+        "authenticated",
+        () => expect(db.query(q)).rejects.toMatchObject({ code: "42501" }),
+        ACTOR,
+      );
+    }
+  });
+
+  it("deleting the target auth user keeps its audit rows", async () => {
+    await asServer(() =>
+      db.query("SELECT public.staff_set_restriction($1,'owner',$2,'ban','abuse')", [ACTOR, T3]),
+    );
+    expect(await count("staff_audit_log", `target_user_id='${T3}'`)).toBe(1);
+    await db.exec(`DELETE FROM auth.users WHERE id='${T3}'`);
+    expect(await count("staff_audit_log", `target_user_id='${T3}'`)).toBe(1);
+    expect(await count("user_restrictions", `user_id='${T3}'`)).toBe(0);
+    // A staff member's own audit rows survive their removal too.
+    await asServer(() =>
+      db.query("SELECT public.staff_record($1,'support','test.x',$2,'r',null,null,null)", [S1, T1]),
+    );
+    await db.exec(`DELETE FROM auth.users WHERE id='${S1}'`);
+    expect(await count("staff_audit_log", `actor_user_id='${S1}'`)).toBe(1);
+  });
+
+  it("staff_revoke_sessions removes the target's sessions and refresh tokens only", async () => {
+    const SA = "10000000-0000-4000-8000-000000000001";
+    const SB = "10000000-0000-4000-8000-000000000002";
+    await db.exec(`
+      INSERT INTO auth.sessions VALUES ('${SA}','${T1}'), ('${SB}','${S2}');
+      INSERT INTO auth.refresh_tokens(user_id, session_id) VALUES ('${T1}','${SA}'), ('${S2}','${SB}');
+    `);
+    await asServer(() => db.query("SELECT public.staff_revoke_sessions($1)", [T1]));
+    const s = await db.query<{ user_id: string }>("SELECT user_id FROM auth.sessions");
+    expect(s.rows.map((r) => r.user_id)).toEqual([S2]);
+    const t = await db.query<{ user_id: string }>("SELECT user_id FROM auth.refresh_tokens");
+    expect(t.rows.map((r) => r.user_id)).toEqual([S2]);
+  });
+
+  it("role and scope constraints hold", async () => {
+    await expect(
+      db.query(
+        `INSERT INTO public.staff_roles(user_id, role, scopes) VALUES ('${S2}','janitor','{}')`,
+      ),
+    ).rejects.toThrow();
+    await db.exec(
+      `INSERT INTO public.staff_roles(user_id, role, scopes) VALUES ('${S2}','support','{users.read}')`,
+    );
+    await expect(
+      db.query(
+        `INSERT INTO public.staff_notes(user_id, author_id, body) VALUES ('${T1}','${S2}','')`,
+      ),
+    ).rejects.toThrow();
+  });
+});

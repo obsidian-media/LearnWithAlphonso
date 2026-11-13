@@ -607,6 +607,11 @@ describe("GDPR export table coverage", () => {
     // decouple (2026-09-27); its create migration stays in history, so
     // this export-coverage scan still sees it and the exclusion must stay.
     "hector_links",
+    // staff_roles and staff_notes (20261113100000): staff-side records, not the learner's own data. staff_notes are
+    // internal notes about a learner and stay out of their export by design; staff_roles is the staff allowlist.
+    // Both are RLS-on, service-role only, and go with the account through ON DELETE CASCADE.
+    "staff_roles",
+    "staff_notes",
   ]);
 
   it("exports every table that has a user_id column", () => {
