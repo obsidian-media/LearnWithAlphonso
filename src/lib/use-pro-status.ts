@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders, currentUserId } from "./auth-headers";
 
-export type ProStore = "app_store" | "web" | "play_store" | null;
+export type ProStore = "app_store" | "web" | "play_store" | "promotional" | null;
 
 /**
  * Set by /pro-return. For an hour after paying, that same account, while not yet active, sees "activating", never

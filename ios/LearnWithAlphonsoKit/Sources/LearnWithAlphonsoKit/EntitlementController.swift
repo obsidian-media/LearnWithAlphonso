@@ -5,15 +5,18 @@ public struct EntitlementSnapshot: Sendable, Equatable {
     /// Set only when the active Pro was bought on the website (RevenueCat Web Billing): where to manage it. Apple's
     /// subscription sheet cannot show a web subscription. Nil for App Store Pro and for no Pro.
     public let webManagementURL: URL?
-    public init(isProActive: Bool, webManagementURL: URL? = nil) {
+    /// True when the active Pro is a promotional entitlement (a gift from the team), not a purchase.
+    public let isGift: Bool
+    public init(isProActive: Bool, webManagementURL: URL? = nil, isGift: Bool = false) {
         self.isProActive = isProActive
+        self.isGift = isProActive && isGift
         self.webManagementURL = isProActive && webManagementURL?.scheme?.lowercased() == "https" ? webManagementURL : nil
     }
 
     /// From RevenueCat's customer info: the management link is kept only for a web-billed Pro (Web Billing or
     /// Stripe), and only when it is https. An App Store subscriber is always sent to Apple's sheet.
-    public init(isProActive: Bool, isWebBilled: Bool, managementURL: URL?) {
-        self.init(isProActive: isProActive, webManagementURL: isWebBilled ? managementURL : nil)
+    public init(isProActive: Bool, isWebBilled: Bool, managementURL: URL?, isGift: Bool = false) {
+        self.init(isProActive: isProActive, webManagementURL: isWebBilled ? managementURL : nil, isGift: isGift)
     }
 }
 
@@ -59,6 +62,10 @@ public struct EntitlementState: Sendable, Equatable {
     public var isPro = false
     /// The web billing portal for a website subscription; nil otherwise (see `EntitlementSnapshot`).
     public var webManagementURL: URL?
+    /// True when the active Pro is a gift (promotional entitlement); see `EntitlementSnapshot.isGift`.
+    public var isGift = false
+    /// The Pro status line for Settings: nil when not Pro, "Pro (gift)" for a gift, "Pro" otherwise.
+    public var proLabel: String? { isPro ? (isGift ? "Pro (gift)" : "Pro") : nil }
     /// Starts `.loading`: the paywall shows its skeleton, never a failure, before the first load.
     public var load: PaywallLoadState = .loading
     public var notice: Notice?
@@ -132,6 +139,7 @@ public final class EntitlementController: EntitlementResetting {
               provider.currentAppUserID() == expected else { return }
         state.isPro = snapshot.isProActive
         state.webManagementURL = snapshot.webManagementURL
+        state.isGift = snapshot.isGift
         if snapshot.isProActive { state.notice = nil }
     }
 
@@ -139,6 +147,7 @@ public final class EntitlementController: EntitlementResetting {
         guard let provider else {
             state.isPro = false
             state.webManagementURL = nil
+            state.isGift = false
             return
         }
         let started = generation
@@ -147,10 +156,12 @@ public final class EntitlementController: EntitlementResetting {
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
             state.webManagementURL = snapshot.webManagementURL
+            state.isGift = snapshot.isGift
         } catch {
             guard started == generation else { return }
             state.isPro = false
             state.webManagementURL = nil
+            state.isGift = false
         }
     }
 
@@ -170,6 +181,7 @@ public final class EntitlementController: EntitlementResetting {
             }
             state.isPro = snapshot.isProActive
             state.webManagementURL = snapshot.webManagementURL
+            state.isGift = snapshot.isGift
         } catch {
             guard started == generation else { return }
             if provider.currentAppUserID() == userID {
@@ -177,6 +189,7 @@ public final class EntitlementController: EntitlementResetting {
             } else {
                 state.isPro = false
                 state.webManagementURL = nil
+                state.isGift = false
             }
         }
     }
@@ -238,6 +251,7 @@ public final class EntitlementController: EntitlementResetting {
             case .completed(let snapshot):
                 state.isPro = snapshot.isProActive
                 state.webManagementURL = snapshot.webManagementURL
+                state.isGift = snapshot.isGift
                 if !snapshot.isProActive { state.notice = .error(PaywallCopy.purchasedNotActive) }
             case .cancelled:
                 break
@@ -261,6 +275,7 @@ public final class EntitlementController: EntitlementResetting {
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
             state.webManagementURL = snapshot.webManagementURL
+            state.isGift = snapshot.isGift
             if !snapshot.isProActive { state.notice = .info(PaywallCopy.restoreEmpty) }
         } catch {
             guard started == generation else { return }
@@ -283,6 +298,7 @@ public final class EntitlementController: EntitlementResetting {
             guard started == generation else { return }
             state.isPro = snapshot.isProActive
             state.webManagementURL = snapshot.webManagementURL
+            state.isGift = snapshot.isGift
         } catch {
             // Anonymous already (logOutAnonymousUserError) or offline: Pro stays off.
         }

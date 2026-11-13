@@ -78,8 +78,8 @@ describe("the admin refusal is indistinguishable from an auth failure", () => {
     expect(authMessages).toContain(UNAUTHORIZED_MESSAGE);
   });
 
-  it("is the string requireAdmin actually throws", () => {
-    const middleware = readFileSync("src/lib/admin-middleware.ts", "utf8");
+  it("is the string requireStaff actually throws", () => {
+    const middleware = readFileSync("src/lib/staff-authorize.ts", "utf8");
     // Pins the import, not a copy: a literal here would drift the moment
     // auth-middleware's wording changed, and the drift would be silent.
     expect(middleware).toContain("UNAUTHORIZED_MESSAGE");
@@ -145,10 +145,10 @@ describe("admin second factor", () => {
     expect(meetsAdminAssurance({ aal: "aal1" }, "false")).toBe(true);
   });
 
-  it("the admin gate checks the allowlist first, then the second factor", () => {
-    const mw = readFileSync("src/lib/admin-middleware.ts", "utf8");
-    const allow = mw.indexOf("isAdminUser(");
-    const aal = mw.indexOf("meetsAdminAssurance(context.claims, process.env.ADMIN_REQUIRE_AAL2)");
+  it("the staff gate checks the allowlist first, then the second factor", () => {
+    const mw = readFileSync("src/lib/staff-authorize.ts", "utf8");
+    const allow = mw.indexOf("getStaffRole(");
+    const aal = mw.indexOf("meetsAdminAssurance(input.claims, input.requireAal2)");
     expect(allow).toBeGreaterThan(-1);
     expect(aal).toBeGreaterThan(allow);
     expect(mw).toMatch(/throw new Error\(SECOND_FACTOR_REQUIRED_MESSAGE\)/);

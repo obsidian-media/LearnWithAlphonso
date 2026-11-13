@@ -105,7 +105,8 @@ final class RevenueCatPurchases: PurchasesProviding {
         return EntitlementSnapshot(
             isProActive: pro?.isActive == true,
             isWebBilled: isWeb,
-            managementURL: info.managementURL
+            managementURL: info.managementURL,
+            isGift: pro?.store == .promotional
         )
     }
 

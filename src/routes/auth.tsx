@@ -15,6 +15,7 @@ import { safeNextPath } from "../lib/safe-next-path";
 import { browserFirstRunStore } from "../lib/first-run";
 import { Under13Stop } from "../components/firstrun/Under13Stop";
 import { FirstRunBubble, FirstRunRoom, FirstRunScreen } from "../components/firstrun/FirstRunParts";
+import { isAccountSuspendedError, useAccountStatus } from "../lib/account-suspended";
 import { roomSrc } from "../lib/first-run";
 import { expressionSrc } from "../lib/lesson-stage";
 import { edgeButtonClass } from "../components/lesson/LessonParts";
@@ -154,7 +155,9 @@ function AuthPage() {
         afterAuth();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      // A banned account's sign-in gets its own plain screen, not the raw error text.
+      if (isAccountSuspendedError(err)) useAccountStatus.getState().setSuspended();
+      else setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
       if (captchaSiteKey && mode !== "verify") setCaptchaReset((n) => n + 1);

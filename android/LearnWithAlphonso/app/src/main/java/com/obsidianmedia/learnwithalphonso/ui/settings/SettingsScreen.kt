@@ -52,6 +52,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPalettes
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoThemeId
+import com.obsidianmedia.learnwithalphonso.core.logic.ProLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -95,6 +96,10 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 OutlinedTextField(value = identity.displayName, onValueChange = identityVm::editName, label = { Text("Display name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 RowButton("Save Name", enabled = !identity.saving && identity.displayName.isNotBlank()) { identityVm.saveName() }
                 identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+            }
+            val entitlement by container.entitlements.state.collectAsState()
+            ProLabel.of(entitlement.isPro, entitlement.isGift)?.let { label ->
+                Section("Alphonso Pro") { Text(label, style = MaterialTheme.typography.bodyLarge, color = palette.ink) }
             }
             AiFeaturesSection(container)
             ExplainSection(container)

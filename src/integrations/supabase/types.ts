@@ -1586,6 +1586,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      pro_grants: {
+        Row: {
+          ends_at: string;
+          granted_by: string | null;
+          id: string;
+          reason: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          starts_at: string;
+          user_id: string;
+        };
+        Insert: {
+          ends_at: string;
+          granted_by?: string | null;
+          id?: string;
+          reason: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          starts_at?: string;
+          user_id: string;
+        };
+        Update: {
+          ends_at?: string;
+          granted_by?: string | null;
+          id?: string;
+          reason?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          starts_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           ai_consent_at: string | null;
@@ -1968,6 +2001,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_audit_log: {
+        Row: {
+          action: string;
+          actor_role: string;
+          actor_user_id: string | null;
+          after: Json | null;
+          at: string;
+          before: Json | null;
+          id: number;
+          ip_hash: string | null;
+          reason: string | null;
+          request_id: string | null;
+          target_user_id: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_role: string;
+          actor_user_id?: string | null;
+          after?: Json | null;
+          at?: string;
+          before?: Json | null;
+          id?: number;
+          ip_hash?: string | null;
+          reason?: string | null;
+          request_id?: string | null;
+          target_user_id?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_role?: string;
+          actor_user_id?: string | null;
+          after?: Json | null;
+          at?: string;
+          before?: Json | null;
+          id?: number;
+          ip_hash?: string | null;
+          reason?: string | null;
+          request_id?: string | null;
+          target_user_id?: string | null;
+        };
+        Relationships: [];
+      };
+      staff_notes: {
+        Row: {
+          author_id: string | null;
+          body: string;
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      staff_roles: {
+        Row: {
+          added_at: string;
+          added_by: string | null;
+          disabled_at: string | null;
+          role: string;
+          scopes: string[];
+          user_id: string;
+        };
+        Insert: {
+          added_at?: string;
+          added_by?: string | null;
+          disabled_at?: string | null;
+          role: string;
+          scopes?: string[];
+          user_id: string;
+        };
+        Update: {
+          added_at?: string;
+          added_by?: string | null;
+          disabled_at?: string | null;
+          role?: string;
+          scopes?: string[];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       team_kicks: {
         Row: {
           kicked_at: string;
@@ -2290,6 +2416,39 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           xp?: number;
+        };
+        Relationships: [];
+      };
+      user_restrictions: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          kind: string;
+          lifted_at: string | null;
+          lifted_by: string | null;
+          reason: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind: string;
+          lifted_at?: string | null;
+          lifted_by?: string | null;
+          reason: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind?: string;
+          lifted_at?: string | null;
+          lifted_by?: string | null;
+          reason?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -2828,6 +2987,14 @@ export type Database = {
         }[];
       };
       hearts_unlimited: { Args: { _user_id: string }; Returns: boolean };
+      is_restricted: {
+        Args: { p_kind: string; p_user: string };
+        Returns: boolean;
+      };
+      is_social_restricted: {
+        Args: { p_user: string };
+        Returns: boolean;
+      };
       join_buddy_pool: {
         Args: { _age_confirmed: boolean; _course: string };
         Returns: {
@@ -3023,6 +3190,133 @@ export type Database = {
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: never; Returns: string };
+      staff_add_member: {
+        Args: {
+          p_actor: string;
+          p_actor_role: string;
+          p_reason: string;
+          p_role: string;
+          p_scopes: string[];
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      staff_add_note: {
+        Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
+        Returns: string;
+      };
+      staff_assert_may_restrict: {
+        Args: { p_actor_role: string; p_target: string };
+        Returns: undefined;
+      };
+      staff_disband_team: {
+        Args: {
+          p_actor: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+          p_team: string;
+        };
+        Returns: boolean;
+      };
+      staff_dismiss_report: {
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Returns: boolean;
+      };
+      staff_lift_restriction: {
+        Args: {
+          p_actor: string;
+          p_kind: string;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: undefined;
+      };
+      staff_record: {
+        Args: {
+          p_action: string;
+          p_actor: string;
+          p_after: Json;
+          p_before: Json;
+          p_reason: string;
+          p_request_id: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: number;
+      };
+      staff_record_pro_grant: {
+        Args: {
+          p_actor: string;
+          p_before: Json;
+          p_ends_at: string;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: string;
+      };
+      staff_record_pro_revoke: {
+        Args: {
+          p_actor: string;
+          p_before: Json;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: undefined;
+      };
+      staff_rename_team: {
+        Args: {
+          p_actor: string;
+          p_name: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+          p_team: string;
+        };
+        Returns: string;
+      };
+      staff_reset_display_name: {
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Returns: string;
+      };
+      staff_revoke_sessions: {
+        Args: { p_target: string };
+        Returns: undefined;
+      };
+      staff_search_users: {
+        Args: { p_q: string };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          email: string;
+          id: string;
+        }[];
+      };
+      staff_set_restriction: {
+        Args: {
+          p_actor: string;
+          p_kind: string;
+          p_reason: string;
+          p_role: string;
+          p_target: string;
+        };
+        Returns: string;
+      };
+      staff_update_member: {
+        Args: {
+          p_actor: string;
+          p_actor_role: string;
+          p_disabled: boolean;
+          p_reason: string;
+          p_role: string;
+          p_scopes: string[];
+          p_user: string;
+        };
+        Returns: undefined;
+      };
       submit_podcast_quiz: {
         Args: {
           _answers: Json;

@@ -15,6 +15,8 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
 import { AttributionBridge } from "../components/AttributionBridge";
+import { SuspendedScreen } from "../components/SuspendedScreen";
+import { useAccountStatus } from "../lib/account-suspended";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
@@ -165,9 +167,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const suspended = useAccountStatus((s) => s.suspended);
   useEffect(() => {
     void track("app_open");
   }, []);
+
+  // A suspended account sees one plain screen instead of the app, whatever page it was on.
+  if (suspended) return <SuspendedScreen />;
 
   return (
     <QueryClientProvider client={queryClient}>

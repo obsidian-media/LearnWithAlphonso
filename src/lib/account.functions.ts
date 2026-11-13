@@ -86,6 +86,9 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   { table: "heart_loss_reports", column: "user_id" },
   { table: "lesson_heart_settlements", column: "user_id" },
   { table: "hearts_pro_status", column: "user_id" },
+  // The learner's own restrictions and gifted Pro periods (20261113100000). Never staff_notes or the action record.
+  { table: "user_restrictions", column: "user_id" },
+  { table: "pro_grants", column: "user_id" },
 ] as const;
 
 // Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's

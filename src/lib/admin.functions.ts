@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { z } from "zod";
-import { requireAdmin } from "./admin-middleware";
+import { requireStaff } from "./staff-middleware";
+import type { Scope, StaffRole } from "./staff-scopes";
 import { findCycle, isValidSlug, slugPathFor, type PodcastFolder } from "./podcast-tree";
 import { validateEpisodeDraft, storagePathFor, type EpisodeDraft } from "./podcast-authoring";
 import {
@@ -14,7 +15,6 @@ import {
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 import { isPublishableProvider, UNPUBLISHABLE_PROVIDER_MESSAGE } from "./podcast-provenance";
-import { eraseSubscriberRecord, revokeAppleGrantForUser } from "./account.functions";
 import { socialReasonMessage } from "./social-reason-copy";
 
 // Matches podcast_folders/podcast_episodes.course's own CHECK constraint
@@ -51,7 +51,6 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminGetTranscript",
   "adminSaveTranscript",
   "adminListReports",
-  "adminDeleteReportedUser",
   "adminResetDisplayName",
   "adminRenameTeam",
   "adminDisbandTeam",
@@ -125,7 +124,7 @@ export function affectedOrThrow(
 
 /** The whole folder tree, including branches with nothing published. */
 export const adminListFolders = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .handler(async ({ context }): Promise<PodcastFolder[]> => {
     const { data, error } = await context.supabaseAdmin
       .from("podcast_folders")
@@ -150,13 +149,13 @@ export const adminListFolders = createServerFn({ method: "GET" })
  * unreadable in the first place.
  */
 export const adminWhoAmI = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
-  .handler(async ({ context }): Promise<{ userId: string }> => {
-    return { userId: context.userId };
+  .middleware([requireStaff()])
+  .handler(async ({ context }): Promise<{ userId: string; role: StaffRole; scopes: Scope[] }> => {
+    return { userId: context.userId, role: context.staffRole, scopes: context.staffScopes };
   });
 
 export const adminCreateFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -197,7 +196,7 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
   });
 
 export const adminRenameFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -220,7 +219,7 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
   });
 
 export const adminMoveFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ id: z.string().uuid(), parentId: z.string().uuid().nullable() }).parse(d),
   )
@@ -259,7 +258,7 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteFolder = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const client = context.supabaseAdmin;
@@ -302,7 +301,7 @@ export type AdminEpisode = {
 
 /** Every episode in a folder, published or not. */
 export const adminListEpisodes = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ folderId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<AdminEpisode[]> => {
     const { data: rows, error } = await context.supabaseAdmin
@@ -324,7 +323,7 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
   });
 
 export const adminUpdateEpisode = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -349,7 +348,7 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
   });
 
 export const adminSetPublished = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d),
   )
@@ -538,7 +537,7 @@ async function verifyStagedAudio(
  * disagree about where the bytes belong.
  */
 export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -583,7 +582,7 @@ export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
  * insert step, not a new one introduced here.
  */
 export const adminCreateEpisode = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -652,7 +651,7 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
  * backup, while the row stayed published and pointing at nothing.
  */
 export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -690,7 +689,7 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
  * our own domain, so the write must land somewhere nothing points at.
  */
 export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
     const client = context.supabaseAdmin;
@@ -721,7 +720,7 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   });
 
 export const adminGetTranscript = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ text: string | null }> => {
     const { data: row, error } = await context.supabaseAdmin
@@ -734,7 +733,7 @@ export const adminGetTranscript = createServerFn({ method: "GET" })
   });
 
 export const adminSaveTranscript = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
     z.object({ episodeId: z.string().uuid(), text: z.string().max(200_000) }).parse(d),
   )
@@ -822,7 +821,7 @@ export function teamIdForReport(report: { reason: string; context: unknown }): s
  * account_deleted_at is set, so that side shows as "(deleted account)" and no lookup is made for it.
  */
 export const adminListReports = createServerFn({ method: "GET" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .handler(async ({ context }): Promise<AdminReport[]> => {
     const { data: reports, error } = await context.supabaseAdmin
       .from("content_reports")
@@ -882,63 +881,6 @@ export const adminListReports = createServerFn({ method: "GET" })
     }));
   });
 
-/**
- * The heaviest action on a report: delete the reported account (lighter
- * ones -- reset the name, rename or disband a team, dismiss -- are below).
- * The reports against them stay in the queue for 90 days with the account
- * shown as "(deleted account)" (content_reports.reported is ON DELETE SET
- * NULL since 20261105101100); dismiss them when done. An AI-response report
- * names no account and is refused, as is a report whose account is already gone. Revokes the Apple grant first, same as self-service
- * deleteMyAccount, because Apple requires that on any account deletion
- * regardless of who initiates it -- see revokeAppleGrantForUser's own
- * doc comment for why it lives in account.functions.ts and is reused
- * here rather than duplicated.
- *
- * Keyed by the report, not a bare userId: the server looks up which
- * account a report actually names rather than trusting an id the client
- * could otherwise send unchecked.
- *
- * Deliberately skips the USER_DELETE_TABLES pre-delete step
- * deleteMyAccount does -- that step exists only because deleteMyAccount
- * issues DELETEs as the caller, whose RLS grants don't cover every
- * table (see account.functions.test.ts's "only tries to delete rows the
- * caller's own RLS role can delete"). Every user-scoped table has
- * ON DELETE CASCADE from auth.users (content_reports alone is SET NULL, kept
- * for moderation), so an admin acting as service_role needs nothing
- * pre-deleted for auth.admin.deleteUser to clean it all up.
- */
-export const adminDeleteReportedUser = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
-  .inputValidator((d: unknown) => z.object({ reportId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const { data: report, error } = await context.supabaseAdmin
-      .from("content_reports")
-      .select("reported")
-      .eq("id", data.reportId)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!report) throw new Error("That report no longer exists.");
-    if (!report.reported) throw new Error("This report has no account to delete.");
-
-    const appleRevocationStatus = await revokeAppleGrantForUser(
-      context.supabaseAdmin,
-      report.reported,
-    );
-    if (appleRevocationStatus === "failed") {
-      console.error(
-        `[apple-revocation] FAILED to revoke an Apple grant during an admin-initiated deletion -- a live grant may still exist.`,
-      );
-    }
-    const { error: deleteError } = await context.supabaseAdmin.auth.admin.deleteUser(
-      report.reported,
-    );
-    if (deleteError) throw new Error(deleteError.message);
-    await eraseSubscriberRecord(report.reported);
-    logAdminAction("delete_account", data.reportId, report.reported, context.userId);
-
-    return { ok: true };
-  });
-
 type ReportRow = {
   id: string;
   kind: string;
@@ -989,34 +931,50 @@ async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string):
   }
 }
 
+/**
+ * The four report actions each change something AND write the action record in one database call (the staff_*
+ * functions in 20261113100000_staff_console.sql), so there is no change without a record. The report itself is
+ * resolved afterwards, as before.
+ */
 export const adminDismissReport = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    await resolveReport(context.supabaseAdmin, data.reportId);
+    const report = await loadReport(context.supabaseAdmin, data.reportId);
+    const { data: removed, error } = await context.supabaseAdmin.rpc("staff_dismiss_report", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+    } as never);
+    if (error) throw new Error(error.message);
+    if (!removed) throw new Error("That report no longer exists.");
     logAdminAction("dismiss_report", data.reportId, null, context.userId);
     return { ok: true };
   });
 
 /** A fresh Learner-XXXX handle for the reported account; they are asked to choose a name again. */
 export const adminResetDisplayName = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; newName: string }> => {
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     if (!report.reported) throw new Error("This report has no account to rename.");
-    const { data: newName, error } = await context.supabaseAdmin.rpc("admin_reset_display_name", {
-      _user_id: report.reported,
-    });
+    const { data: newName, error } = await context.supabaseAdmin.rpc("staff_reset_display_name", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+    } as never);
     if (error) throw new Error(error.message);
     if (!newName) throw new Error("That account no longer exists.");
     logAdminAction("reset_display_name", data.reportId, report.reported, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
-    return { ok: true, newName };
+    return { ok: true, newName: newName as string };
   });
 
 export const adminRenameTeam = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) =>
     reportIdSchema.extend({ name: z.string().min(1).max(80) }).parse(d),
   )
@@ -1024,12 +982,16 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
-    const { data: reason, error } = await context.supabaseAdmin.rpc("admin_rename_team", {
-      _team_id: teamId,
-      _name: data.name,
-    });
+    const { data: reason, error } = await context.supabaseAdmin.rpc("staff_rename_team", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+      p_team: teamId,
+      p_name: data.name,
+    } as never);
     if (error) throw new Error(error.message);
-    if (reason) throw new Error(socialReasonMessage(reason));
+    if (reason) throw new Error(socialReasonMessage(reason as string));
     logAdminAction("rename_team", data.reportId, teamId, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };
@@ -1037,16 +999,21 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
 
 /** Deletes the team the report names; members, missions, rewards and kicks cascade. */
 export const adminDisbandTeam = createServerFn({ method: "POST" })
-  .middleware([requireAdmin])
+  .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
-    affectedOrThrow(
-      await context.supabaseAdmin.from("teams").delete({ count: "exact" }).eq("id", teamId),
-      "That team no longer exists.",
-    );
+    const { data: removed, error } = await context.supabaseAdmin.rpc("staff_disband_team", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+      p_team: teamId,
+    } as never);
+    if (error) throw new Error(error.message);
+    if (!removed) throw new Error("That team no longer exists.");
     logAdminAction("disband_team", data.reportId, teamId, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };

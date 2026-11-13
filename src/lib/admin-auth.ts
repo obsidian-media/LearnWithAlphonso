@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isStaffRole, type StaffRole } from "./staff-scopes";
 
 /**
  * What requireAdmin throws when the caller is not on the allowlist.
@@ -68,4 +69,29 @@ export function meetsAdminAssurance(
 ): boolean {
   if (requireAal2 !== "true") return true;
   return claims?.aal === "aal2";
+}
+
+/**
+ * The caller's staff role, or null when they are not (active) staff.
+ *
+ * `admin_users` stays the "is staff" allowlist: a user absent from it is never staff, whatever staff_roles says. A
+ * member of admin_users with NO staff_roles row is the owner (so the account that was added by hand before roles
+ * existed is not locked out). A row with `disabled_at` set, an unknown role, or any query error is null: fail closed.
+ * MUST be called with a service-role client (both tables have RLS and no policies).
+ */
+export async function getStaffRole(
+  client: SupabaseClient,
+  userId: string,
+): Promise<{ role: StaffRole; scopes: string[] } | null> {
+  if (!(await isAdminUser(client, userId))) return null;
+  const { data, error } = await client
+    .from("staff_roles")
+    .select("role, scopes, disabled_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return null;
+  if (!data) return { role: "owner", scopes: [] };
+  if (data.disabled_at) return null;
+  if (!isStaffRole(data.role)) return null;
+  return { role: data.role, scopes: Array.isArray(data.scopes) ? (data.scopes as string[]) : [] };
 }

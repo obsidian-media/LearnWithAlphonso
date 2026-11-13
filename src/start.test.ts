@@ -50,7 +50,7 @@ describe("start.ts error middleware", () => {
     expect(renderErrorPage).toHaveBeenCalled();
   });
 
-  it("registers attachSupabaseAuth as a function middleware", async () => {
-    expect((await startInstance.getOptions()).functionMiddleware).toHaveLength(1);
+  it("registers attachSupabaseAuth and the account-suspended watcher as function middleware", async () => {
+    expect((await startInstance.getOptions()).functionMiddleware).toHaveLength(2);
   });
 });

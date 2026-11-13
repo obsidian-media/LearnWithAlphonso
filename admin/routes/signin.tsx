@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/signin")({
-  // `?mfa=required`: the server refused this admin's session for lacking a second factor (requireAdmin).
+  // `?mfa=required`: the server refused this admin's session for lacking a second factor (requireStaff).
   validateSearch: (search: Record<string, unknown>): { mfa?: "required" } =>
     search.mfa === "required" ? { mfa: "required" } : {},
   component: SignIn,
@@ -24,7 +24,7 @@ type SecondFactor =
  * Authorization header, not a cookie; see auth-middleware.ts.)
  *
  * Signing in here only proves the account exists. Whether it is on the
- * allowlist is decided server-side on the next call, by requireAdmin.
+ * allowlist is decided server-side on the next call, by requireStaff.
  * Which is why offering Google alongside a password costs nothing in
  * authorization terms: it changes how someone proves who they are, not
  * what they are allowed to do.

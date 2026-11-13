@@ -125,7 +125,11 @@ class SessionManager(
             refreshed.accessToken
         } catch (e: Exception) {
             // A rejected refresh token ends the session it belonged to, not whichever session is signed in by now.
-            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) endSession(endOnServer = false)
+            if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) {
+                endSession(endOnServer = false)
+                // A ban is the one refusal worth explaining: the sign-in screen says so plainly.
+                if (AccountSuspension.isSuspended(e)) _errorMessage.value = AccountSuspension.MESSAGE
+            }
             null
         }
     }
@@ -260,7 +264,8 @@ class SessionManager(
         try {
             block()
         } catch (e: SupabaseAuthError.Server) {
-            _errorMessage.value = e.serverMessage ?: "Something went wrong. Please try again."
+            _errorMessage.value = if (AccountSuspension.isSuspended(e)) AccountSuspension.MESSAGE
+            else e.serverMessage ?: "Something went wrong. Please try again."
         } catch (e: SupabaseAuthError) {
             _errorMessage.value = "Something went wrong. Please try again."
         } catch (e: Exception) {
