@@ -2090,7 +2090,7 @@ confident|believe in their own abilities|sure of your own ability|She feels conf
 shy|feel nervous meeting new people|nervous with new people|He is shy at parties.
 outgoing|enjoy meeting new people|friendly and fond of meeting people|She is outgoing and friendly.
 careless|make mistakes without noticing|not paying enough attention|A careless driver caused the crash.
-organised|keep everything neat and planned|neat and well planned|She is very organised.
+organized|keep everything neat and planned|neat and well planned|She is very organised.
 lazy|avoid doing work|not wanting to work|He is too lazy to cook.
 hardworking|put a lot of effort into tasks|putting a lot of effort in|She is a hardworking student.
 selfish|think mainly of themselves|caring only about yourself|Don't be so selfish!
@@ -3206,7 +3206,7 @@ let the cat out of the bag|reveal a secret|to reveal a secret by mistake|He let 
 break the ice|start a conversation|to ease the tension at a first meeting|A joke helped to break the ice.
 go the extra mile|make extra effort|to make an extra effort|She will go the extra mile for clients.
 throw in the towel|give up|to give up|After two years he threw in the towel.
-a grey area|something unclear|a situation where rules are unclear|The law here is a grey area.
+a gray area|something unclear|a situation where rules are unclear|The law here is a grey area.
 call it a day|stop working|to stop working for the day|It's late, so let's call it a day.
 take it with a pinch of salt|be sceptical|to doubt that something is completely true|Take it with a pinch of salt.
 back to square one|start again|to start again from the beginning|The test failed, so we're back to square one.
@@ -4062,6 +4062,25 @@ function pickDistractors(
   return out;
 }
 
+/**
+ * Why THIS answer is right, for an mc or fill line (docs/CONTENT-PLAYBOOK.md: never the bare
+ * '"x" is correct here.'). English only: the French and Spanish engine (bank-engine.ts) has its own.
+ *   - a bracketed clue in the prompt is the reason ("The clue ... points to ...");
+ *   - a pack note that states a rule is quoted as the rule;
+ *   - a pack note that only names the topic ("Everyday vocabulary for ...") gives way to the sentence
+ *     itself, completed with the answer.
+ */
+export function explainChoice(answer: string, prompt: string, note: string): string {
+  const clue = prompt.match(/\(([^()]+)\)\s*$/)?.[1]?.trim();
+  if (clue) return `The clue "${clue}" points to "${answer}"; the other options do not fit it.`;
+  const topicOnly = /\b(vocabulary|phrases|expressions|words|language|practice)\b/i.test(note);
+  if (!topicOnly) return `"${answer}" fits here. Rule to remember: ${note}`;
+  const filled = prompt.includes("___") ? prompt.replace("___", answer) : "";
+  return filled
+    ? `"${answer}" completes the sentence "${filled}"; the other options do not make sense there.`
+    : `"${answer}" is the best fit for "${prompt}"; the other options do not make sense there.`;
+}
+
 function packQuestions(pack: Pack): Question[] {
   const lines = pack.data
     .split("\n")
@@ -4136,7 +4155,7 @@ function packQuestions(pack: Pack): Question[] {
           ? // The audio sentence already ends in its own punctuation, so quoting
             // it and adding a full stop produced `"... rise.". note`.
             `The audio says "${left}" ${pack.note}`
-          : `"${answer}" is correct here. ${pack.note}`;
+          : explainChoice(answer, prompt, pack.note);
     if (pack.kind === "listening") {
       // Order is cosmetic here: `answer` is the choice text, so there is no
       // index to keep in sync with the shuffle.

@@ -47,7 +47,7 @@ export const COMMON_CHECKLIST = [
 /** Language-specific checks. */
 export const LANGUAGE_CHECKLIST: Record<Course, string[]> = {
   en: [
-    "Variety: British English spelling and usage (colour, favourite, flat); flag a US-only form only when it is the key or the only natural option.",
+    "Variety: American English spelling and usage (color, favorite, apartment); flag a British-only form (colour, flat, queue, mum) unless the item is deliberately about it.",
     "Register: everyday neutral English unless the item sets a formal or casual scene.",
     "Phrasal verbs, articles and prepositions: the classic learner traps; a second preposition that is also idiomatic is a second answer.",
   ],
