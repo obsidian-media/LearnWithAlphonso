@@ -33,6 +33,9 @@ object LearnerProfileLists {
     val heardFrom = listOf("app_store", "search", "youtube", "social", "friend", "podcast")
     val courses = listOf("en", "fr", "es")
 
+    /** How "Explain in my language" appears (src/lib/explain.ts EXPLAIN_MODES); absent on the account means "tap". */
+    val explainModes = listOf("tap", "always", "off")
+
     /** ISO 639-1 codes for the "I speak" picker; names come from the system (Locale). */
     val nativeLanguages = listOf(
         "en", "es", "fr", "pt", "de", "it", "nl", "ar", "fa", "tr", "ru", "uk", "pl", "ro",
@@ -71,6 +74,7 @@ data class LearnerAnswers(
     val name: String? = null,
     val course: String? = null,
     val nativeLanguage: String? = null,
+    val explainMode: String? = null,
     val country: String? = null,
     val showFlag: Boolean? = null,
     val goal: String? = null,
@@ -85,6 +89,7 @@ data class LearnerAnswers(
         name?.let { put("name", it) }
         course?.let { put("course", it) }
         nativeLanguage?.let { put("nativeLanguage", it) }
+        explainMode?.let { put("explainMode", it) }
         country?.let { put("country", it) }
         showFlag?.let { put("showFlag", it) }
         goal?.let { put("goal", it) }
@@ -116,6 +121,7 @@ data class LearnerAnswers(
                 name = str("name")?.let(::cleanName),
                 course = pick("course", LearnerProfileLists.courses),
                 nativeLanguage = pick("nativeLanguage", LearnerProfileLists.nativeLanguages),
+                explainMode = pick("explainMode", LearnerProfileLists.explainModes),
                 country = pick("country", LearnerProfileLists.countries),
                 showFlag = (v["showFlag"] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull,
                 goal = pick("goal", LearnerProfileLists.goals),

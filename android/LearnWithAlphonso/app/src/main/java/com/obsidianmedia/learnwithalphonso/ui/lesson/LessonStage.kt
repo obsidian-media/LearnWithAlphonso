@@ -540,7 +540,10 @@ fun LessonWordRow(content: @Composable () -> Unit) {
 @Composable
 fun LessonVerdictSheet(
     correct: Boolean, title: String, xp: Int?, correctAnswer: String, onHearAnswer: () -> Unit,
-    continueLabel: String, onContinue: () -> Unit, explanation: @Composable () -> Unit,
+    continueLabel: String, onContinue: () -> Unit,
+    /** Under the one-line why, above the button: the "Explain in my language" chip on a wrong answer. */
+    extra: @Composable () -> Unit = {},
+    explanation: @Composable () -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
     val reduce = rememberReduceMotion()
@@ -600,6 +603,8 @@ fun LessonVerdictSheet(
                 }
             }
             Column(Modifier.heightIn(max = 116.dp).verticalScroll(rememberScrollState())) { explanation() }
+            // Its own scroll, so a long explanation in the learner's language never pushes the button off the screen.
+            Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) { extra() }
             LessonEdgeButton(continueLabel, if (correct) EdgeVariant.RIGHT else EdgeVariant.WRONG, onContinue, Modifier.padding(top = 2.dp))
         }
     }
@@ -892,6 +897,8 @@ fun LessonWordDeck(
     onSpeak: (String) -> Unit,
     image: @Composable (VocabImageRef) -> Unit,
     onStart: () -> Unit,
+    /** Under the example on each card: the "Explain in my language" block for the word. */
+    extra: @Composable (VocabItem) -> Unit = {},
 ) {
     val ds = LocalAlphonsoTokens.current
     val reduce = rememberReduceMotion()
@@ -944,6 +951,7 @@ fun LessonWordDeck(
                                 .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
                         )
                     }
+                    extra(item)
                 }
                 // Alphonso peeks over the card's corner.
                 avatar?.let {

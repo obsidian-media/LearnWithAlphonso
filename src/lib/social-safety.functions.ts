@@ -70,7 +70,7 @@ const aiReportContextSchema = z
       .string()
       .min(1)
       .max(AI_REPORT_MESSAGE_MAX * 2),
-    surface: z.enum(["hector", "conversation", "campaign"]),
+    surface: z.enum(["hector", "conversation", "campaign", "explain"]),
     course: z.enum(["en", "fr", "es"]),
     scenario_id: z.string().max(100).optional(),
     campaign_id: z.string().max(100).optional(),

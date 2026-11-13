@@ -156,6 +156,8 @@ struct SettingsView: View {
 
                 SoundEffectsSettingsSection()
 
+                ExplainSettingsSection(session: session)
+
                 VoicesSettingsSection(session: session)
 
                 Section {

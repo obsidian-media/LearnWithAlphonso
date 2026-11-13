@@ -57,6 +57,19 @@ describe("every model prompt path carries the safety preamble", () => {
     expectSafe("define-word");
   });
 
+  it("explain in my language", async () => {
+    const { buildExplainMessages } = await import("./explain.server");
+    const { llmChatCompletion } = await import("./llm-chat.server");
+    await llmChatCompletion({
+      apiKey: "k",
+      body: {
+        model: "m",
+        messages: buildExplainMessages({ kind: "word", course: "en", word: "borrow" }, "fa"),
+      },
+    });
+    expectSafe("explain");
+  });
+
   it("practice generation", async () => {
     const { generatePracticeQuestions } = await import("./practice-generation.server");
     await generatePracticeQuestions({

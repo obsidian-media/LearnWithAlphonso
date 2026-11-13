@@ -39,20 +39,64 @@ private struct ReportableAIMessage: ViewModifier {
     }
 
     private func send(_ report: AIResponseReport) async {
-        guard let token = await session.freshAccessToken() else {
-            resultMessage = AIConsentCopy.reportFailed
-            return
-        }
-        let client = ProgressSyncClient(
-            supabaseURL: AppConfig.supabaseURL,
-            anonKey: AppConfig.supabasePublishableKey,
-            accessToken: token)
-        do {
-            try await client.reportAIResponse(report)
-            resultMessage = AIConsentCopy.reportThanks
-        } catch {
-            resultMessage = AIConsentCopy.reportFailed
-        }
+        resultMessage = await sendAIResponseReport(report, session: session)
+    }
+}
+
+/// Posts one report and returns the message to show (thanks, or why it failed). Shared by the long-press menu and
+/// the explicit "Not clear?" button under an explanation.
+@MainActor
+func sendAIResponseReport(_ report: AIResponseReport, session: Session) async -> String {
+    guard let token = await session.freshAccessToken() else { return AIConsentCopy.reportFailed }
+    let client = ProgressSyncClient(
+        supabaseURL: AppConfig.supabaseURL,
+        anonKey: AppConfig.supabasePublishableKey,
+        accessToken: token)
+    do {
+        try await client.reportAIResponse(report)
+        return AIConsentCopy.reportThanks
+    } catch {
+        return AIConsentCopy.reportFailed
+    }
+}
+
+/// An explicit report button ("Not clear?" under an explanation): the same reasons, the same queue, the same notes as
+/// the long-press menu.
+struct AIReportButton: View {
+    let message: String
+    let surface: AIResponseSurface
+    let course: String
+    let label: String
+    let session: Session
+    @State private var showingReasons = false
+    @State private var resultMessage: String?
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        Button(label) { showingReasons = true }
+            .buttonStyle(.plain)
+            .dsText(.caption)
+            .foregroundStyle(ds.inkSoft)
+            .underline()
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .accessibilityLabel("\(label) Report this explanation")
+            .confirmationDialog(AIConsentCopy.reportAction, isPresented: $showingReasons, titleVisibility: .visible) {
+                ForEach(AIResponseReportReason.allCases, id: \.self) { reason in
+                    Button(reason.label) {
+                        let report = AIResponseReport(message: message, surface: surface, course: course, reason: reason)
+                        Task { resultMessage = await sendAIResponseReport(report, session: session) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(AIConsentCopy.reportReviewNote)
+            }
+            .alert(
+                resultMessage ?? "",
+                isPresented: Binding(get: { resultMessage != nil }, set: { if !$0 { resultMessage = nil } })
+            ) {
+                Button("OK", role: .cancel) {}
+            }
     }
 }
 

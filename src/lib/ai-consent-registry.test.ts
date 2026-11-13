@@ -22,6 +22,8 @@ const GATED_ROUTES: Record<string, RegExp> = {
     /requireAiConsent\(userId,\s*\{\s*db:\s*supabaseAdmin,\s*route:\s*"hector-respond"\s*\}\)/,
   "src/routes/api/define-word.ts":
     /requireAiConsent\(userId,\s*\{\s*db:\s*supabaseAdmin,\s*route:\s*"define-word"\s*\}\)/,
+  "src/routes/api/explain.ts":
+    /requireAiConsent\(userId,\s*\{\s*db:\s*supabaseAdmin,\s*route:\s*"explain"\s*\}\)/,
   "src/routes/api/grade-translation.ts":
     /requireAiConsent\(auth\.userId,\s*\{\s*db:\s*auth\.supabase,\s*route:\s*"grade-translation",?\s*\}\)/,
 };
