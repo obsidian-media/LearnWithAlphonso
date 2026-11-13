@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 1 and "Calls made after the builder review").
 
+**Status (2026-11-13): all ten tasks done and merged in #496** (two migrations, `20261113100000` and `20261113100100`; the owner merges migration PRs). Mutations that went red during the work: `hasScope` always true, the audit trigger dropped, the leaderboard weekly-branch check removed, search wildcard escaping removed, the `requireSupabaseAuth` ban check disabled, delete no longer stopping on an Auth failure, `assertNotSelf` removed in the staff update, `requireStaff` removed from a function, the `pro.grant` scope loosened. Not verified when it merged: the Swift build (CI) and the Android app module compile (only `:core:test` ran); console screenshots came from the views with sample data, not a live backend. The checkboxes below are the original plan, not a live checklist.
+
 ## Global Constraints
 
 - Repo is PUBLIC: no secrets, no local paths. Keys live in Vercel env (`REVENUECAT_SECRET_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` already exist).

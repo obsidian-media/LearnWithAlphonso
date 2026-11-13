@@ -1,0 +1,14 @@
+Use your image generation tool to create TWO images, then save them as PNG files in the current working directory, named classroom-a.png and classroom-b.png. Do not write code, do not read any other files. Just generate the two images and save them.
+
+The attached reference images show "Alphonso", a llama tutor character: cream/beige fluffy fur, tall ears, blue mirrored aviator sunglasses, a royal-blue robe with ornate gold embroidered borders, a blue scarf at the neck, a dark inner shirt. Keep his identity, face, sunglasses and outfit EXACTLY like the references, same realistic 3D style.
+
+Scene for both images: a bright, friendly, modern language classroom. VERTICAL portrait format, 9:16 (1080x1920 or the closest vertical size you support).
+
+Composition rules (very important, this image will be animated later with lip-sync, and text will be added to the board afterwards):
+- A large CLEAN, EMPTY whiteboard in the upper part of the frame, taking about the top 45 to 50 percent of the image. Absolutely NO writing, letters, numbers, drawings or marks on the board. Plain white surface with a thin aluminum frame and a small marker tray.
+- Alphonso stands in the lower half, in front of / slightly beside the board, shown from the waist up, facing the camera directly, head straight, friendly closed-mouth smile, mouth fully visible and unobstructed.
+- His head must be large and sharp (about 20 to 25 percent of the image width), well lit, evenly lit, no shadows across the face. Nothing covering his mouth or chin, hands below chest level.
+- Soft, even, natural daylight. Clean background, no other people or animals, no text, no logos anywhere in the image.
+
+Image A: Alphonso centered below the board, holding a blue whiteboard marker loosely in one hand at waist height.
+Image B: Alphonso slightly to the right of center, the board slightly to the left and above, his near hand gesturing open-palm toward the board at chest height (not near his face).
