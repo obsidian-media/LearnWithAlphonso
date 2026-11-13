@@ -2368,6 +2368,7 @@ export type Database = {
       user_progress: {
         Row: {
           cefr_level: string;
+          day_basis: string;
           hearts: number;
           hearts_refill_at: string | null;
           last_active_date: string | null;
@@ -2385,6 +2386,7 @@ export type Database = {
         };
         Insert: {
           cefr_level?: string;
+          day_basis?: string;
           hearts?: number;
           hearts_refill_at?: string | null;
           last_active_date?: string | null;
@@ -2402,6 +2404,7 @@ export type Database = {
         };
         Update: {
           cefr_level?: string;
+          day_basis?: string;
           hearts?: number;
           hearts_refill_at?: string | null;
           last_active_date?: string | null;
@@ -3027,6 +3030,10 @@ export type Database = {
           ok: boolean;
           reason: string;
         }[];
+      };
+      learner_local_date: {
+        Args: { _at: string; _user_id: string };
+        Returns: string;
       };
       leave_buddy_pool: {
         Args: never;
