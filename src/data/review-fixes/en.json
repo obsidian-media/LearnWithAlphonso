@@ -29,6 +29,12 @@
   },
   "reason": "\"From the machine\" is vague; \"cash machine\" is the natural British term."
  },
+ "en:card:a1p11l2/exact": {
+  "patch": {
+   "example": "Please have the exact money ready for the bus."
+  },
+  "reason": "'Exact change for a ten' mixes two ideas (paying the exact amount and breaking a note), so the example does not clearly show 'exact'. / 'Exact change for a ten' is US usage for a ten-dollar bill, and the sentence is confusing."
+ },
  "en:card:a1p11l3/card": {
   "patch": {
    "meaning": "a small plastic thing you pay with"
@@ -565,6 +571,13 @@
   },
   "reason": "\"In class\" without a determiner sounds American; British English prefers \"in our class\" here."
  },
+ "en:card:a2p10l4/most tired": {
+  "patch": {
+   "meaning": "more tired than all the others",
+   "example": "Of the three of us, I'm the most tired."
+  },
+  "reason": "\"I am the most tired today\" is unnatural because the superlative has no comparison group, and the gloss is loose. / A superlative needs a comparison group to sound natural."
+ },
  "en:card:a2p11l2/vegetarian": {
   "patch": {
    "meaning": "without meat, or not eating meat"
@@ -798,6 +811,12 @@
   },
   "reason": "The gloss also describes a train, so it does not identify a bus; it should say a road vehicle."
  },
+ "en:card:a2p16l5/town": {
+  "patch": {
+   "example": "I live in a small town near the city."
+  },
+  "reason": "'This part of town' works for a city too, so the example does not show the gloss 'smaller than a city'. / 'This part of town' does not show that a town is smaller than a city, so the example should contrast the two."
+ },
  "en:card:a2p17l5/past": {
   "patch": {
    "meaning": "by and beyond something",
@@ -834,6 +853,12 @@
    "meaning": "fast; doing things in a short time"
   },
   "reason": "The gloss 'done in a short time' describes a task, but the example describes a person, so it should mean fast."
+ },
+ "en:card:a2p20l3/popular": {
+  "patch": {
+   "example": "This restaurant is as popular as the one in town."
+  },
+  "reason": "'Downtown' is US usage, and the app teaches British English. / 'Downtown' is US usage, and the app uses British English."
  },
  "en:card:a2p20l4/fun": {
   "patch": {
@@ -1636,6 +1661,13 @@
   },
   "reason": "'A shop or thing' is oddly specific for a general relative pronoun. / The gloss 'a shop or thing' is oddly narrow; a general 7-word gloss fits the rule."
  },
+ "en:card:b1p6l3/which": {
+  "patch": {
+   "meaning": "adds extra information about a thing",
+   "example": "The company, which is based in Oslo, is hiring."
+  },
+  "reason": "The gloss wrongly limits 'which' to companies, and the example ending in 'hires' is clipped and unnatural. / The gloss is too narrow ('about a company'), and the example ending in 'hires' is clipped and unnatural."
+ },
  "en:card:b1p6l3/whose": {
   "patch": {
    "example": "The boy whose bike was stolen called the police."
@@ -1678,6 +1710,12 @@
   },
   "reason": "Insurance is an arrangement with a company, not just 'money paid', so the gloss is misleading. / Insurance is an arrangement that pays out, not 'money paid to cover problems'."
  },
+ "en:card:b1p7l4/stopover": {
+  "patch": {
+   "example": "We had a six-hour stopover in Dubai."
+  },
+  "reason": "'Stopover' is used for breaks in a flight journey, not for a train that simply stops at a station. / A stopover is typically a break in a flight journey, so the train example is unnatural."
+ },
  "en:card:b1p7l5/booked": {
   "patch": {
    "meaning": "reserved by people in advance"
@@ -1713,6 +1751,12 @@
    "example": "His frustration grew as the printer kept jamming."
   },
   "reason": "\"As the printer failed\" sounds odd because it suggests a single failure; the repeated failing is what causes frustration."
+ },
+ "en:card:b1p8l4/loneliness": {
+  "patch": {
+   "example": "She struggled with loneliness in the big city."
+  },
+  "reason": "'Felt loneliness' sounds stiff; natives would say 'felt lonely', so the example should use the noun more naturally. / 'She felt loneliness' is stiff; 'struggled with loneliness' is natural and under 10 words."
  },
  "en:card:b1p8l4/shame": {
   "patch": {
@@ -2382,6 +2426,12 @@
   },
   "reason": "The example keeps the dictionary placeholder 'someone', which no native speaker would say. / 'She likes to keep someone at arm's length' sounds odd; a general statement uses 'someone' naturally."
  },
+ "en:card:c1p12l4/to be a blessing in disguise": {
+  "patch": {
+   "example": "Losing that job turned out to be a blessing in disguise."
+  },
+  "reason": "The example gives no bad-seeming event, so it does not illustrate the meaning. / The example gives no bad-seeming event, so it does not show the meaning; this version does and stays within 12 words."
+ },
  "en:card:c1p12l5/to be a double-edged sword": {
   "patch": {
    "meaning": "to have both good and bad effects"
@@ -2477,6 +2527,12 @@
    "meaning": "praise or respect for what someone has done"
   },
   "reason": "The gloss gives the 'recognising someone again' sense, but the example uses recognition to mean praise for achievements. / The gloss gives the 'recognise again' sense, but the example uses the sense of praise for someone's work."
+ },
+ "en:card:c1p16l1/not": {
+  "patch": {
+   "example": "It was not in 1990 that the company was founded."
+  },
+  "reason": "The double 'it' makes the cleft confusing, and a negative cleft sounds incomplete without the contrast. / The double 'it' makes the cleft example confusing; a noun subject is clearer."
  },
  "en:card:c1p16l2/that": {
   "patch": {
@@ -2637,6 +2693,12 @@
   },
   "reason": "The idiom is not used naturally with 'seem to' in the present; it is normally used in the present perfect or past."
  },
+ "en:card:c1p1l3/take it with a pinch of salt": {
+  "patch": {
+   "example": "If Tom says he's rich, take it with a pinch of salt."
+  },
+  "reason": "The example only repeats the term and gives no context showing what is doubted. / The example only repeats the idiom and gives no context, so a short context sentence of 11 words now shows what is being doubted."
+ },
  "en:card:c1p20l2/onward": {
   "patch": {
    "example": "From this point onward, the discussion focuses on validity."
@@ -2672,6 +2734,12 @@
    "meaning": "deserving to be done, mentioned or considered"
   },
   "reason": "'Deserving the effort' does not fit 'worth noting', which means deserving to be mentioned."
+ },
+ "en:card:c1p20l5/in other words": {
+  "patch": {
+   "example": "Sales fell sharply. In other words, the plan failed."
+  },
+  "reason": "On its own, the example restates nothing, so it does not show what 'in other words' does, and 'results' without 'the' reads awkwardly. / The example does not restate anything, so it fails to show what 'in other words' does; a two-sentence example within 12 words fixes this."
  },
  "en:card:c1p20l5/shown": {
   "patch": {
@@ -3017,6 +3085,12 @@
   },
   "reason": "'Completely without energy' describes 'exhausted' and overstates 'very tired'."
  },
+ "en:card:u3l1/i don't mind — happy to.": {
+  "patch": {
+   "example": "Can you carry this? I don't mind — happy to."
+  },
+  "reason": "The example just repeats the phrase with a fragment added; it should show the phrase as a reply to a request. / The term cannot be edited, but putting it after a request makes it read as a natural reply, and the new example stays under 10 words."
+ },
  "en:card:u3l1/sorry to interrupt…": {
   "patch": {
    "meaning": "polite way to speak while others are talking"
@@ -3250,6 +3324,20 @@
   },
   "reason": "With no time marker, \"They drank tea in the afternoon\" is also correct, so I replaced \"drank\" with \"is drinking\", which is ruled out by subject agreement."
  },
+ "en:placement:p63": {
+  "patch": {
+   "acceptableAnswers": [
+    "We are under no obligation to accept it.",
+    "We do not have to accept it.",
+    "There is no obligation to accept.",
+    "We don't have to accept it.",
+    "We are free to turn it down.",
+    "We are free to decline the offer.",
+    "We can turn it down if we want to."
+   ]
+  },
+  "reason": "Natural answers that echo the task, such as \"The team is free to turn the offer down.\", are not accepted, so learners would be marked wrong for correct sentences. / The accepted list leaves out the most direct ways to say the team is free to refuse, so this patch adds 'free to'/decline answers that do not copy the prompt and keeps the first answer unchanged."
+ },
  "en:placement:p64": {
   "patch": {
    "acceptableAnswers": [
@@ -3383,6 +3471,17 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "en:question:a1p10l4/a1p10q35": {
+  "patch": {
+   "choices": [
+    "It's cold outside — the ground is icy.",
+    "It's hot outside — the ground is icy.",
+    "It's freezing outside — the ground is icy.",
+    "It's mild outside — the ground is icy."
+   ]
+  },
+  "reason": "'It's snow outside' is ungrammatical, so it is not a fair sentence to offer in a listening item. / Option A 'It's snow outside' is ungrammatical, so it can be ruled out without listening; 'cold' is a grammatical near-miss for 'freezing' and is a core A1 word."
+ },
  "en:question:a1p10l5/a1p10q21": {
   "patch": {
    "explanation": "Only \"ice\" is frozen water that can melt in the sun; rain, wind and thunder are not frozen."
@@ -3442,6 +3541,24 @@
    "explanation": "Swapping a note for smaller notes or coins is \"change\"; save, withdraw and deposit do not mean exchanging money for other money."
   },
   "reason": "Replace the generic explanation with a specific one."
+ },
+ "en:question:a1p11l2/a1p11q5": {
+  "patch": {
+   "explanation": "Putting money aside for later, such as for a trip, is to \"save\"; spend is the opposite, and change and withdraw mean something else."
+  },
+  "reason": "Replace the generic explanation with a specific one."
+ },
+ "en:question:a1p11l2/a1p11q7": {
+  "patch": {
+   "explanation": "Asking for a lower price means asking for a \"discount\"; a refund is money back, a receipt is a paper proof of payment, and change is the money you get back after paying."
+  },
+  "reason": "The bracket is a meaning clue used across this lesson; keep it and fix the explanation."
+ },
+ "en:question:a1p11l2/a1p11q8": {
+  "patch": {
+   "explanation": "\"more\" fits because the price is higher than you expected, and \"more ... than\" compares amounts. \"Less\" would mean a lower price, and \"fewer\" is only for countable things."
+  },
+  "reason": "Explanation was generic; the clue is 'than' plus a higher price."
  },
  "en:question:a1p11l3/a1p11q10": {
   "patch": {
@@ -3905,6 +4022,12 @@
   },
   "reason": "Specific explanation for the Halloween fact."
  },
+ "en:question:a1p14l3/a1p14q13": {
+  "patch": {
+   "explanation": "The hint 'when the sun comes up' means the early part of the day, so people go to work on weekday \"mornings\"."
+  },
+  "reason": "Specific explanation using the clue."
+ },
  "en:question:a1p14l3/a1p14q14": {
   "patch": {
    "explanation": "A normal year has 365 \"days\"; weeks (52) and months (12) are far fewer, and hours would be thousands."
@@ -3965,6 +4088,12 @@
   },
   "reason": "Replace generic explanation with a specific one."
  },
+ "en:question:a1p14l4/a1p14q18": {
+  "patch": {
+   "explanation": "New Year's Eve is 31 December, the final day of the \"year\"; a week, day or hour does not end on that date."
+  },
+  "reason": "Replace generic explanation with a specific one."
+ },
  "en:question:a1p14l4/a1p14q19": {
   "patch": {
    "explanation": "An hour is a period of sixty minutes, so \"hour\" fits. A day, week or month is much longer."
@@ -3995,6 +4124,17 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "en:question:a1p15l2/a1p15q29": {
+  "patch": {
+   "choices": [
+    "The window has an oval shape.",
+    "The mirror has an oval shape.",
+    "The table has an oval shape.",
+    "The clock has an oval shape."
+   ]
+  },
+  "reason": "The wrong options use \"an\" before consonant sounds, so the answer can be found by grammar alone without listening; \"cube\" is also a 3D shape. / The wrong options use \"an\" before consonant sounds, so the answer can be picked on grammar alone; the new options keep \"an oval\" and change a content noun instead."
+ },
  "en:question:a1p15l2/a1p15q6": {
   "patch": {
    "explanation": "An egg is longer than it is wide, with round ends, and we call that shape \"oval\"."
@@ -4024,6 +4164,17 @@
    "explanation": "A road that goes on and on covers a big distance from end to end, so it is very \"long\"; \"narrow\" and \"thin\" describe width, not length."
   },
   "reason": "The explanation does not put the answer in double quotes."
+ },
+ "en:question:a1p15l3/a1p15q32": {
+  "patch": {
+   "choices": [
+    "This book is new.",
+    "This book is thin.",
+    "This book is light.",
+    "This book is big."
+   ]
+  },
+  "reason": "'Oversized' is above A1; 'thick' is a level-appropriate distractor and a useful contrast with 'thin'. / \"Oversized\" is above A1 level; \"big\" is a simple A1 word that sounds nothing like \"thin\"."
  },
  "en:question:a1p15l3/a1p15q33": {
   "patch": {
@@ -4062,6 +4213,13 @@
   },
   "reason": "The prompt contains the answer 'heavy', so the item is circular."
  },
+ "en:question:a1p15l4/a1p15q19": {
+  "patch": {
+   "prompt": "Something that \"has six equal square sides\" is…",
+   "explanation": "A solid shape with six equal square sides is a \"cube\", like an ice cube."
+  },
+  "reason": "The prompt contains 'cube', and the frame 'is…' + 'cube' is ungrammatical without an article. / The prompt contains the answer \"cube\"; the new clue is still in quotes but describes the shape instead, and \"square sides\" rules out \"hexagon\"."
+ },
  "en:question:a1p15l5/a1p15q21": {
   "patch": {
    "explanation": "A \"cone\" has a round base and a pointed top, like an ice cream cone; the other words are flat shapes."
@@ -4098,6 +4256,17 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "en:question:a1p16l1/a1p16q26": {
+  "patch": {
+   "choices": [
+    "I wake up at seven o'clock every morning.",
+    "I get up at seven o'clock every morning.",
+    "I wake up at six o'clock every morning.",
+    "I wake up at seven o'clock every Monday."
+   ]
+  },
+  "reason": "\"Put up\", \"bring up\" and \"hold up\" sound nothing like \"wake up\" and make odd sentences, so they don't test listening; distractors that differ by one heard detail work better. / 'I put up / bring up / hold up at seven' are ungrammatical sentences no one would say; real listening distractors should differ by a single natural word."
+ },
  "en:question:a1p16l1/a1p16q3": {
   "patch": {
    "explanation": "With the plural subject \"We\" the present simple uses the base verb, so \"eat\" with no -s and no extra helper."
@@ -4109,6 +4278,12 @@
    "explanation": "The subject \"She\" is third person singular, so the present simple verb takes -s: \"travels\"."
   },
   "reason": "Generic explanation replaced with a specific one."
+ },
+ "en:question:a1p16l2/a1p16q6": {
+  "patch": {
+   "explanation": "\"checks\" is right because the subject is \"He\", so the verb needs -s, and checking your email is what people do first thing at the office."
+  },
+  "reason": "Explanation rewritten; the -s giveaway is minor and left alone."
  },
  "en:question:a1p16l2/a1p16q7": {
   "patch": {
@@ -4157,6 +4332,17 @@
    "explanation": "\"glances at\" means to look quickly at something, which fits checking a phone one last time; \"watch\", \"walk\" and \"sleep\" do not fit and lack -s after \"He\"."
   },
   "reason": "Specific explanation needed; the item is fine, though \"glances at\" is a bit high for A1."
+ },
+ "en:question:a1p16l3/a1p16q32": {
+  "patch": {
+   "choices": [
+    "He washes the clothes after dinner.",
+    "He washes the dishes after dinner.",
+    "He washes the dishes before dinner.",
+    "He washes the dishes after lunch."
+   ]
+  },
+  "reason": "\"sets the dishes\" and \"puts the dishes after dinner\" are not natural English, so the key can be picked without listening; the distractors should be natural sentences that differ by one word. / \"He puts the dishes after dinner\" is ungrammatical and \"sets the dishes\" is unnatural, so they are weak distractors; the replacements use course words and differ by one content word."
  },
  "en:question:a1p16l4/a1p16q15": {
   "patch": {
@@ -4437,6 +4623,17 @@
   },
   "reason": "The explanation only repeats the answer and gives no rule."
  },
+ "en:question:a1p18l2/a1p18q29": {
+  "patch": {
+   "choices": [
+    "The bus is fast.",
+    "The bike is fast.",
+    "The train is fast.",
+    "The car is fast."
+   ]
+  },
+  "reason": "The wrong options make no sense, so a learner can guess the answer without listening. / A fast pillow or feather is absurd, so the answer is guessable by meaning alone; other vehicles keep every option sensible while still testing listening."
+ },
  "en:question:a1p18l2/a1p18q6": {
   "patch": {
    "bank": [
@@ -4550,6 +4747,17 @@
    "explanation": "A \"towel\" gets wet when you dry yourself with it after a shower. Fire, light and noise cannot be wet."
   },
   "reason": "Only a towel can be wet, but the explanation is generic."
+ },
+ "en:question:a1p18l5/a1p18q38": {
+  "patch": {
+   "choices": [
+    "I have a new bag.",
+    "I have a new car.",
+    "I have a new phone.",
+    "I have a new book."
+   ]
+  },
+  "reason": "\"A new sugar\" and \"a new ice\" are ungrammatical, so the answer can be found without listening; the new options are grammatical and sound alike. / \"A new sugar\" and \"a new ice\" are ungrammatical, so a learner can spot the answer without listening; the new distractors are grammatical countable A1 nouns that do not sound like \"phone\"."
  },
  "en:question:a1p19l1/a1p19q0": {
   "patch": {
@@ -5069,6 +5277,17 @@
   },
   "reason": "'In the middle of your body' is a vague clue for the stomach, so it is better tied to food, as the word card is."
  },
+ "en:question:a1p21l3/a1p21q32": {
+  "patch": {
+   "choices": [
+    "My back hurts.",
+    "My stomach hurts.",
+    "My elbow hurts.",
+    "My head hurts."
+   ]
+  },
+  "reason": "The distractors 'My ears hurts' and 'My lungs hurts' are ungrammatical, so learners can rule them out without listening. / \"My ears hurts\" and \"My lungs hurts\" show A1 learners ungrammatical English and give the answer away; singular body parts keep every option grammatical."
+ },
  "en:question:a1p21l3/a1p21q33": {
   "patch": {
    "acceptableAnswers": [
@@ -5186,6 +5405,17 @@
    "explanation": "When you go camping, you sleep in a tent \"outdoors\", outside and not in a house."
   },
   "reason": "The explanation is a generic template line; the key is clear enough because camping is the outdoor option."
+ },
+ "en:question:a1p22l3/a1p22q32": {
+  "patch": {
+   "choices": [
+    "She grows flowers on the balcony.",
+    "She grows tomatoes on the balcony.",
+    "She grows vegetables on the balcony.",
+    "She grows plants on the balcony."
+   ]
+  },
+  "reason": "Nobody grows books, stamps or songs, so the answer can be picked without listening. / Nobody grows books, stamps or songs, so the answer can be found without listening; the new distractors are real things you can grow, and the rest of each sentence stays the same."
  },
  "en:question:a1p22l4/a1p22q15": {
   "patch": {
@@ -5964,6 +6194,13 @@
   },
   "reason": "The key is right, but the explanation does not quote the answer in double quotes and only gives a generic line about collocations."
  },
+ "en:question:a1p5l1/a1p5q1": {
+  "patch": {
+   "prompt": "Which verb goes with \"breakfast\" (= eat it)?",
+   "explanation": "When you eat your morning meal, English says \"have\" breakfast; \"make breakfast\" means cooking it."
+  },
+  "reason": "\"Make breakfast\" is also a correct collocation (meaning to cook it), so the prompt needs a clue that rules out \"make\". / \"Make breakfast\" is a correct collocation, so option B is also right. A bracketed meaning clue in the prompt rules it out without touching the options."
+ },
  "en:question:a1p5l1/a1p5q2": {
   "patch": {
    "bank": [
@@ -5993,6 +6230,18 @@
    "explanation": "We say \"catch\" the bus when we get on it in time to travel; \"do\", \"make\" and \"play\" do not go with buses or trains."
   },
   "reason": "'Take the bus' and 'ride the bus' are both correct, so learners picking them are marked wrong; they should be replaced with non-collocating verbs ('miss' would also be correct, so it is avoided). / \"Catch the bus\" is standard in all varieties of English, so calling it the British verb is misleading."
+ },
+ "en:question:a1p5l2/a1p5q6": {
+  "patch": {
+   "bank": [
+    "throw",
+    "watch",
+    "wash",
+    "listen to"
+   ],
+   "explanation": "We use our ears for music, so we \"listen to\" it; we watch things with our eyes."
+  },
+  "reason": "\"Make music\" is a natural collocation, so a learner who picks \"make\" would be marked wrong; the explanation also does not quote the answer. / \"Make music\" is a valid collocation, so swap \"make\" for \"watch\", a common learner confusion that does not go with music."
  },
  "en:question:a1p5l2/a1p5q7": {
   "patch": {
@@ -6287,6 +6536,17 @@
    "explanation": "The female form of \"son\" is \"daughter\": both words mean a child of a parent."
   },
   "reason": "The explanation does not quote the answer, and \"saleswoman\" and \"godmother\" are above A1; A1 family words make better distractors."
+ },
+ "en:question:a1p7l1/a1p7q26": {
+  "patch": {
+   "choices": [
+    "My uncle lives in Spain.",
+    "My aunt lives in Spain.",
+    "My bride lives in Spain.",
+    "My widow lives in Spain."
+   ]
+  },
+  "reason": "\"My woman\" and \"My widow\" make odd sentences, and the options do not test listening; familiar family words make better distractors. / \"My woman lives in Spain\" is unnatural and sounds crude as a family phrase, so a learner can rule it out without listening; \"uncle\" is a plausible family-word distractor that the course already uses alongside \"aunt\"."
  },
  "en:question:a1p7l1/a1p7q3": {
   "patch": {
@@ -6590,6 +6850,48 @@
   },
   "reason": "Key is right; sweet fruit spread is jam."
  },
+ "en:question:a1p8l3/a1p8q32": {
+  "patch": {
+   "choices": [
+    "We need more cheese for the sandwiches.",
+    "We need more bread for the sandwiches.",
+    "We need more lemon for the sandwiches.",
+    "We need more bacon for the sandwiches."
+   ]
+  },
+  "reason": "\"We need more slice\" is ungrammatical and easy to rule out without listening; a grammatical food word makes a fairer distractor. / \"more slice\" is ungrammatical, so it can be ruled out without listening; \"bread\" is a course word and gives a natural, plausible distractor."
+ },
+ "en:question:a1p8l4/a1p8q15": {
+  "patch": {
+   "explanation": "Tea served with no milk is called \"black\" tea, while milky and creamy describe tea with milk or cream added."
+  },
+  "reason": "Key is right; black tea means tea without milk."
+ },
+ "en:question:a1p8l4/a1p8q16": {
+  "patch": {
+   "explanation": "The clue asks for the American word for the bill, and in the US you ask for the \"check\" at the end of a meal."
+  },
+  "reason": "Prompt explicitly asks for the American word, so check is a fair key; just fix the explanation."
+ },
+ "en:question:a1p8l4/a1p8q17": {
+  "patch": {
+   "explanation": "A restaurant can be famous for a dish like \"steak\"; a bill, jam or salt is not something a restaurant is known for."
+  },
+  "reason": "Key is right; steak is the only dish a restaurant is famous for."
+ },
+ "en:question:a1p8l4/a1p8q18": {
+  "patch": {
+   "explanation": "A vegetarian does not eat animals, so there is no \"meat\" for her, while salad, rice and bread are all fine."
+  },
+  "reason": "Key is right; vegetarians do not eat meat."
+ },
+ "en:question:a1p8l4/a1p8q19": {
+  "patch": {
+   "prompt": "We ran out of ___, so we couldn't make toast.",
+   "explanation": "Toast is made from bread, so running out of \"bread\" means there is no toast."
+  },
+  "reason": "Coffee and tomato also fit \"We ran out of ___ for breakfast\", so the prompt needs a clue that points only to bread. / Tomato and coffee also fit breakfast, so a clue is needed to single out bread. / \"Coffee\" and \"tomato\" also fit \"ran out of ___ for breakfast\"; tying the gap to toast leaves only \"bread\"."
+ },
  "en:question:a1p8l4/a1p8q36": {
   "patch": {
    "acceptableAnswers": [
@@ -6670,6 +6972,17 @@
    "explanation": "For snow and rain you need strong shoes that cover your feet, which are \"boots\". Sandals and slippers are not for wet weather."
   },
   "reason": "Replace generic explanation with a specific one."
+ },
+ "en:question:a1p9l1/a1p9q26": {
+  "patch": {
+   "choices": [
+    "She's wearing a red hat.",
+    "She's wearing a red sock.",
+    "She's wearing a red dress.",
+    "She's wearing a red shirt."
+   ]
+  },
+  "reason": "'a red trousers' is ungrammatical, so a learner can reject it without listening and is shown a wrong pattern. / \"a red trousers\" is ungrammatical and can be dismissed without listening; \"a red shirt\" is a close, grammatical variant of the answer."
  },
  "en:question:a1p9l1/a1p9q4": {
   "patch": {
@@ -6937,6 +7250,17 @@
    "explanation": "Telling the waiter what food you want is to \"order\". Pay and leave come later, and sit comes before."
   },
   "reason": "Replaced the generic explanation with one tied to the clue."
+ },
+ "en:question:a2p11l1/a2p11q26": {
+  "patch": {
+   "choices": [
+    "I'll have the fish, please.",
+    "I'll have the chicken, please.",
+    "I'll have the soup, please.",
+    "I'll have the salad, please."
+   ]
+  },
+  "reason": "The ungrammatical distractors \"I'll has\" and \"I'll having\" are easy to dismiss; grammatical sound-alikes make the listening task real. / \"I'll has\" and \"I'll having\" are ungrammatical and can be ruled out without listening, which leaves only two real options; other dishes keep all four options plausible."
  },
  "en:question:a2p11l1/a2p11q3": {
   "patch": {
@@ -7373,6 +7697,41 @@
   },
   "reason": "Specific explanation."
  },
+ "en:question:a2p14l5/a2p14q38": {
+  "patch": {
+   "choices": [
+    "We're all set to meet at six sharp.",
+    "We're all ready to meet at six sharp.",
+    "We're all looking to meet at six sharp.",
+    "We're all going to meet at six sharp."
+   ]
+  },
+  "reason": "The distractors sound nothing like \"set\", so learners can pick the answer without really listening; sound-alike options test the skill. / \"All pick\" and \"all manage\" are ungrammatical; they are replaced with grammatical sentences that sound clearly different from \"set\", and the answer stays first."
+ },
+ "en:question:a2p15l1/a2p15q0": {
+  "patch": {
+   "explanation": "A \"parcel\" is a package you send by post, so it fits \"send this ___ to Spain\"; the other words are not things you post."
+  },
+  "reason": "Specific explanation."
+ },
+ "en:question:a2p15l1/a2p15q1": {
+  "patch": {
+   "explanation": "A \"stamp\" is the small paper label you put on a letter to pay for postage, which is what the clue describes."
+  },
+  "reason": "Specific explanation; clue is acceptable at A2."
+ },
+ "en:question:a2p15l1/a2p15q2": {
+  "patch": {
+   "explanation": "After \"I need to\" we use the base verb, so \"deposit\" is right; it means to put money into a bank account."
+  },
+  "reason": "Specific explanation."
+ },
+ "en:question:a2p15l1/a2p15q3": {
+  "patch": {
+   "explanation": "After \"Could I\" you need the base form, so \"withdraw\" is right; it means to take money out of an account."
+  },
+  "reason": "Specific explanation."
+ },
  "en:question:a2p15l2/a2p15q5": {
   "patch": {
    "explanation": "\"three working days\" needs a plural noun after the number, so \"days\" is right; \"day\" is singular and weekends or Mondays do not fit."
@@ -7611,6 +7970,24 @@
    "explanation": "The clue \"no rubbish\" describes streets that are \"clean\". \"Busy\" means full of people, and \"residential\" and \"local\" do not describe how tidy a street is."
   },
   "reason": "Specific explanation; the bracketed clue already rules out the other options."
+ },
+ "en:question:a2p16l5/a2p16q20": {
+  "patch": {
+   "explanation": "The place where you wait for a bus is called a \"bus\" stop, which is the fixed phrase. \"Train stop\" is not normally said in British English (we say train station), and \"leisure stop\" and \"community stop\" do not exist."
+  },
+  "reason": "Specific explanation; 'bus stop' is the fixed phrase."
+ },
+ "en:question:a2p16l5/a2p16q21": {
+  "patch": {
+   "explanation": "A \"leisure\" centre is the place with a sports hall and a pool, which fits the clue about sports and exercise. A shopping centre is for buying things, not for exercise."
+  },
+  "reason": "Specific explanation; the clue about sports and exercise points to leisure centre."
+ },
+ "en:question:a2p16l5/a2p16q22": {
+  "patch": {
+   "explanation": "Rush hour means lots of cars and people, so the area gets \"busy\". \"Empty\", \"quiet\" and \"silent\" all mean the opposite."
+  },
+  "reason": "Specific explanation."
  },
  "en:question:a2p16l5/a2p16q38": {
   "patch": {
@@ -8195,6 +8572,36 @@
   },
   "reason": "Replace generic explanation with a clue-specific one."
  },
+ "en:question:a2p20l3/a2p20q10": {
+  "patch": {
+   "explanation": "Having as many customers as the other restaurant means it is liked by many people, so it is as \"popular\" as that one."
+  },
+  "reason": "Replace generic explanation with a clue-specific one."
+ },
+ "en:question:a2p20l3/a2p20q11": {
+  "patch": {
+   "explanation": "The clue \"difficult\" gives the meaning, and \"hard\" means difficult: the exam was not as hard as I thought. \"Easy\" is the opposite."
+  },
+  "reason": "Clue 'difficult' only fits hard; but explain it clearly (easy would contradict the clue)."
+ },
+ "en:question:a2p20l3/a2p20q12": {
+  "patch": {
+   "explanation": "Coffee that wakes you up just as much has the same power, so it is as \"strong\" as the one at home; weak would mean the opposite."
+  },
+  "reason": "Replace generic explanation with a clue-specific one."
+ },
+ "en:question:a2p20l3/a2p20q13": {
+  "patch": {
+   "explanation": "A journey is measured by how much time it takes, so \"long\" fits the clue; heavy, loud and wide don't describe a journey's duration."
+  },
+  "reason": "Replace generic explanation with a clue-specific one."
+ },
+ "en:question:a2p20l3/a2p20q14": {
+  "patch": {
+   "explanation": "A phone that never breaks down can be trusted, which is \"reliable\"; heavy, cheap and noisy don't match the clue."
+  },
+  "reason": "Replace generic explanation with a clue-specific one."
+ },
  "en:question:a2p20l4/a2p20q15": {
   "patch": {
    "explanation": "The clue says the road has the same amount of traffic as the motorway, and a motorway is full of cars, so \"busy\" fits. In 'as ... as', the adjective describes both things equally."
@@ -8387,6 +8794,12 @@
   },
   "reason": "The generic past/future line does not fit, because the contrast is cricket vs rugby."
  },
+ "en:question:a2p21l5/a2p21q23": {
+  "patch": {
+   "explanation": "The audio says \"The parcel hasn't arrived yet.\" Listen for \"hasn't\" and \"yet\", which mean it has still not come, unlike \"arrived yesterday\" in another option."
+  },
+  "reason": "The explanation is generic and inaccurate: no option is a future statement, and the real contrast is present perfect with \"yet\" against past simple with \"yesterday\". / The tail sentence is generic and does not match the options, which differ by more than one word."
+ },
  "en:question:a2p21l5/a2p21q24": {
   "patch": {
    "explanation": "The audio says \"The parcel arrived yesterday.\" Listen for the past simple \"arrived\" with \"yesterday\", not \"hasn't arrived yet\"."
@@ -8554,6 +8967,17 @@
    "explanation": "\"Could you water my plants while I am away?\" is a polite request; you can also say \"Would you mind\" followed by the -ing form, \"watering\"."
   },
   "reason": "The accepted answers are fine, but the explanation is generic."
+ },
+ "en:question:a2p23l1/a2p23q3": {
+  "patch": {
+   "acceptableAnswers": [
+    "I have never been to Italy.",
+    "I have never visited Italy.",
+    "I have not been to Italy before."
+   ],
+   "explanation": "One way to say it: \"I have never been to Italy.\" Use the present perfect with \"never\" for something that has not happened at any time in your life."
+  },
+  "reason": "\"Italy is somewhere I have yet to visit\" is well above A2 and the explanation is generic, so swap in the contracted A2 form and explain the present perfect. / The explanation ends with a generic lesson line, and the B2 phrasing \"have yet to visit\" is replaced with an A2-level alternative."
  },
  "en:question:a2p23l1/a2p23q4": {
   "patch": {
@@ -9038,6 +9462,17 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "en:question:a2p4l5/a2p4q38": {
+  "patch": {
+   "choices": [
+    "I'll leave it, thanks.",
+    "I'll take it, thanks.",
+    "I'll buy it, thanks.",
+    "I'll keep it, thanks."
+   ]
+  },
+  "reason": "\"I'll looking it\" and \"I'll delayed it\" are pool leftovers that no listener would choose, so the item tests no listening. / Two distractors are ungrammatical non-sentences; real, grammatical alternatives that do not sound like \"take\" make the listening item meaningful."
+ },
  "en:question:a2p5l1/a2p5q4": {
   "patch": {
    "choices": [
@@ -9483,6 +9918,25 @@
   },
   "reason": "Item is fine; only the explanation needs to be specific."
  },
+ "en:question:a2p7l5/a2p7q22": {
+  "patch": {
+   "prompt": "The ___ needs painting. (it's above your head in a room)",
+   "explanation": "The clue points to the top surface of a room above your head, which is the \"ceiling\". A cupboard, door or garage is not above your head inside a room."
+  },
+  "reason": "Door and cupboard also get painted; add a clue to single out the ceiling. / A door, cupboard or garage can equally need painting; a clue pointing to the top surface of a room leaves only \"ceiling\" (the CI failure was about the separate \"light\" card in this lesson). / A door, cupboard or garage can also need painting, so the prompt needs a clue that rules them out."
+ },
+ "en:question:a2p7l5/a2p7q23": {
+  "patch": {
+   "explanation": "The clue says the room under the ground floor, which is the \"basement\". An attic is under the roof, and a garage or kitchen is not below ground level."
+  },
+  "reason": "Item is fine; only the explanation needs to be specific."
+ },
+ "en:question:a2p7l5/a2p7q24": {
+  "patch": {
+   "explanation": "You wipe your feet on a \"mat\" by the door; a bed, sofa or wardrobe would not be placed there or used for this."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
  "en:question:a2p8l1/a2p8q0": {
   "patch": {
    "explanation": "You hit the ball with a racket in \"tennis\"; skiing, skateboarding and chess don't use one."
@@ -9631,6 +10085,17 @@
   },
   "reason": "Specific explanation tied to the spinning-room clue."
  },
+ "en:question:a2p9l2/a2p9q29": {
+  "patch": {
+   "choices": [
+    "He's got a bad headache.",
+    "He's got a nasty bruise.",
+    "He's got a bad cough.",
+    "He's got a high temperature."
+   ]
+  },
+  "reason": "\"High headache\", \"high bruise\" and \"high cough\" are nonsense collocations, so the right answer is obvious without careful listening; the distractors should be real sentences that sound close to the audio. / \"High headache\", \"high bruise\" and \"high cough\" are impossible collocations, so a learner can rule them out without listening; natural health complaints make the learner actually listen."
+ },
  "en:question:a2p9l2/a2p9q5": {
   "patch": {
    "explanation": "A very bad pain in the head that needs quiet is a \"migraine\"; a cough, fever or bruise is not pain in the head."
@@ -9716,6 +10181,17 @@
   },
   "reason": "Clue is a high temperature."
  },
+ "en:question:a2p9l4/a2p9q35": {
+  "patch": {
+   "choices": [
+    "The nurse checked my pulse.",
+    "The nurse checked my cough.",
+    "The nurse checked my temperature.",
+    "The nurse checked my fever."
+   ]
+  },
+  "reason": "\"checked my dentist\" makes no sense; a near-sounding word gives a real listening contrast with \"pulse\". / A nurse does not check \"my dentist\", so that option is absurd; replace it with a plausible health word."
+ },
  "en:question:a2p9l5/a2p9q20": {
   "patch": {
    "explanation": "\"hurts\" is the correct present simple form after the singular subject \"my back\"; the other options are not valid verb forms here."
@@ -9745,6 +10221,17 @@
    "explanation": "A \"spray\" is the medicine you squirt into your nose. A syrup and a tablet are swallowed, and a plaster goes on a cut."
   },
   "reason": "Replaced the generic explanation with one tied to the nose clue."
+ },
+ "en:question:a2p9l5/a2p9q38": {
+  "patch": {
+   "choices": [
+    "He's got a nasty bruise on his hand.",
+    "He's got a nasty bruise on his knee.",
+    "He's got a nasty bruise on his arm.",
+    "He's got a nasty bruise on his leg."
+   ]
+  },
+  "reason": "A \"fever\", \"cough\" or \"headache\" on a knee is nonsense, which gives the answer away; the distractors should be plausible near-matches. / A fever, cough or headache cannot be \"on his knee\", so the distractors can be ruled out without listening; varying the body part keeps them plausible."
  },
  "en:question:b1p10l1/b1p10q0": {
   "patch": {
@@ -12385,6 +12872,18 @@
   },
   "reason": "Specific second-conditional explanation needed."
  },
+ "en:question:b1p2l2/b1p2q6": {
+  "patch": {
+   "explanation": "The \"unless\" clause uses the present (\"hurry\"), so this is a first conditional and the result needs \"will\" plus the bare verb: \"will miss\".",
+   "bank": [
+    "are",
+    "had",
+    "ought",
+    "will"
+   ]
+  },
+  "reason": "'Unless' is first conditional; the old explanation did not fit. Bank has weak options but is flagged for rewrite. / 'die' is not a modal or auxiliary and no learner would pick it, and 'ought' is a weak distractor; they are replaced with tempting options that do not fit. / \"die\" is not a credible option. It is replaced with auxiliaries a learner might try, none of which can fit before \"miss\", and \"would\" is left out because the gate accepts it."
+ },
  "en:question:b1p2l2/b1p2q8": {
   "patch": {
    "explanation": "\"What would you do\" shows an imagined situation, so the if-clause takes the past simple \"won\"."
@@ -12489,6 +12988,18 @@
   },
   "reason": "Explain how 'provided' works; the options are acceptable."
  },
+ "en:question:b1p2l5/b1p2q21": {
+  "patch": {
+   "explanation": "\"If only\" expresses a wish about the present, so it takes a past form: \"could\" + 'speak'. \"can\" and \"will\" are not past forms, and \"were\" cannot be followed by a bare verb.",
+   "choices": [
+    "could",
+    "will",
+    "had",
+    "were"
+   ]
+  },
+  "reason": "Key is right; \"were\" cannot be followed by 'speak', so only \"could\" works. The explanation must cover 'if only'. / \"melts\" is absurd after \"I\" and should be replaced with a tempting modal, and the explanation should give the past-form rule for wishes. / \"melts\" is absurd. \"had\" (a past-perfect lure) cannot be followed by the bare verb \"speak\", so it is a tempting but clearly wrong option."
+ },
  "en:question:b1p2l5/b1p2q23": {
   "patch": {
    "explanation": "\"I'd learn\" is a second conditional result, so the if-clause takes the past simple: if I \"had\" time. \"could\" and \"were\" cannot be followed directly by a noun like 'time'."
@@ -12506,6 +13017,19 @@
    "explanation": "\"Should you need help\" is a formal way of saying \"if you need help\", and the main clause gives an instruction, so it needs the imperative \"call\"."
   },
   "reason": "\"tell\" also fits 'tell me', so replace it with a non-fitting word. / \"Should you need help, tell me\" is as correct as \"call me\", so the bank has two answers, and the card gloss wrongly says call is used to give advice."
+ },
+ "en:question:b1p3l1/b1p3q0": {
+  "patch": {
+   "explanation": "To give advice before a bare verb we use \"should\"; \"ought\" and \"have\" would need \"to\", and \"had\" would need \"better\".",
+   "prompt": "You look ill. You ___ see a doctor.",
+   "choices": [
+    "should",
+    "have",
+    "had",
+    "ought"
+   ]
+  },
+  "reason": "Key is right; \"ought\" lacks 'to', so only \"should\" works. The explanation needs to be specific. / \"You can see a doctor\" is also grammatical and natural with no context, so the item has two answers. / \"You can see a doctor\" is grammatical, so \"can\" is a second answer. Swapping it for \"have\" (the missing-\"to\" trap) and adding context gives one clear answer."
  },
  "en:question:b1p3l1/b1p3q1": {
   "patch": {
@@ -13166,6 +13690,37 @@
   },
   "reason": "'that' and 'who' also work; change the options so only 'whom' fits. / \"who\" and \"that\" are both correct object pronouns here, so they are replaced with \"whose\" and \"which\", which are tempting but wrong for a person as object."
  },
+ "en:question:b1p6l3/b1p6q10": {
+  "patch": {
+   "prompt": "The company, ___ is based in Oslo, is hiring.",
+   "explanation": "The commas make this a non-defining clause about a thing (\"The company\"), so \"which\" is used. \"that\" is not used after a comma, and \"who\" and \"whose\" do not fit here."
+  },
+  "reason": "Prompt ends awkwardly; fix it and give a specific explanation. / \"hires\" with no object is unnatural, so the sentence needs a natural ending; the card example is updated to match and kept under 10 words. / \"The company ... hires.\" sounds incomplete with no object, while \"is hiring\" is the natural way to say it."
+ },
+ "en:question:b1p6l3/b1p6q11": {
+  "patch": {
+   "explanation": "The missing word refers to \"students\", which are people, so \"who\" is needed; \"which\" is for things, and \"why\" and \"when\" do not refer to people."
+  },
+  "reason": "Generic explanation replaced with a specific one."
+ },
+ "en:question:b1p6l3/b1p6q12": {
+  "patch": {
+   "explanation": "\"that\" works because a shop is a thing and the word is the subject of \"sells\"; \"who\" and \"whom\" are for people, and \"where\" would need a different clause."
+  },
+  "reason": "Specific explanation needed; only 'that' fits a thing as subject."
+ },
+ "en:question:b1p6l3/b1p6q13": {
+  "patch": {
+   "explanation": "The window belongs to the room, so you need a possessive word: \"whose\" links \"room\" and \"window\"."
+  },
+  "reason": "Specific explanation needed."
+ },
+ "en:question:b1p6l3/b1p6q14": {
+  "patch": {
+   "explanation": "\"a man\" is a person and the missing word is the subject of \"speaks\", so \"who\" is correct; \"which\" is for things."
+  },
+  "reason": "Specific explanation needed."
+ },
  "en:question:b1p6l4/b1p6q15": {
   "patch": {
    "explanation": "After \"the reason\", \"why\" introduces the cause of the action: \"the reason why she resigned\"."
@@ -13375,6 +13930,31 @@
    "explanation": "A \"visa\" is an official document that can expire, so it fits \"hasn't expired\". A trip, directions or staff cannot expire."
   },
   "reason": "Only the explanation needed rewriting."
+ },
+ "en:question:b1p7l4/b1p7q15": {
+  "patch": {
+   "explanation": "The \"reception\" desk is where hotel staff help guests, including with excursions. A view, insurance or check desk would not be a place to ask for this."
+  },
+  "reason": "Only the explanation needed rewriting."
+ },
+ "en:question:b1p7l4/b1p7q16": {
+  "patch": {
+   "explanation": "A \"scenic route\" is a road or way chosen for its views, and \"took a ... along the coast\" needs a noun like \"route\". You do not take an attraction, a tourist or a guide along a coast."
+  },
+  "reason": "Only the explanation needed rewriting."
+ },
+ "en:question:b1p7l4/b1p7q17": {
+  "patch": {
+   "explanation": "A \"stopover\" is a short break in a long journey, which matches a train stopping in Milan. A route, a pass or a guesthouse cannot be \"short\" in this sense."
+  },
+  "reason": "Only the explanation needed rewriting."
+ },
+ "en:question:b1p7l4/b1p7q18": {
+  "patch": {
+   "explanation": "\"staff\" means the people who work in a place, and it is a group noun that fits \"The local ___ was incredibly friendly\" without an article. \"tourist\" would need \"a\" before it.",
+   "prompt": "The local ___ were incredibly friendly."
+  },
+  "reason": "Only the explanation needed rewriting; 'tourist' is not a second answer because the card's example uses 'staff were' and 'tourist' as a singular count noun would need 'a' in the prompt. / \"The local tourist was incredibly friendly\" is grammatical, but plural \"were\" (natural British usage with \"staff\", and matching the card example) leaves only \"staff\". / \"Local tourist\" is self-contradictory, so it is not a real second answer; but British English treats \"staff\" as plural, and switching to \"were\" matches the card example and rules out the singular nouns completely."
  },
  "en:question:b1p7l5/b1p7q21": {
   "patch": {
@@ -15566,6 +16146,18 @@
   },
   "reason": "Replace the generic explanation with one about the present simple passive and the habit clue."
  },
+ "en:question:b2p1l2/b2p1q8": {
+  "patch": {
+   "explanation": "In the reporting passive \"is said to be\", the form of be must agree with \"She\", so \"is\" is needed; \"am\" and \"are\" do not agree with \"She\". \"Was\" would also fit, so it is not offered.",
+   "bank": [
+    "thought",
+    "am",
+    "is",
+    "are"
+   ]
+  },
+  "reason": "Replace the generic explanation with one about \"is said to be\" and subject agreement. / \"She will be said to be brilliant\" is odd but arguably grammatical, and \"thought\" is not a tempting choice, so the bank is better as agreement-based forms of be. / \"She will be said to be brilliant\" is grammatical, so \"will be\" is a possible second answer. \"are\" fails on agreement with \"She\"."
+ },
  "en:question:b2p1l2/b2p1q9": {
   "patch": {
    "explanation": "The reporting passive \"is thought to have been built\" uses the participle \"thought\" after \"is\" to say what people believe about the house.",
@@ -15625,6 +16217,18 @@
    "explanation": "\"It is widely believed that...\" is a fixed passive reporting pattern, so the past participle \"believed\" follows \"is widely\"."
   },
   "reason": "Specific explanation needed."
+ },
+ "en:question:b2p1l4/b2p1q19": {
+  "patch": {
+   "explanation": "\"have\" + \"to be followed\" expresses obligation: the rules must be followed. The sentence needs \"have to be\" before the past participle.",
+   "bank": [
+    "turned",
+    "have",
+    "has",
+    "will be"
+   ]
+  },
+  "reason": "'were to be followed' is grammatical but changes meaning; 'have to be' is the natural obligation reading with present tense of the lesson. / \"The rules were to be followed\" is also a correct sentence (the be-to construction), so \"were\" is a second answer and needs replacing with an option that is clearly wrong. / \"The rules were to be followed\" is grammatical, so \"were\" is a second answer. \"has\" is a plausible agreement error with plural \"rules\"."
  },
  "en:question:b2p1l5/b2p1q20": {
   "patch": {
@@ -16336,6 +16940,19 @@
    "explanation": "\"people\" is a countable plural noun, so we use \"few\"; \"less\" and \"little\" go with uncountable nouns."
   },
   "reason": "The prompt contains the answer and the options are unrelated; the few/less contrast needs a sentence with a countable noun."
+ },
+ "en:question:b2p2l3/b2p2q11": {
+  "patch": {
+   "prompt": "Which word do we use for a position in the middle of a group of three or more?",
+   "choices": [
+    "among",
+    "between",
+    "beside",
+    "along"
+   ],
+   "explanation": "\"among\" describes being inside a group of three or more seen as a whole; \"between\" is mainly used for two things."
+  },
+  "reason": "The prompt contains the answer and the distractors are unrelated; the sentence must rule out \"between\", which British English allows with several distinct items. / The prompt contains the answer, the distractors are unrelated words, and the explanation is generic."
  },
  "en:question:b2p2l3/b2p2q12": {
   "patch": {
@@ -19050,6 +19667,43 @@
   },
   "reason": "Only one option shares the stem 'resolve', so the suffix is never tested, and the explanation is a generic template."
  },
+ "en:question:c1p16l1/c1p16q0": {
+  "patch": {
+   "explanation": "\"it\" is right because a cleft sentence for emphasis opens with dummy 'it' plus 'was', as in 'It was John who...'. The other words cannot start the sentence this way."
+  },
+  "reason": "Cleft starts with dummy 'It'; case-insensitive matching assumed."
+ },
+ "en:question:c1p16l1/c1p16q1": {
+  "patch": {
+   "explanation": "\"is\" is right because in a wh-cleft the clause 'What I really need' is a singular subject, so it takes 'is' to link it to 'a good night's sleep'. 'Am' does not agree with that subject."
+  },
+  "reason": "Wh-cleft verb 'is'."
+ },
+ "en:question:c1p16l1/c1p16q2": {
+  "patch": {
+   "bank": [
+    "which",
+    "who",
+    "later",
+    "is"
+   ],
+   "explanation": "\"who\" is right because in 'It was the manager ___ made the final decision' the blank is the subject of 'made' and refers to a person. 'Whom' is only for objects, so it cannot replace the subject here."
+  },
+  "reason": "'that' is also correct, so remove it from the bank and explain. / \"that\" is equally correct in an it-cleft about a person, so it is replaced with \"which\", a tempting distractor that is wrong for a person. / \"that\" is equally correct for a person in an it-cleft, so learners who choose it would be marked wrong; replacing it with \"which\" (not used for people) leaves one answer."
+ },
+ "en:question:c1p16l1/c1p16q3": {
+  "patch": {
+   "explanation": "\"was\" is right because the cleft 'What surprised me most' is in the past, so it links to 'his honesty' with 'was'. 'That' and 'who' cannot serve as the main verb."
+  },
+  "reason": "Past tense agreement in wh-cleft."
+ },
+ "en:question:c1p16l1/c1p16q4": {
+  "patch": {
+   "explanation": "In a cleft sentence, \"not\" can sit after \"It was\" to deny the stated time and put the focus on it. 'It was not in 1990 that the company was founded' means the founding happened at some other time.",
+   "prompt": "It was ___ in 1990 that the company was founded, but in 1992."
+  },
+  "reason": "Key 'not' is acceptable (negated cleft); the explanation is generic and needs to say what the sentence does. / \"It was not in 1990 that...\" sounds odd without a contrast, so a \"but\" clause is added to make the negative cleft natural."
+ },
  "en:question:c1p16l2/c1p16q6": {
   "patch": {
    "explanation": "In an 'It was ... that' cleft, the focused phrase 'because of the delay' is always followed by \"that\", never 'which', 'what' or 'why', before the rest of the sentence 'we missed the flight'.",
@@ -20273,6 +20927,42 @@
    ]
   },
   "reason": "'following' also fits; clarify the prompt so only 'subsequent' works, and explain it. / Both \"next\" and \"following\" naturally describe an analysis carried out later, so they are second answers to the clue; replace them with earlier-time words that the clue rules out. / \"following\", \"next\" and \"above\" all fit naturally before \"analysis\", so the item has several right answers; replacing the distractors and adding a meaning clue leaves only one."
+ },
+ "en:question:c1p20l5/c1p20q20": {
+  "patch": {
+   "explanation": "\"shown\" completes the fixed phrase \"As shown in Table 2\", used to point readers to evidence in a table."
+  },
+  "reason": "Needs specific explanation."
+ },
+ "en:question:c1p20l5/c1p20q21": {
+  "patch": {
+   "explanation": "\"brings\" is the verb needed after \"This\" and before \"us to\", forming \"This brings us to the final point\" to introduce the next topic."
+  },
+  "reason": "Needs specific explanation; 'back' does not fit with the verb slot."
+ },
+ "en:question:c1p20l5/c1p20q22": {
+  "patch": {
+   "explanation": "\"address\" takes a direct object, so \"address these concerns\" works; \"attend\" needs \"to\", and \"deal\" and \"cope\" need \"with\" before \"these concerns\".",
+   "choices": [
+    "address",
+    "attend",
+    "deal",
+    "cope"
+   ]
+  },
+  "reason": "Needs specific explanation. / \"brings\" and \"back\" were not verbs that can follow \"will\", so they are replaced with bare verbs that fail on preposition or meaning. / \"brings\" and \"back\" cannot follow \"will\", so they are throwaway options; preposition-needing verbs give a real learner trap."
+ },
+ "en:question:c1p20l5/c1p20q23": {
+  "patch": {
+   "explanation": "\"with\" is the preposition that follows \"consistent\", as in \"consistent with prior research\", meaning in agreement with it."
+  },
+  "reason": "Needs specific explanation."
+ },
+ "en:question:c1p20l5/c1p20q24": {
+  "patch": {
+   "explanation": "\"other\" completes the fixed phrase \"In other words\", used to restate something in a different way."
+  },
+  "reason": "Needs specific explanation."
  },
  "en:question:c1p21l1/c1p21q0": {
   "patch": {
@@ -22407,6 +23097,36 @@
    "explanation": "\"Last night\" is in the past, so the question starts with \"Did\" and is followed by the base verb \"see\"."
   },
   "reason": "The explanation spells the answer \"did\" in lower case, not \"Did\" as in the key, and does not point to the time clue."
+ },
+ "en:question:u4l2/q3": {
+  "patch": {
+   "explanation": "Use \"when\" before the short action (\"it started to rain\") that interrupts the longer one (\"I was walking\"); \"while\" goes before the longer action."
+  },
+  "reason": "The key is right, but the explanation is only a formula and does not say why \"while\" fails before a short, interrupting action. / \"while\" is not natural before the short interrupting action, so the key is unique, but the explanation is only a formula and does not say why \"while\" is wrong."
+ },
+ "en:question:u4l2/q4": {
+  "patch": {
+   "choices": [
+    "In the end, we laughed about it.",
+    "On the end, we laughed about it.",
+    "In end, we laughed about it.",
+    "At the ending, we laughed about it."
+   ],
+   "explanation": "\"In the end, we laughed about it.\" is right because the fixed phrase \"in the end\" means finally, after everything; we never say \"on the end\" or \"in end\"."
+  },
+  "reason": "\"End it was.\" and \"Finally end.\" are nonsense fragments no learner would pick, so the item tests nothing; the new options are typical learner errors with the phrase."
+ },
+ "en:question:u4l2/q5": {
+  "patch": {
+   "bank": [
+    "While",
+    "During",
+    "Since",
+    "Until"
+   ],
+   "explanation": "\"While\" introduces the longer action in progress (\"I was cooking\") that another action (\"he called\") interrupts."
+  },
+  "reason": "\"When did\" is an ungrammatical chunk that no learner would put here, and \"During\" + clause is the real learner trap. / The key is right and \"When did\" is a valid ungrammatical distractor, but the explanation is too terse to say why \"While\" fits this sentence."
  },
  "en:question:u5l1/q1": {
   "patch": {

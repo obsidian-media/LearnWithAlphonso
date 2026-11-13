@@ -1161,7 +1161,7 @@
               "answer": 1,
               "explanation": "\"No\" means \"I have no objection\".",
               "meaning": "says you are glad to help",
-              "example": "I don't mind — happy to. Just ask."
+              "example": "Can you carry this? I don't mind — happy to."
             },
             {
               "id": "q8",
@@ -1702,7 +1702,7 @@
                 "since"
               ],
               "answer": "when",
-              "explanation": "Past continuous + \"when\" + past simple.",
+              "explanation": "Use \"when\" before the short action (\"it started to rain\") that interrupts the longer one (\"I was walking\"); \"while\" goes before the longer action.",
               "meaning": "at the time that"
             },
             {
@@ -1711,12 +1711,12 @@
               "prompt": "Choose the natural ending:",
               "choices": [
                 "In the end, we laughed about it.",
-                "End it was.",
-                "Finally end.",
-                "The end came."
+                "On the end, we laughed about it.",
+                "In end, we laughed about it.",
+                "At the ending, we laughed about it."
               ],
               "answer": 0,
-              "explanation": "\"In the end\" wraps up a story naturally.",
+              "explanation": "\"In the end, we laughed about it.\" is right because the fixed phrase \"in the end\" means finally, after everything; we never say \"on the end\" or \"in end\".",
               "meaning": "tells how a story finally ended",
               "example": "In the end, we laughed about it."
             },
@@ -1726,12 +1726,12 @@
               "prompt": "___ I was cooking, he called.",
               "bank": [
                 "While",
-                "When did",
+                "During",
                 "Since",
                 "Until"
               ],
               "answer": "While",
-              "explanation": "\"While\" + continuous action.",
+              "explanation": "\"While\" introduces the longer action in progress (\"I was cooking\") that another action (\"he called\") interrupts.",
               "meaning": "during the time that"
             },
             {
@@ -5280,7 +5280,7 @@
             {
               "id": "a1p5q1",
               "type": "mc",
-              "prompt": "Which verb goes with \"breakfast\"?",
+              "prompt": "Which verb goes with \"breakfast\" (= eat it)?",
               "choices": [
                 "throw",
                 "make",
@@ -5288,7 +5288,7 @@
                 "catch"
               ],
               "answer": 2,
-              "explanation": "breakfast → have. English fixes certain verbs to certain nouns.",
+              "explanation": "When you eat your morning meal, English says \"have\" breakfast; \"make breakfast\" means cooking it.",
               "meaning": "to eat; used in \"have breakfast\"",
               "example": "We have breakfast at eight."
             },
@@ -5409,12 +5409,12 @@
               "prompt": "Which verb goes with \"music\"? ___",
               "bank": [
                 "throw",
-                "make",
+                "watch",
                 "wash",
                 "listen to"
               ],
               "answer": "listen to",
-              "explanation": "music → listen to. English fixes certain verbs to certain nouns.",
+              "explanation": "We use our ears for music, so we \"listen to\" it; we watch things with our eyes.",
               "meaning": "to hear something carefully",
               "example": "I listen to music on the bus."
             },
@@ -6679,7 +6679,7 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "My aunt lives in Spain.",
               "choices": [
-                "My woman lives in Spain.",
+                "My uncle lives in Spain.",
                 "My aunt lives in Spain.",
                 "My bride lives in Spain.",
                 "My widow lives in Spain."
@@ -7555,7 +7555,7 @@
               "audioText": "We need more cheese for the sandwiches.",
               "choices": [
                 "We need more cheese for the sandwiches.",
-                "We need more slice for the sandwiches.",
+                "We need more bread for the sandwiches.",
                 "We need more lemon for the sandwiches.",
                 "We need more bacon for the sandwiches."
               ],
@@ -7597,7 +7597,7 @@
                 "creamy"
               ],
               "answer": 0,
-              "explanation": "\"black\" is correct here. High-frequency food vocabulary used in daily conversation.",
+              "explanation": "Tea served with no milk is called \"black\" tea, while milky and creamy describe tea with milk or cream added.",
               "meaning": "very dark; coffee or tea with no milk",
               "example": "I like my coffee black."
             },
@@ -7612,7 +7612,7 @@
                 "order"
               ],
               "answer": "check",
-              "explanation": "\"check\" is correct here. High-frequency food vocabulary used in daily conversation.",
+              "explanation": "The clue asks for the American word for the bill, and in the US you ask for the \"check\" at the end of a meal.",
               "meaning": "US word for the bill in a restaurant",
               "example": "In New York, we asked for the check."
             },
@@ -7627,7 +7627,7 @@
                 "salt"
               ],
               "answer": 2,
-              "explanation": "\"steak\" is correct here. High-frequency food vocabulary used in daily conversation.",
+              "explanation": "A restaurant can be famous for a dish like \"steak\"; a bill, jam or salt is not something a restaurant is known for.",
               "meaning": "a thick, flat piece of beef",
               "imageKey": "steak"
             },
@@ -7642,14 +7642,14 @@
                 "bread"
               ],
               "answer": "meat",
-              "explanation": "\"meat\" is correct here. High-frequency food vocabulary used in daily conversation.",
+              "explanation": "A vegetarian does not eat animals, so there is no \"meat\" for her, while salad, rice and bread are all fine.",
               "meaning": "the flesh of animals, eaten as food",
               "example": "She's a vegetarian, so she doesn't eat meat."
             },
             {
               "id": "a1p8q19",
               "type": "mc",
-              "prompt": "We ran out of ___ for breakfast.",
+              "prompt": "We ran out of ___, so we couldn't make toast.",
               "choices": [
                 "bread",
                 "tomato",
@@ -7657,7 +7657,7 @@
                 "coffee"
               ],
               "answer": 0,
-              "explanation": "\"bread\" is correct here. High-frequency food vocabulary used in daily conversation.",
+              "explanation": "Toast is made from bread, so running out of \"bread\" means there is no toast.",
               "meaning": "a food baked from flour",
               "imageKey": "bread"
             },
@@ -7957,7 +7957,7 @@
                 "She's wearing a red hat.",
                 "She's wearing a red sock.",
                 "She's wearing a red dress.",
-                "She's wearing a red trousers."
+                "She's wearing a red shirt."
               ],
               "answer": "She's wearing a red dress.",
               "explanation": "The audio says \"She's wearing a red dress.\""
@@ -8945,7 +8945,7 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "It's freezing outside — the ground is icy.",
               "choices": [
-                "It's snow outside — the ground is icy.",
+                "It's cold outside — the ground is icy.",
                 "It's hot outside — the ground is icy.",
                 "It's freezing outside — the ground is icy.",
                 "It's mild outside — the ground is icy."
@@ -9235,7 +9235,7 @@
                 "withdraw"
               ],
               "answer": "save",
-              "explanation": "\"save\" is correct here. Everyday number and money vocabulary.",
+              "explanation": "Putting money aside for later, such as for a trip, is to \"save\"; spend is the opposite, and change and withdraw mean something else.",
               "meaning": "to keep money for later"
             },
             {
@@ -9263,7 +9263,7 @@
                 "discount"
               ],
               "answer": "discount",
-              "explanation": "\"discount\" is correct here. Everyday number and money vocabulary.",
+              "explanation": "Asking for a lower price means asking for a \"discount\"; a refund is money back, a receipt is a paper proof of payment, and change is the money you get back after paying.",
               "meaning": "a lower price"
             },
             {
@@ -9277,7 +9277,7 @@
                 "much"
               ],
               "answer": 2,
-              "explanation": "\"more\" is correct here. Everyday number and money vocabulary.",
+              "explanation": "\"more\" fits because the price is higher than you expected, and \"more ... than\" compares amounts. \"Less\" would mean a lower price, and \"fewer\" is only for countable things.",
               "meaning": "a bigger amount"
             },
             {
@@ -9292,7 +9292,8 @@
               ],
               "answer": "exact",
               "explanation": "\"exact\" is correct here. Everyday number and money vocabulary.",
-              "meaning": "just right, not more or less"
+              "meaning": "just right, not more or less",
+              "example": "Please have the exact money ready for the bus."
             },
             {
               "id": "a1p11q28",
@@ -11289,7 +11290,7 @@
                 "mornings"
               ],
               "answer": "mornings",
-              "explanation": "\"mornings\" is correct here. Days of the week, months, and simple time phrases.",
+              "explanation": "The hint 'when the sun comes up' means the early part of the day, so people go to work on weekday \"mornings\".",
               "meaning": "the early parts of days"
             },
             {
@@ -11431,7 +11432,7 @@
                 "hour"
               ],
               "answer": 2,
-              "explanation": "\"year\" is correct here. Days of the week, months, and simple time phrases.",
+              "explanation": "New Year's Eve is 31 December, the final day of the \"year\"; a week, day or hour does not end on that date.",
               "meaning": "a period of twelve months",
               "example": "A year has twelve months."
             },
@@ -11855,10 +11856,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "The mirror has an oval shape.",
               "choices": [
-                "The mirror has an pentagon shape.",
+                "The window has an oval shape.",
                 "The mirror has an oval shape.",
-                "The mirror has an square shape.",
-                "The mirror has an cube shape."
+                "The table has an oval shape.",
+                "The clock has an oval shape."
               ],
               "answer": "The mirror has an oval shape.",
               "explanation": "The audio says \"The mirror has an oval shape.\""
@@ -11982,7 +11983,7 @@
                 "This book is new.",
                 "This book is thin.",
                 "This book is light.",
-                "This book is oversized."
+                "This book is big."
               ],
               "answer": "This book is thin.",
               "explanation": "The audio says \"This book is thin.\""
@@ -12069,7 +12070,7 @@
             {
               "id": "a1p15q19",
               "type": "mc",
-              "prompt": "Something that \"is a perfect cube shape\" is…",
+              "prompt": "Something that \"has six equal square sides\" is…",
               "choices": [
                 "cube",
                 "hexagon",
@@ -12077,7 +12078,7 @@
                 "circle"
               ],
               "answer": 0,
-              "explanation": "is a perfect cube shape → cube. Basic shapes and size adjectives.",
+              "explanation": "A solid shape with six equal square sides is a \"cube\", like an ice cube.",
               "meaning": "a solid shape with six equal sides",
               "example": "Ice cubes float in my drink."
             },
@@ -12352,9 +12353,9 @@
               "audioText": "I wake up at seven o'clock every morning.",
               "choices": [
                 "I wake up at seven o'clock every morning.",
-                "I put up at seven o'clock every morning.",
-                "I bring up at seven o'clock every morning.",
-                "I hold up at seven o'clock every morning."
+                "I get up at seven o'clock every morning.",
+                "I wake up at six o'clock every morning.",
+                "I wake up at seven o'clock every Monday."
               ],
               "answer": "I wake up at seven o'clock every morning.",
               "explanation": "The audio says \"I wake up at seven o'clock every morning.\""
@@ -12410,7 +12411,7 @@
                 "pack"
               ],
               "answer": "checks",
-              "explanation": "\"checks\" is correct here. Simple present tense sentences describing a typical day.",
+              "explanation": "\"checks\" is right because the subject is \"He\", so the verb needs -s, and checking your email is what people do first thing at the office.",
               "meaning": "looks to see what is new"
             },
             {
@@ -12597,9 +12598,9 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "He washes the dishes after dinner.",
               "choices": [
-                "He sets the dishes after dinner.",
+                "He washes the clothes after dinner.",
                 "He washes the dishes after dinner.",
-                "He puts the dishes after dinner.",
+                "He washes the dishes before dinner.",
                 "He washes the dishes after lunch."
               ],
               "answer": "He washes the dishes after dinner.",
@@ -13765,9 +13766,9 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "The car is fast.",
               "choices": [
-                "The pillow is fast.",
-                "The road is fast.",
-                "The feather is fast.",
+                "The bus is fast.",
+                "The bike is fast.",
+                "The train is fast.",
                 "The car is fast."
               ],
               "answer": "The car is fast.",
@@ -14133,10 +14134,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "I have a new phone.",
               "choices": [
-                "I have a new sugar.",
-                "I have a new lemon.",
+                "I have a new bag.",
+                "I have a new car.",
                 "I have a new phone.",
-                "I have a new ice."
+                "I have a new book."
               ],
               "answer": "I have a new phone.",
               "explanation": "The audio says \"I have a new phone.\""
@@ -15790,10 +15791,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "My stomach hurts.",
               "choices": [
-                "My ears hurts.",
+                "My back hurts.",
                 "My stomach hurts.",
                 "My elbow hurts.",
-                "My lungs hurts."
+                "My head hurts."
               ],
               "answer": "My stomach hurts.",
               "explanation": "The audio says \"My stomach hurts.\""
@@ -16417,9 +16418,9 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "She grows plants on the balcony.",
               "choices": [
-                "She grows books on the balcony.",
-                "She grows stamps on the balcony.",
-                "She grows songs on the balcony.",
+                "She grows flowers on the balcony.",
+                "She grows tomatoes on the balcony.",
+                "She grows vegetables on the balcony.",
                 "She grows plants on the balcony."
               ],
               "answer": "She grows plants on the balcony.",
@@ -20121,10 +20122,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "I'll take it, thanks.",
               "choices": [
-                "I'll looking it, thanks.",
+                "I'll leave it, thanks.",
                 "I'll take it, thanks.",
-                "I'll delayed it, thanks.",
-                "I'll write it, thanks."
+                "I'll buy it, thanks.",
+                "I'll keep it, thanks."
               ],
               "answer": "I'll take it, thanks.",
               "explanation": "The audio says \"I'll take it, thanks.\""
@@ -21913,7 +21914,7 @@
             {
               "id": "a2p7q22",
               "type": "mc",
-              "prompt": "The ___ needs painting.",
+              "prompt": "The ___ needs painting. (it's above your head in a room)",
               "choices": [
                 "cupboard",
                 "door",
@@ -21921,7 +21922,7 @@
                 "garage"
               ],
               "answer": 2,
-              "explanation": "\"ceiling\" is correct here. Everyday vocabulary for describing where you live.",
+              "explanation": "The clue points to the top surface of a room above your head, which is the \"ceiling\". A cupboard, door or garage is not above your head inside a room.",
               "meaning": "the top inside surface of a room",
               "imageKey": "ceiling"
             },
@@ -21936,7 +21937,7 @@
                 "kitchen"
               ],
               "answer": "basement",
-              "explanation": "\"basement\" is correct here. Everyday vocabulary for describing where you live.",
+              "explanation": "The clue says the room under the ground floor, which is the \"basement\". An attic is under the roof, and a garage or kitchen is not below ground level.",
               "meaning": "the room below the ground floor"
             },
             {
@@ -21950,7 +21951,7 @@
                 "wardrobe"
               ],
               "answer": 0,
-              "explanation": "\"mat\" is correct here. Everyday vocabulary for describing where you live.",
+              "explanation": "You wipe your feet on a \"mat\" by the door; a bed, sofa or wardrobe would not be placed there or used for this.",
               "meaning": "a small rug for the floor",
               "imageKey": "mat"
             },
@@ -22856,9 +22857,9 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "He's got a high temperature.",
               "choices": [
-                "He's got a high headache.",
-                "He's got a high bruise.",
-                "He's got a high cough.",
+                "He's got a bad headache.",
+                "He's got a nasty bruise.",
+                "He's got a bad cough.",
                 "He's got a high temperature."
               ],
               "answer": "He's got a high temperature.",
@@ -23107,7 +23108,7 @@
               "choices": [
                 "The nurse checked my pulse.",
                 "The nurse checked my cough.",
-                "The nurse checked my dentist.",
+                "The nurse checked my temperature.",
                 "The nurse checked my fever."
               ],
               "answer": "The nurse checked my pulse.",
@@ -23233,10 +23234,10 @@
               "prompt": "Which sentence did you hear?",
               "audioText": "He's got a nasty bruise on his knee.",
               "choices": [
-                "He's got a nasty fever on his knee.",
+                "He's got a nasty bruise on his hand.",
                 "He's got a nasty bruise on his knee.",
-                "He's got a nasty cough on his knee.",
-                "He's got a nasty headache on his knee."
+                "He's got a nasty bruise on his arm.",
+                "He's got a nasty bruise on his leg."
               ],
               "answer": "He's got a nasty bruise on his knee.",
               "explanation": "The audio says \"He's got a nasty bruise on his knee.\""
@@ -23677,8 +23678,8 @@
               ],
               "answer": "most tired",
               "explanation": "Adjectives formed from -ed participles, like \"tired\", take \"most\" even when they are short, so the superlative is \"most tired\".",
-              "meaning": "needing the most rest",
-              "example": "I am the most tired today."
+              "meaning": "more tired than all the others",
+              "example": "Of the three of us, I'm the most tired."
             },
             {
               "id": "a2p10q17",
@@ -24002,8 +24003,8 @@
               "choices": [
                 "I'll have the fish, please.",
                 "I'll have the chicken, please.",
-                "I'll has the chicken, please.",
-                "I'll having the chicken, please."
+                "I'll have the soup, please.",
+                "I'll have the salad, please."
               ],
               "answer": "I'll have the chicken, please.",
               "explanation": "The audio says \"I'll have the chicken, please.\""
@@ -26486,9 +26487,9 @@
               "audioText": "We're all set to meet at six sharp.",
               "choices": [
                 "We're all set to meet at six sharp.",
-                "We're all pick to meet at six sharp.",
+                "We're all ready to meet at six sharp.",
                 "We're all looking to meet at six sharp.",
-                "We're all manage to meet at six sharp."
+                "We're all going to meet at six sharp."
               ],
               "answer": "We're all set to meet at six sharp.",
               "explanation": "The audio says \"We're all set to meet at six sharp.\""
@@ -26535,7 +26536,7 @@
                 "balance"
               ],
               "answer": "parcel",
-              "explanation": "\"parcel\" is correct here. A2-level vocabulary for post office and banking errands.",
+              "explanation": "A \"parcel\" is a package you send by post, so it fits \"send this ___ to Spain\"; the other words are not things you post.",
               "meaning": "a package sent by post"
             },
             {
@@ -26549,7 +26550,7 @@
                 "form"
               ],
               "answer": 2,
-              "explanation": "\"stamp\" is correct here. A2-level vocabulary for post office and banking errands.",
+              "explanation": "A \"stamp\" is the small paper label you put on a letter to pay for postage, which is what the clue describes.",
               "meaning": "a small paper label for letters"
             },
             {
@@ -26563,7 +26564,7 @@
                 "deposited"
               ],
               "answer": "deposit",
-              "explanation": "\"deposit\" is correct here. A2-level vocabulary for post office and banking errands.",
+              "explanation": "After \"I need to\" we use the base verb, so \"deposit\" is right; it means to put money into a bank account.",
               "meaning": "to put money into a bank"
             },
             {
@@ -26577,7 +26578,7 @@
                 "withdraws"
               ],
               "answer": 0,
-              "explanation": "\"withdraw\" is correct here. A2-level vocabulary for post office and banking errands.",
+              "explanation": "After \"Could I\" you need the base form, so \"withdraw\" is right; it means to take money out of an account.",
               "meaning": "to take money out of a bank",
               "example": "I'd like to withdraw fifty pounds from my account, please."
             },
@@ -27706,7 +27707,7 @@
                 "community"
               ],
               "answer": 2,
-              "explanation": "\"bus\" is correct here. A2-level vocabulary for describing a local area.",
+              "explanation": "The place where you wait for a bus is called a \"bus\" stop, which is the fixed phrase. \"Train stop\" is not normally said in British English (we say train station), and \"leisure stop\" and \"community stop\" do not exist.",
               "meaning": "a big road vehicle that carries many passengers"
             },
             {
@@ -27720,7 +27721,7 @@
                 "leisure"
               ],
               "answer": "leisure",
-              "explanation": "\"leisure\" is correct here. A2-level vocabulary for describing a local area.",
+              "explanation": "A \"leisure\" centre is the place with a sports hall and a pool, which fits the clue about sports and exercise. A shopping centre is for buying things, not for exercise.",
               "meaning": "free time; used in \"leisure centre\""
             },
             {
@@ -27734,7 +27735,7 @@
                 "silent"
               ],
               "answer": 0,
-              "explanation": "\"busy\" is correct here. A2-level vocabulary for describing a local area.",
+              "explanation": "Rush hour means lots of cars and people, so the area gets \"busy\". \"Empty\", \"quiet\" and \"silent\" all mean the opposite.",
               "meaning": "full of people and traffic"
             },
             {
@@ -27763,7 +27764,8 @@
               ],
               "answer": 2,
               "explanation": "\"town\" is correct here. A2-level vocabulary for describing a local area.",
-              "meaning": "a place smaller than a city"
+              "meaning": "a place smaller than a city",
+              "example": "I live in a small town near the city."
             },
             {
               "id": "a2p16q37",
@@ -29958,8 +29960,9 @@
                 "silent"
               ],
               "answer": 2,
-              "explanation": "\"popular\" is correct here. A2-level equal comparison structures.",
-              "meaning": "liked by many people"
+              "explanation": "Having as many customers as the other restaurant means it is liked by many people, so it is as \"popular\" as that one.",
+              "meaning": "liked by many people",
+              "example": "This restaurant is as popular as the one in town."
             },
             {
               "id": "a2p20q11",
@@ -29972,7 +29975,7 @@
                 "long"
               ],
               "answer": "hard",
-              "explanation": "\"hard\" is correct here. A2-level equal comparison structures.",
+              "explanation": "The clue \"difficult\" gives the meaning, and \"hard\" means difficult: the exam was not as hard as I thought. \"Easy\" is the opposite.",
               "meaning": "difficult to do"
             },
             {
@@ -29986,7 +29989,7 @@
                 "small"
               ],
               "answer": 0,
-              "explanation": "\"strong\" is correct here. A2-level equal comparison structures.",
+              "explanation": "Coffee that wakes you up just as much has the same power, so it is as \"strong\" as the one at home; weak would mean the opposite.",
               "meaning": "with a lot of flavour or power"
             },
             {
@@ -30000,7 +30003,7 @@
                 "long"
               ],
               "answer": "long",
-              "explanation": "\"long\" is correct here. A2-level equal comparison structures.",
+              "explanation": "A journey is measured by how much time it takes, so \"long\" fits the clue; heavy, loud and wide don't describe a journey's duration.",
               "meaning": "taking a lot of time"
             },
             {
@@ -30014,7 +30017,7 @@
                 "noisy"
               ],
               "answer": 2,
-              "explanation": "\"reliable\" is correct here. A2-level equal comparison structures.",
+              "explanation": "A phone that never breaks down can be trusted, which is \"reliable\"; heavy, cheap and noisy don't match the clue.",
               "meaning": "able to be trusted"
             },
             {
@@ -30687,7 +30690,7 @@
                 "She hasn't finished her report."
               ],
               "answer": "The parcel hasn't arrived yet.",
-              "explanation": "The audio says \"The parcel hasn't arrived yet.\" Past and future statements that differ by a single word."
+              "explanation": "The audio says \"The parcel hasn't arrived yet.\" Listen for \"hasn't\" and \"yet\", which mean it has still not come, unlike \"arrived yesterday\" in another option."
             },
             {
               "id": "a2p21q24",
@@ -30977,10 +30980,10 @@
               "prompt": "Say you have never been to Italy.",
               "acceptableAnswers": [
                 "I have never been to Italy.",
-                "I have not been to Italy before.",
-                "Italy is somewhere I have yet to visit."
+                "I have never visited Italy.",
+                "I have not been to Italy before."
               ],
-              "explanation": "One way to say it: \"I have never been to Italy.\" Everyday errands and arrangements, more than one wording."
+              "explanation": "One way to say it: \"I have never been to Italy.\" Use the present perfect with \"never\" for something that has not happened at any time in your life."
             },
             {
               "id": "a2p23q4",
@@ -31803,13 +31806,13 @@
               "type": "fill",
               "prompt": "Unless you hurry, you ___ miss it.",
               "bank": [
-                "were",
-                "die",
+                "are",
+                "had",
                 "ought",
                 "will"
               ],
               "answer": "will",
-              "explanation": "\"will\" is correct here. First conditional: if + present, will. Second: if + past, would.",
+              "explanation": "The \"unless\" clause uses the present (\"hurry\"), so this is a first conditional and the result needs \"will\" plus the bare verb: \"will miss\".",
               "meaning": "shows a future result that depends on something",
               "example": "Unless you hurry, you will miss it."
             },
@@ -32052,11 +32055,11 @@
               "choices": [
                 "could",
                 "will",
-                "melts",
+                "had",
                 "were"
               ],
               "answer": 0,
-              "explanation": "\"could\" is correct here. First conditional: if + present, will. Second: if + past, would.",
+              "explanation": "\"If only\" expresses a wish about the present, so it takes a past form: \"could\" + 'speak'. \"can\" and \"will\" are not past forms, and \"were\" cannot be followed by a bare verb.",
               "meaning": "shows an ability you wish you had",
               "example": "If only I could speak Spanish."
             },
@@ -32124,15 +32127,15 @@
             {
               "id": "b1p3q0",
               "type": "mc",
-              "prompt": "You ___ see a doctor.",
+              "prompt": "You look ill. You ___ see a doctor.",
               "choices": [
                 "should",
-                "can",
+                "have",
                 "had",
                 "ought"
               ],
               "answer": 0,
-              "explanation": "\"should\" is correct here. Modals express degree of certainty, permission, or obligation.",
+              "explanation": "To give advice before a bare verb we use \"should\"; \"ought\" and \"have\" would need \"to\", and \"had\" would need \"better\".",
               "meaning": "used to give advice",
               "example": "You should see a doctor."
             },
@@ -33548,7 +33551,7 @@
             {
               "id": "b1p6q10",
               "type": "mc",
-              "prompt": "The company, ___ is based in Oslo, hires.",
+              "prompt": "The company, ___ is based in Oslo, is hiring.",
               "choices": [
                 "which",
                 "whose",
@@ -33556,9 +33559,9 @@
                 "that"
               ],
               "answer": 0,
-              "explanation": "\"which\" is correct here. Use who for people, which for things, whose for possession.",
-              "meaning": "adds extra information about a company",
-              "example": "The company, which is based in Oslo, hires."
+              "explanation": "The commas make this a non-defining clause about a thing (\"The company\"), so \"which\" is used. \"that\" is not used after a comma, and \"who\" and \"whose\" do not fit here.",
+              "meaning": "adds extra information about a thing",
+              "example": "The company, which is based in Oslo, is hiring."
             },
             {
               "id": "b1p6q11",
@@ -33571,7 +33574,7 @@
                 "when"
               ],
               "answer": "who",
-              "explanation": "\"who\" is correct here. Use who for people, which for things, whose for possession.",
+              "explanation": "The missing word refers to \"students\", which are people, so \"who\" is needed; \"which\" is for things, and \"why\" and \"when\" do not refer to people.",
               "meaning": "used for people you describe",
               "example": "The students who passed celebrated."
             },
@@ -33586,7 +33589,7 @@
                 "where"
               ],
               "answer": 2,
-              "explanation": "\"that\" is correct here. Use who for people, which for things, whose for possession.",
+              "explanation": "\"that\" works because a shop is a thing and the word is the subject of \"sells\"; \"who\" and \"whom\" are for people, and \"where\" would need a different clause.",
               "meaning": "used to say which thing you mean",
               "example": "That's the shop that sells guitars."
             },
@@ -33601,7 +33604,7 @@
                 "that"
               ],
               "answer": "whose",
-              "explanation": "\"whose\" is correct here. Use who for people, which for things, whose for possession.",
+              "explanation": "The window belongs to the room, so you need a possessive word: \"whose\" links \"room\" and \"window\".",
               "meaning": "used to show who owns something",
               "example": "The boy whose bike was stolen called the police."
             },
@@ -33616,7 +33619,7 @@
                 "why"
               ],
               "answer": 0,
-              "explanation": "\"who\" is correct here. Use who for people, which for things, whose for possession.",
+              "explanation": "\"a man\" is a person and the missing word is the subject of \"speaks\", so \"who\" is correct; \"which\" is for things.",
               "meaning": "used for a person you describe",
               "example": "I met a man who speaks six languages."
             }
@@ -34058,7 +34061,7 @@
                 "check"
               ],
               "answer": 2,
-              "explanation": "\"reception\" is correct here. Common vocabulary for booking and navigating trips.",
+              "explanation": "The \"reception\" desk is where hotel staff help guests, including with excursions. A view, insurance or check desk would not be a place to ask for this.",
               "meaning": "where hotel guests arrive and check in",
               "example": "The reception desk can help with excursions."
             },
@@ -34073,7 +34076,7 @@
                 "guide"
               ],
               "answer": "route",
-              "explanation": "\"route\" is correct here. Common vocabulary for booking and navigating trips.",
+              "explanation": "A \"scenic route\" is a road or way chosen for its views, and \"took a ... along the coast\" needs a noun like \"route\". You do not take an attraction, a tourist or a guide along a coast.",
               "meaning": "a way you take to get somewhere",
               "example": "We took a scenic route along the coast."
             },
@@ -34088,14 +34091,14 @@
                 "guesthouse"
               ],
               "answer": 0,
-              "explanation": "\"stopover\" is correct here. Common vocabulary for booking and navigating trips.",
+              "explanation": "A \"stopover\" is a short break in a long journey, which matches a train stopping in Milan. A route, a pass or a guesthouse cannot be \"short\" in this sense.",
               "meaning": "a short stop during a long journey",
-              "example": "Our train has a short stopover in Milan."
+              "example": "We had a six-hour stopover in Dubai."
             },
             {
               "id": "b1p7q18",
               "type": "fill",
-              "prompt": "The local ___ was incredibly friendly.",
+              "prompt": "The local ___ were incredibly friendly.",
               "bank": [
                 "shuttle",
                 "attraction",
@@ -34103,7 +34106,7 @@
                 "staff"
               ],
               "answer": "staff",
-              "explanation": "\"staff\" is correct here. Common vocabulary for booking and navigating trips.",
+              "explanation": "\"staff\" means the people who work in a place, and it is a group noun that fits \"The local ___ was incredibly friendly\" without an article. \"tourist\" would need \"a\" before it.",
               "meaning": "the people who work in a place",
               "example": "The local staff were incredibly friendly."
             },
@@ -34494,7 +34497,7 @@
               "answer": 0,
               "explanation": "Change the y in \"lonely\" to i and add -ness to make the noun \"loneliness\".",
               "meaning": "the sad feeling of being alone",
-              "example": "She felt loneliness in the big city."
+              "example": "She struggled with loneliness in the big city."
             },
             {
               "id": "b1p8q17",
@@ -40758,10 +40761,10 @@
                 "thought",
                 "am",
                 "is",
-                "will be"
+                "are"
               ],
               "answer": "is",
-              "explanation": "\"is\" is correct here. Passive = be + past participle; the doer becomes optional.",
+              "explanation": "In the reporting passive \"is said to be\", the form of be must agree with \"She\", so \"is\" is needed; \"am\" and \"are\" do not agree with \"She\". \"Was\" would also fit, so it is not offered.",
               "meaning": "a form of be used to report opinions",
               "example": "She is said to be brilliant."
             },
@@ -40936,11 +40939,11 @@
               "bank": [
                 "turned",
                 "have",
-                "were",
+                "has",
                 "will be"
               ],
               "answer": "have",
-              "explanation": "\"have\" is correct here. Passive = be + past participle; the doer becomes optional.",
+              "explanation": "\"have\" + \"to be followed\" expresses obligation: the rules must be followed. The sentence needs \"have to be\" before the past participle.",
               "meaning": "with \"to\", shows a rule or duty",
               "example": "The rules have to be followed."
             }
@@ -41225,15 +41228,15 @@
             {
               "id": "b2p2q11",
               "type": "mc",
-              "prompt": "Which fits: \"among / between (three or more)\"?",
+              "prompt": "Which word do we use for a position in the middle of a group of three or more?",
               "choices": [
                 "among",
-                "classical",
-                "loose",
-                "affect"
+                "between",
+                "beside",
+                "along"
               ],
               "answer": 0,
-              "explanation": "among / between (three or more) → among. These pairs are frequently mixed up by learners.",
+              "explanation": "\"among\" describes being inside a group of three or more seen as a whole; \"between\" is mainly used for two things.",
               "meaning": "in the middle of three or more",
               "example": "She stood among the crowd."
             },
@@ -50260,7 +50263,7 @@
               "explanation": "If you take something with a pinch of salt, you don't fully believe it, so the idiom means to \"be sceptical\".",
               "term": "take it with a pinch of salt",
               "meaning": "to doubt that something is completely true",
-              "example": "Take it with a pinch of salt."
+              "example": "If Tom says he's rich, take it with a pinch of salt."
             },
             {
               "id": "c1p1q14",
@@ -54940,7 +54943,7 @@
               "explanation": "A blessing \"in disguise\" looks like bad luck at first, so the idiom means \"to seem bad but turn out good\".",
               "term": "to be a blessing in disguise",
               "meaning": "something that seems bad but proves good",
-              "example": "It might turn out to be a blessing in disguise."
+              "example": "Losing that job turned out to be a blessing in disguise."
             },
             {
               "id": "c1p12q16",
@@ -56384,7 +56387,7 @@
                 "is"
               ],
               "answer": "it",
-              "explanation": "\"it\" is correct here. C1-level cleft sentence structures for emphasis.",
+              "explanation": "\"it\" is right because a cleft sentence for emphasis opens with dummy 'it' plus 'was', as in 'It was John who...'. The other words cannot start the sentence this way.",
               "meaning": "a word that puts focus on one part",
               "example": "It was John who broke the vase."
             },
@@ -56399,7 +56402,7 @@
                 "am"
               ],
               "answer": 2,
-              "explanation": "\"is\" is correct here. C1-level cleft sentence structures for emphasis.",
+              "explanation": "\"is\" is right because in a wh-cleft the clause 'What I really need' is a singular subject, so it takes 'is' to link it to 'a good night's sleep'. 'Am' does not agree with that subject.",
               "meaning": "a form of be that links two parts",
               "example": "What I really need is sleep."
             },
@@ -56408,13 +56411,13 @@
               "type": "fill",
               "prompt": "It was the manager ___ made the final decision.",
               "bank": [
-                "that",
+                "which",
                 "who",
                 "later",
                 "is"
               ],
               "answer": "who",
-              "explanation": "\"who\" is correct here. C1-level cleft sentence structures for emphasis.",
+              "explanation": "\"who\" is right because in 'It was the manager ___ made the final decision' the blank is the subject of 'made' and refers to a person. 'Whom' is only for objects, so it cannot replace the subject here.",
               "meaning": "links a person to a clause",
               "example": "It was the manager who decided."
             },
@@ -56429,14 +56432,14 @@
                 "am"
               ],
               "answer": 0,
-              "explanation": "\"was\" is correct here. C1-level cleft sentence structures for emphasis.",
+              "explanation": "\"was\" is right because the cleft 'What surprised me most' is in the past, so it links to 'his honesty' with 'was'. 'That' and 'who' cannot serve as the main verb.",
               "meaning": "a past form of be linking two parts",
               "example": "What surprised me most was his honesty."
             },
             {
               "id": "c1p16q4",
               "type": "fill",
-              "prompt": "It was ___ in 1990 that the company was founded.",
+              "prompt": "It was ___ in 1990 that the company was founded, but in 1992.",
               "bank": [
                 "who",
                 "not",
@@ -56444,9 +56447,9 @@
                 "is"
               ],
               "answer": "not",
-              "explanation": "\"not\" is correct here. C1-level cleft sentence structures for emphasis.",
+              "explanation": "In a cleft sentence, \"not\" can sit after \"It was\" to deny the stated time and put the focus on it. 'It was not in 1990 that the company was founded' means the founding happened at some other time.",
               "meaning": "a word that makes a sentence negative",
-              "example": "It was not in 1990 that it was founded."
+              "example": "It was not in 1990 that the company was founded."
             }
           ]
         },
@@ -58421,7 +58424,7 @@
                 "speaking"
               ],
               "answer": 2,
-              "explanation": "\"shown\" is correct here. C1-level cohesive devices for academic writing.",
+              "explanation": "\"shown\" completes the fixed phrase \"As shown in Table 2\", used to point readers to evidence in a table.",
               "meaning": "displayed or demonstrated, as in a table",
               "example": "As shown in Table 2, results vary."
             },
@@ -58436,7 +58439,7 @@
                 "back"
               ],
               "answer": "brings",
-              "explanation": "\"brings\" is correct here. C1-level cohesive devices for academic writing.",
+              "explanation": "\"brings\" is the verb needed after \"This\" and before \"us to\", forming \"This brings us to the final point\" to introduce the next topic.",
               "meaning": "leads us to a point",
               "example": "This brings us to the final point."
             },
@@ -58446,12 +58449,12 @@
               "prompt": "The closing chapter will ___ these concerns in detail.",
               "choices": [
                 "address",
-                "sum",
-                "brings",
-                "back"
+                "attend",
+                "deal",
+                "cope"
               ],
               "answer": 0,
-              "explanation": "\"address\" is correct here. C1-level cohesive devices for academic writing.",
+              "explanation": "\"address\" takes a direct object, so \"address these concerns\" works; \"attend\" needs \"to\", and \"deal\" and \"cope\" need \"with\" before \"these concerns\".",
               "meaning": "to deal with a problem",
               "example": "The closing chapter will address these concerns."
             },
@@ -58466,7 +58469,7 @@
                 "as"
               ],
               "answer": "with",
-              "explanation": "\"with\" is correct here. C1-level cohesive devices for academic writing.",
+              "explanation": "\"with\" is the preposition that follows \"consistent\", as in \"consistent with prior research\", meaning in agreement with it.",
               "meaning": "together or in agreement",
               "example": "Consistent with prior research, the findings confirm it."
             },
@@ -58481,10 +58484,10 @@
                 "subsequent"
               ],
               "answer": 2,
-              "explanation": "\"other\" is correct here. C1-level cohesive devices for academic writing.",
+              "explanation": "\"other\" completes the fixed phrase \"In other words\", used to restate something in a different way.",
               "term": "in other words",
               "meaning": "said in a different way",
-              "example": "In other words, results were not as expected."
+              "example": "Sales fell sharply. In other words, the plan failed."
             }
           ]
         }
