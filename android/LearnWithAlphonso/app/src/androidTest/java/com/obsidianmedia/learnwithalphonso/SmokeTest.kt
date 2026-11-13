@@ -14,8 +14,12 @@ class SmokeTest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun launchShowsTheSignInScreen() {
-        compose.waitUntil(10_000) { compose.onAllNodes(androidx.compose.ui.test.hasText("Continue with Google")).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("Continue with Google").assertIsDisplayed()
+    fun launchShowsTheFirstQuestion() {
+        // A signed-out launch opens the first-run questions (name first), not the sign-in screen: that comes after
+        // the plan. This test waited for "Continue with Google" until then, and has failed on every emulator run
+        // since the first-run flow became the front door. Wait for the first screen a fresh install really shows.
+        compose.waitUntil(30_000) { compose.onAllNodes(androidx.compose.ui.test.hasText("Nice to meet you")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Nice to meet you").assertIsDisplayed()
+        compose.onNodeWithText("Hi, I'm Alphonso! What should I call you?").assertIsDisplayed()
     }
 }
