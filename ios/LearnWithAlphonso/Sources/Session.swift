@@ -198,6 +198,7 @@ final class Session {
         do {
             let session = try await authClient.verifyEmailOTP(email: email, code: emailFlow.code)
             establishSession(session)
+            Analytics.track(.signInCompleted, ["method": "email"])
         } catch {
             emailFlow.verificationFailed(error, now: Date())
         }
@@ -272,6 +273,7 @@ final class Session {
             }
             let session = try await authClient.exchangeOAuthCode(code, codeVerifier: challenge.verifier)
             establishSession(session)
+            Analytics.track(.signInCompleted, ["method": "google"])
         } catch GoogleSignInPresenterError.cancelled {
             // The user dismissed the sheet -- not a real error.
         } catch {
@@ -306,6 +308,7 @@ final class Session {
             let apple = try appleSignIn.result(from: authorization)
             let session = try await authClient.signInWithIDToken(provider: "apple", idToken: apple.identityToken, nonce: apple.rawNonce)
             establishSession(session)
+            Analytics.track(.signInCompleted, ["method": "apple"])
             // Remember which Apple ID signed in on this device, for which account.
             appleCredentials.save(AppleCredentialLink(appleUserID: apple.appleUserID, supabaseUserID: session.userID))
             // Apple sends the name only on the first authorization: keep it for the name prompt's prefill,

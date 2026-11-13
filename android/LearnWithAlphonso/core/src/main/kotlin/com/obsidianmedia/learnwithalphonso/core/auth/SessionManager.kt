@@ -164,9 +164,15 @@ class SessionManager(
         _state.value = AuthState.AwaitingCode(email.trim())
     }
 
+    /** Told after a sign-in the learner just completed (not a restored session): "email" or "google". Analytics only. */
+    var onSignIn: ((method: String) -> Unit)? = null
+
     suspend fun verifyCode(code: String) {
         val email = (_state.value as? AuthState.AwaitingCode)?.email ?: return
-        busy { establish(auth.verifyEmailOtp(email, code.trim())) }
+        busy {
+            establish(auth.verifyEmailOtp(email, code.trim()))
+            onSignIn?.invoke("email")
+        }
     }
 
     fun backToEmail() {
@@ -176,13 +182,16 @@ class SessionManager(
 
     suspend fun signInWithPassword(email: String, password: String, captchaToken: String? = null) = busy {
         establish(auth.signInWithPassword(email.trim(), password, captchaToken))
+        onSignIn?.invoke("email")
     }
 
     suspend fun signUpWithPassword(email: String, password: String, displayName: String, emailRedirectTo: String, captchaToken: String? = null) = busy {
         val name = displayName.trim().ifEmpty { email.trim().substringBefore('@') }.take(40)
         val session = auth.signUpWithPassword(email.trim(), password, name, emailRedirectTo, captchaToken)
-        if (session != null) establish(session)
-        else _notice.value = "Almost there: check your email and click the confirmation link to activate your account."
+        if (session != null) {
+            establish(session)
+            onSignIn?.invoke("email")
+        } else _notice.value = "Almost there: check your email and click the confirmation link to activate your account."
     }
 
     suspend fun resetPassword(email: String, redirectTo: String, captchaToken: String? = null) = busy {
@@ -207,6 +216,7 @@ class SessionManager(
         }
         busy {
             establish(auth.exchangeOAuthCode(code, challenge.verifier))
+            onSignIn?.invoke("google")
             pendingPkce = null
         }
     }

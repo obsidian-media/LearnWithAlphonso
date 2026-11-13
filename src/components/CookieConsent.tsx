@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTheme } from "../lib/theme";
 import { promoteAttribution } from "../lib/signup-attribution";
+import { setAnalyticsConsent } from "../lib/analytics";
 
 const KEY = "lingua.cookie-consent.v1";
 
@@ -31,6 +32,8 @@ export function CookieConsent() {
       local: window.localStorage,
       session: window.sessionStorage,
     });
+    // The same choice covers anonymous usage analytics (Settings can change it later).
+    setAnalyticsConsent(value === "all");
     setOpen(false);
   }
 
@@ -51,7 +54,7 @@ export function CookieConsent() {
       >
         <p className="ds-type-footnote leading-relaxed text-ds-ink-soft">
           We use essential storage to keep you signed in and remember your progress. Optional
-          analytics storage helps us improve lessons. You choose.{" "}
+          analytics storage and anonymous usage data help us improve lessons. You choose.{" "}
           <Link to="/cookies" className="underline hover:text-ds-ink">
             Cookie Policy
           </Link>

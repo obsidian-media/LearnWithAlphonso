@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { track } from "../lib/analytics";
 import { authHeaders } from "@/lib/auth-headers";
 import {
   PAYWALL_COPY,
@@ -71,6 +72,10 @@ export function WebPaywall({ source, onClose }: { source: PaywallSource; onClose
     void load();
   }, [load]);
 
+  useEffect(() => {
+    void track("paywall_viewed", { source });
+  }, [source]);
+
   return (
     <section
       aria-label={PAYWALL_COPY.fallbackTitle}
@@ -110,7 +115,7 @@ export function WebPaywall({ source, onClose }: { source: PaywallSource; onClose
           </div>
         )}
         {state.kind === "not-configured" && <ComingSoon />}
-        {state.kind === "loaded" && <Plans plans={state.plans} />}
+        {state.kind === "loaded" && <Plans plans={state.plans} source={source} />}
       </div>
     </section>
   );
@@ -131,7 +136,7 @@ function ComingSoon() {
   );
 }
 
-function Plans({ plans }: { plans: PaywallPlan[] }) {
+function Plans({ plans, source }: { plans: PaywallPlan[]; source: PaywallSource }) {
   const [selected, setSelected] = useState(0);
   const plan = plans[selected] ?? plans[0];
   const trialLine = planTrialLine(plan.trialDays);
@@ -155,7 +160,10 @@ function Plans({ plans }: { plans: PaywallPlan[] }) {
       <WhenRow lead={when.lead} rest={when.rest} />
       <button
         type="button"
-        onClick={() => window.location.assign(plan.purchaseUrl)}
+        onClick={() => {
+          void track("purchase_started", { source });
+          window.location.assign(plan.purchaseUrl);
+        }}
         className={edgeButtonClass("primary")}
       >
         {trialLine ? PAYWALL_COPY.startFreeTrial : PAYWALL_COPY.subscribe}

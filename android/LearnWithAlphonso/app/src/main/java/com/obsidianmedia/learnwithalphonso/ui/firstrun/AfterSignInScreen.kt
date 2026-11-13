@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.firstrun
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -61,12 +63,46 @@ fun AfterSignInScreen(
     container: AppContainer, name: String, course: String, interests: List<String>, avatarSeed: String,
     onFinish: (FirstRun.FinishTarget) -> Unit,
 ) {
-    var step by remember { mutableStateOf(0) }
+    // 0 is the optional-analytics choice: only in a build that has a PostHog key and only for a learner who has not
+    // answered yet. Everything else is unchanged.
+    var step by remember { mutableStateOf(if (Analytics.isAvailable && !Analytics.hasAnswered) 0 else 1) }
+    // Only the step name leaves the device, never an answer. The choice itself is not counted: nothing is asked of
+    // the learner before they answer it.
+    LaunchedEffect(step) {
+        val name = when (step) { 1 -> "avatar"; 2 -> "heard"; 3 -> "meet_hector"; else -> null }
+        if (name != null) Analytics.track(AnalyticsEvent.ONBOARDING_STEP, mapOf("step" to name))
+    }
     when (step) {
-        0 -> FirstRunAvatarStep(name, avatarSeed, save = { seed -> saveAvatar(container, seed) }) { step = 1 }
-        1 -> FirstRunHeardStep(container, course) { step = 2 }
+        0 -> FirstRunUsageStep(course) { step = 1 }
+        1 -> FirstRunAvatarStep(name, avatarSeed, save = { seed -> saveAvatar(container, seed) }) { step = 2 }
+        2 -> FirstRunHeardStep(container, course) { step = 3 }
         else -> MeetHectorScreen(container, name, course, interests, onFinish = onFinish)
     }
+}
+
+/**
+ * A neutral, two-button choice (no pre-selected answer, no reward attached): share anonymous usage data or not.
+ * Settings > Share anonymous usage data changes it any time. Nothing is sent before an answer.
+ */
+@Composable
+internal fun FirstRunUsageStep(course: String, onDone: () -> Unit) {
+    val context = LocalContext.current
+    val title = "Help improve Alphonso?"
+    val note = "Share anonymous usage data: which lessons and screens are used. Never what you type or say, and never your name or email. Change it any time in Settings."
+    FirstRunScreen(
+        room = {
+            FirstRunRoom(FirstRun.room(course, null), lessonFace(LessonExpression.NEUTRAL), "Alphonso, asking")
+            FirstRunBubble(title, sub = note) { FirstRunDevice.speak(context, title) }
+        },
+        footer = {
+            FirstRunFooter(
+                "Share anonymous usage data",
+                { Analytics.setConsent(true); onDone() },
+                secondaryLabel = "No thanks",
+                onSecondary = { Analytics.setConsent(false); onDone() },
+            )
+        },
+    ) {}
 }
 
 /** True when the picture was saved to profiles.avatar_seed (an animal from the list, or the old colour seed). */

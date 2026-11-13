@@ -223,7 +223,10 @@ describe("English word cards have an authored meaning and example", () => {
 // French and Spanish: the same gate, with the circularity rules off (the term is in another language,
 // so "lion" glossing "lion" is a translation, not a circle). A level is added only when EVERY card of it
 // passes; never remove a level.
-const ROMANCE_GATED: Record<"fr" | "es", Level[]> = { fr: ["A1", "A2"], es: ["A1", "A2"] };
+const ROMANCE_GATED: Record<"fr" | "es", Level[]> = {
+  fr: ["A1", "A2", "B1", "B2", "C1"],
+  es: ["A1", "A2", "B1", "B2", "C1"],
+};
 
 describe("cardProblems for a French or Spanish term", () => {
   it("accepts a gloss that is the same English word as the term", () => {

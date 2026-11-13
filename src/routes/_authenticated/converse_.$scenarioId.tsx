@@ -1,4 +1,5 @@
 import { postChat } from "../../lib/chat-request";
+import { track } from "@/lib/analytics";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
@@ -122,6 +123,9 @@ function ConverseChatPage({
   // up asks the server to score the call. The client never sends stars.
   const [callId] = useState(newCallId);
   const [startedAt] = useState(() => Date.now());
+  useEffect(() => {
+    void track("practice_call_started", { scenario_id: scenario.id });
+  }, [scenario.id]);
   const [ending, setEnding] = useState(false);
   const [result, setResult] = useState<{ result: Result; seconds: number } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([
@@ -352,8 +356,9 @@ function ConverseChatPage({
       void navigate({ to: "/converse" });
       return;
     }
+    void track("practice_call_completed", { scenario_id: scenario.id, stars: scored.stars });
     setResult({ result: scored, seconds: Math.round((Date.now() - startedAt) / 1000) });
-  }, [ending, learnerReplies, navigate, callId, startedAt]);
+  }, [ending, learnerReplies, navigate, callId, startedAt, scenario.id]);
 
   const hint = (
     <div className="px-5">

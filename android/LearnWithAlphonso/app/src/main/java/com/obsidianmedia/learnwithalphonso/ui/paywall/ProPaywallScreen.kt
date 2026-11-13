@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.paywall
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -117,7 +119,7 @@ private fun BillingPackage.toPlan(): PaywallPlan? {
 }
 
 @Composable
-fun ProPaywallScreen(container: AppContainer, onPurchaseStarted: () -> Unit = {}) {
+fun ProPaywallScreen(container: AppContainer, source: String = "hector_tab", onPurchaseStarted: () -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val store = container.entitlements
     val state by store.state.collectAsState()
@@ -128,6 +130,7 @@ fun ProPaywallScreen(container: AppContainer, onPurchaseStarted: () -> Unit = {}
     val uriHandler = LocalUriHandler.current
     var selectedId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { store.loadOffering() }
+    LaunchedEffect(source) { Analytics.track(AnalyticsEvent.PAYWALL_VIEWED, mapOf("source" to source)) }
     val plans = remember(state.packages) { state.packages.mapNotNull { it.toPlan() } }
     val presentation = remember(plans, selectedId) { ProPaywall.make(plans, selectedId, LocalDate.now()) }
 
@@ -161,6 +164,7 @@ fun ProPaywallScreen(container: AppContainer, onPurchaseStarted: () -> Unit = {}
                         val activity = context as? Activity
                         if (pkg != null && activity != null) {
                             onPurchaseStarted()
+                            Analytics.track(AnalyticsEvent.PURCHASE_STARTED, mapOf("source" to source))
                             scope.launch { store.purchase(activity, pkg) }
                         }
                     })

@@ -203,7 +203,9 @@ describe("app privacy manifest: collected data types (match the App Store Connec
 
   /**
    * Product Interaction is also Analytics: the paywall writes which entry point opened it (`paywall_source`) to
-   * the RevenueCat customer so the owner can see which one sells. Everything else is app functionality only.
+   * the RevenueCat customer so the owner can see which one sells, and the optional PostHog usage analytics records
+   * which features are used. Device ID is also Analytics: PostHog keeps a random per-install id (opt-in only).
+   * Everything else is app functionality only.
    */
   const ANALYTICS = "NSPrivacyCollectedDataTypePurposeAnalytics";
   /**
@@ -214,6 +216,7 @@ describe("app privacy manifest: collected data types (match the App Store Connec
   const PERSONALIZATION = "NSPrivacyCollectedDataTypePurposeProductPersonalization";
   const ALSO_ANALYTICS: Record<string, RegExp> = {
     NSPrivacyCollectedDataTypeProductInteraction: /PaywallSource\.attributeKey/,
+    NSPrivacyCollectedDataTypeDeviceID: /PostHogSDK\.shared\.setup/,
   };
   const ALSO_PERSONALIZATION: Record<string, RegExp> = {
     NSPrivacyCollectedDataTypeProductInteraction: /ReviewQueueResolution/,
