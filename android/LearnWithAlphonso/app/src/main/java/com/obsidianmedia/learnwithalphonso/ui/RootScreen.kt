@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
+import com.obsidianmedia.learnwithalphonso.core.video.VideoPracticeTarget
 import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.ui.path.PathBuildScreen
 import com.obsidianmedia.learnwithalphonso.ui.path.PathMode
@@ -98,7 +99,7 @@ private data class Tab(val route: String, val label: String, val icon: ImageVect
 
 private val tabs = listOf(
     Tab(Routes.LEARN, "Learn", Icons.Filled.MenuBook),
-    Tab(Routes.LISTEN, "Listen", Icons.Filled.Headphones),
+    Tab(Routes.LISTEN, "Library", Icons.Filled.Headphones),
     Tab(Routes.PRACTICE, "Practice", Icons.Filled.Mic),
     Tab(Routes.HECTOR, "Hector", Icons.Filled.AutoAwesome),
     Tab(Routes.PROFILE, "Profile", Icons.Filled.Person),
@@ -289,6 +290,11 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 "lesson" -> nav.navigate(Routes.lesson(container.activeCourse.course.value.code, ref.id))
                 "talk" -> nav.navigate(Routes.scenario(ref.id))
                 "campaign" -> nav.navigate(Routes.campaign(ref.id, ref.sceneIndex ?: 0))
+                // A video opens its player in the Library tab: the shelf picks the id up once the videos are loaded.
+                "video" -> {
+                    container.pendingVideoId.value = ref.id
+                    nav.navigate(Routes.LISTEN) { launchSingleTop = true }
+                }
                 else -> nav.navigate(Routes.LISTEN) { launchSingleTop = true }
             }
         }
@@ -312,7 +318,18 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.LISTEN) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
                 val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
-                ListenScreen(container, listenVm, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
+                ListenScreen(
+                    container, listenVm,
+                    onOpenFolder = { nav.navigate(Routes.listenFolder(it)) },
+                    // After a video: one tap to the matching lesson, Talk scenario or story scene.
+                    onOpenPractice = { target ->
+                        when (target) {
+                            is VideoPracticeTarget.Lesson -> nav.navigate(Routes.lesson(container.activeCourse.course.value.code, target.id))
+                            is VideoPracticeTarget.Talk -> nav.navigate(Routes.scenario(target.id))
+                            is VideoPracticeTarget.Campaign -> nav.navigate(Routes.campaign(target.id, target.scene))
+                        }
+                    },
+                )
             }
             composable(Routes.LISTEN_FOLDER) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }

@@ -58,6 +58,8 @@ struct ListenShelfRoot: View {
                     ContinueCard(target: target, player: player, downloads: downloads, networkMonitor: networkMonitor, queue: target.shelf.episodes)
                 }
 
+                WatchShelfHost(session: session, player: player, course: activeCourse)
+
                 if !levels.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: AlphonsoSpacing.sm) {
@@ -89,6 +91,9 @@ struct ListenShelfRoot: View {
                 } else if shown.isEmpty {
                     VStack(spacing: AlphonsoSpacing.sm) {
                         MascotTile(moment: .emptyState, size: 120, tone: .mint).accessibilityHidden(true)
+                        if episodes.isEmpty {
+                            Text(PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)).dsText(.title).foregroundStyle(AlphonsoColor.ink)
+                        }
                         Text(episodes.isEmpty
                             ? PodcastLibraryCopy.emptyMessage
                             : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.")
@@ -119,7 +124,7 @@ struct ListenShelfRoot: View {
             .padding(AlphonsoSpacing.md)
         }
         .miniPlayerClearance(player)
-        .navigationTitle("Listen")
+        .navigationTitle("Library")
         .task { await load() }
         // Back from a folder, or after an episode played, the shelf reflects what was just heard.
         .task(id: player.episode?.id) { await reloadProgress() }
@@ -144,6 +149,152 @@ struct ListenShelfRoot: View {
         guard let client = makePodcastClient(session: session) else { return }
         if let rows = try? await client.fetchListenProgress() { progress = rows }
         if let seconds = try? await client.fetchMonthListenedSeconds() { monthSeconds = seconds }
+    }
+}
+
+/// The Watch shelf with its player sheet and the path deep link into it. It owns the videos read, so the shelf shows
+/// whenever there are published videos: beside the rooms, and also when the podcast side is empty, offline or failed
+/// (ListenView). It draws nothing when the course has no videos, so the podcast empty state is all that is left when
+/// there are neither podcasts nor videos.
+struct WatchShelfHost: View {
+    let session: Session
+    let player: PodcastAudioPlayer
+    let course: String
+
+    /// Alphonso videos, read on their own so a failed read never hides the podcasts.
+    @State private var videos: [LibraryVideo] = []
+    @State private var videosLoaded = false
+    @State private var videosFailed = false
+    @State private var watching: LibraryVideo?
+    /// Where the player's "practice this" goes once the sheet has finished closing.
+    @State private var practiceAfterClose: PathDestination?
+    @Environment(PathDeepLink.self) private var deepLink
+
+    var body: some View {
+        Group {
+            if videosFailed {
+                HStack {
+                    Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
+                    Spacer(minLength: AlphonsoSpacing.sm)
+                    Button("Try again") { Task { await loadVideos() } }.tint(AlphonsoColor.moss)
+                }
+                .padding(AlphonsoSpacing.md)
+                .alphonsoGlass()
+            } else {
+                WatchShelfSection(videos: VideoShelf.shelf(videos, course: course)) { watching = $0 }
+            }
+        }
+        .task { await loadVideos() }
+        // A path stop for a video lands here: open its player as soon as the videos are known.
+        .task(id: deepLink.pending) { openPendingVideo() }
+        .sheet(item: $watching, onDismiss: {
+            // Back from the player: the shelf shows what was just watched, and a chosen practice item opens now.
+            Task { await loadVideos() }
+            if let destination = practiceAfterClose {
+                practiceAfterClose = nil
+                deepLink.open(destination)
+            }
+        }) { video in
+            VideoPlayerSheet(
+                video: video,
+                client: makePodcastClient(session: session),
+                pauseOtherAudio: { player.pauseForVoice() },
+                onPractice: { destination in
+                    practiceAfterClose = destination
+                    watching = nil
+                },
+                onClose: { watching = nil }
+            )
+            .presentationDetents([.large])
+        }
+    }
+
+    private func loadVideos() async {
+        guard let client = makePodcastClient(session: session) else { return }
+        do {
+            videos = try await client.fetchVideos()
+            videosFailed = false
+        } catch {
+            if Task.isCancelled { return }
+            videosFailed = true
+        }
+        videosLoaded = true
+        openPendingVideo()
+    }
+
+    private func openPendingVideo() {
+        guard case let .video(id)? = deepLink.pending, videosLoaded else { return }
+        deepLink.pending = nil
+        if let video = videos.first(where: { $0.id == id }) { watching = video }
+    }
+}
+
+/// The Watch shelf: the course's Alphonso videos as a row of vertical posters. It draws NOTHING when there are none (no
+/// empty box). A finished video shows a tick, one part-way through shows a bar. Every title, length and state comes from
+/// the rows (`VideoShelf` in the Kit).
+private struct WatchShelfSection: View {
+    let videos: [LibraryVideo]
+    let onOpen: (LibraryVideo) -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        if !videos.isEmpty {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                Text("Watch").dsText(.title).foregroundStyle(ds.ink)
+                    .accessibilityAddTraits(.isHeader)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                        ForEach(videos) { video in card(video) }
+                    }
+                }
+            }
+        }
+    }
+
+    private func card(_ video: LibraryVideo) -> some View {
+        let state = VideoShelf.state(video)
+        let stateWord = state == .done ? "watched" : state == .inProgress ? "in progress" : "new"
+        return Button { onOpen(video) } label: {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                ZStack(alignment: .bottomLeading) {
+                    ds.sunk
+                    if let poster = video.posterURL {
+                        AsyncImage(url: poster) { image in image.resizable().scaledToFill() } placeholder: { ds.sunk }
+                    }
+                    Image(systemName: "play.fill").foregroundStyle(ds.ink)
+                        .frame(width: AlphonsoDS.Space.s8, height: AlphonsoDS.Space.s8)
+                        .background(Circle().fill(ds.card.opacity(0.9)))
+                        .padding(AlphonsoDS.Space.s2)
+                    if state == .inProgress {
+                        ProgressView(value: VideoShelf.fraction(video)).tint(ds.xp)
+                            .frame(maxHeight: .infinity, alignment: .bottom)
+                    }
+                }
+                .frame(width: 120, height: 120 * 16 / 9)
+                .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if let level = video.level {
+                        Text(level).dsText(.caption).foregroundStyle(ds.ink)
+                            .padding(.horizontal, AlphonsoDS.Space.s2)
+                            .background(Capsule().fill(ds.card)).padding(AlphonsoDS.Space.s2)
+                    }
+                }
+                .overlay(alignment: .topTrailing) {
+                    if state == .done {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(ds.right).padding(AlphonsoDS.Space.s2)
+                    }
+                }
+                Text(video.title).dsText(.footnote).foregroundStyle(ds.ink)
+                    .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                Text(VideoShelf.clock(Double(video.durationSeconds)) + (state == .new ? " \u{00B7} New" : ""))
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            .frame(width: 120, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(video.title), \(VideoShelf.clock(Double(video.durationSeconds))), \(stateWord)")
+        .accessibilityAddTraits(.isButton)
     }
 }
 

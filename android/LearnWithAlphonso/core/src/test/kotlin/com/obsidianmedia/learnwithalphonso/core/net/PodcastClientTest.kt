@@ -59,6 +59,39 @@ class PodcastClientTest {
     }
 
     @Test
+    fun `fetchVideos reads the two tables, merges progress, drops unplayable rows and survives a failed progress read`() = runTest {
+        val row = """{"id":"v1","slug":"en-a","course":"en","title":"A","duration_seconds":49,"video_path":"en/a.mp4","captions_path":"en/a.vtt","sort_order":0}"""
+        val noCaptions = """{"id":"v2","slug":"en-b","course":"en","title":"B","duration_seconds":49,"video_path":"en/b.mp4","captions_path":null}"""
+        val fake = FakeSupabase { req ->
+            if (req.path.endsWith("/videos")) json("[$row,$noCaptions]")
+            else json("""[{"video_id":"v1","progress_seconds":20,"completed_at":null}]""")
+        }
+        val videos = client(fake).fetchVideos()
+        assertEquals(listOf("v1"), videos.map { it.id })
+        assertEquals(20, videos[0].progressSeconds)
+        assertTrue(fake.seen[0].query["select"]!!.contains("captions_path"))
+        assertEquals("sort_order.asc", fake.seen[0].query["order"])
+        assertEquals("video_watches", fake.seen[1].path.substringAfterLast('/'))
+
+        val failing = FakeSupabase { req -> if (req.path.endsWith("/videos")) json("[$row]") else json("{}", HttpStatusCode.InternalServerError) }
+        val still = client(failing).fetchVideos()
+        assertEquals(1, still.size)
+        assertEquals(0, still[0].progressSeconds)
+    }
+
+    @Test
+    fun `saveVideoProgress goes through the function and a rejected token is Unauthorized`() = runTest {
+        val fake = FakeSupabase { json("{}") }
+        client(fake).saveVideoProgress("v1", 49)
+        val request = fake.seen.single()
+        assertEquals("save_video_progress", request.path.substringAfterLast('/'))
+        assertTrue(request.body.contains("\"p_video_id\":\"v1\""))
+        assertTrue(request.body.contains("\"p_progress_s\":49"))
+        val rejected = FakeSupabase { json("{}", HttpStatusCode.Unauthorized) }
+        assertThrows<PodcastClientError.Unauthorized> { client(rejected).saveVideoProgress("v1", 5) }
+    }
+
+    @Test
     fun `month listened seconds asks for this UTC month and sums, ignoring bad rows`() = runTest {
         // 2026-11-30 23:59 UTC is still November.
         val nov = 1_796_083_140_000L

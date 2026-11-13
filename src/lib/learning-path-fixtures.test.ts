@@ -39,6 +39,8 @@ const base: PathData = {
     },
   ],
   listen: [],
+  videos: [],
+  videoWatches: [],
   calls: [],
   stars: [],
   profile: { showFlag: false, goal: "travel", interests: ["food"], dailyMinutes: 10 },
@@ -48,6 +50,19 @@ const scenarios: Record<string, PathData> = {
   onTrack: { ...base, goal: { ...base.goal, targetDate: "2028-06-01" } },
   behind: base,
   restDayChosen: { ...base, profile: { ...base.profile, pathRestDay: 3 } },
+  // An Alphonso video (Library > Watch) is on the path: a "video" stop with a ref the apps open in the player.
+  withVideo: {
+    ...base,
+    videos: [
+      {
+        id: "vid-order",
+        title: "I'd like vs I want",
+        durationSeconds: 49,
+        levelId: "A1",
+        tags: ["travel", "food", "ordering"],
+      },
+    ],
+  },
   noRestDay: { ...base, profile: { ...base.profile, pathRestDay: "none" } },
   behindTrimmed: {
     ...base,
@@ -87,6 +102,14 @@ describe("learning path contract fixtures", () => {
     expect(built.noRestDay?.restDay).toBe(-1);
     expect(built.noRestDay?.week.some((d) => d.state === "rest")).toBe(false);
     expect(built.noRestDay?.weekMinutes).toBe(70);
+  });
+  it("the video scenario carries a video in the mix and a video stop with a video ref", () => {
+    const p = built.withVideo!;
+    expect(p.mix.find((m) => m.type === "video")?.minutes).toBeGreaterThan(0);
+    const stops = p.week.flatMap((d) => d.items).filter((i) => i.type === "video");
+    expect(stops).toHaveLength(1);
+    expect(stops[0].ref).toEqual({ kind: "video", id: "vid-order" });
+    expect(built.behind?.mix.find((m) => m.type === "video")?.minutes).toBe(0);
   });
   it("the behind-and-trimmed scenario really is behind and trimmed", () => {
     expect(built.behindTrimmed?.status).toBe("behind");

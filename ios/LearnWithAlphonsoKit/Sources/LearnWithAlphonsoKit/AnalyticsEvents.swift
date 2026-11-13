@@ -22,6 +22,8 @@ public enum AnalyticsEvent: String, CaseIterable, Sendable {
     case purchaseStarted = "purchase_started"
     case explainRequested = "explain_requested"
     case pathBuilt = "path_built"
+    case videoStarted = "video_started"
+    case videoCompleted = "video_completed"
 
     public enum PropertyKind: Sendable { case identifier, number }
 
@@ -38,6 +40,7 @@ public enum AnalyticsEvent: String, CaseIterable, Sendable {
         case .podcastPlayed, .podcastCompleted: return ["episode_id": .identifier, "course": .identifier]
         case .paywallViewed, .purchaseStarted, .explainRequested: return ["source": .identifier]
         case .pathBuilt: return ["course": .identifier]
+        case .videoStarted, .videoCompleted: return ["video_id": .identifier, "course": .identifier]
         }
     }
 }

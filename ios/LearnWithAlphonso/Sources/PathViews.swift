@@ -96,6 +96,7 @@ struct PathTypeBadge: View {
         case .podcast: return "headphones"
         case .talk: return "mic.fill"
         case .campaign: return "star.fill"
+        case .video: return "play.fill"
         case .unknown: return "circle.fill"
         }
     }
@@ -105,6 +106,7 @@ struct PathTypeBadge: View {
         case .podcast: return ds.hero
         case .talk: return ds.xp
         case .campaign: return ds.right
+        case .video: return ds.hero
         case .unknown: return ds.line
         }
     }
@@ -179,6 +181,7 @@ struct PathMixBar: View {
         case .podcast: return ds.hero
         case .talk: return ds.xp
         case .campaign: return ds.right
+        case .video: return ds.hero
         case .unknown: return ds.line
         }
     }
@@ -351,7 +354,7 @@ struct PathScreen: View {
             NavigationLink(value: PathRoute.why) { Text("Why this mix?").dsText(.headline).foregroundStyle(ds.ink) }
         }
         Section {
-            Text("Tap a stop to open it: lessons here, podcasts in Listen, talks and story campaigns in Practice.")
+            Text("Tap a stop to open it: lessons here, podcasts and videos in Library, talks and story campaigns in Practice.")
                 .dsText(.caption).foregroundStyle(ds.inkSoft)
         }
     }
@@ -571,7 +574,7 @@ struct PathBuildView: View {
                 }
             }
             .frame(minHeight: AlphonsoDS.Space.minTouch)
-            ForEach(PathKind.optional, id: \.wire) { kind in
+            ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
                 Toggle(isOn: Binding(
                     get: { !path.off.contains(kind.wire) },
                     set: { on in
@@ -609,6 +612,7 @@ struct PathBuildView: View {
         switch kind {
         case .podcast: return "Listen and answer a short quiz"
         case .talk: return "Needs the microphone"
+        case .video: return "Short captioned videos from Alphonso"
         default: return "Story scenes that run over several days"
         }
     }
@@ -650,7 +654,7 @@ struct PathProfileCard: View {
                     .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
                     .accessibilityElement(children: .combine)
                     HStack(spacing: AlphonsoDS.Space.s2) {
-                        ForEach(Array(path.streaks.enumerated()), id: \.offset) { _, streak in
+                        ForEach(Array(PathStreak.visible(path.streaks).enumerated()), id: \.offset) { _, streak in
                             VStack(spacing: AlphonsoDS.Space.s1) {
                                 PathTypeBadge(kind: streak.kind, small: true)
                                 Text("\(streak.days)d").dsText(.headline).foregroundStyle(ds.ink)

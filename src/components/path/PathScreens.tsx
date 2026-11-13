@@ -6,7 +6,7 @@ import { COURSES } from "@/data/courses";
 import { saveGoal } from "@/lib/learning-goal-client";
 import { usePath } from "@/lib/learning-path-client";
 import {
-  OPTIONAL_TYPES,
+  switchableTypes,
   PATH_TYPE_INFO,
   type LearningPath,
   type PathType,
@@ -396,6 +396,7 @@ const HOW: Record<Exclude<PathType, "lesson">, string> = {
   podcast: "Listen and answer a short quiz",
   talk: "Needs the microphone",
   campaign: "Story scenes that run over several days",
+  video: "Short captioned videos from Alphonso",
 };
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -470,7 +471,7 @@ export function BuildScreen() {
             </span>
             <span className="text-xs font-bold text-ds-ink-soft">Always on</span>
           </div>
-          {OPTIONAL_TYPES.map((t) => {
+          {switchableTypes(path).map((t) => {
             const on = !off.includes(t);
             const why = path.why.find((w) => w.type === t && w.source !== "planner");
             return (

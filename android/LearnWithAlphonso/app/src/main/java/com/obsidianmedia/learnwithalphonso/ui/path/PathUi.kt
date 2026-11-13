@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -72,6 +73,7 @@ import com.obsidianmedia.learnwithalphonso.core.path.PathApi
 import com.obsidianmedia.learnwithalphonso.core.path.PathItem
 import com.obsidianmedia.learnwithalphonso.core.path.PathItemRef
 import com.obsidianmedia.learnwithalphonso.core.path.PathKind
+import com.obsidianmedia.learnwithalphonso.core.path.visibleStreaks
 import com.obsidianmedia.learnwithalphonso.core.path.PathMixEntry
 import com.obsidianmedia.learnwithalphonso.core.path.PathRestDay
 import com.obsidianmedia.learnwithalphonso.core.path.PathStop
@@ -173,6 +175,7 @@ private fun kindColor(kind: PathKind): Color {
         PathKind.PODCAST -> ds.hero
         PathKind.TALK -> ds.xp
         PathKind.CAMPAIGN -> ds.right
+        PathKind.VIDEO -> ds.hero
         PathKind.UNKNOWN -> ds.line
     }
 }
@@ -181,6 +184,7 @@ private fun kindIcon(kind: PathKind): ImageVector = when (kind) {
     PathKind.LESSON -> Icons.Filled.MenuBook
     PathKind.PODCAST -> Icons.Filled.Headphones
     PathKind.TALK -> Icons.Filled.Mic
+    PathKind.VIDEO -> Icons.Filled.PlayArrow
     PathKind.CAMPAIGN, PathKind.UNKNOWN -> Icons.Filled.Star
 }
 
@@ -575,12 +579,13 @@ fun PathBuildScreen(container: AppContainer, onBack: () -> Unit) {
                         }
                     }
                 }
-                items(PathKind.optional, key = { "switch-${it.wire}" }) { kind ->
+                items(PathKind.switchable(path.mix, path.off), key = { "switch-${it.wire}" }) { kind ->
                     val on = !path.off.contains(kind.wire)
                     val reason = path.why.firstOrNull { it.kind == kind && it.source != "planner" }?.detail?.takeIf { on }
                         ?: when (kind) {
                             PathKind.PODCAST -> "Listen and answer a short quiz"
                             PathKind.TALK -> "Needs the microphone"
+                            PathKind.VIDEO -> "Short captioned videos from Alphonso"
                             else -> "Story scenes that run over several days"
                         }
                     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(ds.card).defaultMinSize(minHeight = 56.dp).padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -631,7 +636,7 @@ fun PathProfileCard(container: AppContainer) {
                     Text("This week: ${p.weekDoneMinutes} of ${p.weekMinutes} min", style = MaterialTheme.typography.bodySmall, color = ds.onHeroSoft)
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    p.streaks.forEach { st ->
+                    visibleStreaks(p.streaks).forEach { st ->
                         val spoken = "${st.kind.label}: ${st.days} ${if (st.days == 1) "day" else "days"} in a row, ${st.weekMinutes} minutes this week"
                         Column(
                             Modifier.weight(1f).clip(RoundedCornerShape(14.dp)).background(ds.card).defaultMinSize(minHeight = 96.dp).padding(6.dp)

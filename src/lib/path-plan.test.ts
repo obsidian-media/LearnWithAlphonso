@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GoalPlan } from "./learning-goal";
 import {
   planPath,
+  switchableTypes,
   type ActivityEvent,
   type Candidate,
   type PathInput,
@@ -69,6 +70,7 @@ function input(over: Partial<PathInput> = {}): PathInput {
         cand("campaign", "c-travel", { goals: ["travel"], skills: ["speaking"] }),
         cand("campaign", "c3", { goals: ["family"], skills: ["speaking"] }),
       ],
+      video: [],
     },
     events: [],
     ...over,
@@ -131,9 +133,67 @@ describe("planPath: the weekly mix", () => {
     expect(mixMinutes(heavy, "lesson")).toBeGreaterThan(mixMinutes(light, "lesson"));
   });
 
-  it("never lists a video type until a video catalogue exists", () => {
+  it("gives videos no minutes and places none until a video exists", () => {
     const p = planPath(input());
-    expect(p.mix.map((m) => m.type)).not.toContain("video");
+    expect(mixMinutes(p, "video")).toBe(0);
+    expect(plannedTypes(p)).not.toContain("video");
+  });
+
+  it("gives videos minutes and a place in the week once one is published, with a ref the apps can open", () => {
+    const p = planPath(
+      input({
+        candidates: {
+          ...input().candidates,
+          video: [cand("video", "v1", { minutes: 1, skills: ["listening"] })],
+        },
+      }),
+    );
+    expect(mixMinutes(p, "video")).toBeGreaterThan(0);
+    const placed = p.week.flatMap((d) => d.items).filter((i) => i.type === "video");
+    expect(placed).toHaveLength(1);
+    expect(placed[0].ref).toEqual({ kind: "video", id: "v1" });
+  });
+
+  it("switching videos off removes them from the mix and the week", () => {
+    const p = planPath(
+      input({
+        prefs: { off: ["video"], trimUntil: null },
+        candidates: {
+          ...input().candidates,
+          video: [cand("video", "v1", { minutes: 1, skills: ["listening"] })],
+        },
+      }),
+    );
+    expect(mixMinutes(p, "video")).toBe(0);
+    expect(plannedTypes(p)).not.toContain("video");
+  });
+
+  it("a weak listening score raises the video share, as it does the podcast share", () => {
+    const withVideo = (skillPct: PathInput["skillPct"]) =>
+      planPath(
+        input({
+          skillPct,
+          candidates: {
+            ...input().candidates,
+            video: [cand("video", "v1", { minutes: 1, skills: ["listening"] })],
+          },
+        }),
+      );
+    expect(mixMinutes(withVideo({ listening: 30 }), "video")).toBeGreaterThan(
+      mixMinutes(withVideo({ listening: 95 }), "video"),
+    );
+  });
+});
+
+describe("switchableTypes", () => {
+  const path = (videoMinutes: number, off: PathType[] = []) => ({
+    off,
+    mix: [{ type: "video" as PathType, minutes: videoMinutes, share: 0, count: 0 }],
+  });
+  it("offers Videos only once there is something to watch, or when the learner already switched them off", () => {
+    expect(switchableTypes(path(0))).toEqual(["podcast", "talk", "campaign"]);
+    expect(switchableTypes(path(5))).toEqual(["podcast", "talk", "campaign", "video"]);
+    expect(switchableTypes(path(0, ["video"]))).toEqual(["podcast", "talk", "campaign", "video"]);
   });
 });
 

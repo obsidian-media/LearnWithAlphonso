@@ -34,6 +34,8 @@ const data = (over: Partial<PathData> = {}): PathData => ({
     },
   ],
   listen: [],
+  videos: [],
+  videoWatches: [],
   calls: [],
   stars: [],
   profile: { showFlag: false, goal: "travel", interests: ["food"], dailyMinutes: 10 },
@@ -165,5 +167,56 @@ describe("buildLearningPath", () => {
 
   it("labels the goal in plain words", () => {
     expect(buildLearningPath(data())!.goalLabel).toBe("A2 by 1 June");
+  });
+});
+
+describe("buildLearningPath: Alphonso videos", () => {
+  const vid = (id: string, over: Partial<PathData["videos"][number]> = {}) => ({
+    id,
+    title: `Video ${id}`,
+    durationSeconds: 49,
+    levelId: "A1",
+    tags: ["travel", "food", "ordering"],
+    ...over,
+  });
+  const videoItems = (path: NonNullable<ReturnType<typeof buildLearningPath>>) =>
+    path.week.flatMap((d) => d.items).filter((i) => i.type === "video");
+
+  it("puts an unwatched video on the path with a video ref, a minute count rounded up and the title from the data", () => {
+    const path = buildLearningPath(data({ videos: [vid("v1")] }))!;
+    const items = videoItems(path);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      id: "v1",
+      title: "Video v1",
+      minutes: 1,
+      ref: { kind: "video", id: "v1" },
+    });
+  });
+
+  it("leaves a completed video off the path and counts it as done activity", () => {
+    const path = buildLearningPath(
+      data({
+        videos: [vid("v1")],
+        videoWatches: [{ videoId: "v1", completedAt: "2026-11-11T08:00:00.000Z" }],
+      }),
+    )!;
+    expect(videoItems(path).filter((i) => i.state !== "done")).toHaveLength(0);
+    expect(path.mix.find((m) => m.type === "video")?.minutes).toBe(0);
+    expect(path.streaks.find((s) => s.type === "video")?.days).toBe(1);
+  });
+
+  it("an unfinished watch (no completed_at) does not hide the video", () => {
+    const path = buildLearningPath(
+      data({ videos: [vid("v1")], videoWatches: [{ videoId: "v1", completedAt: null }] }),
+    )!;
+    expect(videoItems(path)).toHaveLength(1);
+  });
+
+  it("skips a video above the learner's level or with no usable level", () => {
+    const path = buildLearningPath(
+      data({ videos: [vid("hard", { levelId: "C1" }), vid("none", { levelId: null })] }),
+    )!;
+    expect(videoItems(path)).toHaveLength(0);
   });
 });

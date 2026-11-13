@@ -190,16 +190,34 @@ describe("build my path", () => {
 });
 
 describe("Profile my path", () => {
-  it("shows a tile per activity with its streak and this week's minutes", async () => {
+  it("shows a tile per activity with its streak and this week's minutes, and no Videos tile before any video activity", async () => {
     serve("onTrack");
     render(<PathProfileCard course="en" />);
     await screen.findByText(/This week:/);
-    for (const s of fixtures.onTrack.streaks) {
-      const label = { lesson: "Lessons", podcast: "Podcasts", talk: "Talk", campaign: "Campaigns" }[
-        s.type
-      ];
-      const text = `${label}: ${s.days} ${s.days === 1 ? "day" : "days"} in a row, ${s.weekMinutes} minutes this week`;
+    const label = { lesson: "Lessons", podcast: "Podcasts", talk: "Talk", campaign: "Campaigns" };
+    const shown = fixtures.onTrack.streaks.filter((s) => s.type !== "video");
+    expect(shown).toHaveLength(4);
+    for (const s of shown) {
+      const name = label[s.type as keyof typeof label];
+      const text = `${name}: ${s.days} ${s.days === 1 ? "day" : "days"} in a row, ${s.weekMinutes} minutes this week`;
       expect(screen.getByLabelText(text)).toBeTruthy();
     }
+    expect(screen.queryByLabelText(/^Videos:/)).toBeNull();
+  });
+
+  it("shows the Videos tile once the learner has watched one", async () => {
+    const path = {
+      ...fixtures.onTrack,
+      streaks: fixtures.onTrack.streaks.map((s) =>
+        s.type === "video" ? { ...s, days: 2, weekMinutes: 3 } : s,
+      ),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ path }), { status: 200 })),
+    );
+    render(<PathProfileCard course="en" />);
+    await screen.findByText(/This week:/);
+    expect(screen.getByLabelText("Videos: 2 days in a row, 3 minutes this week")).toBeTruthy();
   });
 });

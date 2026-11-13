@@ -21,6 +21,8 @@ export const ANALYTICS_EVENTS = [
   "purchase_started",
   "explain_requested",
   "path_built",
+  "video_started",
+  "video_completed",
 ] as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
@@ -42,6 +44,8 @@ export const ANALYTICS_PROPS: Record<AnalyticsEvent, Record<string, Kind>> = {
   purchase_started: { source: "id" },
   explain_requested: { source: "id" },
   path_built: { course: "id" },
+  video_started: { video_id: "id", course: "id" },
+  video_completed: { video_id: "id", course: "id" },
 };
 
 /** A short identifier: letters, digits and _ . : + - only. No spaces and no at sign, so no sentence and no email. */

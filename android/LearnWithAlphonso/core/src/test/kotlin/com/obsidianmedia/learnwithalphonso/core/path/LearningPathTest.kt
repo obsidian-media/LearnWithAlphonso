@@ -29,7 +29,7 @@ class LearningPathTest {
     }
 
     @Test fun `every checked-in scenario decodes`() {
-        for (key in listOf("onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay")) path(key)
+        for (key in listOf("onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo")) path(key)
     }
 
     @Test fun `the behind path carries the three ways forward`() {
@@ -90,16 +90,35 @@ class LearningPathTest {
         assertEquals(p.weekMinutes, p.mix.sumOf { it.minutes })
     }
 
-    @Test fun `every type has a streak tile`() {
-        assertEquals(
-            listOf(PathKind.LESSON, PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN),
-            path("onTrack").streaks.map { it.kind },
-        )
+    @Test fun `every type has a streak entry but an empty Videos tile is not drawn`() {
+        val streaks = path("onTrack").streaks
+        assertEquals(listOf(PathKind.LESSON, PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN, PathKind.VIDEO), streaks.map { it.kind })
+        assertEquals(listOf(PathKind.LESSON, PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN), visibleStreaks(streaks).map { it.kind })
+        assertTrue(visibleStreaks(listOf(PathStreak("video", 2, 3))).isNotEmpty())
     }
 
-    @Test fun `an unknown type from a newer server is drawn generically`() {
-        assertEquals(PathKind.UNKNOWN, PathKind.fromWire("video"))
+    @Test fun `a video scenario carries a video in the mix and a video stop with a video ref`() {
+        val p = path("withVideo")
+        assertTrue(p.mix.first { it.kind == PathKind.VIDEO }.minutes > 0)
+        val stops = p.week.flatMap { it.items }.filter { it.kind == PathKind.VIDEO }
+        assertEquals(1, stops.size)
+        assertEquals("video", stops.single().ref?.kind)
+        assertEquals("vid-order", stops.single().ref?.id)
+        assertEquals(0, path("behind").mix.first { it.kind == PathKind.VIDEO }.minutes)
+    }
+
+    @Test fun `videos are switchable only once there is something to watch or they are off`() {
+        val none = path("onTrack")
+        assertEquals(listOf(PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN), PathKind.switchable(none.mix, none.off))
+        val some = path("withVideo")
+        assertEquals(listOf(PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN, PathKind.VIDEO), PathKind.switchable(some.mix, some.off))
+        assertEquals(listOf(PathKind.PODCAST, PathKind.TALK, PathKind.CAMPAIGN, PathKind.VIDEO), PathKind.switchable(none.mix, listOf("video")))
+    }
+
+    @Test fun `video is a known type and an unheard-of one is still drawn generically`() {
+        assertEquals(PathKind.VIDEO, PathKind.fromWire("video"))
         assertEquals(PathKind.PODCAST, PathKind.fromWire("podcast"))
+        assertEquals(PathKind.UNKNOWN, PathKind.fromWire("hologram"))
     }
 
     @Test fun `no goal decodes as null`() {

@@ -54,6 +54,8 @@ export const USER_ID_EXPORT_TABLES = [
   "user_achievements",
   "user_progress",
   "user_weekly_quest_claims",
+  // Which Alphonso videos the learner watched (20261115100000); own-row SELECT.
+  "video_watches",
   "weakness_events",
 ] as const;
 
@@ -198,6 +200,7 @@ export const exportMyData = createServerFn({ method: "POST" })
                   | "learning_days"
                   | "mastered_words"
                   | "skill_days"
+                  | "video_watches"
                 >,
               )
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {

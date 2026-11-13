@@ -128,7 +128,7 @@ describe("Listen: studio scene, large header, glass folder and episode cards", (
     const header = from(listen, "private struct ListenSceneHeader: View");
     expect(header).toContain("minHeight: 190");
     expect(header).toContain(".alphonsoGlass(");
-    expect(listing).toContain('ListenSceneHeader(title: folder?.title ?? "Listen"');
+    expect(listing).toContain('ListenSceneHeader(title: folder?.title ?? "Library"');
   });
 
   it("folders and episodes are larger glass cards with the existing 3D icons, same data and same actions", () => {

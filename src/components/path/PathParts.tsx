@@ -18,6 +18,7 @@ const TYPE_ICON: Record<PathType, DsIconName> = {
   podcast: "speaker",
   talk: "mic",
   campaign: "star",
+  video: "play",
 };
 /** Token classes per type: the badge fill, the text on it, the legend swatch and the label colour. */
 export const TYPE_STYLE: Record<
@@ -43,6 +44,12 @@ export const TYPE_STYLE: Record<
     swatch: "bg-ds-right",
     text: "text-ds-right-ink",
   },
+  video: {
+    fill: "bg-ds-hero",
+    on: "text-ds-on-hero",
+    swatch: "bg-ds-hero",
+    text: "text-ds-ink",
+  },
 };
 
 export function TypeBadge({ type, small = false }: { type: PathType; small?: boolean }) {
@@ -57,7 +64,7 @@ export function TypeBadge({ type, small = false }: { type: PathType; small?: boo
         <DsIcon name="star" solid className={small ? "size-4" : "size-5"} />
       ) : (
         <DsIcon
-          name={TYPE_ICON[type] as "book" | "speaker" | "mic"}
+          name={TYPE_ICON[type] as "book" | "speaker" | "mic" | "play"}
           className={small ? "size-4" : "size-5"}
         />
       )}
@@ -65,7 +72,7 @@ export function TypeBadge({ type, small = false }: { type: PathType; small?: boo
   );
 }
 
-/** Where an item opens. A podcast opens the Listen library: the path does not know the folder route. */
+/** Where an item opens. A podcast opens the Library: the path does not know the folder route. A video opens its player there. */
 export function ItemLink({
   item,
   children,
@@ -97,6 +104,12 @@ export function ItemLink({
         search={{ scene: ref.sceneIndex ?? 0 }}
         className={className}
       >
+        {children}
+      </Link>
+    );
+  if (ref.kind === "video")
+    return (
+      <Link to="/listen" search={{ video: ref.id }} className={className}>
         {children}
       </Link>
     );

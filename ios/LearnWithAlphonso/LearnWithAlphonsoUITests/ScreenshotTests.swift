@@ -165,7 +165,7 @@ final class ScreenshotTests: XCTestCase {
     }
 
     private func captureListenLibrary() {
-        guard tapTab("Listen") else { return }
+        guard tapTab("Library") else { return }
 
         // Capture the library root FIRST, unconditionally. Everything
         // below this line is a network-dependent enhancement, and the

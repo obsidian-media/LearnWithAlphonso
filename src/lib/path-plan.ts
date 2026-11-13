@@ -30,12 +30,12 @@ import { localDay } from "./local-day";
  * every list come in. The server runs it once (/api/learning-path); web, iOS and Android render the result, so the three
  * can never disagree. The rules, in words, are shown to the learner on the "Why this mix" screen.
  *
- * A "video" type is added later by adding it to PATH_TYPES, PATH_TYPE_INFO and the candidates; nothing else changes.
+ * The "video" type (Library > Watch) was added exactly that way: PATH_TYPES, PATH_TYPE_INFO and the candidates.
  */
-export const PATH_TYPES = ["lesson", "podcast", "talk", "campaign"] as const;
+export const PATH_TYPES = ["lesson", "podcast", "talk", "campaign", "video"] as const;
 export type PathType = (typeof PATH_TYPES)[number];
 /** Types a learner may switch off: everything except the backbone. */
-export const OPTIONAL_TYPES: readonly PathType[] = ["podcast", "talk", "campaign"];
+export const OPTIONAL_TYPES: readonly PathType[] = ["podcast", "talk", "campaign", "video"];
 
 export const PATH_TYPE_INFO: Record<
   PathType,
@@ -45,7 +45,31 @@ export const PATH_TYPE_INFO: Record<
   podcast: { label: "Podcasts", noun: "Podcast", trainedSkills: ["listening"] },
   talk: { label: "Talk", noun: "Talk to Alphonso", trainedSkills: ["speaking"] },
   campaign: { label: "Campaigns", noun: "Story campaign", trainedSkills: ["speaking"] },
+  video: { label: "Videos", noun: "Video", trainedSkills: ["listening"] },
 };
+
+/** A count per type, all zero: the engine's tallies start here so a new type needs no edit at every site. */
+const zeroByType = (): Record<PathType, number> =>
+  Object.fromEntries(PATH_TYPES.map((t) => [t, 0])) as Record<PathType, number>;
+
+/**
+ * The switches the learner is offered. Podcasts, Talk and campaigns always are; Videos only once there is something to
+ * watch (the mix gives them minutes) or the learner already switched them off, so nobody is offered a switch for an
+ * empty shelf. iOS and Android apply the same rule (PathKind.switchable).
+ */
+export function switchableTypes(path: Pick<LearningPath, "mix" | "off">): PathType[] {
+  return OPTIONAL_TYPES.filter(
+    (t) =>
+      t !== "video" ||
+      path.off.includes(t) ||
+      (path.mix.find((m) => m.type === t)?.minutes ?? 0) > 0,
+  );
+}
+
+/** The profile tiles: one per activity, except Videos before the learner has any video activity (no empty tile). */
+export function visibleStreaks(streaks: readonly StreakEntry[]): StreakEntry[] {
+  return streaks.filter((s) => s.type !== "video" || s.days > 0 || s.weekMinutes > 0);
+}
 
 export type ItemRef = { kind: PathType; id: string; sceneIndex?: number };
 
@@ -252,7 +276,7 @@ function computeMix(input: PathInput, trimmed: boolean): MixEntry[] {
   const required = input.goalPlan.status === "done" ? 0 : input.goalPlan.requiredPerWeek;
   let lessonMinutes = Math.min(weekMin, Math.round(Math.max(floor, required * lessonAvg)));
 
-  const minutes: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
+  const minutes: Record<PathType, number> = zeroByType();
   if (enabled.length === 0) {
     lessonMinutes = weekMin;
   } else if (trimmed) {
@@ -262,7 +286,7 @@ function computeMix(input: PathInput, trimmed: boolean): MixEntry[] {
     lessonMinutes = weekMin - minutes.podcast;
   } else {
     const rest = weekMin - lessonMinutes;
-    const w: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
+    const w: Record<PathType, number> = zeroByType();
     for (const t of enabled) w[t] = BASE_WEIGHT;
     weak.forEach((ws, i) => {
       const boost = WEAK_SKILL_BOOST * (i === 0 ? 1 : 0.5);
@@ -363,13 +387,15 @@ export function planPath(input: PathInput): LearningPath {
   const weekEvents = input.events.filter(
     (e) => e.day >= weekStart && e.day <= addDays(weekStart, 6),
   );
-  const doneCount: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
+  const doneCount: Record<PathType, number> = zeroByType();
   for (const e of weekEvents) doneCount[e.type]++;
   const usedIds = new Set(weekEvents.filter((e) => e.refId).map((e) => `${e.type}:${e.refId}`));
 
   // Quotas still to place this week and the ranked pools they come from.
-  const remaining: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
-  const pool: Record<PathType, Candidate[]> = { lesson: [], podcast: [], talk: [], campaign: [] };
+  const remaining: Record<PathType, number> = zeroByType();
+  const pool: Record<PathType, Candidate[]> = Object.fromEntries(
+    PATH_TYPES.map((t) => [t, []]),
+  ) as unknown as Record<PathType, Candidate[]>;
   for (const m of mix) {
     remaining[m.type] = Math.max(0, m.count - doneCount[m.type]);
     pool[m.type] = ranked(input, m.type).filter((c) => !usedIds.has(`${c.type}:${c.id}`));
@@ -409,7 +435,7 @@ export function planPath(input: PathInput): LearningPath {
 
   // Token-bucket spread: each day every type earns its share of what is left; an item is placed once its type has
   // earned half an item, and every day starts with a lesson while lessons remain.
-  const credit: Record<PathType, number> = { lesson: 0, podcast: 0, talk: 0, campaign: 0 };
+  const credit: Record<PathType, number> = zeroByType();
   const perDay = (t: PathType) =>
     plannable.length === 0 ? 0 : (remaining[t] * avg(t)) / plannable.length;
   for (const slot of plannable) {
@@ -649,7 +675,12 @@ function buildWhy(
     if (first) {
       out.push({
         type: first,
-        headline: first === "podcast" ? "More podcasts" : "Speaking time",
+        headline:
+          first === "podcast"
+            ? "More podcasts"
+            : first === "video"
+              ? "More videos"
+              : "Speaking time",
         detail: `${SKILL_NAME[ws.skill]} is your ${adjective} skill (${Math.round(ws.pct)}%), so there is more of what trains it.`,
         source: "skills",
       });

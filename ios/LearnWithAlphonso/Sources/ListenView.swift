@@ -59,7 +59,7 @@ struct ListenView: View {
                 }
             }
             .screenScene(.listen)
-            .navigationTitle("Listen")
+            .navigationTitle("Library")
             .searchable(text: $searchQuery, prompt: "Search episodes")
         }
         .tint(AlphonsoColor.moss)
@@ -112,50 +112,54 @@ struct ListenView: View {
                 episodes: knownEpisodes
             )
             if offline.isEmpty {
+                withWatchShelf {
+                    ContentUnavailableView {
+                        Label("You're offline", systemImage: "wifi.slash")
+                    } description: {
+                        Text("Download episodes while you have a connection and they'll play here.")
+                    } actions: {
+                        Button("Try again") { Task { await load() } }
+                            .tint(AlphonsoColor.moss)
+                    }
+                    .padding(AlphonsoSpacing.md)
+                    .alphonsoGlass()
+                }
+            } else {
+                OfflineEpisodeList(episodes: offline, player: player, downloads: downloads)
+            }
+        } else if let errorMessage {
+            withWatchShelf {
                 ContentUnavailableView {
-                    Label("You're offline", systemImage: "wifi.slash")
+                    Label("Couldn't load episodes", systemImage: "exclamationmark.triangle")
                 } description: {
-                    Text("Download episodes while you have a connection and they'll play here.")
+                    Text(errorMessage)
                 } actions: {
                     Button("Try again") { Task { await load() } }
                         .tint(AlphonsoColor.moss)
                 }
                 .padding(AlphonsoSpacing.md)
                 .alphonsoGlass()
-                .padding(AlphonsoSpacing.md)
-            } else {
-                OfflineEpisodeList(episodes: offline, player: player, downloads: downloads)
             }
-        } else if let errorMessage {
-            ContentUnavailableView {
-                Label("Couldn't load episodes", systemImage: "exclamationmark.triangle")
-            } description: {
-                Text(errorMessage)
-            } actions: {
-                Button("Try again") { Task { await load() } }
-                    .tint(AlphonsoColor.moss)
-            }
-            .padding(AlphonsoSpacing.md)
-            .alphonsoGlass()
-            .padding(AlphonsoSpacing.md)
         } else if visibleFolders.isEmpty {
-            // A course with nothing published is a stated state, not a blank list.
-            ContentUnavailableView {
-                VStack(spacing: AlphonsoSpacing.sm) {
-                    MascotTile(moment: .emptyState, size: 120, tone: .mint)
-                        .alphonsoLift()
-                        .accessibilityHidden(true)
-                    Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
+            // No podcasts is a stated state, not a blank list. The Watch shelf still shows above it when the course
+            // has published videos; with neither podcasts nor videos this is all there is.
+            withWatchShelf {
+                ContentUnavailableView {
+                    VStack(spacing: AlphonsoSpacing.sm) {
+                        MascotTile(moment: .emptyState, size: 120, tone: .mint)
+                            .alphonsoLift()
+                            .accessibilityHidden(true)
+                        Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
+                    }
+                } description: {
+                    Text(PodcastLibraryCopy.emptyMessage)
+                } actions: {
+                    Button("Refresh") { Task { await load() } }
+                        .tint(AlphonsoColor.moss)
                 }
-            } description: {
-                Text(PodcastLibraryCopy.emptyMessage)
-            } actions: {
-                Button("Refresh") { Task { await load() } }
-                    .tint(AlphonsoColor.moss)
+                .padding(AlphonsoSpacing.md)
+                .alphonsoGlass()
             }
-            .padding(AlphonsoSpacing.md)
-            .alphonsoGlass()
-            .padding(AlphonsoSpacing.md)
         } else {
             // The Listen home is the rooms shelf (ListenShelfViews.swift); a folder opens its own episode list.
             ListenShelfRoot(
@@ -168,6 +172,19 @@ struct ListenView: View {
                 onEpisodesLoaded: rememberEpisodes
             )
         }
+    }
+
+    /// The podcast-side placeholder (empty, offline, failed) under the Watch shelf, so published videos and path video
+    /// stops stay reachable when there is nothing to list. The shelf draws nothing when the course has no videos.
+    private func withWatchShelf<Content: View>(@ViewBuilder _ placeholder: () -> Content) -> some View {
+        ScrollView {
+            VStack(spacing: AlphonsoSpacing.md) {
+                WatchShelfHost(session: session, player: player, course: courseCode)
+                placeholder()
+            }
+            .padding(AlphonsoSpacing.md)
+        }
+        .miniPlayerClearance(player)
     }
 
     /// Keeps one entry per episode id, so the offline listing can name a
@@ -297,7 +314,7 @@ private struct PodcastFolderListing: View {
     var body: some View {
         List {
             // A large header over the studio scene; it also reports the scroll position for the parallax.
-            ListenSceneHeader(title: folder?.title ?? "Listen", subtitle: folder == nil ? "Podcasts to practice your ear" : "Episodes and folders")
+            ListenSceneHeader(title: folder?.title ?? "Library", subtitle: folder == nil ? "Podcasts and videos to practice your ear" : "Episodes and folders")
                 .sceneScrollProbe()
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
@@ -394,7 +411,7 @@ private struct PodcastFolderListing: View {
         .scrollContentBackground(.hidden)
         .miniPlayerClearance(player)
         .screenScene(.listen, if: showsScene)
-        .navigationTitle(folder?.title ?? "Listen")
+        .navigationTitle(folder?.title ?? "Library")
         .task(id: folder?.id) { await loadEpisodes() }
     }
 

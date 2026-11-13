@@ -1,4 +1,4 @@
-import type { Goal, Interest } from "../lib/learner-profile";
+import { GOALS, INTERESTS, type Goal, type Interest } from "../lib/learner-profile";
 import type { Skill } from "../lib/profile-data";
 import type { Level } from "./levels";
 
@@ -122,3 +122,19 @@ export const CAMPAIGN_TAGS: Readonly<Record<string, PathTag>> = {
 
 export const podcastTagKey = (course: string, folder: string, slug: string) =>
   `${course}/${folder}/${slug}`;
+
+/**
+ * Alphonso videos (Library > Watch) carry their tag in the database row, not here: a video is published by the owner
+ * with `scripts/video-tool.ts --tags travel,food,...`, and a label that names a first-run goal or interest puts the video
+ * on that learner's path (anything else is just a label). The level is the row's level; a video trains listening
+ * (it is captioned, and heard) and the phrase it teaches.
+ */
+export const VIDEO_SKILLS: readonly Skill[] = ["listening", "vocabulary"];
+export function videoPathTag(level: Level, tags: readonly string[]): PathTag {
+  return {
+    level,
+    goals: GOALS.filter((g) => tags.includes(g)),
+    interests: INTERESTS.filter((i) => tags.includes(i)),
+    skills: VIDEO_SKILLS,
+  };
+}

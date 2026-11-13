@@ -10,7 +10,16 @@ works now_.
 
 ## Unreleased
 
-Nothing here yet except work in progress: the Library tab with a Watch shelf of Alphonso tutor videos (branch `feat/library-watch`, not merged; it renames Listen to Library). The pipeline that makes the videos is documented in `docs/VIDEO-PLAYBOOK.md` (tools in `scripts/video/`).
+### Library tab with a Watch shelf (2026-11-14)
+
+The Listen tab is now **Library** on web, iOS and Android (route `/listen`, deep links and stored ids unchanged). It holds the
+podcasts and a **Watch** shelf of short vertical Alphonso videos for the learner's course (hidden when there are none). A video
+opens in a captioned player sheet (captions on by default, scrubber, speed) and ends with one tap to a matching practice
+item; watching is recorded per user (`video_watches`) and videos are a new stop kind on Your learning path. Migration
+`20261115100000_videos_watch_shelf.sql` adds `videos`, `video_watches`, `save_video_progress()` and the public `videos` bucket.
+The owner uploads and publishes videos with `scripts/video-tool.ts`; the pipeline that makes them is `docs/VIDEO-PLAYBOOK.md` (tools in `scripts/video/`). Analytics: `video_started`, `video_completed`.
+
+### Your learning path (2026-11-13)
 
 ### Build 62 batch (2026-11-13, #480 to #498; cut as iOS build 62, #498, on TestFlight and not submitted)
 

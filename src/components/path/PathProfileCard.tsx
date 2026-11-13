@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { Course } from "@/data/courses";
 import { usePath } from "@/lib/learning-path-client";
-import { PATH_TYPE_INFO } from "@/lib/path-plan";
+import { PATH_TYPE_INFO, visibleStreaks } from "@/lib/path-plan";
 import { TypeBadge } from "./PathParts";
 
 /**
@@ -32,6 +32,7 @@ export function PathProfileCard({ course }: { course: Course }) {
     );
   }
   const p = state.path;
+  const tiles = visibleStreaks(p.streaks);
   const pct = p.weekMinutes
     ? Math.min(100, Math.round((100 * p.weekDoneMinutes) / p.weekMinutes))
     : 0;
@@ -64,8 +65,11 @@ export function PathProfileCard({ course }: { course: Course }) {
           This week: {p.weekDoneMinutes} of {p.weekMinutes} min
         </small>
       </div>
-      <ul aria-label="Streak and minutes per activity" className="grid grid-cols-4 gap-1.5">
-        {p.streaks.map((s) => (
+      <ul
+        aria-label="Streak and minutes per activity"
+        className={`grid gap-1.5 ${tiles.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}
+      >
+        {tiles.map((s) => (
           <li key={s.type}>
             <Link
               to="/path/week"

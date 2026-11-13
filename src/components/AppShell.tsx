@@ -138,7 +138,7 @@ export function BottomTabs() {
             />
           </svg>
         </TabItem>
-        <TabItem to="/listen" label="Listen" active={pathname.startsWith("/listen")}>
+        <TabItem to="/listen" label="Library" active={pathname.startsWith("/listen")}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
               d="M4 14v-2a8 8 0 0 1 16 0v2"

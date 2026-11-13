@@ -1,6 +1,6 @@
-import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, Outlet, useChildMatches, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { AI_NARRATED_LABEL } from "../../lib/podcast-label";
@@ -10,6 +10,9 @@ import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { buildShelves } from "../../lib/listen-library";
 import { ListenLibraryView, ListenShelfView } from "../../components/ListenLibrary";
+import { VideoPlayerSheet } from "../../components/VideoPlayerSheet";
+import { listVideos, saveVideoProgress } from "../../lib/video.functions";
+import type { LibraryVideo } from "../../lib/video-library";
 import { Icon3D } from "../../components/Icon3D";
 import { PodcastQuizLauncher } from "../../components/PodcastQuizLauncher";
 import { fetchQuizEpisodeIds } from "../../lib/podcast-quiz.functions";
@@ -18,15 +21,22 @@ import { tileTone, type TileTone, TILE_TONE_CLASSES } from "../../lib/tile-tones
 
 export const Route = createFileRoute("/_authenticated/listen")({
   component: ListenPage,
+  // The path opens a video stop as /listen?video=<id>; the URL stays /listen so links and notifications keep working.
+  validateSearch: (search: Record<string, unknown>): { video?: string } =>
+    typeof search.video === "string" && search.video ? { video: search.video } : {},
   head: () => ({
     meta: [
-      { title: "Listen — Alphonso" },
+      { title: "Library — Alphonso" },
       {
         name: "description",
-        content: "Short audio episodes to practice listening, organised by course and level.",
+        content:
+          "Short audio episodes and Alphonso videos to practice listening, organised by course and level.",
       },
-      { property: "og:title", content: "Listen — Alphonso" },
-      { property: "og:description", content: "Short audio episodes for listening practice." },
+      { property: "og:title", content: "Library — Alphonso" },
+      {
+        property: "og:description",
+        content: "Short audio episodes and Alphonso videos for listening practice.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -129,7 +139,7 @@ export function ListenFolderView({
       <div className="px-5 py-8">
         <SceneBackdrop scene="listen" />
         <div data-surface className="relative z-10 rounded-3xl bg-ds-card/90 p-5 backdrop-blur-md">
-          <h1 className="font-display text-3xl font-bold text-ds-ink">Listen</h1>
+          <h1 className="font-display text-3xl font-bold text-ds-ink">Library</h1>
           <p className="mt-3 text-sm text-ds-ink-soft/80">
             We couldn&apos;t find that folder. It may have been renamed or removed.
           </p>
@@ -153,7 +163,7 @@ export function ListenFolderView({
       <SceneBackdrop scene="listen" />
       <div className="relative z-10">
         <h1 className="font-display text-3xl font-bold text-ds-ink">
-          {current?.title ?? "Listen"}
+          {current?.title ?? "Library"}
         </h1>
         {current?.description ? (
           <p className="mt-1 text-sm text-ds-ink-soft">{current.description}</p>
@@ -255,7 +265,24 @@ export function ListenFolderView({
  * Shared by `/listen` and the `/listen/$` splat route: fetches the flat
  * folder list, resolves the path, then fetches that folder's episodes.
  */
-export function ListenBrowser({ segments }: { segments: string[] }) {
+export function ListenBrowser({
+  segments,
+  openVideoId,
+}: {
+  segments: string[];
+  /** A video to open on arrival (a path stop links here); ignored when it is not in the shelf. */
+  openVideoId?: string;
+}) {
+  const queryClient = useQueryClient();
+  // Videos are their own read: a failure shows the shelf's own error line and never blocks the podcasts.
+  const videosQuery = useQuery({ queryKey: ["videos"], queryFn: () => listVideos() });
+  const videos = videosQuery.data;
+  const [watching, setWatching] = useState<string | null>(openVideoId ?? null);
+  // A deep link followed while this page is mounted (/listen?video=x) reopens the player.
+  useEffect(() => {
+    if (openVideoId) setWatching(openVideoId);
+  }, [openVideoId]);
+  const watchingVideo: LibraryVideo | undefined = videos?.find((v) => v.id === watching);
   // One read for the whole shelf: folders, every episode, this user's progress and the month total.
   const { data: library, isLoading } = useQuery({
     queryKey: ["podcast-library"],
@@ -328,7 +355,13 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
       {searching ? (
         <PodcastSearchResults query={query} results={searchResults ?? []} isLoading={isSearching} />
       ) : segments.length === 0 ? (
-        <ListenLibraryView library={library} />
+        <ListenLibraryView
+          library={library}
+          videos={videos}
+          videosFailed={videosQuery.isError}
+          onRetryVideos={() => void videosQuery.refetch()}
+          onOpenVideo={(v) => setWatching(v.id)}
+        />
       ) : shelf ? (
         <ListenShelfView library={library} shelf={shelf} quizEpisodeIds={quizEpisodeIds} />
       ) : (
@@ -339,6 +372,22 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
           quizEpisodeIds={quizEpisodeIds}
         />
       )}
+      {watchingVideo ? (
+        <VideoPlayerSheet
+          key={watchingVideo.id}
+          video={watchingVideo}
+          onClose={() => {
+            setWatching(null);
+            void queryClient.invalidateQueries({ queryKey: ["videos"] });
+          }}
+          onSaveProgress={(seconds) => {
+            // Garnish, like the podcast position: a failed save must never interrupt the video.
+            void saveVideoProgress({
+              data: { videoId: watchingVideo.id, progressSeconds: seconds },
+            }).catch(() => undefined);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -350,10 +399,11 @@ export function ListenBrowser({ segments }: { segments: string[] }) {
  */
 export function ListenPage() {
   const hasChild = useChildMatches().length > 0;
+  const search = useSearch({ strict: false }) as { video?: string };
   if (hasChild) return <Outlet />;
   return (
     <MobileFrame>
-      <ListenBrowser segments={[]} />
+      <ListenBrowser segments={[]} openVideoId={search.video} />
     </MobileFrame>
   );
 }

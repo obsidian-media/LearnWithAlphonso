@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/listen/$")({
   component: ListenFolderPage,
   head: () => ({
     meta: [
-      { title: "Listen — Alphonso" },
+      { title: "Library — Alphonso" },
       {
         name: "description",
         content: "Short audio episodes to practice listening, organised by course and level.",

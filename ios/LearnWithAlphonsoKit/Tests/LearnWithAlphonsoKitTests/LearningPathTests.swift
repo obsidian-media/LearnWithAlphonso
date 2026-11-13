@@ -20,7 +20,7 @@ final class LearningPathTests: XCTestCase {
     }
 
     func testEveryCheckedInScenarioDecodes() throws {
-        for key in ["onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay"] {
+        for key in ["onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo"] {
             XCTAssertNoThrow(try LearningPathDecoding.path(from: try scenario(key)), key)
         }
     }
@@ -85,14 +85,36 @@ final class LearningPathTests: XCTestCase {
         XCTAssertEqual(p.mix.map(\.minutes).reduce(0, +), p.weekMinutes)
     }
 
-    func testEveryTypeHasAStreakTile() throws {
+    func testEveryTypeHasAStreakEntryButAnEmptyVideosTileIsNotDrawn() throws {
         let p = try path("onTrack")
-        XCTAssertEqual(p.streaks.map(\.kind), [.lesson, .podcast, .talk, .campaign])
+        XCTAssertEqual(p.streaks.map(\.kind), [.lesson, .podcast, .talk, .campaign, .video])
+        XCTAssertEqual(PathStreak.visible(p.streaks).map(\.kind), [.lesson, .podcast, .talk, .campaign])
     }
 
-    func testAnUnknownTypeFromANewerServerIsDrawnGenerically() {
-        XCTAssertEqual(PathKind(raw: "video"), .unknown)
+    func testAVideoScenarioCarriesAVideoInTheMixAndAVideoStopWithAVideoRef() throws {
+        let p = try path("withVideo")
+        XCTAssertGreaterThan(p.mix.first { $0.kind == .video }?.minutes ?? 0, 0)
+        let stops = p.week.flatMap(\.items).filter { $0.kind == .video }
+        XCTAssertEqual(stops.count, 1)
+        XCTAssertEqual(stops.first?.ref?.kind, "video")
+        XCTAssertEqual(stops.first?.ref?.id, "vid-order")
+        XCTAssertEqual(PathStopRouting.destination(for: stops.first?.ref, done: false), .video("vid-order"))
+        XCTAssertEqual(try path("behind").mix.first { $0.kind == .video }?.minutes, 0)
+    }
+
+    func testVideosAreSwitchableOnlyOnceThereIsSomethingToWatchOrTheyAreOff() throws {
+        let none = try path("onTrack")
+        XCTAssertEqual(PathKind.switchable(mix: none.mix, off: none.off), [.podcast, .talk, .campaign])
+        let some = try path("withVideo")
+        XCTAssertEqual(PathKind.switchable(mix: some.mix, off: some.off), [.podcast, .talk, .campaign, .video])
+        XCTAssertEqual(PathKind.switchable(mix: none.mix, off: ["video"]), [.podcast, .talk, .campaign, .video])
+    }
+
+    func testVideoIsAKnownTypeAndAnUnheardOfOneIsStillDrawnGenerically() {
+        XCTAssertEqual(PathKind(raw: "video"), .video)
         XCTAssertEqual(PathKind(raw: "podcast"), .podcast)
+        XCTAssertEqual(PathKind(raw: "hologram"), .unknown)
+        XCTAssertEqual(PathKind.video.wire, "video")
     }
 
     func testNoGoalDecodesAsNil() throws {
