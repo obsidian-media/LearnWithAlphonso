@@ -23,14 +23,6 @@ struct ListenShelfRoot: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isLoading = true
     @State private var loadFailed = false
-    /// The Watch shelf: Alphonso videos, read on their own so a failed read never hides the podcasts.
-    @State private var videos: [LibraryVideo] = []
-    @State private var videosLoaded = false
-    @State private var videosFailed = false
-    @State private var watching: LibraryVideo?
-    /// Where the player's "practice this" goes once the sheet has finished closing.
-    @State private var practiceAfterClose: PathDestination?
-    @Environment(PathDeepLink.self) private var deepLink
 
     private let courses: [(code: String, label: String)] = [("en", "English"), ("fr", "Français"), ("es", "Español")]
     private var activeCourse: String { course ?? initialCourse }
@@ -66,17 +58,7 @@ struct ListenShelfRoot: View {
                     ContinueCard(target: target, player: player, downloads: downloads, networkMonitor: networkMonitor, queue: target.shelf.episodes)
                 }
 
-                if videosFailed {
-                    HStack {
-                        Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
-                        Spacer(minLength: AlphonsoSpacing.sm)
-                        Button("Try again") { Task { await loadVideos() } }.tint(AlphonsoColor.moss)
-                    }
-                    .padding(AlphonsoSpacing.md)
-                    .alphonsoGlass()
-                } else {
-                    WatchShelfSection(videos: VideoShelf.shelf(videos, course: activeCourse)) { watching = $0 }
-                }
+                WatchShelfHost(session: session, player: player, course: activeCourse)
 
                 if !levels.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -109,6 +91,9 @@ struct ListenShelfRoot: View {
                 } else if shown.isEmpty {
                     VStack(spacing: AlphonsoSpacing.sm) {
                         MascotTile(moment: .emptyState, size: 120, tone: .mint).accessibilityHidden(true)
+                        if episodes.isEmpty {
+                            Text(PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)).dsText(.title).foregroundStyle(AlphonsoColor.ink)
+                        }
                         Text(episodes.isEmpty
                             ? PodcastLibraryCopy.emptyMessage
                             : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.")
@@ -141,6 +126,64 @@ struct ListenShelfRoot: View {
         .miniPlayerClearance(player)
         .navigationTitle("Library")
         .task { await load() }
+        // Back from a folder, or after an episode played, the shelf reflects what was just heard.
+        .task(id: player.episode?.id) { await reloadProgress() }
+    }
+
+    private func load() async {
+        guard let client = makePodcastClient(session: session) else { isLoading = false; loadFailed = true; return }
+        isLoading = true
+        loadFailed = false
+        do {
+            episodes = try await client.fetchEpisodes()
+            onEpisodesLoaded(episodes)
+        } catch {
+            if !Task.isCancelled { loadFailed = true }
+        }
+        await reloadProgress()
+        isLoading = false
+    }
+
+    /// Progress is garnish: a failed read shows an unlistened shelf rather than an error.
+    private func reloadProgress() async {
+        guard let client = makePodcastClient(session: session) else { return }
+        if let rows = try? await client.fetchListenProgress() { progress = rows }
+        if let seconds = try? await client.fetchMonthListenedSeconds() { monthSeconds = seconds }
+    }
+}
+
+/// The Watch shelf with its player sheet and the path deep link into it. It owns the videos read, so the shelf shows
+/// whenever there are published videos: beside the rooms, and also when the podcast side is empty, offline or failed
+/// (ListenView). It draws nothing when the course has no videos, so the podcast empty state is all that is left when
+/// there are neither podcasts nor videos.
+struct WatchShelfHost: View {
+    let session: Session
+    let player: PodcastAudioPlayer
+    let course: String
+
+    /// Alphonso videos, read on their own so a failed read never hides the podcasts.
+    @State private var videos: [LibraryVideo] = []
+    @State private var videosLoaded = false
+    @State private var videosFailed = false
+    @State private var watching: LibraryVideo?
+    /// Where the player's "practice this" goes once the sheet has finished closing.
+    @State private var practiceAfterClose: PathDestination?
+    @Environment(PathDeepLink.self) private var deepLink
+
+    var body: some View {
+        Group {
+            if videosFailed {
+                HStack {
+                    Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
+                    Spacer(minLength: AlphonsoSpacing.sm)
+                    Button("Try again") { Task { await loadVideos() } }.tint(AlphonsoColor.moss)
+                }
+                .padding(AlphonsoSpacing.md)
+                .alphonsoGlass()
+            } else {
+                WatchShelfSection(videos: VideoShelf.shelf(videos, course: course)) { watching = $0 }
+            }
+        }
         .task { await loadVideos() }
         // A path stop for a video lands here: open its player as soon as the videos are known.
         .task(id: deepLink.pending) { openPendingVideo() }
@@ -164,22 +207,6 @@ struct ListenShelfRoot: View {
             )
             .presentationDetents([.large])
         }
-        // Back from a folder, or after an episode played, the shelf reflects what was just heard.
-        .task(id: player.episode?.id) { await reloadProgress() }
-    }
-
-    private func load() async {
-        guard let client = makePodcastClient(session: session) else { isLoading = false; loadFailed = true; return }
-        isLoading = true
-        loadFailed = false
-        do {
-            episodes = try await client.fetchEpisodes()
-            onEpisodesLoaded(episodes)
-        } catch {
-            if !Task.isCancelled { loadFailed = true }
-        }
-        await reloadProgress()
-        isLoading = false
     }
 
     private func loadVideos() async {
@@ -199,13 +226,6 @@ struct ListenShelfRoot: View {
         guard case let .video(id)? = deepLink.pending, videosLoaded else { return }
         deepLink.pending = nil
         if let video = videos.first(where: { $0.id == id }) { watching = video }
-    }
-
-    /// Progress is garnish: a failed read shows an unlistened shelf rather than an error.
-    private func reloadProgress() async {
-        guard let client = makePodcastClient(session: session) else { return }
-        if let rows = try? await client.fetchListenProgress() { progress = rows }
-        if let seconds = try? await client.fetchMonthListenedSeconds() { monthSeconds = seconds }
     }
 }
 

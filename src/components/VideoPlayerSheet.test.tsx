@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LibraryVideo } from "../lib/video-library";
+import { usePodcastPlayer } from "../lib/podcast-player";
 
 const tracked: { name: string; props: unknown }[] = [];
 vi.mock("../lib/analytics", () => ({
@@ -245,5 +246,25 @@ describe("errors", () => {
     expect(screen.getByText("We couldn't play this video.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(screen.queryByText("We couldn't play this video.")).toBeNull();
+  });
+});
+
+describe("with the podcast player", () => {
+  it("pauses the persistent podcast audio when the video plays", () => {
+    const { el } = setup();
+    usePodcastPlayer.setState({ isPlaying: true });
+    fireEvent.play(el);
+    expect(usePodcastPlayer.getState().isPlaying).toBe(false);
+  });
+});
+
+describe("video_completed", () => {
+  it("fires once per play-through of the sheet, not on every replay end", () => {
+    const { el } = setup();
+    fireEvent.play(el);
+    fireEvent.ended(el);
+    fireEvent.play(el);
+    fireEvent.ended(el);
+    expect(tracked.filter((t) => t.name === "video_completed")).toHaveLength(1);
   });
 });

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useChildMatches, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
@@ -278,6 +278,10 @@ export function ListenBrowser({
   const videosQuery = useQuery({ queryKey: ["videos"], queryFn: () => listVideos() });
   const videos = videosQuery.data;
   const [watching, setWatching] = useState<string | null>(openVideoId ?? null);
+  // A deep link followed while this page is mounted (/listen?video=x) reopens the player.
+  useEffect(() => {
+    if (openVideoId) setWatching(openVideoId);
+  }, [openVideoId]);
   const watchingVideo: LibraryVideo | undefined = videos?.find((v) => v.id === watching);
   // One read for the whole shelf: folders, every episode, this user's progress and the month total.
   const { data: library, isLoading } = useQuery({

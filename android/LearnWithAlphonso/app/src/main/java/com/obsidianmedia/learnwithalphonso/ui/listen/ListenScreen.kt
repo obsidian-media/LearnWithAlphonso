@@ -114,10 +114,12 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
             state.offline != null || (!isConnected && state.folders.isEmpty()) -> {
                 val offline = state.offline ?: emptyList()
                 if (offline.isEmpty()) {
-                    Centered {
-                        Text("You're offline", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                        Text("Download episodes while you have a connection and they'll play here.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                        AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+                    WithWatchShelf(container, state.courseCode, onOpenPractice) {
+                        Centered {
+                            Text("You're offline", style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                            Text("Download episodes while you have a connection and they'll play here.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
+                            AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+                        }
                     }
                 } else {
                     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -128,16 +130,21 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                     }
                 }
             }
-            state.error != null -> Centered {
-                Text("Couldn't load episodes", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                Text(state.error!!, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+            state.error != null -> WithWatchShelf(container, state.courseCode, onOpenPractice) {
+                Centered {
+                    Text("Couldn't load episodes", style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                    Text(state.error!!, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
+                    AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+                }
             }
-            state.folders.isEmpty() -> Centered {
-                // A course with nothing published is a stated state, not a blank list.
-                Text(PodcastLibrary.emptyTitle(state.courseCode), style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                Text(PodcastLibrary.EMPTY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+            // No podcasts is a stated state, not a blank list; the Watch shelf still shows above it when the course has
+            // published videos. With neither podcasts nor videos the shelf draws nothing and this is all there is.
+            state.folders.isEmpty() -> WithWatchShelf(container, state.courseCode, onOpenPractice) {
+                Centered {
+                    Text(PodcastLibrary.emptyTitle(state.courseCode), style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                    Text(PodcastLibrary.EMPTY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
+                    AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
+                }
             }
             // The Listen home is the rooms shelf (ListenShelfUi.kt); a folder opens its own episode list.
             else -> ListenShelfRoot(container, vm, onOpenFolder, onOpenPractice)
@@ -216,6 +223,15 @@ private fun SearchResults(container: AppContainer, state: ListenUiState, results
 @Composable
 private fun Message(text: String) {
     Text(text, style = MaterialTheme.typography.bodyMedium, color = AlphonsoColor.palette.inkSoft, modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center)
+}
+
+/** The podcast-side placeholder (empty, offline, failed) under the Watch shelf, which draws nothing when there are no videos. */
+@Composable
+private fun WithWatchShelf(container: AppContainer, course: String, onOpenPractice: (VideoPracticeTarget) -> Unit, content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.padding(horizontal = 16.dp)) { WatchShelfHost(container, course, onOpenPractice) }
+        Box(Modifier.weight(1f)) { content() }
+    }
 }
 
 @Composable

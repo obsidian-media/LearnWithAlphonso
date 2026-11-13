@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "./Modal";
 import { track } from "../lib/analytics";
 import { clock } from "../lib/listen-library";
+import { usePodcastPlayer } from "../lib/podcast-player";
 import { usePrefersReducedMotion } from "../lib/use-prefers-reduced-motion";
 import {
   CAPTIONS_DEFAULT_ON,
@@ -77,6 +78,7 @@ export function VideoPlayerSheet({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastSaved = useRef(0);
   const started = useRef(false);
+  const completedTracked = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(video.durationSeconds);
@@ -185,6 +187,8 @@ export function VideoPlayerSheet({
             onPlay={() => {
               setPlaying(true);
               setEnded(false);
+              // The persistent podcast <audio> must not keep playing under the video.
+              usePodcastPlayer.getState().setPlaying(false);
               if (!started.current) {
                 started.current = true;
                 void track("video_started", { video_id: video.id, course: video.course });
@@ -199,7 +203,11 @@ export function VideoPlayerSheet({
               setPlaying(false);
               setEnded(true);
               save(videoRef.current?.duration ?? duration);
-              void track("video_completed", { video_id: video.id, course: video.course });
+              // Once per sheet session: a replay's end must not count as a second completion.
+              if (!completedTracked.current) {
+                completedTracked.current = true;
+                void track("video_completed", { video_id: video.id, course: video.course });
+              }
             }}
             onError={() => setFailed(true)}
           >

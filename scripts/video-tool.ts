@@ -223,7 +223,7 @@ async function cmdPublish(flags: CliFlags, publish: boolean) {
   if (publish) {
     const { data: listed, error: listError } = await db.storage
       .from(VIDEO_BUCKET)
-      .list(row.course, { search: slug, limit: 20 });
+      .list(row.course, { limit: 1000 });
     if (listError) fail(`could not list the bucket: ${listError.message}`);
     const existing = (listed ?? []).map((o: { name: string }) => `${row.course}/${o.name}`);
     const problems = publishProblems(row, existing);

@@ -100,6 +100,43 @@ private fun RoomImage(room: String, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * The Watch shelf's player sheet and the path-stop deep link into it. Returns the function that opens a video. Shared by
+ * the rooms home and by the empty / offline / failed placeholders, so published videos and path video stops stay reachable
+ * when there is nothing to list on the podcast side.
+ */
+@Composable
+fun rememberWatchSheet(container: AppContainer, watchVm: WatchViewModel, watch: WatchUiState, onOpenPractice: (VideoPracticeTarget) -> Unit): (LibraryVideo) -> Unit {
+    var watching by remember { mutableStateOf<LibraryVideo?>(null) }
+    // A path stop for a video lands here: open its player as soon as the videos are known.
+    val pendingVideo by container.pendingVideoId.collectAsState()
+    LaunchedEffect(pendingVideo, watch.loaded) {
+        val id = pendingVideo ?: return@LaunchedEffect
+        if (!watch.loaded) return@LaunchedEffect
+        container.pendingVideoId.value = null
+        watch.videos.firstOrNull { it.id == id }?.let { watching = it }
+    }
+    watching?.let { video ->
+        VideoPlayerSheet(
+            video = video,
+            onSaveProgress = { watchVm.saveProgress(video.id, it) },
+            onPractice = { target -> watching = null; onOpenPractice(target) },
+            onDismiss = { watching = null; watchVm.load() },
+        )
+    }
+    return { watching = it }
+}
+
+/** The Watch shelf on its own (no rooms): draws nothing when the course has no videos and the read did not fail. */
+@Composable
+fun WatchShelfHost(container: AppContainer, course: String, onOpenPractice: (VideoPracticeTarget) -> Unit) {
+    val watchVm: WatchViewModel = viewModel { WatchViewModel(container.podcastClient) }
+    val watch by watchVm.state.collectAsState()
+    val openVideo = rememberWatchSheet(container, watchVm, watch, onOpenPractice)
+    val videos = VideoShelf.shelf(watch.videos, course)
+    if (watch.failed || videos.isNotEmpty()) WatchShelfSection(videos, watch.failed, onRetry = watchVm::load, onOpen = openVideo)
+}
+
 /** The Listen home (round 6.1, option A): continue card, course switch, level chips, a painted room per folder. All logic is [ListenShelf]. */
 @Composable
 fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
@@ -110,15 +147,7 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val scope = rememberCoroutineScope()
     val watchVm: WatchViewModel = viewModel { WatchViewModel(container.podcastClient) }
     val watch by watchVm.state.collectAsState()
-    var watching by remember { mutableStateOf<LibraryVideo?>(null) }
-    // A path stop for a video lands here: open its player as soon as the videos are known.
-    val pendingVideo by container.pendingVideoId.collectAsState()
-    LaunchedEffect(pendingVideo, watch.loaded) {
-        val id = pendingVideo ?: return@LaunchedEffect
-        if (!watch.loaded) return@LaunchedEffect
-        container.pendingVideoId.value = null
-        watch.videos.firstOrNull { it.id == id }?.let { watching = it }
-    }
+    val openVideo = rememberWatchSheet(container, watchVm, watch, onOpenPractice)
     var course by rememberSaveable(state.courseCode) { mutableStateOf(state.courseCode) }
     var level by rememberSaveable(course) { mutableStateOf<String?>(null) }
     // Back from a folder, or after an episode played, the shelf reflects what was just heard.
@@ -130,15 +159,6 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val levels = ListenShelf.levels(shelves)
     val shown = level?.takeIf { it in levels }?.let { l -> shelves.filter { it.level == l } } ?: shelves
     val target = remember(shelves, state.progress) { ListenShelf.continueListening(shelves, state.progress) }
-
-    watching?.let { video ->
-        VideoPlayerSheet(
-            video = video,
-            onSaveProgress = { watchVm.saveProgress(video.id, it) },
-            onPractice = { target -> watching = null; onOpenPractice(target) },
-            onDismiss = { watching = null; watchVm.load() },
-        )
-    }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
@@ -189,7 +209,7 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
         }
         val watchVideos = VideoShelf.shelf(watch.videos, course)
         if (watch.failed || watchVideos.isNotEmpty()) {
-            item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = { watching = it }) }
+            item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo) }
         }
         if (levels.isNotEmpty()) {
             item {
