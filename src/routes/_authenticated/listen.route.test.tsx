@@ -12,6 +12,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("../../components/AppShell", () => ({
   MobileFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
+vi.mock("../../lib/video.functions", () => ({
+  listVideos: async () => [],
+  saveVideoProgress: async () => undefined,
+}));
 vi.mock("../../components/PodcastQuizLauncher", () => ({ PodcastQuizLauncher: () => null }));
 
 afterEach(cleanup);

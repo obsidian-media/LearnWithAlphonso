@@ -34,6 +34,8 @@ const data = (over: Partial<PathData> = {}): PathData => ({
     },
   ],
   listen: [],
+  videos: [],
+  videoWatches: [],
   calls: [],
   stars: [],
   profile: { showFlag: false, goal: "travel", interests: ["food"], dailyMinutes: 10 },

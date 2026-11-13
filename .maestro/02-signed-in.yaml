@@ -15,12 +15,12 @@ appId: com.obsidianmedia.learnwithalphonso
       UITestSkipOnboarding: true
 # The five-tab bar only exists once signed in.
 - assertVisible: "Learn"
-- assertVisible: "Listen"
+- assertVisible: "Library"
 - assertVisible: "Practice"
 - assertVisible: "Hector"
 - assertVisible: "Profile"
 # Walk the primary surfaces a user (and a reviewer) actually visits.
-- tapOn: "Listen"
+- tapOn: "Library"
 - tapOn: "Practice"
 - assertVisible: "Practice speaking"
 - tapOn: "Profile"

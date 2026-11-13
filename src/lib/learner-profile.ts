@@ -42,7 +42,7 @@ export const HEARD_FROM = [
 ] as const;
 export const PROFILE_COURSES = ["en", "fr", "es"] as const;
 /** Learning-path types a learner may switch off (lessons are the backbone and can never be switched off). */
-export const PATH_OPTIONAL_TYPES = ["podcast", "talk", "campaign"] as const;
+export const PATH_OPTIONAL_TYPES = ["podcast", "talk", "campaign", "video"] as const;
 export type PathOptionalType = (typeof PATH_OPTIONAL_TYPES)[number];
 
 /** ISO 639-1 codes for the "I speak" picker; names come from Intl.DisplayNames. */

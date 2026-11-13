@@ -3,6 +3,10 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ListenFolderView, PodcastSearchResults } from "./listen";
 
+vi.mock("../../lib/video.functions", () => ({
+  listVideos: async () => [],
+  saveVideoProgress: async () => undefined,
+}));
 vi.mock("../../components/PodcastQuizLauncher", () => ({
   PodcastQuizLauncher: ({ episode }: { episode: { title: string } }) => (
     <button type="button">{`Take the quiz: ${episode.title}`}</button>
@@ -162,7 +166,7 @@ describe("Listen in the studio", () => {
     expect(container.querySelector('[data-scene="listen"] img')?.getAttribute("src")).toBe(
       "/scenes/listen.jpg",
     );
-    expect(screen.getByRole("heading", { level: 1, name: "Listen" }).className).toContain(
+    expect(screen.getByRole("heading", { level: 1, name: "Library" }).className).toContain(
       "text-3xl",
     );
   });

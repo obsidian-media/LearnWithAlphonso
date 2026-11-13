@@ -37,6 +37,8 @@ enum class AnalyticsEvent(val wire: String, val allowed: Map<String, PropertyKin
     PURCHASE_STARTED("purchase_started", mapOf("source" to PropertyKind.IDENTIFIER)),
     EXPLAIN_REQUESTED("explain_requested", mapOf("source" to PropertyKind.IDENTIFIER)),
     PATH_BUILT("path_built", mapOf("course" to PropertyKind.IDENTIFIER)),
+    VIDEO_STARTED("video_started", mapOf("video_id" to PropertyKind.IDENTIFIER, "course" to PropertyKind.IDENTIFIER)),
+    VIDEO_COMPLETED("video_completed", mapOf("video_id" to PropertyKind.IDENTIFIER, "course" to PropertyKind.IDENTIFIER)),
 }
 
 enum class PropertyKind { IDENTIFIER, NUMBER }

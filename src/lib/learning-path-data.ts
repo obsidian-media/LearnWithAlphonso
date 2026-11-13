@@ -13,6 +13,7 @@ import {
   PODCAST_TAGS,
   SCENARIO_TAGS,
   podcastTagKey,
+  videoPathTag,
   type PathTag,
 } from "@/data/path-tags";
 import { SCENARIOS } from "@/data/scenarios";
@@ -57,6 +58,16 @@ export type PathData = {
     levelId: string | null;
   }[];
   listen: { episodeId: string; completedAt: string | null }[];
+  /** Published Alphonso videos of this course (Library > Watch). */
+  videos: {
+    id: string;
+    title: string;
+    durationSeconds: number;
+    levelId: string | null;
+    tags: string[];
+  }[];
+  /** This learner's watches (video_watches). */
+  videoWatches: { videoId: string; completedAt: string | null }[];
   /** Finished practice calls. */
   calls: {
     kind: "scenario" | "scene";
@@ -154,6 +165,18 @@ export function buildLearningPath(data: PathData): LearningPath | null {
       title: ep.title,
     });
   }
+  const videoById = new Map(data.videos.map((v) => [v.id, v]));
+  for (const w of data.videoWatches) {
+    const v = videoById.get(w.videoId);
+    if (!v || !w.completedAt) continue;
+    events.push({
+      type: "video",
+      day: dayOf(w.completedAt),
+      minutes: Math.max(1, Math.round(v.durationSeconds / 60)),
+      refId: v.id,
+      title: v.title,
+    });
+  }
   const campaigns = CAMPAIGNS.map((c) => localizeCampaign(c, course));
   const sceneTitle = new Map<string, string>();
   for (const c of campaigns)
@@ -245,6 +268,25 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     });
   }
 
+  const watched = new Set(data.videoWatches.filter((w) => w.completedAt).map((w) => w.videoId));
+  const videos: Candidate[] = [];
+  for (const v of data.videos) {
+    if (watched.has(v.id) || !LEVEL_ORDER.includes(v.levelId as Level)) continue;
+    const tag = videoPathTag(v.levelId as Level, v.tags);
+    videos.push({
+      id: v.id,
+      type: "video",
+      title: v.title,
+      subtitle: "Video",
+      minutes: Math.max(1, Math.ceil(v.durationSeconds / 60)),
+      level: tag.level,
+      goals: tag.goals,
+      interests: tag.interests,
+      skills: tag.skills,
+      ref: { kind: "video", id: v.id },
+    });
+  }
+
   const stars = starLookup(data.stars);
   const unstarred = SCENARIOS.filter((s) => stars("scenario", s.id) === 0);
   const talkPool = unstarred.length > 0 ? unstarred : SCENARIOS;
@@ -294,6 +336,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     podcast: podcasts,
     talk: talks,
     campaign: campaignItems,
+    video: videos,
   };
   return planPath({
     now,

@@ -21,7 +21,7 @@ const SCREENS: { name: string; path: string; ready: string }[] = [
   { name: "learn", path: "/learn", ready: "Continue" },
   { name: "practice", path: "/converse", ready: "Scenarios" },
   { name: "lesson-overview", path: `/lesson/${LESSON.id}`, ready: "Start lesson" },
-  { name: "listen", path: "/listen", ready: "Listen" },
+  { name: "listen", path: "/listen", ready: "Library" },
   { name: "profile", path: "/profile", ready: "Achievements" },
 ];
 

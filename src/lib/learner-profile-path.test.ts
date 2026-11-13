@@ -15,7 +15,8 @@ describe("learner profile: path preferences", () => {
   });
   it("refuses switching lessons off, an unknown type, or a bad date", () => {
     expect(learnerProfilePatchSchema.safeParse({ pathOff: ["lesson"] }).success).toBe(false);
-    expect(learnerProfilePatchSchema.safeParse({ pathOff: ["video"] }).success).toBe(false);
+    expect(learnerProfilePatchSchema.safeParse({ pathOff: ["movie"] }).success).toBe(false);
+    expect(learnerProfilePatchSchema.safeParse({ pathOff: ["video"] }).success).toBe(true);
     expect(learnerProfilePatchSchema.safeParse({ pathTrimUntil: "tomorrow" }).success).toBe(false);
   });
   it("parses field by field and drops a bad value without losing the rest", () => {

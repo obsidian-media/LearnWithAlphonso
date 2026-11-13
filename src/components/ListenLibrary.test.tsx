@@ -6,6 +6,7 @@ import { usePodcastPlayer } from "../lib/podcast-player";
 import type { PodcastLibrary } from "../lib/podcast.functions";
 import { ListenLibraryView, ListenShelfView } from "./ListenLibrary";
 import { buildShelves } from "../lib/listen-library";
+import type { LibraryVideo } from "../lib/video-library";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -180,5 +181,74 @@ describe("Listen folder view", () => {
     render(<ListenShelfView library={l} shelf={shelfOf(l)} />);
     await userEvent.click(screen.getByRole("button", { name: /Episode title 3/ }));
     expect(usePodcastPlayer.getState().episode?.id).toBe("e3");
+  });
+});
+
+describe("Library: the Watch shelf", () => {
+  const vid = (over: Partial<LibraryVideo> = {}): LibraryVideo => ({
+    id: "v1",
+    slug: "en-a",
+    course: "en",
+    title: "I'd like vs I want",
+    description: null,
+    level: "A1",
+    durationSeconds: 49,
+    videoUrl: "https://x.test/a.mp4",
+    posterUrl: null,
+    captionsUrl: "https://x.test/a.vtt",
+    tags: [],
+    practice: null,
+    sortOrder: 0,
+    progressSeconds: 0,
+    completedAt: null,
+    ...over,
+  });
+
+  it("is named Library, and the podcasts and the videos live on the same page", () => {
+    render(<ListenLibraryView library={lib()} videos={[vid()]} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Library" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Watch" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Bookshop/ })).toBeInTheDocument();
+  });
+
+  it("hides the shelf (no empty box) when there are no videos, none for this course, or they are still loading", () => {
+    const { rerender } = render(<ListenLibraryView library={lib()} videos={[]} />);
+    expect(screen.queryByTestId("watch-shelf")).toBeNull();
+    rerender(<ListenLibraryView library={lib()} videos={[vid({ course: "fr" })]} />);
+    expect(screen.queryByTestId("watch-shelf")).toBeNull();
+    rerender(<ListenLibraryView library={lib()} />);
+    expect(screen.queryByTestId("watch-shelf")).toBeNull();
+  });
+
+  it("follows the course switch: French videos appear under Français", async () => {
+    render(
+      <ListenLibraryView library={lib()} videos={[vid({ course: "fr", title: "Au café" })]} />,
+    );
+    expect(screen.queryByRole("button", { name: /Au café/ })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Français" }));
+    expect(screen.getByRole("button", { name: /Au café/ })).toBeInTheDocument();
+  });
+
+  it("opens the player for the tapped video", async () => {
+    const onOpenVideo = vi.fn();
+    render(<ListenLibraryView library={lib()} videos={[vid()]} onOpenVideo={onOpenVideo} />);
+    await userEvent.click(screen.getByRole("button", { name: /I'd like vs I want/ }));
+    expect(onOpenVideo).toHaveBeenCalledWith(expect.objectContaining({ id: "v1" }));
+  });
+
+  it("shows the existing error pattern with Try again when the videos fail to load, instead of hiding it", async () => {
+    const onRetryVideos = vi.fn();
+    render(
+      <ListenLibraryView
+        library={lib()}
+        videosFailed
+        onRetryVideos={onRetryVideos}
+        videos={undefined}
+      />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("We couldn't load the videos.");
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(onRetryVideos).toHaveBeenCalled();
+    expect(screen.queryByTestId("watch-shelf")).toBeNull();
   });
 });

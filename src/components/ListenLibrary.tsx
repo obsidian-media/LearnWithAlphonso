@@ -19,6 +19,8 @@ import {
 import type { PodcastLibrary } from "../lib/podcast.functions";
 import { slugPathFor } from "../lib/podcast-tree";
 import { PodcastQuizLauncher } from "./PodcastQuizLauncher";
+import { WatchShelf } from "./WatchShelf";
+import type { LibraryVideo } from "../lib/video-library";
 
 const COURSES: { id: Course; label: string }[] = [
   { id: "en", label: "English" },
@@ -63,8 +65,23 @@ function shelfLink(library: PodcastLibrary, shelf: Shelf) {
 
 const plural = (n: number) => `${n} ${n === 1 ? "episode" : "episodes"}`;
 
-/** The Listen home: continue-listening card, course switch, level chips, and a painted room per folder. */
-export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
+/**
+ * The Library home: continue-listening card, course switch, the Watch shelf of Alphonso videos, level chips, and a painted
+ * room per folder. `videos` is undefined while they load (nothing drawn); an empty or all-other-course list draws no shelf.
+ */
+export function ListenLibraryView({
+  library,
+  videos,
+  videosFailed = false,
+  onRetryVideos,
+  onOpenVideo,
+}: {
+  library: PodcastLibrary;
+  videos?: readonly LibraryVideo[];
+  videosFailed?: boolean;
+  onRetryVideos?: () => void;
+  onOpenVideo?: (video: LibraryVideo) => void;
+}) {
   const activeCourse = useProgress((s) => s.course);
   const [course, setCourse] = useState<Course>(activeCourse);
   const [level, setLevel] = useState<string | null>(null);
@@ -84,7 +101,7 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
   return (
     <div className="grid gap-3 px-5 pb-6 pt-4" data-testid="listen-library">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="font-display text-3xl font-extrabold text-ds-ink">Listen</h1>
+        <h1 className="font-display text-3xl font-extrabold text-ds-ink">Library</h1>
         {library.monthSeconds >= 60 ? (
           <span className="rounded-full border border-ds-line bg-ds-card px-3 py-1 text-xs font-bold text-ds-ink-soft">
             ⏱ {hoursMinutes(library.monthSeconds)} this month
@@ -148,6 +165,25 @@ export function ListenLibraryView({ library }: { library: PodcastLibrary }) {
             />
           </span>
         </button>
+      ) : null}
+
+      {videosFailed ? (
+        <div
+          data-surface
+          role="alert"
+          className="flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
+        >
+          <p className="text-sm font-semibold text-ds-ink">We couldn&apos;t load the videos.</p>
+          <button
+            type="button"
+            onClick={onRetryVideos}
+            className="min-h-11 rounded-full border border-ds-line px-3 text-sm font-bold text-ds-ink"
+          >
+            Try again
+          </button>
+        </div>
+      ) : videos ? (
+        <WatchShelf videos={videos} course={course} onOpen={(v) => onOpenVideo?.(v)} />
       ) : null}
 
       {levels.length > 0 ? (
@@ -245,7 +281,7 @@ export function ListenShelfView({
         <span className="absolute inset-0 bg-gradient-to-b from-ds-hero/45 via-transparent to-ds-surface" />
         <Link
           to="/listen"
-          aria-label="Back to Listen"
+          aria-label="Back to Library"
           className="absolute left-4 top-4 grid size-11 place-items-center rounded-full bg-ds-card/90 text-lg font-extrabold text-ds-ink"
         >
           ‹
