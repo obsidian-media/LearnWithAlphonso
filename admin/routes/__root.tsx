@@ -1,4 +1,7 @@
-import { createRootRoute, Outlet, HeadContent, Scripts } from "@tanstack/react-router";
+import { createRootRoute, Outlet, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { adminWhoAmI } from "@/lib/admin.functions";
+import { ConsoleNav } from "@/components/staff/ConsoleNav";
+import { NAV_ITEMS } from "@/lib/staff-nav";
 // The learner root imports the stylesheet the same way -- as a URL
 // registered in head.links, not as a side-effect import. There is no
 // src/index.css in this repo.
@@ -17,10 +20,22 @@ export const Route = createRootRoute({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  // Who is signed in and what they may use, for the navigation. A signed-out visitor (or anyone who is not staff)
+  // gets null and sees no navigation; the pages themselves are gated by their own server calls.
+  loader: async () => {
+    try {
+      return { me: await adminWhoAmI() };
+    } catch {
+      return { me: null };
+    }
+  },
   component: RootDocument,
 });
 
 function RootDocument() {
+  const { me } = Route.useLoaderData();
+  const { pathname } = useLocation();
+  const current = NAV_ITEMS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))?.key;
   return (
     // data-theme is set statically, unlike the learner app which reads a
     // stored preference before first paint. `:root` in styles.css is
@@ -33,6 +48,7 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="bg-surface text-ink font-sans">
+        {me ? <ConsoleNav scopes={me.scopes} role={me.role} current={current} /> : null}
         <Outlet />
         <Scripts />
       </body>

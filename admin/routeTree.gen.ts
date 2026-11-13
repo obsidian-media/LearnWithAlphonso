@@ -10,19 +10,35 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditRouteImport } from './routes/audit'
 import { Route as FoldersRouteImport } from './routes/folders'
+import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as StaffRouteImport } from './routes/staff'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as UsersRouteImport } from './routes/users'
 import { Route as FolderIdRouteImport } from './routes/folder.$id'
+import { Route as UsersIdRouteImport } from './routes/users.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FoldersRoute = FoldersRouteImport.update({
   id: '/folders',
   path: '/folders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NumbersRoute = NumbersRouteImport.update({
+  id: '/numbers',
+  path: '/numbers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -35,47 +51,124 @@ const SigninRoute = SigninRouteImport.update({
   path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FolderIdRoute = FolderIdRouteImport.update({
   id: '/folder/$id',
   path: '/folder/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsersIdRoute = UsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => UsersRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
+  '/staff': typeof StaffRoute
+  '/support': typeof SupportRoute
+  '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/users/$id': typeof UsersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
+  '/staff': typeof StaffRoute
+  '/support': typeof SupportRoute
+  '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/users/$id': typeof UsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
+  '/staff': typeof StaffRoute
+  '/support': typeof SupportRoute
+  '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/users/$id': typeof UsersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
+  fullPaths:
+    | '/'
+    | '/audit'
+    | '/folders'
+    | '/numbers'
+    | '/reports'
+    | '/signin'
+    | '/staff'
+    | '/support'
+    | '/users'
+    | '/folder/$id'
+    | '/users/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
-  id: '__root__' | '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
+  to:
+    | '/'
+    | '/audit'
+    | '/folders'
+    | '/numbers'
+    | '/reports'
+    | '/signin'
+    | '/staff'
+    | '/support'
+    | '/users'
+    | '/folder/$id'
+    | '/users/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/audit'
+    | '/folders'
+    | '/numbers'
+    | '/reports'
+    | '/signin'
+    | '/staff'
+    | '/support'
+    | '/users'
+    | '/folder/$id'
+    | '/users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditRoute: typeof AuditRoute
   FoldersRoute: typeof FoldersRoute
+  NumbersRoute: typeof NumbersRoute
   ReportsRoute: typeof ReportsRoute
   SigninRoute: typeof SigninRoute
+  StaffRoute: typeof StaffRoute
+  SupportRoute: typeof SupportRoute
+  UsersRoute: typeof UsersRouteWithChildren
   FolderIdRoute: typeof FolderIdRoute
 }
 
@@ -88,11 +181,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/folders': {
       id: '/folders'
       path: '/folders'
       fullPath: '/folders'
       preLoaderRoute: typeof FoldersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/numbers': {
+      id: '/numbers'
+      path: '/numbers'
+      fullPath: '/numbers'
+      preLoaderRoute: typeof NumbersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -109,6 +216,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/folder/$id': {
       id: '/folder/$id'
       path: '/folder/$id'
@@ -116,14 +244,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FolderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users/$id': {
+      id: '/users/$id'
+      path: '/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof UsersIdRouteImport
+      parentRoute: typeof UsersRoute
+    }
   }
 }
 
+interface UsersRouteChildren {
+  UsersIdRoute: typeof UsersIdRoute
+}
+
+const UsersRouteChildren: UsersRouteChildren = {
+  UsersIdRoute: UsersIdRoute,
+}
+
+const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditRoute: AuditRoute,
   FoldersRoute: FoldersRoute,
+  NumbersRoute: NumbersRoute,
   ReportsRoute: ReportsRoute,
   SigninRoute: SigninRoute,
+  StaffRoute: StaffRoute,
+  SupportRoute: SupportRoute,
+  UsersRoute: UsersRouteWithChildren,
   FolderIdRoute: FolderIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -26,5 +26,11 @@ export function suspendedResponse(): Response {
 
 /** The 403 to return for a banned learner, or null. `admin` is the service-role client the function already builds. */
 export async function suspendedResponseIfBanned(admin: RpcClient, userId: string): Promise<Response | null> {
-  return (await isBanned(admin, userId)) ? suspendedResponse() : null;
+  try {
+    return (await isBanned(admin, userId)) ? suspendedResponse() : null;
+  } catch {
+    // A client that cannot even ask is an outage, not a ban.
+    console.error("[account-status] could not check the account status");
+    return null;
+  }
 }

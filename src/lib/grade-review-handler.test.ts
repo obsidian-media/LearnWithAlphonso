@@ -30,11 +30,28 @@ function request(attemptId?: string): Request {
   });
 }
 
+// The client calls are consumed in order: the token check, the account-status check (a learner who is not banned),
+// then the service-role client the handler works with.
+const notBanned = { rpc: async () => ({ data: false, error: null }) };
+
 beforeEach(() => {
   createClient.mockReset();
   createClient.mockReturnValueOnce({
     auth: { getClaims: async () => ({ data: { claims: { sub: "test-user" } }, error: null }) },
   });
+  createClient.mockReturnValueOnce(notBanned);
+});
+
+it("refuses a banned learner's still-valid token with 403 account_suspended before touching any data", async () => {
+  createClient.mockReset();
+  createClient.mockReturnValueOnce({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "test-user" } }, error: null }) },
+  });
+  createClient.mockReturnValueOnce({ rpc: async () => ({ data: true, error: null }) });
+  const response = await handleRequest(request());
+  expect(response.status).toBe(403);
+  expect((await response.json()).error).toBe("account_suspended");
+  expect(createClient).toHaveBeenCalledTimes(2);
 });
 
 it("returns a retryable failure when the review row read fails", async () => {

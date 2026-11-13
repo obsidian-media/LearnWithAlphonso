@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert@1";
-import { ACCOUNT_SUSPENDED_ERROR, isBanned, suspendedResponse } from "./account-status.ts";
+import { ACCOUNT_SUSPENDED_ERROR, isBanned, suspendedResponse, suspendedResponseIfBanned } from "./account-status.ts";
 
 function fakeAdmin(result: { data: unknown; error: { message: string } | null }, calls: unknown[] = []) {
   return {
@@ -30,4 +30,14 @@ Deno.test("the refusal is a 403 whose error is account_suspended", async () => {
   assertEquals(res.status, 403);
   assertEquals((await res.json()).error, ACCOUNT_SUSPENDED_ERROR);
   assertEquals(ACCOUNT_SUSPENDED_ERROR, "account_suspended");
+});
+
+Deno.test("a client that throws is an outage, not a ban", async () => {
+  const broken = { rpc: () => { throw new Error("no rpc"); } };
+  assertEquals(await suspendedResponseIfBanned(broken, "u1"), null);
+});
+
+Deno.test("a banned learner gets the 403 response", async () => {
+  const res = await suspendedResponseIfBanned(fakeAdmin({ data: true, error: null }), "u1");
+  assertEquals(res?.status, 403);
 });

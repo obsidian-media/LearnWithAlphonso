@@ -1,41 +1,37 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { SECOND_FACTOR_REQUIRED_MESSAGE } from "@/lib/admin-auth";
 import { adminWhoAmI } from "@/lib/admin.functions";
+import { homeFor } from "@/lib/staff-nav";
 
 export const Route = createFileRoute("/")({
   // The gate is the server function, not this loader. A loader runs on
   // the client too and is trivially skipped; adminWhoAmI throws for
-  // anyone not on the allowlist, and every other admin call is gated
-  // independently by the same middleware. This redirect is a courtesy
-  // to a signed-out admin, not a control.
+  // anyone who is not active staff, and every other console call is gated
+  // independently by requireStaff. This redirect is a courtesy to a
+  // signed-out person, not a control.
   loader: async () => {
+    let scopes: readonly string[];
     try {
-      return await adminWhoAmI();
+      scopes = (await adminWhoAmI()).scopes;
     } catch (error) {
-      // An admin whose session lacks a required second factor is sent to finish it, not to sign in again.
+      // Staff whose session lacks a required second factor are sent to finish it, not to sign in again.
       const needsSecondFactor =
         error instanceof Error && error.message.includes(SECOND_FACTOR_REQUIRED_MESSAGE);
       throw redirect({ to: "/signin", search: needsSecondFactor ? { mfa: "required" } : {} });
     }
+    // The console opens on Users, or on the first thing this person is allowed to use.
+    const home = homeFor(scopes);
+    if (home) throw redirect({ href: home });
+    return null;
   },
-  component: Home,
+  component: NothingToOpen,
 });
 
-function Home() {
+function NothingToOpen() {
   return (
     <main className="mx-auto max-w-3xl p-6">
-      <h1 className="font-display text-2xl font-semibold">Alphonso Admin</h1>
-      <nav className="mt-6 flex flex-col gap-2">
-        {/* Typed against the generated route tree, so a rename of
-            /folders breaks the build here instead of shipping a dead
-            link. */}
-        <Link to="/folders" className="text-moss underline">
-          Folders
-        </Link>
-        <Link to="/reports" className="text-moss underline">
-          Reports
-        </Link>
-      </nav>
+      <h1 className="font-display text-2xl font-semibold">Alphonso console</h1>
+      <p className="mt-3 text-ink-soft">Your account has no console pages yet. Ask the owner.</p>
     </main>
   );
 }
