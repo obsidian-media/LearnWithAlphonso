@@ -66,7 +66,8 @@ final class LearningPathTests: XCTestCase {
     }
 
     func testAnOlderServerWithoutARestDayMeansSunday() throws {
-        var object = try JSONSerialization.jsonObject(with: try scenario("onTrack")) as! [String: Any]
+        let envelope = try JSONSerialization.jsonObject(with: try scenario("onTrack")) as! [String: Any]
+        var object = envelope["path"] as! [String: Any]
         object.removeValue(forKey: "restDay")
         let data = try JSONSerialization.data(withJSONObject: ["path": object])
         XCTAssertEqual(try LearningPathDecoding.path(from: data)?.restDayValue, PathRestDay.sunday)
