@@ -112,6 +112,30 @@ describe("tokens and secrets are scoped", () => {
     expect(wf.doc.permissions).toEqual({ contents: "read" });
   });
 
+  it("the types workflow also runs by itself, only after a push to main's CI, and can still be dispatched", () => {
+    const wf = parsed.find((w) => w.file === "regenerate-supabase-types.yml")!;
+    expect(triggers(wf.doc.on).sort()).toEqual(["workflow_dispatch", "workflow_run"]);
+    const run = (
+      wf.doc.on as { workflow_run: { workflows: string[]; types: string[]; branches: string[] } }
+    ).workflow_run;
+    expect(run).toEqual({ workflows: ["CI"], types: ["completed"], branches: ["main"] });
+    const job = wf.doc.jobs.regenerate as { if?: string };
+    // never for a pull request's CI run (a fork could otherwise reach the deploy key), and not for its own commit
+    expect(job.if).toMatch(/workflow_run\.event == 'push'/);
+    expect(job.if).toMatch(/chore: regenerate supabase types/);
+    // the gate names the deploy job, and every later step honours its verdict
+    const steps = wf.doc.jobs.regenerate.steps!;
+    expect(steps[0].run).toContain("Deploy Supabase migrations + Edge Functions");
+    const ci = parsed.find((w) => w.file === "ci.yml")!;
+    expect((ci.doc.jobs["deploy-supabase"] as { name?: string }).name).toBe(
+      "Deploy Supabase migrations + Edge Functions",
+    );
+    for (const step of steps.slice(1))
+      expect((step as { if?: string }).if, JSON.stringify(step).slice(0, 60)).toBe(
+        "env.SKIP != '1'",
+      );
+  });
+
   it("every manually run job that uses secrets runs in a named environment, and so does the production deploy", () => {
     const missing: string[] = [];
     for (const w of parsed) {
