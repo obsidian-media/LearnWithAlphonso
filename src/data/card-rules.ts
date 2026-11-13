@@ -6,8 +6,13 @@ import type { Level } from "./levels";
  * it is written). The gate and the checker import the same function.
  */
 const MAX_MEANING_WORDS = 8;
-/** A1 to B1 examples stay short; B2 and C1 sentences need a few more words to sound natural. */
-const maxExampleWords = (level: Level) => (level === "B2" || level === "C1" ? 12 : 10);
+/** French and Spanish sentences run longer than English ones, so B1 may use 12 words there too. */
+const maxExampleWords = (level: Level, lang: "en" | "fr" | "es" = "en") =>
+  level === "B2" || level === "C1" || (level === "B1" && lang !== "en") ? 12 : 10;
+
+/** A leading article is not part of the word a French or Spanish card teaches: "le logiciel" is found in "ce logiciel". */
+export const withoutArticle = (term: string) =>
+  term.replace(/^(?:les|le|la|un|une|el|los|las|una)\s+|^l['’]/i, "");
 
 export const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
 const tokens = (s: string) => s.toLowerCase().match(/[\p{L}]+(?:'[\p{L}]+)?/gu) ?? [];
@@ -90,9 +95,10 @@ export function cardProblems(
   }
   if (!example.trim()) out.push("empty example");
   else {
-    if (words(example).length > maxExampleWords(level))
-      out.push(`example over ${maxExampleWords(level)} words`);
-    if (!mentionsTerm(example, term)) out.push("example lacks the word");
+    if (words(example).length > maxExampleWords(level, lang))
+      out.push(`example over ${maxExampleWords(level, lang)} words`);
+    if (!mentionsTerm(example, lang === "en" ? term : withoutArticle(term)))
+      out.push("example lacks the word");
     if (LABEL.test(example)) out.push("example is a label, not a sentence");
   }
   for (const [name, text] of [
