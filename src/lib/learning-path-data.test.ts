@@ -131,6 +131,38 @@ describe("buildLearningPath", () => {
     expect(path.mix.find((m) => m.type === "podcast")?.minutes).toBe(0);
   });
 
+  describe("the learner's own calendar day (owner decision 2026-11-12)", () => {
+    // NOW is Wednesday 10:00 UTC. In Kiritimati (UTC+14) it is already Thursday 2026-11-12 00:00.
+    it("today is the learner's day: east of UTC it is already tomorrow", () => {
+      const utc = buildLearningPath(data())!;
+      const east = buildLearningPath(data({ timeZone: "Pacific/Kiritimati" }))!;
+      expect(utc.today.day).toBe("2026-11-11");
+      expect(east.today.day).toBe("2026-11-12");
+      expect(east.asOf).toBe(utc.asOf);
+    });
+    it("west of UTC it is still yesterday", () => {
+      const west = buildLearningPath(data({ timeZone: "Pacific/Pago_Pago" }))!; // UTC-11
+      expect(west.today.day).toBe("2026-11-10");
+    });
+    it("no zone, or one that does not exist, is UTC", () => {
+      expect(buildLearningPath(data({ timeZone: null }))!.today.day).toBe("2026-11-11");
+      expect(buildLearningPath(data({ timeZone: "Not/AZone" }))!.today.day).toBe("2026-11-11");
+    });
+    it("a lesson finished at 23:30 UTC counts on the learner's day, not UTC's", () => {
+      // 2026-11-10T23:30Z is Wednesday the 11th at 09:30 in Brisbane (UTC+10): the learner's day, and today there.
+      const path = buildLearningPath(
+        data({
+          timeZone: "Australia/Brisbane",
+          completions: [{ lessonId: firstLessons[0].id, completedAt: "2026-11-10T23:30:00.000Z" }],
+        }),
+      )!;
+      expect(path.today.day).toBe("2026-11-11");
+      expect(
+        path.week.find((d) => d.day === "2026-11-11")!.items.some((i) => i.state === "done"),
+      ).toBe(true);
+    });
+  });
+
   it("labels the goal in plain words", () => {
     expect(buildLearningPath(data())!.goalLabel).toBe("A2 by 1 June");
   });

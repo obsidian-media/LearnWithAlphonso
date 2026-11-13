@@ -11,6 +11,7 @@ import { LEVEL_ORDER } from "./learning-goal";
 import { LEAGUE_THRESHOLDS } from "./progress-math";
 import { dailyGoalProgress } from "./profile-data";
 import type { LearningDayRow, LeagueStanding, SkillDayRow } from "./profile-data";
+import { localDay } from "./local-day";
 
 /**
  * The Profile (visual round 6, BACKLOG 0.0-bi): the rows the server function reads (profile.functions.ts), and the
@@ -82,9 +83,12 @@ const dayNum = (day: string) => Math.floor(Date.parse(`${day}T00:00:00Z`) / DAY_
 const fromNum = (n: number) => new Date(n * DAY_MS).toISOString().slice(0, 10);
 export const addDays = (day: string, n: number) => fromNum(dayNum(day) + n);
 
-/** Today as the streak counts it: the UTC calendar date. */
-export function streakToday(now: Date = new Date()): string {
-  return now.toISOString().slice(0, 10);
+/**
+ * Today as the streak counts it: the learner's own calendar date in their stored time zone, UTC when none is known
+ * (owner decision 2026-11-12; the database books every day the same way, learner_local_date).
+ */
+export function streakToday(now: Date = new Date(), timeZone?: string | null): string {
+  return localDay(now.getTime(), timeZone);
 }
 
 /** Monday of the ISO week holding `day`. */

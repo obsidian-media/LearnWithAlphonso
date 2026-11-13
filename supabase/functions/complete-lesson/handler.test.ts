@@ -294,6 +294,99 @@ Deno.test(
   },
 );
 
+// ---- local days (owner decision 2026-11-12): the learner's own calendar day, UTC when no zone is known ----
+
+const progressRow = (over: Row = {}): Row => ({
+  user_id: USER,
+  streak: 4,
+  longest_streak: 4,
+  last_active_date: "2026-10-16",
+  hearts: 5,
+  hearts_refill_at: null,
+  streak_freezes: 0,
+  updated_at: "2026-10-16T12:00:00Z",
+  ...over,
+});
+
+Deno.test("the day is the learner's local day: 23:30 UTC is already tomorrow in Sydney", async () => {
+  const now = new Date("2026-10-17T23:30:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.learner_time_zones = [{ user_id: USER, time_zone: "Australia/Sydney" }];
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
+  assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-18");
+});
+
+Deno.test("west of UTC the day is still yesterday's: 02:00 UTC is the 16th in Los Angeles", async () => {
+  const now = new Date("2026-10-17T02:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.learner_time_zones = [{ user_id: USER, time_zone: "America/Los_Angeles" }];
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-16");
+});
+
+Deno.test("no stored zone, or one that does not exist, is UTC", async () => {
+  for (const rows of [[], [{ user_id: USER, time_zone: "Not/AZone" }]]) {
+    const { db, handler } = setup({ now: new Date("2026-10-17T23:30:00Z") });
+    db.tables.learner_time_zones = rows;
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+  }
+});
+
+Deno.test("an unreadable zone never fails the lesson: UTC is used", async () => {
+  const { db, handler } = setup({ now: new Date("2026-10-17T23:30:00Z") });
+  db.failReads.add("learner_time_zones");
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+});
+
+Deno.test("an offline completion's original day is the learner's local day too", async () => {
+  const now = new Date("2026-10-18T05:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.learner_time_zones = [{ user_id: USER, time_zone: "Australia/Sydney" }];
+  // 23:55 UTC on the 17th is 10:55 on the 18th in Sydney.
+  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T23:55:00.000Z" }));
+  assertEquals(res.status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
+});
+
+Deno.test("the switch cannot drop a streak: a UTC-basis streak bridges a two-date gap once, then goes local", async () => {
+  // Last active 2026-10-16 (a UTC date); this lesson is on the learner's 18th: two dates later, no freeze.
+  const now = new Date("2026-10-18T01:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.user_progress = [progressRow({ day_basis: "utc" })];
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  const next = db.rpcCalls[0].args._next as Row;
+  assertEquals(next.streak, 5);
+  assertEquals(next.streak_freezes, 0);
+  assertEquals(next.day_basis, "local");
+});
+
+Deno.test("a row with no day basis counts as the old UTC basis", async () => {
+  const now = new Date("2026-10-18T01:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.user_progress = [progressRow()];
+  await handler(post(body(["a", "d"])));
+  assertEquals((db.rpcCalls[0].args._next as Row).streak, 5);
+});
+
+Deno.test("once on the local basis, a two-date gap is a real missed day and resets the streak", async () => {
+  const now = new Date("2026-10-18T01:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.user_progress = [progressRow({ day_basis: "local" })];
+  await handler(post(body(["a", "d"])));
+  assertEquals((db.rpcCalls[0].args._next as Row).streak, 1);
+});
+
+Deno.test("the bridge never lets a gap of three dates continue a streak", async () => {
+  const now = new Date("2026-10-19T01:00:00Z");
+  const { db, handler } = setup({ now });
+  db.tables.user_progress = [progressRow({ day_basis: "utc" })];
+  await handler(post(body(["a", "d"])));
+  assertEquals((db.rpcCalls[0].args._next as Row).streak, 1);
+});
+
 Deno.test(
   "a dated replay never moves the activity marker backwards or restarts the streak",
   async () => {

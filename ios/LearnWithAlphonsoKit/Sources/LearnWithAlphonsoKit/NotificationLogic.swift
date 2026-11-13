@@ -23,6 +23,19 @@ public func utcDateString(_ date: Date) -> String {
     isoDateFormatter.string(from: date)
 }
 
+/// The learner's own calendar date, "yyyy-MM-dd", in `timeZone` (the device's by default). Streaks and days are the
+/// learner's local days (owner decision 2026-11-12; the server books them in their stored zone, which the app sends
+/// from the device), so "studied today" compares against this, never against the UTC date. Review due dates
+/// (`dueOn`) stay UTC dates: use `utcDateString` for those.
+public func localDateString(_ date: Date, timeZone: TimeZone = .current) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    formatter.timeZone = timeZone
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.calendar = Calendar(identifier: .gregorian)
+    return formatter.string(from: date)
+}
+
 /// nil means "don't schedule a reminder" -- the user already completed a
 /// lesson today, so a streak reminder would be noise. Otherwise, the next
 /// occurrence of 8pm: later today if `now` is still before 8pm, tomorrow if
@@ -36,7 +49,7 @@ public func nextStreakReminderDate(
     now: Date,
     calendar: Calendar = Calendar.current
 ) -> Date? {
-    if lastActiveDate == utcDateString(now) {
+    if lastActiveDate == localDateString(now, timeZone: calendar.timeZone) {
         return nil
     }
     guard let todayAt8pm = calendar.date(

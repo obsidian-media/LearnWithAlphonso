@@ -43,6 +43,42 @@ describe("computeStreakUpdate", () => {
     expect(result.longestStreak).toBe(10);
   });
 
+  describe("the one-time bridge from UTC days to local days (bridgeUtcDay)", () => {
+    it("counts a two-date gap as the next day, spending no freeze, so no streak drops on the switch", () => {
+      const result = computeStreakUpdate({
+        ...base,
+        lastActiveDate: "2026-09-11",
+        bridgeUtcDay: true,
+      });
+      expect(result.streak).toBe(5);
+      expect(result.freezes).toBe(1);
+    });
+    it("still resets a real gap of three or more dates", () => {
+      expect(
+        computeStreakUpdate({ ...base, lastActiveDate: "2026-09-10", bridgeUtcDay: true }).streak,
+      ).toBe(1);
+    });
+    it("changes nothing for one date, the same date or first activity", () => {
+      expect(
+        computeStreakUpdate({ ...base, lastActiveDate: "2026-09-12", bridgeUtcDay: true }).streak,
+      ).toBe(5);
+      expect(
+        computeStreakUpdate({ ...base, lastActiveDate: "2026-09-13", bridgeUtcDay: true }).streak,
+      ).toBe(4);
+      expect(
+        computeStreakUpdate({ ...base, lastActiveDate: null, bridgeUtcDay: true }).streak,
+      ).toBe(1);
+    });
+    it("is off by default: a local-day streak with a two-date gap still needs a freeze", () => {
+      const noFreeze = computeStreakUpdate({
+        ...base,
+        freezes: 0,
+        lastActiveDate: "2026-09-11",
+      });
+      expect(noFreeze.streak).toBe(1);
+    });
+  });
+
   it("bridges a missed day by spending a freeze when one is available", () => {
     const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-11" });
     expect(result.streak).toBe(5);

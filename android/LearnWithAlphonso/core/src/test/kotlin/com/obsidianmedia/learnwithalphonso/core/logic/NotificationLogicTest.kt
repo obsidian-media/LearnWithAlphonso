@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -81,12 +82,23 @@ class NotificationLogicTest {
     }
 
     @Test
-    fun `widget snapshot studiedToday follows the UTC date and round-trips through JSON`() {
+    fun `no streak reminder when the learner already studied on their own local day`() {
+        val sydney = java.time.ZoneId.of("Australia/Sydney")
+        assertNull(nextStreakReminderMillis("2026-09-14", at("2026-09-13T23:30:00Z"), sydney))
+        assertNotNull(nextStreakReminderMillis("2026-09-13", at("2026-09-13T23:30:00Z"), sydney))
+    }
+
+    @Test
+    fun `widget snapshot studiedToday follows the learner's local day and round-trips through JSON`() {
         val now = at("2026-09-13T23:30:00Z")
-        assertTrue(makeStreakWidgetSnapshot(4, 12, "2026-09-13", now).studiedToday)
-        assertFalse(makeStreakWidgetSnapshot(4, 12, "2026-09-12", now).studiedToday)
-        assertFalse(makeStreakWidgetSnapshot(4, 12, null, now).studiedToday)
-        val snapshot = makeStreakWidgetSnapshot(4, 12, "2026-09-13", now)
+        assertTrue(makeStreakWidgetSnapshot(4, 12, "2026-09-13", now, utc).studiedToday)
+        assertFalse(makeStreakWidgetSnapshot(4, 12, "2026-09-12", now, utc).studiedToday)
+        assertFalse(makeStreakWidgetSnapshot(4, 12, null, now, utc).studiedToday)
+        // 23:30 UTC on the 13th is already the 14th in Sydney: the learner's own day decides.
+        val sydney = java.time.ZoneId.of("Australia/Sydney")
+        assertTrue(makeStreakWidgetSnapshot(4, 12, "2026-09-14", now, sydney).studiedToday)
+        assertFalse(makeStreakWidgetSnapshot(4, 12, "2026-09-14", now, utc).studiedToday)
+        val snapshot = makeStreakWidgetSnapshot(4, 12, "2026-09-13", now, utc)
         val encoded = ContentJson.json.encodeToString(StreakWidgetSnapshot.serializer(), snapshot)
         assertEquals(snapshot, ContentJson.json.decodeFromString(StreakWidgetSnapshot.serializer(), encoded))
     }

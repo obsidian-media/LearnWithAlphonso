@@ -20,6 +20,7 @@ import {
 import { LEVEL_ORDER, type GoalPlan, type GoalStatus } from "./learning-goal";
 import { DAILY_MINUTES, type Goal, type Interest } from "./learner-profile";
 import type { Skill } from "./profile-data";
+import { localDay } from "./local-day";
 
 /**
  * The learning path (docs/superpowers/specs/2026-11-12-learning-path-design.md): ONE pure engine that turns what the
@@ -74,6 +75,8 @@ export type PathPrefs = { off: PathType[]; trimUntil: string | null };
 
 export type PathInput = {
   now: Date;
+  /** The learner's IANA time zone (learner_time_zones); today is their calendar day there. UTC when missing. */
+  timeZone?: string | null;
   course: "en" | "fr" | "es";
   goalPlan: GoalPlan;
   /** "B1 by 1 March" style label the screens show. */
@@ -216,6 +219,11 @@ function enabledOptional(input: PathInput): PathType[] {
   );
 }
 
+/** The learner's calendar day for `now` (UTC when no zone is known): the same day the database books. */
+function todayOf(input: PathInput): string {
+  return localDay(input.now.getTime(), input.timeZone);
+}
+
 /** The rest day the plan uses: the learner's choice, the default when they never chose, null for none. */
 function restDayOf(input: PathInput): number | null {
   const chosen = input.profile.restDay;
@@ -229,7 +237,7 @@ function studyDaysOf(input: PathInput): number {
 
 function isTrimmed(input: PathInput): boolean {
   const until = input.prefs.trimUntil;
-  return until !== null && until >= input.now.toISOString().slice(0, 10);
+  return until !== null && until >= todayOf(input);
 }
 
 function computeMix(input: PathInput, trimmed: boolean): MixEntry[] {
@@ -344,7 +352,7 @@ function streakOf(
 // ---------------------------------------------------------------- the engine
 
 export function planPath(input: PathInput): LearningPath {
-  const today = input.now.toISOString().slice(0, 10);
+  const today = todayOf(input);
   const weekStart = mondayOf(today);
   const trimmed = isTrimmed(input);
   const mix = computeMix(input, trimmed);
@@ -681,7 +689,7 @@ function buildWhy(
 
 function buildRoad(input: PathInput, upcoming: PlannedItem[]): RoadStop[] {
   const plan = input.goalPlan;
-  const today = input.now.toISOString().slice(0, 10);
+  const today = todayOf(input);
   const recent = plan.lessonsDoneLast7Days;
   const est = (lessonsAhead: number): string | null =>
     recent > 0 ? addDays(today, Math.ceil((lessonsAhead / recent) * 7)) : null;

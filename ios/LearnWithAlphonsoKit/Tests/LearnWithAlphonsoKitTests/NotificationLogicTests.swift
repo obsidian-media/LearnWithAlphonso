@@ -4,6 +4,15 @@ import XCTest
 final class NotificationLogicTests: XCTestCase {
     // MARK: - nextStreakReminderDate
 
+    /// The learner's own day decides "already studied today", not UTC's.
+    func testNoReminderWhenStudiedOnTheLearnersLocalDay() {
+        var sydney = Calendar(identifier: .gregorian)
+        sydney.timeZone = TimeZone(identifier: "Australia/Sydney")!
+        let now = ISO8601DateFormatter().date(from: "2026-11-12T23:30:00Z")!   // the 13th in Sydney
+        XCTAssertNil(nextStreakReminderDate(lastActiveDate: "2026-11-13", now: now, calendar: sydney))
+        XCTAssertNotNil(nextStreakReminderDate(lastActiveDate: "2026-11-12", now: now, calendar: sydney))
+    }
+
     private var utcCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!

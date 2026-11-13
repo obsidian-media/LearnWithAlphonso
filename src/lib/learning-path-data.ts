@@ -31,6 +31,7 @@ import { sceneKey } from "./practice-catalog";
 import { starLookup, type StarRow } from "./practice-hub";
 import { skillScores, type SkillDayRow } from "./profile-data";
 import { MIN_SKILL_ANSWERS } from "./skills-radar";
+import { localDay } from "./local-day";
 
 /**
  * Everything the learning path needs, as plain rows (loaded by learning-path.server.ts), turned into the engine's input.
@@ -39,6 +40,8 @@ import { MIN_SKILL_ANSWERS } from "./skills-radar";
 export type PathData = {
   course: Course;
   now: Date;
+  /** The learner's IANA time zone (learner_time_zones); every day below is their calendar day. UTC when missing. */
+  timeZone?: string | null;
   currentLevel: Level;
   goal: { targetLevel: Level; targetDate: string; createdAt: string };
   completions: { lessonId: string; completedAt: string }[];
@@ -85,7 +88,6 @@ export function goalLabel(level: string, targetDate: string): string {
   return `${level} by ${d} ${MONTHS[m - 1]}`;
 }
 
-const dayOf = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const LESSON_CANDIDATES = 40;
 /** A call counts for at most this long: a call left open in a background tab is not 40 minutes of study. */
 const MAX_CALL_MINUTES = 15;
@@ -115,6 +117,9 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   >();
   for (const u of units)
     for (const l of u.lessons) lessonInfo.set(l.id, { title: l.title, questions: l.questions });
+
+  // The learner's own calendar day for an instant: the same day the database books (learner_local_date).
+  const dayOf = (iso: string) => localDay(Date.parse(iso), data.timeZone);
 
   // ---- events (what the learner did, from the tables that already record it)
   const events: ActivityEvent[] = [];
@@ -278,7 +283,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     });
   }
 
-  const today = now.toISOString().slice(0, 10);
+  const today = localDay(now.getTime(), data.timeZone);
   const scores = skillScores(data.skillDays, today);
   const skillPct = Object.fromEntries(
     scores.map((s) => [s.skill, s.answered >= MIN_SKILL_ANSWERS ? s.pct : null]),
@@ -292,6 +297,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   };
   return planPath({
     now,
+    timeZone: data.timeZone,
     course,
     goalPlan: plan,
     goalLabel: goalLabel(data.goal.targetLevel, data.goal.targetDate),

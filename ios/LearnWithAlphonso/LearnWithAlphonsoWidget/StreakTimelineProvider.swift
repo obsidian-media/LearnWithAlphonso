@@ -41,7 +41,7 @@ struct StreakTimelineProvider: TimelineProvider {
         //  - a second entry at the next UTC midnight, so "Studied today" turns off the moment the day changes
         //    (the stored value is only true for the day it was written);
         //  - a 4-hour reload as a general safety net.
-        let midnight = nextUTCMidnight(after: now)
+        let midnight = nextLocalMidnight(after: now)
         let entries = [
             StreakEntry(date: now, snapshot: stored?.asOf(now)),
             StreakEntry(date: midnight, snapshot: stored?.asOf(midnight)),

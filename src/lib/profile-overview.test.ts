@@ -75,13 +75,23 @@ function overview(over: Partial<ProfileOverview> = {}): ProfileOverview {
   };
 }
 
-describe("the learner's day is the streak's day (UTC)", () => {
-  it("late evening west of UTC is already tomorrow, as it is for the streak", () => {
-    // 8 pm in Vancouver on 5 November is 04:00 UTC on 6 November: activity_days books that XP on the 6th.
+describe("the learner's day is the streak's day: their own calendar day, UTC when no zone is known", () => {
+  it("with no zone, late evening west of UTC is already tomorrow (UTC), as before", () => {
+    // 8 pm in Vancouver on 5 November is 04:00 UTC on 6 November.
     expect(streakToday(new Date("2026-11-05T20:00:00-08:00"))).toBe("2026-11-06");
+    expect(streakToday(new Date("2026-11-05T20:00:00-08:00"), null)).toBe("2026-11-06");
   });
-  it("early morning east of UTC is still yesterday", () => {
+  it("with a zone, it is the learner's own date: 8 pm in Vancouver is still the 5th", () => {
+    expect(streakToday(new Date("2026-11-05T20:00:00-08:00"), "America/Vancouver")).toBe(
+      "2026-11-05",
+    );
+  });
+  it("early morning east of UTC is the learner's today, not yesterday", () => {
     expect(streakToday(new Date("2026-11-06T01:00:00+05:00"))).toBe("2026-11-05");
+    expect(streakToday(new Date("2026-11-06T01:00:00+05:00"), "Asia/Karachi")).toBe("2026-11-06");
+  });
+  it("an invalid zone is UTC", () => {
+    expect(streakToday(new Date("2026-11-06T01:00:00+05:00"), "Not/AZone")).toBe("2026-11-05");
   });
 });
 
