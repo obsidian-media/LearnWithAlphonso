@@ -68,6 +68,22 @@ public enum ListenShelf {
         return m >= 60 ? "\(m / 60) h \(m % 60) m" : "\(m) m"
     }
 
+    /// The start of the current UTC month, ISO-8601 with a Z: where "this month" begins (web counts the same way).
+    public static func monthStartISO(now: Date) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let parts = calendar.dateComponents([.year, .month], from: now)
+        return String(format: "%04d-%02d-01T00:00:00Z", parts.year!, parts.month!)
+    }
+
+    /// Seconds listened this month from `podcast_play_events` rows; garbage rows count for nothing.
+    public static func monthSeconds(_ rows: [Int]) -> Int { rows.reduce(0) { $0 + max(0, $1) } }
+
+    /// The month chip's text, or nil under one minute (hidden, as on web).
+    public static func monthChip(seconds: Int) -> String? {
+        seconds >= 60 ? "\(hoursMinutes(seconds)) this month" : nil
+    }
+
     /// Capped below int4 so "the very end" reaches the database's own clamp instead of overflowing it.
     public static func wirePosition(_ seconds: Int) -> Int { min(max(seconds, 0), 2_000_000_000) }
 

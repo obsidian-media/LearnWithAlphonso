@@ -409,6 +409,18 @@ public final class PodcastClient: Sendable {
         }
     }
 
+    /// Seconds this user listened since the start of the current UTC month (`podcast_play_events`, own rows by RLS).
+    public func fetchMonthListenedSeconds(now: Date = Date()) async throws -> Int {
+        let request = request(
+            path: "rest/v1/podcast_play_events",
+            query: "select=seconds_listened&started_at=gte.\(ListenShelf.monthStartISO(now: now))",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+        return ListenShelf.monthSeconds(try Self.rows(from: data).map { $0["seconds_listened"] as? Int ?? 0 })
+    }
+
     /// Saves progress through `save_listen_progress`, which takes the user from `auth.uid()`, requires a
     /// published episode and clamps the position into the episode. There is no direct write grant.
     public func saveListenProgress(episodeID: String, positionSeconds: Int) async throws {
