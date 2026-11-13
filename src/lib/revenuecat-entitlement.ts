@@ -116,7 +116,7 @@ function purchaseCounts(
 export type ProEntitlementStatus = "active" | "inactive" | "unavailable";
 
 /** Where the active Pro came from. "web" is RevenueCat Web Billing (Stripe), bought on the website. */
-export type ProStore = "app_store" | "web" | "play_store" | null;
+export type ProStore = "app_store" | "web" | "play_store" | "promotional" | null;
 
 export type SubscriberSummary =
   | { status: "unavailable" }
@@ -156,6 +156,7 @@ const possiblyWeb = (store: unknown) => typeof store === "string" && !NOT_WEB_ST
 function storeOf(raw: unknown): ProStore {
   if (raw === "app_store" || raw === "mac_app_store") return "app_store";
   if (raw === "play_store") return "play_store";
+  if (raw === "promotional") return "promotional";
   if (typeof raw === "string" && WEB_STORES.has(raw)) return "web";
   return null;
 }
@@ -426,4 +427,74 @@ export async function deleteAccountSubscribers(
     if ((await deleteRevenueCatSubscriber(config, id, fetchImpl)) !== "erased") ok = false;
   }
   return ok ? "erased" : "failed";
+}
+
+async function promotionalCall(
+  config: RevenueCatConfig,
+  appUserId: string,
+  path: "promotional" | "revoke_promotionals",
+  body: Record<string, unknown> | undefined,
+  fetchImpl: typeof fetch,
+): Promise<number> {
+  let res: Response;
+  try {
+    res = await fetchImpl(
+      `${REVENUECAT_API_HOST}/v1/subscribers/${encodeURIComponent(appUserId)}/entitlements/${PRO_ENTITLEMENT_ID}/${path}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.secretApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(8000),
+      },
+    );
+  } catch {
+    // Never the underlying error: it can carry the request, headers included.
+    throw new Error("RevenueCat promotional request failed (network)");
+  }
+  return res.status;
+}
+
+/**
+ * Gifts Pro until `endTimeMs` as a RevenueCat promotional entitlement, so every platform (the iOS and Android SDKs
+ * and the server/web check) sees it with no client change. Throws on a non-2xx with the HTTP status only: never the
+ * response body, which is RevenueCat's to word.
+ */
+export async function grantPromotionalPro(
+  config: RevenueCatConfig,
+  appUserId: string,
+  endTimeMs: number,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const status = await promotionalCall(
+    config,
+    appUserId,
+    "promotional",
+    { end_time_ms: endTimeMs },
+    fetchImpl,
+  );
+  if (status < 200 || status >= 300) {
+    throw new Error(`RevenueCat promotional grant failed (HTTP ${status})`);
+  }
+}
+
+/** Ends every promotional Pro gift of one RevenueCat id. A subscriber RevenueCat has never seen (404) has none. */
+export async function revokePromotionalPro(
+  config: RevenueCatConfig,
+  appUserId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const status = await promotionalCall(
+    config,
+    appUserId,
+    "revoke_promotionals",
+    undefined,
+    fetchImpl,
+  );
+  if (status === 404) return;
+  if (status < 200 || status >= 300) {
+    throw new Error(`RevenueCat promotional revoke failed (HTTP ${status})`);
+  }
 }

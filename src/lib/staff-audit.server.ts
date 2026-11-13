@@ -77,3 +77,10 @@ export function recordUserView(
     requestId: input.requestId,
   });
 }
+
+export const SELF_ACTION_MESSAGE = "You cannot act on your own account.";
+
+/** No staff action may target the actor's own user id: a rule the server enforces, whatever the UI shows. */
+export function assertNotSelf(actor: string, target: string): void {
+  if (actor === target) throw new Error(SELF_ACTION_MESSAGE);
+}
