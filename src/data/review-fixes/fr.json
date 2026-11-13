@@ -10431,11 +10431,29 @@
   },
   "reason": "Specific explanation."
  },
+ "fr:question:fra2p10l1/fra2p10q1": {
+  "patch": {
+   "explanation": "\"voit\" is the \"il/on\" form of \"voir\": \"on\" takes the same verb form as \"il\", so \"on se voit\" means we will meet."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p10l1/fra2p10q2": {
+  "patch": {
+   "explanation": "\"invite\" is the \"je\" form of the present tense of \"inviter\"; \"inviter\" is the infinitive, \"invites\" is the \"tu\" form and \"invitons\" is the \"nous\" form."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p10l1/fra2p10q3": {
   "patch": {
    "explanation": "\"Ça te dit de...?\" is a fixed expression meaning \"do you fancy...?\", with \"ça\" as subject so the verb is third-person singular: \"dit\"."
   },
   "reason": "Specific explanation of the idiom."
+ },
+ "fr:question:fra2p10l1/fra2p10q4": {
+  "patch": {
+   "explanation": "After \"on pourrait\" a verb stays in the infinitive, so \"retrouver\" is right; \"se retrouver\" means to meet up."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p10l2/fra2p10q5": {
   "patch": {
@@ -10524,6 +10542,12 @@
    "explanation": "After \"quelque chose de\" the adjective or participle stays masculine singular, so \"prévu\" is used; the other forms add a wrong ending or are an infinitive."
   },
   "reason": "Replace generic explanation with the agreement rule."
+ },
+ "fr:question:fra2p10l4/fra2p10q18": {
+  "patch": {
+   "explanation": "\"plaisir\" completes \"avec plaisir\", the fixed phrase for gladly or with pleasure when you accept an invitation."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p10l4/fra2p10q19": {
   "patch": {
@@ -10697,6 +10721,18 @@
   },
   "reason": "Specific explanation needed."
  },
+ "fr:question:fra2p11l4/fra2p11q17": {
+  "patch": {
+   "explanation": "\"livraison\" means delivery, which is what takes time to arrive; \"timbre\" is a stamp and \"colis\" is the parcel itself."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p11l4/fra2p11q18": {
+  "patch": {
+   "explanation": "After \"tous les\" the noun is plural, so \"matins\" is right: \"tous les matins\" means every morning."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p11l4/fra2p11q19": {
   "patch": {
    "explanation": "Something that arrives and is very heavy is a parcel, so \"colis\" fits; a stamp, a message or a ticket is not heavy.",
@@ -10794,6 +10830,12 @@
   },
   "reason": "Specific explanation needed."
  },
+ "fr:question:fra2p12l2/fra2p12q5": {
+  "patch": {
+   "explanation": "\"passer l'aspirateur\" is the set phrase for vacuuming; \"passer\" is used here, not \"balayer\", which means to sweep."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p12l2/fra2p12q6": {
   "patch": {
    "explanation": "The clue says 'wash', and \"laver\" is the French verb for washing; \"repasser\" means to iron, \"trier\" to sort and \"ranger\" to put away."
@@ -10811,6 +10853,12 @@
    "explanation": "The clue says 'clean', and \"nettoyer\" is the general verb for cleaning a room; \"balayer\" only means to sweep and \"ranger\" to tidy."
   },
   "reason": "Specific explanation tied to the clue."
+ },
+ "fr:question:fra2p12l2/fra2p12q9": {
+  "patch": {
+   "explanation": "\"débarrasser\" means to clear, as the clue says, so \"débarrasser la table\" is to clear the table."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p12l3/fra2p12q10": {
   "patch": {
@@ -10835,6 +10883,12 @@
    "explanation": "The clue says 'clean', and \"nettoyer\" is the general verb for cleaning a room such as a bathroom; \"balayer\" means to sweep and \"ranger\" to tidy."
   },
   "reason": "Specific explanation tied to the clue."
+ },
+ "fr:question:fra2p12l3/fra2p12q14": {
+  "patch": {
+   "explanation": "\"changer\" means to change, as the clue says, so \"changer les draps\" is to change the sheets; \"laver\" is to wash and \"repasser\" is to iron."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p12l4/fra2p12q15": {
   "patch": {
@@ -11223,6 +11277,42 @@
   },
   "reason": "Replace generic explanation with a specific one."
  },
+ "fr:question:fra2p15l1/fra2p15q2": {
+  "patch": {
+   "explanation": "\"plus\" completes \"ne ... plus\", which means no longer, as the clue says: \"elle ne travaille plus ici\" is she no longer works here."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p15l1/fra2p15q3": {
+  "patch": {
+   "explanation": "\"ne ... rien\" means nothing; \"rien\" replaces \"pas\" to say we see nothing."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p15l1/fra2p15q4": {
+  "patch": {
+   "explanation": "\"ne ... personne\" means nobody; \"personne\" is a pronoun, so it says you know no one here."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p15l2/fra2p15q5": {
+  "patch": {
+   "explanation": "\"plus\" completes \"ne ... plus de\", which means no more, so \"il n'a plus d'argent\" is he has no money left."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p15l2/fra2p15q6": {
+  "patch": {
+   "explanation": "\"ne ... jamais\" means never, as the clue says; with the past tense, \"jamais\" goes between \"ai\" and \"vu\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p15l2/fra2p15q7": {
+  "patch": {
+   "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, which matches the clue \"not\": \"elle ne veut pas sortir\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p15l2/fra2p15q8": {
   "patch": {
    "explanation": "The clue \"no longer\" calls for \"plus\" in \"ne ... plus\": \"Nous n'avons plus le temps\" (We no longer have the time)."
@@ -11240,6 +11330,12 @@
    "explanation": "The clue \"never\" calls for \"jamais\" in \"ne ... jamais\": \"Je ne vais jamais au cinéma\" (I never go to the cinema)."
   },
   "reason": "Specific explanation; the clue \"never\" selects jamais, so keep the item."
+ },
+ "fr:question:fra2p15l3/fra2p15q11": {
+  "patch": {
+   "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, so \"tu ne dis pas la vérité\" is you are not telling the truth."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p15l3/fra2p15q12": {
   "patch": {
@@ -11288,6 +11384,12 @@
    "explanation": "The clue \"(never)\" is expressed by ne...jamais. So \"jamais\" gives Nous n'irons jamais là-bas."
   },
   "reason": "The clue '(never)' points to 'jamais'."
+ },
+ "fr:question:fra2p15l5/fra2p15q20": {
+  "patch": {
+   "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, so \"tu n'as pas raison\" is you are not right; \"avoir raison\" is the idiom for being right."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p15l5/fra2p15q21": {
   "patch": {
@@ -12680,6 +12782,42 @@
   },
   "reason": "The item is correct (the hyphenated spelling is accepted), but the explanation is generic and unquoted."
  },
+ "fr:question:fra2p3l1/fra2p3q0": {
+  "patch": {
+   "explanation": "\"droite\" means right: the clue says right, and \"à droite\" is the set phrase for turning right; \"gauche\" is left."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l1/fra2p3q1": {
+  "patch": {
+   "explanation": "\"gauche\" means left, matching the clue; \"à gauche\" is the set phrase for turning left, and \"droite\" would be right."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l1/fra2p3q2": {
+  "patch": {
+   "explanation": "\"tout droit\" is the fixed phrase for straight ahead; \"droite\" and \"gauche\" are right and left, and here \"droit\" stays unchanged."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l1/fra2p3q3": {
+  "patch": {
+   "explanation": "\"face\" completes \"en face de\", which means opposite or facing: one place is across the road from another."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l1/fra2p3q4": {
+  "patch": {
+   "explanation": "\"tout près\" means very close; \"tout\" strengthens \"près\", and \"près d'ici\" means near here."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l2/fra2p3q5": {
+  "patch": {
+   "explanation": "\"loin\" means far, as the clue says; \"près\" is its opposite, and \"droite\" and \"gauche\" are directions, not distances."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p3l2/fra2p3q6": {
   "patch": {
    "explanation": "\"gare\" means train station, which is the place the clue asks for; poste, banque and place are other places in town.",
@@ -12692,6 +12830,30 @@
    ]
   },
   "reason": "Gender of the article makes \"gare\" the fit; explain it. / \"gare\" is the only feminine option that fits after \"la\", so the article gives the answer away; the fix uses feminine distractors and a clue that selects one of them. / \"gare\" is the only feminine option after la (arrêt, pont and carrefour are masculine), so the article gives the answer away."
+ },
+ "fr:question:fra2p3l2/fra2p3q7": {
+  "patch": {
+   "explanation": "\"arrêt\" is the stop, so \"l'arrêt de bus\" is the bus stop; \"l'église\" and \"l'avenue\" are places, not a bus stop."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l2/fra2p3q8": {
+  "patch": {
+   "explanation": "\"côté\" completes \"à côté de\", which means next to, so the pharmacy is beside the bakery; \"loin\" and \"près\" talk about distance."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l2/fra2p3q9": {
+  "patch": {
+   "explanation": "\"derrière\" means behind, as the clue says; \"devant\" is in front of, \"contre\" is against and \"entre\" is between."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p3l3/fra2p3q10": {
+  "patch": {
+   "explanation": "\"devant\" means in front of, as the clue says; \"derrière\" is behind, \"sous\" is under and \"entre\" is between."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p3l3/fra2p3q11": {
   "patch": {
@@ -12750,6 +12912,12 @@
   },
   "reason": "Entrance of a building is the sensible meaning."
  },
+ "fr:question:fra2p3l4/fra2p3q18": {
+  "patch": {
+   "explanation": "\"sortie\" is the exit, so \"la sortie de secours\" is the emergency exit; \"rue\", \"carte\" and \"place\" do not fit the phrase."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p3l4/fra2p3q19": {
   "patch": {
    "explanation": "\"au coin de la rue\" is the set phrase for 'at the corner of the street', so \"coin\" is right; a bridge, pavement or plan has no 'of the street' sense here."
@@ -12762,6 +12930,12 @@
    "prompt": "Regarde la ___ pour trouver le chemin."
   },
   "reason": "Map is the thing you look at to find a route. / The gloss '(map)' names the answer, and the sentence alone already makes \"carte\" the only option you look at to find your way. / All four options are feminine, so the gender remark gives no real clue and misleads; only the meaning decides."
+ },
+ "fr:question:fra2p3l5/fra2p3q21": {
+  "patch": {
+   "explanation": "\"perdu\" is the past participle of \"perdre\" used as an adjective: \"je suis perdu\" means I am lost."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p3l5/fra2p3q22": {
   "patch": {
@@ -12828,6 +13002,12 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "fr:question:fra2p4l2/fra2p4q7": {
+  "patch": {
+   "explanation": "\"bulletin\" is the report, so \"le bulletin\" on the weather forecast announces rain; \"soleil\" and \"parapluie\" cannot announce anything."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p4l2/fra2p4q8": {
   "patch": {
    "explanation": "\"magnifique\" means wonderful, matching the clue, and is the only positive word here. Épouvantable, affreux and horrible all mean awful."
@@ -12858,6 +13038,12 @@
   },
   "reason": "The sun rises with 'se lève'; 'tôt' points to rising."
  },
+ "fr:question:fra2p4l3/fra2p4q13": {
+  "patch": {
+   "explanation": "\"un temps épouvantable\" means terrible weather: \"temps\" is the word for weather in \"il fait un temps ...\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p4l3/fra2p4q14": {
   "patch": {
    "explanation": "A clear sky is \"dégagé\", meaning free of clouds. \"Nuageux\", \"couvert\" and \"gris\" all describe a cloudy sky, the opposite."
@@ -12887,6 +13073,12 @@
    "explanation": "To say the wind blows hard, French uses \"fort\" as an adverb after the verb: \"le vent souffle fort\". \"Bon\", \"beau\" and \"long\" do not describe how wind blows."
   },
   "reason": "'Souffler fort' is the natural adverbial use."
+ },
+ "fr:question:fra2p4l4/fra2p4q19": {
+  "patch": {
+   "explanation": "\"glacial\" means icy, the strongest of the four after \"froid\"; \"torride\" is scorching, and \"tiède\" and \"doux\" describe mild weather."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p4l5/fra2p4q20": {
   "patch": {
@@ -13445,6 +13637,12 @@
   },
   "reason": "A dentist is the doctor for teeth, and the bracketed clue specifies this; keep item, write a specific explanation. / The English hint \"(for my teeth)\" hands over the answer without testing French; a French clue keeps \"dentiste\" the only fit and still tests vocabulary."
  },
+ "fr:question:fra2p8l2/fra2p8q9": {
+  "patch": {
+   "explanation": "\"piqûre\" completes \"faire une piqûre\", the set phrase for giving an injection, which is what a nurse does."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p8l3/fra2p8q10": {
   "patch": {
    "explanation": "After \"le\" you need a masculine noun, and \"bras\" is masculine (le bras); \"jambe\" and \"tête\" are feminine, and \"main\" is feminine too, so \"le\" cannot precede them."
@@ -13456,6 +13654,12 @@
    "explanation": "\"au\" means \"à le\", so a masculine noun is needed: \"dos\" is masculine, while \"main\", \"tête\" and \"jambe\" are feminine and would need \"à la\"."
   },
   "reason": "Gender and meaning drive the answer."
+ },
+ "fr:question:fra2p8l3/fra2p8q12": {
+  "patch": {
+   "explanation": "\"antidouleur\" is a painkiller, the medicine you take for pain; \"pommade\" is a cream and \"ordonnance\" is a prescription."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p8l3/fra2p8q13": {
   "patch": {
@@ -13476,6 +13680,12 @@
    "prompt": "Tu dois aller voir un ___."
   },
   "reason": "Masculine 'un' and a person who is a doctor fit 'spécialiste'. / The subjunctive \"Il faut que tu ailles\" is above A2 for a vocabulary item; a simpler frame keeps the same answer. / \"Il faut que tu ailles\" uses the subjunctive, which is B1 grammar; \"Tu dois aller\" keeps the same meaning at A2."
+ },
+ "fr:question:fra2p8l4/fra2p8q16": {
+  "patch": {
+   "explanation": "\"l'assurance maladie\" is health insurance; \"maladie\" (illness) follows \"assurance\" in this fixed phrase."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p8l4/fra2p8q17": {
   "patch": {
@@ -13520,6 +13730,18 @@
   },
   "reason": "Item fine; explanation made specific."
  },
+ "fr:question:fra2p8l5/fra2p8q23": {
+  "patch": {
+   "explanation": "\"exercice\" completes \"plus d'exercice\" (more exercise), and \"d'\" is \"de\" before a vowel; a doctor recommends exercise, not an allergy or a nurse."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p8l5/fra2p8q24": {
+  "patch": {
+   "explanation": "\"vite\" is an adverb meaning quickly, and an adverb is needed to modify the verb \"guérir\"; \"bon\", \"long\" and \"grand\" are adjectives."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p9l1/fra2p9q0": {
   "patch": {
    "choices": [
@@ -13551,6 +13773,18 @@
   },
   "reason": "Item fine; explanation made specific."
  },
+ "fr:question:fra2p9l1/fra2p9q4": {
+  "patch": {
+   "explanation": "\"essayage\" is trying on, so \"la cabine d'essayage\" is the fitting room; the other nouns do not form this phrase."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p9l2/fra2p9q5": {
+  "patch": {
+   "explanation": "The clue \"on sale\" points to \"solde\"; \"en solde\" is the set phrase for a discounted item, while \"soie\", \"laine\" and \"coton\" are materials."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p9l2/fra2p9q6": {
   "patch": {
    "explanation": "\"pointure\" is the French word for shoe size, so \"Quelle est votre pointure de chaussures ?\" asks for the size. Style, prix and modèle don't answer a request about size."
@@ -13581,11 +13815,29 @@
   },
   "reason": "Generic explanation replaced; the English clue is the item's design, so left alone."
  },
+ "fr:question:fra2p9l3/fra2p9q11": {
+  "patch": {
+   "explanation": "\"aller bien\" is the idiom for clothes that suit or fit you, so \"me va très bien\" means it fits me very well; \"bien\" is an adverb here."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:fra2p9l3/fra2p9q12": {
+  "patch": {
+   "explanation": "\"réduction\" means a discount, the only option a salesperson can give you; the others are items of clothing."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:fra2p9l3/fra2p9q13": {
   "patch": {
    "explanation": "After \"je vais\" (near future) the verb stays in the infinitive, so \"acheter\". Conjugated forms like \"achète\" or \"achetons\" don't follow \"aller\"."
   },
   "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:fra2p9l3/fra2p9q14": {
+  "patch": {
+   "explanation": "\"hiver\" means winter, as the clue says, and it takes \"l'\" because it starts with a vowel sound; \"été\" is summer and \"automne\" is autumn."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:fra2p9l4/fra2p9q15": {
   "patch": {
@@ -14777,6 +15029,18 @@
   },
   "reason": "The key is right, but the explanation only restates the gloss and does not put the answer in double quotes."
  },
+ "fr:question:frb1p17l1/frb1p17q0": {
+  "patch": {
+   "explanation": "\"penser à\" takes \"à\" before the thing you think about: \"je pense à mes vacances\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l1/frb1p17q1": {
+  "patch": {
+   "explanation": "\"avoir besoin de\" always takes \"de\": \"j'ai besoin de ton aide\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p17l1/frb1p17q2": {
   "patch": {
    "prompt": "Il hésite ___ répondre.",
@@ -14784,12 +15048,60 @@
   },
   "reason": "Both \"continuer à\" and \"continuer de\" are standard before an infinitive, so a learner who picks \"de\" is wrongly marked; a verb that takes only à removes the ambiguity. / \"Hésiter de\" survives only as an archaic or literary form, so \"always\" is slightly overstated; this is minor polish. / Both « continuer à » and « continuer de » are standard before an infinitive, so a learner who picks de is wrongly marked; a verb that takes only à removes the second answer."
  },
+ "fr:question:frb1p17l1/frb1p17q3": {
+  "patch": {
+   "explanation": "\"décider de\" takes \"de\" before an infinitive: \"elle a décidé de partir\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p17l1/frb1p17q4": {
   "patch": {
    "prompt": "Nous réussissons ___ comprendre.",
    "explanation": "The verb « réussir » is followed by \"à\" before an infinitive: réussir à faire quelque chose."
   },
   "reason": "\"Commencer de\" is a literary but correct variant, so a verb that takes only à avoids penalising a learner who knows it. / « Commencer de » is literary but still correct, so a verb that takes only à is safer at B1."
+ },
+ "fr:question:frb1p17l2/frb1p17q5": {
+  "patch": {
+   "explanation": "\"oublier de\" takes \"de\" before an infinitive: \"vous avez oublié de fermer la porte\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l2/frb1p17q6": {
+  "patch": {
+   "explanation": "\"réussir à\" takes \"à\" before an infinitive: \"ils réussissent à finir dans les délais\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l2/frb1p17q7": {
+  "patch": {
+   "explanation": "\"rêver de\" takes \"de\" before an infinitive: \"je rêve de voyager un jour\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l2/frb1p17q8": {
+  "patch": {
+   "explanation": "\"apprendre à\" takes \"à\" before an infinitive: \"tu apprends à conduire\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l2/frb1p17q9": {
+  "patch": {
+   "explanation": "\"avoir peur de\" takes \"de\" before an infinitive: \"elle a peur d'échouer\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l3/frb1p17q10": {
+  "patch": {
+   "explanation": "\"s'intéresser à\" takes \"à\", and \"à l'\" is \"à la\" shortened before a vowel: \"nous nous intéressons à l'art\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "fr:question:frb1p17l3/frb1p17q11": {
+  "patch": {
+   "explanation": "\"de\" is right because \"venir de\" plus an infinitive means has just done: \"il vient de finir son travail\" is he has just finished; \"venir à\" would mean something different."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb1p17l3/frb1p17q12": {
   "patch": {
@@ -15227,6 +15539,12 @@
   },
   "reason": "Key is correct; il y a is the natural choice with a completed passé composé action."
  },
+ "fr:question:frb1p19l2/frb1p19q9": {
+  "patch": {
+   "explanation": "\"depuis\" is used for an action that began in the past and is still going on: \"tu apprends ... depuis combien de temps ?\" asks how long you have been learning."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p19l3/frb1p19q10": {
   "patch": {
    "explanation": "\"pendant\" fits because \"toute la journée\" gives a finished stretch of time during which it rained."
@@ -15275,6 +15593,12 @@
    "explanation": "\"il y a\" with a past tense (\"a appelé\") tells how long ago the call happened: five minutes ago."
   },
   "reason": "Generic explanation replaced with a specific one."
+ },
+ "fr:question:frb1p19l4/frb1p19q18": {
+  "patch": {
+   "explanation": "\"depuis\" is used with \"toujours\" to say always, for as long as she can remember, with the situation still going on; \"pendant\" gives a finished length of time."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb1p19l4/frb1p19q19": {
   "patch": {
@@ -15652,6 +15976,12 @@
   },
   "reason": "The distractors were not forms of pouvoir. A new bank built only from 'peut' would accept two answers, so the bank now uses other persons of the conditional, which only the subject 'on' rules out. / Specific explanation needed; key is right."
  },
+ "fr:question:frb1p20l1/frb1p20q3": {
+  "patch": {
+   "explanation": "\"prendre\" is the verb of \"prendre du repos\" (to take some rest); the clue \"to take\" confirms it."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p20l1/frb1p20q4": {
   "patch": {
    "bank": [
@@ -15683,9 +16013,10 @@
     "attendre",
     "essayer",
     "oublier"
-   ]
+   ],
+   "explanation": "\"essayer\" means to try, as the clue says: \"ça vaudrait la peine d'essayer\" is it would be worth trying; after \"de\" the verb stays in the infinitive."
   },
-  "reason": "The conditional forms and the consonant-initial 'partir' gave away the key through form and elision. They are replaced with vowel-initial infinitives that only the clue (to try) rules out."
+  "reason": "The conditional forms and the consonant-initial 'partir' gave away the key through form and elision. They are replaced with vowel-initial infinitives that only the clue (to try) rules out. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb1p20l2/frb1p20q8": {
   "patch": {
@@ -16635,6 +16966,12 @@
   },
   "reason": "\"retardé\" and \"centre-ville\" are not plausible here; money words that do not fit \"de la\" (de l'argent, des billets, du chèque) are tempting and ruled out. / 'de la' needs a feminine singular noun; 'monnaie' fits and is the natural noun here. / For getting small change, which is the card's meaning, the natural phrase is \"faire de la monnaie\"; \"changer de la monnaie\" is less idiomatic and drifts toward currency exchange."
  },
+ "fr:question:frb1p3l3/frb1p3q14": {
+  "patch": {
+   "explanation": "\"dépôt de bagages\" is the left-luggage office, where you leave your bags; \"dépôt\" is the place something is deposited."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p3l4/frb1p3q15": {
   "patch": {
    "choices": [
@@ -16654,9 +16991,10 @@
     "fenêtre",
     "billet",
     "place"
-   ]
+   ],
+   "explanation": "\"fenêtre\" completes \"côté fenêtre\", the window side and the usual way to ask for a window seat; \"côté\" is followed by the position."
   },
-  "reason": "Two distractors are adjectives; travel nouns that make no sense after \"siège côté\" are better, and \"couloir\" is avoided because it would be a second answer."
+  "reason": "Two distractors are adjectives; travel nouns that make no sense after \"siège côté\" are better, and \"couloir\" is avoided because it would be a second answer. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb1p3l4/frb1p3q17": {
   "patch": {
@@ -18148,6 +18486,12 @@
   },
   "reason": "'s'y' is not a realistic choice; 'les' is the typical error for 'des enfants', but a quantity ('deux') requires 'en'. / Generic explanation replaced."
  },
+ "fr:question:frb1p9l1/frb1p9q3": {
+  "patch": {
+   "explanation": "\"en\" replaces \"du café\" (de plus a noun, a quantity): \"j'en veux bien\" means I would like some; \"y\" stands for a place or \"à\" plus a thing."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb1p9l1/frb1p9q4": {
   "patch": {
    "choices": [
@@ -18169,6 +18513,12 @@
    "explanation": "\"en\" replaces \"de son travail\" after \"parler de\", so \"il en parle\" means \"he talks about it\"."
   },
   "reason": "\"s'y\" does not work with il parle; \"lui\" is tempting but is ruled out because the verb is parler de. / Generic explanation replaced."
+ },
+ "fr:question:frb1p9l2/frb1p9q6": {
+  "patch": {
+   "explanation": "\"croire à\" takes \"à\", and \"y\" replaces \"à\" plus a thing: \"à cette histoire\" becomes \"j'y crois\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb1p9l2/frb1p9q7": {
   "patch": {
@@ -18202,6 +18552,13 @@
    "explanation": "\"en\" replaces \"des araignées\" after \"avoir peur de\", so \"ils en ont peur\" means \"they are afraid of them\"."
   },
   "reason": "\"s'y\" is not plausible; \"leur\" is tempting for a plural but is ruled out because the verb is avoir peur de. / Generic explanation replaced."
+ },
+ "fr:question:frb1p9l3/frb1p9q10": {
+  "patch": {
+   "explanation": "\"penser à\" takes \"à\", and \"y\" replaces \"à\" plus a thing: \"à ton voyage\" becomes \"j'y pense\".",
+   "prompt": "Tu penses souvent à ton voyage ? Oui, j'y pense souvent."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7). The prompt asked about a person (\"à elle\"), where \"y\" is not used; it now asks about a thing."
  },
  "fr:question:frb1p9l3/frb1p9q11": {
   "patch": {
@@ -20334,9 +20691,10 @@
     "réparer",
     "ignorer"
    ],
-   "answer": 0
+   "answer": 0,
+   "explanation": "\"remarquer\" completes \"faire remarquer\", which means to point out, so \"vous faites remarquer le problème\" is you point out the problem; the clue \"to notice\" gives the verb."
   },
-  "reason": "'faire' and 'visiter' do not fit 'le problème', so they are replaced by verbs that do, which the clue (to notice) excludes."
+  "reason": "'faire' and 'visiter' do not fit 'le problème', so they are replaced by verbs that do, which the clue (to notice) excludes. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frb2p19l5/frb2p19q23": {
   "patch": {
@@ -22126,6 +22484,12 @@
   },
   "reason": "The bank held other verbs and a fragment. It now holds conditional forms of appeler that the subject 'elle' rules out. / Replace generic explanation with a specific one."
  },
+ "fr:question:frb2p5l4/frb2p5q16": {
+  "patch": {
+   "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so \"était enfin\" is a form of \"être\" in the imperfect; the key repeats \"enfin\", which the sentence already has."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frb2p5l4/frb2p5q17": {
   "patch": {
    "bank": [
@@ -23426,9 +23790,10 @@
     "aveu",
     "examen",
     "audience"
-   ]
+   ],
+   "explanation": "\"examen\" is the examination, and \"soumis à l'examen du juge\" means submitted for the judge's examination; \"aveu\" is a confession."
   },
-  "reason": "Consonant-initial words and an adjective could not follow l'; the new vowel-initial legal nouns fit the elision but not the meaning."
+  "reason": "Consonant-initial words and an adjective could not follow l'; the new vowel-initial legal nouns fit the elision but not the meaning. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l2/frc1p10q9": {
   "patch": {
@@ -23449,9 +23814,10 @@
     "recours",
     "opposition",
     "pourvoi"
-   ]
+   ],
+   "explanation": "\"faire appel de\" is the fixed legal phrase for appealing a decision, so \"appel\" is right."
   },
-  "reason": "A verb and a participle were absurd here; the new legal remedy nouns are tempting but none forms 'faire ___ de'."
+  "reason": "A verb and a participle were absurd here; the new legal remedy nouns are tempting but none forms 'faire ___ de'. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l3/frc1p10q11": {
   "patch": {
@@ -23472,9 +23838,10 @@
     "créance",
     "peine",
     "succession"
-   ]
+   ],
+   "explanation": "\"peine\" is a sentence or penalty, which the public prosecutor asks the court for (\"requérir une peine\"); \"plainte\" is a complaint."
   },
-  "reason": "Two of the wrong options were not feminine nouns (\"document\", \"rejetée\"), so I replaced them with feminine nouns that a prosecutor cannot \"requérir\" as a sentence."
+  "reason": "Two of the wrong options were not feminine nouns (\"document\", \"rejetée\"), so I replaced them with feminine nouns that a prosecutor cannot \"requérir\" as a sentence. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l3/frc1p10q13": {
   "patch": {
@@ -23483,9 +23850,10 @@
     "prochaine",
     "ancienne",
     "propre"
-   ]
+   ],
+   "explanation": "\"première\" completes \"première instance\", the court of first instance: the fixed phrase for the first level of a court case."
   },
-  "reason": "The bank held nouns and a participle; I replaced them with feminine adjectives that do not form a set phrase with \"instance\" (avoiding \"dernière\" and \"seconde\", which would also be correct)."
+  "reason": "The bank held nouns and a participle; I replaced them with feminine adjectives that do not form a set phrase with \"instance\" (avoiding \"dernière\" and \"seconde\", which would also be correct). Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l3/frc1p10q14": {
   "patch": {
@@ -23494,9 +23862,10 @@
     "comparution",
     "plaidoirie",
     "jurisprudence"
-   ]
+   ],
+   "explanation": "\"droits de succession\" are inheritance taxes, which heirs pay; \"succession\" is the estate passed on at death."
   },
-  "reason": "\"stipulée\" and \"jugement\" were not plausible; the new wrong options are legal nouns that do not form a tax heirs pay with \"droits de\"."
+  "reason": "\"stipulée\" and \"jugement\" were not plausible; the new wrong options are legal nouns that do not form a tax heirs pay with \"droits de\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l4/frc1p10q15": {
   "patch": {
@@ -23505,9 +23874,10 @@
     "litige",
     "plaignant",
     "greffe"
-   ]
+   ],
+   "explanation": "\"non-lieu\" is a dismissal, a judge's decision that there is no case to answer, which is why the judge pronounces it."
   },
-  "reason": "\"protège\" and \"convoqués\" are not nouns; the new options are masculine legal nouns a judge cannot \"prononcer\" (avoiding \"jugement\" and \"verdict\", which would also be correct)."
+  "reason": "\"protège\" and \"convoqués\" are not nouns; the new options are masculine legal nouns a judge cannot \"prononcer\" (avoiding \"jugement\" and \"verdict\", which would also be correct). Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l4/frc1p10q16": {
   "patch": {
@@ -23577,9 +23947,10 @@
     "rejeté",
     "rejetées",
     "rejeter"
-   ]
+   ],
+   "explanation": "\"rejetée\" agrees with the feminine singular \"la demande\": the passive participle takes the subject's gender and number."
   },
-  "reason": "\"protège\" and \"document\" are absurd and \"adopté\" is ambiguous; forms of \"rejeter\" test agreement with the feminine \"La demande\"."
+  "reason": "\"protège\" and \"document\" are absurd and \"adopté\" is ambiguous; forms of \"rejeter\" test agreement with the feminine \"La demande\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l5/frc1p10q22": {
   "patch": {
@@ -23588,9 +23959,10 @@
     "amical",
     "obligeant",
     "amiable"
-   ]
+   ],
+   "explanation": "\"amiable\" completes \"à l'amiable\", the fixed phrase for settled out of court by agreement; \"aimable\" means kind and does not fit here."
   },
-  "reason": "The bank held unrelated words; the new options are adjectives that look or feel like \"amiable\" but do not form the fixed phrase \"à l'amiable\"."
+  "reason": "The bank held unrelated words; the new options are adjectives that look or feel like \"amiable\" but do not form the fixed phrase \"à l'amiable\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l5/frc1p10q23": {
   "patch": {
@@ -23599,9 +23971,10 @@
     "convoquer",
     "convoqués",
     "convoquant"
-   ]
+   ],
+   "explanation": "\"convoqués\" is a passive participle agreeing with the masculine plural \"les témoins\": the witnesses were summoned."
   },
-  "reason": "\"vigueur\" and \"examen\" are nouns; I used forms of \"convoquer\" and left out the feminine plural, because \"témoins\" can refer to women."
+  "reason": "\"vigueur\" and \"examen\" are nouns; I used forms of \"convoquer\" and left out the feminine plural, because \"témoins\" can refer to women. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p10l5/frc1p10q24": {
   "patch": {
@@ -23610,9 +23983,10 @@
     "adoptés",
     "adopter",
     "adopté"
-   ]
+   ],
+   "explanation": "\"adopté\" agrees with the masculine singular \"le texte de loi\": the passive participle takes the subject's gender and number."
   },
-  "reason": "The bank mixed unrelated words; agreement and infinitive traps on the same verb test the participle agreement with the masculine singular 'le texte'."
+  "reason": "The bank mixed unrelated words; agreement and infinitive traps on the same verb test the participle agreement with the masculine singular 'le texte'. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p11l1/frc1p11q0": {
   "patch": {
@@ -24803,6 +25177,12 @@
   },
   "reason": "'peut' and 'faut' are other verbs; devoir forms that 'Elle' and the simple tense rule out are better. / Generic explanation replaced with a specific one."
  },
+ "fr:question:frc1p17l3/frc1p17q10": {
+  "patch": {
+   "explanation": "\"devez\" is the \"vous\" form of \"devoir\"; used for probability, \"vous devez avoir des questions\" means you must have some questions."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frc1p17l3/frc1p17q11": {
   "patch": {
    "choices": [
@@ -25501,6 +25881,12 @@
   },
   "reason": "\"corroborent\" competes with the key and the other options are a noun and an infinitive; other forms of confirmer are ruled out by the plural subject \"Les résultats\", and \"confirmer quelqu'un dans\" is idiomatic, so the key stands. / Plural subject 'résultats'; 'confirmer qn dans qch' is acceptable. / \"confirmer quelqu'un dans une hypothèse\" is correct, but \"corroborent\" matches the (confirm) hint and confuses learners; \"infirment\" is a tempting verb that the hint rules out. / \"objectif\" (a noun) and \"noter\" (an infinitive) are absurd, and the explanation discusses forms that are not offered."
  },
+ "fr:question:frc1p19l5/frc1p19q23": {
+  "patch": {
+   "explanation": "\"replacer\" means to put back, so \"replacer ces conclusions dans un contexte plus large\" is to put these conclusions back in a wider context."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frc1p19l5/frc1p19q24": {
   "patch": {
    "choices": [
@@ -25687,6 +26073,12 @@
   },
   "reason": "\"est\" is a form of être, not venir; it is replaced with \"venez\", a form of venir that the subject \"il\" rules out. / Specific explanation needed."
  },
+ "fr:question:frc1p20l1/frc1p20q2": {
+  "patch": {
+   "explanation": "\"sommes\" is the \"nous\" form of \"être\": \"nous sommes sur le point de\" means we are about to."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "fr:question:frc1p20l1/frc1p20q3": {
   "patch": {
    "bank": [
@@ -25758,6 +26150,12 @@
    "explanation": "'Venir de' + infinitive means 'to have just done', and with 'nous' venir becomes \"venons\"."
   },
   "reason": "\"êtes\" and \"es\" are forms of être; they are replaced with forms of venir that the subject \"nous\" rules out. / Replaced generic explanation with a specific one."
+ },
+ "fr:question:frc1p20l2/frc1p20q9": {
+  "patch": {
+   "explanation": "\"êtes\" is the \"vous\" form of \"être\": \"vous êtes sur le point de partir ?\" means are you about to leave?"
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p20l3/frc1p20q10": {
   "patch": {
@@ -26401,9 +26799,10 @@
     "atteint",
     "fixé"
    ],
-   "answer": 2
+   "answer": 2,
+   "explanation": "\"atteint\" is the past participle of \"atteindre\", to reach, so \"il a atteint son objectif\" means he reached his goal; \"nonobstant\" (despite) introduces the difficulties."
   },
-  "reason": "Only 'atteint' was a masculine past participle, so the distractors are now masculine past participles and a clue rules them out."
+  "reason": "Only 'atteint' was a masculine past participle, so the distractors are now masculine past participles and a clue rules them out. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l1/frc1p2q1": {
   "patch": {
@@ -26450,9 +26849,10 @@
     "constaté",
     "échoué",
     "suscité"
-   ]
+   ],
+   "explanation": "\"échoué\" is the past participle of \"échouer\", to fail, which fits \"en dépit des efforts\" (despite the efforts) for a project that did not succeed."
   },
-  "reason": "Only \"échoué\" was a past participle. The new participles \"noté\", \"constaté\" and \"suscité\" are transitive, so they need an object that \"le projet a ___.\" does not supply."
+  "reason": "Only \"échoué\" was a past participle. The new participles \"noté\", \"constaté\" and \"suscité\" are transitive, so they need an object that \"le projet a ___.\" does not supply. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l2/frc1p2q5": {
   "patch": {
@@ -26473,9 +26873,10 @@
     "remis en question",
     "remettant en question",
     "remettrai en question"
-   ]
+   ],
+   "explanation": "After the preposition \"de\" a verb stays in the infinitive, so \"remettre en question\" is right; the other options are conjugated or participles."
   },
-  "reason": "\"revoir\" also fits the blank, and \"atteint\" is absurd. Other forms of the key are ruled out because \"l'idée de\" requires an infinitive."
+  "reason": "\"revoir\" also fits the blank, and \"atteint\" is absurd. Other forms of the key are ruled out because \"l'idée de\" requires an infinitive. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l2/frc1p2q7": {
   "patch": {
@@ -26632,9 +27033,10 @@
     "écarter",
     "oublier"
    ],
-   "prompt": "Il conviendrait d'___ cette question plus avant."
+   "prompt": "Il conviendrait d'___ cette question plus avant.",
+   "explanation": "\"examiner\" means to examine and is an infinitive after \"d'\"; \"il conviendrait de\" (it would be fitting to) is followed by an infinitive."
   },
-  "reason": "\"ouverte\" is an adjective and \"noter\" or \"déplorer\" are borderline; the new infinitives clash with \"plus avant\", which needs further examination. / \"de\" must elide before \"examiner\", so the prompt now uses \"d'\" and the consonant-initial \"clore\" becomes the vowel-initial \"ignorer\"; \"plus avant\" (further) still rules out every distractor."
+  "reason": "\"ouverte\" is an adjective and \"noter\" or \"déplorer\" are borderline; the new infinitives clash with \"plus avant\", which needs further examination. / \"de\" must elide before \"examiner\", so the prompt now uses \"d'\" and the consonant-initial \"clore\" becomes the vowel-initial \"ignorer\"; \"plus avant\" (further) still rules out every distractor. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l5/frc1p2q20": {
   "patch": {
@@ -26643,9 +27045,10 @@
     "susciter",
     "commettre",
     "éprouver"
-   ]
+   ],
+   "explanation": "\"nier\" means to deny, and \"nul ne saurait\" (no one could) is followed by an infinitive: no one could deny the importance of the event."
   },
-  "reason": "\"ouverte\" is an adjective in a verb slot; the new infinitives cannot take \"la portée\" as object, while plausible ones like \"ignorer\" are avoided."
+  "reason": "\"ouverte\" is an adjective in a verb slot; the new infinitives cannot take \"la portée\" as object, while plausible ones like \"ignorer\" are avoided. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l5/frc1p2q21": {
   "patch": {
@@ -26655,9 +27058,10 @@
     "signaler",
     "affirmer",
     "déplorer"
-   ]
+   ],
+   "explanation": "\"déplorer\" completes \"il est à déplorer que\", a formal phrase for it is regrettable that, followed by the subjunctive."
   },
-  "reason": "The participles are the wrong class; standard \"il est à déplorer que\" takes the subjunctive, so the prompt now uses \"aient été\", which rules out the indicative verbs \"noter\", \"signaler\" and \"affirmer\". / \"Il est à déplorer que\" expresses a judgement or feeling and takes the subjunctive, so the prompt's \"ont été prises\" teaches a wrong mood; the options and explanation are already scheduled for rewrite."
+  "reason": "The participles are the wrong class; standard \"il est à déplorer que\" takes the subjunctive, so the prompt now uses \"aient été\", which rules out the indicative verbs \"noter\", \"signaler\" and \"affirmer\". / \"Il est à déplorer que\" expresses a judgement or feeling and takes the subjunctive, so the prompt's \"ont été prises\" teaches a wrong mood; the options and explanation are already scheduled for rewrite. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p2l5/frc1p2q22": {
   "patch": {
@@ -27292,9 +27696,10 @@
     "favoriser",
     "défendre",
     "infondée"
-   ]
+   ],
+   "explanation": "\"considérer\" means to consider, and \"il convient de\" (it is appropriate to) takes an infinitive; \"infondée\" is an adjective and does not fit."
   },
-  "reason": "\"peser les implications\" is as natural as \"considérer\", and \"infondée\" is an adjective, so the distractors are replaced with verbs the sentence's meaning rules out. / \"peser les implications\" is natural French, so it is a second correct answer; replacing it with \"contredire\" leaves \"considérer\" as the only fit. / \"infondée\" is an adjective among infinitives, so it is replaced by the infinitive \"réfuter\", which clashes with \"implications\" just as the other distractors do. / \"Peser les implications\" is fully idiomatic, so the option \"peser\" is also correct."
+  "reason": "\"peser les implications\" is as natural as \"considérer\", and \"infondée\" is an adjective, so the distractors are replaced with verbs the sentence's meaning rules out. / \"peser les implications\" is natural French, so it is a second correct answer; replacing it with \"contredire\" leaves \"considérer\" as the only fit. / \"infondée\" is an adjective among infinitives, so it is replaced by the infinitive \"réfuter\", which clashes with \"implications\" just as the other distractors do. / \"Peser les implications\" is fully idiomatic, so the option \"peser\" is also correct. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "fr:question:frc1p5l4/frc1p5q15": {
   "patch": {
