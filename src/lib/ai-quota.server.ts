@@ -3,8 +3,9 @@ import type { Database } from "@/integrations/supabase/types";
 import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 import { HECTOR_DAILY_LIMIT } from "./hector-allowance";
+import { EXPLAIN_DAILY_LIMIT } from "./explain";
 
-export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define" | "hector";
+export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -30,6 +31,9 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // Pro learners' Hector turns (20261102120000). Separate from `chat`, which free Practice spends, so practicing
   // never blocks the feature a learner pays for; still capped to bound AI cost.
   hector: HECTOR_DAILY_LIMIT,
+  // "Explain in my language": one short call per tap (/api/explain), its own budget; a cache hit spends none.
+  // Hector explanations spend `hector` instead. 20261112100000_explain_in_my_language.sql.
+  explain: EXPLAIN_DAILY_LIMIT,
 };
 
 export type QuotaResult =

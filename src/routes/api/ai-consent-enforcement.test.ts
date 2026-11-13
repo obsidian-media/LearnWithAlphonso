@@ -93,6 +93,14 @@ const GATED: [string, () => Request][] = [
       ),
   ],
   [
+    "explain",
+    () =>
+      new Request(
+        "https://x/api/explain",
+        json({ kind: "word", course: "en", word: "borrow", sentence: "Can I borrow a pen?" }),
+      ),
+  ],
+  [
     "analyze-weaknesses",
     () =>
       new Request(
