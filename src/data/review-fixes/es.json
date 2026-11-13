@@ -6850,6 +6850,30 @@
   },
   "reason": "Generic explanation replaced with a specific one."
  },
+ "es:question:esa1p18l2/esa1p18q7": {
+  "patch": {
+   "explanation": "\"punto\" completes \"en punto\", the fixed phrase for exactly on the hour, as the clue says."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "es:question:esa1p18l2/esa1p18q8": {
+  "patch": {
+   "explanation": "\"cuarto\" is a quarter: \"las seis menos cuarto\" is a quarter to six, and \"cuarto\" is masculine, so \"cuarta\" does not fit."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "es:question:esa1p18l2/esa1p18q9": {
+  "patch": {
+   "explanation": "\"mañana\" completes \"de la mañana\", which means in the morning (a.m.), as the clue says: \"llego a las siete de la mañana\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
+ "es:question:esa1p18l3/esa1p18q10": {
+  "patch": {
+   "explanation": "\"noche\" completes \"de la noche\", which means at night (p.m.), as the clue says: \"ceno a las nueve de la noche\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "es:question:esa1p18l3/esa1p18q11": {
   "patch": {
    "explanation": "The English clue says \"afternoon\", and \"tarde\" is the Spanish word for it; \"por la tarde\" means 'in the afternoon'."
@@ -12573,6 +12597,12 @@
   },
   "reason": "Specific explanation; the (more) clue decides between más and menos."
  },
+ "es:question:esa2p5l4/esa2p5q19": {
+  "patch": {
+   "explanation": "\"más\" builds the superlative with \"la\": \"la más barata de todas\" is the cheapest of all, and the clue says most."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+ },
  "es:question:esa2p5l5/esa2p5q20": {
   "patch": {
    "explanation": "The clue says \"less\", and \"menos\" + adjective + \"que\" compares two things (less stressful than yours). \"Tan\" needs \"como\", not \"que\"."
@@ -12596,6 +12626,12 @@
    "explanation": "The clue says \"more\", and \"más\" + adjective + \"que\" is the comparative of superiority (shorter than the other). \"Menos\" would give the opposite meaning."
   },
   "reason": "Specific explanation; the clue decides."
+ },
+ "es:question:esa2p5l5/esa2p5q24": {
+  "patch": {
+   "explanation": "\"más\" builds the superlative with \"la\": \"la más original de todas\" is the most original of all, and the clue says most."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esa2p6l1/esa2p6q0": {
   "patch": {
@@ -13799,9 +13835,10 @@
     "Debe",
     "Hay",
     "Planchar"
-   ]
+   ],
+   "explanation": "\"Hay\" completes \"hay que\" plus an infinitive, which says what has to be done in general, with no subject: \"hay que lavar los platos\"."
   },
-  "reason": "The infinitives \"sacudir\" and \"planchar\" are absurd, and lowercase \"debe\" beside capitalized \"Hay\" is a giveaway; capitalized finite forms that learners confuse with \"Hay que\" replace them, and none of them fits before \"que\" + infinitive. / \"Hay\" is the only capitalized option, and the blank starts the sentence, so capitalization gives the answer away; all options should be capitalized."
+  "reason": "The infinitives \"sacudir\" and \"planchar\" are absurd, and lowercase \"debe\" beside capitalized \"Hay\" is a giveaway; capitalized finite forms that learners confuse with \"Hay que\" replace them, and none of them fits before \"que\" + infinitive. / \"Hay\" is the only capitalized option, and the blank starts the sentence, so capitalization gives the answer away; all options should be capitalized. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb1p16l1/esb1p16q1": {
   "patch": {
@@ -13810,9 +13847,10 @@
     "Hay",
     "Ha",
     "Es"
-   ]
+   ],
+   "explanation": "\"Hay\" completes \"hay que\" plus an infinitive, which says what has to be done in general, with no subject: \"hay que limpiar la casa\"."
   },
-  "reason": "The infinitives \"hacer\" and \"sacudir\" are absurd, and lowercase \"debe\" gives away the capitalized answer; tempting capitalized finite forms replace them, and none fits before \"que limpiar\"."
+  "reason": "The infinitives \"hacer\" and \"sacudir\" are absurd, and lowercase \"debe\" gives away the capitalized answer; tempting capitalized finite forms replace them, and none fits before \"que limpiar\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb1p16l1/esb1p16q2": {
   "patch": {
@@ -18032,9 +18070,10 @@
     "sal",
     "salga",
     "sales"
-   ]
+   ],
+   "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"salgas\" is right after \"no\"; \"sal\" is the affirmative form."
   },
-  "reason": "The wrong options were other verbs, so they are replaced with forms of salir; a (tú) clue rules out \"salga\"."
+  "reason": "The wrong options were other verbs, so they are replaced with forms of salir; a (tú) clue rules out \"salga\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb1p9l3/esb1p9q12": {
   "patch": {
@@ -18083,9 +18122,10 @@
     "pon",
     "ponga",
     "pones"
-   ]
+   ],
+   "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"pongas\" is right after \"no\"; \"pon\" is the affirmative form."
   },
-  "reason": "The wrong options were other verbs, so they are replaced with forms of poner; a (tú) clue rules out \"ponga\"."
+  "reason": "The wrong options were other verbs, so they are replaced with forms of poner; a (tú) clue rules out \"ponga\". Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb1p9l4/esb1p9q16": {
   "patch": {
@@ -18133,9 +18173,10 @@
     "ve",
     "vas",
     "vaya"
-   ]
+   ],
+   "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"vayas\" is right after \"no\"; \"ve\" is the affirmative form."
   },
-  "reason": "The distractors seas and hables are not forms of ir; better distractors are ir forms, and a (tú) clue rules out the usted form vaya."
+  "reason": "The distractors seas and hables are not forms of ir; better distractors are ir forms, and a (tú) clue rules out the usted form vaya. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb2p10l1/esb2p10q0": {
   "patch": {
@@ -21941,6 +21982,12 @@
    "explanation": "The phrase \"antes de que\" always takes \"de\" before \"que\" to mean 'before'; \"antes a\" or \"antes con\" do not exist."
   },
   "reason": "Generic explanation replaced with a specific one."
+ },
+ "es:question:esb2p5l2/esb2p5q8": {
+  "patch": {
+   "explanation": "\"después de\" is the preposition for after, and it takes \"de\" before a noun: \"después de la clase\"."
+  },
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esb2p5l2/esb2p5q9": {
   "patch": {
@@ -26355,9 +26402,10 @@
     "habían salido",
     "había salido",
     "ha salido"
-   ]
+   ],
+   "explanation": "\"había salido\" is the pluperfect: it shows she had left before another past moment, \"cuando llegué\"."
   },
-  "reason": "Only the key uses the bracketed verb \"salir\", so learners can match the verb instead of choosing the tense and person; the new distractors keep \"salir\" and differ in tense or person, and both \"Cuando llegué\" and \"ella\" rule them out."
+  "reason": "Only the key uses the bracketed verb \"salir\", so learners can match the verb instead of choosing the tense and person; the new distractors keep \"salir\" and differ in tense or person, and both \"Cuando llegué\" and \"ella\" rule them out. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esc1p6l1/esc1p6q1": {
   "patch": {
@@ -26366,9 +26414,10 @@
     "habré terminado",
     "habrá terminado",
     "he terminado"
-   ]
+   ],
+   "explanation": "\"habré terminado\" is the future perfect: it says I will have finished by a future point, \"para el año próximo\"."
   },
-  "reason": "The bank mixes in other verbs; the new distractors keep \"terminar\", and \"Para el año próximo\" plus \"yo\" rule them out."
+  "reason": "The bank mixes in other verbs; the new distractors keep \"terminar\", and \"Para el año próximo\" plus \"yo\" rule them out. Generic explanation replaced with the rule for this sentence (round 7)."
  },
  "es:question:esc1p6l1/esc1p6q2": {
   "patch": {

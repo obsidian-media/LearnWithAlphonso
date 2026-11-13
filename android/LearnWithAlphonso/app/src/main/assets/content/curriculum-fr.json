@@ -9105,7 +9105,7 @@
                 "face"
               ],
               "answer": 2,
-              "explanation": "\"droite\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"droite\" means right: the clue says right, and \"à droite\" is the set phrase for turning right; \"gauche\" is left.",
               "meaning": "right (direction)"
             },
             {
@@ -9119,7 +9119,7 @@
                 "côté"
               ],
               "answer": "gauche",
-              "explanation": "\"gauche\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"gauche\" means left, matching the clue; \"à gauche\" is the set phrase for turning left, and \"droite\" would be right.",
               "meaning": "left (direction)"
             },
             {
@@ -9133,7 +9133,7 @@
                 "près"
               ],
               "answer": 0,
-              "explanation": "\"droit\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"tout droit\" is the fixed phrase for straight ahead; \"droite\" and \"gauche\" are right and left, and here \"droit\" stays unchanged.",
               "meaning": "straight (tout droit: straight ahead)"
             },
             {
@@ -9147,7 +9147,7 @@
                 "coin"
               ],
               "answer": "face",
-              "explanation": "\"face\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"face\" completes \"en face de\", which means opposite or facing: one place is across the road from another.",
               "meaning": "face (en face de: opposite)"
             },
             {
@@ -9161,7 +9161,7 @@
                 "côté"
               ],
               "answer": 2,
-              "explanation": "\"près\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"tout près\" means very close; \"tout\" strengthens \"près\", and \"près d'ici\" means near here.",
               "meaning": "near, close"
             }
           ]
@@ -9182,7 +9182,7 @@
                 "loin"
               ],
               "answer": "loin",
-              "explanation": "\"loin\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"loin\" means far, as the clue says; \"près\" is its opposite, and \"droite\" and \"gauche\" are directions, not distances.",
               "meaning": "far (away)"
             },
             {
@@ -9210,7 +9210,7 @@
                 "adresse"
               ],
               "answer": "arrêt",
-              "explanation": "\"arrêt\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"arrêt\" is the stop, so \"l'arrêt de bus\" is the bus stop; \"l'église\" and \"l'avenue\" are places, not a bus stop.",
               "meaning": "stop (bus or tram stop)"
             },
             {
@@ -9224,7 +9224,7 @@
                 "face"
               ],
               "answer": 2,
-              "explanation": "\"côté\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"côté\" completes \"à côté de\", which means next to, so the pharmacy is beside the bakery; \"loin\" and \"près\" talk about distance.",
               "meaning": "side; à côté de = next to"
             },
             {
@@ -9238,7 +9238,7 @@
                 "entre"
               ],
               "answer": "derrière",
-              "explanation": "\"derrière\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"derrière\" means behind, as the clue says; \"devant\" is in front of, \"contre\" is against and \"entre\" is between.",
               "meaning": "behind"
             }
           ]
@@ -9259,7 +9259,7 @@
                 "derrière"
               ],
               "answer": "devant",
-              "explanation": "\"devant\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"devant\" means in front of, as the clue says; \"derrière\" is behind, \"sous\" is under and \"entre\" is between.",
               "meaning": "in front of"
             },
             {
@@ -9378,7 +9378,7 @@
                 "place"
               ],
               "answer": "sortie",
-              "explanation": "\"sortie\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"sortie\" is the exit, so \"la sortie de secours\" is the emergency exit; \"rue\", \"carte\" and \"place\" do not fit the phrase.",
               "meaning": "exit"
             },
             {
@@ -9427,7 +9427,7 @@
                 "perdu"
               ],
               "answer": "perdu",
-              "explanation": "\"perdu\" is correct here. Everyday vocabulary for asking and giving directions.",
+              "explanation": "\"perdu\" is the past participle of \"perdre\" used as an adjective: \"je suis perdu\" means I am lost.",
               "meaning": "lost"
             },
             {
@@ -9604,7 +9604,7 @@
                 "parapluie"
               ],
               "answer": 2,
-              "explanation": "\"bulletin\" is correct here. Everyday weather vocabulary and expressions.",
+              "explanation": "\"bulletin\" is the report, so \"le bulletin\" on the weather forecast announces rain; \"soleil\" and \"parapluie\" cannot announce anything.",
               "meaning": "report, bulletin",
               "example": "Le bulletin météo annonce de la pluie demain."
             },
@@ -9696,7 +9696,7 @@
                 "ciel"
               ],
               "answer": "temps",
-              "explanation": "\"temps\" is correct here. Everyday weather vocabulary and expressions.",
+              "explanation": "\"un temps épouvantable\" means terrible weather: \"temps\" is the word for weather in \"il fait un temps ...\".",
               "meaning": "weather"
             },
             {
@@ -9787,7 +9787,7 @@
                 "doux"
               ],
               "answer": "glacial",
-              "explanation": "\"glacial\" is correct here. Everyday weather vocabulary and expressions.",
+              "explanation": "\"glacial\" means icy, the strongest of the four after \"froid\"; \"torride\" is scorching, and \"tiède\" and \"doux\" describe mild weather.",
               "meaning": "icy, freezing"
             }
           ]
@@ -11185,7 +11185,7 @@
                 "bras"
               ],
               "answer": 0,
-              "explanation": "\"piqûre\" is correct here. Health, symptoms, and visiting the doctor.",
+              "explanation": "\"piqûre\" completes \"faire une piqûre\", the set phrase for giving an injection, which is what a nurse does.",
               "meaning": "injection, shot"
             }
           ]
@@ -11234,7 +11234,7 @@
                 "pommade"
               ],
               "answer": 2,
-              "explanation": "\"antidouleur\" is correct here. Health, symptoms, and visiting the doctor.",
+              "explanation": "\"antidouleur\" is a painkiller, the medicine you take for pain; \"pommade\" is a cream and \"ordonnance\" is a prescription.",
               "meaning": "painkiller",
               "example": "J'ai besoin d'un antidouleur, j'ai très mal à la tête."
             },
@@ -11299,7 +11299,7 @@
                 "douleur"
               ],
               "answer": 2,
-              "explanation": "\"maladie\" is correct here. Health, symptoms, and visiting the doctor.",
+              "explanation": "\"l'assurance maladie\" is health insurance; \"maladie\" (illness) follows \"assurance\" in this fixed phrase.",
               "meaning": "illness, disease",
               "example": "Cette maladie est grave."
             },
@@ -11405,7 +11405,7 @@
                 "infirmière"
               ],
               "answer": 2,
-              "explanation": "\"exercice\" is correct here. Health, symptoms, and visiting the doctor.",
+              "explanation": "\"exercice\" completes \"plus d'exercice\" (more exercise), and \"d'\" is \"de\" before a vowel; a doctor recommends exercise, not an allergy or a nurse.",
               "meaning": "exercise, physical activity"
             },
             {
@@ -11419,7 +11419,7 @@
                 "vite"
               ],
               "answer": "vite",
-              "explanation": "\"vite\" is correct here. Health, symptoms, and visiting the doctor.",
+              "explanation": "\"vite\" is an adverb meaning quickly, and an adverb is needed to modify the verb \"guérir\"; \"bon\", \"long\" and \"grand\" are adjectives.",
               "meaning": "quickly, fast"
             }
           ]
@@ -11505,7 +11505,7 @@
                 "accueil"
               ],
               "answer": 0,
-              "explanation": "\"essayage\" is correct here. Shopping for clothes and asking for sizes.",
+              "explanation": "\"essayage\" is trying on, so \"la cabine d'essayage\" is the fitting room; the other nouns do not form this phrase.",
               "meaning": "trying on (clothes), fitting"
             }
           ]
@@ -11526,7 +11526,7 @@
                 "coton"
               ],
               "answer": "solde",
-              "explanation": "\"solde\" is correct here. Shopping for clothes and asking for sizes.",
+              "explanation": "The clue \"on sale\" points to \"solde\"; \"en solde\" is the set phrase for a discounted item, while \"soie\", \"laine\" and \"coton\" are materials.",
               "meaning": "sale (en solde: on sale)"
             },
             {
@@ -11618,7 +11618,7 @@
                 "bonne"
               ],
               "answer": 2,
-              "explanation": "\"bien\" is correct here. Shopping for clothes and asking for sizes.",
+              "explanation": "\"aller bien\" is the idiom for clothes that suit or fit you, so \"me va très bien\" means it fits me very well; \"bien\" is an adverb here.",
               "meaning": "well (me va bien: suits me)"
             },
             {
@@ -11632,7 +11632,7 @@
                 "manteau"
               ],
               "answer": "réduction",
-              "explanation": "\"réduction\" is correct here. Shopping for clothes and asking for sizes.",
+              "explanation": "\"réduction\" means a discount, the only option a salesperson can give you; the others are items of clothing.",
               "meaning": "discount, price reduction"
             },
             {
@@ -11660,7 +11660,7 @@
                 "orage"
               ],
               "answer": "hiver",
-              "explanation": "\"hiver\" is correct here. Shopping for clothes and asking for sizes.",
+              "explanation": "\"hiver\" means winter, as the clue says, and it takes \"l'\" because it starts with a vowel sound; \"été\" is summer and \"automne\" is autumn.",
               "meaning": "winter"
             }
           ]
@@ -11858,7 +11858,7 @@
                 "voir"
               ],
               "answer": "voit",
-              "explanation": "\"voit\" is correct here. Making plans, invitations, and arrangements.",
+              "explanation": "\"voit\" is the \"il/on\" form of \"voir\": \"on\" takes the same verb form as \"il\", so \"on se voit\" means we will meet.",
               "meaning": "sees (se voir: to meet up)"
             },
             {
@@ -11872,7 +11872,7 @@
                 "invitons"
               ],
               "answer": 0,
-              "explanation": "\"invite\" is correct here. Making plans, invitations, and arrangements.",
+              "explanation": "\"invite\" is the \"je\" form of the present tense of \"inviter\"; \"inviter\" is the infinitive, \"invites\" is the \"tu\" form and \"invitons\" is the \"nous\" form.",
               "meaning": "invite (I/he/she invites)"
             },
             {
@@ -11900,7 +11900,7 @@
                 "retrouvons"
               ],
               "answer": 2,
-              "explanation": "\"retrouver\" is correct here. Making plans, invitations, and arrangements.",
+              "explanation": "After \"on pourrait\" a verb stays in the infinitive, so \"retrouver\" is right; \"se retrouver\" means to meet up.",
               "meaning": "to meet up, to meet again"
             }
           ]
@@ -12119,7 +12119,7 @@
                 "plaisir"
               ],
               "answer": "plaisir",
-              "explanation": "\"plaisir\" is correct here. Making plans, invitations, and arrangements.",
+              "explanation": "\"plaisir\" completes \"avec plaisir\", the fixed phrase for gladly or with pleasure when you accept an invitation.",
               "meaning": "pleasure",
               "example": "Avec plaisir, je viendrai !"
             },
@@ -12501,7 +12501,7 @@
                 "colis"
               ],
               "answer": "livraison",
-              "explanation": "\"livraison\" is correct here. Banking and postal errands.",
+              "explanation": "\"livraison\" means delivery, which is what takes time to arrive; \"timbre\" is a stamp and \"colis\" is the parcel itself.",
               "meaning": "delivery"
             },
             {
@@ -12515,7 +12515,7 @@
                 "année"
               ],
               "answer": 2,
-              "explanation": "\"matins\" is correct here. Banking and postal errands.",
+              "explanation": "After \"tous les\" the noun is plural, so \"matins\" is right: \"tous les matins\" means every morning.",
               "meaning": "mornings"
             },
             {
@@ -12713,7 +12713,7 @@
                 "passer"
               ],
               "answer": "passer",
-              "explanation": "\"passer\" is correct here. Everyday household chores.",
+              "explanation": "\"passer l'aspirateur\" is the set phrase for vacuuming; \"passer\" is used here, not \"balayer\", which means to sweep.",
               "meaning": "to run (the vacuum): passer l'aspirateur = to vacuum"
             },
             {
@@ -12769,7 +12769,7 @@
                 "repasser"
               ],
               "answer": "débarrasser",
-              "explanation": "\"débarrasser\" is correct here. Everyday household chores.",
+              "explanation": "\"débarrasser\" means to clear, as the clue says, so \"débarrasser la table\" is to clear the table.",
               "meaning": "to clear (the table)"
             }
           ]
@@ -12846,7 +12846,7 @@
                 "laver"
               ],
               "answer": "changer",
-              "explanation": "\"changer\" is correct here. Everyday household chores.",
+              "explanation": "\"changer\" means to change, as the clue says, so \"changer les draps\" is to change the sheets; \"laver\" is to wash and \"repasser\" is to iron.",
               "meaning": "to change (bed sheets)"
             }
           ]
@@ -13820,7 +13820,7 @@
                 "rien"
               ],
               "answer": "plus",
-              "explanation": "\"plus\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"plus\" completes \"ne ... plus\", which means no longer, as the clue says: \"elle ne travaille plus ici\" is she no longer works here.",
               "meaning": "no longer, not any more"
             },
             {
@@ -13834,7 +13834,7 @@
                 "plus"
               ],
               "answer": 0,
-              "explanation": "\"rien\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"ne ... rien\" means nothing; \"rien\" replaces \"pas\" to say we see nothing.",
               "meaning": "nothing"
             },
             {
@@ -13848,7 +13848,7 @@
                 "jamais"
               ],
               "answer": "personne",
-              "explanation": "\"personne\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"ne ... personne\" means nobody; \"personne\" is a pronoun, so it says you know no one here.",
               "meaning": "no one, nobody"
             }
           ]
@@ -13869,7 +13869,7 @@
                 "rien"
               ],
               "answer": 2,
-              "explanation": "\"plus\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"plus\" completes \"ne ... plus de\", which means no more, so \"il n'a plus d'argent\" is he has no money left.",
               "meaning": "no more, no longer"
             },
             {
@@ -13883,7 +13883,7 @@
                 "jamais"
               ],
               "answer": "jamais",
-              "explanation": "\"jamais\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"ne ... jamais\" means never, as the clue says; with the past tense, \"jamais\" goes between \"ai\" and \"vu\".",
               "meaning": "never"
             },
             {
@@ -13897,7 +13897,7 @@
                 "rien"
               ],
               "answer": 0,
-              "explanation": "\"pas\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, which matches the clue \"not\": \"elle ne veut pas sortir\".",
               "meaning": "not (second part of the negation)"
             },
             {
@@ -13959,7 +13959,7 @@
                 "plus"
               ],
               "answer": "pas",
-              "explanation": "\"pas\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, so \"tu ne dis pas la vérité\" is you are not telling the truth.",
               "meaning": "not (second part of the negation)"
             },
             {
@@ -14096,7 +14096,7 @@
                 "jamais"
               ],
               "answer": "pas",
-              "explanation": "\"pas\" is correct here. Common negative structures beyond ne...pas.",
+              "explanation": "\"pas\" completes \"ne ... pas\", the basic negation, so \"tu n'as pas raison\" is you are not right; \"avoir raison\" is the idiom for being right.",
               "meaning": "not (second part of negation)"
             },
             {
@@ -19386,7 +19386,7 @@
                 "entrée"
               ],
               "answer": "dépôt",
-              "explanation": "\"dépôt\" is correct here. Everyday travel vocabulary for airports, trains, and hotels.",
+              "explanation": "\"dépôt de bagages\" is the left-luggage office, where you leave your bags; \"dépôt\" is the place something is deposited.",
               "meaning": "depot, storage (as in left luggage)"
             }
           ]
@@ -19421,7 +19421,7 @@
                 "place"
               ],
               "answer": "fenêtre",
-              "explanation": "\"fenêtre\" is correct here. Everyday travel vocabulary for airports, trains, and hotels.",
+              "explanation": "\"fenêtre\" completes \"côté fenêtre\", the window side and the usual way to ask for a window seat; \"côté\" is followed by the position.",
               "meaning": "window"
             },
             {
@@ -21581,7 +21581,7 @@
                 "s'y"
               ],
               "answer": 0,
-              "explanation": "\"en\" is correct here. The pronouns y (place/idea) and en (quantity/of it)."
+              "explanation": "\"en\" replaces \"du café\" (de plus a noun, a quantity): \"j'en veux bien\" means I would like some; \"y\" stands for a place or \"à\" plus a thing."
             },
             {
               "id": "frb1p9q4",
@@ -21625,7 +21625,7 @@
                 "s'y"
               ],
               "answer": 1,
-              "explanation": "\"y\" is correct here. The pronouns y (place/idea) and en (quantity/of it).",
+              "explanation": "\"croire à\" takes \"à\", and \"y\" replaces \"à\" plus a thing: \"à cette histoire\" becomes \"j'y crois\".",
               "meaning": "in it (replaces 'à' + thing)"
             },
             {
@@ -21674,14 +21674,14 @@
             {
               "id": "frb1p9q10",
               "type": "mc",
-              "prompt": "Tu penses souvent à elle ? Oui, j'___ pense souvent.",
+              "prompt": "Tu penses souvent à ton voyage ? Oui, j'y pense souvent.",
               "choices": [
                 "y",
                 "s'y",
                 "en"
               ],
               "answer": 0,
-              "explanation": "\"y\" is correct here. The pronouns y (place/idea) and en (quantity/of it).",
+              "explanation": "\"penser à\" takes \"à\", and \"y\" replaces \"à\" plus a thing: \"à ton voyage\" becomes \"j'y pense\".",
               "meaning": "of it, about it (replaces 'à' + thing)",
               "example": "Tu penses souvent à ton examen ? Oui, j'y pense souvent."
             },
@@ -24482,7 +24482,7 @@
                 "à"
               ],
               "answer": 1,
-              "explanation": "\"à\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"penser à\" takes \"à\" before the thing you think about: \"je pense à mes vacances\".",
               "meaning": "about, of (after 'penser')"
             },
             {
@@ -24494,7 +24494,7 @@
                 "à"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"avoir besoin de\" always takes \"de\": \"j'ai besoin de ton aide\".",
               "meaning": "of (after 'avoir besoin')"
             },
             {
@@ -24517,7 +24517,7 @@
                 "à"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun."
+              "explanation": "\"décider de\" takes \"de\" before an infinitive: \"elle a décidé de partir\"."
             },
             {
               "id": "frb1p17q4",
@@ -24546,7 +24546,7 @@
                 "à"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"oublier de\" takes \"de\" before an infinitive: \"vous avez oublié de fermer la porte\".",
               "meaning": "to (after 'oublier', before a verb)"
             },
             {
@@ -24558,7 +24558,7 @@
                 "à"
               ],
               "answer": 1,
-              "explanation": "\"à\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"réussir à\" takes \"à\" before an infinitive: \"ils réussissent à finir dans les délais\".",
               "meaning": "réussir à: to succeed in, manage to"
             },
             {
@@ -24570,7 +24570,7 @@
                 "à"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun."
+              "explanation": "\"rêver de\" takes \"de\" before an infinitive: \"je rêve de voyager un jour\"."
             },
             {
               "id": "frb1p17q8",
@@ -24581,7 +24581,7 @@
                 "à"
               ],
               "answer": 1,
-              "explanation": "\"à\" is correct here. Common verbs requiring à or de before an infinitive or noun."
+              "explanation": "\"apprendre à\" takes \"à\" before an infinitive: \"tu apprends à conduire\"."
             },
             {
               "id": "frb1p17q9",
@@ -24592,7 +24592,7 @@
                 "à"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun."
+              "explanation": "\"avoir peur de\" takes \"de\" before an infinitive: \"elle a peur d'échouer\"."
             }
           ]
         },
@@ -24610,7 +24610,7 @@
                 "de"
               ],
               "answer": 0,
-              "explanation": "\"à\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"s'intéresser à\" takes \"à\", and \"à l'\" is \"à la\" shortened before a vowel: \"nous nous intéressons à l'art\".",
               "meaning": "s'intéresser à: to be interested in"
             },
             {
@@ -24622,7 +24622,7 @@
                 "de"
               ],
               "answer": 1,
-              "explanation": "\"de\" is correct here. Common verbs requiring à or de before an infinitive or noun.",
+              "explanation": "\"de\" is right because \"venir de\" plus an infinitive means has just done: \"il vient de finir son travail\" is he has just finished; \"venir à\" would mean something different.",
               "meaning": "venir de: to have just (done)"
             },
             {
@@ -25327,7 +25327,7 @@
                 "il y a"
               ],
               "answer": 1,
-              "explanation": "\"depuis\" is correct here. Depuis, pendant, and il y a for talking about time."
+              "explanation": "\"depuis\" is used for an action that began in the past and is still going on: \"tu apprends ... depuis combien de temps ?\" asks how long you have been learning."
             }
           ]
         },
@@ -25455,7 +25455,7 @@
                 "il y a"
               ],
               "answer": 1,
-              "explanation": "\"depuis\" is correct here. Depuis, pendant, and il y a for talking about time."
+              "explanation": "\"depuis\" is used with \"toujours\" to say always, for as long as she can remember, with the situation still going on; \"pendant\" gives a finished length of time."
             },
             {
               "id": "frb1p19q19",
@@ -25608,7 +25608,7 @@
                 "partir"
               ],
               "answer": 2,
-              "explanation": "\"prendre\" is correct here. Common structures for suggestions and advice.",
+              "explanation": "\"prendre\" is the verb of \"prendre du repos\" (to take some rest); the clue \"to take\" confirms it.",
               "meaning": "to take, to have (a rest)"
             },
             {
@@ -25671,7 +25671,7 @@
                 "oublier"
               ],
               "answer": 2,
-              "explanation": "\"essayer\" is correct here. Common structures for suggestions and advice.",
+              "explanation": "\"essayer\" means to try, as the clue says: \"ça vaudrait la peine d'essayer\" is it would be worth trying; after \"de\" the verb stays in the infinitive.",
               "meaning": "to try"
             },
             {
@@ -30064,10 +30064,10 @@
               "type": "fill",
               "prompt": "Elle a dit qu'elle ___ (être) très contente du résultat.",
               "bank": [
-                "habitais",
+                "étais",
                 "était",
-                "commençait",
-                "avait"
+                "étions",
+                "étaient"
               ],
               "answer": "était",
               "explanation": "After the past verb \"a dit\", her present \"je suis\" shifts to the imperfect \"était\" in reported speech; \"très\" is already in the sentence.",
@@ -30118,7 +30118,7 @@
                 "avions"
               ],
               "answer": 2,
-              "explanation": "\"était enfin\" is correct here. Reported speech with tense and pronoun shifts.",
+              "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so \"était enfin\" is a form of \"être\" in the imperfect; the key repeats \"enfin\", which the sentence already has.",
               "meaning": "was finally",
               "example": "Il a affirmé que le projet était enfin terminé."
             },
@@ -31490,7 +31490,9 @@
                 "néanmoins"
               ],
               "answer": "néanmoins",
-              "explanation": "\"néanmoins\" means \"nevertheless\": it admits a point and then states something that still holds, for example \"C'est cher ; néanmoins, je l'achète.\""
+              "explanation": "\"néanmoins\" means \"nevertheless\": it admits a point and then states something that still holds, for example \"C'est cher ; néanmoins, je l'achète.\"",
+              "meaning": "nevertheless",
+              "example": "Le projet est coûteux. Néanmoins, nous le poursuivrons."
             },
             {
               "id": "frb2p9q3",
@@ -31549,7 +31551,9 @@
                 "en revanche"
               ],
               "answer": "en revanche",
-              "explanation": "\"en revanche\" means \"on the other hand\" and starts a new sentence that presents a contrasting point, for example \"Il est timide ; en revanche, sa sœur parle à tout le monde.\""
+              "explanation": "\"en revanche\" means \"on the other hand\" and starts a new sentence that presents a contrasting point, for example \"Il est timide ; en revanche, sa sœur parle à tout le monde.\"",
+              "meaning": "on the other hand",
+              "example": "Il est lent. En revanche, il est très précis."
             },
             {
               "id": "frb2p9q7",
@@ -31575,7 +31579,9 @@
                 "pourtant"
               ],
               "answer": "pourtant",
-              "explanation": "\"pourtant\" means \"yet\" and introduces a surprising contrast, for example \"Il est riche, et pourtant il se plaint.\""
+              "explanation": "\"pourtant\" means \"yet\" and introduces a surprising contrast, for example \"Il est riche, et pourtant il se plaint.\"",
+              "meaning": "yet, however",
+              "example": "Il a beaucoup travaillé. Pourtant, il a échoué."
             },
             {
               "id": "frb2p9q9",
@@ -31887,7 +31893,9 @@
                 "grâce à"
               ],
               "answer": "ainsi",
-              "explanation": "\"ainsi\" means \"thus\" and introduces a conclusion or result. \"Puisque\" gives a cause, \"afin de\" a purpose, and \"grâce à\" means \"thanks to\"."
+              "explanation": "\"ainsi\" means \"thus\" and introduces a conclusion or result. \"Puisque\" gives a cause, \"afin de\" a purpose, and \"grâce à\" means \"thanks to\".",
+              "meaning": "thus, so",
+              "example": "Les routes étaient bloquées. Ainsi, nous avons dû rentrer à pied."
             }
           ]
         },
@@ -31996,7 +32004,9 @@
                 "puisque"
               ],
               "answer": "par conséquent",
-              "explanation": "\"par conséquent\" means \"consequently\" and introduces the logical result of what came before, e.g. \"Il est malade, par conséquent il reste chez lui.\""
+              "explanation": "\"par conséquent\" means \"consequently\" and introduces the logical result of what came before, e.g. \"Il est malade, par conséquent il reste chez lui.\"",
+              "meaning": "consequently",
+              "example": "Il n'a pas étudié. Par conséquent, il a raté l'examen."
             },
             {
               "id": "frb2p10q12",
@@ -32022,7 +32032,9 @@
                 "c'est pourquoi"
               ],
               "answer": "c'est pourquoi",
-              "explanation": "\"c'est pourquoi\" literally means \"that is why\" and introduces a consequence clause, e.g. \"Il était malade, c'est pourquoi il est resté chez lui.\""
+              "explanation": "\"c'est pourquoi\" literally means \"that is why\" and introduces a consequence clause, e.g. \"Il était malade, c'est pourquoi il est resté chez lui.\"",
+              "meaning": "that's why",
+              "example": "Il pleut. C'est pourquoi nous restons à la maison."
             },
             {
               "id": "frb2p10q14",
@@ -32055,7 +32067,9 @@
                 "puisque"
               ],
               "answer": "pour cette raison",
-              "explanation": "\"pour cette raison\" is the word-for-word equivalent of \"for this reason\" and refers back to a cause just mentioned."
+              "explanation": "\"pour cette raison\" is the word-for-word equivalent of \"for this reason\" and refers back to a cause just mentioned.",
+              "meaning": "for this reason",
+              "example": "Le prix a augmenté. Pour cette raison, nous avons changé de fournisseur."
             },
             {
               "id": "frb2p10q16",
@@ -35526,7 +35540,7 @@
                 "ignorer"
               ],
               "answer": 0,
-              "explanation": "\"remarquer\" is correct here. The causative construction: faire + infinitive.",
+              "explanation": "\"remarquer\" completes \"faire remarquer\", which means to point out, so \"vous faites remarquer le problème\" is you point out the problem; the clue \"to notice\" gives the verb.",
               "meaning": "to notice (faire remarquer: to point out)",
               "example": "Vous lui faites remarquer le problème."
             },
@@ -37255,7 +37269,7 @@
                 "fixé"
               ],
               "answer": 2,
-              "explanation": "\"atteint\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "\"atteint\" is the past participle of \"atteindre\", to reach, so \"il a atteint son objectif\" means he reached his goal; \"nonobstant\" (despite) introduces the difficulties.",
               "meaning": "reached, achieved"
             },
             {
@@ -37311,7 +37325,7 @@
                 "suscité"
               ],
               "answer": 2,
-              "explanation": "\"échoué\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "\"échoué\" is the past participle of \"échouer\", to fail, which fits \"en dépit des efforts\" (despite the efforts) for a project that did not succeed.",
               "meaning": "failed"
             }
           ]
@@ -37346,7 +37360,7 @@
                 "remettrai en question"
               ],
               "answer": 0,
-              "explanation": "\"remettre en question\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "After the preposition \"de\" a verb stays in the infinitive, so \"remettre en question\" is right; the other options are conjugated or participles.",
               "meaning": "to call into question, to challenge"
             },
             {
@@ -37543,7 +37557,7 @@
                 "oublier"
               ],
               "answer": 0,
-              "explanation": "\"examiner\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "\"examiner\" means to examine and is an infinitive after \"d'\"; \"il conviendrait de\" (it would be fitting to) is followed by an infinitive.",
               "meaning": "to examine, to look into",
               "example": "Il conviendrait d'examiner cette question plus avant."
             }
@@ -37565,7 +37579,7 @@
                 "éprouver"
               ],
               "answer": 0,
-              "explanation": "\"nier\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "\"nier\" means to deny, and \"nul ne saurait\" (no one could) is followed by an infinitive: no one could deny the importance of the event.",
               "meaning": "to deny"
             },
             {
@@ -37579,7 +37593,7 @@
                 "déplorer"
               ],
               "answer": "déplorer",
-              "explanation": "\"déplorer\" is correct here. C1-level formal and literary phrasing.",
+              "explanation": "\"déplorer\" completes \"il est à déplorer que\", a formal phrase for it is regrettable that, followed by the subjunctive.",
               "meaning": "to deplore, to regret strongly",
               "example": "Il est à déplorer que peu de mesures aient été prises."
             },
@@ -38604,7 +38618,7 @@
                 "infondée"
               ],
               "answer": 0,
-              "explanation": "\"considérer\" is correct here. C1-level vocabulary for structured argument and debate.",
+              "explanation": "\"considérer\" means to consider, and \"il convient de\" (it is appropriate to) takes an infinitive; \"infondée\" is an adjective and does not fit.",
               "meaning": "to consider, to take into account"
             }
           ]
@@ -40411,7 +40425,7 @@
                 "audience"
               ],
               "answer": "examen",
-              "explanation": "\"examen\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"examen\" is the examination, and \"soumis à l'examen du juge\" means submitted for the judge's examination; \"aveu\" is a confession.",
               "meaning": "examination, review"
             },
             {
@@ -40446,7 +40460,7 @@
                 "pourvoi"
               ],
               "answer": 0,
-              "explanation": "\"appel\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"faire appel de\" is the fixed legal phrase for appealing a decision, so \"appel\" is right.",
               "meaning": "appeal (faire appel: to appeal)"
             },
             {
@@ -40474,7 +40488,7 @@
                 "succession"
               ],
               "answer": 2,
-              "explanation": "\"peine\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"peine\" is a sentence or penalty, which the public prosecutor asks the court for (\"requérir une peine\"); \"plainte\" is a complaint.",
               "meaning": "sentence, legal punishment"
             },
             {
@@ -40488,7 +40502,7 @@
                 "propre"
               ],
               "answer": "première",
-              "explanation": "\"première\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"première\" completes \"première instance\", the court of first instance: the fixed phrase for the first level of a court case.",
               "meaning": "first (as in 'first instance' court)"
             },
             {
@@ -40502,7 +40516,7 @@
                 "jurisprudence"
               ],
               "answer": 0,
-              "explanation": "\"succession\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"droits de succession\" are inheritance taxes, which heirs pay; \"succession\" is the estate passed on at death.",
               "meaning": "inheritance, estate"
             }
           ]
@@ -40523,7 +40537,7 @@
                 "greffe"
               ],
               "answer": "non-lieu",
-              "explanation": "\"non-lieu\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"non-lieu\" is a dismissal, a judge's decision that there is no case to answer, which is why the judge pronounces it.",
               "meaning": "dismissal of a case, no grounds to prosecute"
             },
             {
@@ -40615,7 +40629,7 @@
                 "rejeter"
               ],
               "answer": 0,
-              "explanation": "\"rejetée\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"rejetée\" agrees with the feminine singular \"la demande\": the passive participle takes the subject's gender and number.",
               "meaning": "rejected, turned down (feminine)"
             },
             {
@@ -40629,7 +40643,7 @@
                 "amiable"
               ],
               "answer": "amiable",
-              "explanation": "\"amiable\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"amiable\" completes \"à l'amiable\", the fixed phrase for settled out of court by agreement; \"aimable\" means kind and does not fit here.",
               "meaning": "amicable; 'à l'amiable' means out of court"
             },
             {
@@ -40643,7 +40657,7 @@
                 "convoquant"
               ],
               "answer": 2,
-              "explanation": "\"convoqués\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"convoqués\" is a passive participle agreeing with the masculine plural \"les témoins\": the witnesses were summoned.",
               "meaning": "summoned, officially called (plural)"
             },
             {
@@ -40657,7 +40671,7 @@
                 "adopté"
               ],
               "answer": "adopté",
-              "explanation": "\"adopté\" is correct here. Legal and administrative vocabulary in context.",
+              "explanation": "\"adopté\" agrees with the masculine singular \"le texte de loi\": the passive participle takes the subject's gender and number.",
               "meaning": "passed, adopted (a law)",
               "example": "Le texte de loi a été adopté par le Parlement."
             }
@@ -43046,13 +43060,13 @@
               "type": "fill",
               "prompt": "Vous ___ (devoir) avoir des questions.",
               "bank": [
-                "peut",
-                "pouvons",
+                "doit",
+                "dois",
                 "devons",
                 "devez"
               ],
               "answer": "devez",
-              "explanation": "\"devez\" is correct here. Nuances of devoir, pouvoir, and other modal verbs.",
+              "explanation": "\"devez\" is the \"vous\" form of \"devoir\"; used for probability, \"vous devez avoir des questions\" means you must have some questions.",
               "meaning": "you must (surely, probably)"
             },
             {
@@ -43213,13 +43227,13 @@
               "type": "fill",
               "prompt": "Cela n'aurait pas ___ (devoir) arriver.",
               "bank": [
-                "peut",
+                "devoir",
                 "dois",
                 "dû",
-                "pu"
+                "du"
               ],
               "answer": "dû",
-              "explanation": "After \"n'aurait pas\" a past participle is needed, and the meaning 'should not have happened' calls for devoir's participle \"dû\" (with circumflex), not \"pu\".",
+              "explanation": "After \"n'aurait pas\" a past participle is needed, and the meaning 'should not have happened' calls for devoir's participle \"dû\" (with circumflex), not the infinitive or \"du\".",
               "meaning": "should (have), ought to have"
             },
             {
@@ -43227,7 +43241,7 @@
               "type": "mc",
               "prompt": "Il ___ (devoir) être fatigué après ce voyage.",
               "choices": [
-                "peut",
+                "doivent",
                 "dû",
                 "doit",
                 "dois"
@@ -43255,7 +43269,7 @@
               "choices": [
                 "doit",
                 "dû",
-                "peut"
+                "devoir"
               ],
               "answer": 1,
               "explanation": "The conditional perfect \"n'auriez pas ...\" needs a past participle, and 'you should not have left without warning' uses devoir's participle \"dû\"."
@@ -43996,7 +44010,7 @@
                 "replacer"
               ],
               "answer": "replacer",
-              "explanation": "\"replacer\" is correct here. Set phrases for academic essays and structured argument.",
+              "explanation": "\"replacer\" means to put back, so \"replacer ces conclusions dans un contexte plus large\" is to put these conclusions back in a wider context.",
               "meaning": "to put back, to set in context"
             },
             {
@@ -44068,7 +44082,7 @@
                 "suis"
               ],
               "answer": 2,
-              "explanation": "\"sommes\" is correct here. Aspectual expressions for ongoing, just-finished, and about-to-happen actions.",
+              "explanation": "\"sommes\" is the \"nous\" form of \"être\": \"nous sommes sur le point de\" means we are about to.",
               "meaning": "are (about to do something)"
             },
             {
@@ -44173,7 +44187,7 @@
                 "est"
               ],
               "answer": "êtes",
-              "explanation": "\"êtes\" is correct here. Aspectual expressions for ongoing, just-finished, and about-to-happen actions.",
+              "explanation": "\"êtes\" is the \"vous\" form of \"être\": \"vous êtes sur le point de partir ?\" means are you about to leave?",
               "meaning": "(you) are (about to)"
             }
           ]
