@@ -94,6 +94,17 @@ function Privacy() {
           time you made it, so it applies on every device you sign in on.
         </p>
         <p>
+          Explain in my language: when you tap &ldquo;Explain in&rdquo; your own language (or choose
+          &ldquo;Always show&rdquo; in Settings), the app sends the item to the AI, which is the
+          question, your answer and the right answer, or the word and its sentence, or the chat
+          message, together with the language you chose. The explanation is written in that language
+          and labelled as AI. We keep each explanation in a shared store so the same item in the
+          same language is only written once; it is not tied to your account, and another learner
+          who asks for the same item in the same language may see it. Because an explanation can
+          quote your answer, it may contain a few of your words. Your language is read from your
+          profile, never sent by the app.
+        </p>
+        <p>
           You can withdraw your consent at any time, in the iOS app under Profile → Settings → AI
           features, or on the website on your Profile page. From that moment nothing more is sent to
           our AI providers. Without consent you can still do lessons, review and the placement test:
@@ -181,7 +192,7 @@ function Privacy() {
             "Resend: delivers the emails we send, such as your sign-in codes and password-reset links, and internal alerts to us when a learner files a report.",
             "Deepgram: converts your recorded speech to text, AI replies to spoken audio, and our audio library scripts to the AI-narrated episodes. It receives the recording or the reply text, not your account details. Deepgram does not keep your recordings or use them to train its models: we opt every request out of its model improvement program, so it keeps the data only as long as it needs to process the request.",
             "OpenRouter: passes the text below to the AI model that answers it and returns the reply. It sends the text only to the AI providers named in this list, and only to providers that do not train on it. It does not keep the text, apart from anonymous usage statistics.",
-            "Anthropic (Claude), reached through OpenRouter: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, and finds practice items in your conversation mistakes. It receives only the text needed for each task. Anthropic does not use it to train its models and deletes it within 30 days, or keeps it longer only when it is flagged for breaking Anthropic's usage policy.",
+            "Anthropic (Claude), reached through OpenRouter: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, explains a mistake, a word or a message in your own language when you ask, and finds practice items in your conversation mistakes. It receives only the text needed for each task. Anthropic does not use it to train its models and deletes it within 30 days, or keeps it longer only when it is flagged for breaking Anthropic's usage policy.",
             "RevenueCat: manages subscription status, so Alphonso Pro works on every device you sign in on. It receives an account identifier and purchase and renewal information from Apple, Google or Stripe, not your payment details. For a subscription bought on our website it also runs the checkout page.",
             "Stripe: processes card payments for subscriptions bought on our website. It receives your card details and billing email directly; we never see or store your card number.",
             "Sentry: receives the crash and error reports described above, so we can find and fix faults. It stores the technical details of the fault for 90 days, not your account details, and does not use them for advertising.",

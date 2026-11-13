@@ -17,6 +17,8 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastProbeResult
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSaveGate
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSavedPositions
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastSessionTracker
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepChoice
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepTimerState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -116,11 +118,43 @@ class PodcastPlayer(
     private val probe: suspend (String) -> PodcastProbeResult = { PodcastProbeResult.NotRun },
     private val loadTimeoutMillis: Long = PodcastPlayerMachine.LOAD_TIMEOUT_MILLIS,
     private val stallTimeoutMillis: Long = PodcastPlayerMachine.STALL_TIMEOUT_MILLIS,
+    /** How often the sleep timer checks the clock. */
+    private val sleepPollMillis: Long = 1_000L,
 ) {
     private val _state = MutableStateFlow(PodcastPlayerState())
     val state: StateFlow<PodcastPlayerState> = _state.asStateFlow()
 
     private val tracker = PodcastSessionTracker()
+
+    /** The sleep timer. A timed choice pauses at its deadline, saving the position; "end of episode" is spent when it ends. */
+    private val _sleep = MutableStateFlow(SleepTimerState.OFF)
+    val sleep: StateFlow<SleepTimerState> = _sleep.asStateFlow()
+    private var sleepJob: Job? = null
+
+    /** Starts (or with [SleepChoice.Off] clears) the sleep timer. */
+    fun setSleep(choice: SleepChoice) {
+        sleepJob?.cancel()
+        sleepJob = null
+        _sleep.value = if (choice == SleepChoice.Off) SleepTimerState.OFF else SleepTimerState.start(choice, nowMillis())
+        if (_sleep.value.endsAtMillis == null) return
+        sleepJob = scope.launch {
+            while (true) {
+                delay(sleepPollMillis)
+                if (_sleep.value.shouldPause(nowMillis(), episodeEnded = false)) {
+                    clearSleep()
+                    // The same path a pulled headphone takes: pause and save, never resume by itself.
+                    dispatch(PodcastPlayerEvent.PausedExternally(resumable = false))
+                    return@launch
+                }
+            }
+        }
+    }
+
+    private fun clearSleep() {
+        sleepJob?.cancel()
+        sleepJob = null
+        _sleep.value = SleepTimerState.OFF
+    }
 
     /** Internal so a test can observe the gate (what was last seen, whether saving is paused). */
     internal val saveGate = PodcastSaveGate()
@@ -261,6 +295,7 @@ class PodcastPlayer(
      * ten seconds behind. The gate keeps counting epochs, so a save already chained from the previous account is refused.
      */
     fun stopForAccountChange() {
+        clearSleep()
         saveJob?.cancel()
         saveJob = null
         saveGate.resetForAccountChange()
@@ -275,6 +310,16 @@ class PodcastPlayer(
         _state.value = PodcastPlayerState()
     }
 
+    /** Seeks to an absolute position (the scrubber, a tapped transcript line), clamped into the episode. */
+    fun seek(seconds: Double) {
+        val episode = _state.value.episode ?: return
+        if (!seconds.isFinite()) return
+        val limit = (port.durationMillis()?.let { it / 1000.0 } ?: episode.durationSeconds.toDouble())
+        val target = seconds.coerceIn(0.0, limit)
+        port.seekTo((target * 1000).toLong())
+        _state.update { it.copy(elapsedSeconds = target) }
+    }
+
     fun skip(seconds: Double) {
         val episode = _state.value.episode ?: return
         val limit = (port.durationMillis()?.let { it / 1000.0 } ?: episode.durationSeconds.toDouble())
@@ -285,6 +330,7 @@ class PodcastPlayer(
 
     fun close() {
         val episode = _state.value.episode ?: return
+        clearSleep()
         save(port.currentMillis() / 1000.0, completed = false)
         flushPlayEvent(episode)
         timeoutJob?.cancel()
@@ -318,6 +364,8 @@ class PodcastPlayer(
     private fun finish() {
         val finished = _state.value.episode ?: return
         Analytics.track(AnalyticsEvent.PODCAST_COMPLETED, mapOf("episode_id" to finished.id))
+        // "End of episode" is spent, and so is any timed choice: nothing is left to stop.
+        clearSleep()
         dispatch(PodcastPlayerEvent.PlayedToEnd)
     }
 

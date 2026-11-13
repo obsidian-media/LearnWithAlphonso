@@ -65,6 +65,8 @@ import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
+import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
+import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
@@ -271,6 +273,7 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
             LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 itemsIndexed(state.turns) { index, turn ->
                     val isUser = turn.role == "user"
+                    Column(Modifier.fillMaxWidth()) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start, verticalAlignment = Alignment.Bottom) {
                         if (!isUser) Image(painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop, modifier = Modifier.size(26.dp).clip(CircleShape))
                         else Spacer(Modifier.width(40.dp))
@@ -288,6 +291,9 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
                                 Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
                             }
                         }
+                    }
+                    // "Say that in <language>" under each of Hector's bubbles; his calls spend Hector's own Pro allowance.
+                    if (!isUser) ExplainInMyLanguage(container, remember(turn.content, vm.course.code) { ExplainRules.message(turn.content, vm.course.code, hector = true) }, Modifier.padding(start = 32.dp, top = 4.dp))
                     }
                 }
             }

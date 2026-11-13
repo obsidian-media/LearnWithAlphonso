@@ -715,6 +715,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      explanation_cache: {
+        Row: {
+          cache_key: string;
+          course: string;
+          created_at: string;
+          explanation: string;
+          kind: string;
+          native_language: string;
+        };
+        Insert: {
+          cache_key: string;
+          course: string;
+          created_at?: string;
+          explanation: string;
+          kind: string;
+          native_language: string;
+        };
+        Update: {
+          cache_key?: string;
+          course?: string;
+          created_at?: string;
+          explanation?: string;
+          kind?: string;
+          native_language?: string;
+        };
+        Relationships: [];
+      };
       friend_activity_events: {
         Row: {
           created_at: string;

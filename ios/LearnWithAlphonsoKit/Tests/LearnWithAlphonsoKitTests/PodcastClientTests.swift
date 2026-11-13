@@ -476,4 +476,30 @@ final class PodcastClientTests: XCTestCase {
         let body = try JSONSerialization.jsonObject(with: await box.last!.httpBody!) as! [String: Any]
         XCTAssertNotNil(body["completed_at"])
     }
+
+    func testMonthListenedSecondsAsksForThisUTCMonthAndSums() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [["seconds_listened": 600], ["seconds_listened": 1200], ["seconds_listened": -5]])
+        }
+        // 2026-11-30 23:59 UTC is still November.
+        let now = Date(timeIntervalSince1970: 1_796_083_140)
+        let total = try await client.fetchMonthListenedSeconds(now: now)
+        XCTAssertEqual(total, 1800)
+        let url = await box.last!.url!.absoluteString
+        XCTAssertTrue(url.contains("rest/v1/podcast_play_events"))
+        XCTAssertTrue(url.contains("started_at=gte.2026-11-01T00:00:00Z"), url)
+    }
+
+    func testMonthStartIsTheFirstOfTheUTCMonth() {
+        XCTAssertEqual(ListenShelf.monthStartISO(now: Date(timeIntervalSince1970: 1_796_083_140)), "2026-11-01T00:00:00Z")
+        XCTAssertEqual(ListenShelf.monthStartISO(now: Date(timeIntervalSince1970: 1_796_083_261)), "2026-12-01T00:00:00Z")
+    }
+
+    func testMonthChipIsHiddenUnderAMinute() {
+        XCTAssertNil(ListenShelf.monthChip(seconds: 59))
+        XCTAssertEqual(ListenShelf.monthChip(seconds: 60), "1 m this month")
+        XCTAssertEqual(ListenShelf.monthChip(seconds: 12000), "3 h 20 m this month")
+    }
 }

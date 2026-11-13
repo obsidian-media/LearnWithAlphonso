@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,10 +27,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +60,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,6 +70,10 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.ListenEpisodeState
 import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelf
 import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelfFolder
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTimings
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepChoice
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepTimerState
+import com.obsidianmedia.learnwithalphonso.core.podcast.TimedLine
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLibrary
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.loadAsset
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -115,6 +127,14 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
                         contentAlignment = Alignment.Center,
                     ) { Text(label, color = if (on) palette.onPrimary else palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge) }
                 }
+            }
+        }
+        ListenShelf.monthChip(state.monthSeconds)?.let { chip ->
+            item {
+                Text(
+                    "⏱ $chip", color = palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.heightIn(min = 48.dp).clip(CircleShape).background(palette.parchment).padding(horizontal = 16.dp, vertical = 14.dp),
+                )
             }
         }
         target?.let { t ->
@@ -302,8 +322,9 @@ private suspend fun playEpisode(container: AppContainer, episode: com.obsidianme
 }
 
 /**
- * The full-screen player body: the room, Alphonso, the title, progress with time left, back 15 / play / forward 30 and the
- * transcript. The audio is untouched by opening or closing it. Seeking is by the skip buttons (the player has no absolute seek).
+ * The full-screen player body: the room, Alphonso, the title, a seek bar, back 15 / play / forward 30, the sleep timer and the
+ * transcript. With timings ([lines]) the transcript follows the audio line by line and a tapped line seeks. The audio is
+ * untouched by opening or closing it; the sheet closes with the standard swipe down.
  */
 @Composable
 internal fun FullPlayerContent(
@@ -312,25 +333,39 @@ internal fun FullPlayerContent(
     elapsed: Double,
     duration: Int,
     control: com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl,
+    lines: List<TimedLine>?,
+    sleep: SleepTimerState,
     onToggle: () -> Unit,
     onSkip: (Double) -> Unit,
+    onSeek: (Double) -> Unit,
+    onSleep: (SleepChoice) -> Unit,
     onTranscript: () -> Unit,
     onClose: () -> Unit,
 ) {
     val palette = AlphonsoColor.palette
     val left = ListenShelf.clock(duration - elapsed.toInt())
     Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Box(Modifier.size(240.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(24.dp))) {
-            RoomImage("radio", Modifier.matchParentSize())
-            Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).width(120.dp))
+        if (lines != null) {
+            // With timings the art shrinks to a header so the transcript has the room, as in the mock.
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
+                Box(Modifier.size(96.dp).clip(RoundedCornerShape(20.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))) {
+                    RoomImage("radio", Modifier.matchParentSize())
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            TimedTranscript(lines, elapsed, onSeek)
+        } else {
+            Box(Modifier.size(240.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(24.dp))) {
+                RoomImage("radio", Modifier.matchParentSize())
+                Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).width(120.dp))
+            }
+            Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodyMedium)
         }
-        Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
-        Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodyMedium)
-        LinearProgressIndicator(
-            progress = { if (duration > 0) (elapsed / duration).toFloat().coerceIn(0f, 1f) else 0f },
-            color = palette.ember, trackColor = palette.onPrimary.copy(alpha = 0.25f),
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Playback position, ${ListenShelf.clock(elapsed.toInt())} of ${ListenShelf.clock(duration)}" },
-        )
+        Scrubber(elapsed, duration, onSeek)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(ListenShelf.clock(elapsed.toInt()), color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
             Text("-$left", color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
@@ -346,8 +381,82 @@ internal fun FullPlayerContent(
             TextButtonLike("+30") { onSkip(30.0) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            SleepMenu(sleep, onSleep)
             TextButtonLike("Transcript", onTranscript)
             TextButtonLike("Stop and close", onClose)
+        }
+    }
+}
+
+/** The seek bar: drag or tap to seek; TalkBack reads "Playback position, 1:05 of 4:10" and can adjust it. */
+@Composable
+internal fun Scrubber(elapsed: Double, duration: Int, onSeek: (Double) -> Unit) {
+    val palette = AlphonsoColor.palette
+    if (duration <= 0) return
+    // While the thumb is dragged the bar follows the finger; the seek happens once, on release.
+    var dragging by remember { mutableStateOf<Float?>(null) }
+    val shown = dragging ?: elapsed.toFloat().coerceIn(0f, duration.toFloat())
+    Slider(
+        value = shown,
+        onValueChange = { dragging = it },
+        onValueChangeFinished = { dragging?.let { onSeek(it.toDouble()) }; dragging = null },
+        valueRange = 0f..duration.toFloat(),
+        colors = SliderDefaults.colors(thumbColor = palette.ember, activeTrackColor = palette.ember, inactiveTrackColor = palette.onPrimary.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth().semantics {
+            contentDescription = "Playback position"
+            stateDescription = "${ListenShelf.clock(shown.toInt())} of ${ListenShelf.clock(duration)}"
+        },
+    )
+}
+
+/** The sleep timer chip: off, 15, 30, 45 minutes or the end of the episode. */
+@Composable
+private fun SleepMenu(sleep: SleepTimerState, onSleep: (SleepChoice) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val label = if (sleep.choice == SleepChoice.Off) "Sleep" else "Sleep: ${sleep.choice.label}"
+    Box {
+        TextButtonLike("☾ $label") { open = true }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            SleepChoice.entries.forEach { choice ->
+                DropdownMenuItem(
+                    text = { Text(if (choice == sleep.choice) "✓ ${choice.label}" else choice.label) },
+                    onClick = { onSleep(choice); open = false },
+                    modifier = Modifier.semantics { selected = choice == sleep.choice },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The transcript, line by line, following the audio: the line being spoken is bright, the rest dimmed, the current one
+ * scrolls to the middle (without animation when the system has animations off) and tapping a line seeks to its start.
+ */
+@Composable
+private fun TimedTranscript(lines: List<TimedLine>, elapsed: Double, onSeek: (Double) -> Unit) {
+    val palette = AlphonsoColor.palette
+    val context = LocalContext.current
+    val reduceMotion = remember {
+        android.provider.Settings.Global.getFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    }
+    val active = PodcastTimings.activeIndex(lines, elapsed)
+    val listState = rememberLazyListState()
+    LaunchedEffect(active) {
+        if (active < 0) return@LaunchedEffect
+        val offset = -(listState.layoutInfo.viewportSize.height / 3)
+        if (reduceMotion) listState.scrollToItem(active, offset) else listState.animateScrollToItem(active, offset)
+    }
+    LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().height(240.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        itemsIndexed(lines) { index, line ->
+            Text(
+                line.t,
+                color = palette.onPrimary.copy(alpha = if (index == active) 1f else 0.55f),
+                fontWeight = if (index == active) FontWeight.Bold else FontWeight.Normal,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth().padding(top = if (line.p && index > 0) 8.dp else 0.dp)
+                    .clickable(onClickLabel = "Play from here", role = Role.Button) { onSeek(line.s) }
+                    .semantics { selected = index == active },
+            )
         }
     }
 }

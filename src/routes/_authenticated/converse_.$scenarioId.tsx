@@ -4,6 +4,7 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
+import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { isAiConsentRequired, useAiConsent } from "../../lib/ai-consent-context";
 import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
@@ -388,6 +389,10 @@ function ConverseChatPage({
                     scenarioId={scenario.id}
                   />
                 )}
+                <ExplainInMyLanguage
+                  className="mt-1"
+                  request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
+                />
               </div>
             ) : (
               <div className="flex max-w-[85%] flex-col items-end gap-1">

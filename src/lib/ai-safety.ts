@@ -62,6 +62,7 @@ export type AiOutputRoute =
   | "chat"
   | "hector-respond"
   | "define-word"
+  | "explain"
   | "generate-practice"
   | "grade-translation"
   | "analyze-weaknesses"

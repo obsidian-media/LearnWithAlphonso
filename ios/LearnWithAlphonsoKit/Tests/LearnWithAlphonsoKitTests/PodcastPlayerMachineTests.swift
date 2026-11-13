@@ -110,6 +110,14 @@ final class PodcastPlayerMachineTests: XCTestCase {
         XCTAssertFalse(machine.isAudible)
     }
 
+    func testAPauseAfterTheEndSavesNothingMore() {
+        var machine = playing()
+        _ = machine.send(.didPlayToEnd)
+        // A pause signal landing after the end (route change, interruption) must not store the position a second time.
+        XCTAssertEqual(machine.send(.pausedExternally(resumable: false)), [])
+        XCTAssertEqual(machine.send(.togglePressed).first, .play)
+    }
+
     func testPlayAfterFinishingStartsAgainFromTheTop() {
         var machine = playing()
         _ = machine.send(.didPlayToEnd)

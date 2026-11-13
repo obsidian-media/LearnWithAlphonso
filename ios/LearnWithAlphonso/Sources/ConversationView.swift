@@ -210,6 +210,10 @@ struct ConversationSessionView: View {
                     )
                 if turn.role == "assistant" { Spacer(minLength: AlphonsoDS.Space.minTouch) }
             }
+            // "Say that in <language>", under the tutor's bubble.
+            AssistantExplainRow(
+                turn: turn, isOpener: conversation.openerIndices.contains(index), course: course,
+                surface: .conversation, session: session)
             // V3 package 3a: pronunciation-clarity heuristic from Deepgram's
             // utterance-level confidence, not phoneme-level scoring.
             if let confidence {

@@ -9,6 +9,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonScreen } from "../../components/lesson/LessonScreen";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
+import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
+import { wrongAnswerRequest } from "../../lib/explain-client";
 import { DsIcon } from "../../components/ds/DsIcon";
 import {
   AlphonsoBubble,
@@ -748,6 +750,11 @@ function LessonPage() {
                 className=""
               />
             }
+            extra={
+              answered ? null : (
+                <ExplainInMyLanguage request={wrongAnswerRequest(q, submittedAnswer, course)} />
+              )
+            }
             continueLabel={
               isReinforcing || pendingReinforcement || idx < total - 1
                 ? answered
@@ -925,6 +932,15 @@ function VocabDeckScreen({
                   {v.example}
                 </p>
               )}
+              <ExplainInMyLanguage
+                className="mt-3"
+                request={{
+                  kind: "word",
+                  course,
+                  word: v.term.slice(0, 80),
+                  ...(v.example ? { sentence: v.example.slice(0, 400) } : {}),
+                }}
+              />
             </div>
           </motion.div>
         </AnimatePresence>

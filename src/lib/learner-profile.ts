@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EXPLAIN_MODES } from "./explain";
 
 /**
  * The learner's first-run answers (visual round 6, BACKLOG 0.0-bd), kept on the account in Supabase auth
@@ -377,6 +378,7 @@ export const learnerProfilePatchSchema = z
     name: nameSchema.optional(),
     course: z.enum(PROFILE_COURSES).optional(),
     nativeLanguage: z.enum(NATIVE_LANGUAGES).optional(),
+    explainMode: z.enum(EXPLAIN_MODES).optional(),
     country: z.enum(COUNTRIES).optional(),
     showFlag: z.boolean().optional(),
     goal: z.enum(GOALS).optional(),
@@ -421,6 +423,8 @@ export function parseLearnerProfile(raw: unknown): LearnerProfile {
   if (course) out.course = course;
   const nativeLanguage = pick(shape.nativeLanguage, v.nativeLanguage);
   if (nativeLanguage) out.nativeLanguage = nativeLanguage;
+  const explainMode = pick(shape.explainMode, v.explainMode);
+  if (explainMode) out.explainMode = explainMode;
   const country = pick(shape.country, v.country);
   if (country) out.country = country;
   const goal = pick(shape.goal, v.goal);

@@ -383,6 +383,7 @@ export function VerdictSheet({
   correctAnswer,
   onHearAnswer,
   explanation,
+  extra,
   continueLabel,
   onContinue,
 }: {
@@ -393,6 +394,8 @@ export function VerdictSheet({
   correctAnswer?: string;
   onHearAnswer?: () => void;
   explanation: ReactNode;
+  /** Under the reason, above the button: the "Explain in my language" chip on a wrong answer. */
+  extra?: ReactNode;
   continueLabel: string;
   onContinue: () => void;
 }) {
@@ -451,6 +454,7 @@ export function VerdictSheet({
       >
         {explanation}
       </div>
+      {extra}
       <button
         type="button"
         onClick={onContinue}

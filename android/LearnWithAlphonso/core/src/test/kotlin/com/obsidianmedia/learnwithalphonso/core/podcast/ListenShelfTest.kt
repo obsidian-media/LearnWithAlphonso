@@ -76,4 +76,18 @@ class ListenShelfTest {
         val finished = listOf("e1", "e2", "e3").map { prog(it, 0, "2026-01-01", true) }
         assertNull(ListenShelf.continueListening(shelves, finished))
     }
+
+    @Test
+    fun `the month starts on the first of the UTC month`() {
+        assertEquals("2026-11-01T00:00:00Z", ListenShelf.monthStartIso(1_796_083_140_000L))
+        assertEquals("2026-12-01T00:00:00Z", ListenShelf.monthStartIso(1_796_083_261_000L))
+    }
+
+    @Test
+    fun `the month chip is hidden under a minute`() {
+        assertNull(ListenShelf.monthChip(59))
+        assertEquals("1 m this month", ListenShelf.monthChip(60))
+        assertEquals("3 h 20 m this month", ListenShelf.monthChip(12000))
+        assertEquals(1800, ListenShelf.monthSeconds(listOf(600, 1200, -5)))
+    }
 }

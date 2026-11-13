@@ -50,6 +50,11 @@ final class PodcastAudioPlayer {
     /// because PodcastClient cannot refresh the token it was given.
     var makeClient: (@MainActor () -> PodcastClient?)?
 
+    /// The sleep timer (Kit `SleepTimerState`). A timed choice pauses at its deadline, saving the position; "end of
+    /// episode" has done its job when the episode ends. Cleared by close and by an account change.
+    private(set) var sleep = SleepTimerState.off
+    private var sleepTask: Task<Void, Never>?
+
     private var saveGate = PodcastSaveGate()
     /// The episode whose first play was already counted for analytics: pausing and resuming is not a new play.
     private var playTrackedEpisodeID: String?
@@ -155,7 +160,35 @@ final class PodcastAudioPlayer {
         }
     }
 
+    /// Starts (or with `.off` clears) the sleep timer.
+    func setSleep(_ choice: SleepChoice) {
+        sleepTask?.cancel()
+        sleepTask = nil
+        sleep = choice == .off ? .off : .start(choice, now: Date().timeIntervalSinceReferenceDate)
+        guard sleep.endsAt != nil else { return }
+        sleepTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard let self, !Task.isCancelled else { return }
+                if self.sleep.shouldPause(now: Date().timeIntervalSinceReferenceDate, episodeEnded: false) {
+                    self.sleep = .off
+                    self.sleepTask = nil
+                    // The same path a pulled headphone takes: pause and save, never resume by itself.
+                    self.handle(.pausedExternally(resumable: false))
+                    return
+                }
+            }
+        }
+    }
+
+    private func clearSleep() {
+        sleepTask?.cancel()
+        sleepTask = nil
+        sleep = .off
+    }
+
     func close() {
+        clearSleep()
         if let player { save(position: player.currentTime().seconds, completed: false) }
         flushPlayEvent()
         teardownItem()
@@ -181,6 +214,7 @@ final class PodcastAudioPlayer {
     /// account's episode. No final save: the session's token is already gone, and the
     /// position is at most 10 seconds behind.
     func stopForAccountChange() {
+        clearSleep()
         teardownItem()
         saveTask?.cancel()
         saveTask = nil
@@ -291,6 +325,8 @@ final class PodcastAudioPlayer {
                     if let finished = self?.episode {
                         Analytics.track(.podcastCompleted, ["episode_id": finished.id, "course": finished.course ?? ""])
                     }
+                    // "End of episode" is spent, and so is any timed choice: nothing is left to stop.
+                    self?.clearSleep()
                     self?.handle(.didPlayToEnd)
                 }
             },
